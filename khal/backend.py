@@ -60,6 +60,7 @@ try:
     import pytz
     import time
     from os import path
+    from model import Event
 
 except ImportError, error:
     print(error)
@@ -163,17 +164,18 @@ class SQLiteDb(object):
         return result
 
     def check_account_table(self, account_name, resource):
-        sql_s = """CREATE TABLE IF NOT EXISTS {0} (
-                uid TEXT NOT NULL UNIQUE,
-                href TEXT,
-                etag TEXT,
-                start INT,
-                end INT,
-                status INT NOT NULL,
-                vevent TEXT
-                )""".format(account_name)
-        self.sql_ex(sql_s)
-        sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
+        for account_name in [account_name, account_name + '_allday']:
+            sql_s = """CREATE TABLE IF NOT EXISTS {0} (
+                    uid TEXT NOT NULL UNIQUE,
+                    href TEXT,
+                    etag TEXT,
+                    start INT,
+                    end INT,
+                    status INT NOT NULL,
+                    vevent TEXT
+                    )""".format(account_name)
+            self.sql_ex(sql_s)
+            sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
         self.sql_ex(sql_s, (account_name, resource))
         logging.debug("created {0} table".format(account_name))
 
@@ -232,7 +234,15 @@ class SQLiteDb(object):
                 all_day_event = True
         except KeyError:
             pass
-        if not all_day_event:
+        if all_day_event:
+            try:
+                dtstart = vevent['DTSTART'].dt.strftime('%Y%m%d')
+                dtend = vevent['DTEND'].dt.strftime('%Y%m%d')
+
+
+
+
+        else:
 
             def fix_timezone(identifier):
                 dtstart = vevent[identifier]
@@ -349,6 +359,22 @@ class SQLiteDb(object):
 #                    print(href)
 #                    print(error)
 #            return temp
+
+    def get_time_range(self, start, end, account_name):
+        """returns
+        :type start: datetime.datetime
+        :type end: datetime.datetime
+        """
+        start = time.mktime(start.timetuple())
+        end = time.mktime(end.timetuple())
+        sql_s = ('SELECT vevent FROM {0} WHERE '
+                 'start >= ? AND start <= ? OR '
+                 'end >= ? AND end <= ? OR '
+                 'start <= ? AND end >= ?').format(account_name)
+        stuple = (start, end, start, end, start, end)
+        result = self.sql_ex(sql_s, stuple)
+        result = [Event(one[0]) for one in result]
+        return result
 
     def get_vcard_from_db(self, href, account_name):
         """returns a VCard()

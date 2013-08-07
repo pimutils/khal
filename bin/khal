@@ -44,17 +44,21 @@ if conf is None:
 if conf.debug:
     conf_parser.dump(conf)
 
-rvalue = 0
-for one in conf.accounts:
-    if one.name in conf.sync.accounts:
-        logging.debug('start syncing account {0}'.format(one.name))
-        conf.account = one
-        try:
-            controllers.sync(conf)
-        except Exception as error:
-            if conf.debug:
-                raise
-            logging.critical('While syncing account "{0}" an error occured:\n  '.format(one.name) + str(error))
-            rvalue = 1
 
-sys.exit(rvalue)
+if conf.syncrun:
+    rvalue = 0
+    for one in conf.accounts:
+        if one.name in conf.sync.accounts:
+            logging.debug('start syncing account {0}'.format(one.name))
+            conf.account = one
+            try:
+                controllers.Sync(conf)
+            except Exception as error:
+                if conf.debug:
+                    raise
+                logging.critical('While syncing account "{0}" an error occured:\n  '.format(one.name) + str(error))
+                rvalue = 1
+    sys.exit(rvalue)
+else:
+    controllers.Display(conf)
+

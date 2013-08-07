@@ -27,25 +27,52 @@ syncs the remote database to the local db
 
 from khal import backend
 from khal import caldav
+from khal import calendar_display
+from itertools import izip_longest
+import datetime
+import time
+
+class Controller(object):
+    def __init__(self, conf):
+        self.dbtool = backend.SQLiteDb(db_path=conf.sqlite.path,
+                                       encoding="utf-8",
+                                       errors="stricts",
+                                       debug=conf.debug)
+
+class Sync(Controller):
+    def __init__(self, conf):
+        super(Sync, self).__init__(conf)
+        self.syncer = caldav.Syncer(conf.account.resource,
+                             user=conf.account.user,
+                             passwd=conf.account.passwd,
+                             write_support=conf.account.write_support,
+                             verify=conf.account.verify,
+                             auth=conf.account.auth)
+        # sync:
+        vevents = self.syncer.get_all_vevents()
+        self.dbtool.check_account_table(conf.account.name, conf.account.resource)
+        for vevent in vevents:
+            self.dbtool.update(vevent, conf.account.name)
 
 
-def sync(conf):
-    """this should probably be seperated from the class definitions"""
+class Display(Controller):
+    def __init__(self, conf):
+        super(Display, self).__init__(conf)
 
-    syncer = caldav.Syncer(conf.account.resource,
-                           user=conf.account.user,
-                           passwd=conf.account.passwd,
-                           write_support=conf.account.write_support,
-                           verify=conf.account.verify,
-                           auth=conf.account.auth)
-    my_dbtool = backend.SQLiteDb(db_path=conf.sqlite.path,
-                                 encoding="utf-8",
-                                 errors="stricts",
-                                 debug=conf.debug)
-    # sync:
-    vevents = syncer.get_all_vevents()
+        today = datetime.date.today()
+        start = datetime.datetime.combine(today, datetime.time.min)
+        end = datetime.datetime.combine(today, datetime.time.max)
 
-    my_dbtool.check_account_table(conf.account.name, conf.account.resource)
+        event_column = list()
+        event_column.append('Today:')
+        for account in conf.sync.accounts:
+            events = self.dbtool.get_time_range(start, end, account)
+            for event in events:
+                event_column.append(event.start.strftime('%H:%M') + '-' +  event.end.strftime('%H:%M') + ': ' + event.summary)
 
-    for vevent in vevents:
-        my_dbtool.update(vevent, conf.account.name)
+        calendar_column = calendar_display.vertical_month()
+        rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
+        print '\n'.join(rows)
+
+
+

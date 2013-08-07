@@ -219,6 +219,9 @@ class ConfigurationParser(object):
             "-a", "--account", action="append", dest="sync__accounts",
             metavar="NAME",
             help="use only the NAME account (can be used more than once)")
+        self._arg_parser.add_argument(
+            '--sync', action='store_true', dest='syncrun',
+            help="start syncing")
 
     def parse(self):
         """Start parsing.
