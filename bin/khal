@@ -38,6 +38,14 @@ capture_user_interruption()
 # Read configuration.
 conf_parser = ConfigurationParser('khal is a CalDAV based calendar')
 conf = conf_parser.parse()
+
+# converting conf.accounts to a dict (where account.names are the keys)
+# should be moved to the config parser
+out = dict()
+for one in conf.accounts:
+    out[one.name] = one
+conf.accounts = out
+
 if conf is None:
     sys.exit(1)
 
@@ -47,12 +55,11 @@ if conf.debug:
 
 if conf.syncrun:
     rvalue = 0
-    for one in conf.accounts:
-        if one.name in conf.sync.accounts:
-            logging.debug('start syncing account {0}'.format(one.name))
-            conf.account = one
+    for account_name in conf.accounts:
+        if account_name in conf.sync.accounts:
+            logging.debug('start syncing account {0}'.format(account_name))
             try:
-                controllers.Sync(conf)
+                controllers.Sync(conf, account_name)
             except Exception as error:
                 if conf.debug:
                     raise

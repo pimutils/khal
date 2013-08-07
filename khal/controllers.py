@@ -25,34 +25,37 @@
 syncs the remote database to the local db
 """
 
+import datetime
+
 from khal import backend
 from khal import caldav
 from khal import calendar_display
 from itertools import izip_longest
-import datetime
-import time
+
 
 class Controller(object):
     def __init__(self, conf):
-        self.dbtool = backend.SQLiteDb(db_path=conf.sqlite.path,
-                                       encoding="utf-8",
-                                       errors="stricts",
-                                       debug=conf.debug)
+        self.dbtool = backend.SQLiteDb(conf)
+
 
 class Sync(Controller):
-    def __init__(self, conf):
+    def __init__(self, conf, sync_account_name):
+        """
+        :param sync_account_name: name of account which should be synced
+        """
         super(Sync, self).__init__(conf)
-        self.syncer = caldav.Syncer(conf.account.resource,
-                             user=conf.account.user,
-                             passwd=conf.account.passwd,
-                             write_support=conf.account.write_support,
-                             verify=conf.account.verify,
-                             auth=conf.account.auth)
+        sync_account = conf.accounts[sync_account_name]
+        self.syncer = caldav.Syncer(sync_account.resource,
+                                    user=sync_account.user,
+                                    passwd=sync_account.passwd,
+                                    write_support=sync_account.write_support,
+                                    verify=sync_account.verify,
+                                    auth=sync_account.auth)
         # sync:
         vevents = self.syncer.get_all_vevents()
-        self.dbtool.check_account_table(conf.account.name, conf.account.resource)
+
         for vevent in vevents:
-            self.dbtool.update(vevent, conf.account.name)
+            self.dbtool.update(vevent, sync_account.name)
 
 
 class Display(Controller):
@@ -65,14 +68,18 @@ class Display(Controller):
 
         event_column = list()
         event_column.append('Today:')
+        all_day_events = list()
+        events = list()
         for account in conf.sync.accounts:
-            events = self.dbtool.get_time_range(start, end, account)
-            for event in events:
-                event_column.append(event.start.strftime('%H:%M') + '-' +  event.end.strftime('%H:%M') + ': ' + event.summary)
+            all_day_events += self.dbtool.get_allday_range(today,
+                                                           account_name=account)
+            events += self.dbtool.get_time_range(start, end, account)
+        for event in all_day_events:
+            event_column.append(event.summary)
+        for event in events:
+            event_column.append(event.start.strftime('%H:%M') + '-' +  event.end.strftime('%H:%M') + ': ' + event.summary)
+
 
         calendar_column = calendar_display.vertical_month()
         rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
         print '\n'.join(rows)
-
-
-

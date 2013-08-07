@@ -53,6 +53,7 @@ account_$ACCOUNTNAME:
 from __future__ import print_function
 
 try:
+    import datetime
     import xdg.BaseDirectory
     import sys
     import sqlite3
@@ -67,6 +68,7 @@ except ImportError, error:
     sys.exit(1)
 
 default_time_zone = 'Europe/Berlin'
+DEFAULTTZ = 'Europe/Berlin'
 
 OK = 0  # not touched since last sync
 NEW = 1  # new card, needs to be created on the server
@@ -81,21 +83,22 @@ class SQLiteDb(object):
     and of parameters named "accountS" should be an iterable like list()
     """
 
-    def __init__(self,
-                 db_path=None,
-                 encoding="utf-8",
-                 errors="strict",
-                 debug=False):
+    def __init__(self, conf):
+
+        db_path = conf.sqlite.path
         if db_path is None:
             db_path = xdg.BaseDirectory.save_data_path('pycard') + 'abook.db'
         self.db_path = path.expanduser(db_path)
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
-        self.encoding = encoding
-        self.errors = errors
-        self.debug = debug
+        self.debug = conf.debug
         self._create_default_tables()
         self._check_table_version()
+        self.conf = conf
+
+        for account in self.conf.sync.accounts:
+            self.check_account_table(account,
+                                     self.conf.accounts[account].resource)
 
     def __del__(self):
         self.conn.close()
@@ -164,6 +167,7 @@ class SQLiteDb(object):
         return result
 
     def check_account_table(self, account_name, resource):
+
         for account_name in [account_name, account_name + '_allday']:
             sql_s = """CREATE TABLE IF NOT EXISTS {0} (
                     uid TEXT NOT NULL UNIQUE,
@@ -175,7 +179,7 @@ class SQLiteDb(object):
                     vevent TEXT
                     )""".format(account_name)
             self.sql_ex(sql_s)
-            sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
+        sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
         self.sql_ex(sql_s, (account_name, resource))
         logging.debug("created {0} table".format(account_name))
 
@@ -229,52 +233,44 @@ class SQLiteDb(object):
 
         """
         all_day_event = False
-        try:
-            if (vevent['DTSTART'].params['VALUE'] == 'DATE'):
+        if 'VALUE' in vevent['DTSTART'].params:
+            if vevent['DTSTART'].params['VALUE'] == 'DATE':
                 all_day_event = True
-        except KeyError:
-            pass
-        if all_day_event:
-            try:
-                dtstart = vevent['DTSTART'].dt.strftime('%Y%m%d')
-                dtend = vevent['DTEND'].dt.strftime('%Y%m%d')
 
-
-
-
+        dtstart = vevent['DTSTART'].dt
+        if 'DTEND' in vevent.keys():
+            dtend = vevent['DTEND'].dt
         else:
+            dtend = vevent['DTSTART'].dt + vevent['DURATION'].dt
 
-            def fix_timezone(identifier):
-                dtstart = vevent[identifier]
-                if dtstart.dt.tzinfo is None:
-                    # in case timezone information looks like this:
-                    # /freeassociation.sourceforge.net/Tzfile/Europe/Amsterdam
-                    try:
-                        timezone = '/'.join(dtstart.params['TZID'].split('/')[-2:])
-                    except KeyError:
-                        timezone = default_time_zone
-                    timezone = pytz.timezone(timezone)
-                    dtstart.dt = timezone.localize(dtstart.dt)
-                return dtstart.dt.astimezone(pytz.UTC)
+        if all_day_event:
+            dbstart = dtstart.strftime('%Y%m%d')
+            dbend = dtend.strftime('%Y%m%d')
+            dbname = account_name + '_allday'
+        else:
+            # TODO: extract strange TZs from params['TZID']
+            if dtstart.tzinfo is None:
+                dtstart = pytz.timezone(DEFAULTTZ).localize(dtstart)
+            if dtend.tzinfo is None:
+                dtend = pytz.timezone(DEFAULTTZ).localize(dtend)
 
-            try:
-                dtstart_utc = fix_timezone('DTSTART')
-                cstart = int(time.mktime(dtstart_utc.timetuple()))
-                try:
-                    dtend_utc = fix_timezone('DTEND')
-                except KeyError:
-                    dtend_utc = dtstart_utc + vevent['DURATION'].dt
-                cend = int(time.mktime(dtend_utc.timetuple()))
-            except:
-                print(vevent.to_ical())
-                import ipdb; ipdb.set_trace()
+            dtstart_utc = dtstart.astimezone(pytz.UTC)
+            dtend_utc = dtend.astimezone(pytz.UTC)
+
+            dbstart = int(time.mktime(dtstart_utc.timetuple()))
+            dbend = int(time.mktime(dtend_utc.timetuple()))
+            dbname = account_name
 
 
-            sql_s = ('INSERT INTO {0} '
-                     '(uid, start, end, status, vevent) '
-                     'VALUES (?, ?, ?, ?, ?);'.format(account_name))
-            stuple = (str(vevent['UID']), cstart, cend, 0, vevent.to_ical().decode('utf-8'))
-            self.sql_ex(sql_s, stuple)
+        sql_s = ('INSERT INTO {0} '
+                 '(uid, start, end, status, vevent) '
+                 'VALUES (?, ?, ?, ?, ?);'.format(dbname))
+        stuple = (str(vevent['UID']),
+                  dbstart,
+                  dbend,
+                  0,
+                  vevent.to_ical().decode('utf-8'))
+        self.sql_ex(sql_s, stuple)
 
 
 
@@ -372,6 +368,20 @@ class SQLiteDb(object):
                  'end >= ? AND end <= ? OR '
                  'start <= ? AND end >= ?').format(account_name)
         stuple = (start, end, start, end, start, end)
+        result = self.sql_ex(sql_s, stuple)
+        result = [Event(one[0]) for one in result]
+        return result
+
+    def get_allday_range(self, start, end=None, account_name=None):
+        strstart = start.strftime('%Y%m%d')
+        if end is None:
+            end = start + datetime.timedelta(days=1)
+        strend = end.strftime('%Y%m%d')
+        sql_s = ('SELECT vevent FROM {0} WHERE '
+                 'start >= ? AND start < ? OR '
+                 'end >= ? AND end < ? OR '
+                 'start <= ? AND end > ?').format(account_name + '_allday')
+        stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s, stuple)
         result = [Event(one[0]) for one in result]
         return result
