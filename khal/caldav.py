@@ -25,11 +25,12 @@ use the Syncer class for syncing CalDAV resources
 """
 
 from collections import namedtuple
-import icalendar
+from lxml import etree
+import datetime
 import requests
 import urlparse
 import logging
-import lxml.etree as ET
+import pytz
 
 
 def get_random_href():
@@ -94,6 +95,8 @@ class Syncer(object):
             self._settings['auth'] = HTTPDigestAuth(user, passwd)
         self._default_headers = {"User-Agent": "khal"}
 
+        self.local_timezone = 'Europe/Berlin'
+
         headers = self.headers
         headers['Depth'] = '1'
         response = self.session.request('OPTIONS',
@@ -125,157 +128,76 @@ class Syncer(object):
         if not self.write_support:
             raise NoWriteSupport
 
-    def get_abook(self):
-        """does the propfind and processes what it returns
+    def get_hel(self, start=None, end=None):
+        hel = list()
+        tz = pytz.timezone(self.local_timezone)
+        if start is None:
+            start = datetime.datetime.utcnow()
+        if end is None:
+            end = start + datetime.timedelta(days=365)
+        lstart = tz.localize(start)
+        lend = tz.localize(end)
+        start_utc = lstart.astimezone(pytz.UTC)
+        end_utc = lend.astimezone(pytz.UTC)
+        sstart = start_utc.strftime('%Y%m%dT%H%M%SZ')
+        send = end_utc.strftime('%Y%m%dT%H%M%SZ')
+        body = """<?xml version="1.0" encoding="utf-8" ?>
+<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+  <D:prop>
+    <D:getetag/>
+  </D:prop>
+  <C:filter>
+    <C:comp-filter name="VCALENDAR">
+      <C:comp-filter name="VEVENT">
+        <C:time-range start="{start}"
+                        end="{end}"/>
+      </C:comp-filter>
+    </C:comp-filter>
+  </C:filter>
+</C:calendar-query>""".format(start=sstart, end=send)
 
-        :rtype: list of hrefs to vcards
-        """
-        xml = self._get_xml_props()
-        abook = self._process_xml_props(xml)
-        return abook
-
-    def get_all_vevents(self):
-        response = self.session.get(self.url.resource,
-                                    headers=self.headers,
-                                    **self._settings)
-        response.raise_for_status()
-        calendar = icalendar.Calendar.from_ical(response.text)
-        vevents = list()
-        for component in calendar.walk():
-            if component.name == 'VEVENT':
-                vevents.append(component)
-        return vevents
-
-    def get_vcard(self, href):
-        """
-        pulls vcard from server
-
-        :returns: vcard
-        :rtype: string
-        """
-        response = self.session.get(self.url.base + href,
-                                    headers=self.headers,
-                                    **self._settings)
-        response.raise_for_status()
-        return response.content
-
-    def update_vcard(self, card, href, etag):
-        """
-        pushes changed vcard to the server
-        card: vcard as unicode string
-        etag: str or None, if this is set to a string, card is only updated if
-              remote etag matches. If etag = None the update is forced anyway
-         """
-         # TODO what happens if etag does not match?
-        self._check_write_support()
-        remotepath = str(self.url.base + href)
-        headers = self.headers
-        headers['content-type'] = 'text/vcard'
-        if etag is not None:
-            headers['If-Match'] = etag
-        self.session.put(remotepath, data=card, headers=headers,
-                         **self._settings)
-
-    def delete_vcard(self, href, etag):
-        """deletes vcard from server
-
-        deletes the resource at href if etag matches,
-        if etag=None delete anyway
-        :param href: href of card to be deleted
-        :type href: str()
-        :param etag: etag of that card, if None card is always deleted
-        :type href: str()
-        :returns: nothing
-        """
-        # TODO: what happens if etag does not match, url does not exist etc ?
-        self._check_write_support()
-        remotepath = str(self.url.base + href)
-        headers = self.headers
-        headers['content-type'] = 'text/vcard'
-        if etag is not None:
-            headers['If-Match'] = etag
-        response = self.session.delete(remotepath,
-                                       headers=headers,
-                                       **self._settings)
-        response.raise_for_status()
-
-    def upload_new_card(self, card):
-        """
-        upload new card to the server
-
-        :param card: vcard to be uploaded
-        :type card: unicode
-        :rtype: tuple of string (path of the vcard on the server) and etag of
-                new card (string or None)
-        """
-        self._check_write_support()
-        card = card.encode('utf-8')
-        for _ in range(0, 5):
-            rand_string = get_random_href()
-            remotepath = str(self.url.resource + rand_string + ".vcf")
-            headers = self.headers
-            headers['content-type'] = 'text/vcard'  # TODO perhaps this should
-            # be set to the value this carddav server uses itself
-            headers['If-None-Match'] = '*'
-            response = requests.put(remotepath, data=card, headers=headers,
-                                    **self._settings)
-            if response.ok:
-                parsed_url = urlparse.urlparse(remotepath)
-                if 'etag' not in response.headers.keys() or response.headers['etag'] is None:
-                    etag = ''
-                else:
-                    etag = response.headers['etag']
-
-                return (parsed_url.path, etag)
-        response.raise_for_status()
-
-    def _get_xml_props(self):
-        """PROPFIND method
-
-        gets the xml file with all vevent hrefs
-
-        :rtype: str() (an xml file)
-        """
-        headers = self.headers
-        headers['Depth'] = '1'
-        response = self.session.request('PROPFIND',
+        response = self.session.request('REPORT',
                                         self.url.resource,
-                                        headers=headers,
+                                        data=body,
+                                        headers=self.headers,
                                         **self._settings)
         response.raise_for_status()
-        return response.content
+        root = etree.XML(response.text.encode(response.encoding))
+        for element in root.iter('{DAV:}response'):
+            etag = element.find('{DAV:}propstat').find('{DAV:}prop').find('{DAV:}getetag').text
+            href = element.find('{DAV:}href').text
+            hel.append((href, etag))
+        return hel
 
-    @classmethod
-    def _process_xml_props(cls, xml):
-        """processes the xml from PROPFIND, listing all vcard hrefs
-
-        :param xml: the xml file
-        :type xml: str()
-        :rtype: dict() key: href, value: etag
+    def get_vevents(self, hrefs):
         """
-        namespace = "{DAV:}"
-
-        element = ET.XML(xml)
-        abook = dict()
-        for response in element.iterchildren():
-            if (response.tag == namespace + "response"):
-                href = ""
-                etag = ""
-                insert = False
-                for refprop in response.iterchildren():
-                    if (refprop.tag == namespace + "href"):
-                        href = refprop.text
-                    for prop in refprop.iterchildren():
-                        for props in prop.iterchildren():
-                            # different servers give different getcontenttypes:
-                            # e.g.:
-                            # "text/calendar"
-                            #  "text/vcard; charset=utf-8"  CalendarServer
-                            if (props.tag == namespace + "getcontenttype" and
-                                    props.text.split(';')[0].strip() in ['text/calendar']):
-                                insert = True
-                            if (props.tag == namespace + "getetag"):
-                                etag = props.text
-                        if insert:
-                            abook[href] = etag
-        return abook
+        :param hrefs: hrefs to fetch
+        :type hrefs: list
+        :returns: list of tuples(vevent, href, etag)
+        """
+        empty_body = """<?xml version="1.0" encoding="utf-8" ?>
+<C:calendar-multiget xmlns:D="DAV:"
+                     xmlns:C="urn:ietf:params:xml:ns:caldav">
+  <D:prop>
+    <D:getetag/>
+    <C:calendar-data/>
+  </D:prop>
+{hrefs}
+</C:calendar-multiget>"""
+        href_xml = ["<D:href>{href}</D:href>".format(href=href) for href in hrefs]
+        href_xml = '\n'.join(href_xml)
+        body = empty_body.format(hrefs=href_xml)
+        response = self.session.request('REPORT',
+                                        self.url.resource,
+                                        data=body,
+                                        headers=self.headers,
+                                        **self._settings)
+        response.raise_for_status()
+        root = etree.XML(response.text.encode(response.encoding))
+        vhe = list()
+        for element in root.iter('{DAV:}response'):
+            href = element.find('{DAV:}href').text
+            vevent = element.find('{DAV:}propstat').find('{DAV:}prop').find('{urn:ietf:params:xml:ns:caldav}calendar-data').text
+            etag = element.find('{DAV:}propstat').find('{DAV:}prop').find('{DAV:}getetag').text
+            vhe.append((vevent, href, etag))
+        return vhe

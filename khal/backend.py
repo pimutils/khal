@@ -54,6 +54,7 @@ from __future__ import print_function
 
 try:
     import datetime
+    import icalendar
     import xdg.BaseDirectory
     import sys
     import sqlite3
@@ -183,30 +184,34 @@ class SQLiteDb(object):
         self.sql_ex(sql_s, (account_name, resource))
         logging.debug("created {0} table".format(account_name))
 
-    def needs_update(self, href, account_name, etag=''):
+    def needs_update(self, account_name, href_etag_list):
         """checks if we need to update this vcard
-
-        :param href: href of vcard
-        :type href: str()
-        :param etag: etag of vcard
-        :type etag: str()
-        :return: True or False
+        :param account_name: account_name
+        :param account_name: string
+        :param href_etag_list: list of tuples of (hrefs and etags)
+        :return: list of hrefs that need an update
         """
-        stuple = (href,)
-        sql_s = 'SELECT etag FROM {0} WHERE href = ?'.format(account_name)
-        result = self.sql_ex(sql_s, stuple)
-        if len(result) is 0:
-            return True
-        elif etag != result[0][0]:
-            return True
-        else:
-            return False
+        needs_update = list()
+        for href, etag in href_etag_list:
+            found = False
+            stuple = (href,)
+            sql_s = 'SELECT etag FROM {0} WHERE href = ?'.format(account_name)
+            result = self.sql_ex(sql_s, stuple)
+            if result and etag == result[0][0]:
+                found = True
+            sql_s = 'SELECT etag FROM {0} WHERE href = ?'.format(account_name + '_allday')
+            result = self.sql_ex(sql_s, stuple)
+            if result and etag == result[0][0]:
+                found = True
+            if not found:
+                needs_update.append(href)
+        return needs_update
 
     def update(self, vevent, account_name, href='', etag='', status=OK):
         """insert a new or update an existing card in the db
 
         :param vcard: vcard to be inserted or updated
-        :type vcard: icalendar.cal.Event or unicode() (an actual vcard)
+        :type vcard: unicode
         :param href: href of the card on the server, if this href already
                      exists in the db the card gets updated. If no href is
                      given, a random href is chosen and it is implied that this
@@ -232,6 +237,11 @@ class SQLiteDb(object):
                       BACKEND.DELETED
 
         """
+        calendar = icalendar.Event.from_ical(vevent)
+        for component in calendar.walk():
+            if component.name == 'VEVENT':
+                vevent = component
+
         all_day_event = False
         if 'VALUE' in vevent['DTSTART'].params:
             if vevent['DTSTART'].params['VALUE'] == 'DATE':
@@ -248,7 +258,7 @@ class SQLiteDb(object):
             dbend = dtend.strftime('%Y%m%d')
             dbname = account_name + '_allday'
         else:
-            # TODO: extract strange TZs from params['TZID']
+            # TODO: extract stange (aka non Olson) TZs from params['TZID']
             if dtstart.tzinfo is None:
                 dtstart = pytz.timezone(DEFAULTTZ).localize(dtstart)
             if dtend.tzinfo is None:
@@ -261,15 +271,16 @@ class SQLiteDb(object):
             dbend = int(time.mktime(dtend_utc.timetuple()))
             dbname = account_name
 
-
         sql_s = ('INSERT INTO {0} '
-                 '(uid, start, end, status, vevent) '
-                 'VALUES (?, ?, ?, ?, ?);'.format(dbname))
+                 '(uid, start, end, status, vevent, etag, href) '
+                 'VALUES (?, ?, ?, ?, ?, ?, ?);'.format(dbname))
         stuple = (str(vevent['UID']),
                   dbstart,
                   dbend,
                   0,
-                  vevent.to_ical().decode('utf-8'))
+                  vevent.to_ical().decode('utf-8'),
+                  etag,
+                  href)
         self.sql_ex(sql_s, stuple)
 
 

@@ -26,6 +26,7 @@ syncs the remote database to the local db
 """
 
 import datetime
+import logging
 
 from khal import backend
 from khal import caldav
@@ -52,10 +53,15 @@ class Sync(Controller):
                                     verify=sync_account.verify,
                                     auth=sync_account.auth)
         # sync:
-        vevents = self.syncer.get_all_vevents()
+        logging.debug('syncing events in the next 365 days')
+        href_etag_list = self.syncer.get_hel()
+        need_update = self.dbtool.needs_update(sync_account_name,
+                                               href_etag_list)
+        logging.debug('{number} events need an update'.format(number=len(need_update)))
+        vhe_list = self.syncer.get_vevents(need_update)
 
-        for vevent in vevents:
-            self.dbtool.update(vevent, sync_account.name)
+        for vevent, href, etag in vhe_list:
+            self.dbtool.update(vevent, sync_account.name, href=href, etag=etag)
 
 
 class Display(Controller):
