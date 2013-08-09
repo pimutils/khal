@@ -277,7 +277,7 @@ class ConfigurationParser(object):
             for option in self._conf_parser.options(section):
                 logging.debug("Ignoring %s:%s in configuration file", section, option)
 
-        if self._check_accounts:
+        if ns.syncrun:
             if self.check_property(ns, 'accounts'):
                 for account in ns.accounts:
                     result &= self.check_account(account)
