@@ -71,7 +71,7 @@ setup(
     url='http://lostpackets.de/khal/',
     license='Expat/MIT',
     packages=['khal'],
-    scripts=['bin/khal'],
+    scripts=['bin/khal', 'bin/ikhal'],
     requires=requirements,
     classifiers=[
         "Development Status :: 1 - Planning"

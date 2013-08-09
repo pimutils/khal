@@ -89,3 +89,10 @@ class Display(Controller):
         calendar_column = calendar_display.vertical_month()
         rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
         print '\n'.join(rows)
+
+
+class Interactive(Controller):
+    def __init__(self, conf):
+        import ui
+        super(Interactive, self).__init__(conf)
+        ui.interactive(conf=conf, dbtool=self.dbtool)
