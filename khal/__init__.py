@@ -222,6 +222,10 @@ class ConfigurationParser(object):
         self._arg_parser.add_argument(
             '--sync', action='store_true', dest='syncrun',
             help="start syncing")
+        self._arg_parser.add_argument(
+            "-i", "--import", metavar="FILE",
+            type=argparse.FileType("r"), dest="importing",
+            help="import ics from FILE into the first specified account")
 
     def parse(self):
         """Start parsing.
