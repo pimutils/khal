@@ -1,0 +1,24 @@
+# default places for the config file are ~/.khal/khal.conf and
+# ~/.config/khal/khal.conf
+# specify as many Accounts as you want
+[Account home]
+user: jdoe
+# if the password is not specified it will be asked for while syncing
+passwd: 2342
+resource: https://exmaple.com/davical/caldav.php/jdoe/home/
+
+[Account work]
+user: doe
+resource: https://blobhal.de/owncloud/remote.php/caldav/calendars/doe/work
+# verify controls SSL cert checking
+# verify can be set to True (default), False (No SSL certificates are checked,
+# or to a path to a pem cert
+verify: /home/jd/.khal/cacert.pem
+
+[sqlite]
+# the default location for the db is 
+# ~/.local/share/khal/khal.db
+path: /home/jd/.khal/khal.db
+
+[default]
+DEBUG: 0
