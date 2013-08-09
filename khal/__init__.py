@@ -195,7 +195,7 @@ class ConfigurationParser(object):
     output level using the debug flag read from the command-line or
     the configuration file.
     """
-    DEFAULT_DB_PATH = xdg.BaseDirectory.save_data_path('khal') + 'khal.db'
+    DEFAULT_DB_PATH = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
     DEFAULT_PATH = "khal"
     DEFAULT_FILE = "khal.conf"
 
