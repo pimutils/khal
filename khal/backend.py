@@ -390,8 +390,8 @@ class SQLiteDb(object):
         strend = end.strftime('%Y%m%d')
         sql_s = ('SELECT vevent FROM {0} WHERE '
                  'start >= ? AND start < ? OR '
-                 'end >= ? AND end < ? OR '
-                 'start <= ? AND end > ?').format(account_name + '_allday')
+                 'end > ? AND end <= ? OR '
+                 'start <= ? AND end > ? ').format(account_name + '_allday')
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s, stuple)
         result = [Event(one[0]) for one in result]
