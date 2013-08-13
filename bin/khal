@@ -66,6 +66,7 @@ if conf.syncrun:
                 logging.critical('While syncing account "{0}" an error occured:\n  '.format(one.name) + str(error))
                 rvalue = 1
     sys.exit(rvalue)
+if conf.new:
+    controllers.NewFromString(conf)
 else:
     controllers.Display(conf)
-

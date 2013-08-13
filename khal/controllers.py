@@ -91,6 +91,24 @@ class Display(Controller):
         print '\n'.join(rows)
 
 
+
+class NewFromString(Controller):
+    def __init__(self, conf):
+        super(NewFromString, self).__init__(conf)
+        date_list = conf.new
+        timeformat = '%H:%M'
+        dateformat = '%d.%m.'
+        datetimeformat = '%d.%m. %H:%M'
+        DEFAULTTZ = 'Europe/Berlin'
+        event = aux.construct_event(date_list,
+                                    timeformat,
+                                    dateformat,
+                                    datetimeformat,
+                                    DEFAULTTZ)
+        self.dbtool.update(event,  conf.sync.accounts.pop(), status=backend.NEW, )
+
+
+
 class Interactive(Controller):
     def __init__(self, conf):
         import ui

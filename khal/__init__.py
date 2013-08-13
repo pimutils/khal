@@ -226,6 +226,9 @@ class ConfigurationParser(object):
             "-i", "--import", metavar="FILE",
             type=argparse.FileType("r"), dest="importing",
             help="import ics from FILE into the first specified account")
+        self._arg_parser.add_argument(
+            '--new', nargs='+',
+            help="create a new event")
 
     def parse(self):
         """Start parsing.

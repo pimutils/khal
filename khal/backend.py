@@ -237,11 +237,11 @@ class SQLiteDb(object):
                       BACKEND.DELETED
 
         """
-        calendar = icalendar.Event.from_ical(vevent)
-        for component in calendar.walk():
-            if component.name == 'VEVENT':
-                vevent = component
-
+        if not isinstance(vevent, icalendar.cal.Event):
+            calendar = icalendar.Event.from_ical(vevent)
+            for component in calendar.walk():
+                if component.name == 'VEVENT':
+                    vevent = component
         all_day_event = False
         if 'VALUE' in vevent['DTSTART'].params:
             if vevent['DTSTART'].params['VALUE'] == 'DATE':
