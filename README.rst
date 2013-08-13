@@ -11,10 +11,44 @@ Features
 --------
 (or rather: limitations)
 
-- khal --sync syncs the all events in the next 365 days
+- khal can sync events from CalDAV calendar collections
+- add new events to a calendar (doesn't get uploaded just yet)
 - ikhal can show events in the current and next two months
 - no recurring events support whatsoever
 - no proper timezone support yet
+- is pretty Euro centric, weeks start on Mondays, khal uses a 24 hour clock and
+  the default time zone is 'Europe/Berlin' (hopefully all of this will be
+  configurable soon)
+
+
+Usage
+-----
+
+**syncing**
+
+ khal --sync
+
+syncs the all events in the next 365 days
+
+**quick event adding**
+
+  khal --new 18:00 Awesome Event
+
+adds a new event starting today at 18:00 with summary 'awesome event' (lasting
+for the default time of one hour, will be configurable soon) to the default
+calendar
+
+  khal --new 25.10. 16:00 18:00 Another Event
+
+adds a new event on 25th of October lasting from 16:00 to 18:00
+
+
+  khal --new 26.07. Great Event
+
+adds a new all day event on 26.07.
+
+khal --new should be able to understand quite a range of dates, have a look at
+the tests for more examples.
 
 About
 -----
