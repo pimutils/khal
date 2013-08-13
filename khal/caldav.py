@@ -135,10 +135,8 @@ class Syncer(object):
             start = datetime.datetime.utcnow()
         if end is None:
             end = start + datetime.timedelta(days=365)
-        lstart = tz.localize(start)
-        lend = tz.localize(end)
-        start_utc = lstart.astimezone(pytz.UTC)
-        end_utc = lend.astimezone(pytz.UTC)
+        start_utc = tz.localize(start).astimezone(pytz.UTC)
+        end_utc = tz.localize(end).astimezone(pytz.UTC)
         sstart = start_utc.strftime('%Y%m%dT%H%M%SZ')
         send = end_utc.strftime('%Y%m%dT%H%M%SZ')
         body = """<?xml version="1.0" encoding="utf-8" ?>

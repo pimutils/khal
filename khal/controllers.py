@@ -25,9 +25,10 @@
 syncs the remote database to the local db
 """
 
-import datetime
 import logging
+import datetime
 
+from khal import aux
 from khal import backend
 from khal import caldav
 from khal import calendar_display
@@ -111,6 +112,6 @@ class NewFromString(Controller):
 
 class Interactive(Controller):
     def __init__(self, conf):
-        import ui
+        from khal import ui
         super(Interactive, self).__init__(conf)
         ui.interactive(conf=conf, dbtool=self.dbtool)

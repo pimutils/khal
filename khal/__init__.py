@@ -31,7 +31,7 @@ import signal
 import sys
 import xdg.BaseDirectory
 
-import version
+from khal import version
 
 from netrc import netrc
 from urlparse import urlsplit
