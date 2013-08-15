@@ -31,6 +31,7 @@ import requests
 import urlparse
 import logging
 import pytz
+import icalendar
 
 
 def get_random_href():
@@ -199,3 +200,32 @@ class Syncer(object):
             etag = element.find('{DAV:}propstat').find('{DAV:}prop').find('{DAV:}getetag').text
             vhe.append((vevent, href, etag))
         return vhe
+
+    def upload(self, vevent):
+        """
+        :param vevent: vevent
+        :type vevent: unicode
+        """
+        self._check_write_support()
+        calendar = icalendar.Calendar()
+        calendar.add_component(icalendar.Event.from_ical(vevent))
+        for _ in range(5):
+            randstr = get_random_href()
+            remotepath = str(self.url.resource + randstr + ".vcf")
+            headers = self.headers
+            headers['content-type'] = 'text/calendar'
+            headers['If-None-Match'] = '*'
+            response = requests.put(remotepath,
+                                    data=calendar.to_ical(),
+                                    headers=headers,
+                                    **self._settings)
+            if response.ok:
+                parsed_url = urlparse.urlparse(remotepath)
+                if ('etag' not in response.headers.keys()
+                        or response.headers['etag'] is None):
+                    etag = ''
+                else:
+                    etag = response.headers['etag']
+
+                return (parsed_url.path, etag)
+        response.raise_for_status()

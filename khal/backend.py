@@ -243,6 +243,8 @@ class SQLiteDb(object):
                 if component.name == 'VEVENT':
                     vevent = component
         all_day_event = False
+        if href is '':
+            href = get_random_href()
         if 'VALUE' in vevent['DTSTART'].params:
             if vevent['DTSTART'].params['VALUE'] == 'DATE':
                 all_day_event = True
@@ -271,21 +273,21 @@ class SQLiteDb(object):
             dbend = int(time.mktime(dtend_utc.timetuple()))
             dbname = account_name
 
-        sql_s = ('INSERT INTO {0} '
+        sql_s = ('INSERT OR REPLACE INTO {0} '
                  '(uid, start, end, status, vevent, etag, href) '
-                 'VALUES (?, ?, ?, ?, ?, ?, ?);'.format(dbname))
+                 'VALUES (?, ?, ?, ?, ?, ?, '
+                 'COALESCE((SELECT href FROM {0} WHERE href = ?), ?)'
+                 ');'.format(dbname))
+
         stuple = (str(vevent['UID']),
                   dbstart,
                   dbend,
                   0,
                   vevent.to_ical().decode('utf-8'),
                   etag,
+                  href,
                   href)
         self.sql_ex(sql_s, stuple)
-
-
-
-
 
     def update_href(self, old_href, new_href, account_name, etag='', status=OK):
         """updates old_href to new_href, can also alter etag and status,
@@ -293,6 +295,9 @@ class SQLiteDb(object):
         stuple = (new_href, etag, status, old_href)
         sql_s = 'UPDATE {0} SET href = ?, etag = ?, status = ? \
              WHERE href = ?;'.format(account_name)
+        self.sql_ex(sql_s, stuple)
+        sql_s = 'UPDATE {0} SET href = ?, etag = ?, status = ? \
+             WHERE href = ?;'.format(account_name + '_allday')
         self.sql_ex(sql_s, stuple)
 
     def href_exists(self, href, account_name):
@@ -397,15 +402,15 @@ class SQLiteDb(object):
         result = [Event(one[0]) for one in result]
         return result
 
-    def get_vcard_from_db(self, href, account_name):
+    def get_vevent_from_db(self, href, account_name):
         """returns a VCard()
         """
-        sql_s = 'SELECT vcard FROM {0} WHERE href=(?)'.format(account_name)
+        sql_s = 'SELECT vevent FROM {0} WHERE href=(?)'.format(account_name)
         result = self.sql_ex(sql_s, (href, ))
-        vcard = model.vcard_from_string(result[0][0])
-        vcard.href = href
-        vcard.account = account_name
-        return vcard
+        sql_s = 'SELECT vevent FROM {0} WHERE href=(?)'.format(account_name + '_allday')
+        result = result + self.sql_ex(sql_s, (href, ))
+
+        return result[0][0]
 
     def get_changed(self, account_name):
         """returns list of hrefs of locally edited vcards
@@ -419,6 +424,8 @@ class SQLiteDb(object):
         """
         sql_s = 'SELECT href FROM {0} WHERE status == (?)'.format(account_name)
         result = self.sql_ex(sql_s, (NEW, ))
+        sql_s = 'SELECT href FROM {0} WHERE status == (?)'.format(account_name + '_allday')
+        result = result + self.sql_ex(sql_s, (NEW, ))
         return [row[0] for row in result]
 
     def get_marked_delete(self, account_name):
@@ -426,6 +433,8 @@ class SQLiteDb(object):
         """
         sql_s = 'SELECT href, etag FROM {0} WHERE status == (?)'.format(account_name)
         result = self.sql_ex(sql_s, (DELETED, ))
+        sql_s = 'SELECT href, etag FROM {0} WHERE status == (?)'.format(account_name + '_allday')
+        result = result + self.sql_ex(sql_s, (DELETED, ))
         return result
 
     def mark_delete(self, href, account_name):
@@ -439,6 +448,8 @@ class SQLiteDb(object):
         resets the status for a given href to 0 (=not edited locally)
         """
         sql_s = 'UPDATE {0} SET status = ? WHERE href = ?'.format(account_name)
+        self.sql_ex(sql_s, (OK, href, ))
+        sql_s = 'UPDATE {0} SET status = ? WHERE href = ?'.format(account_name + '_allday')
         self.sql_ex(sql_s, (OK, href, ))
 
 

@@ -53,16 +53,34 @@ class Sync(Controller):
                                     write_support=sync_account.write_support,
                                     verify=sync_account.verify,
                                     auth=sync_account.auth)
-        # sync:
+        # syncing remote to local:
         logging.debug('syncing events in the next 365 days')
         href_etag_list = self.syncer.get_hel()
         need_update = self.dbtool.needs_update(sync_account_name,
                                                href_etag_list)
-        logging.debug('{number} events need an update'.format(number=len(need_update)))
+        logging.debug('{number} events need an '
+                      'update'.format(number=len(need_update)))
         vhe_list = self.syncer.get_vevents(need_update)
 
         for vevent, href, etag in vhe_list:
             self.dbtool.update(vevent, sync_account.name, href=href, etag=etag)
+        # syncing local new events
+        hrefs = self.dbtool.get_new(sync_account.name)
+
+        logging.debug('{number} new events need to be '
+                      'uploaded'.format(number=len(hrefs)))
+        try:
+            for href in hrefs:
+                event = self.dbtool.get_vevent_from_db(href, sync_account.name)
+                (href_new, etag_new) = self.syncer.upload(event)
+                self.dbtool.update_href(href,
+                                        href_new,
+                                        sync_account.name,
+                                        status=backend.OK)
+        except caldav.NoWriteSupport:
+            logging.info('failed to upload a new event, '
+                         'you need to enable write support, '
+                         'see the documentation.')
 
 
 class Display(Controller):
