@@ -1,34 +1,62 @@
 khal
 ====
 
-Khal is a CalDAV_ based calendar programm, `allowing syncing of calendars with a
+Khal is a CLI (console), CalDAV_ based calendar programm, `allowing syncing of calendars with a
 variety of other programs on a host of different platforms`__.
 
-*khal* is currently in a very early stage of development and has a very limited
-feature set and is probably full of bugs.
+*khal* is currently in a very early stage of development, has a very limited
+feature set and is probably full of bugs. If you still want to take it out for a
+spin, please know, that as long as you don't enable write support, there is no
+chance at all that you might mess up your remote calendar. If you do try it out,
+please report back any bugs you might encounter.
 
 Features
 --------
 (or rather: limitations)
 
 - khal can sync events from CalDAV calendar collections
-- add new events to a calendar (doesn't get uploaded just yet)
+- add simple new events to a calendar and upload them
 - ikhal can show events in the current and next two months
-- no recurring events support whatsoever
+- simple recurring events support (no exceptions just yet)
 - no proper timezone support yet
 - is pretty Euro centric, weeks start on Mondays, khal uses a 24 hour clock and
   the default time zone is 'Europe/Berlin' (hopefully all of this will be
   configurable soon)
+- khal should run on all major operating systems [1]_ (has been tested on FreeBSD and
+  Debian GNU/Linux)
 
+
+.. [1] except for Microsoft Windows
 
 Usage
 -----
+
+**install**
+
+ python setup.py install
+
+**configure**
+
+copy *khal.conf.sample* to ~/.khal/khal.conf or ~/.config/khal/khal.conf and
+edit to your liking
 
 **syncing**
 
  khal --sync
 
-syncs the all events in the next 365 days
+syncs all events in the last month and next 365 days
+
+
+**basic usage**
+
+ khal
+
+will show all events today and tomorrow
+
+ ikhal
+
+opens and interactive calendar browser, showing all events on the selected day
+
 
 **quick event adding**
 
@@ -49,6 +77,21 @@ adds a new all day event on 26.07.
 
 khal --new should be able to understand quite a range of dates, have a look at
 the tests for more examples.
+
+
+Write Support
+-------------
+
+To enable uploading events on the server, you need to enable write support.
+Please note, that write support is experimental and please make sure you either
+*really do have a backup* or only use it on test calendars.
+
+To enable write support you need to put 
+
+ write_support: YesPleaseIDoHaveABackupOfMyData
+
+into every *Account* section you want to enable write support on in your config
+file.
 
 About
 -----
