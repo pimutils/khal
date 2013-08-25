@@ -333,6 +333,9 @@ class SQLiteDb(object):
         sql_s = 'UPDATE {0} SET href = ?, etag = ?, status = ? \
              WHERE href = ?;'.format(account_name)
         self.sql_ex(sql_s, stuple)
+        for dbname in [account_name + '_d', account_name + '_dt']:
+            sql_s = 'UPDATE {0} SET href = ? WHERE href = ?;'.format(dbname)
+            self.sql_ex(sql_s, (newhref, oldhref))
 
     def href_exists(self, href, account_name):
         """returns True if href already exist in db
