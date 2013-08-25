@@ -110,6 +110,7 @@ class Display(Controller):
                 events += self.dbtool.get_time_range(start, end, account)
             for event in all_day_events:
                 event_column.append(event.summary)
+            events.sort(key=lambda e: e.start)
             for event in events:
                 event_column.append(event.start.strftime('%H:%M') + '-' +
                                     event.end.strftime('%H:%M') +
