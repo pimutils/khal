@@ -58,12 +58,18 @@ class Sync(Controller):
         href_etag_list = self.syncer.get_hel()
         need_update = self.dbtool.needs_update(sync_account_name,
                                                href_etag_list)
-        logging.debug('{number} events need an '
+        logging.debug('{number} event(s) need(s) an '
                       'update'.format(number=len(need_update)))
         vhe_list = self.syncer.get_vevents(need_update)
 
         for vevent, href, etag in vhe_list:
-            self.dbtool.update(vevent, sync_account.name, href=href, etag=etag)
+            try:
+                self.dbtool.update(vevent,
+                                   sync_account.name,
+                                   href=href,
+                                   etag=etag)
+            except backend.UpdateFailed as error:
+                logging.error(error)
         # syncing local new events
         hrefs = self.dbtool.get_new(sync_account.name)
 
@@ -79,8 +85,8 @@ class Sync(Controller):
                                         status=backend.OK)
         except caldav.NoWriteSupport:
             logging.info('failed to upload a new event, '
-                         'you need to enable write support, '
-                         'see the documentation.')
+                         'you need to enable write support to use this feature'
+                         ', see the documentation.')
 
 
 class Display(Controller):
@@ -102,13 +108,11 @@ class Display(Controller):
         for event in all_day_events:
             event_column.append(event.summary)
         for event in events:
-            event_column.append(event.start.strftime('%H:%M') + '-' +  event.end.strftime('%H:%M') + ': ' + event.summary)
-
+            event_column.append(event.start.strftime('%H:%M') + '-' + event.end.strftime('%H:%M') + ': ' + event.summary)
 
         calendar_column = calendar_display.vertical_month()
         rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
         print '\n'.join(rows)
-
 
 
 class NewFromString(Controller):
@@ -124,8 +128,7 @@ class NewFromString(Controller):
                                     dateformat,
                                     datetimeformat,
                                     DEFAULTTZ)
-        self.dbtool.update(event,  conf.sync.accounts.pop(), status=backend.NEW, )
-
+        self.dbtool.update(event, conf.sync.accounts.pop(), status=backend.NEW)
 
 
 class Interactive(Controller):

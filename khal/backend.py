@@ -38,7 +38,7 @@ account:
     last_sync (TEXT)
     etag (TEX)
 
-account_$ACCOUNTNAME:
+$ACCOUNTNAME:
     href (TEXT)
     uid (TEXT)
     etag (TEXT)
@@ -47,6 +47,17 @@ account_$ACCOUNTNAME:
     all_day (INT): 1 if event is 'all day event', 0 otherwise
     status (INT): status of this card, see below for meaning
     vevent (TEXT): the actual vcard
+
+$ACCOUNTNAME_d: #all day events
+    # keeps start and end dates of all events, incl. recurrent dates
+    dtstart (INT)
+    dtend (INT)
+    href (TEXT)
+
+$ACCOUNTNAME_dt: #other events, same as above
+    dtstart (INT)
+    dtend (INT)
+    href (TEXT)
 
 """
 
@@ -62,6 +73,7 @@ try:
     import pytz
     import time
     from os import path
+    import dateutil.rrule
     from model import Event
 
 except ImportError, error:
@@ -75,6 +87,11 @@ OK = 0  # not touched since last sync
 NEW = 1  # new card, needs to be created on the server
 CHANGED = 2  # properties edited or added (news to be pushed to server)
 DELETED = 9  # marked for deletion (needs to be deleted on server)
+
+
+class UpdateFailed(Exception):
+    """raised if update not possible"""
+    pass
 
 
 class SQLiteDb(object):
@@ -104,16 +121,6 @@ class SQLiteDb(object):
     def __del__(self):
         self.conn.close()
 
-    def search(self, search_string, accounts):
-        """returns list of ids from db matching search_string"""
-        stuple = ('%' + search_string + '%', )
-        result = list()
-        for account in accounts:
-            sql_s = 'SELECT href FROM {0} WHERE vcard LIKE (?)'.format(account)
-            hrefs = self.sql_ex(sql_s, stuple)
-            result = result + ([(href[0], account) for href in hrefs])
-        return result
-
     def _dump(self, account_name):
         """return table self.account, used for testing"""
         sql_s = 'SELECT * FROM {0}'.format(account_name)
@@ -129,7 +136,8 @@ class SQLiteDb(object):
         result = self.cursor.fetchone()
         if result is None:
             stuple = (database_version, )  # database version db Version
-            self.cursor.execute('INSERT INTO version (version) VALUES (?)', stuple)
+            self.cursor.execute('INSERT INTO version (version) VALUES (?)',
+                                stuple)
             self.conn.commit()
         elif not result[0] == database_version:
             raise Exception(str(self.db_path) +
@@ -140,7 +148,7 @@ class SQLiteDb(object):
         """creates version and account tables and instert table version number
         """
         try:
-            self.cursor.execute('''CREATE TABLE IF NOT EXISTS version ( version INTEGER )''')
+            self.sql_ex('CREATE TABLE IF NOT EXISTS version (version INTEGER)')
             logging.debug("created version table")
         except Exception as error:
             sys.stderr.write('Failed to connect to database,'
@@ -160,26 +168,33 @@ class SQLiteDb(object):
         self.conn.commit()
         self._check_table_version()  # insert table version
 
-    def sql_ex(self, statement, stuple=''):
+    def sql_ex(self, statement, stuple='', commit=True):
         """wrapper for sql statements, does a "fetchall" """
         self.cursor.execute(statement, stuple)
         result = self.cursor.fetchall()
-        self.conn.commit()
+        if commit:
+            self.conn.commit()
         return result
 
     def check_account_table(self, account_name, resource):
 
-        for account_name in [account_name, account_name + '_allday']:
-            sql_s = """CREATE TABLE IF NOT EXISTS {0} (
-                    uid TEXT NOT NULL UNIQUE,
-                    href TEXT,
-                    etag TEXT,
-                    start INT,
-                    end INT,
-                    status INT NOT NULL,
-                    vevent TEXT
-                    )""".format(account_name)
-            self.sql_ex(sql_s)
+        sql_s = """CREATE TABLE IF NOT EXISTS {0} (
+                href TEXT,
+                etag TEXT,
+                status INT NOT NULL,
+                vevent TEXT
+                )""".format(account_name)
+        self.sql_ex(sql_s)
+        sql_s = '''CREATE TABLE IF NOT EXISTS {0} (
+            dtstart INT,
+            dtend INT,
+            href TEXT ); '''.format(account_name + '_dt')
+        self.sql_ex(sql_s)
+        sql_s = '''CREATE TABLE IF NOT EXISTS {0} (
+            dtstart INT,
+            dtend INT,
+            href TEXT ); '''.format(account_name + '_d')
+        self.sql_ex(sql_s)
         sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
         self.sql_ex(sql_s, (account_name, resource))
         logging.debug("created {0} table".format(account_name))
@@ -193,17 +208,10 @@ class SQLiteDb(object):
         """
         needs_update = list()
         for href, etag in href_etag_list:
-            found = False
             stuple = (href,)
             sql_s = 'SELECT etag FROM {0} WHERE href = ?'.format(account_name)
             result = self.sql_ex(sql_s, stuple)
-            if result and etag == result[0][0]:
-                found = True
-            sql_s = 'SELECT etag FROM {0} WHERE href = ?'.format(account_name + '_allday')
-            result = self.sql_ex(sql_s, stuple)
-            if result and etag == result[0][0]:
-                found = True
-            if not found:
+            if not result or etag != result[0][0]:
                 needs_update.append(href)
         return needs_update
 
@@ -234,7 +242,7 @@ class SQLiteDb(object):
                                   one the server on next sync (if remote card
                                   has not changed)
         :type status: one of backend.OK, backend.NEW, backend.CHANGED,
-                      BACKEND.DELETED
+                      backend.DELETED
 
         """
         if not isinstance(vevent, icalendar.cal.Event):
@@ -249,55 +257,81 @@ class SQLiteDb(object):
             if vevent['DTSTART'].params['VALUE'] == 'DATE':
                 all_day_event = True
 
-        dtstart = vevent['DTSTART'].dt
-        if 'DTEND' in vevent.keys():
-            dtend = vevent['DTEND'].dt
-        else:
-            dtend = vevent['DTSTART'].dt + vevent['DURATION'].dt
-
-        if all_day_event:
-            dbstart = dtstart.strftime('%Y%m%d')
-            dbend = dtend.strftime('%Y%m%d')
-            dbname = account_name + '_allday'
-        else:
-            # TODO: extract stange (aka non Olson) TZs from params['TZID']
-            if dtstart.tzinfo is None:
-                dtstart = pytz.timezone(DEFAULTTZ).localize(dtstart)
-            if dtend.tzinfo is None:
-                dtend = pytz.timezone(DEFAULTTZ).localize(dtend)
-
-            dtstart_utc = dtstart.astimezone(pytz.UTC)
-            dtend_utc = dtend.astimezone(pytz.UTC)
-
-            dbstart = int(time.mktime(dtstart_utc.timetuple()))
-            dbend = int(time.mktime(dtend_utc.timetuple()))
-            dbname = account_name
-
         sql_s = ('INSERT OR REPLACE INTO {0} '
-                 '(uid, start, end, status, vevent, etag, href) '
-                 'VALUES (?, ?, ?, ?, ?, ?, '
+                 '(status, vevent, etag, href) '
+                 'VALUES (?, ?, ?, '
                  'COALESCE((SELECT href FROM {0} WHERE href = ?), ?)'
-                 ');'.format(dbname))
+                 ');'.format(account_name))
 
-        stuple = (str(vevent['UID']),
-                  dbstart,
-                  dbend,
-                  0,
+        stuple = (status,
                   vevent.to_ical().decode('utf-8'),
                   etag,
                   href,
                   href)
-        self.sql_ex(sql_s, stuple)
+        self.sql_ex(sql_s, stuple, commit=False)
 
-    def update_href(self, old_href, new_href, account_name, etag='', status=OK):
+        dtstart = vevent['DTSTART'].dt
+        if 'RRULE' in vevent.keys():
+            rrulestr = vevent['RRULE'].to_ical()
+            rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=dtstart)
+            rrule._until = (datetime.datetime.today() +
+                            datetime.timedelta(days=15 * 265))
+            logging.debug('calculating recurrence dates for {0}, '
+                          'this might take some time.'.format(href))
+            dtstartl = list(rrule)
+            if len(dtstartl) == 0:
+                raise UpdateFailed('Unsupported recursion rule for event '
+                                   '{0}:\n{1}'.format(href, vevent.to_ical()))
+
+            if 'DURATION' in vevent.keys():
+                duration = vevent['DURATION'].dt
+            else:
+                duration = vevent['DTEND'].dt - vevent['DTSTART'].dt
+            dtstartend = [(start, start + duration) for start in dtstartl]
+        else:
+            if 'DTEND' in vevent.keys():
+                dtend = vevent['DTEND'].dt
+            else:
+                dtend = vevent['DTSTART'].dt + vevent['DURATION'].dt
+            dtstartend = [(dtstart, dtend)]
+        for dbname in [account_name + '_d', account_name + '_dt']:
+            sql_s = ('DELETE FROM {0} WHERE href == ?'.format(dbname))
+            self.sql_ex(sql_s, (href, ), commit=False)
+        for dtstart, dtend in dtstartend:
+            if all_day_event:
+                dbstart = dtstart.strftime('%Y%m%d')
+                dbend = dtend.strftime('%Y%m%d')
+                dbname = account_name + '_d'
+            else:
+                # TODO: extract stange (aka non Olson) TZs from params['TZID']
+                # perhaps better done in model/vevent
+                if dtstart.tzinfo is None:
+                    dtstart = pytz.timezone(DEFAULTTZ).localize(dtstart)
+                if dtend.tzinfo is None:
+                    dtend = pytz.timezone(DEFAULTTZ).localize(dtend)
+
+                dtstart_utc = dtstart.astimezone(pytz.UTC)
+                dtend_utc = dtend.astimezone(pytz.UTC)
+
+                dbstart = int(time.mktime(dtstart_utc.timetuple()))
+                dbend = int(time.mktime(dtend_utc.timetuple()))
+                dbname = account_name + '_dt'
+
+            sql_s = ('INSERT INTO {0} '
+                     '(dtstart, dtend, href) '
+                     'VALUES (?, ?, ?);'.format(dbname))
+            stuple = (dbstart,
+                      dbend,
+                      href)
+            self.sql_ex(sql_s, stuple, commit=False)
+        self.conn.commit()
+
+    def update_href(self, oldhref, newhref, account_name, etag='', status=OK):
         """updates old_href to new_href, can also alter etag and status,
         see update() for an explanation of these parameters"""
-        stuple = (new_href, etag, status, old_href)
+        stuple = (newhref, etag, status, oldhref)
         sql_s = 'UPDATE {0} SET href = ?, etag = ?, status = ? \
              WHERE href = ?;'.format(account_name)
-        self.sql_ex(sql_s, stuple)
-        sql_s = 'UPDATE {0} SET href = ?, etag = ?, status = ? \
-             WHERE href = ?;'.format(account_name + '_allday')
         self.sql_ex(sql_s, stuple)
 
     def href_exists(self, href, account_name):
@@ -331,14 +365,16 @@ class SQLiteDb(object):
         """
         stuple = (href, )
         logging.debug("locally deleting " + str(href))
-        self.sql_ex('DELETE FROM {0} WHERE href=(?)'.format(account_name), stuple)
+        self.sql_ex('DELETE FROM {0} WHERE href=(?)'.format(account_name),
+                    stuple)
 
     def get_all_href_from_db(self, accounts):
         """returns a list with all hrefs
         """
         result = list()
         for account in accounts:
-            hrefs = self.sql_ex('SELECT href FROM {0} ORDER BY fname COLLATE NOCASE'.format(account))
+            hrefs = self.sql_ex('SELECT href FROM {0} ORDER BY fname '
+                                'COLLATE NOCASE'.format(account))
             result = result + [(href[0], account) for href in hrefs]
         return result
 
@@ -352,26 +388,6 @@ class SQLiteDb(object):
             result = result + [(href[0], account) for href in hrefs]
         return result
 
-#    def get_names_href_from_db(self, searchstring=None):
-#        """
-#        :return: list of tuples(name, href) of all entries from the db
-#        """
-#        if searchstring is None:
-#            return self.sql_ex('SELECT fname, href FROM {0} '
-#                               'ORDER BY name'.format(self.account))
-#        else:
-#            hrefs = self.search(searchstring)
-#            temp = list()
-#            for href in hrefs:
-#                try:
-#                    sql_s = 'SELECT fname, href FROM {0} WHERE href =(?)'.format(self.account)
-#                    result = self.sql_ex(sql_s, (href, ))
-#                    temp.append(result[0])
-#                except IndexError as error:
-#                    print(href)
-#                    print(error)
-#            return temp
-
     def get_time_range(self, start, end, account_name):
         """returns
         :type start: datetime.datetime
@@ -379,37 +395,43 @@ class SQLiteDb(object):
         """
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
-        sql_s = ('SELECT vevent FROM {0} WHERE '
-                 'start >= ? AND start <= ? OR '
-                 'end >= ? AND end <= ? OR '
-                 'start <= ? AND end >= ?').format(account_name)
+        sql_s = ('SELECT href, dtstart, dtend FROM {0} WHERE '
+                 'dtstart >= ? AND dtstart <= ? OR '
+                 'dtend >= ? AND dtend <= ? OR '
+                 'dtstart <= ? AND dtend >= ?').format(account_name + '_dt')
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s, stuple)
-        result = [Event(one[0]) for one in result]
-        return result
+        event_list = list()
+        for href, dtstart, dtend in result:
+            vevent = self.get_vevent_from_db(href, account_name)
+            event_list.append(Event(vevent))
+
+        return event_list
 
     def get_allday_range(self, start, end=None, account_name=None):
+        if account_name is None:
+            raise Exception('need to specify an account_name')
         strstart = start.strftime('%Y%m%d')
         if end is None:
             end = start + datetime.timedelta(days=1)
         strend = end.strftime('%Y%m%d')
-        sql_s = ('SELECT vevent FROM {0} WHERE '
-                 'start >= ? AND start < ? OR '
-                 'end > ? AND end <= ? OR '
-                 'start <= ? AND end > ? ').format(account_name + '_allday')
+        sql_s = ('SELECT href, dtstart, dtend FROM {0} WHERE '
+                 'dtstart >= ? AND dtstart < ? OR '
+                 'dtend > ? AND dtend <= ? OR '
+                 'dtstart <= ? AND dtend > ? ').format(account_name + '_d')
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s, stuple)
-        result = [Event(one[0]) for one in result]
-        return result
+        event_list = list()
+        for href, dtstart, dtend in result:
+            vevent = self.get_vevent_from_db(href, account_name)
+            event_list.append(Event(vevent))
+        return event_list
 
     def get_vevent_from_db(self, href, account_name):
         """returns a VCard()
         """
         sql_s = 'SELECT vevent FROM {0} WHERE href=(?)'.format(account_name)
         result = self.sql_ex(sql_s, (href, ))
-        sql_s = 'SELECT vevent FROM {0} WHERE href=(?)'.format(account_name + '_allday')
-        result = result + self.sql_ex(sql_s, (href, ))
-
         return result[0][0]
 
     def get_changed(self, account_name):
@@ -424,17 +446,14 @@ class SQLiteDb(object):
         """
         sql_s = 'SELECT href FROM {0} WHERE status == (?)'.format(account_name)
         result = self.sql_ex(sql_s, (NEW, ))
-        sql_s = 'SELECT href FROM {0} WHERE status == (?)'.format(account_name + '_allday')
-        result = result + self.sql_ex(sql_s, (NEW, ))
         return [row[0] for row in result]
 
     def get_marked_delete(self, account_name):
         """returns list of tuples (hrefs, etags) of locally deleted vcards
         """
-        sql_s = 'SELECT href, etag FROM {0} WHERE status == (?)'.format(account_name)
+        sql_s = ('SELECT href, etag FROM {0} WHERE status == '
+                 '(?)'.format(account_name))
         result = self.sql_ex(sql_s, (DELETED, ))
-        sql_s = 'SELECT href, etag FROM {0} WHERE status == (?)'.format(account_name + '_allday')
-        result = result + self.sql_ex(sql_s, (DELETED, ))
         return result
 
     def mark_delete(self, href, account_name):
@@ -448,8 +467,6 @@ class SQLiteDb(object):
         resets the status for a given href to 0 (=not edited locally)
         """
         sql_s = 'UPDATE {0} SET status = ? WHERE href = ?'.format(account_name)
-        self.sql_ex(sql_s, (OK, href, ))
-        sql_s = 'UPDATE {0} SET status = ? WHERE href = ?'.format(account_name + '_allday')
         self.sql_ex(sql_s, (OK, href, ))
 
 
