@@ -94,21 +94,26 @@ class Display(Controller):
         super(Display, self).__init__(conf)
 
         today = datetime.date.today()
-        start = datetime.datetime.combine(today, datetime.time.min)
-        end = datetime.datetime.combine(today, datetime.time.max)
-
+        tomorrow = today + datetime.timedelta(days=1)
+        daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
         event_column = list()
-        event_column.append('Today:')
-        all_day_events = list()
-        events = list()
-        for account in conf.sync.accounts:
-            all_day_events += self.dbtool.get_allday_range(today,
-                                                           account_name=account)
-            events += self.dbtool.get_time_range(start, end, account)
-        for event in all_day_events:
-            event_column.append(event.summary)
-        for event in events:
-            event_column.append(event.start.strftime('%H:%M') + '-' + event.end.strftime('%H:%M') + ': ' + event.summary)
+        for day, dayname in daylist:
+            start = datetime.datetime.combine(day, datetime.time.min)
+            end = datetime.datetime.combine(day, datetime.time.max)
+
+            event_column.append(dayname)
+            all_day_events = list()
+            events = list()
+            for account in conf.sync.accounts:
+                all_day_events += self.dbtool.get_allday_range(
+                    day, account_name=account)
+                events += self.dbtool.get_time_range(start, end, account)
+            for event in all_day_events:
+                event_column.append(event.summary)
+            for event in events:
+                event_column.append(event.start.strftime('%H:%M') + '-' +
+                                    event.end.strftime('%H:%M') +
+                                    ': ' + event.summary)
 
         calendar_column = calendar_display.vertical_month()
         rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
