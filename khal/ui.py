@@ -86,15 +86,17 @@ def construct_week(week, call=None):
 
     this_week = [(4, urwid.Text(month_name))]
 
-    for day in week:
+    for number, day in enumerate(week):
         if day == date.today():
             this_week.append((2, urwid.AttrMap(Date(day),
                                                'today', 'today_focus')))
+            today = number + 1
         else:
             this_week.append((2, urwid.AttrMap(Date(day),
                                                None, 'reveal focus')))
-    week = DateColumns(this_week, call=call, dividechars=1)
-    return week
+            today = None
+    week = DateColumns(this_week, call=call, dividechars=1, focus_column=today)
+    return week, bool(today)
 
 
 def calendar_walker(call=None):
@@ -105,11 +107,13 @@ def calendar_walker(call=None):
     daynames = urwid.Columns([(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in daynames],
                              dividechars=1)
     lines = [daynames]
-    for week in week_list():
-        week = construct_week(week, call=call)
+    for number, week in enumerate(week_list()):
+        week, contains_today = construct_week(week, call=call)
+        if contains_today:
+            focus_item = number + 1
         lines.append(week)
 
-    weeks = urwid.Pile(lines)
+    weeks = urwid.Pile(lines, focus_item=focus_item)
     return weeks
 
 
