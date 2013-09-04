@@ -30,7 +30,6 @@ import datetime
 import requests
 import urlparse
 import logging
-import pytz
 import icalendar
 
 
@@ -96,8 +95,6 @@ class Syncer(object):
             self._settings['auth'] = HTTPDigestAuth(user, passwd)
         self._default_headers = {"User-Agent": "khal"}
 
-        self.local_timezone = 'Europe/Berlin'
-
         headers = self.headers
         headers['Depth'] = '1'
         response = self.session.request('OPTIONS',
@@ -130,16 +127,19 @@ class Syncer(object):
             raise NoWriteSupport
 
     def get_hel(self, start=None, end=None):
+        """
+        getting (href, etag) list
+
+        type start: datetime.datetime
+        type end: datetime.datetime
+        """
         hel = list()
-        tz = pytz.timezone(self.local_timezone)
         if start is None:
             start = datetime.datetime.utcnow()
         if end is None:
             end = start + datetime.timedelta(days=365)
-        start_utc = tz.localize(start).astimezone(pytz.UTC)
-        end_utc = tz.localize(end).astimezone(pytz.UTC)
-        sstart = start_utc.strftime('%Y%m%dT%H%M%SZ')
-        send = end_utc.strftime('%Y%m%dT%H%M%SZ')
+        sstart = start.strftime('%Y%m%dT%H%M%SZ')
+        send = end.strftime('%Y%m%dT%H%M%SZ')
         body = """<?xml version="1.0" encoding="utf-8" ?>
 <C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
   <D:prop>
@@ -194,6 +194,7 @@ class Syncer(object):
         response.raise_for_status()
         root = etree.XML(response.text.encode(response.encoding))
         vhe = list()
+
         for element in root.iter('{DAV:}response'):
             href = element.find('{DAV:}href').text
             vevent = element.find('{DAV:}propstat').find('{DAV:}prop').find('{urn:ietf:params:xml:ns:caldav}calendar-data').text

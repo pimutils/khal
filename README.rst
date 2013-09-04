@@ -93,6 +93,26 @@ To enable write support you need to put
 into every *Account* section you want to enable write support on in your config
 file.
 
+
+Notes on Timezones
+-------------------
+Getting localized time right, seems to be the most difficult part about
+calendaring (and messing it up ends in missing the one imported meeting of the
+week). So I'll briefly describe here, how khal tries to handle timezone
+information.
+
+All datetimes are saved to the local database as UTC Time. Datetimes that are
+already UTC Time, e.g. '19980119T070000Z' are saved as such. Datetimes in local
+time and with a time zone reference that khal can understand (Olson database) are
+converted to UTC and than saved, e.g. 'TZID=America/New_York:19980119T020000'.
+Floating times, e.g. '19980118T230000' (datetimes which are neither UTC nor have a
+timezone specified) are treated as if the *default timezone* (specified in
+khal's config file) was specified. Datetimes with a specified timezone that
+khal does not understand are treated as if they were floating time.
+
+khal expects you want *all* start and end dates displayed in *local time* (which
+can be configured in the config file).
+
 About
 -----
 

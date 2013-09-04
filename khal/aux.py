@@ -87,8 +87,8 @@ def construct_event(date_list, timeformat, dateformat, datetimeformat,
             dtend = pytz.timezone(date_list[0]).localize(dtend)
             date_list.pop(0)
         except (pytz.UnknownTimeZoneError,  UnicodeDecodeError):
-            dtstart = pytz.timezone(defaulttz).localize(dtstart)
-            dtend = pytz.timezone(defaulttz).localize(dtend)
+            dtstart = defaulttz.localize(dtstart)
+            dtend = defaulttz.localize(dtend)
 
     event = icalendar.Event()
     event.add('dtstart', dtstart)

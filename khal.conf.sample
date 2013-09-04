@@ -21,4 +21,10 @@ verify: /home/jd/.khal/cacert.pem
 path: /home/jd/.khal/khal.db
 
 [default]
+# all dates are shown in local time, defined by local_timezone
+local_timezone: 'Europe/Berlin'
+# if start and end datetimes are either 'floating' or the timezone information
+# is not understood, default_timezone is used
+# this is also the timezone used for new events added via khal --new
+default_timezone: 'America/New_York'
 DEBUG: 0

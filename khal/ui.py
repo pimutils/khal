@@ -138,7 +138,7 @@ class EventList(urwid.WidgetWrap):
         events = list()
         for account in self.conf.sync.accounts:
             all_day_events += self.dbtool.get_allday_range(this_date,
-                                                            account_name=account)
+                                                           account_name=account)
             events += self.dbtool.get_time_range(start, end, account)
         for event in all_day_events:
             event_column.append(event.summary)

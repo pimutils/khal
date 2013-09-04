@@ -27,6 +27,7 @@ syncs the remote database to the local db
 
 import logging
 import datetime
+import pytz
 
 from khal import aux
 from khal import backend
@@ -55,7 +56,9 @@ class Sync(Controller):
                                     auth=sync_account.auth)
         # syncing remote to local:
         logging.debug('syncing events in the next 365 days')
-        href_etag_list = self.syncer.get_hel()
+        start = datetime.datetime.utcnow() - datetime.timedelta(days=30)
+        start_utc = conf.default.local_timezone.localize(start).astimezone(pytz.UTC)
+        href_etag_list = self.syncer.get_hel(start=start_utc)
         need_update = self.dbtool.needs_update(sync_account_name,
                                                href_etag_list)
         logging.debug('{number} event(s) need(s) an '
@@ -128,12 +131,11 @@ class NewFromString(Controller):
         timeformat = '%H:%M'
         dateformat = '%d.%m.'
         datetimeformat = '%d.%m. %H:%M'
-        DEFAULTTZ = 'Europe/Berlin'
         event = aux.construct_event(date_list,
                                     timeformat,
                                     dateformat,
                                     datetimeformat,
-                                    DEFAULTTZ)
+                                    conf.default.local_timezone)
         self.dbtool.update(event, conf.sync.accounts.pop(), status=backend.NEW)
 
 

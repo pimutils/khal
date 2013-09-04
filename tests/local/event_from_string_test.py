@@ -1,6 +1,7 @@
 # vim: set fileencoding=utf-8:
 from khal.aux import construct_event
 import random
+import pytz
 
 
 test_set = [('15.08. 16.08. Äwesöme Event',  # 2 day all-day
@@ -57,7 +58,7 @@ test_set = [('15.08. 16.08. Äwesöme Event',  # 2 day all-day
 timeformat = '%H:%M'
 dateformat = '%d.%m.'
 datetimeformat = '%d.%m. %H:%M'
-DEFAULTTZ = 'Europe/Berlin'
+DEFAULTTZ = pytz.timezone('Europe/Berlin')
 
 
 def test_construct_event():

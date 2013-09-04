@@ -27,6 +27,7 @@ import getpass
 import re
 import logging
 import os
+import pytz
 import signal
 import sys
 import xdg.BaseDirectory
@@ -156,6 +157,10 @@ class Section(object):
         else:
             return False
 
+    def _parse_time_zone(self, value):
+        """returns pytz timezone"""
+        return pytz.timezone(value)
+
 
 class AccountSection(Section):
     def __init__(self, parser):
@@ -187,6 +192,15 @@ class SQLiteSection(Section):
         ]
 
 
+class DefaultSection(Section):
+    def __init__(self, parser):
+        Section.__init__(self, parser, 'default')
+        self._schema = [
+            ('local_timezone', '', self._parse_time_zone),
+            ('default_timezone', '', self._parse_time_zone)
+        ]
+
+
 class ConfigurationParser(object):
     """A Configuration setup tool.
 
@@ -201,7 +215,7 @@ class ConfigurationParser(object):
 
     def __init__(self, desc, check_accounts=True):
         # Set the configuration current schema.
-        self._sections = [AccountSection, SQLiteSection]
+        self._sections = [AccountSection, SQLiteSection, DefaultSection]
 
         # Build parsers and set common options.
         self._check_accounts = check_accounts

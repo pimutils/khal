@@ -80,9 +80,6 @@ except ImportError, error:
     print(error)
     sys.exit(1)
 
-default_time_zone = 'Europe/Berlin'
-DEFAULTTZ = 'Europe/Berlin'
-
 OK = 0  # not touched since last sync
 NEW = 1  # new card, needs to be created on the server
 CHANGED = 2  # properties edited or added (news to be pushed to server)
@@ -257,14 +254,13 @@ class SQLiteDb(object):
             if vevent['DTSTART'].params['VALUE'] == 'DATE':
                 all_day_event = True
 
-
         dtstart = vevent['DTSTART'].dt
         if 'RRULE' in vevent.keys():
             rrulestr = vevent['RRULE'].to_ical()
             rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=dtstart)
             today = datetime.datetime.today()
             if dtstart.tzinfo is not None:
-                today = pytz.timezone(DEFAULTTZ).localize(today)
+                today = self.conf.default.default_timezone.localize(today)
             rrule._until = today + datetime.timedelta(days=15 * 365)
             logging.debug('calculating recurrence dates for {0}, '
                           'this might take some time.'.format(href))
@@ -293,12 +289,12 @@ class SQLiteDb(object):
                 dbend = dtend.strftime('%Y%m%d')
                 dbname = account_name + '_d'
             else:
-                # TODO: extract stange (aka non Olson) TZs from params['TZID']
+                # TODO: extract strange (aka non Olson) TZs from params['TZID']
                 # perhaps better done in model/vevent
                 if dtstart.tzinfo is None:
-                    dtstart = pytz.timezone(DEFAULTTZ).localize(dtstart)
+                    dtstart = self.conf.default.default_timezone.localize(dtstart)
                 if dtend.tzinfo is None:
-                    dtend = pytz.timezone(DEFAULTTZ).localize(dtend)
+                    dtend = self.conf.default.default_timezone.localize(dtend)
 
                 dtstart_utc = dtstart.astimezone(pytz.UTC)
                 dtend_utc = dtend.astimezone(pytz.UTC)

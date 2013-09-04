@@ -4,6 +4,7 @@ TODO
 * recurrent events don't know their real start and end dates
 * ikhal: new weeks should be loaded into the walker
 * ikhal: editable events
+* output times are NOT localized yet
 
 
 DONE
