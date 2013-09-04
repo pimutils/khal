@@ -274,8 +274,10 @@ class SQLiteDb(object):
         if 'RRULE' in vevent.keys():
             rrulestr = vevent['RRULE'].to_ical()
             rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=dtstart)
-            rrule._until = (datetime.datetime.today() +
-                            datetime.timedelta(days=15 * 265))
+            today = datetime.datetime.today()
+            if dtstart.tzinfo is not None:
+                today = pytz.timezone(DEFAULTTZ).localize(today)
+            rrule._until = today + datetime.timedelta(days=15 * 365)
             logging.debug('calculating recurrence dates for {0}, '
                           'this might take some time.'.format(href))
             dtstartl = list(rrule)
