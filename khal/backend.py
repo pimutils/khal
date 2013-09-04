@@ -257,18 +257,6 @@ class SQLiteDb(object):
             if vevent['DTSTART'].params['VALUE'] == 'DATE':
                 all_day_event = True
 
-        sql_s = ('INSERT OR REPLACE INTO {0} '
-                 '(status, vevent, etag, href) '
-                 'VALUES (?, ?, ?, '
-                 'COALESCE((SELECT href FROM {0} WHERE href = ?), ?)'
-                 ');'.format(account_name))
-
-        stuple = (status,
-                  vevent.to_ical().decode('utf-8'),
-                  etag,
-                  href,
-                  href)
-        self.sql_ex(sql_s, stuple, commit=False)
 
         dtstart = vevent['DTSTART'].dt
         if 'RRULE' in vevent.keys():
@@ -326,6 +314,19 @@ class SQLiteDb(object):
                       dbend,
                       href)
             self.sql_ex(sql_s, stuple, commit=False)
+
+        sql_s = ('INSERT OR REPLACE INTO {0} '
+                 '(status, vevent, etag, href) '
+                 'VALUES (?, ?, ?, '
+                 'COALESCE((SELECT href FROM {0} WHERE href = ?), ?)'
+                 ');'.format(account_name))
+
+        stuple = (status,
+                  vevent.to_ical().decode('utf-8'),
+                  etag,
+                  href,
+                  href)
+        self.sql_ex(sql_s, stuple, commit=False)
         self.conn.commit()
 
     def update_href(self, oldhref, newhref, account_name, etag='', status=OK):
