@@ -405,8 +405,8 @@ class SQLiteDb(object):
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
         for href, dtstart, dtend in result:
-            vevent = self.get_vevent_from_db(href, account_name)
-            event_list.append(Event(vevent))
+            event = self.get_vevent_from_db(href, account_name)
+            event_list.append(event)
 
         return event_list
 
@@ -426,7 +426,7 @@ class SQLiteDb(object):
         event_list = list()
         for href, dtstart, dtend in result:
             vevent = self.get_vevent_from_db(href, account_name)
-            event_list.append(Event(vevent))
+            event_list.append(vevent)
         return event_list
 
     def get_vevent_from_db(self, href, account_name):
@@ -434,7 +434,9 @@ class SQLiteDb(object):
         """
         sql_s = 'SELECT vevent FROM {0} WHERE href=(?)'.format(account_name)
         result = self.sql_ex(sql_s, (href, ))
-        return result[0][0]
+        return Event(result[0][0],
+                     self.conf.default.local_timezone,
+                     self.conf.default.default_timezone)
 
     def get_changed(self, account_name):
         """returns list of hrefs of locally edited vcards

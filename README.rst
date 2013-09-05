@@ -99,7 +99,7 @@ Notes on Timezones
 Getting localized time right, seems to be the most difficult part about
 calendaring (and messing it up ends in missing the one imported meeting of the
 week). So I'll briefly describe here, how khal tries to handle timezone
-information.
+information, which information it can handle and wich it can't.
 
 All datetimes are saved to the local database as UTC Time. Datetimes that are
 already UTC Time, e.g. '19980119T070000Z' are saved as such. Datetimes in local
@@ -112,6 +112,16 @@ khal does not understand are treated as if they were floating time.
 
 khal expects you want *all* start and end dates displayed in *local time* (which
 can be configured in the config file).
+
+*VTIMEZONE* components of calendars are totally ignored at the moment, as are
+daylight saving times.
+
+To summarize: as long as it is not daylight saving time, you are always in the
+same timezone and your calendar is, too, khal probably shows the right start and
+end times. Otherwise: Good Luck!
+
+Seriously: be careful when changing timezones and do check if khal shows the
+correct times anyway (and please report back if it doesn't).
 
 About
 -----
