@@ -64,6 +64,7 @@ $ACCOUNTNAME_dt: #other events, same as above
 from __future__ import print_function
 
 try:
+    import calendar
     import datetime
     import icalendar
     import xdg.BaseDirectory
@@ -243,8 +244,8 @@ class SQLiteDb(object):
 
         """
         if not isinstance(vevent, icalendar.cal.Event):
-            calendar = icalendar.Event.from_ical(vevent)
-            for component in calendar.walk():
+            ical = icalendar.Event.from_ical(vevent)
+            for component in ical.walk():
                 if component.name == 'VEVENT':
                     vevent = component
         all_day_event = False
@@ -255,6 +256,7 @@ class SQLiteDb(object):
                 all_day_event = True
 
         dtstart = vevent['DTSTART'].dt
+
         if 'RRULE' in vevent.keys():
             rrulestr = vevent['RRULE'].to_ical()
             rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=dtstart)
@@ -280,9 +282,11 @@ class SQLiteDb(object):
             else:
                 dtend = vevent['DTSTART'].dt + vevent['DURATION'].dt
             dtstartend = [(dtstart, dtend)]
+
         for dbname in [account_name + '_d', account_name + '_dt']:
             sql_s = ('DELETE FROM {0} WHERE href == ?'.format(dbname))
             self.sql_ex(sql_s, (href, ), commit=False)
+
         for dtstart, dtend in dtstartend:
             if all_day_event:
                 dbstart = dtstart.strftime('%Y%m%d')
@@ -298,9 +302,8 @@ class SQLiteDb(object):
 
                 dtstart_utc = dtstart.astimezone(pytz.UTC)
                 dtend_utc = dtend.astimezone(pytz.UTC)
-
-                dbstart = int(time.mktime(dtstart_utc.timetuple()))
-                dbend = int(time.mktime(dtend_utc.timetuple()))
+                dbstart = calendar.timegm(dtstart_utc.timetuple())
+                dbend = calendar.timegm(dtend_utc.timetuple())
                 dbname = account_name + '_dt'
 
             sql_s = ('INSERT INTO {0} '
@@ -404,8 +407,11 @@ class SQLiteDb(object):
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
-        for href, dtstart, dtend in result:
-            event = self.get_vevent_from_db(href, account_name)
+        for href, start, end in result:
+            start = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(start))
+            end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
+            event = self.get_vevent_from_db(href, account_name,
+                                            start=start, end=end)
             event_list.append(event)
 
         return event_list
@@ -429,14 +435,16 @@ class SQLiteDb(object):
             event_list.append(vevent)
         return event_list
 
-    def get_vevent_from_db(self, href, account_name):
+    def get_vevent_from_db(self, href, account_name, start=None, end=None):
         """returns a VCard()
         """
         sql_s = 'SELECT vevent FROM {0} WHERE href=(?)'.format(account_name)
         result = self.sql_ex(sql_s, (href, ))
         return Event(result[0][0],
                      self.conf.default.local_timezone,
-                     self.conf.default.default_timezone)
+                     self.conf.default.default_timezone,
+                     start=start,
+                     end=end)
 
     def get_changed(self, account_name):
         """returns list of hrefs of locally edited vcards

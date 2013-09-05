@@ -28,8 +28,15 @@ import datetime
 
 
 class Event(object):
-    def __init__(self, ical, local_tz=None, default_tz=None):
+    def __init__(self, ical, local_tz=None, default_tz=None,
+                 start=None, end=None):
         self.vevent = icalendar.Event.from_ical(ical)
+        if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
+            start = start.astimezone(local_tz)
+            end = end.astimezone(local_tz)
+        self.vevent['DTSTART'].dt = start
+        if 'DTEND' in self.vevent.keys():
+            self.vevent['DTEND'].dt = end
         self.local_tz = local_tz
         self.default_tz = default_tz
 
