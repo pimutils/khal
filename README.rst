@@ -10,6 +10,8 @@ spin, please know, that as long as you don't enable write support, there is no
 chance at all that you might mess up your remote calendar. If you do try it out,
 please report back any bugs you might encounter.
 
+.. image:: http://lostpackets.de/images/khal.png
+
 Features
 --------
 (or rather: limitations)
