@@ -5,27 +5,7 @@ import datetime
 import argparse
 import doctest
 
-
-RTEXT = '\x1b[7m'  # reverse
-NTEXT = '\x1b[0m'  # normal
-BTEXT = '\x1b[1m'  # bold
-
-
-def rstring(string):
-    """returns string as reverse color string (ANSI escape codes)
-
-    >>> rstring('test')
-    '\\x1b[7mtest\\x1b[0m'
-    """
-    return RTEXT + string + NTEXT
-
-
-def bstring(string):
-    """returns string as bold string (ANSI escape codes)
-    >>> bstring('test')
-    '\\x1b[1mtest\\x1b[0m'
-    """
-    return BTEXT + string + NTEXT
+from khal.aux import bstring, rstring
 
 
 def getweeknumber(date):

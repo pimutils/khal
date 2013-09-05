@@ -144,7 +144,7 @@ class EventList(urwid.WidgetWrap):
             event_column.append(event.summary)
         events.sort(key=lambda e: e.start)
         for event in events:
-            event_column.append(event.start.strftime('%H:%M') + '-' +  event.end.strftime('%H:%M') + ': ' + event.summary)
+            event_column.append(event.compact(this_date))
         pile = urwid.Pile([urwid.Text(event) for event in event_column])
         self._w = pile
 

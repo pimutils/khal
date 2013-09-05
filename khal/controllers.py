@@ -33,6 +33,7 @@ from khal import aux
 from khal import backend
 from khal import caldav
 from khal import calendar_display
+from khal.aux import bstring
 from itertools import izip_longest
 
 
@@ -104,7 +105,7 @@ class Display(Controller):
             start = datetime.datetime.combine(day, datetime.time.min)
             end = datetime.datetime.combine(day, datetime.time.max)
 
-            event_column.append(dayname)
+            event_column.append(bstring(dayname))
             all_day_events = list()
             events = list()
             for account in conf.sync.accounts:
@@ -115,9 +116,7 @@ class Display(Controller):
                 event_column.append(event.summary)
             events.sort(key=lambda e: e.start)
             for event in events:
-                event_column.append(event.start.strftime('%H:%M') + '-' +
-                                    event.end.strftime('%H:%M') +
-                                    ': ' + event.summary)
+                event_column.append(event.compact(day))
 
         calendar_column = calendar_display.vertical_month()
         rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
