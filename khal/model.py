@@ -11,7 +11,7 @@ class Event(object):
     def start(self):
         start = self.vevent['DTSTART'].dt
         if start.tzinfo is None:
-            start.astimezone(self.default_tz)
+            start = self.default_tz.localize(start)
         start = start.astimezone(self.local_tz)
         return self.vevent['DTSTART'].dt
 
@@ -21,7 +21,7 @@ class Event(object):
         # nor DURATION
         end = self.vevent['DTEND'].dt
         if end.tzinfo is None:
-            end.astimezone(self.default_tz)
+            end = self.default_tz.localize(end)
         end = end.astimezone(self.local_tz)
         return end
 
