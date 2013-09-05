@@ -120,7 +120,7 @@ class Display(Controller):
 
         calendar_column = calendar_display.vertical_month()
         rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
-        print '\n'.join(rows)
+        print '\n'.join(rows).encode('utf-8')
 
 
 class NewFromString(Controller):
