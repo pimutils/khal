@@ -1,7 +1,7 @@
 khal
 ====
 
-Khal is a CLI (console), CalDAV_ based calendar programm, `allowing syncing of calendars with a
+Khal is a CLI (console), CalDAV_ based calendar program, `allowing syncing of calendars with a
 variety of other programs on a host of different platforms`__.
 
 *khal* is currently in a very early stage of development, has a very limited
@@ -18,7 +18,7 @@ Features
 
 - khal can sync events from CalDAV calendar collections
 - add simple new events to a calendar and upload them
-- ikhal can show events in the current and next two months
+- ikhal (interactive khal) can show events in the current and next two months
 - simple recurring events support (no exceptions just yet)
 - no proper timezone support yet
 - is pretty Euro centric, weeks start on Mondays, khal uses a 24 hour clock and
