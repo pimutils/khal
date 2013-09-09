@@ -55,18 +55,19 @@ if conf.debug:
 
 if conf.syncrun:
     rvalue = 0
-    for account_name in conf.accounts:
-        if account_name in conf.sync.accounts:
-            logging.debug('start syncing account {0}'.format(account_name))
-            try:
-                controllers.Sync(conf, account_name)
-            except Exception as error:
-                if conf.debug:
-                    raise
-                logging.critical('While syncing account "{0}" an error occured:\n  '.format(one.name) + str(error))
-                rvalue = 1
+    for account_name in conf.sync.accounts:
+        logging.debug('start syncing account {0}'.format(account_name))
+        try:
+            controllers.Sync(conf, account_name)
+        except Exception as error:
+            if conf.debug:
+                raise
+            logging.critical('While syncing account "{0}" an error '
+                             'occured:\n  '.format(account_name)
+                             + str(error))
+            rvalue = 1
     sys.exit(rvalue)
-if conf.new:
+elif conf.new:
     controllers.NewFromString(conf)
 else:
     controllers.Display(conf)
