@@ -112,10 +112,6 @@ class SQLiteDb(object):
         self._check_table_version()
         self.conf = conf
 
-        for account in self.conf.sync.accounts:
-            self.check_account_table(account,
-                                     self.conf.accounts[account].resource)
-
     def __del__(self):
         self.conn.close()
 
@@ -174,8 +170,15 @@ class SQLiteDb(object):
             self.conn.commit()
         return result
 
-    def check_account_table(self, account_name, resource):
+    def check_account_table(self, account_name):
+        count_sql_s = """SELECT count(*) FROM accounts
+                WHERE account = ? AND resource = ?"""
+        stuple = (account_name, self.conf.accounts[account_name].resource)
+        self.cursor.execute(count_sql_s, stuple)
+        result = self.cursor.fetchone()
 
+        if(result[0] != 0):
+            return
         sql_s = """CREATE TABLE IF NOT EXISTS {0} (
                 href TEXT,
                 etag TEXT,
@@ -194,8 +197,9 @@ class SQLiteDb(object):
             href TEXT ); '''.format(account_name + '_d')
         self.sql_ex(sql_s)
         sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
-        self.sql_ex(sql_s, (account_name, resource))
-        logging.debug("created {0} table".format(account_name))
+        stuple = (account_name, self.conf.accounts[account_name].resource)
+        self.sql_ex(sql_s, stuple)
+        logging.debug("made sure table {0} exists".format(account_name))
 
     def needs_update(self, account_name, href_etag_list):
         """checks if we need to update this vcard

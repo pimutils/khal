@@ -55,6 +55,7 @@ class Sync(Controller):
                                     write_support=sync_account.write_support,
                                     verify=sync_account.verify,
                                     auth=sync_account.auth)
+        self.dbtool.check_account_table(sync_account_name)
         # syncing remote to local:
         logging.debug('syncing events in the next 365 days')
         start = datetime.datetime.utcnow() - datetime.timedelta(days=30)
