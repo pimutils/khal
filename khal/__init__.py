@@ -324,6 +324,11 @@ class ConfigurationParser(object):
                 account.resource = account.resource + '/'
 
         ns.sync.accounts = set(ns.sync.accounts)
+        # converting conf.accounts to a dict (where account.names are the keys)
+        out = dict()
+        for one in ns.accounts:
+            out[one.name] = one
+        ns.accounts = out
 
         return result
 
@@ -393,6 +398,9 @@ class ConfigurationParser(object):
             if type(value) is list:
                 for o in value:
                     self.dump(o, '\t'*tab + name + ':', tab + 1)
+            elif type(value) is dict:
+                for o in value:
+                    self.dump(value[o], '\t'*tab + name + ':', tab + 1)
             elif type(value) is Namespace:
                 self.dump(value, '\t'*tab + name + ':', tab + 1)
             elif name != 'passwd':
