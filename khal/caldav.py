@@ -174,6 +174,8 @@ class Syncer(object):
         :type hrefs: list
         :returns: list of tuples(vevent, href, etag)
         """
+        if hrefs == list():
+            return list()
         empty_body = """<?xml version="1.0" encoding="utf-8" ?>
 <C:calendar-multiget xmlns:D="DAV:"
                      xmlns:C="urn:ietf:params:xml:ns:caldav">
