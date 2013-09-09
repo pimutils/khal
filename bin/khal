@@ -46,8 +46,10 @@ if conf is None:
 if conf.debug:
     conf_parser.dump(conf)
 
-
-if conf.syncrun:
+if conf.list_accounts:
+    for name in conf.accounts:
+        print(name)
+elif conf.syncrun:
     rvalue = 0
     for account_name in conf.sync.accounts:
         logging.debug('start syncing account {0}'.format(account_name))

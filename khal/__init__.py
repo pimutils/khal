@@ -243,6 +243,8 @@ class ConfigurationParser(object):
         self._arg_parser.add_argument(
             '--new', nargs='+',
             help="create a new event")
+        self._arg_parser.add_argument('--list-accounts', action='store_true',
+                                      help=argparse.SUPPRESS)
 
     def parse(self):
         """Start parsing.
