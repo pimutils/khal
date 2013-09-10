@@ -11,6 +11,7 @@ palette = [('header', 'white', 'black'),
 
 
 class Date(urwid.Text):
+    """used in the main calendar for dates"""
 
     def __init__(self, date):
         self.date = date
@@ -45,6 +46,10 @@ def week_list(count=3):
 
 
 class DateColumns(urwid.Columns):
+    """clone of urwid.Columns
+    since this code is mostly taken from urwid, it needs to be put into an extra
+    module and put under LGPL
+    """
     def __init__(self, widget_list, call=None, **kwargs):
         self.call = call
 
@@ -72,6 +77,59 @@ class DateColumns(urwid.Columns):
 index of child widget in focus. Raises IndexError if read when
 Columns is empty, or when set to an invalid index.
 """)
+
+    def keypress(self, size, key):
+        """
+        Pass keypress to the focus column.
+
+        :param size: `(maxcol,)` if :attr:`widget_list` contains flow widgets or
+            `(maxcol, maxrow)` if it contains box widgets.
+        :type size: int, int
+        """
+        if key in ['tab']:
+            return 'right'
+        if self.focus_position is None: return key
+
+        widths = self.column_widths(size)
+        if self.focus_position >= len(widths):
+            return key
+
+        i = self.focus_position
+        mc = widths[i]
+        w, (t, n, b) = self.contents[i]
+        if self._command_map[key] not in ('cursor up', 'cursor down',
+            'cursor page up', 'cursor page down'):
+            self.pref_col = None
+        if len(size) == 1 and b:
+            key = w.keypress((mc, self.rows(size, True)), key)
+        else:
+            key = w.keypress((mc,) + size[1:], key)
+
+        if self._command_map[key] not in ('cursor left', 'cursor right'):
+            return key
+
+
+        if self._command_map[key] == 'cursor left':
+            candidates = range(i-1, -1, -1) # count backwards to 0
+        else: # key == 'right'
+            candidates = range(i+1, len(self.contents))
+        if candidates == [7] and key == 'right':
+            self.focus_position = 1
+            return 'down'
+        if candidates == [0] and key == 'left':
+            self.focus_position = 7
+            return 'up'
+
+        for j in candidates:
+            if not self.contents[j][0].selectable():
+                continue
+
+            self.focus_position = j
+            return
+        return key
+
+
+
 
 
 def construct_week(week, call=None):
@@ -117,8 +175,17 @@ def calendar_walker(call=None):
     return weeks
 
 
-class EventList(urwid.WidgetWrap):
+class Event(urwid.Text):
 
+    @classmethod
+    def selectable(cls):
+        return True
+
+    def keypress(self, _, key):
+        return key
+
+
+class EventList(urwid.WidgetWrap):
     def __init__(self, conf=None, dbtool=None):
         self.conf = conf
         self.dbtool = dbtool
@@ -133,7 +200,8 @@ class EventList(urwid.WidgetWrap):
         start = datetime.combine(this_date, time.min)
         end = datetime.combine(this_date, time.max)
 
-        event_column = [this_date.strftime('%d.%m.%Y')]
+        date_text = urwid.Text(this_date.strftime('%d.%m.%Y'))
+        event_column = list()
         all_day_events = list()
         events = list()
         for account in self.conf.sync.accounts:
@@ -145,7 +213,8 @@ class EventList(urwid.WidgetWrap):
         events.sort(key=lambda e: e.start)
         for event in events:
             event_column.append(event.compact(this_date))
-        pile = urwid.Pile([urwid.Text(event) for event in event_column])
+
+        pile = urwid.Pile([date_text] + [urwid.AttrMap(Event(event), None, 'reveal focus') for event in event_column])
         self._w = pile
 
 
