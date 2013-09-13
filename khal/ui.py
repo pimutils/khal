@@ -211,7 +211,7 @@ class Event(urwid.Text):
 
     def keypress(self, _, key):
         if key is 'enter':
-            self.call()
+            self.call(self.event)
         return key
 
 
@@ -220,14 +220,13 @@ class EventList(urwid.WidgetWrap):
     def __init__(self, conf=None, dbtool=None, call=None):
         self.conf = conf
         self.dbtool = dbtool
-        self.number = 1
+        self.call = call
         pile = urwid.Pile([])
         urwid.WidgetWrap.__init__(self, pile)
         self.update()
 
     def update(self, this_date=date.today()):
 
-        self.number += 1
         start = datetime.combine(this_date, time.min)
         end = datetime.combine(this_date, time.max)
 
@@ -240,18 +239,35 @@ class EventList(urwid.WidgetWrap):
                                                            account_name=account)
             events += self.dbtool.get_time_range(start, end, account)
         for event in all_day_events:
-            event_column.append(Event(event, this_date=this_date))
+            event_column.append(Event(event, this_date=this_date, call=self.call))
         events.sort(key=lambda e: e.start)
         for event in events:
-            event_column.append(Event(event, this_date=this_date))
+            event_column.append(Event(event, this_date=this_date, call=self.call))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
         pile = urwid.Pile([date_text] + event_list)
         self._w = pile
 
 
+class EventViewer(urwid.WidgetWrap):
+    def __init__(self, conf=None, dbtool=None):
+        self.conf = conf
+        self.dbtool = dbtool
+        pile = urwid.Pile([])
+        urwid.WidgetWrap.__init__(self, pile)
+
+    def update(self, event):
+
+        lines = []
+        for key in event.vevent:
+            lines.append(urwid.Text(key + ': ' + str(event.vevent[key])))
+        pile = urwid.Pile(lines)
+        self._w = pile
+
+
 def interactive(conf=None, dbtool=None):
-    events = EventList(conf=conf, dbtool=dbtool)
+    eventviewer = EventViewer(conf=conf, dbtool=dbtool)
+    events = EventList(conf=conf, dbtool=dbtool, call=eventviewer.update)
     weeks = calendar_walker(call=events.update)
-    columns = urwid.Columns([(25, weeks), events], dividechars=2)
+    columns = urwid.Columns([(25, weeks), events, eventviewer], dividechars=2)
     fill = urwid.Filler(columns)
     urwid.MainLoop(fill, palette=palette).run()
