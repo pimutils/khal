@@ -136,7 +136,7 @@ Columns is empty, or when set to an invalid index.
             candidates = range(i-1, -1, -1) # count backwards to 0
         else: # key == 'right'
             candidates = range(i+1, len(self.contents))
-        if candidates == [7] and key == 'right':
+        if candidates == [] and key == 'right':
             self.focus_position = 1
             return 'down'
         if candidates == [0] and key == 'left':
