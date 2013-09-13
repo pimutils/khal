@@ -265,7 +265,8 @@ class SQLiteDb(object):
             rrulestr = vevent['RRULE'].to_ical()
             rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=dtstart)
             today = datetime.datetime.today()
-            if dtstart.tzinfo is not None:
+            if hasattr(dtstart, 'tzinfo') and dtstart.tzinfo is not None:
+                # would be better to check if self is all day event
                 today = self.conf.default.default_timezone.localize(today)
             rrule._until = today + datetime.timedelta(days=15 * 365)
             logging.debug('calculating recurrence dates for {0}, '
