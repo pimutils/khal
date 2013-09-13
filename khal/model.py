@@ -31,7 +31,9 @@ class Event(object):
     def __init__(self, ical, local_tz=None, default_tz=None,
                  start=None, end=None):
         self.vevent = icalendar.Event.from_ical(ical)
+        self.allday = True
         if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
+            self.allday = False
             start = start.astimezone(local_tz)
             end = end.astimezone(local_tz)
         self.vevent['DTSTART'].dt = start
@@ -67,6 +69,19 @@ class Event(object):
         return 'RRULE' in self.vevent.keys()
 
     def compact(self, day):
+        if self.allday:
+            return self._compact_allday(day)
+        else:
+            return self._compact_datetime(day)
+
+    def _compact_allday(self, day):
+        if 'RRULE' in self.vevent.keys():
+            recurstr = u' ⟳'
+        else:
+            recurstr = ''
+        return self.summary + recurstr
+
+    def _compact_datetime(self, day):
         """compact description of this event
 
         TODO: explain day param

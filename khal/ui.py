@@ -69,7 +69,7 @@ def week_list(count=3):
 
 
 class DateColumns(urwid.Columns):
-    """clone of urwid.Columns
+    """clone of urwid.Columns used for the calendar
     since this code is mostly taken from urwid, it needs to be put into an extra
     module and put under LGPL
     """
@@ -152,9 +152,6 @@ Columns is empty, or when set to an invalid index.
         return key
 
 
-
-
-
 def construct_week(week, call=None):
     """
     :param week: list of datetime.date objects
@@ -199,17 +196,28 @@ def calendar_walker(call=None):
 
 
 class Event(urwid.Text):
+    """representation of event in Eventlist
+    """
+
+    def __init__(self, event, this_date=None, call=None):
+        self.event = event
+        self.call = call
+        self.this_date = this_date
+        super(Event, self).__init__(self.event.compact(self.this_date))
 
     @classmethod
     def selectable(cls):
         return True
 
     def keypress(self, _, key):
+        if key is 'enter':
+            self.call()
         return key
 
 
 class EventList(urwid.WidgetWrap):
-    def __init__(self, conf=None, dbtool=None):
+    """list of events"""
+    def __init__(self, conf=None, dbtool=None, call=None):
         self.conf = conf
         self.dbtool = dbtool
         self.number = 1
@@ -232,12 +240,12 @@ class EventList(urwid.WidgetWrap):
                                                            account_name=account)
             events += self.dbtool.get_time_range(start, end, account)
         for event in all_day_events:
-            event_column.append(event.summary)
+            event_column.append(Event(event, this_date=this_date))
         events.sort(key=lambda e: e.start)
         for event in events:
-            event_column.append(event.compact(this_date))
-
-        pile = urwid.Pile([date_text] + [urwid.AttrMap(Event(event), None, 'reveal focus') for event in event_column])
+            event_column.append(Event(event, this_date=this_date))
+        event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
+        pile = urwid.Pile([date_text] + event_list)
         self._w = pile
 
 
