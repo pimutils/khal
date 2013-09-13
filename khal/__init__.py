@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
-# vim: set fileencoding=utf-8 :
+# coding: utf-8
+# vim: set ts=4 sw=4 expandtab sts=4:
 # Copyright (c) 2011-2013 Christian Geier & contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining
