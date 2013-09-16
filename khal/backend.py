@@ -436,8 +436,13 @@ class SQLiteDb(object):
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
-        for href, dtstart, dtend in result:
-            vevent = self.get_vevent_from_db(href, account_name)
+        for href, start, end in result:
+            start = time.strptime(str(start), '%Y%m%d')
+            end = time.strptime(str(end), '%Y%m%d')
+            start = datetime.date(start.tm_year, start.tm_mon, start.tm_mday)
+            end = datetime.date(end.tm_year, end.tm_mon, end.tm_mday)
+            vevent = self.get_vevent_from_db(href, account_name,
+                                             start=start, end=end)
             event_list.append(vevent)
         return event_list
 

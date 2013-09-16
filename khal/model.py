@@ -45,6 +45,9 @@ class Event(object):
     @property
     def start(self):
         start = self.vevent['DTSTART'].dt
+
+        if self.allday:
+            return start
         if start.tzinfo is None:
             start = self.default_tz.localize(start)
         start = start.astimezone(self.local_tz)
@@ -55,6 +58,8 @@ class Event(object):
         # TODO take care of events with no DTEND but DURATION and neither DTEND
         # nor DURATION
         end = self.vevent['DTEND'].dt
+        if self.allday:
+            return end
         if end.tzinfo is None:
             end = self.default_tz.localize(end)
         end = end.astimezone(self.local_tz)
