@@ -181,7 +181,7 @@ class SQLiteDb(object):
         if(result[0] != 0):
             return
         sql_s = """CREATE TABLE IF NOT EXISTS {0} (
-                href TEXT,
+                href TEXT UNIQUE,
                 etag TEXT,
                 status INT NOT NULL,
                 vevent TEXT
