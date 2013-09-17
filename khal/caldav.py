@@ -208,11 +208,11 @@ class Syncer(object):
     def upload(self, vevent):
         """
         :param vevent: vevent
-        :type vevent: unicode
+        :type vevent: icalendar.cal.Event
         """
         self._check_write_support()
         calendar = icalendar.Calendar()
-        calendar.add_component(icalendar.Event.from_ical(vevent))
+        calendar.add_component(vevent)
         for _ in range(5):
             randstr = get_random_href()
             remotepath = str(self.url.resource + randstr + ".vcf")

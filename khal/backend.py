@@ -447,7 +447,9 @@ class SQLiteDb(object):
         return event_list
 
     def get_vevent_from_db(self, href, account_name, start=None, end=None):
-        """returns a VCard()
+        """returns the Event matching href, if start and end are given, a
+        specific Event from a Recursion set is returned, the Event as saved in
+        the db
         """
         sql_s = 'SELECT vevent FROM {0} WHERE href=(?)'.format(account_name)
         result = self.sql_ex(sql_s, (href, ))
