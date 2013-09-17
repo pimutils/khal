@@ -3,6 +3,7 @@ TODO
 * colored events (by icalendar)
 * ikhal: new weeks should be loaded into the walker
 * ikhal: editable events
+* detect remotely deleted events
 
 
 DONE
