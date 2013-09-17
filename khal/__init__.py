@@ -314,7 +314,7 @@ class ConfigurationParser(object):
         if ns.sync.accounts:
             for name in set(ns.sync.accounts):
                 if not name in [a.name for a in ns.accounts]:
-                    logging.warn('Uknown account %s', name)
+                    logging.warn('Unknown account %s', name)
                     ns.sync.accounts.remove(name)
             if len(ns.sync.accounts) == 0:
                 logging.error('No valid account selected')
