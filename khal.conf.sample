@@ -6,6 +6,9 @@ user: jdoe
 # if the password is not specified it will be asked for while syncing
 passwd: 2342
 resource: https://exmaple.com/davical/caldav.php/jdoe/home/
+color: dark blue  # currently only dark blue and dark green are supported
+                  # if color is not set, events will be in your default
+                  # terminal color
 
 [Account work]
 user: doe

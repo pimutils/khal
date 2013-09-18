@@ -141,3 +141,23 @@ def bstring(string):
     '\\x1b[1mtest\\x1b[0m'
     """
     return BTEXT + string + NTEXT
+
+
+def decode_color(colorstring):
+
+    if colorstring == 'dark blue':
+        return '4'
+    elif colorstring == 'dark green':
+        return '34'
+    else:
+        None
+
+
+def color_maker(colorstring):
+    number = decode_color(colorstring)
+    if number is None:
+        return lambda x: x
+
+    def color(string):
+        return '\33[38;5;' + number + 'm' + string + '\33[0m'
+    return color

@@ -29,9 +29,10 @@ import datetime
 
 class Event(object):
     def __init__(self, ical, local_tz=None, default_tz=None,
-                 start=None, end=None):
+                 start=None, end=None, color=lambda x: x):
         self.vevent = icalendar.Event.from_ical(ical)
         self.allday = True
+        self.color = color
         if start is not None:
             if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
                 self.allday = False  # TODO detect allday even if start is None
@@ -77,9 +78,9 @@ class Event(object):
 
     def compact(self, day):
         if self.allday:
-            return self._compact_allday(day)
+            return self.color(self._compact_allday(day))
         else:
-            return self._compact_datetime(day)
+            return self.color(self._compact_datetime(day))
 
     def _compact_allday(self, day):
         if 'RRULE' in self.vevent.keys():

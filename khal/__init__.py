@@ -173,6 +173,7 @@ class AccountSection(Section):
             ('auth', 'basic', None),
             ('verify', 'True', self._parse_bool_string),
             ('write_support', '', self._parse_write_support),
+            ('color', '', None)
         ]
 
     def is_collection(self):
