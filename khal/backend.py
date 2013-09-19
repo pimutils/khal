@@ -399,7 +399,7 @@ class SQLiteDb(object):
             result = result + [(href[0], account) for href in hrefs]
         return result
 
-    def get_time_range(self, start, end, account_name, color=lambda x: x):
+    def get_time_range(self, start, end, account_name, color=''):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
@@ -424,7 +424,7 @@ class SQLiteDb(object):
         return event_list
 
     def get_allday_range(self, start, end=None, account_name=None,
-                         color=lambda x: x):
+                         color=''):
         if account_name is None:
             raise Exception('need to specify an account_name')
         strstart = start.strftime('%Y%m%d')

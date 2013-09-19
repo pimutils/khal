@@ -110,7 +110,7 @@ class Display(Controller):
             all_day_events = list()
             events = list()
             for account in conf.sync.accounts:
-                color = aux.color_maker(conf.accounts[account]['color'])
+                color = conf.accounts[account]['color']
                 all_day_events += self.dbtool.get_allday_range(
                     day, account_name=account, color=color)
                 events += self.dbtool.get_time_range(start, end, account,
@@ -119,7 +119,7 @@ class Display(Controller):
                 event_column.append(event.summary)
             events.sort(key=lambda e: e.start)
             for event in events:
-                event_column.append(event.compact(day))
+                event_column.append(aux.colored(event.compact(day), event.color))
 
         calendar_column = calendar_display.vertical_month()
         rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]

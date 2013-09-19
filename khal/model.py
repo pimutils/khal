@@ -29,7 +29,7 @@ import datetime
 
 class Event(object):
     def __init__(self, ical, local_tz=None, default_tz=None,
-                 start=None, end=None, color=lambda x: x):
+                 start=None, end=None, color=None):
         self.vevent = icalendar.Event.from_ical(ical)
         self.allday = True
         self.color = color
@@ -78,9 +78,9 @@ class Event(object):
 
     def compact(self, day):
         if self.allday:
-            return self.color(self._compact_allday(day))
+            return self._compact_allday(day)
         else:
-            return self.color(self._compact_datetime(day))
+            return self._compact_datetime(day)
 
     def _compact_allday(self, day):
         if 'RRULE' in self.vevent.keys():

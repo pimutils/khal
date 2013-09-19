@@ -124,6 +124,7 @@ def construct_event(date_list, timeformat, dateformat, datetimeformat,
 RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal
 BTEXT = '\x1b[1m'  # bold
+RESET = '\33[0m'
 
 
 def rstring(string):
@@ -144,20 +145,42 @@ def bstring(string):
 
 
 def decode_color(colorstring):
-
-    if colorstring == 'dark blue':
-        return '4'
+    if colorstring == 'black':
+        return '\33[30m'
+    elif colorstring == 'dark red':
+        return '\33[31m'
     elif colorstring == 'dark green':
-        return '34'
+        return '\33[32m'
+    elif colorstring == 'brown':
+        return '\33[33m'
+    elif colorstring == 'dark blue':
+        return '\33[34m'
+    elif colorstring == 'dark magenta':
+        return '\33[35m'
+    elif colorstring == 'dark cyan':
+        return '\33[36m'
+    elif colorstring == 'white':
+        return '\33[37m'
+    elif colorstring == 'light grey':
+        return '\33[1;37m'
+    elif colorstring == 'dark grey':
+        return '\33[1;30m'
+    elif colorstring == 'light red':
+        return '\33[1;31m'
+    elif colorstring == 'light green':
+        return '\33[1;32m'
+    elif colorstring == 'yellow':
+        return '\33[1;33m'
+    elif colorstring == 'light blue':
+        return '\33[1;34m'
+    elif colorstring == 'light magenta':
+        return '\33[1;35m'
+    elif colorstring == 'light cyan':
+        return '\33[1;36m'
     else:
-        None
+        return ''
 
 
-def color_maker(colorstring):
-    number = decode_color(colorstring)
-    if number is None:
-        return lambda x: x
-
-    def color(string):
-        return '\33[38;5;' + number + 'm' + string + '\33[0m'
-    return color
+def colored(string, color):
+    color = decode_color(color)
+    return color + string + RESET

@@ -30,7 +30,24 @@ from datetime import datetime
 palette = [('header', 'white', 'black'),
            ('reveal focus', 'black', 'dark cyan', 'standout'),
            ('today_focus', 'white', 'black', 'standout'),
-           ('today', 'black', 'white', 'dark cyan')]
+           ('today', 'black', 'white', 'dark cyan'),
+           ('black', 'black', ''),
+           ('dark red', 'dark red', ''),
+           ('dark green', 'dark green', ''),
+           ('brown', 'brown', ''),
+           ('dark blue', 'dark blue', ''),
+           ('dark magenta', 'dark magenta', ''),
+           ('dark cyan', 'dark cyan', ''),
+           ('light gray', 'light gray', ''),
+           ('dark gray', 'dark gray', ''),
+           ('light red', 'light red', ''),
+           ('light green', 'light green', ''),
+           ('yellow', 'yellow', ''),
+           ('light blue', 'light blue', ''),
+           ('light magenta', 'light magenta', ''),
+           ('light cyan', 'light cyan', ''),
+           ('white', 'white', ''),
+           ]
 
 
 class Date(urwid.Text):
@@ -235,14 +252,16 @@ class EventList(urwid.WidgetWrap):
         all_day_events = list()
         events = list()
         for account in self.conf.sync.accounts:
+            color = self.conf.accounts[account]['color']
             all_day_events += self.dbtool.get_allday_range(this_date,
-                                                           account_name=account)
-            events += self.dbtool.get_time_range(start, end, account)
+                                                           account_name=account,
+                                                           color=color)
+            events += self.dbtool.get_time_range(start, end, account, color=color)
         for event in all_day_events:
-            event_column.append(Event(event, this_date=this_date, call=self.call))
+            event_column.append(urwid.AttrMap(Event(event, this_date=this_date, call=self.call), event.color, 'reveal focus'))
         events.sort(key=lambda e: e.start)
         for event in events:
-            event_column.append(Event(event, this_date=this_date, call=self.call))
+            event_column.append(urwid.AttrMap(Event(event, this_date=this_date, call=self.call), event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
         pile = urwid.Pile([date_text] + event_list)
         self._w = pile
