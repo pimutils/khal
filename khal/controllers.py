@@ -35,11 +35,39 @@ from khal import caldav
 from khal import calendar_display
 from khal.aux import bstring
 from itertools import izip_longest
+import icalendar
 
 
 class Controller(object):
     def __init__(self, conf):
         self.dbtool = backend.SQLiteDb(conf)
+
+
+class SimpleSync(Controller):
+    def __init__(self, conf, sync_account_name):
+        """
+        simple syncer to import events from .ics files
+        """
+        super(SimpleSync, self).__init__(conf)
+        sync_account = conf.accounts[sync_account_name]
+        self.syncer = caldav.HTTPSyncer(sync_account.resource,
+                                        user=sync_account.user,
+                                        passwd=sync_account.passwd,
+                                        verify=sync_account.verify,
+                                        auth=sync_account.auth)
+        self.dbtool.check_account_table(sync_account_name)
+        ics = self.syncer.get_ics()
+        cal = icalendar.Calendar.from_ical(ics)
+        for component in cal.walk():
+            if component.name in ['VEVENT']:
+                try:
+                    self.dbtool.update(component,
+                                       sync_account.name,
+                                       href=str(component['UID']),
+                                       etag='',
+                                       status=0)
+                except backend.UpdateFailed as error:
+                    logging.error(error)
 
 
 class Sync(Controller):

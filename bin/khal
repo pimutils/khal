@@ -54,7 +54,10 @@ elif conf.syncrun:
     for account_name in conf.sync.accounts:
         logging.debug('start syncing account {0}'.format(account_name))
         try:
-            controllers.Sync(conf, account_name)
+            if conf.accounts[account_name].type == 'caldav':
+                controllers.Sync(conf, account_name)
+            elif conf.accounts[account_name].type == 'http':
+                controllers.SimpleSync(conf, account_name)
         except Exception as error:
             if conf.debug:
                 raise

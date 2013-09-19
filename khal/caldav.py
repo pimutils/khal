@@ -54,6 +54,40 @@ class NoWriteSupport(Exception):
     pass
 
 
+class HTTPSyncer(object):
+    def __init__(self, resource, debug='', user='', passwd='',
+                 verify=True, auth='basic'):
+        #shutup urllib3
+        urllog = logging.getLogger('requests.packages.urllib3.connectionpool')
+        urllog.setLevel(logging.CRITICAL)
+        urllog = logging.getLogger('urllib3.connectionpool')
+        urllog.setLevel(logging.CRITICAL)
+
+        split_url = urlparse.urlparse(resource)
+        url_tuple = namedtuple('url', 'resource base path')
+        self.url = url_tuple(resource,
+                             split_url.scheme + '://' + split_url.netloc,
+                             split_url.path)
+        self.debug = debug
+        self.session = requests.session()
+        self._settings = {'verify': verify}
+        if auth == 'basic':
+            self._settings['auth'] = (user, passwd,)
+        if auth == 'digest':
+            from requests.auth import HTTPDigestAuth
+            self._settings['auth'] = HTTPDigestAuth(user, passwd)
+        self._default_headers = {"User-Agent": "khal"}
+
+    def get_ics(self):
+        headers = self._default_headers
+        response = self.session.request('GET',
+                                        self.url.resource,
+                                        headers=headers,
+                                        **self._settings)
+
+        response.raise_for_status()   # raises error on not 2XX HTTP status
+        return response.content.decode('utf-8')
+
 class Syncer(object):
     """class for interacting with a CalDAV server
 

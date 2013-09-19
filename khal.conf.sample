@@ -18,6 +18,14 @@ resource: https://blobhal.de/owncloud/remote.php/caldav/calendars/doe/work
 # or to a path to a pem cert
 verify: /home/jd/.khal/cacert.pem
 
+[Account simple]
+type: http  # setting the type to http (default is caldav) makes a simple read only syncer
+            # user and passwd MUST still be set (to anything) even if it is auth isn't needed
+resource: https://test.tld/calendars/meetings.ics
+verify: False
+user: XXX
+passwd: XXX
+
 [sqlite]
 # the default location for the db is 
 # ~/.local/share/khal/khal.db

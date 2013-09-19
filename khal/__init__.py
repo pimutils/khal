@@ -173,7 +173,8 @@ class AccountSection(Section):
             ('auth', 'basic', None),
             ('verify', 'True', self._parse_bool_string),
             ('write_support', '', self._parse_write_support),
-            ('color', '', None)
+            ('color', '', None),
+            ('type', 'caldav', None)
         ]
 
     def is_collection(self):
@@ -198,6 +199,7 @@ class DefaultSection(Section):
     def __init__(self, parser):
         Section.__init__(self, parser, 'default')
         self._schema = [
+            ('debug', False, None),
             ('local_timezone', '', self._parse_time_zone),
             ('default_timezone', '', self._parse_time_zone)
         ]
@@ -323,8 +325,9 @@ class ConfigurationParser(object):
         else:
             ns.sync.accounts = accounts
 
+
         for account in ns.accounts:
-            if account.resource[-1] != '/':
+            if account.resource[-1] != '/' and account.type == 'caldav':
                 account.resource = account.resource + '/'
 
         ns.sync.accounts = set(ns.sync.accounts)
@@ -338,6 +341,10 @@ class ConfigurationParser(object):
 
     def check_account(self, ns):
         result = True
+        if not ns.type in ['caldav', 'http']:
+            logging.error("Value %s is not allowed for in Account %s:type",
+                          ns.type, ns.name)
+            result = False
 
         if not ns.auth in ['basic', 'digest']:
             logging.error("Value %s is not allowed for in  Account %s:auth",
