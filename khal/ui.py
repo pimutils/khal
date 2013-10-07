@@ -86,87 +86,46 @@ def week_list(count=3):
 
 
 class DateColumns(urwid.Columns):
-    """clone of urwid.Columns used for the calendar
-    since this code is mostly taken from urwid, it needs to be put into an extra
-    module and put under LGPL
+    """container for one week worth of dates
+
+    focus can only move away by pressing 'TAB',
+    calls 'call' on every focus change
     """
     def __init__(self, widget_list, call=None, **kwargs):
         self.call = call
-
         super(DateColumns, self).__init__(widget_list, **kwargs)
 
     def _set_focus_position(self, position):
-        """
-        Set the widget in focus.
+        """calls 'call' before calling super()._set_focus_position"""
 
-        position -- index of child widget to be made focus
-        """
+        super(DateColumns, self)._set_focus_position(position)
 
-        try:
-            if position < 0 or position >= len(self.contents):
-                raise IndexError
-        except (TypeError, IndexError):
-            raise IndexError, "No Columns child widget at position %s" % (position,)
         # since first Column is month name, focus should only be 0 during
         # construction
         if not self.contents.focus == 0:
             self.call(self.contents[position][0].original_widget.date)
-        self.contents.focus = position
 
-    focus_position = property(urwid.Columns._get_focus_position, _set_focus_position, doc="""
+    focus_position = property(urwid.Columns._get_focus_position,
+                              _set_focus_position, doc="""
 index of child widget in focus. Raises IndexError if read when
 Columns is empty, or when set to an invalid index.
 """)
 
     def keypress(self, size, key):
-        """
-        Pass keypress to the focus column.
+        """only leave calendar area on pressing 'TAB'"""
 
-        :param size: `(maxcol,)` if :attr:`widget_list` contains flow widgets or
-            `(maxcol, maxrow)` if it contains box widgets.
-        :type size: int, int
-        """
-        if key in ['tab']:
+        old_pos = self.focus_position
+        super(DateColumns, self).keypress(size, key)
+        if key in ['up', 'down']:  # don't know why this is needed...
+            return key
+        elif key in ['tab']:
             return 'right'
-        if self.focus_position is None: return key
-
-        widths = self.column_widths(size)
-        if self.focus_position >= len(widths):
-            return key
-
-        i = self.focus_position
-        mc = widths[i]
-        w, (t, n, b) = self.contents[i]
-        if self._command_map[key] not in ('cursor up', 'cursor down',
-            'cursor page up', 'cursor page down'):
-            self.pref_col = None
-        if len(size) == 1 and b:
-            key = w.keypress((mc, self.rows(size, True)), key)
-        else:
-            key = w.keypress((mc,) + size[1:], key)
-
-        if self._command_map[key] not in ('cursor left', 'cursor right'):
-            return key
-
-
-        if self._command_map[key] == 'cursor left':
-            candidates = range(i-1, -1, -1) # count backwards to 0
-        else: # key == 'right'
-            candidates = range(i+1, len(self.contents))
-        if candidates == [] and key == 'right':
+        elif old_pos == 7 and key == 'right':
             self.focus_position = 1
             return 'down'
-        if candidates == [0] and key == 'left':
+        elif old_pos == 1 and key == 'left':
             self.focus_position = 7
             return 'up'
-
-        for j in candidates:
-            if not self.contents[j][0].selectable():
-                continue
-
-            self.focus_position = j
-            return
-        return key
 
 
 def construct_week(week, call=None):
