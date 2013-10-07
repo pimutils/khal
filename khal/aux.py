@@ -125,6 +125,24 @@ RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal
 BTEXT = '\x1b[1m'  # bold
 RESET = '\33[0m'
+COLORS = {
+    'black': '\33[30m',
+    'dark red': '\33[31m',
+    'dark green': '\33[32m',
+    'brown': '\33[33m',
+    'dark blue': '\33[34m',
+    'dark magenta': '\33[35m',
+    'dark cyan': '\33[36m',
+    'white': '\33[37m',
+    'light grey': '\33[1;37m',
+    'dark grey': '\33[1;30m',
+    'light red': '\33[1;31m',
+    'light green': '\33[1;32m',
+    'yellow': '\33[1;33m',
+    'light blue': '\33[1;34m',
+    'light magenta': '\33[1;35m',
+    'light cyan': '\33[1;36m'
+}
 
 
 def rstring(string):
@@ -144,43 +162,9 @@ def bstring(string):
     return BTEXT + string + NTEXT
 
 
-def decode_color(colorstring):
-    if colorstring == 'black':
-        return '\33[30m'
-    elif colorstring == 'dark red':
-        return '\33[31m'
-    elif colorstring == 'dark green':
-        return '\33[32m'
-    elif colorstring == 'brown':
-        return '\33[33m'
-    elif colorstring == 'dark blue':
-        return '\33[34m'
-    elif colorstring == 'dark magenta':
-        return '\33[35m'
-    elif colorstring == 'dark cyan':
-        return '\33[36m'
-    elif colorstring == 'white':
-        return '\33[37m'
-    elif colorstring == 'light grey':
-        return '\33[1;37m'
-    elif colorstring == 'dark grey':
-        return '\33[1;30m'
-    elif colorstring == 'light red':
-        return '\33[1;31m'
-    elif colorstring == 'light green':
-        return '\33[1;32m'
-    elif colorstring == 'yellow':
-        return '\33[1;33m'
-    elif colorstring == 'light blue':
-        return '\33[1;34m'
-    elif colorstring == 'light magenta':
-        return '\33[1;35m'
-    elif colorstring == 'light cyan':
-        return '\33[1;36m'
-    else:
-        return ''
-
-
-def colored(string, color):
-    color = decode_color(color)
+def colored(string, colorstring):
+    try:
+        color = COLORS[colorstring]
+    except KeyError:
+        color = ''
     return color + string + RESET
