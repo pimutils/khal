@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }}{% endblock %}
+{% block content %}        
+<section id="content" class="body">    
+<article>
+        <header> <h1 class="entry-title"><a href="{{ pagename }}"
+        rel="bookmark" title="Permalink to {{ article.title }}">{{ article.title
+        }}</a></h1>  </header>
+        <div class="entry-content">
+        {% include 'article_infos.html' %}
+        {{ article.content }}
+        </div><!-- /.entry-content -->
+
+</article>
+</section>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content_title %}{% endblock %}
+{% block content %}        
+{% if articles %}
+    {% for article in articles_page.object_list %}        
+
+        {# First item #}
+        {% if loop.first and not articles_page.has_previous() %}
+            <aside id="featured" class="body">
+                <div class="container">
+		<h1>Latest News</h1>
+                    <h2 class="entry-title"><a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a></h2> 
+                    {% include 'article_infos.html' %}{{ article.content }}{% include 'comments.html' %}
+                </div>
+                {% if loop.length == 1 %}
+                    {% include 'pagination.html' %}
+                {% endif %}
+            </aside><!-- /#featured -->
+            {% if loop.length > 1 %}
+                <section id="content" class="body">
+		<h2><a href="archives.html">More News</a></h2>
+		<span class="feeds">
+		<a class="feed" href="feeds/all.atom.xml">All News</a>
+		<a class="feed" href="feeds/Releases.atom.xml">Only Releases</a>
+		</span>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+            {% endif %}
+        {# other items #}
+        {% endif %}
+        {% if loop.last and (articles_page.has_previous() 
+           or not articles_page.has_previous() and loop.length > 1) %}
+        {% endif %}
+        {% if loop.last %}
+            </ol><!-- /#posts-list -->
+            </section><!-- /#content -->
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<h1>About khal</h1>
+{% for page in PAGES %}
+	{% if page.title == "About" %}
+		{{ page.content }}
+	{% endif %}
+{% endfor %}
+
+{% endblock content %}
