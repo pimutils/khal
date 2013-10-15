@@ -4,11 +4,17 @@
 [Account home]
 user: jdoe
 # if the password is not specified it will be asked for while syncing
+# and if pykeychain is installed passwords will be stored there
 passwd: 2342
 resource: https://exmaple.com/davical/caldav.php/jdoe/home/
-color: dark blue  # currently only dark blue and dark green are supported
-                  # if color is not set, events will be in your default
-                  # terminal color
+# supported color names are
+# 'black' 'dark red' 'dark green' 'brown' 'dark blue' 'dark magenta' 'dark
+# cyan' 'white' 'light grey' 'dark grey' 'light red' 'light green' 'yellow'
+# 'light blue' 'light magenta' 'light cyan'
+# the default ANSI colors (may not actually have the color they are named for,
+# depending on how your termial emulator is setup) if color is not set, events
+# will be in your default terminal color
+color: dark blue
 
 [Account work]
 user: doe
@@ -19,8 +25,9 @@ resource: https://blobhal.de/owncloud/remote.php/caldav/calendars/doe/work
 verify: /home/jd/.khal/cacert.pem
 
 [Account simple]
-type: http  # setting the type to http (default is caldav) makes a simple read only syncer
-            # user and passwd MUST still be set (to anything) even if it is auth isn't needed
+# setting the type to http (default is caldav) makes a simple read only syncer
+# user and passwd MUST still be set (to anything) even if it is auth isn't needed
+type: http
 resource: https://test.tld/calendars/meetings.ics
 verify: False
 user: XXX
@@ -33,9 +40,9 @@ path: /home/jd/.khal/khal.db
 
 [default]
 # all dates are shown in local time, defined by local_timezone
-local_timezone: 'Europe/Berlin'
+local_timezone: Europe/Berlin
 # if start and end datetimes are either 'floating' or the timezone information
 # is not understood, default_timezone is used
 # this is also the timezone used for new events added via khal --new
-default_timezone: 'America/New_York'
+default_timezone: America/New_York
 DEBUG: 0
