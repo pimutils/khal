@@ -31,6 +31,15 @@ import random
 
 
 def timefstr(date_list, timeformat):
+    """
+    converts a time (as a string) to a datetimeobject
+
+    the date is today
+
+    removes "used" elements of list
+
+    :returns: datetimeobject
+    """
     time_start = time.strptime(date_list[0], timeformat)
     time_start = dtime(*time_start[3:5])
     day_start = date.today()
@@ -39,22 +48,38 @@ def timefstr(date_list, timeformat):
     return dtstart
 
 
-def datetimefstr(date_list, datetimeformat):
-    dtstring = ' '.join(date_list[0:2])
-    dtstart = time.strptime(dtstring, datetimeformat)
-    if dtstart[0] == 1900:
-        dtstart = datetime(date.today().timetuple()[0],
-                           *dtstart[1:5])
-    date_list.pop(0)
-    date_list.pop(0)
-    return dtstart
+def datetimefstr(date_list, datetimeformat, longdatetimeformat):
+    """
+    converts a datetime (as one or several string elements of a list) to
+    a datetimeobject
 
+    if no year is given, the current year is used
 
-def datefstr(date_list, dateformat):
-    dtstart = datetime.strptime(date_list[0], dateformat)
-    if dtstart.year == 1900:
-        dtstart = datetime(date.today().year, *dtstart.timetuple()[1:5])
-    date_list.pop(0)
+    removes "used" elements of list
+
+    :returns: datetimeobject
+    """
+    try:
+        # including year
+        parts = longdatetimeformat.count(' ') + 1
+        dtstring = ' '.join(date_list[0:parts])
+        dtstart = datetime.strptime(dtstring, longdatetimeformat)
+        for _ in range(parts):
+            date_list.pop(0)
+    except ValueError:
+        # without year
+        parts = datetimeformat.count(' ') + 1
+        dtstring = ' '.join(date_list[0:parts])
+        dtstart = datetime.strptime(dtstring, datetimeformat)
+        if dtstart.timetuple()[0] == 1900:
+            dtstart = datetime(date.today().timetuple()[0],
+                               *dtstart.timetuple()[1:5])
+        # if start date lies in the past use next year
+        #if dtstart < datetime.today():
+            #dtstart = datetime(dtstart.timetuple()[0] + 1,
+                               #*dtstart.timetuple()[1:6])
+        for _ in range(parts):
+            date_list.pop(0)
     return dtstart
 
 
@@ -65,34 +90,89 @@ def generate_random_uid():
     return ''.join([random.choice(choice) for _ in range(36)])
 
 
-def construct_event(date_list, timeformat, dateformat, datetimeformat,
-                    defaulttz, defaulttimelen=60, defaultdatelen=1):
+def construct_event(date_list, timeformat, dateformat, longdateformat,
+                    datetimeformat, longdatetimeformat, defaulttz,
+                    defaulttimelen=60, defaultdatelen=1):
     """takes a list of strings and constructs a vevent from it,
-    see tests for examples"""
+
+    can be either of this:
+        * datetime datetime description
+            start and end datetime specified, if no year is given, this year
+            is used, if the second datetime has no year, the same year as for
+            the first datetime object will be used, unless that would make
+            the event end before it begins, in which case the next year is
+            used
+        * datetime time description
+            end date will be same as start date, unless that would make the
+            event end before it has started, then the next day is used as
+            end date
+        * datetime description
+            event will last for defaulttime
+        * time time description
+            event starting today at the first time and ending today at the
+            second time, unless that would make the event end before it has
+            started, then the next day is used as end date
+        * time description
+            event starting today at time, lasting for the default length
+        * date date description
+            all day event starting on the first and ending on the last event
+        * date description
+            all day event starting at given date and lasting for default length
+
+    datetime should match datetimeformat or longdatetimeformat
+    time should match timeformat
+
+    where description is the unused part of the list
+    see tests for examples
+
+    """
+
+    today = datetime.today()
+
     all_day = False
+
+    # looking for start datetime
     try:
-        dtstart = timefstr(date_list, timeformat)
+        # first two elements are a date and a time
+        dtstart = datetimefstr(date_list, datetimeformat, longdatetimeformat)
     except ValueError:
         try:
-            dtstart = datetimefstr(date_list, datetimeformat)
+            # first element is a time
+            dtstart = timefstr(date_list, timeformat)
         except ValueError:
             try:
-                dtstart = datefstr(date_list, dateformat)
+                # first element is a date (and since second isn't a time this
+                # is an all-day-event
+                dtstart = datetimefstr(date_list, dateformat, longdateformat)
                 all_day = True
             except ValueError:
                 raise
+
+    # now looking for the end
     if all_day:
         try:
-            dtend = datefstr(date_list, dateformat)
+            # second element must be a date, too
+            dtend = datetimefstr(date_list, dateformat, longdateformat)
             dtend = dtend + timedelta(days=1)
         except ValueError:
+            # if it isn't we expect it to be the summary and use defaultdatelen
+            # as event length
             dtend = dtstart + timedelta(days=defaultdatelen)
+        # test if dtend's year is this year, but dtstart's year is not
+        if dtend.year == today.year and dtstart.year != today.year:
+            dtend = datetime(dtstart.year, *dtend.timetuple()[1:6])
+
+        if dtend < dtstart:
+            dtend = datetime(dtend.year + 1, *dtend.timetuple()[1:6])
+
     else:
         try:
-            dtend = timefstr(date_list, timeformat)
+            # next element datetime
+            dtend = datetimefstr(date_list, datetimeformat, longdateformat)
         except ValueError:
             try:
-                dtend = datetimefstr(date_list, datetimeformat)
+                # next element time only
+                dtend = timefstr(date_list, timeformat)
             except ValueError:
                 dtend = dtstart + timedelta(minutes=defaulttimelen)
 
@@ -101,6 +181,7 @@ def construct_event(date_list, timeformat, dateformat, datetimeformat,
                          dtend.timetuple()[3:5])
     if dtend < dtstart:
         dtend = dtend + timedelta(days=1)
+
     if all_day:
         dtstart = dtstart.date()
         dtend = dtend.date()
