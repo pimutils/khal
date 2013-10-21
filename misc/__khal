@@ -1,0 +1,38 @@
+#compdef khal
+#
+local opts actions config
+
+_accounts() {
+	local accounts
+	accounts=( ${${(f)"$(command khal --list-accounts 2> /dev/null)"}/[$'\n']##/} )
+	compadd "$a" ${(kv)=accounts}
+}
+
+actions=(
+	--help -h
+	--version -v
+	--sync
+	-i --import
+	--new
+)
+
+config=(
+	-a --acount
+	--config -c
+	--debug
+)
+
+opts=(
+	"($actions)"{--import,-i}'[import icalendar from FILE or STDIN]'
+	"($actions)"--sync'[sync with remote servers]'
+	"($actions $config)"{--help,-h}'[show help and exit]'
+	"($actions $config)"{--version,-v}'[show version number and exit]'
+	"($actions $config)"--new'[add a new event]'
+	"(-a)"-a'[specify account]:account name:_accounts'
+	"(-c --config --help)"{--config,-c}'[an alternate configuration file]:config file:_files'
+	)
+
+
+_arguments $opts[@]
+
+# vim: ft=zsh
