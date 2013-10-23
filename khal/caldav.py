@@ -35,7 +35,11 @@ import icalendar
 
 
 def get_random_href():
-    """returns a random href"""
+    """returns a random href
+
+    :returns: a random href
+    :rtype: str
+    """
     import random
     tmp_list = list()
     for _ in xrange(3):
@@ -55,6 +59,10 @@ class NoWriteSupport(Exception):
 
 
 class HTTPSyncer(object):
+    """class for getting an ics file from an http(s) url
+
+    mostly a wrapper around requests.get, being instantiated the same way
+    as (CalDAV)Syncer"""
     def __init__(self, resource, debug='', user='', passwd='',
                  verify=True, auth='basic'):
         #shutup urllib3
@@ -88,6 +96,7 @@ class HTTPSyncer(object):
         response.raise_for_status()   # raises error on not 2XX HTTP status
         return response.content.decode('utf-8')
 
+
 class Syncer(object):
     """class for interacting with a CalDAV server
 
@@ -98,16 +107,35 @@ class Syncer(object):
     [1] http://docs.python-requests.org/
     [2] http://docs.python-requests.org/en/latest/user/advanced/
 
-    raises:
-        requests.exceptions.SSLError
-        requests.exceptions.ConnectionError
-        more requests.exceptions depending on the actual error
-        Exception (shame on me)
+    :param resource: the remote CalDAV resource
+    :type resource: str
+    :param debug: enable debugging
+    :type debug: bool
+    :param user: user name for accessing the CalDAV resource
+    :type user: str
+    :param passwd: password for accessing the CalDAV resource
+    :type passwd: str
+    :param verify: should a https connection be verifiey or not
+    :type param: bool
+    :param write_support: should write support be enabled or not, if set
+                          to false, Syncer will raise an NoWriteSupport
+                          Exception when trying to upload a new event
+    :type write_support: bool
+    :param auth: which http authentication is used, supported are 'basic'
+                 and 'digest'
+    :type param: str
+
+    :raises: requests.exceptions.SSLError
+    :raises: requests.exceptions.ConnectionError
+    :raises: more requests.exceptions depending on the actual error
+    :raises: Exception (shame on me)
 
     """
 
     def __init__(self, resource, debug='', user='', passwd='',
                  verify=True, write_support=False, auth='basic'):
+        """
+        """
         #shutup urllib3
         urllog = logging.getLogger('requests.packages.urllib3.connectionpool')
         urllog.setLevel(logging.CRITICAL)
@@ -143,21 +171,36 @@ class Syncer(object):
 
     @property
     def verify(self):
-        """gets verify from settings dict"""
+        """gets verify from settings dict
+
+        :returns: True or False
+        :rtype: bool
+        """
         return self._settings['verify']
 
     @verify.setter
     def verify(self, verify):
-        """set verify"""
+        """set verify
+
+        :param verify: True or False
+        :type verify: bool
+        """
         self._settings['verify'] = verify
 
     @property
     def headers(self):
-        """returns the headers"""
+        """returns the default headers for all CalDAV requests
+
+        :returns: headers
+        :rtype: dict
+        """
         return dict(self._default_headers)
 
     def _check_write_support(self):
-        """checks if user really wants his data destroyed"""
+        """checks if user really wants his data destroyed
+
+        :raises: NoWriteSupport
+        """
         if not self.write_support:
             raise NoWriteSupport
 
@@ -165,8 +208,12 @@ class Syncer(object):
         """
         getting (href, etag) list
 
-        type start: datetime.datetime
-        type end: datetime.datetime
+        :param start: start date
+        :type start: datetime.datetime
+        :param end: end date
+        :type end: datetime.datetime
+        :returns: list of (href, etags) tuples
+        :rtype: list(tuple(str, str))
         """
         hel = list()
         if start is None:
@@ -205,6 +252,8 @@ class Syncer(object):
 
     def get_vevents(self, hrefs):
         """
+        gets events by hrefs
+
         :param hrefs: hrefs to fetch
         :type hrefs: list
         :returns: list of tuples(vevent, href, etag)
@@ -241,8 +290,12 @@ class Syncer(object):
 
     def upload(self, vevent):
         """
-        :param vevent: vevent
+        uploads a new event to the server
+
+        :param vevent: the event to upload
         :type vevent: icalendar.cal.Event
+        :returns: new url of the event and its etag
+        :rtype: tuple(str, str)
         """
         self._check_write_support()
         calendar = icalendar.Calendar()
