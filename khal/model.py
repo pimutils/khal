@@ -87,7 +87,21 @@ class Event(object):
             recurstr = u' ⟳'
         else:
             recurstr = ''
-        return self.summary + recurstr
+        if self.start < day and self.end > day + datetime.timedelta(days=1):
+            # event started in the past and goes on longer than today:
+            rangestr = u'↔ '
+            pass
+        elif self.start < day:
+            # event started in past
+            rangestr = u'⇥ '
+            pass
+
+        elif self.end > day + datetime.timedelta(days=1):
+            # event goes on longer than today
+            rangestr = u'↦ '
+        else:
+            rangestr = ''
+        return rangestr + self.summary + recurstr
 
     def _compact_datetime(self, day):
         """compact description of this event
