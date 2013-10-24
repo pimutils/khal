@@ -25,8 +25,11 @@
 syncs the remote database to the local db
 """
 
-import logging
 import datetime
+from itertools import izip_longest
+import logging
+
+import icalendar
 import pytz
 
 from khal import aux
@@ -34,8 +37,6 @@ from khal import backend
 from khal import caldav
 from khal import calendar_display
 from khal.aux import bstring
-from itertools import izip_longest
-import icalendar
 
 
 class Controller(object):
@@ -150,8 +151,13 @@ class Display(Controller):
                 event_column.append(aux.colored(event.compact(day), event.color))
 
         calendar_column = calendar_display.vertical_month()
+        missing = len(event_column) - len(calendar_column)
+
+        if missing > 0:
+            calendar_column = calendar_column + missing * [25 * ' ']
+
         rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
-        print '\n'.join(rows).encode('utf-8')
+        print('\n'.join(rows).encode('utf-8'))
 
 
 class NewFromString(Controller):
