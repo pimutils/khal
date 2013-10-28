@@ -45,4 +45,15 @@ local_timezone: Europe/Berlin
 # is not understood, default_timezone is used
 # this is also the timezone used for new events added via khal --new
 default_timezone: America/New_York
+
+# these formats are used for displaying and entering date and times
+# the long version should contain the current year
+# use the standard format codes for strftime,
+# see http:// for examples  TODO include link to python site when up
+timeformat: %H:%M
+dateformat: %d.%m.
+longdateformat: %d.%m.%Y
+datetimeformat: %d.%m. %H:%M
+longdatetimeformat: %d.%m.%Y %H:%M
+
 DEBUG: 0

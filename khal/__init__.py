@@ -125,7 +125,15 @@ class Section(object):
                     filter_ = lambda x: x
                 else:
                     reader = Section.READERS[type(default)]
-                self._parsed[option] = filter_(reader(self._parser, section, option))
+                try:  # TODO ugly, there probably is a much better way
+                    self._parsed[option] = filter_(reader(self._parser,
+                                                          section,
+                                                          option))
+                except ConfigParser.InterpolationSyntaxError:
+                    self._parsed[option] = filter_(reader(self._parser,
+                                                          section,
+                                                          option,
+                                                          raw=True))
 
                 # Remove option once handled (see the check function).
                 self._parser.remove_option(section, option)
@@ -201,7 +209,12 @@ class DefaultSection(Section):
         self._schema = [
             ('debug', False, None),
             ('local_timezone', '', self._parse_time_zone),
-            ('default_timezone', '', self._parse_time_zone)
+            ('default_timezone', '', self._parse_time_zone),
+            ('timeformat', '', None),
+            ('dateformat', '', None),
+            ('longdateformat', '', None),
+            ('datetimeformat', '', None),
+            ('longdatetimeformat', '', None)
         ]
 
 

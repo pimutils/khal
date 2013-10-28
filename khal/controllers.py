@@ -158,17 +158,12 @@ class NewFromString(Controller):
     def __init__(self, conf):
         super(NewFromString, self).__init__(conf)
         date_list = conf.new
-        timeformat = '%H:%M'
-        dateformat = '%d.%m.'
-        longdateformat = '%d.%m.%Y'
-        datetimeformat = '%d.%m. %H:%M'
-        longdatetimeformat = '%d.%m.%Y %H:%M'
         event = aux.construct_event(date_list,
-                                    timeformat,
-                                    dateformat,
-                                    longdateformat,
-                                    datetimeformat,
-                                    longdatetimeformat,
+                                    conf.default.timeformat,
+                                    conf.default.dateformat,
+                                    conf.default.longdateformat,
+                                    conf.default.datetimeformat,
+                                    conf.default.longdatetimeformat,
                                     conf.default.local_timezone)
         self.dbtool.update(event, conf.sync.accounts.pop(), status=backend.NEW)
 

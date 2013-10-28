@@ -206,7 +206,7 @@ class EventList(urwid.WidgetWrap):
         start = datetime.combine(this_date, time.min)
         end = datetime.combine(this_date, time.max)
 
-        date_text = urwid.Text(this_date.strftime('%d.%m.%Y'))
+        date_text = urwid.Text(this_date.strftime(self.conf.default.longdateformat))
         event_column = list()
         all_day_events = list()
         events = list()

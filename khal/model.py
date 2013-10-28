@@ -76,11 +76,11 @@ class Event(object):
     def recur(self):
         return 'RRULE' in self.vevent.keys()
 
-    def compact(self, day):
+    def compact(self, day, timeformat='%H:%M'):
         if self.allday:
             return self._compact_allday(day)
         else:
-            return self._compact_datetime(day)
+            return self._compact_datetime(day, timeformat)
 
     def _compact_allday(self, day):
         if 'RRULE' in self.vevent.keys():
@@ -103,7 +103,7 @@ class Event(object):
             rangestr = ''
         return rangestr + self.summary + recurstr
 
-    def _compact_datetime(self, day):
+    def _compact_datetime(self, day, timeformat='%M:%H'):
         """compact description of this event
 
         TODO: explain day param
@@ -111,7 +111,7 @@ class Event(object):
         :param day:
         :type day: datetime.date
 
-        :return: compact decsription of Event
+        :return: compact description of Event
         :rtype: unicode()
         """
         start = datetime.datetime.combine(day, datetime.time.min)
@@ -127,11 +127,11 @@ class Event(object):
             startstr = u'→ '
             tostr = ''
         else:
-            startstr = self.start.strftime('%H:%M')
+            startstr = self.start.strftime(timeformat)
         if self.end > local_end:
             endstr = u' → '
             tostr = ''
         else:
-            endstr = self.end.strftime('%H:%M')
+            endstr = self.end.strftime(timeformat)
 
         return startstr + tostr + endstr + ': ' + self.summary + recurstr
