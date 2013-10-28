@@ -224,8 +224,10 @@ class ConfigurationParser(object):
         # Build parsers and set common options.
         self._check_accounts = check_accounts
         self._conf_parser = ConfigParser.SafeConfigParser()
-        self._arg_parser = argparse.ArgumentParser(
-            description=desc, version=__version__)
+        self._arg_parser = argparse.ArgumentParser(description=desc)
+
+        self._arg_parser.add_argument(
+            "-v", "--version", action='version', version=__version__)
         self._arg_parser.add_argument(
             "-c", "--config", action="store", dest="filename",
             default=self._get_default_configuration_file(), metavar="FILE",
@@ -275,8 +277,8 @@ class ConfigurationParser(object):
                 return None
             else:
                 logging.debug('Using configuration from %s', args.filename)
-        except ConfigParser.Error, e:
-            logging.error("Could not parse %s: %s", args.filename, e)
+        except ConfigParser.Error as error:
+            logging.error("Could not parse %s: %s", args.filename, error)
             return None
 
         conf = self._read_configuration(args)
@@ -447,7 +449,7 @@ class ConfigurationParser(object):
             if not parser is None:
                 values = parser.parse(section)
                 if parser.is_collection():
-                    if not items.has_key(parser.group):
+                    if parser.group not in items:
                         items[parser.group] = []
                     items[parser.group].append(values)
                 else:
