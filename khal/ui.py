@@ -248,4 +248,5 @@ def interactive(conf=None, dbtool=None):
     weeks = calendar_walker(call=events.update)
     columns = urwid.Columns([(25, weeks), events, eventviewer], dividechars=2)
     fill = urwid.Filler(columns)
+    events.update(date.today())  # update events column to show today's events
     urwid.MainLoop(fill, palette=palette).run()

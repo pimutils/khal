@@ -3,11 +3,11 @@ TODO
 * ikhal: new weeks should be loaded into the walker
 * ikhal: editable events
 * detect remotely deleted events
-* while ikhal shows today focused, today's events are not shown
 
 
 DONE
 ====
+* while ikhal shows today focused, today's events are not shown
 * events should be sorted
 * khal should show tomorrows events, too
 * ikhal should start with today focused
