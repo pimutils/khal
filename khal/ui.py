@@ -227,17 +227,42 @@ class EventList(urwid.WidgetWrap):
 
 
 class EventViewer(urwid.WidgetWrap):
-    def __init__(self, conf=None, dbtool=None):
+    """showing events
+
+    3rd column in ikhal
+    """
+    def __init__(self, conf, dbtool):
         self.conf = conf
         self.dbtool = dbtool
         pile = urwid.Pile([])
         urwid.WidgetWrap.__init__(self, pile)
 
     def update(self, event):
-
         lines = []
-        for key in event.vevent:
-            lines.append(urwid.Text(key + ': ' + str(event.vevent[key])))
+        lines.append(urwid.Text(event.vevent['SUMMARY']))
+        if event.allday:
+            startstr = event.start.strftime(self.conf.default.dateformat)
+            if event.start == event.end:
+                lines.append(urwid.Text('On: ' + startstr))
+            else:
+                endstr = event.end.strftime(self.conf.default.dateformat)
+                lines.append(urwid.Text('From: ' + startstr + ' to: ' + endstr))
+
+        else:
+            startstr= event.start.strftime(self.conf.default.dateformat + ' ' +
+                                           self.conf.default.timeformat)
+            if event.start.date == event.end.date:
+                endstr = event.end.strftime(self.conf.default.timeformat)
+            else:
+                endstr = event.end.strftime(self.conf.default.dateformat + ' ' +
+                                            self.conf.default.timeformat)
+                lines.append(urwid.Text('From: ' + startstr + ' To: ' + endstr))
+
+        for key, desc in [('DESCRIPTION', 'Desc'), ('LOCATION', 'Loc')]:
+            try:
+                lines.append(urwid.Text(desc + ': ' + str(event.vevent[key].encode('utf-8'))))
+            except KeyError:
+                pass
         pile = urwid.Pile(lines)
         self._w = pile
 
