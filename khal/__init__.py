@@ -23,20 +23,26 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import argparse
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 import getpass
-import re
 import logging
 import os
-import pytz
+import re
 import signal
 import sys
+from netrc import netrc
+try:
+    from urlparse import urlsplit
+except ImportError:
+    from urllib.parse import urlsplit
+
+import pytz
 import xdg.BaseDirectory
 
 from khal import version
-
-from netrc import netrc
-from urlparse import urlsplit
 
 __productname__ = 'khal'
 __version__ = version.__version__
@@ -420,7 +426,7 @@ class ConfigurationParser(object):
         """
         logging.debug(intro)
 
-        for name, value in sorted(dict.copy(conf).iteritems()):
+        for name, value in sorted(dict.copy(conf).items()):
             if type(value) is list:
                 for o in value:
                     self.dump(o, '\t'*tab + name + ':', tab + 1)
@@ -434,7 +440,7 @@ class ConfigurationParser(object):
 
     def _read_command_line(self):
         items = {}
-        for key, value in vars(self._arg_parser.parse_args()).iteritems():
+        for key, value in vars(self._arg_parser.parse_args()).items():
             if '__' in key:
                 section, option = key.split('__')
                 items.setdefault(section, Namespace({}))[option] = value

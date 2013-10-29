@@ -23,9 +23,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-import icalendar
 import datetime
 
+import icalendar
 
 class Event(object):
     def __init__(self, ical, local_tz=None, default_tz=None,

@@ -21,14 +21,15 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-import time
+
 from datetime import date, datetime, timedelta
 from datetime import time as dtime
-import pytz
-import icalendar
-import string
 import random
+import string
+import time
 
+import icalendar
+import pytz
 
 def timefstr(date_list, timeformat):
     """

@@ -26,7 +26,10 @@ syncs the remote database to the local db
 """
 
 import datetime
-from itertools import izip_longest
+try:
+    from itertools import izip_longest
+except ImportError:
+    from itertools import zip_longest as izip_longest
 import logging
 
 import icalendar
@@ -157,7 +160,7 @@ class Display(Controller):
             calendar_column = calendar_column + missing * [25 * ' ']
 
         rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
-        print('\n'.join(rows).encode('utf-8'))
+        print('\n'.join(rows))
 
 
 class NewFromString(Controller):

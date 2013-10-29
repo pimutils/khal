@@ -26,12 +26,16 @@ use the Syncer class for syncing CalDAV resources
 """
 
 from collections import namedtuple
-from lxml import etree
 import datetime
-import requests
-import urlparse
+try:
+    import urlparse
+except ImportError:
+    from urllib import parse as urlparse
 import logging
+
 import icalendar
+from lxml import etree
+import requests
 
 
 def get_random_href():

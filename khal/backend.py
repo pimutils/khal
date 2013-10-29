@@ -64,23 +64,20 @@ $ACCOUNTNAME_dt: #other events, same as above
 
 from __future__ import print_function
 
-try:
-    import calendar
-    import datetime
-    import icalendar
-    import xdg.BaseDirectory
-    import sys
-    import sqlite3
-    import logging
-    import pytz
-    import time
-    from os import path
-    import dateutil.rrule
-    from model import Event
+import calendar
+import datetime
+import logging
+from os import path
+import sys
+import sqlite3
+import time
 
-except ImportError, error:
-    print(error)
-    sys.exit(1)
+import dateutil.rrule
+import icalendar
+import pytz
+import xdg.BaseDirectory
+
+from .model import Event
 
 OK = 0  # not touched since last sync
 NEW = 1  # new card, needs to be created on the server
