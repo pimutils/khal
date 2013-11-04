@@ -306,7 +306,7 @@ class Syncer(object):
         calendar.add_component(vevent)
         for _ in range(5):
             randstr = get_random_href()
-            remotepath = str(self.url.resource + randstr + ".vcf")
+            remotepath = str(self.url.resource + randstr + ".ics")
             headers = self.headers
             headers['content-type'] = 'text/calendar'
             headers['If-None-Match'] = '*'
