@@ -292,6 +292,45 @@ class Syncer(object):
             vhe.append((vevent, href, etag))
         return vhe
 
+    def test_deleted(self, href):
+        """
+        test if event is still on server
+
+        :param href: href to test
+        :type hrefs: str
+        :returns: True or False
+        """
+        empty_body = """<?xml version="1.0" encoding="utf-8" ?>
+<C:calendar-multiget xmlns:D="DAV:"
+                     xmlns:C="urn:ietf:params:xml:ns:caldav">
+  <D:prop>
+    <D:getetag/>
+    <C:calendar-data/>
+  </D:prop>
+{hrefs}
+</C:calendar-multiget>"""
+        href_xml = ["<D:href>{href}</D:href>".format(href=href) for href in [href, ]]
+        href_xml = '\n'.join(href_xml)
+        body = empty_body.format(hrefs=href_xml)
+
+        response = self.session.request('REPORT',
+                                        self.url.resource,
+                                        data=body,
+                                        headers=self.headers,
+                                        **self._settings)
+        response.raise_for_status()
+        root = etree.XML(response.text.encode(response.encoding))
+        vhe = list()
+        for element in root.iter('{DAV:}response'):
+            href = element.find('{DAV:}href').text
+            vevent = element.find('{DAV:}propstat').find('{DAV:}prop').find('{urn:ietf:params:xml:ns:caldav}calendar-data').text
+            etag = element.find('{DAV:}propstat').find('{DAV:}prop').find('{DAV:}getetag').text
+            vhe.append((vevent, href, etag))
+        if vhe == list():
+            return True
+        else:
+            return False
+
     def upload(self, vevent):
         """
         uploads a new event to the server

@@ -366,15 +366,16 @@ class SQLiteDb(object):
         etag = self.sql_ex(sql_s, (href,))[0][0]
         return etag
 
-    def delete_vcard_from_db(self, href, account_name):
+    def delete(self, href, account_name):
         """
-        removes the whole vcard,
+        removes the event from the db,
         returns nothing
         """
         stuple = (href, )
         logging.debug("locally deleting " + str(href))
-        self.sql_ex('DELETE FROM {0} WHERE href=(?)'.format(account_name),
-                    stuple)
+        for dbname in [account_name + '_d', account_name + '_dt', account_name]:
+            sql_s = 'DELETE FROM {0} WHERE href = ? ;'.format(dbname)
+            self.sql_ex(sql_s, (href ,))
 
     def get_all_href_from_db(self, accounts):
         """returns a list with all hrefs
@@ -445,6 +446,40 @@ class SQLiteDb(object):
                                              color=color)
             event_list.append(vevent)
         return event_list
+
+    def hrefs_by_time_range_datetime(self, start, end, account_name, color=''):
+        """returns
+        :type start: datetime.datetime
+        :type end: datetime.datetime
+        """
+        start = time.mktime(start.timetuple())
+        end = time.mktime(end.timetuple())
+        sql_s = ('SELECT href FROM {0} WHERE '
+                 'dtstart >= ? AND dtstart <= ? OR '
+                 'dtend >= ? AND dtend <= ? OR '
+                 'dtstart <= ? AND dtend >= ?').format(account_name + '_dt')
+        stuple = (start, end, start, end, start, end)
+        result = self.sql_ex(sql_s, stuple)
+        return [one[0] for one in result]
+
+    def hrefs_by_time_range_date(self, start, end=None, account_name=None):
+        if account_name is None:
+            raise Exception('need to specify an account_name')
+        strstart = start.strftime('%Y%m%d')
+        if end is None:
+            end = start + datetime.timedelta(days=1)
+        strend = end.strftime('%Y%m%d')
+        sql_s = ('SELECT href FROM {0} WHERE '
+                 'dtstart >= ? AND dtstart < ? OR '
+                 'dtend > ? AND dtend <= ? OR '
+                 'dtstart <= ? AND dtend > ? ').format(account_name + '_d')
+        stuple = (strstart, strend, strstart, strend, strstart, strend)
+        result = self.sql_ex(sql_s, stuple)
+        return [one[0] for one in result]
+
+    def hrefs_by_time_range(self, start, end, account_name):
+        return list(set(self.hrefs_by_time_range_date(start, end, account_name) +
+        self.hrefs_by_time_range_datetime(start, end, account_name)))
 
     def get_vevent_from_db(self, href, account_name, start=None, end=None,
                            color=lambda x: x):

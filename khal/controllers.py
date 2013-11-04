@@ -92,7 +92,8 @@ class Sync(Controller):
         logging.debug('syncing events in the next 365 days')
         start = datetime.datetime.utcnow() - datetime.timedelta(days=30)
         start_utc = conf.default.local_timezone.localize(start).astimezone(pytz.UTC)
-        href_etag_list = self.syncer.get_hel(start=start_utc)
+        end_utc = start_utc + datetime.timedelta(days=365)
+        href_etag_list = self.syncer.get_hel(start=start_utc, end=end_utc)
         need_update = self.dbtool.needs_update(sync_account_name,
                                                href_etag_list)
         logging.debug('{number} event(s) need(s) an '
@@ -124,6 +125,19 @@ class Sync(Controller):
             logging.info('failed to upload a new event, '
                          'you need to enable write support to use this feature'
                          ', see the documentation.')
+
+        # looking for events deleted on the server but still in the local db
+        locale_hrefs = self.dbtool.hrefs_by_time_range(start_utc,
+                                                       end_utc,
+                                                       sync_account.name)
+        remote_hrefs = [href for href, _ in href_etag_list]
+        may_be_deleted = list(set(locale_hrefs) - set(remote_hrefs))
+        if may_be_deleted != list():
+            for href in may_be_deleted:
+                if self.syncer.test_deleted(href):
+                    self.dbtool.delete(href, sync_account.name)
+
+
 
 
 class Display(Controller):
