@@ -62,8 +62,10 @@ class SimpleSync(Controller):
         self.dbtool.check_account_table(sync_account_name)
         ics = self.syncer.get_ics()
         cal = icalendar.Calendar.from_ical(ics)
+        remote_uids = list()
         for component in cal.walk():
             if component.name in ['VEVENT']:
+                remote_uids.append(str(component['UID']))
                 try:
                     self.dbtool.update(component,
                                        sync_account.name,
@@ -72,6 +74,14 @@ class SimpleSync(Controller):
                                        status=0)
                 except backend.UpdateFailed as error:
                     logging.error(error)
+        # because SimpleSync Events have no href their uid is safed in column href
+        locale_uids = [uid for uid, account in self.dbtool.get_all_href_from_db([sync_account.name])]
+        remote_deleted = list(set(locale_uids) - set(remote_uids))
+        if remote_deleted != list():
+            for uid in remote_deleted:
+                logging.debug('removing remotely deleted event {0} from '
+                              'the local db'.format(uid))
+                self.dbtool.delete(uid, sync_account.name)
 
 
 class Sync(Controller):
@@ -135,6 +145,8 @@ class Sync(Controller):
         if may_be_deleted != list():
             for href in may_be_deleted:
                 if self.syncer.test_deleted(href):
+                    logging.debug('removing remotely deleted event {0} from '
+                                  'the local db'.format(href))
                     self.dbtool.delete(href, sync_account.name)
 
 

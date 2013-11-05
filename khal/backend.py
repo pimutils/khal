@@ -382,8 +382,7 @@ class SQLiteDb(object):
         """
         result = list()
         for account in accounts:
-            hrefs = self.sql_ex('SELECT href FROM {0} ORDER BY fname '
-                                'COLLATE NOCASE'.format(account))
+            hrefs = self.sql_ex('SELECT href FROM {0}'.format(account))
             result = result + [(href[0], account) for href in hrefs]
         return result
 
