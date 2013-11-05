@@ -128,6 +128,8 @@ Columns is empty, or when set to an invalid index.
         elif old_pos == 1 and key == 'left':
             self.focus_position = 7
             return 'up'
+        else:
+            return key
 
 
 def construct_week(week, call=None):
@@ -268,6 +270,10 @@ class EventViewer(urwid.WidgetWrap):
         pile = urwid.Pile(lines)
         self._w = pile
 
+def exit(key):
+    if key in ('q', 'Q', 'esc'):
+        raise urwid.ExitMainLoop()
+
 
 def interactive(conf=None, dbtool=None):
     eventviewer = EventViewer(conf=conf, dbtool=dbtool)
@@ -276,4 +282,4 @@ def interactive(conf=None, dbtool=None):
     columns = urwid.Columns([(25, weeks), events, eventviewer], dividechars=2)
     fill = urwid.Filler(columns)
     events.update(date.today())  # update events column to show today's events
-    urwid.MainLoop(fill, palette=palette).run()
+    urwid.MainLoop(fill, palette=palette, unhandled_input=exit).run()
