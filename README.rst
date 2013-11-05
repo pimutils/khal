@@ -22,10 +22,10 @@ Features
 - simple recurring events support (no exceptions just yet)
 - no proper timezone support yet
 - is pretty Euro centric, weeks start on Mondays, khal uses a 24 hour clock and
-  the default time zone is 'Europe/Berlin' (hopefully all of this will be
-  configurable soon)
-- khal should run on all major operating systems [1]_ (has been tested on FreeBSD and
-  Debian GNU/Linux)
+  the default time zone is 'Europe/Berlin' (time and date display is actually
+  configurable now, the rest is coming later)
+- khal should run on all major
+  operating systems [1]_ (has been tested on FreeBSD and Debian GNU/Linux)
 
 
 .. [1] except for Microsoft Windows
@@ -77,8 +77,38 @@ adds a new event on 25th of October lasting from 16:00 to 18:00
 
 adds a new all day event on 26.07.
 
-khal --new should be able to understand quite a range of dates, have a look at
-the tests for more examples.
+In a more abstract form:
+
+  khal --new startdatetime [enddatetime] description
+
+where stard- and enddatetime are either datetimes or times in the format defined
+in the config file. Start- and enddatetime can be one of the following:
+
+  * datetime datetime
+      start and end datetime specified, if no year is given, this year
+      is used, if the second datetime has no year, the same year as for
+      the first datetime object will be used, unless that would make
+      the event end before it begins, in which case the next year is
+      used
+  * datetime time
+      end date will be same as start date, unless that would make the
+      event end before it has started, then the next day is used as
+      end date
+  * datetime
+      event will last for defaulttime
+  * time time
+      event starting today at the first time and ending today at the
+      second time, unless that would make the event end before it has
+      started, then the next day is used as end date
+  * time
+      event starting today at time, lasting for the default length
+  * date date
+      all day event starting on the first and ending on the last event
+  * date
+      all day event starting at given date and lasting for default length
+
+At the moment default length is either 1h or 1 day (should be configurable soon,
+too).
 
 
 Write Support
