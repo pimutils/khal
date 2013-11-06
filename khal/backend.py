@@ -83,6 +83,7 @@ OK = 0  # not touched since last sync
 NEW = 1  # new card, needs to be created on the server
 CHANGED = 2  # properties edited or added (news to be pushed to server)
 DELETED = 9  # marked for deletion (needs to be deleted on server)
+NEWDELETE = 11  # card should be deleted on exit (not yet on the server)
 
 
 class UpdateFailed(Exception):
@@ -486,14 +487,17 @@ class SQLiteDb(object):
         specific Event from a Recursion set is returned, the Event as saved in
         the db
         """
-        sql_s = 'SELECT vevent FROM {0} WHERE href=(?)'.format(account_name)
+        sql_s = 'SELECT vevent, status FROM {0} WHERE href=(?)'.format(account_name)
         result = self.sql_ex(sql_s, (href, ))
         return Event(result[0][0],
-                     self.conf.default.local_timezone,
-                     self.conf.default.default_timezone,
+                     local_tz =self.conf.default.local_timezone,
+                     default_tz=self.conf.default.default_timezone,
                      start=start,
                      end=end,
-                     color=color)
+                     color=color,
+                     href=href,
+                     account=account_name,
+                     status=result[0][1])
 
     def get_changed(self, account_name):
         """returns list of hrefs of locally edited vcards
@@ -522,6 +526,12 @@ class SQLiteDb(object):
         """
         sql_s = 'UPDATE {0} SET STATUS = ? WHERE href = ?'.format(account_name)
         self.sql_ex(sql_s, (DELETED, href, ))
+
+    def set_status(self, href, status, account_name):
+        """sets the status of vcard
+        """
+        sql_s = 'UPDATE {0} SET STATUS = ? WHERE href = ?'.format(account_name)
+        self.sql_ex(sql_s, (status, href, ))
 
     def reset_flag(self, href, account_name):
         """

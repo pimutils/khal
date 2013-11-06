@@ -179,19 +179,35 @@ class Event(urwid.Text):
     """representation of event in Eventlist
     """
 
-    def __init__(self, event, this_date=None, call=None):
+    def __init__(self, event, this_date=None, call=None, dbtool=None):
         self.event = event
         self.call = call
         self.this_date = this_date
+        self.dbtool = dbtool
         super(Event, self).__init__(self.event.compact(self.this_date))
 
     @classmethod
     def selectable(cls):
         return True
 
+    def toggle_delete(self):
+        if self.event.status == 0:
+            toggle = 9
+        elif self.event.status == 9:
+            toggle = 0
+        elif self.event.status == 1:
+            toggle = 11
+        elif self.event.status == 11:
+            toggle = 1
+        self.event.status = toggle
+        self.set_text(self.event.compact(self.this_date))
+        self.dbtool.set_status(self.event.href, toggle, self.event.account)
+
     def keypress(self, _, key):
         if key is 'enter':
             self.call(self.event)
+        elif key is 'd':
+            self.toggle_delete()
         return key
 
 
@@ -220,11 +236,16 @@ class EventList(urwid.WidgetWrap):
                                                            account_name=account,
                                                            color=color)
             events += self.dbtool.get_time_range(start, end, account, color=color)
+
         for event in all_day_events:
-            event_column.append(urwid.AttrMap(Event(event, this_date=this_date, call=self.call), event.color, 'reveal focus'))
+            event_column.append(
+                urwid.AttrMap(Event(event, dbtool=self.dbtool, this_date=this_date, call=self.call),
+                              event.color, 'reveal focus'))
         events.sort(key=lambda e: e.start)
         for event in events:
-            event_column.append(urwid.AttrMap(Event(event, this_date=this_date, call=self.call), event.color, 'reveal focus'))
+            event_column.append(
+                urwid.AttrMap(Event(event, dbtool=self.dbtool, this_date=this_date, call=self.call),
+                              event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
         pile = urwid.Pile([date_text] + event_list)
         self._w = pile
