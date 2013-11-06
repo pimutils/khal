@@ -397,7 +397,7 @@ class SQLiteDb(object):
             result = result + [(href[0], account) for href in hrefs]
         return result
 
-    def get_time_range(self, start, end, account_name, color=''):
+    def get_time_range(self, start, end, account_name, color='', readonly=False):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
@@ -416,13 +416,14 @@ class SQLiteDb(object):
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
             event = self.get_vevent_from_db(href, account_name,
                                             start=start, end=end,
-                                            color=color)
+                                            color=color,
+                                            readonly=readonly)
             event_list.append(event)
 
         return event_list
 
     def get_allday_range(self, start, end=None, account_name=None,
-                         color=''):
+                         color='', readonly=False):
         if account_name is None:
             raise Exception('need to specify an account_name')
         strstart = start.strftime('%Y%m%d')
@@ -443,7 +444,8 @@ class SQLiteDb(object):
             end = datetime.date(end.tm_year, end.tm_mon, end.tm_mday)
             vevent = self.get_vevent_from_db(href, account_name,
                                              start=start, end=end,
-                                             color=color)
+                                             color=color,
+                                             readonly=readonly)
             event_list.append(vevent)
         return event_list
 
@@ -479,10 +481,10 @@ class SQLiteDb(object):
 
     def hrefs_by_time_range(self, start, end, account_name):
         return list(set(self.hrefs_by_time_range_date(start, end, account_name) +
-        self.hrefs_by_time_range_datetime(start, end, account_name)))
+            self.hrefs_by_time_range_datetime(start, end, account_name)))
 
     def get_vevent_from_db(self, href, account_name, start=None, end=None,
-                           color=lambda x: x):
+                           readonly=False, color=lambda x: x):
         """returns the Event matching href, if start and end are given, a
         specific Event from a Recursion set is returned, the Event as saved in
         the db
@@ -497,7 +499,8 @@ class SQLiteDb(object):
                      color=color,
                      href=href,
                      account=account_name,
-                     status=result[0][1])
+                     status=result[0][1],
+                     readonly=readonly)
 
     def get_changed(self, account_name):
         """returns list of hrefs of locally edited vcards

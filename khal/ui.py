@@ -191,17 +191,20 @@ class Event(urwid.Text):
         return True
 
     def toggle_delete(self):
-        if self.event.status == 0:
-            toggle = 9
-        elif self.event.status == 9:
-            toggle = 0
-        elif self.event.status == 1:
-            toggle = 11
-        elif self.event.status == 11:
-            toggle = 1
-        self.event.status = toggle
-        self.set_text(self.event.compact(self.this_date))
-        self.dbtool.set_status(self.event.href, toggle, self.event.account)
+        if self.event.readonly is False:
+            if self.event.status == 0:
+                toggle = 9
+            elif self.event.status == 9:
+                toggle = 0
+            elif self.event.status == 1:
+                toggle = 11
+            elif self.event.status == 11:
+                toggle = 1
+            self.event.status = toggle
+            self.set_text(self.event.compact(self.this_date))
+            self.dbtool.set_status(self.event.href, toggle, self.event.account)
+        else:
+            self.set_text('R' + self.event.compact(self.this_date))
 
     def keypress(self, _, key):
         if key is 'enter':
@@ -232,10 +235,13 @@ class EventList(urwid.WidgetWrap):
         events = list()
         for account in self.conf.sync.accounts:
             color = self.conf.accounts[account]['color']
+            readonly = self.conf.accounts[account]['readonly']
             all_day_events += self.dbtool.get_allday_range(this_date,
                                                            account_name=account,
-                                                           color=color)
-            events += self.dbtool.get_time_range(start, end, account, color=color)
+                                                           color=color,
+                                                           readonly=readonly)
+            events += self.dbtool.get_time_range(start, end, account,
+                                                 color=color, readonly=readonly)
 
         for event in all_day_events:
             event_column.append(

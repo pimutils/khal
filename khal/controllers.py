@@ -155,7 +155,6 @@ class Sync(Controller):
 class Display(Controller):
     def __init__(self, conf):
         super(Display, self).__init__(conf)
-
         today = datetime.date.today()
         tomorrow = today + datetime.timedelta(days=1)
         daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
@@ -168,11 +167,13 @@ class Display(Controller):
             all_day_events = list()
             events = list()
             for account in conf.sync.accounts:
+                readonly = conf.accounts[account]['readonly']
                 color = conf.accounts[account]['color']
                 all_day_events += self.dbtool.get_allday_range(
-                    day, account_name=account, color=color)
+                    day, account_name=account, color=color, readonly=readonly)
                 events += self.dbtool.get_time_range(start, end, account,
-                                                     color=color)
+                                                     color=color,
+                                                     readonly=readonly)
             for event in all_day_events:
                 event_column.append(aux.colored(event.compact(day), event.color))
             events.sort(key=lambda e: e.start)
@@ -180,8 +181,8 @@ class Display(Controller):
                 event_column.append(aux.colored(event.compact(day), event.color))
 
         calendar_column = calendar_display.vertical_month()
-        missing = len(event_column) - len(calendar_column)
 
+        missing = len(event_column) - len(calendar_column)
         if missing > 0:
             calendar_column = calendar_column + missing * [25 * ' ']
 

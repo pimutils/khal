@@ -29,13 +29,15 @@ import icalendar
 
 class Event(object):
     def __init__(self, ical, status=0, href=None, account=None, local_tz=None,
-                 default_tz=None, start=None, end=None, color=None):
+                 default_tz=None, start=None, end=None, color=None,
+                 readonly=False):
         self.vevent = icalendar.Event.from_ical(ical)
         self.allday = True
         self.color = color
         self.status = status
         self.href = href
-        self.account =account
+        self.account = account
+        self.readonly = readonly
         if start is not None:
             if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
                 self.allday = False  # TODO detect allday even if start is None

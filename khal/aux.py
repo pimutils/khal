@@ -127,6 +127,8 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     see tests for examples
 
     """
+    import ipdb; ipdb.set_trace()
+
 
     today = datetime.today()
 

@@ -348,6 +348,10 @@ class ConfigurationParser(object):
 
 
         for account in ns.accounts:
+            if account.type == 'caldav':
+                account.readonly = False
+            else:
+                account.readonly = True
             if account.resource[-1] != '/' and account.type == 'caldav':
                 account.resource = account.resource + '/'
 
