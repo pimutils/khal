@@ -128,7 +128,7 @@ Columns is empty, or when set to an invalid index.
         elif old_pos == 1 and key == 'left':
             self.focus_position = 7
             return 'up'
-        else:
+        elif key not in ['right']:
             return key
 
 
