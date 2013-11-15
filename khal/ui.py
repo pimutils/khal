@@ -120,7 +120,7 @@ Columns is empty, or when set to an invalid index.
         super(DateColumns, self).keypress(size, key)
         if key in ['up', 'down']:  # don't know why this is needed...
             return key
-        elif key in ['tab']:
+        elif key in ['tab', 'enter']:
             return 'right'
         elif old_pos == 7 and key == 'right':
             self.focus_position = 1
@@ -179,11 +179,13 @@ class Event(urwid.Text):
     """representation of event in Eventlist
     """
 
-    def __init__(self, event, this_date=None, call=None, dbtool=None):
+    def __init__(self, event, this_date=None, conf=None, dbtool=None, columns=None):
         self.event = event
-        self.call = call
         self.this_date = this_date
         self.dbtool = dbtool
+        self.conf = conf
+        self.columns = columns
+        self.view = False
         super(Event, self).__init__(self.event.compact(self.this_date))
 
     @classmethod
@@ -207,19 +209,24 @@ class Event(urwid.Text):
             self.set_text('R' + self.event.compact(self.this_date))
 
     def keypress(self, _, key):
-        if key is 'enter':
-            self.call(self.event)
+        if key is 'enter' and self.view is False:
+            self.view = True
+            self.columns.contents.append((EventDisplay(self.conf, self.dbtool), self.columns.options()))
+            self.columns[2].update(self.event)
         elif key is 'd':
             self.toggle_delete()
+        elif key in ['left', 'up', 'down'] and self.view:
+            if isinstance(self.columns.contents[-1][0], EventViewer):
+                self.columns.contents.pop()
         return key
 
 
 class EventList(urwid.WidgetWrap):
     """list of events"""
-    def __init__(self, conf=None, dbtool=None, call=None):
+    def __init__(self, conf=None, dbtool=None):
         self.conf = conf
         self.dbtool = dbtool
-        self.call = call
+        self.columns = None
         pile = urwid.Pile([])
         urwid.WidgetWrap.__init__(self, pile)
         self.update()
@@ -245,12 +252,12 @@ class EventList(urwid.WidgetWrap):
 
         for event in all_day_events:
             event_column.append(
-                urwid.AttrMap(Event(event, dbtool=self.dbtool, this_date=this_date, call=self.call),
+                urwid.AttrMap(Event(event, conf=self.conf, dbtool=self.dbtool, this_date=this_date, columns=self.columns),
                               event.color, 'reveal focus'))
         events.sort(key=lambda e: e.start)
         for event in events:
             event_column.append(
-                urwid.AttrMap(Event(event, dbtool=self.dbtool, this_date=this_date, call=self.call),
+                urwid.AttrMap(Event(event, conf=self.conf, dbtool=self.dbtool, this_date=this_date, columns=self.columns),
                               event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
         pile = urwid.Pile([date_text] + event_list)
@@ -258,9 +265,8 @@ class EventList(urwid.WidgetWrap):
 
 
 class EventViewer(urwid.WidgetWrap):
-    """showing events
-
-    3rd column in ikhal
+    """
+    Base Class for EventEditor and EventDisplay
     """
     def __init__(self, conf, dbtool):
         self.conf = conf
@@ -268,6 +274,12 @@ class EventViewer(urwid.WidgetWrap):
         pile = urwid.Pile([])
         urwid.WidgetWrap.__init__(self, pile)
 
+
+class EventDisplay(EventViewer):
+    """showing events
+
+    3rd column in ikhal
+    """
     def update(self, event):
         lines = []
         lines.append(urwid.Text(event.vevent['SUMMARY']))
@@ -297,16 +309,24 @@ class EventViewer(urwid.WidgetWrap):
         pile = urwid.Pile(lines)
         self._w = pile
 
+class EventEditor(EventViewer):
+    def update(self, event):
+        pass
+
 def exit(key):
     if key in ('q', 'Q', 'esc'):
         raise urwid.ExitMainLoop()
 
 
 def interactive(conf=None, dbtool=None):
-    eventviewer = EventViewer(conf=conf, dbtool=dbtool)
-    events = EventList(conf=conf, dbtool=dbtool, call=eventviewer.update)
+    eventviewer = EventDisplay(conf=conf, dbtool=dbtool)
+    events = EventList(conf=conf, dbtool=dbtool)
     weeks = calendar_walker(call=events.update)
-    columns = urwid.Columns([(25, weeks), events, eventviewer], dividechars=2)
+
+    columns = urwid.Columns([(25, weeks), events], dividechars=2)
+
+    events.columns = columns
+
     fill = urwid.Filler(columns)
     events.update(date.today())  # update events column to show today's events
     urwid.MainLoop(fill, palette=palette, unhandled_input=exit).run()
