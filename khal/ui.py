@@ -29,6 +29,8 @@ from datetime import datetime
 
 import urwid
 
+from . import backend
+
 palette = [('header', 'white', 'black'),
            ('reveal focus', 'black', 'dark cyan', 'standout'),
            ('today_focus', 'white', 'black', 'standout'),
@@ -194,14 +196,14 @@ class Event(urwid.Text):
 
     def toggle_delete(self):
         if self.event.readonly is False:
-            if self.event.status == 0:
-                toggle = 9
-            elif self.event.status == 9:
-                toggle = 0
-            elif self.event.status == 1:
-                toggle = 11
-            elif self.event.status == 11:
-                toggle = 1
+            if self.event.status == backend.OK:
+                toggle = backend.DELETED
+            elif self.event.status == backend.DELETED:
+                toggle = backend.OK
+            elif self.event.status == backend.NEW:
+                toggle = backend.NEWDELETE
+            elif self.event.status == backend.NEWDELETE:
+                toggle = backend.NEW
             self.event.status = toggle
             self.set_text(self.event.compact(self.this_date))
             self.dbtool.set_status(self.event.href, toggle, self.event.account)
@@ -211,9 +213,18 @@ class Event(urwid.Text):
     def keypress(self, _, key):
         if key is 'enter' and self.view is False:
             self.view = True
-            self.columns.contents.append((EventDisplay(self.conf, self.dbtool), self.columns.options()))
-            self.columns[2].update(self.event)
-        elif key is 'd':
+            self.columns.contents.append((EventDisplay(self.conf, self.dbtool, self.event), self.columns.options()))
+        elif key is 'enter' and self.view is True:
+            if self.view == True and isinstance(self.columns.contents[-1][0], EventViewer):
+                self.columns.contents.pop()
+            self.columns.contents.append((EventEditor(self.conf, self.dbtool, self.event), self.columns.options()))
+            return 'right'
+        elif key == 'e':
+            if self.view == True and isinstance(self.columns.contents[-1][0], EventViewer):
+                self.columns.contents.pop()
+            self.columns.contents.append((EventEditor(self.conf, self.dbtool, self.event), self.columns.options()))
+            return 'right'
+        elif key == 'd':
             self.toggle_delete()
         elif key in ['left', 'up', 'down'] and self.view:
             if isinstance(self.columns.contents[-1][0], EventViewer):
@@ -264,6 +275,44 @@ class EventList(urwid.WidgetWrap):
         self._w = pile
 
 
+class StartEndEditor(urwid.WidgetWrap):
+    def __init__(self, start, end, conf):
+        self.conf = conf
+        self.start = start
+        self.end = end
+        self.allday = False
+        if isinstance(start, date):
+            self.allday = True
+        self.startdate = urwid.Edit(
+            caption='From: ',
+            edit_text=start.strftime(self.conf.default.longdateformat))
+        self.starttime = urwid.Edit(
+            edit_text=start.strftime(self.conf.default.timeformat))
+        self.enddate = urwid.Edit(
+            caption='To: ',
+            edit_text=end.strftime(self.conf.default.longdateformat))
+        self.endtime = urwid.Edit(
+            edit_text=end.strftime(self.conf.default.timeformat))
+        self.checkallday = urwid.CheckBox('Allday', state=self.allday,
+                                     on_state_change=self.toggle)
+        self.toggle(None, self.allday)
+
+    def toggle(self, checkbox, state):
+        if state is True:
+            self.starttime = urwid.Text('')
+            self.endtime = urwid.Text('')
+        elif state is False:
+            self.starttime = urwid.Edit(
+                edit_text=self.start.strftime(self.conf.default.timeformat))
+            self.endtime = urwid.Edit(
+                edit_text=self.end.strftime(self.conf.default.timeformat))
+        columns = urwid.Pile([
+            urwid.Columns([self.startdate, self.starttime]),
+            urwid.Columns([self.enddate, self.endtime]),
+                                 self.checkallday])
+        urwid.WidgetWrap.__init__(self, columns)
+
+
 class EventViewer(urwid.WidgetWrap):
     """
     Base Class for EventEditor and EventDisplay
@@ -278,9 +327,10 @@ class EventViewer(urwid.WidgetWrap):
 class EventDisplay(EventViewer):
     """showing events
 
-    3rd column in ikhal
+    widget for display one event
     """
-    def update(self, event):
+    def __init__(self, conf, dbtool, event):
+        super(EventDisplay, self).__init__(conf, dbtool)
         lines = []
         lines.append(urwid.Text(event.vevent['SUMMARY']))
         if event.allday:
@@ -309,9 +359,74 @@ class EventDisplay(EventViewer):
         pile = urwid.Pile(lines)
         self._w = pile
 
+
 class EventEditor(EventViewer):
-    def update(self, event):
-        pass
+    def __init__(self, conf, dbtool, event):
+        super(EventEditor, self).__init__(conf, dbtool)
+        self.event = event
+        try:
+            self.description = event.vevent['DESCRIPTION'].encode('utf-8')
+        except KeyError:
+            self.description = ''
+        try:
+            self.location = event.vevent['LOCATION'].encode('utf-8')
+        except KeyError:
+            self.location = ''
+
+        self.startendeditor = StartEndEditor(event.start, event.end, self.conf)
+        self.summary = urwid.Edit(edit_text=event.vevent['SUMMARY'].encode('utf-8'))
+        self.description = urwid.Edit(caption='Description: ',
+                                      edit_text=self.description)
+        self.location = urwid.Edit(caption='Location: ',
+                                    edit_text=self.location)
+        cancel = urwid.Button('Cancel', on_press=self.destroy)
+        save = urwid.Button('Save', on_press=self.save)
+        buttons = urwid.Columns([cancel, save])
+
+        pile = urwid.Pile([self.summary, self.startendeditor, self.description,
+                           self.location, urwid.Text(''), buttons])
+        self._w = pile
+
+
+    @classmethod
+    def selectable(cls):
+        return True
+
+    def destroy(self, button):
+        # destroy the event editor
+        raise NotImplementedError
+
+    def save(self, button):
+        changed = False
+        if self.summary.get_edit_text() != self.event.vevent['SUMMARY']:
+            self.event.vevent['SUMMARY'] = self.summary.get_edit_text()
+            changed = True
+        if self.description.get_edit_text() != self.description:
+            self.event.vevent['DESCRIPTION'] = self.description.get_edit_text()
+            changed = True
+        if self.location.get_edit_text() != self.location:
+            self.event.vevent['LOCATION'] = self.location.get_edit_text()
+            changed = True
+        # TODO timedatechanged
+        if changed is True:
+            # TODO increment counter
+            if self.event.status == backend.NEW:
+                status = backend.NEW
+            else:
+                status = backend.CHANGED
+            self.dbtool.update(self.event.vevent.to_ical(),
+                               self.event.account,
+                               self.event.href,
+                               status=status)
+        self.destroy(None)
+
+    def keypress(self, length, key):
+        if key == 'left':
+            return
+        else:
+            super(EventEditor, self).keypress(length, key)
+
+
 
 def exit(key):
     if key in ('q', 'Q', 'esc'):
@@ -319,7 +434,6 @@ def exit(key):
 
 
 def interactive(conf=None, dbtool=None):
-    eventviewer = EventDisplay(conf=conf, dbtool=dbtool)
     events = EventList(conf=conf, dbtool=dbtool)
     weeks = calendar_walker(call=events.update)
 
