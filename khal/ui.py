@@ -181,7 +181,8 @@ class Event(urwid.Text):
     """representation of event in Eventlist
     """
 
-    def __init__(self, event, this_date=None, conf=None, dbtool=None, columns=None):
+    def __init__(self, event, this_date=None, conf=None, dbtool=None,
+                 columns=None):
         self.event = event
         self.this_date = this_date
         self.dbtool = dbtool
@@ -213,16 +214,22 @@ class Event(urwid.Text):
     def keypress(self, _, key):
         if key is 'enter' and self.view is False:
             self.view = True
-            self.columns.contents.append((EventDisplay(self.conf, self.dbtool, self.event), self.columns.options()))
+            self.columns.contents.append(
+                (EventDisplay(self.conf, self.dbtool, self.event),
+                 self.columns.options()))
         elif key is 'enter' and self.view is True:
-            if self.view == True and isinstance(self.columns.contents[-1][0], EventViewer):
+            if self.view is True and isinstance(self.columns.contents[-1][0], EventViewer):
                 self.columns.contents.pop()
-            self.columns.contents.append((EventEditor(self.conf, self.dbtool, self.event), self.columns.options()))
+            self.columns.contents.append(
+                (EventEditor(self.conf, self.dbtool, self.event),
+                 self.columns.options()))
             return 'right'
         elif key == 'e':
-            if self.view == True and isinstance(self.columns.contents[-1][0], EventViewer):
+            if self.view is True and isinstance(self.columns.contents[-1][0], EventViewer):
                 self.columns.contents.pop()
-            self.columns.contents.append((EventEditor(self.conf, self.dbtool, self.event), self.columns.options()))
+            self.columns.contents.append(
+                (EventEditor(self.conf, self.dbtool, self.event),
+                 self.columns.options()))
             return 'right'
         elif key == 'd':
             self.toggle_delete()
@@ -247,28 +254,39 @@ class EventList(urwid.WidgetWrap):
         start = datetime.combine(this_date, time.min)
         end = datetime.combine(this_date, time.max)
 
-        date_text = urwid.Text(this_date.strftime(self.conf.default.longdateformat))
+        date_text = urwid.Text(
+            this_date.strftime(self.conf.default.longdateformat))
         event_column = list()
         all_day_events = list()
         events = list()
         for account in self.conf.sync.accounts:
             color = self.conf.accounts[account]['color']
             readonly = self.conf.accounts[account]['readonly']
-            all_day_events += self.dbtool.get_allday_range(this_date,
-                                                           account_name=account,
-                                                           color=color,
-                                                           readonly=readonly)
+            all_day_events += self.dbtool.get_allday_range(
+                this_date,
+                account_name=account,
+                color=color,
+                readonly=readonly)
             events += self.dbtool.get_time_range(start, end, account,
-                                                 color=color, readonly=readonly)
+                                                 color=color,
+                                                 readonly=readonly)
 
         for event in all_day_events:
             event_column.append(
-                urwid.AttrMap(Event(event, conf=self.conf, dbtool=self.dbtool, this_date=this_date, columns=self.columns),
+                urwid.AttrMap(Event(event,
+                                    conf=self.conf,
+                                    dbtool=self.dbtool,
+                                    this_date=this_date,
+                                    columns=self.columns),
                               event.color, 'reveal focus'))
         events.sort(key=lambda e: e.start)
         for event in events:
             event_column.append(
-                urwid.AttrMap(Event(event, conf=self.conf, dbtool=self.dbtool, this_date=this_date, columns=self.columns),
+                urwid.AttrMap(Event(event,
+                                    conf=self.conf,
+                                    dbtool=self.dbtool,
+                                    this_date=this_date,
+                                    columns=self.columns),
                               event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
         pile = urwid.Pile([date_text] + event_list)
@@ -380,11 +398,12 @@ class EventDisplay(EventViewer):
                 lines.append(urwid.Text('On: ' + startstr))
             else:
                 endstr = event.end.strftime(self.conf.default.dateformat)
-                lines.append(urwid.Text('From: ' + startstr + ' to: ' + endstr))
+                lines.append(
+                    urwid.Text('From: ' + startstr + ' to: ' + endstr))
 
         else:
-            startstr= event.start.strftime(self.conf.default.dateformat + ' ' +
-                                           self.conf.default.timeformat)
+            startstr = event.start.strftime(self.conf.default.dateformat +
+                                            ' ' + self.conf.default.timeformat)
             if event.start.date == event.end.date:
                 endstr = event.end.strftime(self.conf.default.timeformat)
             else:
@@ -394,7 +413,8 @@ class EventDisplay(EventViewer):
 
         for key, desc in [('DESCRIPTION', 'Desc'), ('LOCATION', 'Loc')]:
             try:
-                lines.append(urwid.Text(desc + ': ' + str(event.vevent[key].encode('utf-8'))))
+                lines.append(urwid.Text(
+                    desc + ': ' + str(event.vevent[key].encode('utf-8'))))
             except KeyError:
                 pass
         pile = urwid.Pile(lines)
@@ -415,11 +435,12 @@ class EventEditor(EventViewer):
             self.location = ''
 
         self.startendeditor = StartEndEditor(event.start, event.end, self.conf)
-        self.summary = urwid.Edit(edit_text=event.vevent['SUMMARY'].encode('utf-8'))
+        self.summary = urwid.Edit(
+            edit_text=event.vevent['SUMMARY'].encode('utf-8'))
         self.description = urwid.Edit(caption='Description: ',
                                       edit_text=self.description)
         self.location = urwid.Edit(caption='Location: ',
-                                    edit_text=self.location)
+                                   edit_text=self.location)
         cancel = urwid.Button('Cancel', on_press=self.destroy)
         save = urwid.Button('Save', on_press=self.save)
         buttons = urwid.Columns([cancel, save])
@@ -428,14 +449,13 @@ class EventEditor(EventViewer):
                            self.location, urwid.Text(''), buttons])
         self._w = pile
 
-
     @classmethod
     def selectable(cls):
         return True
 
     def destroy(self, button):
         # destroy the event editor
-        raise NotImplementedError('if you pressed save your edit was still saved')
+        raise NotImplementedError('if you pressed save the edit was saved')
 
     def save(self, button):
         changed = False
@@ -469,7 +489,6 @@ class EventEditor(EventViewer):
             return
         else:
             super(EventEditor, self).keypress(length, key)
-
 
 
 def exit(key):
