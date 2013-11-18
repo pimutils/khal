@@ -281,7 +281,7 @@ class StartEndEditor(urwid.WidgetWrap):
         self.start = start
         self.end = end
         self.allday = False
-        if isinstance(start, date):
+        if not isinstance(start, datetime):
             self.allday = True
         self.startdate = urwid.Edit(
             caption='From: ',
@@ -309,7 +309,7 @@ class StartEndEditor(urwid.WidgetWrap):
         columns = urwid.Pile([
             urwid.Columns([self.startdate, self.starttime]),
             urwid.Columns([self.enddate, self.endtime]),
-                                 self.checkallday])
+                                 self.checkallday], focus_item=2)
         urwid.WidgetWrap.__init__(self, columns)
 
 
@@ -394,7 +394,7 @@ class EventEditor(EventViewer):
 
     def destroy(self, button):
         # destroy the event editor
-        raise NotImplementedError
+        raise NotImplementedError('if you pressed save your edit was still saved')
 
     def save(self, button):
         changed = False
