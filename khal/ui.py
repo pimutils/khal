@@ -276,6 +276,13 @@ class EventList(urwid.WidgetWrap):
 
 
 class StartEndEditor(urwid.WidgetWrap):
+    """
+    editing start and end times of the event
+
+    we cannot changed timezones ATM  # TODO
+    no exception on strings not matching timeformat (but errormessage) # TODO
+    """
+
     def __init__(self, start, end, conf):
         self.conf = conf
         self.start = start
@@ -294,7 +301,7 @@ class StartEndEditor(urwid.WidgetWrap):
         self.endtime = urwid.Edit(
             edit_text=end.strftime(self.conf.default.timeformat))
         self.checkallday = urwid.CheckBox('Allday', state=self.allday,
-                                     on_state_change=self.toggle)
+                                          on_state_change=self.toggle)
         self.toggle(None, self.allday)
 
     def toggle(self, checkbox, state):
@@ -309,8 +316,42 @@ class StartEndEditor(urwid.WidgetWrap):
         columns = urwid.Pile([
             urwid.Columns([self.startdate, self.starttime]),
             urwid.Columns([self.enddate, self.endtime]),
-                                 self.checkallday], focus_item=2)
+            self.checkallday], focus_item=2)
         urwid.WidgetWrap.__init__(self, columns)
+
+    @property
+    def changed(self):
+        """
+        returns True if content has been edited, False otherwise
+        """
+        return not ((self.start == self.newstart) and
+                    (self.end == self.newend))
+
+    @property
+    def newstart(self):
+        newstartdatetime = datetime.strptime(
+            self.startdate.get_edit_text(),
+            self.conf.default.longdateformat).date()
+        if not self.checkallday.state:
+            newstarttime = datetime.strptime(
+                self.starttime.get_edit_text(),
+                self.conf.default.timeformat).time()
+            newstartdatetime = datetime.combine(newstartdatetime, newstarttime)
+            newstartdatetime = self.start.tzinfo.localize(newstartdatetime)
+        return newstartdatetime
+
+    @property
+    def newend(self):
+        newenddatetime = datetime.strptime(
+            self.enddate.get_edit_text(),
+            self.conf.default.longdateformat).date()
+        if not self.checkallday.state:
+            newendtime = datetime.strptime(
+                self.endtime.get_edit_text(),
+                self.conf.default.timeformat).time()
+            newenddatetime = datetime.combine(newenddatetime, newendtime)
+            newenddatetime = self.end.tzinfo.localize(newenddatetime)
+        return newenddatetime
 
 
 class EventViewer(urwid.WidgetWrap):
@@ -407,7 +448,10 @@ class EventEditor(EventViewer):
         if self.location.get_edit_text() != self.location:
             self.event.vevent['LOCATION'] = self.location.get_edit_text()
             changed = True
-        # TODO timedatechanged
+        if self.startendeditor.changed:
+            self.event.vevent['DTSTART'].dt = self.startendeditor.newstart
+            self.event.vevent['DTEND'].dt = self.startendeditor.newend
+            changed = True
         if changed is True:
             # TODO increment counter
             if self.event.status == backend.NEW:
