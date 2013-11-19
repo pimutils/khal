@@ -473,7 +473,10 @@ class EventEditor(EventViewer):
             self.event.vevent['DTEND'].dt = self.startendeditor.newend
             changed = True
         if changed is True:
-            # TODO increment counter
+            try:
+                self.event.vevent['SEQUENCE'] += 1
+            except KeyError:
+                self.event.vevent['SEQUNCE'] = 0
             if self.event.status == backend.NEW:
                 status = backend.NEW
             else:
