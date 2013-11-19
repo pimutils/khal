@@ -1,8 +1,7 @@
-khal
-====
-
-Khal is a CLI (console), CalDAV_ based calendar program, `allowing syncing of calendars with a
-variety of other programs on a host of different platforms`__.
+About
+=====
+*Khal* is a CLI (console), CalDAV_ based calendar program, `allowing syncing of
+calendars with a variety of other programs on a host of different platforms`__.
 
 *khal* is currently in a very early stage of development, has a very limited
 feature set and is probably full of bugs. If you still want to take it out for a
@@ -18,21 +17,50 @@ Features
 
 - khal can sync events from CalDAV calendar collections
 - add simple new events to a calendar and upload them
-- ikhal (interactive khal) can show events in the current and next two months
+- ikhal (interactive khal) can show and edit events in the current and next two months
 - simple recurring events support (no exceptions just yet)
-- no proper timezone support yet
+- you cannot edit the timezones of events
 - is pretty Euro centric, weeks start on Mondays, khal uses a 24 hour clock and
-  the default time zone is 'Europe/Berlin' (time and date display is actually
-  configurable now, the rest is coming later)
+  the default time zone is 'Europe/Berlin' (apart from the week start issue, it
+  is all configurable now)
 - khal should run on all major
   operating systems [1]_ (has been tested on FreeBSD and Debian GNU/Linux)
 
 
 .. [1] except for Microsoft Windows
 
+Feedback
+--------
+Please do provide feedback if *khal* works for you or even more importantly
+if it doesn't. You can reach me by email at khal (at) lostpackets (dot) de
+, by jabber/XMPP at geier (at) jabber (dot) ccc (dot) de or via github
+
+.. __: http://en.wikipedia.org/wiki/Comparison_of_CalDAV_and_CardDAV_implementations
+.. _CalDAV: http://en.wikipedia.org/wiki/CalDAV
+
+Installation
+------------
+You can install *khal* from *pypi* via *pip install khal* or install it from
+source by executing *python setup.py install*. 
+
+Copy and edit the supplied khal.conf.sample file (default location is
+~/.config/khal/khal.conf). If you don't want to store the password in clear
+text in the config file, pyCardDAV will ask for it while syncing (and store it
+in a keychain if keychain_ is installed).
+
+Make sure you have sqlite3 (normally available by default), icalendar_, lxml(>2),
+requests (>0.10), urwid (>0.9) and pyxdg installed. Users of python 2.6 will also
+need to install argparse.
+
+khal has so far been successfully tested on recent versions of FreeBSD,
+NetBSD, Debian and Ubuntu with python 2.6 and 2.7 against davical, owncloud
+and fruux.
+
+.. _keychain: https://pypi.python.org/pypi/keyring
+.. _icalendar: https://github.com/collective/icalendar
+
 Usage
 -----
-
 **install**
 
  python setup.py install
@@ -77,6 +105,9 @@ adds a new event on 25th of October lasting from 16:00 to 18:00
 
 adds a new all day event on 26.07.
 
+khal --new should be able to understand quite a range of dates, have a look at
+the tests for more examples.
+
 In a more abstract form:
 
   khal --new startdatetime [enddatetime] description
@@ -113,7 +144,6 @@ too).
 
 Write Support
 -------------
-
 To enable uploading events on the server, you need to enable write support.
 Please note, that write support is experimental and please make sure you either
 *really do have a backup* or only use it on test calendars.
@@ -155,17 +185,41 @@ end times. Otherwise: Good Luck!
 Seriously: be careful when changing timezones and do check if khal shows the
 correct times anyway (and please report back if it doesn't).
 
-About
------
 
+Miscellaneous
+-------------
 *khal* is written in python using among others requests_, lxml_, icalendar_,
 dateutil_ and pysqlite_. *khal* is open source and free software, released under
 the Expat/MIT license.
 
-.. __: http://en.wikipedia.org/wiki/Comparison_of_CalDAV_and_CardDAV_implementations
-.. _CalDAV: http://en.wikipedia.org/wiki/CalDAV
 .. _lxml: http://lxml.de/
 .. _pysqlite: http://code.google.com/p/pysqlite/
 .. _requests: http://python-requests.org
 .. _icalendar: https://github.com/collective/icalendar
 .. _dateutil: http://labix.org/python-dateutil
+
+
+
+License
+-------
+pyCardDAV is released under the Expat/MIT License:
+
+Copyright (c) 2013 Christian Geier and contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
