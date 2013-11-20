@@ -95,19 +95,19 @@ class DateColumns(urwid.Columns):
     focus can only move away by pressing 'TAB',
     calls 'call' on every focus change
     """
-    def __init__(self, widget_list, call=None, **kwargs):
-        self.call = call
+    def __init__(self, widget_list, select_date=None, **kwargs):
+        self.select_date = select_date
         super(DateColumns, self).__init__(widget_list, **kwargs)
 
     def _set_focus_position(self, position):
-        """calls 'call' before calling super()._set_focus_position"""
+        """calls 'select_date' before calling super()._set_focus_position"""
 
         super(DateColumns, self)._set_focus_position(position)
 
         # since first Column is month name, focus should only be 0 during
         # construction
         if not self.contents.focus == 0:
-            self.call(self.contents[position][0].original_widget.date)
+            self.select_date(self.contents[position][0].original_widget.date)
 
     focus_position = property(urwid.Columns._get_focus_position,
                               _set_focus_position, doc="""
@@ -134,9 +134,10 @@ Columns is empty, or when set to an invalid index.
             return key
 
 
-def construct_week(week, call=None):
+def construct_week(week, select_date=None):
     """
     :param week: list of datetime.date objects
+    :param select_date: function to call on selecting date
     returns urwid.Columns
     """
     if 1 in [day.day for day in week]:
@@ -154,11 +155,12 @@ def construct_week(week, call=None):
         else:
             this_week.append((2, urwid.AttrMap(Date(day),
                                                None, 'reveal focus')))
-    week = DateColumns(this_week, call=call, dividechars=1, focus_column=today)
+    week = DateColumns(this_week, select_date=select_date, dividechars=1,
+                       focus_column=today)
     return week, bool(today)
 
 
-def calendar_walker(call=None):
+def calendar_walker(select_date=None):
     """hopefully this will soon become a real "walker",
     loading new weeks as nedded"""
     lines = list()
@@ -168,7 +170,7 @@ def calendar_walker(call=None):
     lines = [daynames]
     focus_item = None
     for number, week in enumerate(week_list()):
-        week, contains_today = construct_week(week, call=call)
+        week, contains_today = construct_week(week, select_date=select_date)
         if contains_today:
             focus_item = number + 1
         lines.append(week)
@@ -182,12 +184,12 @@ class Event(urwid.Text):
     """
 
     def __init__(self, event, this_date=None, conf=None, dbtool=None,
-                 columns=None):
+                 eventcolumn=None):
         self.event = event
         self.this_date = this_date
         self.dbtool = dbtool
         self.conf = conf
-        self.columns = columns
+        self.eventcolumn = eventcolumn
         self.view = False
         super(Event, self).__init__(self.event.compact(self.this_date))
 
@@ -212,39 +214,24 @@ class Event(urwid.Text):
             self.set_text('R' + self.event.compact(self.this_date))
 
     def keypress(self, _, key):
-        if key is 'enter' and self.view is False:
+        if key == 'enter' and self.view is False:
             self.view = True
-            self.columns.contents.append(
-                (EventDisplay(self.conf, self.dbtool, self.event),
-                 self.columns.options()))
-        elif key is 'enter' and self.view is True:
-            if self.view is True and isinstance(self.columns.contents[-1][0], EventViewer):
-                self.columns.contents.pop()
-            self.columns.contents.append(
-                (EventEditor(self.conf, self.dbtool, self.event),
-                 self.columns.options()))
-            return 'right'
-        elif key == 'e':
-            if self.view is True and isinstance(self.columns.contents[-1][0], EventViewer):
-                self.columns.contents.pop()
-            self.columns.contents.append(
-                (EventEditor(self.conf, self.dbtool, self.event),
-                 self.columns.options()))
-            return 'right'
+            self.eventcolumn.view(self.event)
+        elif (key == 'enter' and self.view is True) or key == 'e':
+            self.eventcolumn.edit(self.event)
         elif key == 'd':
             self.toggle_delete()
         elif key in ['left', 'up', 'down'] and self.view:
-            if isinstance(self.columns.contents[-1][0], EventViewer):
-                self.columns.contents.pop()
+            self.eventcolumn.destroy()
         return key
 
 
 class EventList(urwid.WidgetWrap):
     """list of events"""
-    def __init__(self, conf=None, dbtool=None):
+    def __init__(self, conf=None, dbtool=None, eventcolumn=None):
         self.conf = conf
         self.dbtool = dbtool
-        self.columns = None
+        self.eventcolumn = eventcolumn
         pile = urwid.Pile([])
         urwid.WidgetWrap.__init__(self, pile)
         self.update()
@@ -277,7 +264,7 @@ class EventList(urwid.WidgetWrap):
                                     conf=self.conf,
                                     dbtool=self.dbtool,
                                     this_date=this_date,
-                                    columns=self.columns),
+                                    eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
         events.sort(key=lambda e: e.start)
         for event in events:
@@ -286,16 +273,55 @@ class EventList(urwid.WidgetWrap):
                                     conf=self.conf,
                                     dbtool=self.dbtool,
                                     this_date=this_date,
-                                    columns=self.columns),
+                                    eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
         pile = urwid.Pile([date_text] + event_list)
         self._w = pile
 
 
+class EventColumn(urwid.WidgetWrap):
+    def __init__(self, conf=None, dbtool=None):
+        self.conf = conf
+        self.dbtool = dbtool
+        self.editor = False
+
+    def update(self, date):
+        # TODO make this switch from pile to columns depending on terminal size
+        events = EventList(conf=self.conf, dbtool=self.dbtool,
+                           eventcolumn=self)
+        events.update(date)
+        self.container = urwid.Pile([events])
+        self._w = self.container
+
+    def view(self, event):
+        self.destroy()
+        self.container.contents.append(
+            (EventDisplay(self.conf, self.dbtool, event),
+             self.container.options()))
+
+    def edit(self, event):
+        self.destroy()
+        self.editor = True
+        self.container.contents.append(
+            (EventEditor(self.conf, self.dbtool, event, cancel=self.destroy),
+             self.container.options()))
+        self.container.set_focus(1)
+
+    def destroy(self, _=None):
+        self.editor = False
+        if (len(self.container.contents) > 1 and
+                isinstance(self.container.contents[1][0], EventViewer)):
+            self.container.contents.pop()
+
+    @classmethod
+    def selectable(cls):
+        return True
+
+
 class StartEndEditor(urwid.WidgetWrap):
     """
-    editing start and end times of the event
+    editing start and nd times of the event
 
     we cannot changed timezones ATM  # TODO
     no exception on strings not matching timeformat (but errormessage) # TODO
@@ -407,9 +433,11 @@ class EventDisplay(EventViewer):
             if event.start.date == event.end.date:
                 endstr = event.end.strftime(self.conf.default.timeformat)
             else:
-                endstr = event.end.strftime(self.conf.default.dateformat + ' ' +
+                endstr = event.end.strftime(self.conf.default.dateformat +
+                                            ' ' +
                                             self.conf.default.timeformat)
-                lines.append(urwid.Text('From: ' + startstr + ' To: ' + endstr))
+                lines.append(urwid.Text('From: ' + startstr +
+                                        ' To: ' + endstr))
 
         for key, desc in [('DESCRIPTION', 'Desc'), ('LOCATION', 'Loc')]:
             try:
@@ -422,9 +450,10 @@ class EventDisplay(EventViewer):
 
 
 class EventEditor(EventViewer):
-    def __init__(self, conf, dbtool, event):
+    def __init__(self, conf, dbtool, event, cancel=None):
         super(EventEditor, self).__init__(conf, dbtool)
         self.event = event
+        self.cancel = cancel
         try:
             self.description = event.vevent['DESCRIPTION'].encode('utf-8')
         except KeyError:
@@ -441,7 +470,7 @@ class EventEditor(EventViewer):
                                       edit_text=self.description)
         self.location = urwid.Edit(caption='Location: ',
                                    edit_text=self.location)
-        cancel = urwid.Button('Cancel', on_press=self.destroy)
+        cancel = urwid.Button('Cancel', on_press=self.cancel)
         save = urwid.Button('Save', on_press=self.save)
         buttons = urwid.Columns([cancel, save])
 
@@ -452,10 +481,6 @@ class EventEditor(EventViewer):
     @classmethod
     def selectable(cls):
         return True
-
-    def destroy(self, button):
-        # destroy the event editor
-        raise NotImplementedError('if you pressed save the edit was saved')
 
     def save(self, button):
         changed = False
@@ -485,13 +510,7 @@ class EventEditor(EventViewer):
                                self.event.account,
                                self.event.href,
                                status=status)
-        self.destroy(None)
-
-    def keypress(self, length, key):
-        if key == 'left':
-            return
-        else:
-            super(EventEditor, self).keypress(length, key)
+        self.cancel()
 
 
 def exit(key):
@@ -500,13 +519,10 @@ def exit(key):
 
 
 def interactive(conf=None, dbtool=None):
-    events = EventList(conf=conf, dbtool=dbtool)
-    weeks = calendar_walker(call=events.update)
-
-    columns = urwid.Columns([(25, weeks), events], dividechars=2)
-
-    events.columns = columns
+    eventscolumn = EventColumn(conf=conf, dbtool=dbtool)
+    weeks = calendar_walker(select_date=eventscolumn.update)
+    columns = urwid.Columns([(25, weeks), eventscolumn], dividechars=2)
 
     fill = urwid.Filler(columns)
-    events.update(date.today())  # update events column to show today's events
+    eventscolumn.update(date.today())  # showing with today's events
     urwid.MainLoop(fill, palette=palette, unhandled_input=exit).run()

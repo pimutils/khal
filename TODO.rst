@@ -5,33 +5,36 @@ TODO
 
 * ikhal:
   * new weeks should be loaded into the walker
-  * [BUG] moving cursor left in vcard editor does not work
-  * exception on pressing save and cancel
   * make it look prettier
   * new event on pressing n in calendar
   * help text
   * [BUG] no exceptions on bad input in start or end dates
   * edit recurrence rules
-  * layout should probably be:
+  * show which resource an event belongs to and make it editable
+  * prevent user from leaving EventEditor by pressing left or top (at least when
+    event has been modified)
+  * layout should probably be::
 
-------------------------------------------
-|           |                            |
-| calendar  |                            |
-|           |   list of events           |
-|           |                            |
-|           |----------------------------|
-|           |                            |
-|           | currently selected event   |
-|           |                            |
-|           |                            |
-|           |                            |
-|           |                            |
-|           |                            |
-|           |                            |
--------------------------------------------
+        ------------------------------------------
+        |           |                            |
+        | calendar  |                            |
+        |           |   list of events           |
+        |           |                            |
+        |           |----------------------------|
+        |           |                            |
+        |           | currently selected event   |
+        |           |                            |
+        |           |                            |
+        |           |                            |
+        |           |                            |
+        |           |                            |
+        |           |                            |
+        -------------------------------------------
 
 DONE
 ====
+* exception on pressing save and cancel
+* [BUG] moving cursor left in vcard editor does not work
 * ikhal: editable events
 * detect remotely deleted events
 * while ikhal shows today focused, today's events are not shown
