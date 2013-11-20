@@ -11,8 +11,8 @@ TODO
   * [BUG] no exceptions on bad input in start or end dates
   * edit recurrence rules
   * show which resource an event belongs to and make it editable
-  * prevent user from leaving EventEditor by pressing left or top (at least when
-    event has been modified)
+  * prevent user from leaving EventEditor by pressing left or top (at least when event has been modified)
+  * edit recurrence rules
   * layout should probably be::
 
         ------------------------------------------
