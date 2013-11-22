@@ -4,15 +4,16 @@ TODO
 * exceptions to recurrent events
 
 * ikhal:
-   * new weeks should be loaded into the walker
-   * [BUG] moving cursor left in vcard editor does not work
-   * exception on pressing save and cancel
-   * make it look prettier
-   * new event on pressing n in calendar
-   * help text
-   * [BUG] no exceptions on bad input in start or end dates
-   * edit recurrence rules
-   * layout should probably be::
+  * new weeks should be loaded into the walker
+  * make it look prettier
+  * new event on pressing n in calendar
+  * help text
+  * [BUG] no exceptions on bad input in start or end dates
+  * edit recurrence rules
+  * show which resource an event belongs to and make it editable
+  * prevent user from leaving EventEditor by pressing left or top (at least when event has been modified)
+  * edit recurrence rules
+  * layout should probably be::
 
         ------------------------------------------
         |           |                            |
