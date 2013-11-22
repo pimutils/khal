@@ -169,6 +169,7 @@ class Syncer(object):
                                         headers=headers,
                                         **self._settings)
 
+
         response.raise_for_status()   # raises error on not 2XX HTTP status
         if response.headers['DAV'].count('calendar-access') == 0:
             raise Exception("URL is not a CalDAV resource")

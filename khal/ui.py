@@ -35,6 +35,13 @@ palette = [('header', 'white', 'black'),
            ('reveal focus', 'black', 'dark cyan', 'standout'),
            ('today_focus', 'white', 'black', 'standout'),
            ('today', 'black', 'white', 'dark cyan'),
+           ('edit', 'white', 'dark blue'),
+           ('alert', 'white', 'dark red'),
+
+           ('editfc', 'white', 'dark blue', 'bold'),
+           ('editbx', 'light gray', 'dark blue'),
+           ('editcp', 'black', 'light gray', 'standout'),
+
            ('black', 'black', ''),
            ('dark red', 'dark red', ''),
            ('dark green', 'dark green', ''),
@@ -211,7 +218,7 @@ class Event(urwid.Text):
             self.set_text(self.event.compact(self.this_date))
             self.dbtool.set_status(self.event.href, toggle, self.event.account)
         else:
-            self.set_text('R' + self.event.compact(self.this_date))
+            self.set_text('RO' + self.event.compact(self.this_date))
 
     def keypress(self, _, key):
         if key == 'enter' and self.view is False:
@@ -329,37 +336,50 @@ class StartEndEditor(urwid.WidgetWrap):
 
     def __init__(self, start, end, conf):
         self.conf = conf
-        self.start = start
-        self.end = end
+        self.startdt = start
+        self.enddt = end
+        # TODO cleanup
+        self.startdate = self.startdt.strftime(self.conf.default.longdateformat)
+        self.starttime = self.startdt.strftime(self.conf.default.timeformat)
+        self.enddate = self.enddt.strftime(self.conf.default.longdateformat)
+        self.endtime = self.enddt.strftime(self.conf.default.timeformat)
+        self.startdate_bg = 'edit'
+        self.starttime_bg = 'edit'
+        self.enddate_bg = 'edit'
+        self.endtime_bg = 'edit'
+        self.startdatewidget = None
+        self.starttimewidget = None
+        self.enddatewidget = None
+        self.endtimewidget = None
         self.allday = False
         if not isinstance(start, datetime):
             self.allday = True
-        self.startdate = urwid.Edit(
-            caption='From: ',
-            edit_text=start.strftime(self.conf.default.longdateformat))
-        self.starttime = urwid.Edit(
-            edit_text=start.strftime(self.conf.default.timeformat))
-        self.enddate = urwid.Edit(
-            caption='To: ',
-            edit_text=end.strftime(self.conf.default.longdateformat))
-        self.endtime = urwid.Edit(
-            edit_text=end.strftime(self.conf.default.timeformat))
+
         self.checkallday = urwid.CheckBox('Allday', state=self.allday,
                                           on_state_change=self.toggle)
         self.toggle(None, self.allday)
 
     def toggle(self, checkbox, state):
+        self.allday = state
+        self.startdatewidget = urwid.AttrMap(
+            urwid.Edit(caption=('', 'From: '), edit_text=self.startdate,),
+            self.startdate_bg, 'editcp', )
+        self.enddatewidget = urwid.AttrMap(
+            urwid.Edit(caption=('', 'To:   '), edit_text=self.enddate),
+            self.enddate_bg, 'editcp', )
         if state is True:
-            self.starttime = urwid.Text('')
-            self.endtime = urwid.Text('')
+            self.starttimewidget = urwid.Text('')
+            self.endtimewidget = urwid.Text('')
         elif state is False:
-            self.starttime = urwid.Edit(
-                edit_text=self.start.strftime(self.conf.default.timeformat))
-            self.endtime = urwid.Edit(
-                edit_text=self.end.strftime(self.conf.default.timeformat))
+            self.starttimewidget = urwid.AttrMap(
+                urwid.Edit(edit_text=self.starttime),
+                self.starttime_bg, 'editcp', )
+            self.endtimewidget = urwid.AttrMap(
+                urwid.Edit(edit_text=self.endtime),
+                self.endtime_bg, 'editcp', )
         columns = urwid.Pile([
-            urwid.Columns([self.startdate, self.starttime]),
-            urwid.Columns([self.enddate, self.endtime]),
+            urwid.Columns([self.startdatewidget, self.starttimewidget]),
+            urwid.Columns([self.enddatewidget, self.endtimewidget]),
             self.checkallday], focus_item=2)
         urwid.WidgetWrap.__init__(self, columns)
 
@@ -368,34 +388,84 @@ class StartEndEditor(urwid.WidgetWrap):
         """
         returns True if content has been edited, False otherwise
         """
-        return not ((self.start == self.newstart) and
-                    (self.end == self.newend))
+        return ((self.startdt != self.newstart) or
+                (self.enddt != self.newend))
 
     @property
     def newstart(self):
-        newstartdatetime = datetime.strptime(
-            self.startdate.get_edit_text(),
-            self.conf.default.longdateformat).date()
+        newstartdatetime = self._newstartdate
         if not self.checkallday.state:
-            newstarttime = datetime.strptime(
-                self.starttime.get_edit_text(),
-                self.conf.default.timeformat).time()
-            newstartdatetime = datetime.combine(newstartdatetime, newstarttime)
-            newstartdatetime = self.start.tzinfo.localize(newstartdatetime)
+            try:
+                newstarttime = self._newstarttime
+                newstartdatetime = datetime.combine(newstartdatetime, newstarttime)
+                newstartdatetime = self.startdt.tzinfo.localize(newstartdatetime)
+            except TypeError:
+                return None
         return newstartdatetime
 
     @property
-    def newend(self):
-        newenddatetime = datetime.strptime(
-            self.enddate.get_edit_text(),
-            self.conf.default.longdateformat).date()
-        if not self.checkallday.state:
-            newendtime = datetime.strptime(
-                self.endtime.get_edit_text(),
+    def _newstartdate(self):
+        try:
+            self.startdate = self.startdatewidget.original_widget.get_edit_text()
+            newstartdate = datetime.strptime(
+                self.startdate,
+                self.conf.default.longdateformat).date()
+            self.startdate_bg = 'edit'
+            return newstartdate
+        except ValueError:
+            self.startdate_bg = 'alert'
+            return None
+
+    @property
+    def _newstarttime(self):
+        try:
+            self.starttime = self.starttimewidget.original_widget.get_edit_text()
+            newstarttime = datetime.strptime(
+                self.starttime,
                 self.conf.default.timeformat).time()
-            newenddatetime = datetime.combine(newenddatetime, newendtime)
-            newenddatetime = self.end.tzinfo.localize(newenddatetime)
+            self.starttime_bg = 'edit'
+            return newstarttime
+        except ValueError:
+            self.starttime_bg = 'alert'
+            return None
+
+    @property
+    def newend(self):
+        newenddatetime = self._newenddate
+        if not self.checkallday.state:
+            try:
+                newendtime = self._newendtime
+                newenddatetime = datetime.combine(newenddatetime, newendtime)
+                newenddatetime = self.enddt.tzinfo.localize(newenddatetime)
+            except TypeError:
+                return None
         return newenddatetime
+
+    @property
+    def _newenddate(self):
+        try:
+            self.enddate = self.enddatewidget.original_widget.get_edit_text()
+            newenddate = datetime.strptime(
+                self.enddate,
+                self.conf.default.longdateformat).date()
+            self.enddate_bg = 'edit'
+            return newenddate
+        except ValueError:
+            self.enddate_bg = 'alert'
+            return None
+
+    @property
+    def _newendtime(self):
+        try:
+            self.endtime = self.endtimewidget.original_widget.get_edit_text()
+            newendtime = datetime.strptime(
+                self.endtime,
+                self.conf.default.timeformat).time()
+            self.endtime_bg = 'edit'
+            return newendtime
+        except ValueError:
+            self.endtime_bg = 'alert'
+            return None
 
 
 class EventViewer(urwid.WidgetWrap):
@@ -412,7 +482,7 @@ class EventViewer(urwid.WidgetWrap):
 class EventDisplay(EventViewer):
     """showing events
 
-    widget for display one event
+    widget for displaying one event's details
     """
     def __init__(self, conf, dbtool, event):
         super(EventDisplay, self).__init__(conf, dbtool)
@@ -450,6 +520,9 @@ class EventDisplay(EventViewer):
 
 
 class EventEditor(EventViewer):
+    """
+    Widget for event Editing
+    """
     def __init__(self, conf, dbtool, event, cancel=None):
         super(EventEditor, self).__init__(conf, dbtool)
         self.event = event
@@ -474,15 +547,16 @@ class EventEditor(EventViewer):
         save = urwid.Button('Save', on_press=self.save)
         buttons = urwid.Columns([cancel, save])
 
-        pile = urwid.Pile([self.summary, self.startendeditor, self.description,
-                           self.location, urwid.Text(''), buttons])
-        self._w = pile
+        self.pile = urwid.Pile([self.summary, self.startendeditor, self.description,
+                                self.location, urwid.Text(''), buttons])
+        self._w = self.pile
 
     @classmethod
     def selectable(cls):
         return True
 
-    def save(self, button):
+    @property
+    def changed(self):
         changed = False
         if self.summary.get_edit_text() != self.event.vevent['SUMMARY']:
             self.event.vevent['SUMMARY'] = self.summary.get_edit_text()
@@ -497,6 +571,17 @@ class EventEditor(EventViewer):
             self.event.vevent['DTSTART'].dt = self.startendeditor.newstart
             self.event.vevent['DTEND'].dt = self.startendeditor.newend
             changed = True
+        return changed
+
+    def save(self, button):
+        changed = self.changed  # need to call this to set startdate_bg etc. to False
+        if 'alert' in [self.startendeditor.startdate_bg,
+                       self.startendeditor.starttime_bg,
+                       self.startendeditor.enddate_bg,
+                       self.startendeditor.endtime_bg]:
+            self.startendeditor.toggle(None, state=self.startendeditor.allday)
+            self.pile.set_focus(1)  # the startendeditor
+            return
         if changed is True:
             try:
                 self.event.vevent['SEQUENCE'] += 1
@@ -512,6 +597,15 @@ class EventEditor(EventViewer):
                                status=status)
         self.cancel()
 
+    def keypress(self, size, key):
+        key = super(EventEditor, self).keypress(size, key)
+        if key in ['left', 'up']:
+            return
+        elif key in ['esc'] and not self.changed:
+            self.cancel()
+        else:
+            return key
+
 
 def exit(key):
     if key in ('q', 'Q', 'esc'):
@@ -526,3 +620,7 @@ def interactive(conf=None, dbtool=None):
     fill = urwid.Filler(columns)
     eventscolumn.update(date.today())  # showing with today's events
     urwid.MainLoop(fill, palette=palette, unhandled_input=exit).run()
+
+
+class DateConversionError(Exception):
+    pass
