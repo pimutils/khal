@@ -32,6 +32,8 @@ TODO
 
 DONE
 ====
+* exception on pressing save and cancel
+* [BUG] moving cursor left in vcard editor does not work
 * ikhal: editable events
 * detect remotely deleted events
 * while ikhal shows today focused, today's events are not shown
