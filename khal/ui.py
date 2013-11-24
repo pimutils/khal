@@ -288,9 +288,11 @@ class EventList(urwid.WidgetWrap):
 
 
 class EventColumn(urwid.WidgetWrap):
+    """contains the eventlist as well as the event viewer/editor"""
     def __init__(self, conf=None, dbtool=None):
         self.conf = conf
         self.dbtool = dbtool
+        self.divider = urwid.Divider('-')
         self.editor = False
 
     def update(self, date):
@@ -303,6 +305,7 @@ class EventColumn(urwid.WidgetWrap):
 
     def view(self, event):
         self.destroy()
+        self.container.contents.append((self.divider, self.container.options()))
         self.container.contents.append(
             (EventDisplay(self.conf, self.dbtool, event),
              self.container.options()))
@@ -310,15 +313,17 @@ class EventColumn(urwid.WidgetWrap):
     def edit(self, event):
         self.destroy()
         self.editor = True
+        self.container.contents.append((self.divider, self.container.options()))
         self.container.contents.append(
             (EventEditor(self.conf, self.dbtool, event, cancel=self.destroy),
              self.container.options()))
-        self.container.set_focus(1)
+        self.container.set_focus(2)
 
     def destroy(self, _=None):
         self.editor = False
-        if (len(self.container.contents) > 1 and
-                isinstance(self.container.contents[1][0], EventViewer)):
+        if (len(self.container.contents) > 2 and
+                isinstance(self.container.contents[2][0], EventViewer)):
+            self.container.contents.pop()
             self.container.contents.pop()
 
     @classmethod
