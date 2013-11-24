@@ -381,25 +381,37 @@ class StartEndEditor(urwid.WidgetWrap):
 
     def toggle(self, checkbox, state):
         self.allday = state
-        self.startdatewidget = urwid.AttrMap(
-            urwid.Edit(caption=('', 'From: '), edit_text=self.startdate,),
-            self.startdate_bg, 'editcp', )
-        self.enddatewidget = urwid.AttrMap(
-            urwid.Edit(caption=('', 'To:   '), edit_text=self.enddate),
-            self.enddate_bg, 'editcp', )
+        datewidth = len(self.startdate) + 7
+
+
+        edit = urwid.Edit(caption=('', 'From: '), edit_text=self.startdate, wrap='any')
+        edit = urwid.AttrMap(edit, self.startdate_bg, 'editcp', )
+        edit = urwid.Padding(edit, align='left', width=datewidth, left=0, right=1)
+        self.startdatewidget = edit
+
+        edit = urwid.Edit(caption=('', 'To:   '), edit_text=self.enddate, wrap='any')
+        edit = urwid.AttrMap(edit, self.enddate_bg, 'editcp', )
+        edit = urwid.Padding(edit, align='left', width=datewidth, left=0, right=1)
+        self.enddatewidget = edit
         if state is True:
+            timewidth = 1
             self.starttimewidget = urwid.Text('')
             self.endtimewidget = urwid.Text('')
         elif state is False:
-            self.starttimewidget = urwid.AttrMap(
-                urwid.Edit(edit_text=self.starttime),
-                self.starttime_bg, 'editcp', )
-            self.endtimewidget = urwid.AttrMap(
-                urwid.Edit(edit_text=self.endtime),
-                self.endtime_bg, 'editcp', )
+            timewidth = len(self.starttime) + 1
+            edit = urwid.Edit(edit_text=self.starttime, wrap='any')
+            edit = urwid.AttrMap(edit, self.starttime_bg, 'editcp', )
+            edit = urwid.Padding(edit, align='left', width=len(self.starttime) + 1, left=1)
+            self.starttimewidget = edit
+
+            edit = urwid.Edit(edit_text=self.endtime, wrap='any')
+            edit = urwid.AttrMap(edit, self.endtime_bg, 'editcp', )
+            edit = urwid.Padding(edit, align='left', width=len(self.endtime) + 1, left=1)
+            self.endtimewidget = edit
+
         columns = urwid.Pile([
-            urwid.Columns([self.startdatewidget, self.starttimewidget]),
-            urwid.Columns([self.enddatewidget, self.endtimewidget]),
+            urwid.Columns([(datewidth, self.startdatewidget), (timewidth, self.starttimewidget)], dividechars=1),
+            urwid.Columns([(datewidth, self.enddatewidget), (timewidth, self.endtimewidget)], dividechars=1),
             self.checkallday], focus_item=2)
         urwid.WidgetWrap.__init__(self, columns)
 
@@ -426,7 +438,7 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newstartdate(self):
         try:
-            self.startdate = self.startdatewidget.original_widget.get_edit_text()
+            self.startdate = self.startdatewidget.original_widget.original_widget.get_edit_text()
             newstartdate = datetime.strptime(
                 self.startdate,
                 self.conf.default.longdateformat).date()
@@ -439,7 +451,7 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newstarttime(self):
         try:
-            self.starttime = self.starttimewidget.original_widget.get_edit_text()
+            self.starttime = self.starttimewidget.original_widget.original_widget.get_edit_text()
             newstarttime = datetime.strptime(
                 self.starttime,
                 self.conf.default.timeformat).time()
@@ -464,7 +476,7 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newenddate(self):
         try:
-            self.enddate = self.enddatewidget.original_widget.get_edit_text()
+            self.enddate = self.enddatewidget.original_widget.original_widget.get_edit_text()
             newenddate = datetime.strptime(
                 self.enddate,
                 self.conf.default.longdateformat).date()
@@ -477,7 +489,7 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newendtime(self):
         try:
-            self.endtime = self.endtimewidget.original_widget.get_edit_text()
+            self.endtime = self.endtimewidget.original_widget.original_widget.get_edit_text()
             newendtime = datetime.strptime(
                 self.endtime,
                 self.conf.default.timeformat).time()
