@@ -331,12 +331,27 @@ class EventColumn(urwid.WidgetWrap):
         return True
 
 
+class RecursionEditor(urwid.WidgetWrap):
+    def __init__(self, rrule):
+        self.recursive = False if rrule is None else True
+        self.checkRecursion = urwid.CheckBox('repeat', state=self.recursive,
+                                             on_state_change=self.toggle)
+        self.columns = urwid.Columns([self.checkRecursion])
+        urwid.WidgetWrap.__init__(self, self.columns)
+
+    def toggle(self, checkbox, state):
+        if len(self.columns.contents) < 2:
+            text = 'Editing repitition rules is not supported yet'
+            self.columns.contents.append((urwid.Text(text),
+                                          self.columns.options()))
+
+
 class StartEndEditor(urwid.WidgetWrap):
     """
     editing start and nd times of the event
 
-    we cannot changed timezones ATM  # TODO
-    no exception on strings not matching timeformat (but errormessage) # TODO
+    we cannot change timezones ATM  # TODO
+    pop up on strings not matching timeformat # TODO
     """
 
     def __init__(self, start, end, conf):
@@ -542,6 +557,11 @@ class EventEditor(EventViewer):
             self.location = ''
 
         self.startendeditor = StartEndEditor(event.start, event.end, self.conf)
+        try:
+            rrule = self.event.vevent['RRULE']
+        except KeyError:
+            rrule = None
+        self.recursioneditor = RecursionEditor(rrule)
         self.summary = urwid.Edit(
             edit_text=event.vevent['SUMMARY'].encode('utf-8'))
         self.description = urwid.Edit(caption='Description: ',
@@ -552,7 +572,8 @@ class EventEditor(EventViewer):
         save = urwid.Button('Save', on_press=self.save)
         buttons = urwid.Columns([cancel, save])
 
-        self.pile = urwid.Pile([self.summary, self.startendeditor, self.description,
+        self.pile = urwid.Pile([self.summary, self.startendeditor,
+                                self.recursioneditor, self.description,
                                 self.location, urwid.Text(''), buttons])
         self._w = self.pile
 
