@@ -202,6 +202,44 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     return event
 
 
+def new_event(dtstart=None, dtend=None, summary=None, timezone=None):
+    """create a new event
+
+    :param dtstart: starttime of that event
+    :type dtstart: datetime
+    :param dtend: end time of that event
+    :type dtend: datetime
+    :param summary: description of the event, used in the SUMMARY property
+    :type summary: unicode
+    :param timezone: timezone of the event (start and end)
+    :type timezone: pytz.timezone
+    :returns: event
+    :rtype: icalendar.Event
+    """
+    now = datetime.now().timetuple()
+    now = datetime(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour)
+    inonehour = now + timedelta(minutes=60)
+    if dtstart is None:
+        dtstart = inonehour
+    elif isinstance(dtstart, date):
+        time_start = inonehour.time()
+        dtstart = datetime.combine(dtstart, time_start)
+
+    if dtend is None:
+        dtend = dtstart + timedelta(minutes=60)
+    if summary is None:
+        summary = 'New Event'
+    if timezone is not None:
+        dtstart = timezone.localize(dtstart)
+        dtend = timezone.localize(dtend)
+    event = icalendar.Event()
+    event.add('dtstart', dtstart)
+    event.add('dtend', dtend)
+    event.add('summary', summary)
+    event.add('uid', generate_random_uid())
+    return event
+
+
 RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal
 BTEXT = '\x1b[1m'  # bold
