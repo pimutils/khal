@@ -41,8 +41,9 @@ class DateConversionError(Exception):
 class Date(urwid.Text):
     """used in the main calendar for dates"""
 
-    def __init__(self, date):
+    def __init__(self, date, view):
         self.date = date
+        self.view = view
         if date.today == date:
             urwid.AttrMap(super(Date, self).__init__(str(date.day).rjust(2)),
                           None,
@@ -55,7 +56,11 @@ class Date(urwid.Text):
         return True
 
     def keypress(self, _, key):
-        return key
+        if key in ['n']:
+            self.view.new_event(self.date)
+            return 'tab'  # TODO return next
+        else:
+            return key
 
 
 def week_list(count=3):
@@ -79,19 +84,19 @@ class DateColumns(urwid.Columns):
     focus can only move away by pressing 'TAB',
     calls 'call' on every focus change
     """
-    def __init__(self, widget_list, select_date=None, **kwargs):
-        self.select_date = select_date
+    def __init__(self, widget_list, view=None, **kwargs):
+        self.view = view
         super(DateColumns, self).__init__(widget_list, **kwargs)
 
     def _set_focus_position(self, position):
-        """calls 'select_date' before calling super()._set_focus_position"""
+        """calls view.show_date before calling super()._set_focus_position"""
 
         super(DateColumns, self)._set_focus_position(position)
 
         # since first Column is month name, focus should only be 0 during
         # construction
         if not self.contents.focus == 0:
-            self.select_date(self.contents[position][0].original_widget.date)
+            self.view.show_date(self.contents[position][0].original_widget.date)
 
     focus_position = property(urwid.Columns._get_focus_position,
                               _set_focus_position, doc="""
@@ -103,7 +108,7 @@ Columns is empty, or when set to an invalid index.
         """only leave calendar area on pressing 'TAB'"""
 
         old_pos = self.focus_position
-        super(DateColumns, self).keypress(size, key)
+        key = super(DateColumns, self).keypress(size, key)
         if key in ['up', 'down']:  # don't know why this is needed...
             return key
         elif key in ['tab', 'enter']:
@@ -118,10 +123,11 @@ Columns is empty, or when set to an invalid index.
             return key
 
 
-def construct_week(week, select_date=None):
+def construct_week(week, view):
     """
     :param week: list of datetime.date objects
-    :param select_date: function to call on selecting date
+    :param view: passed along for back calling
+    :type view: a View (ClassicView) object
     returns urwid.Columns
     """
     if 1 in [day.day for day in week]:
@@ -133,18 +139,18 @@ def construct_week(week, select_date=None):
     today = None
     for number, day in enumerate(week):
         if day == date.today():
-            this_week.append((2, urwid.AttrMap(Date(day),
+            this_week.append((2, urwid.AttrMap(Date(day, view),
                                                'today', 'today_focus')))
             today = number + 1
         else:
-            this_week.append((2, urwid.AttrMap(Date(day),
+            this_week.append((2, urwid.AttrMap(Date(day, view),
                                                None, 'reveal focus')))
-    week = DateColumns(this_week, select_date=select_date, dividechars=1,
+    week = DateColumns(this_week, view=view, dividechars=1,
                        focus_column=today)
     return week, bool(today)
 
 
-def calendar_walker(select_date=None):
+def calendar_walker(view):
     """hopefully this will soon become a real "walker",
     loading new weeks as nedded"""
     lines = list()
@@ -154,7 +160,7 @@ def calendar_walker(select_date=None):
     lines = [daynames]
     focus_item = None
     for number, week in enumerate(week_list()):
-        week, contains_today = construct_week(week, select_date=select_date)
+        week, contains_today = construct_week(week, view)
         if contains_today:
             focus_item = number + 1
         lines.append(week)
@@ -630,12 +636,13 @@ class ClassicView(Pane):
     on the right
     """
     def __init__(self, conf=None, dbtool=None, title=u'', description=u''):
-        eventscolumn = EventColumn(conf=conf, dbtool=dbtool)
-        weeks = calendar_walker(select_date=eventscolumn.update)
-        columns = urwid.Columns([(25, weeks), eventscolumn], dividechars=2)
+        self.eventscolumn = EventColumn(conf=conf, dbtool=dbtool)
+        weeks = calendar_walker(view=self)
+        columns = urwid.Columns([(25, weeks), self.eventscolumn],
+                                dividechars=2)
 
         fill = urwid.Filler(columns)
-        eventscolumn.update(date.today())  # showing with today's events
+        self.eventscolumn.update(date.today())  # showing with today's events
         Pane.__init__(self, fill, title=title, description=description)
 
     def get_keys(self):
@@ -643,6 +650,9 @@ class ClassicView(Pane):
                 (['enter'], 'select a date'),
                 (['q'], 'quit')
                 ]
+
+    def show_date(self, date):
+        self.eventscolumn.update(date)
 
 
 def start_pane(pane, header=''):

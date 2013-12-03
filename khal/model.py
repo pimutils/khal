@@ -32,6 +32,8 @@ class Event(object):
                  default_tz=None, start=None, end=None, color=None,
                  readonly=False):
         self.vevent = icalendar.Event.from_ical(ical)
+        if account is None:
+            raise TypeError('account must not be None')
         self.allday = True
         self.color = color
         self.status = status
