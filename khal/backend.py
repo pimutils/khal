@@ -27,7 +27,7 @@ The SQLite backend implementation.
 Database Layout
 ===============
 
-current version number: 9
+current version number: 1
 tables: version, accounts, account_$ACCOUNTNAME
 
 version:
