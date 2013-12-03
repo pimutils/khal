@@ -40,6 +40,7 @@ from khal import backend
 from khal import caldav
 from khal import calendar_display
 from khal.aux import bstring
+from khal import __version__, __productname__
 
 
 class Controller(object):
@@ -208,4 +209,6 @@ class Interactive(Controller):
     def __init__(self, conf):
         from khal import ui
         super(Interactive, self).__init__(conf)
-        ui.interactive(conf=conf, dbtool=self.dbtool)
+        ui.start_pane(ui.ClassicView(conf, self.dbtool, title='select an event',
+                                     description='do something'),
+                      header=u'{0} v{1}'.format(__productname__, __version__))

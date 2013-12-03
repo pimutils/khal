@@ -29,36 +29,13 @@ from datetime import datetime
 
 import urwid
 
-from . import backend
+from .. import backend
 
-palette = [('header', 'white', 'black'),
-           ('reveal focus', 'black', 'dark cyan', 'standout'),
-           ('today_focus', 'white', 'black', 'standout'),
-           ('today', 'black', 'white', 'dark cyan'),
-           ('edit', 'white', 'dark blue'),
-           ('alert', 'white', 'dark red'),
+from base import Pane, Window
 
-           ('editfc', 'white', 'dark blue', 'bold'),
-           ('editbx', 'light gray', 'dark blue'),
-           ('editcp', 'black', 'light gray', 'standout'),
 
-           ('black', 'black', ''),
-           ('dark red', 'dark red', ''),
-           ('dark green', 'dark green', ''),
-           ('brown', 'brown', ''),
-           ('dark blue', 'dark blue', ''),
-           ('dark magenta', 'dark magenta', ''),
-           ('dark cyan', 'dark cyan', ''),
-           ('light gray', 'light gray', ''),
-           ('dark gray', 'dark gray', ''),
-           ('light red', 'light red', ''),
-           ('light green', 'light green', ''),
-           ('yellow', 'yellow', ''),
-           ('light blue', 'light blue', ''),
-           ('light magenta', 'light magenta', ''),
-           ('light cyan', 'light cyan', ''),
-           ('white', 'white', ''),
-           ]
+class DateConversionError(Exception):
+    pass
 
 
 class Date(urwid.Text):
@@ -84,16 +61,16 @@ class Date(urwid.Text):
 def week_list(count=3):
     month = date.today().month
     year = date.today().year
-    khal = list()
+    cal = list()
     for _ in range(count):
         for week in calendar.Calendar(0).monthdatescalendar(year, month):
-            if week not in khal:
-                khal.append(week)
+            if week not in cal:
+                cal.append(week)
         month = month + 1
         if month > 12:
             month = 1
             year = year + 1
-    return khal
+    return cal
 
 
 class DateColumns(urwid.Columns):
@@ -305,7 +282,8 @@ class EventColumn(urwid.WidgetWrap):
 
     def view(self, event):
         self.destroy()
-        self.container.contents.append((self.divider, self.container.options()))
+        self.container.contents.append((self.divider,
+                                        self.container.options()))
         self.container.contents.append(
             (EventDisplay(self.conf, self.dbtool, event),
              self.container.options()))
@@ -313,7 +291,8 @@ class EventColumn(urwid.WidgetWrap):
     def edit(self, event):
         self.destroy()
         self.editor = True
-        self.container.contents.append((self.divider, self.container.options()))
+        self.container.contents.append((self.divider,
+                                        self.container.options()))
         self.container.contents.append(
             (EventEditor(self.conf, self.dbtool, event, cancel=self.destroy),
              self.container.options()))
@@ -382,7 +361,6 @@ class StartEndEditor(urwid.WidgetWrap):
     def toggle(self, checkbox, state):
         self.allday = state
         datewidth = len(self.startdate) + 7
-
 
         edit = urwid.Edit(caption=('', 'From: '), edit_text=self.startdate, wrap='any')
         edit = urwid.AttrMap(edit, self.startdate_bg, 'editcp', )
@@ -645,20 +623,33 @@ class EventEditor(EventViewer):
             return key
 
 
-def exit(key):
-    if key in ('q', 'Q', 'esc'):
-        raise urwid.ExitMainLoop()
+class ClassicView(Pane):
+    """default Pane for khal
+
+    showing a CalendarWalker on the left and the eventList + eventviewer/editor
+    on the right
+    """
+    def __init__(self, conf=None, dbtool=None, title=u'', description=u''):
+        eventscolumn = EventColumn(conf=conf, dbtool=dbtool)
+        weeks = calendar_walker(select_date=eventscolumn.update)
+        columns = urwid.Columns([(25, weeks), eventscolumn], dividechars=2)
+
+        fill = urwid.Filler(columns)
+        eventscolumn.update(date.today())  # showing with today's events
+        Pane.__init__(self, fill, title=title, description=description)
+
+    def get_keys(self):
+        return [(['arrows'], 'navigate through the calendar'),
+                (['enter'], 'select a date'),
+                (['q'], 'quit')
+                ]
 
 
-def interactive(conf=None, dbtool=None):
-    eventscolumn = EventColumn(conf=conf, dbtool=dbtool)
-    weeks = calendar_walker(select_date=eventscolumn.update)
-    columns = urwid.Columns([(25, weeks), eventscolumn], dividechars=2)
-
-    fill = urwid.Filler(columns)
-    eventscolumn.update(date.today())  # showing with today's events
-    urwid.MainLoop(fill, palette=palette, unhandled_input=exit).run()
-
-
-class DateConversionError(Exception):
-    pass
+def start_pane(pane, header=''):
+    """Open the user interface with the given initial pane."""
+    frame = Window(header=header,
+                   footer='arrows: navigate, enter: select, q: quit, ?: help')
+    frame.open(pane)
+    loop = urwid.MainLoop(frame, Window.PALETTE,
+                          unhandled_input=frame.on_key_press)
+    loop.run()
