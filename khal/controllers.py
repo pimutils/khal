@@ -207,7 +207,7 @@ class NewFromString(Controller):
 
 class Interactive(Controller):
     def __init__(self, conf):
-        from khal import ui
+        import ui
         super(Interactive, self).__init__(conf)
         ui.start_pane(ui.ClassicView(conf, self.dbtool, title='select an event',
                                      description='do something'),

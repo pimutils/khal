@@ -70,7 +70,7 @@ setup(
     author_email='khal@lostpackets.de',
     url='http://lostpackets.de/khal/',
     license='Expat/MIT',
-    packages=['khal'],
+    packages=['khal', 'khal/ui'],
     scripts=['bin/khal', 'bin/ikhal'],
     requires=requirements,
     classifiers=[
