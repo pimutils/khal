@@ -10,7 +10,6 @@ TODO
   * edit recurrence rules
   * show which resource an event belongs to and make it editable
   * edit recurrence rules
-  * reload EventList after editing or adding an event
 
 
 DONE
@@ -32,6 +31,7 @@ DONE
 * ikhal:
   * help text
   * new event on pressing n in calendar
+  * reload EventList after editing or adding an event
   * prevent user from leaving EventEditor by pressing left or top (at least when event has been modified)
 
         * layout should probably be::

@@ -281,11 +281,12 @@ class EventColumn(urwid.WidgetWrap):
         self.dbtool = dbtool
         self.divider = urwid.Divider('-')
         self.editor = False
+        self.date = None
 
     def update(self, date):
         """create an EventList populated with Events for `date` and display it
         """
-
+        self.date = date
         # TODO make this switch from pile to columns depending on terminal size
         events = EventList(conf=self.conf, dbtool=self.dbtool,
                            eventcolumn=self)
@@ -322,10 +323,12 @@ class EventColumn(urwid.WidgetWrap):
              self.container.options()))
         self.container.set_focus(2)
 
-    def destroy(self, _=None):
+    def destroy(self, _=None, refresh=False):
         """
         if an EventViewer or EventEditor is displayed, remove it
         """
+        if refresh and not self.date is None:
+            self.update(self.date)
         self.editor = False
         if (len(self.container.contents) > 2 and
                 isinstance(self.container.contents[2][0], EventViewer)):
@@ -660,7 +663,7 @@ class EventEditor(EventViewer):
                                self.event.account,
                                self.event.href,
                                status=status)
-        self.cancel()
+        self.cancel(refresh=True)
 
     def keypress(self, size, key):
         key = super(EventEditor, self).keypress(size, key)
