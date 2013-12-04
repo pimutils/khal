@@ -411,10 +411,14 @@ class StartEndEditor(urwid.WidgetWrap):
     def newstart(self):
         newstartdatetime = self._newstartdate
         if not self.checkallday.state:
+            if self.startdt.tzinfo is None:
+                tzinfo = self.conf.default_timezone
+            else:
+                tzinfo = self.startdt.tzinfo
             try:
                 newstarttime = self._newstarttime
                 newstartdatetime = datetime.combine(newstartdatetime, newstarttime)
-                newstartdatetime = self.startdt.tzinfo.localize(newstartdatetime)
+                newstartdatetime = tzinfo.localize(newstartdatetime)
             except TypeError:
                 return None
         return newstartdatetime
@@ -449,10 +453,14 @@ class StartEndEditor(urwid.WidgetWrap):
     def newend(self):
         newenddatetime = self._newenddate
         if not self.checkallday.state:
+            if self.enddt.tzinfo is None:
+                tzinfo = self.conf.default.default_timezone
+            else:
+                tzinfo = self.enddt.tzinfo
             try:
                 newendtime = self._newendtime
                 newenddatetime = datetime.combine(newenddatetime, newendtime)
-                newenddatetime = self.enddt.tzinfo.localize(newenddatetime)
+                newenddatetime = tzinfo.localize(newenddatetime)
             except TypeError:
                 return None
         return newenddatetime
