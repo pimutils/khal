@@ -252,7 +252,7 @@ class SQLiteDb(object):
                 if component.name == 'VEVENT':
                     vevent = component
         all_day_event = False
-        if href is '':
+        if href == '' or href is None:
             href = get_random_href()
         if 'VALUE' in vevent['DTSTART'].params:
             if vevent['DTSTART'].params['VALUE'] == 'DATE':
