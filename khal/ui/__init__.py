@@ -29,7 +29,7 @@ from datetime import datetime
 
 import urwid
 
-from .. import backend
+from .. import aux, backend, model
 
 from base import Pane, Window
 
@@ -170,11 +170,15 @@ def calendar_walker(view):
 
 
 class Event(urwid.Text):
-    """representation of event in Eventlist
-    """
-
     def __init__(self, event, this_date=None, conf=None, dbtool=None,
                  eventcolumn=None):
+        """
+        representation of an event in EventList
+
+        :param event: the encapsulated event
+        :tpye event: khal.model.event
+        """
+
         self.event = event
         self.this_date = this_date
         self.dbtool = dbtool
@@ -279,6 +283,9 @@ class EventColumn(urwid.WidgetWrap):
         self.editor = False
 
     def update(self, date):
+        """create an EventList populated with Events for `date` and display it
+        """
+
         # TODO make this switch from pile to columns depending on terminal size
         events = EventList(conf=self.conf, dbtool=self.dbtool,
                            eventcolumn=self)
@@ -287,6 +294,12 @@ class EventColumn(urwid.WidgetWrap):
         self._w = self.container
 
     def view(self, event):
+        """
+        show an event's details
+
+        :param event: event to view
+        :type event: khal.model.Event
+        """
         self.destroy()
         self.container.contents.append((self.divider,
                                         self.container.options()))
@@ -295,6 +308,11 @@ class EventColumn(urwid.WidgetWrap):
              self.container.options()))
 
     def edit(self, event):
+        """create an EventEditor and display it
+
+        :param event: event to edit
+        :type event: khal.model.Event
+        """
         self.destroy()
         self.editor = True
         self.container.contents.append((self.divider,
@@ -305,11 +323,28 @@ class EventColumn(urwid.WidgetWrap):
         self.container.set_focus(2)
 
     def destroy(self, _=None):
+        """
+        if an EventViewer or EventEditor is displayed, remove it
+        """
         self.editor = False
         if (len(self.container.contents) > 2 and
                 isinstance(self.container.contents[2][0], EventViewer)):
             self.container.contents.pop()
             self.container.contents.pop()
+
+    def new(self, date):
+        """create a new event on date
+
+        :param date: default date for new event
+        :type date: datetime.date
+        """
+        event = aux.new_event(dtstart=date,
+                              timezone=self.conf.default.default_timezone)
+        event = model.Event(ical=event.to_ical(), status=backend.NEW,
+                            account=list(self.conf.sync.accounts)[-1])
+        self.edit(event)
+
+
 
     @classmethod
     def selectable(cls):
@@ -661,6 +696,9 @@ class ClassicView(Pane):
 
     def show_date(self, date):
         self.eventscolumn.update(date)
+
+    def new_event(self, date):
+        self.eventscolumn.new(date)
 
 
 def start_pane(pane, header=''):
