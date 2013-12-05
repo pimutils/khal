@@ -23,6 +23,25 @@ resource: https://blobhal.de/owncloud/remote.php/caldav/calendars/doe/work
 # verify can be set to True (default), False (No SSL certificates are checked,
 # or to a path to a pem cert
 verify: /home/jd/.khal/cacert.pem
+# If that dose not solve the SSL error
+# you will need rename or link to the CA.pem formated file with the name set to 
+# the x509 -hash value of the PEM cert file.
+#
+# You  hash vlaue of the CA certificate which signed your cladav
+# server's certificat with OpenSSL. It is best to create the link system wide,
+# But you will need to be
+#
+# ln -s CA.pem /etc/ssl/certs/`openssl x509 -hash -noout -in CA.pem`.0
+# verify: /etc/ssl/certs/3b015462.0
+# 
+# Or rename it to the value of it's hash.
+# $ openssl x509 -hash -noout -in ~/.hkal/CA.pem
+#  3b015462
+#
+# Just append a ".0" to the end and rename, and may as well move it system wide
+# sudo mv CA.pem /etc/ssl/certs/3b015462.0
+# verify: /etc/ssl/certs/3b015462.0
+#
 
 [Account simple]
 # setting the type to http (default is caldav) makes a simple read only syncer
