@@ -1,0 +1,45 @@
+# Maintainer: Thomas Dwyer <aur@tomd.tel>
+pkgname=khal
+pkgver=0.1.0.dev
+pkgrel=1
+pkgdesc=""
+arch=(any)
+url="https://github.com/geier/khal.git"
+license=('GPL')
+groups=()
+depends=(python2-lxml python2-requests python2-urwid python2-xdg python2-icalendar python2-pysqlite python2-dateutil python2-ndg-httpsclient python2-grequests)
+makedepends=()
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=()
+noextract=()
+md5sums=(skip) #generate with 'makepkg -g'
+
+build() {
+    #
+    msg "Connecting to GIT server..."
+    if [[ -d ${srcdir}/${pkgname} ]]; then
+      cd ${srcdir}/${pkgname} && git pull origin || return 1
+    else
+      mkdir -p ${srcdir}/${pkgname}
+      git clone ${url} ${srcdir}/${pkgname} || return 1
+      cd ${srcdir}/${pkgname}
+    fi
+    msg "GIT checkout done or server timeout"
+        #
+}
+
+package() {
+  cd "$srcdir/$pkgname"
+  PYTHONPATH=${pkgdir}
+  /usr/bin/python2 setup.py install --root=${pkgdir}
+  mkdir -p ${pkgdir}/etc/khal
+  cp khal.conf.sample ${pkgdir}/etc/khal/khal.conf
+  cp README.rst ${pkgdir}/etc/khal
+}
