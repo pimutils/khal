@@ -38,6 +38,43 @@ class DateConversionError(Exception):
     pass
 
 
+class AccountList(urwid.WidgetWrap):
+    signals = ['close']
+
+    def __init__(self, accounts):
+        acc_list = []
+        for one in accounts:
+            button = urwid.Button(one)
+            acc_list.append(button)
+            urwid.connect_signal(button, 'click',
+                                 lambda button: self._emit("close"))
+        pile = urwid.Pile(acc_list)
+        fill = urwid.Filler(pile)
+        self.__super.__init__(urwid.AttrMap(fill, 'popupbg'))
+
+
+class AccountChooser(urwid.PopUpLauncher):
+    def __init__(self, active_account, accounts):
+        self.active_account = active_account
+        self.accounts = accounts
+        self.button = urwid.Button(active_account)
+        self.__super.__init__(self.button)
+        urwid.connect_signal(self.button, 'click',
+                             lambda button: self.open_pop_up())
+
+    def create_pop_up(self):
+        pop_up = AccountList(self.accounts)
+        urwid.connect_signal(pop_up, 'close',
+                             lambda button: self.close_pop_up())
+        return pop_up
+
+    def get_pop_up_parameters(self):
+        return {'left': 0,
+                'top': 1,
+                'overlay_width': 32,
+                'overlay_height': len(self.accounts)}
+
+
 class Date(urwid.Text):
     """used in the main calendar for dates"""
 
@@ -347,8 +384,6 @@ class EventColumn(urwid.WidgetWrap):
                             account=list(self.conf.sync.accounts)[-1])
         self.edit(event)
 
-
-
     @classmethod
     def selectable(cls):
         return True
@@ -606,6 +641,10 @@ class EventEditor(EventViewer):
         self.recursioneditor = RecursionEditor(rrule)
         self.summary = urwid.Edit(
             edit_text=event.vevent['SUMMARY'].encode('utf-8'))
+        self.accountchooser = AccountChooser(self.event.account,
+                                             self.conf.sync.accounts)
+        accounts = urwid.Columns([(9, urwid.Text('Calendar:')),
+                                  self.accountchooser])
         self.description = urwid.Edit(caption='Description: ',
                                       edit_text=self.description)
         self.location = urwid.Edit(caption='Location: ',
@@ -614,7 +653,9 @@ class EventEditor(EventViewer):
         save = urwid.Button('Save', on_press=self.save)
         buttons = urwid.Columns([cancel, save])
 
-        self.pile = urwid.Pile([self.summary, self.startendeditor,
+        self.pile = urwid.Pile([self.summary,
+                                accounts,
+                                self.startendeditor,
                                 self.recursioneditor, self.description,
                                 self.location, urwid.Text(''), buttons])
         self._w = self.pile
@@ -710,5 +751,6 @@ def start_pane(pane, header=''):
                    footer='arrows: navigate, enter: select, q: quit, ?: help')
     frame.open(pane)
     loop = urwid.MainLoop(frame, Window.PALETTE,
-                          unhandled_input=frame.on_key_press)
+                          unhandled_input=frame.on_key_press,
+                          pop_ups=True)
     loop.run()

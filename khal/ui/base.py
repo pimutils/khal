@@ -111,6 +111,7 @@ class Window(urwid.Frame):
                ('editfc', 'white', 'dark blue', 'bold'),
                ('editbx', 'light gray', 'dark blue'),
                ('editcp', 'black', 'light gray', 'standout'),
+               ('popupbg', 'white', 'black', 'bold'),
 
                ('black', 'black', ''),
                ('dark red', 'dark red', ''),
