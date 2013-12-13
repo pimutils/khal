@@ -699,16 +699,40 @@ class EventEditor(EventViewer):
 
     @property
     def changed(self):
+        # TODO refactor
+        changed = False
+        if self.summary.get_edit_text() != self.event.vevent['SUMMARY']:
+            changed = True
+
+        key = 'DESCRIPTION'
+        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key] ) or
+                self.description.get_edit_text() != ''):
+            changed = True
+
+        key = 'LOCATION'
+        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key] ) or
+                self.location.get_edit_text() != ''):
+            changed = True
+
+        if self.startendeditor.changed:
+            changed = True
+        if self.accountchooser.changed:
+            self.event.account = self.accountchooser.account
+            changed = True
+        return changed
+
+    def update(self):
         changed = False
         if self.summary.get_edit_text() != self.event.vevent['SUMMARY']:
             self.event.vevent['SUMMARY'] = self.summary.get_edit_text()
             changed = True
-        if self.description.get_edit_text() != self.description:
-            self.event.vevent['DESCRIPTION'] = self.description.get_edit_text()
-            changed = True
-        if self.location.get_edit_text() != self.location:
-            self.event.vevent['LOCATION'] = self.location.get_edit_text()
-            changed = True
+
+        for key, prop in [('DESCRIPTION', self.description), ('LOCATION', self.location)]:
+            if ((key in self.event.vevent and prop.get_edit_text() != self.event.vevent[key] ) or
+                    prop.get_edit_text() != ''):
+                self.event.vevent[key] = prop.get_edit_text()
+                changed = True
+
         if self.startendeditor.changed:
             self.event.vevent['DTSTART'].dt = self.startendeditor.newstart
             self.event.vevent['DTEND'].dt = self.startendeditor.newend
@@ -719,7 +743,12 @@ class EventEditor(EventViewer):
         return changed
 
     def save(self, button):
+        """
+        saves the event to the db (only when it has been changed)
+        :param button: not needed, passed via the button press
+        """
         changed = self.changed  # need to call this to set startdate_bg etc. to False
+        self.update()
         if 'alert' in [self.startendeditor.startdate_bg,
                        self.startendeditor.starttime_bg,
                        self.startendeditor.enddate_bg,
@@ -728,6 +757,8 @@ class EventEditor(EventViewer):
             self.pile.set_focus(1)  # the startendeditor
             return
         if changed is True:
+            import ipdb; ipdb.set_trace()
+
             try:
                 self.event.vevent['SEQUENCE'] += 1
             except KeyError:
@@ -749,11 +780,15 @@ class EventEditor(EventViewer):
         self.cancel(refresh=True)
 
     def keypress(self, size, key):
+        if key in ['esc']:
+            if self.changed:
+                return
+            else:
+                self.cancel()
+                return
         key = super(EventEditor, self).keypress(size, key)
         if key in ['left', 'up']:
             return
-        elif key in ['esc'] and not self.changed:
-            self.cancel()
         else:
             return key
 

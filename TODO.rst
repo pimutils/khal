@@ -3,13 +3,19 @@ TODO
 
 * exceptions to recurrent events
 * use a writable calendar for as a default calendar
+* make read-only calendars static
+
+* khal default ui:
+  * show which calendar/resource an events belongs to
 
 * ikhal:
   * new weeks should be loaded into the walker
   * make it look prettier
   * edit recurrence rules
-  * show which resource an event belongs to and make it editable
-  * edit recurrence rules
+  * do not loose chosen day highlight when focussing on Event Column
+  * warning on pressing 'esc' in event editor when event has changed (including
+    options to save and discard edit)
+
 
 
 DONE
@@ -32,6 +38,7 @@ DONE
   * help text
   * new event on pressing n in calendar
   * reload EventList after editing or adding an event
+  * show which resource/calendar an event belongs to and make it editable
   * prevent user from leaving EventEditor by pressing left or top (at least when event has been modified)
 
         * layout should probably be::

@@ -151,8 +151,6 @@ class Sync(Controller):
                     self.dbtool.delete(href, sync_account.name)
 
 
-
-
 class Display(Controller):
     def __init__(self, conf):
         super(Display, self).__init__(conf)
@@ -161,6 +159,7 @@ class Display(Controller):
         daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
         event_column = list()
         for day, dayname in daylist:
+            # TODO unify allday and datetime events
             start = datetime.datetime.combine(day, datetime.time.min)
             end = datetime.datetime.combine(day, datetime.time.max)
 
@@ -177,11 +176,14 @@ class Display(Controller):
                     readonly=readonly,
                     unicode_symbols=conf.default.unicode_symbols,
                     show_deleted=False)
-                events += self.dbtool.get_time_range(start, end, account,
-                                                     color=color,
-                                                     readonly=readonly,
-                                                     unicode_symbols=conf.default.unicode_symbols,
-                                                     show_deleted=False)
+                events += self.dbtool.get_time_range(
+                    start,
+                    end,
+                    account,
+                    color=color,
+                    readonly=readonly,
+                    unicode_symbols=conf.default.unicode_symbols,
+                    show_deleted=False)
             for event in all_day_events:
                 event_column.append(aux.colored(event.compact(day), event.color))
             events.sort(key=lambda e: e.start)
