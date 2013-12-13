@@ -27,11 +27,13 @@ import datetime
 
 import icalendar
 
+from .status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
+
 
 class Event(object):
     def __init__(self, ical, status=0, href=None, account=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
-                 readonly=False, unicode_symbols=True):
+                 readonly=False, unicode_symbols=True, dbtool=None):
         self.vevent = icalendar.Event.from_ical(ical)
         if account is None:
             raise TypeError('account must not be None')
@@ -42,6 +44,7 @@ class Event(object):
         self.account = account
         self.readonly = readonly
         self.unicode_symbols = unicode_symbols
+        self.dbtool = dbtool
 
         if unicode_symbols:
             self.recurstr = u' ⟳'
@@ -98,11 +101,11 @@ class Event(object):
         return 'RRULE' in self.vevent.keys()
 
     def compact(self, day, timeformat='%H:%M'):
-        if self.status == 9:
+        if self.status == DELETED:
             status = 'D '
-        elif self.status == 11:
+        elif self.status == NEWDELETE:
             status = 'X '
-        elif self.status == 1:
+        elif self.status == NEW:
             status = 'N '
         else:
             status = ''

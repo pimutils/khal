@@ -78,12 +78,7 @@ import pytz
 import xdg.BaseDirectory
 
 from .model import Event
-
-OK = 0  # not touched since last sync
-NEW = 1  # new card, needs to be created on the server
-CHANGED = 2  # properties edited or added (news to be pushed to server)
-DELETED = 9  # marked for deletion (needs to be deleted on server)
-NEWDELETE = 11  # card should be deleted on exit (not yet on the server)
+from .status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
 
 
 class UpdateFailed(Exception):
@@ -245,6 +240,7 @@ class SQLiteDb(object):
         :type status: one of backend.OK, backend.NEW, backend.CHANGED,
                       backend.DELETED
 
+
         """
         if not isinstance(vevent, icalendar.cal.Event):
             ical = icalendar.Event.from_ical(vevent)
@@ -372,11 +368,10 @@ class SQLiteDb(object):
         removes the event from the db,
         returns nothing
         """
-        stuple = (href, )
         logging.debug("locally deleting " + str(href))
         for dbname in [account_name + '_d', account_name + '_dt', account_name]:
             sql_s = 'DELETE FROM {0} WHERE href = ? ;'.format(dbname)
-            self.sql_ex(sql_s, (href ,))
+            self.sql_ex(sql_s, (href, ))
 
     def get_all_href_from_db(self, accounts):
         """returns a list with all hrefs

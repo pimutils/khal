@@ -30,6 +30,8 @@ from datetime import datetime
 import urwid
 
 from .. import aux, backend, model
+from ..status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
+
 
 from base import Pane, Window
 
@@ -41,21 +43,27 @@ class DateConversionError(Exception):
 class AccountList(urwid.WidgetWrap):
     signals = ['close']
 
-    def __init__(self, accounts):
+    def __init__(self, accounts, account_chooser):
+        self.account_chooser = account_chooser
         acc_list = []
         for one in accounts:
-            button = urwid.Button(one)
+            button = urwid.Button(one, on_press=self.set_account,
+                                  user_data=one)
+
             acc_list.append(button)
-            urwid.connect_signal(button, 'click',
-                                 lambda button: self._emit("close"))
         pile = urwid.Pile(acc_list)
         fill = urwid.Filler(pile)
         self.__super.__init__(urwid.AttrMap(fill, 'popupbg'))
+
+    def set_account(self, button, account):
+        self.account_chooser.account = account
+        self._emit("close")
 
 
 class AccountChooser(urwid.PopUpLauncher):
     def __init__(self, active_account, accounts):
         self.active_account = active_account
+        self.original_account = active_account
         self.accounts = accounts
         self.button = urwid.Button(active_account)
         self.__super.__init__(self.button)
@@ -63,7 +71,7 @@ class AccountChooser(urwid.PopUpLauncher):
                              lambda button: self.open_pop_up())
 
     def create_pop_up(self):
-        pop_up = AccountList(self.accounts)
+        pop_up = AccountList(self.accounts, self)
         urwid.connect_signal(pop_up, 'close',
                              lambda button: self.close_pop_up())
         return pop_up
@@ -73,6 +81,25 @@ class AccountChooser(urwid.PopUpLauncher):
                 'top': 1,
                 'overlay_width': 32,
                 'overlay_height': len(self.accounts)}
+
+    @property
+    def changed(self):
+        if self.active_account == self.original_account:
+            return False
+        else:
+            return True
+
+    @property
+    def account(self):
+        return self.active_account
+
+    @account.setter
+    def account(self, account):
+        self.active_account = account
+        self.button = urwid.Button(self.active_account)
+        self.__super.__init__(self.button)
+        urwid.connect_signal(self.button, 'click',
+                             lambda button: self.open_pop_up())
 
 
 class Date(urwid.Text):
@@ -230,14 +257,14 @@ class Event(urwid.Text):
 
     def toggle_delete(self):
         if self.event.readonly is False:
-            if self.event.status == backend.OK:
-                toggle = backend.DELETED
-            elif self.event.status == backend.DELETED:
-                toggle = backend.OK
-            elif self.event.status == backend.NEW:
-                toggle = backend.NEWDELETE
-            elif self.event.status == backend.NEWDELETE:
-                toggle = backend.NEW
+            if self.event.status == OK:
+                toggle = DELETED
+            elif self.event.status == DELETED:
+                toggle = OK
+            elif self.event.status == NEW:
+                toggle = NEWDELETE
+            elif self.event.status == NEWDELETE:
+                toggle = NEW
             self.event.status = toggle
             self.set_text(self.event.compact(self.this_date))
             self.dbtool.set_status(self.event.href, toggle, self.event.account)
@@ -380,7 +407,7 @@ class EventColumn(urwid.WidgetWrap):
         """
         event = aux.new_event(dtstart=date,
                               timezone=self.conf.default.default_timezone)
-        event = model.Event(ical=event.to_ical(), status=backend.NEW,
+        event = model.Event(ical=event.to_ical(), status=NEW,
                             account=list(self.conf.sync.accounts)[-1])
         self.edit(event)
 
@@ -621,6 +648,10 @@ class EventEditor(EventViewer):
     Widget for event Editing
     """
     def __init__(self, conf, dbtool, event, cancel=None):
+        """
+        :type event: khal.model.Event
+        """
+
         super(EventEditor, self).__init__(conf, dbtool)
         self.event = event
         self.cancel = cancel
@@ -643,7 +674,7 @@ class EventEditor(EventViewer):
             edit_text=event.vevent['SUMMARY'].encode('utf-8'))
         self.accountchooser = AccountChooser(self.event.account,
                                              self.conf.sync.accounts)
-        accounts = urwid.Columns([(9, urwid.Text('Calendar:')),
+        accounts = urwid.Columns([(9, urwid.Text('Calendar: ')),
                                   self.accountchooser])
         self.description = urwid.Edit(caption='Description: ',
                                       edit_text=self.description)
@@ -680,6 +711,9 @@ class EventEditor(EventViewer):
             self.event.vevent['DTSTART'].dt = self.startendeditor.newstart
             self.event.vevent['DTEND'].dt = self.startendeditor.newend
             changed = True
+        if self.accountchooser.changed:
+            changed = True
+            self.event.account = self.accountchooser.account
         return changed
 
     def save(self, button):
@@ -696,10 +730,16 @@ class EventEditor(EventViewer):
                 self.event.vevent['SEQUENCE'] += 1
             except KeyError:
                 self.event.vevent['SEQUNCE'] = 0
-            if self.event.status == backend.NEW:
-                status = backend.NEW
+            if self.event.status == NEW:
+                status = NEW
             else:
-                status = backend.CHANGED
+                status = CHANGED
+            if self.accountchooser.changed:
+                delstatus = NEWDELETE if self.event.status == NEW else CALCHANGED
+                self.dbtool.set_status(self.event.href,
+                                       delstatus,
+                                       self.accountchooser.original_account)
+                status = NEW
             self.dbtool.update(self.event.vevent.to_ical(),
                                self.event.account,
                                self.event.href,
