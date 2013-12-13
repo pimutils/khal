@@ -171,12 +171,17 @@ class Display(Controller):
                 readonly = conf.accounts[account]['readonly']
                 color = conf.accounts[account]['color']
                 all_day_events += self.dbtool.get_allday_range(
-                    day, account_name=account, color=color, readonly=readonly,
-                    unicode_symbols=conf.default.unicode_symbols)
+                    day,
+                    account_name=account,
+                    color=color,
+                    readonly=readonly,
+                    unicode_symbols=conf.default.unicode_symbols,
+                    show_deleted=False)
                 events += self.dbtool.get_time_range(start, end, account,
                                                      color=color,
                                                      readonly=readonly,
-                                                     unicode_symbols=conf.default.unicode_symbols)
+                                                     unicode_symbols=conf.default.unicode_symbols,
+                                                     show_deleted=False)
             for event in all_day_events:
                 event_column.append(aux.colored(event.compact(day), event.color))
             events.sort(key=lambda e: e.start)

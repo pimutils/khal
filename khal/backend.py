@@ -81,6 +81,9 @@ from .model import Event
 from .status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
 
 
+# TODO fix that event/vevent mess
+
+
 class UpdateFailed(Exception):
     """raised if update not possible"""
     pass
@@ -393,10 +396,11 @@ class SQLiteDb(object):
         return result
 
     def get_time_range(self, start, end, account_name, color='', readonly=False,
-                       unicode_symbols=True):
+                       unicode_symbols=True, show_deleted=True):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
+        :param deleted: include deleted events in returned lsit
         """
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
@@ -415,12 +419,13 @@ class SQLiteDb(object):
                                             color=color,
                                             readonly=readonly,
                                             unicode_symbols=unicode_symbols)
-            event_list.append(event)
+            if show_deleted or event.status not in [DELETED, CALCHANGED, NEWDELETE]:
+                event_list.append(event)
 
         return event_list
 
     def get_allday_range(self, start, end=None, account_name=None,
-                         color='', readonly=False, unicode_symbols=True):
+                         color='', readonly=False, unicode_symbols=True, show_deleted=True):
         if account_name is None:
             raise Exception('need to specify an account_name')
         strstart = start.strftime('%Y%m%d')
@@ -444,7 +449,8 @@ class SQLiteDb(object):
                                              color=color,
                                              readonly=readonly,
                                              unicode_symbols=unicode_symbols)
-            event_list.append(vevent)
+            if show_deleted or vevent.status not in [DELETED, CALCHANGED, NEWDELETE]:
+                event_list.append(vevent)
         return event_list
 
     def hrefs_by_time_range_datetime(self, start, end, account_name, color=''):

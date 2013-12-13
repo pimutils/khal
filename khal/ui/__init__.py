@@ -311,10 +311,12 @@ class EventList(urwid.WidgetWrap):
                 this_date,
                 account_name=account,
                 color=color,
-                readonly=readonly)
+                readonly=readonly,
+                show_deleted=False)
             events += self.dbtool.get_time_range(start, end, account,
                                                  color=color,
-                                                 readonly=readonly)
+                                                 readonly=readonly,
+                                                 show_deleted=False)
 
         for event in all_day_events:
             event_column.append(
