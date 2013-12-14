@@ -323,14 +323,16 @@ class Syncer(object):
         root = etree.XML(response.text.encode(response.encoding))
         vhe = list()
         for element in root.iter('{DAV:}response'):
-            href = element.find('{DAV:}href').text
-            vevent = element.find('{DAV:}propstat').find('{DAV:}prop').find('{urn:ietf:params:xml:ns:caldav}calendar-data').text
-            etag = element.find('{DAV:}propstat').find('{DAV:}prop').find('{DAV:}getetag').text
-            vhe.append((vevent, href, etag))
-        if vhe == list():
+            try:
+                href = element.find('{DAV:}href').text
+                vevent = element.find('{DAV:}propstat').find('{DAV:}prop').find('{urn:ietf:params:xml:ns:caldav}calendar-data').text
+                etag = element.find('{DAV:}propstat').find('{DAV:}prop').find('{DAV:}getetag').text
+                vhe.append((vevent, href, etag))
+            except AttributeError:
+                continue
+        if not vhe:
             return True
-        else:
-            return False
+        return False
 
     def upload(self, vevent):
         """
