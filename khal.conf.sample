@@ -1,32 +1,168 @@
-# default places for the config file are ~/.khal/khal.conf and
+#/etc/khal/khal.conf.sample
+#
+# The default configuration file locations
+# ~/.khal/khal.conf
 # ~/.config/khal/khal.conf
-# specify as many Accounts as you want
+#
+# In this file you need to specify:
+# - CalDAV Account settings
+# - khal SQLite3 Database settings
+# - Timezone and Time Display Formating Interface settings
+# - Debug level
+#
+#------------------------------------------------------------------------------
+# ## CalDAV Account Configuration ##
+#------------------------------------------------------------------------------
+# [Account home]
+# # Each Account configuration must start with an Account Tag
+# # Each Account Tag must be unique
+#
+# type: caldav
+# # Set the protocol khal should use
+# #  * Default: caldav
+# #
+# # type: http
+# # Setting the type to http makes a simple read only
+# #   * user: and passwd: still must be set, put anything if no auth required
+# 
+#
+# user: stallman
+# # Username to access the CalDAV Account
+#
+#
+# passwd: GodSexLoveSecret
+# # You can place your plain-text password here
+# # If the password is not specified it will be asked for while syncing
+# # If pykeychain is installed, it will store the passwords
+#
+#
+# resource: https://exmaple.com/davical/caldav.php/jdoe/home/
+# # Spesify the URL for the CalDAV Calendar
+#
+#
+# color: dark blue
+# # Set the color for this CalDAV Account
+# # If color is not set, events will be in your default terminal color
+# #   * Colors may not be what you expect by their name.
+# #   * Your terminal's terminfo and termcap define these values.
+# #
+# # Supported color names:
+# # 'black' 'white' 'brown' 'yellow'
+# # 'dark grey' 'dark green' 'dark blue'
+# # 'light grey' 'light green' 'light blue'
+# # 'dark magenta' 'dark cyan' 'dark red' 
+# # 'light magenta' 'light cyan''light red' 
+#
+#
+# verify: True
+# # SSL Certificate Verification
+# # This setting is unique for each account
+# #
+# # verify: True
+# # The servers SSL Certificate will be verify.
+# # If verification fails the account will not be synchronized
+# #   * Default: True
+# #
+# # verify: False
+# # SSL Certificate Verification will be disabled for this account.
+# #
+# # verify: /etc/ssl/certs/3b015462.0
+# # Specify the CA Certificate used to sign the CalDAV Server's SSL Certificate
+# # This is useful when using a Self Signed Certificate, or Corporate PKI
+# ######
+# ## Install SSL Certificate Authority Certificate to Trusted Key Store
+# ##   * See, `man update-ca-certificates`
+# #
+# ## Create a directory for the CA Issuer in: /usr/local/share/ca-certificates
+# # mkdir -p /usr/local/share/ca-certificates/MyCACerts
+# #
+# ## Copy the PEM encoded CA Certificates into the directory.
+# ##   * Make sure to name the Certificates with extension: .crt
+# # cp MyCACertificate.crt /usr/local/share/ca-certificates/MyCACerts
+# #
+# ## Add/Update SSL Trusted Key Store with: update-ca-certificates
+# ## This utility should have been installed along with OpenSSL
+# # update-ca-certificates --verbose
+# #
+# ## You will need the Certificate Hash for the new CA Certificate
+# # _C_HASH=`locate c_hash |grep ssl/misc`
+# # chmod +x ${_C_HASH}
+# # ${_C_HASH} /usr/local/share/ca-certificates/MyCACert/MyCACertificate.crt
+# #
+# ## Almost done ;)
+# ## Now you can add the, verify: line for this CalDAV Account
+# ## The file name will be the Certificate Hash
+# ## The Path will be, /etc/ssl/certs
+# #
+# # veirfy: /etc/ssl/certs/21c04162.0
+# #
+# ######
+#
+#------------------------------------------------------------------------------
+# ## khal SQLite3 Database Configuration ##
+#------------------------------------------------------------------------------
+#
+# [sqlite]
+# # This configuration file must have a [sqlite] Tag
+# 
+# path: ~/.config/khal/khal.db
+# # This specifies the location of the khal SQLite3 Database file
+# #   * Default: ~/.local/share/khal/khal.db
+#
+#------------------------------------------------------------------------------
+# ## Time Zone and Time Display Formating Configuration ##
+#------------------------------------------------------------------------------
+#
+# [default]
+# # This configuration file must have a [default] Tag
+#
+# local_timezone: Pacific/Honolulu
+# # Set the Local Timezone
+# #   * All date are shown in the Local Timezone
+#
+# default_timezone: Pacific/Honolulu
+# # Set the Default Timezone
+# # The Default Timezone is used for new events added via khal --new
+# # It is also used if vCal datetimes or timezone is not understood
+# #
+#
+#
+# timeformat: %H:%M
+# dateformat: %m-%d
+# longdateformat: %Y-%m-%d
+# datetimeformat: %m-%d %H:%M
+# longdatetimeformat: %Y-%m-%d %H:%M
+# # Siet the format Time and Date should be displayed in khal
+# #   * Long version should contain the current year
+#
+# # Specify date/time in standard strftime format
+# # http://strftime.net/
+# #   * Example date in ISO-8601 format, "American"
+#
+#------------------------------------------------------------------------------
+# ## Debug Level ##
+#------------------------------------------------------------------------------
+#
+# DEBUG: 0
+# # Specify the Default Debug level
+# 
+
+
+##
+## Example Configuration
+##
 [Account home]
 user: jdoe
-# if the password is not specified it will be asked for while syncing
-# and if pykeychain is installed passwords will be stored there
 passwd: 2342
 resource: https://exmaple.com/davical/caldav.php/jdoe/home/
-# supported color names are
-# 'black' 'dark red' 'dark green' 'brown' 'dark blue' 'dark magenta' 'dark
-# cyan' 'white' 'light grey' 'dark grey' 'light red' 'light green' 'yellow'
-# 'light blue' 'light magenta' 'light cyan'
-# the default ANSI colors (may not actually have the color they are named for,
-# depending on how your termial emulator is setup) if color is not set, events
-# will be in your default terminal color
 color: dark blue
 
 [Account work]
 user: doe
 resource: https://blobhal.de/owncloud/remote.php/caldav/calendars/doe/work
-# verify controls SSL cert checking
-# verify can be set to True (default), False (No SSL certificates are checked,
-# or to a path to a pem cert
 verify: /home/jd/.khal/cacert.pem
 
 [Account simple]
-# setting the type to http (default is caldav) makes a simple read only syncer
-# user and passwd MUST still be set (to anything) even if it is auth isn't needed
 type: http
 resource: https://test.tld/calendars/meetings.ics
 verify: False
@@ -34,34 +170,16 @@ user: XXX
 passwd: XXX
 
 [sqlite]
-# the default location for the db is 
-# ~/.local/share/khal/khal.db
 path: /home/jd/.khal/khal.db
 
 [default]
-# all dates are shown in local time, defined by local_timezone
 local_timezone: Europe/Berlin
-# if start and end datetimes are either 'floating' or the timezone information
-# is not understood, default_timezone is used
-# this is also the timezone used for new events added via khal --new
 default_timezone: America/New_York
 
-# these formats are used for displaying and entering date and times
-# the long version should contain the current year
-# use the standard format codes for strftime,
-# see http:// for examples  TODO include link to python site when up
 timeformat: %H:%M
 dateformat: %d.%m.
 longdateformat: %d.%m.%Y
 datetimeformat: %d.%m. %H:%M
 longdatetimeformat: %d.%m.%Y %H:%M
-
-# the encoding of your terminal emulator
-# encoding: utf-8
-
-# by default, khal uses unicode symbols to display certain event properties set
-# to False if you do not want this (e.g. your character set does not support
-# these symbols
-# unicode_symbols: True
 
 DEBUG: 0
