@@ -431,6 +431,8 @@ class ConfigurationParser(object):
         """
         logging.debug(intro)
 
+        if not type(conf) is 'dict':
+            return
         for name, value in sorted(dict.copy(conf).items()):
             if type(value) is list:
                 for o in value:

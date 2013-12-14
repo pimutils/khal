@@ -1,4 +1,2 @@
-*.pyc
-*.swp
-khal/version.py
-khal.egg-info/
+*.conf
+*.db

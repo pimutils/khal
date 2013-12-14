@@ -757,7 +757,7 @@ class EventEditor(EventViewer):
             self.pile.set_focus(1)  # the startendeditor
             return
         if changed is True:
-            import ipdb; ipdb.set_trace()
+            #import ipdb; ipdb.set_trace()
 
             try:
                 self.event.vevent['SEQUENCE'] += 1

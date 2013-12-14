@@ -345,6 +345,8 @@ class Syncer(object):
         """
         self._check_write_support()
         calendar = icalendar.Calendar()
+        calendar.add('version','2.0')
+        calendar.add('prodid','-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
         calendar.add_component(vevent)
         for _ in range(5):
             randstr = get_random_href()
@@ -356,6 +358,7 @@ class Syncer(object):
                                     data=calendar.to_ical(),
                                     headers=headers,
                                     **self._settings)
+
             if response.ok:
                 parsed_url = urlparse.urlparse(remotepath)
                 if ('etag' not in response.headers.keys()
