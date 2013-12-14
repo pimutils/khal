@@ -78,12 +78,10 @@ import pytz
 import xdg.BaseDirectory
 
 from .model import Event
+from .status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
 
-OK = 0  # not touched since last sync
-NEW = 1  # new card, needs to be created on the server
-CHANGED = 2  # properties edited or added (news to be pushed to server)
-DELETED = 9  # marked for deletion (needs to be deleted on server)
-NEWDELETE = 11  # card should be deleted on exit (not yet on the server)
+
+# TODO fix that event/vevent mess
 
 
 class UpdateFailed(Exception):
@@ -245,6 +243,7 @@ class SQLiteDb(object):
         :type status: one of backend.OK, backend.NEW, backend.CHANGED,
                       backend.DELETED
 
+
         """
         if not isinstance(vevent, icalendar.cal.Event):
             ical = icalendar.Event.from_ical(vevent)
@@ -372,11 +371,10 @@ class SQLiteDb(object):
         removes the event from the db,
         returns nothing
         """
-        stuple = (href, )
         logging.debug("locally deleting " + str(href))
         for dbname in [account_name + '_d', account_name + '_dt', account_name]:
             sql_s = 'DELETE FROM {0} WHERE href = ? ;'.format(dbname)
-            self.sql_ex(sql_s, (href ,))
+            self.sql_ex(sql_s, (href, ))
 
     def get_all_href_from_db(self, accounts):
         """returns a list with all hrefs
@@ -397,10 +395,12 @@ class SQLiteDb(object):
             result = result + [(href[0], account) for href in hrefs]
         return result
 
-    def get_time_range(self, start, end, account_name, color='', readonly=False):
+    def get_time_range(self, start, end, account_name, color='', readonly=False,
+                       unicode_symbols=True, show_deleted=True):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
+        :param deleted: include deleted events in returned lsit
         """
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
@@ -417,13 +417,15 @@ class SQLiteDb(object):
             event = self.get_vevent_from_db(href, account_name,
                                             start=start, end=end,
                                             color=color,
-                                            readonly=readonly)
-            event_list.append(event)
+                                            readonly=readonly,
+                                            unicode_symbols=unicode_symbols)
+            if show_deleted or event.status not in [DELETED, CALCHANGED, NEWDELETE]:
+                event_list.append(event)
 
         return event_list
 
     def get_allday_range(self, start, end=None, account_name=None,
-                         color='', readonly=False):
+                         color='', readonly=False, unicode_symbols=True, show_deleted=True):
         if account_name is None:
             raise Exception('need to specify an account_name')
         strstart = start.strftime('%Y%m%d')
@@ -445,8 +447,10 @@ class SQLiteDb(object):
             vevent = self.get_vevent_from_db(href, account_name,
                                              start=start, end=end,
                                              color=color,
-                                             readonly=readonly)
-            event_list.append(vevent)
+                                             readonly=readonly,
+                                             unicode_symbols=unicode_symbols)
+            if show_deleted or vevent.status not in [DELETED, CALCHANGED, NEWDELETE]:
+                event_list.append(vevent)
         return event_list
 
     def hrefs_by_time_range_datetime(self, start, end, account_name, color=''):
@@ -484,7 +488,8 @@ class SQLiteDb(object):
             self.hrefs_by_time_range_datetime(start, end, account_name)))
 
     def get_vevent_from_db(self, href, account_name, start=None, end=None,
-                           readonly=False, color=lambda x: x):
+                           readonly=False, color=lambda x: x,
+                           unicode_symbols=True):
         """returns the Event matching href, if start and end are given, a
         specific Event from a Recursion set is returned, the Event as saved in
         the db
@@ -500,7 +505,8 @@ class SQLiteDb(object):
                      href=href,
                      account=account_name,
                      status=result[0][1],
-                     readonly=readonly)
+                     readonly=readonly,
+                     unicode_symbols=unicode_symbols)
 
     def get_changed(self, account_name):
         """returns list of hrefs of locally edited vcards

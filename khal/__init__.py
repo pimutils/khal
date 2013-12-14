@@ -220,7 +220,9 @@ class DefaultSection(Section):
             ('dateformat', '', None),
             ('longdateformat', '', None),
             ('datetimeformat', '', None),
-            ('longdatetimeformat', '', None)
+            ('longdatetimeformat', '', None),
+            ('encoding', 'utf-8', None),
+            ('unicode_symbols', 'True', self._parse_bool_string)
         ]
 
 
@@ -345,7 +347,6 @@ class ConfigurationParser(object):
                 result = False
         else:
             ns.sync.accounts = accounts
-
 
         for account in ns.accounts:
             if account.type == 'caldav':

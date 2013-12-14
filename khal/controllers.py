@@ -151,8 +151,6 @@ class Sync(Controller):
                     self.dbtool.delete(href, sync_account.name)
 
 
-
-
 class Display(Controller):
     def __init__(self, conf):
         super(Display, self).__init__(conf)
@@ -161,6 +159,7 @@ class Display(Controller):
         daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
         event_column = list()
         for day, dayname in daylist:
+            # TODO unify allday and datetime events
             start = datetime.datetime.combine(day, datetime.time.min)
             end = datetime.datetime.combine(day, datetime.time.max)
 
@@ -171,10 +170,20 @@ class Display(Controller):
                 readonly = conf.accounts[account]['readonly']
                 color = conf.accounts[account]['color']
                 all_day_events += self.dbtool.get_allday_range(
-                    day, account_name=account, color=color, readonly=readonly)
-                events += self.dbtool.get_time_range(start, end, account,
-                                                     color=color,
-                                                     readonly=readonly)
+                    day,
+                    account_name=account,
+                    color=color,
+                    readonly=readonly,
+                    unicode_symbols=conf.default.unicode_symbols,
+                    show_deleted=False)
+                events += self.dbtool.get_time_range(
+                    start,
+                    end,
+                    account,
+                    color=color,
+                    readonly=readonly,
+                    unicode_symbols=conf.default.unicode_symbols,
+                    show_deleted=False)
             for event in all_day_events:
                 event_column.append(aux.colored(event.compact(day), event.color))
             events.sort(key=lambda e: e.start)
@@ -188,7 +197,7 @@ class Display(Controller):
             calendar_column = calendar_column + missing * [25 * ' ']
 
         rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
-        print('\n'.join(rows))
+        print('\n'.join(rows).encode(conf.default.encoding))
 
 
 class NewFromString(Controller):
@@ -201,7 +210,8 @@ class NewFromString(Controller):
                                     conf.default.longdateformat,
                                     conf.default.datetimeformat,
                                     conf.default.longdatetimeformat,
-                                    conf.default.local_timezone)
+                                    conf.default.local_timezone,
+                                    encoding=conf.default.encoding)
         self.dbtool.update(event, conf.sync.accounts.pop(), status=backend.NEW)
 
 

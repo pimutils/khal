@@ -93,8 +93,11 @@ def generate_random_uid():
 
 def construct_event(date_list, timeformat, dateformat, longdateformat,
                     datetimeformat, longdatetimeformat, defaulttz,
-                    defaulttimelen=60, defaultdatelen=1):
+                    defaulttimelen=60, defaultdatelen=1, encoding='utf-8'):
     """takes a list of strings and constructs a vevent from it,
+
+    :param encoding: the encoding of your terminal, should be a valid encoding
+    :type encoding: str
 
     can be either of this:
         * datetime datetime description
@@ -197,7 +200,7 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
-    event.add('summary', ' '.join(date_list))
+    event.add('summary', ' '.join(date_list).decode(encoding))
     event.add('uid', generate_random_uid())
     return event
 

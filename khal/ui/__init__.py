@@ -30,12 +30,76 @@ from datetime import datetime
 import urwid
 
 from .. import aux, backend, model
+from ..status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
+
 
 from base import Pane, Window
 
 
 class DateConversionError(Exception):
     pass
+
+
+class AccountList(urwid.WidgetWrap):
+    signals = ['close']
+
+    def __init__(self, accounts, account_chooser):
+        self.account_chooser = account_chooser
+        acc_list = []
+        for one in accounts:
+            button = urwid.Button(one, on_press=self.set_account,
+                                  user_data=one)
+
+            acc_list.append(button)
+        pile = urwid.Pile(acc_list)
+        fill = urwid.Filler(pile)
+        self.__super.__init__(urwid.AttrMap(fill, 'popupbg'))
+
+    def set_account(self, button, account):
+        self.account_chooser.account = account
+        self._emit("close")
+
+
+class AccountChooser(urwid.PopUpLauncher):
+    def __init__(self, active_account, accounts):
+        self.active_account = active_account
+        self.original_account = active_account
+        self.accounts = accounts
+        self.button = urwid.Button(active_account)
+        self.__super.__init__(self.button)
+        urwid.connect_signal(self.button, 'click',
+                             lambda button: self.open_pop_up())
+
+    def create_pop_up(self):
+        pop_up = AccountList(self.accounts, self)
+        urwid.connect_signal(pop_up, 'close',
+                             lambda button: self.close_pop_up())
+        return pop_up
+
+    def get_pop_up_parameters(self):
+        return {'left': 0,
+                'top': 1,
+                'overlay_width': 32,
+                'overlay_height': len(self.accounts)}
+
+    @property
+    def changed(self):
+        if self.active_account == self.original_account:
+            return False
+        else:
+            return True
+
+    @property
+    def account(self):
+        return self.active_account
+
+    @account.setter
+    def account(self, account):
+        self.active_account = account
+        self.button = urwid.Button(self.active_account)
+        self.__super.__init__(self.button)
+        urwid.connect_signal(self.button, 'click',
+                             lambda button: self.open_pop_up())
 
 
 class Date(urwid.Text):
@@ -193,14 +257,14 @@ class Event(urwid.Text):
 
     def toggle_delete(self):
         if self.event.readonly is False:
-            if self.event.status == backend.OK:
-                toggle = backend.DELETED
-            elif self.event.status == backend.DELETED:
-                toggle = backend.OK
-            elif self.event.status == backend.NEW:
-                toggle = backend.NEWDELETE
-            elif self.event.status == backend.NEWDELETE:
-                toggle = backend.NEW
+            if self.event.status == OK:
+                toggle = DELETED
+            elif self.event.status == DELETED:
+                toggle = OK
+            elif self.event.status == NEW:
+                toggle = NEWDELETE
+            elif self.event.status == NEWDELETE:
+                toggle = NEW
             self.event.status = toggle
             self.set_text(self.event.compact(self.this_date))
             self.dbtool.set_status(self.event.href, toggle, self.event.account)
@@ -247,10 +311,12 @@ class EventList(urwid.WidgetWrap):
                 this_date,
                 account_name=account,
                 color=color,
-                readonly=readonly)
+                readonly=readonly,
+                show_deleted=False)
             events += self.dbtool.get_time_range(start, end, account,
                                                  color=color,
-                                                 readonly=readonly)
+                                                 readonly=readonly,
+                                                 show_deleted=False)
 
         for event in all_day_events:
             event_column.append(
@@ -343,11 +409,9 @@ class EventColumn(urwid.WidgetWrap):
         """
         event = aux.new_event(dtstart=date,
                               timezone=self.conf.default.default_timezone)
-        event = model.Event(ical=event.to_ical(), status=backend.NEW,
+        event = model.Event(ical=event.to_ical(), status=NEW,
                             account=list(self.conf.sync.accounts)[-1])
         self.edit(event)
-
-
 
     @classmethod
     def selectable(cls):
@@ -586,6 +650,10 @@ class EventEditor(EventViewer):
     Widget for event Editing
     """
     def __init__(self, conf, dbtool, event, cancel=None):
+        """
+        :type event: khal.model.Event
+        """
+
         super(EventEditor, self).__init__(conf, dbtool)
         self.event = event
         self.cancel = cancel
@@ -606,6 +674,10 @@ class EventEditor(EventViewer):
         self.recursioneditor = RecursionEditor(rrule)
         self.summary = urwid.Edit(
             edit_text=event.vevent['SUMMARY'].encode('utf-8'))
+        self.accountchooser = AccountChooser(self.event.account,
+                                             self.conf.sync.accounts)
+        accounts = urwid.Columns([(9, urwid.Text('Calendar: ')),
+                                  self.accountchooser])
         self.description = urwid.Edit(caption='Description: ',
                                       edit_text=self.description)
         self.location = urwid.Edit(caption='Location: ',
@@ -614,7 +686,9 @@ class EventEditor(EventViewer):
         save = urwid.Button('Save', on_press=self.save)
         buttons = urwid.Columns([cancel, save])
 
-        self.pile = urwid.Pile([self.summary, self.startendeditor,
+        self.pile = urwid.Pile([self.summary,
+                                accounts,
+                                self.startendeditor,
                                 self.recursioneditor, self.description,
                                 self.location, urwid.Text(''), buttons])
         self._w = self.pile
@@ -625,24 +699,56 @@ class EventEditor(EventViewer):
 
     @property
     def changed(self):
+        # TODO refactor
+        changed = False
+        if self.summary.get_edit_text() != self.event.vevent['SUMMARY']:
+            changed = True
+
+        key = 'DESCRIPTION'
+        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key] ) or
+                self.description.get_edit_text() != ''):
+            changed = True
+
+        key = 'LOCATION'
+        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key] ) or
+                self.location.get_edit_text() != ''):
+            changed = True
+
+        if self.startendeditor.changed:
+            changed = True
+        if self.accountchooser.changed:
+            self.event.account = self.accountchooser.account
+            changed = True
+        return changed
+
+    def update(self):
         changed = False
         if self.summary.get_edit_text() != self.event.vevent['SUMMARY']:
             self.event.vevent['SUMMARY'] = self.summary.get_edit_text()
             changed = True
-        if self.description.get_edit_text() != self.description:
-            self.event.vevent['DESCRIPTION'] = self.description.get_edit_text()
-            changed = True
-        if self.location.get_edit_text() != self.location:
-            self.event.vevent['LOCATION'] = self.location.get_edit_text()
-            changed = True
+
+        for key, prop in [('DESCRIPTION', self.description), ('LOCATION', self.location)]:
+            if ((key in self.event.vevent and prop.get_edit_text() != self.event.vevent[key] ) or
+                    prop.get_edit_text() != ''):
+                self.event.vevent[key] = prop.get_edit_text()
+                changed = True
+
         if self.startendeditor.changed:
             self.event.vevent['DTSTART'].dt = self.startendeditor.newstart
             self.event.vevent['DTEND'].dt = self.startendeditor.newend
             changed = True
+        if self.accountchooser.changed:
+            changed = True
+            self.event.account = self.accountchooser.account
         return changed
 
     def save(self, button):
+        """
+        saves the event to the db (only when it has been changed)
+        :param button: not needed, passed via the button press
+        """
         changed = self.changed  # need to call this to set startdate_bg etc. to False
+        self.update()
         if 'alert' in [self.startendeditor.startdate_bg,
                        self.startendeditor.starttime_bg,
                        self.startendeditor.enddate_bg,
@@ -651,14 +757,22 @@ class EventEditor(EventViewer):
             self.pile.set_focus(1)  # the startendeditor
             return
         if changed is True:
+            import ipdb; ipdb.set_trace()
+
             try:
                 self.event.vevent['SEQUENCE'] += 1
             except KeyError:
                 self.event.vevent['SEQUNCE'] = 0
-            if self.event.status == backend.NEW:
-                status = backend.NEW
+            if self.event.status == NEW:
+                status = NEW
             else:
-                status = backend.CHANGED
+                status = CHANGED
+            if self.accountchooser.changed:
+                delstatus = NEWDELETE if self.event.status == NEW else CALCHANGED
+                self.dbtool.set_status(self.event.href,
+                                       delstatus,
+                                       self.accountchooser.original_account)
+                status = NEW
             self.dbtool.update(self.event.vevent.to_ical(),
                                self.event.account,
                                self.event.href,
@@ -666,11 +780,15 @@ class EventEditor(EventViewer):
         self.cancel(refresh=True)
 
     def keypress(self, size, key):
+        if key in ['esc']:
+            if self.changed:
+                return
+            else:
+                self.cancel()
+                return
         key = super(EventEditor, self).keypress(size, key)
         if key in ['left', 'up']:
             return
-        elif key in ['esc'] and not self.changed:
-            self.cancel()
         else:
             return key
 
@@ -710,5 +828,6 @@ def start_pane(pane, header=''):
                    footer='arrows: navigate, enter: select, q: quit, ?: help')
     frame.open(pane)
     loop = urwid.MainLoop(frame, Window.PALETTE,
-                          unhandled_input=frame.on_key_press)
+                          unhandled_input=frame.on_key_press,
+                          pop_ups=True)
     loop.run()

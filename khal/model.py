@@ -27,10 +27,13 @@ import datetime
 
 import icalendar
 
+from .status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
+
+
 class Event(object):
     def __init__(self, ical, status=0, href=None, account=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
-                 readonly=False):
+                 readonly=False, unicode_symbols=True, dbtool=None):
         self.vevent = icalendar.Event.from_ical(ical)
         if account is None:
             raise TypeError('account must not be None')
@@ -40,6 +43,20 @@ class Event(object):
         self.href = href
         self.account = account
         self.readonly = readonly
+        self.unicode_symbols = unicode_symbols
+        self.dbtool = dbtool
+
+        if unicode_symbols:
+            self.recurstr = u' ⟳'
+            self.rangestr = u'↔ '
+            self.rangestopstr = u'⇥ '
+            self.rangestartstr = u'↦ '
+        else:
+            self.recurstr = u' R'
+            self.rangestr = u' <->'
+            self.rangestopstr = u' ->|'
+            self.rangestartstr = u' |->'
+
         if start is not None:
             if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
                 self.allday = False  # TODO detect allday even if start is None
@@ -84,11 +101,11 @@ class Event(object):
         return 'RRULE' in self.vevent.keys()
 
     def compact(self, day, timeformat='%H:%M'):
-        if self.status == 9:
+        if self.status == DELETED:
             status = 'D '
-        elif self.status == 11:
+        elif self.status == NEWDELETE:
             status = 'X '
-        elif self.status == 1:
+        elif self.status == NEW:
             status = 'N '
         else:
             status = ''
@@ -100,21 +117,21 @@ class Event(object):
 
     def _compact_allday(self, day):
         if 'RRULE' in self.vevent.keys():
-            recurstr = u' ⟳'
+            recurstr = self.recurstr
         else:
             recurstr = ''
         if self.start < day and self.end > day + datetime.timedelta(days=1):
             # event started in the past and goes on longer than today:
-            rangestr = u'↔ '
+            rangestr = self.rangestr
             pass
         elif self.start < day:
             # event started in past
-            rangestr = u'⇥ '
+            rangestr = self.rangestopstr
             pass
 
         elif self.end > day + datetime.timedelta(days=1):
             # event goes on longer than today
-            rangestr = u'↦ '
+            rangestr = self.rangestartstr
         else:
             rangestr = ''
         return rangestr + self.summary + recurstr
