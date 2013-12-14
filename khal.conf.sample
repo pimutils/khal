@@ -160,7 +160,7 @@ color: dark blue
 [Account work]
 user: doe
 resource: https://blobhal.de/owncloud/remote.php/caldav/calendars/doe/work
-verify: /home/jd/.khal/cacert.pem
+verify: /etc/ssl/certs/3b015462.0
 
 [Account simple]
 type: http
