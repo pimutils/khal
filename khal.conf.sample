@@ -182,12 +182,4 @@ longdateformat: %d.%m.%Y
 datetimeformat: %d.%m. %H:%M
 longdatetimeformat: %d.%m.%Y %H:%M
 
-# the encoding of your terminal emulator
-# encoding: utf-8
-
-# by default, khal uses unicode symbols to display certain event properties set
-# to False if you do not want this (e.g. your character set does not support
-# these symbols
-# unicode_symbols: True
-
 DEBUG: 0
