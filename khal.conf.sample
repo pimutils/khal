@@ -1,12 +1,14 @@
+#/etc/khal/khal.conf.sample
 #
-# The default places for the config file are
+# The default configuration file locations
 # ~/.khal/khal.conf
 # ~/.config/khal/khal.conf
 #
 # In this file you need to specify:
 # - CalDAV Account settings
 # - khal SQLite3 Database settings
-# - ikhal Interface settings
+# - Timezone and Time Display Formating Interface settings
+# - Debug level
 #
 #------------------------------------------------------------------------------
 # ## CalDAV Account Configuration ##
