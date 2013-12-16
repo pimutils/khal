@@ -87,6 +87,15 @@ test_set_format_de = [
                   'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
                   'END:VEVENT',
                   ''])),
+    # timezone given
+    ('25.10.2013 06:00 America/New_York Äwesöme Event',
+     '\r\n'.join(['BEGIN:VEVENT',
+                  'SUMMARY:Äwesöme Event',
+                  'DTSTART;TZID=America/New_York;VALUE=DATE-TIME:20131025T060000',
+                  'DTEND;TZID=America/New_York;VALUE=DATE-TIME:20131025T070000',
+                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+                  'END:VEVENT',
+                  ''])),
 ]
 
 
