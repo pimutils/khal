@@ -189,6 +189,15 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
         dtstart = dtstart.date()
         dtend = dtend.date()
 
+    else:
+        try:
+            dtstart = pytz.timezone(date_list[0]).localize(dtstart)
+            dtend = pytz.timezone(date_list[0]).localize(dtend)
+            date_list.pop(0)
+        except (pytz.UnknownTimeZoneError,  UnicodeDecodeError):
+            dtstart = defaulttz.localize(dtstart)
+            dtend = defaulttz.localize(dtend)
+
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
@@ -231,6 +240,7 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None):
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
+    event.add('dtstamp', datetime.now())
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
     return event

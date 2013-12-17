@@ -265,6 +265,8 @@ class Event(urwid.Text):
                 toggle = NEWDELETE
             elif self.event.status == NEWDELETE:
                 toggle = NEW
+            else:
+                toggle = DELETED
             self.event.status = toggle
             self.set_text(self.event.compact(self.this_date))
             self.dbtool.set_status(self.event.href, toggle, self.event.account)
@@ -514,7 +516,7 @@ class StartEndEditor(urwid.WidgetWrap):
         newstartdatetime = self._newstartdate
         if not self.checkallday.state:
             if self.startdt.tzinfo is None:
-                tzinfo = self.conf.default_timezone
+                tzinfo = self.conf.default.default_timezone
             else:
                 tzinfo = self.startdt.tzinfo
             try:
