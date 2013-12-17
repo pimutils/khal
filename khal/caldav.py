@@ -409,7 +409,6 @@ class Syncer(object):
                                     headers=headers,
                                     **self._settings)
 
-            print response.content
             if response.ok:
                 parsed_url = urlparse.urlparse(remotepath)
                 if ('etag' not in response.headers.keys()
