@@ -367,13 +367,13 @@ class Syncer(object):
         timezone_daylight.add('TZNAME', tz._transition_info[daylight[0]][2])
         timezone_daylight.add('DTSTART', daylight[1])
         timezone_daylight.add('TZOFFSETFROM', tz._transition_info[daylight[0]][0])
-        timezone_daylight.add('TZOFFSETTO', tz._transition_info[daylight[0]][1])
+        timezone_daylight.add('TZOFFSETTO', tz._transition_info[standard[0]][0])
 
         timezone_standard = icalendar.TimezoneStandard()
         timezone_standard.add('TZNAME', tz._transition_info[standard[0]][2])
         timezone_standard.add('DTSTART', standard[1])
         timezone_standard.add('TZOFFSETFROM', tz._transition_info[standard[0]][0])
-        timezone_standard.add('TZOFFSETTO', tz._transition_info[standard[0]][1])
+        timezone_standard.add('TZOFFSETTO', tz._transition_info[daylight[0]][0])
 
         timezone.add_component(timezone_daylight)
         timezone.add_component(timezone_standard)
