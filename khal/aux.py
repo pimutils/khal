@@ -188,6 +188,7 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     if all_day:
         dtstart = dtstart.date()
         dtend = dtend.date()
+
     else:
         try:
             # next element is a valid Olson db timezone string
@@ -201,6 +202,7 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
+    event.add('dtstamp', datetime.now())
     event.add('summary', ' '.join(date_list).decode(encoding))
     event.add('uid', generate_random_uid())
     return event
@@ -239,6 +241,7 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None):
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
+    event.add('dtstamp', datetime.now())
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
     return event

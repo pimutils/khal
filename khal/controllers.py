@@ -127,7 +127,7 @@ class Sync(Controller):
         try:
             for href in hrefs:
                 event = self.dbtool.get_vevent_from_db(href, sync_account.name)
-                (href_new, etag_new) = self.syncer.upload(event.vevent)
+                (href_new, etag_new) = self.syncer.upload(conf, event.vevent)
                 self.dbtool.update_href(href,
                                         href_new,
                                         sync_account.name,
