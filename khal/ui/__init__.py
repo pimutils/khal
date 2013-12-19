@@ -29,7 +29,7 @@ from datetime import datetime
 
 import urwid
 
-from .. import aux, backend, model
+from .. import aux, model
 from ..status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
 
 
@@ -127,7 +127,7 @@ class Date(urwid.Text):
             return key
 
 
-def week_list(count=3):
+def week_list(count=6):
     month = date.today().month
     year = date.today().year
     cal = list()
@@ -173,9 +173,7 @@ Columns is empty, or when set to an invalid index.
 
         old_pos = self.focus_position
         key = super(DateColumns, self).keypress(size, key)
-        if key in ['up', 'down']:  # don't know why this is needed...
-            return key
-        elif key in ['tab', 'enter']:
+        if key in ['tab', 'enter']:
             return 'right'
         elif old_pos == 7 and key == 'right':
             self.focus_position = 1
@@ -184,6 +182,8 @@ Columns is empty, or when set to an invalid index.
             self.focus_position = 7
             return 'up'
         elif key not in ['right']:
+            return key
+        else:
             return key
 
 
@@ -221,15 +221,18 @@ def calendar_walker(view):
     daynames = 'Mo Tu We Th Fr Sa Su'.split(' ')
     daynames = urwid.Columns([(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in daynames],
                              dividechars=1)
-    lines = [daynames]
+    lines = []
     focus_item = None
     for number, week in enumerate(week_list()):
         week, contains_today = construct_week(week, view)
         if contains_today:
-            focus_item = number + 1
+            focus_item = number
         lines.append(week)
 
-    weeks = urwid.Pile(lines, focus_item=focus_item)
+    weeks = urwid.SimpleFocusListWalker(lines)
+    weeks.set_focus(focus_item)
+    weeks = urwid.ListBox(weeks)
+    weeks = urwid.Frame(weeks, header=daynames)
     return weeks
 
 
@@ -292,7 +295,7 @@ class EventList(urwid.WidgetWrap):
         self.conf = conf
         self.dbtool = dbtool
         self.eventcolumn = eventcolumn
-        pile = urwid.Pile([])
+        pile = urwid.Filler(urwid.Pile([]))
         urwid.WidgetWrap.__init__(self, pile)
         self.update()
 
@@ -338,7 +341,8 @@ class EventList(urwid.WidgetWrap):
                                     eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
-        pile = urwid.Pile([date_text] + event_list)
+        pile = urwid.ListBox(urwid.SimpleFocusListWalker(event_list))
+        pile = urwid.Frame(pile, header=date_text)
         self._w = pile
 
 
@@ -371,7 +375,8 @@ class EventColumn(urwid.WidgetWrap):
         """
         self.destroy()
         self.container.contents.append((self.divider,
-                                        self.container.options()))
+                                        ('pack', None)))
+                                        #self.container.options()))
         self.container.contents.append(
             (EventDisplay(self.conf, self.dbtool, event),
              self.container.options()))
@@ -384,8 +389,10 @@ class EventColumn(urwid.WidgetWrap):
         """
         self.destroy()
         self.editor = True
+        #self.container.contents.append((self.divider,
+                                        #self.container.options()))
         self.container.contents.append((self.divider,
-                                        self.container.options()))
+                                        ('pack', None)))
         self.container.contents.append(
             (EventEditor(self.conf, self.dbtool, event, cancel=self.destroy),
              self.container.options()))
@@ -644,7 +651,7 @@ class EventDisplay(EventViewer):
             except KeyError:
                 pass
         pile = urwid.Pile(lines)
-        self._w = pile
+        self._w = urwid.Filler(pile, valign='top')
 
 
 class EventEditor(EventViewer):
@@ -688,11 +695,14 @@ class EventEditor(EventViewer):
         save = urwid.Button('Save', on_press=self.save)
         buttons = urwid.Columns([cancel, save])
 
-        self.pile = urwid.Pile([self.summary,
-                                accounts,
-                                self.startendeditor,
-                                self.recursioneditor, self.description,
-                                self.location, urwid.Text(''), buttons])
+        self.pile = urwid.ListBox(urwid.SimpleFocusListWalker(
+            [self.summary,
+             accounts,
+             self.startendeditor,
+             self.recursioneditor, self.description,
+             self.location, urwid.Text(''), buttons
+             ]))
+
         self._w = self.pile
 
     @classmethod
@@ -707,12 +717,12 @@ class EventEditor(EventViewer):
             changed = True
 
         key = 'DESCRIPTION'
-        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key] ) or
+        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key]) or
                 self.description.get_edit_text() != ''):
             changed = True
 
         key = 'LOCATION'
-        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key] ) or
+        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key]) or
                 self.location.get_edit_text() != ''):
             changed = True
 
@@ -730,7 +740,7 @@ class EventEditor(EventViewer):
             changed = True
 
         for key, prop in [('DESCRIPTION', self.description), ('LOCATION', self.location)]:
-            if ((key in self.event.vevent and prop.get_edit_text() != self.event.vevent[key] ) or
+            if ((key in self.event.vevent and prop.get_edit_text() != self.event.vevent[key]) or
                     prop.get_edit_text() != ''):
                 self.event.vevent[key] = prop.get_edit_text()
                 changed = True
@@ -804,12 +814,11 @@ class ClassicView(Pane):
     def __init__(self, conf=None, dbtool=None, title=u'', description=u''):
         self.eventscolumn = EventColumn(conf=conf, dbtool=dbtool)
         weeks = calendar_walker(view=self)
-        columns = urwid.Columns([(25, weeks), self.eventscolumn],
-                                dividechars=2)
-
-        fill = urwid.Filler(columns)
+        events = self.eventscolumn
+        columns = urwid.Columns([(25, weeks), events],
+                                dividechars=2, box_columns=[0, 1])
         self.eventscolumn.update(date.today())  # showing with today's events
-        Pane.__init__(self, fill, title=title, description=description)
+        Pane.__init__(self, columns, title=title, description=description)
 
     def get_keys(self):
         return [(['arrows'], 'navigate through the calendar'),
