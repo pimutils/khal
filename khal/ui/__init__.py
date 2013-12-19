@@ -341,6 +341,8 @@ class EventList(urwid.WidgetWrap):
                                     eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
+        if not event_list:
+            event_list = [urwid.Text('no scheduled events')]
         pile = urwid.ListBox(CSimpleFocusListWalker(event_list))
         pile = urwid.Frame(pile, header=date_text)
         self._w = pile
@@ -623,6 +625,8 @@ class EventDisplay(EventViewer):
         super(EventDisplay, self).__init__(conf, dbtool)
         lines = []
         lines.append(urwid.Text(event.vevent['SUMMARY']))
+
+        # start and end time/date
         if event.allday:
             startstr = event.start.strftime(self.conf.default.dateformat)
             if event.start == event.end:
@@ -644,12 +648,17 @@ class EventDisplay(EventViewer):
                 lines.append(urwid.Text('From: ' + startstr +
                                         ' To: ' + endstr))
 
+        # resource
+        lines.append(urwid.Text('Calendar: ' + event.account))
+
+        # description and location
         for key, desc in [('DESCRIPTION', 'Desc'), ('LOCATION', 'Loc')]:
             try:
                 lines.append(urwid.Text(
                     desc + ': ' + str(event.vevent[key].encode('utf-8'))))
             except KeyError:
                 pass
+
         pile = CPile(lines)
         self._w = urwid.Filler(pile, valign='top')
 
