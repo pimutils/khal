@@ -17,6 +17,11 @@
 # # Each Account configuration must start with an Account Tag
 # # Each Account Tag must be unique
 #
+# write_support: YesPleaseIDoHaveABackupOfMyData
+# # Enable writing events and event changes to CalDAV Server
+# #   * Default: Disabled
+# #   * Make Sure you have a Backup of your calender before enabling
+#
 # type: caldav
 # # Set the protocol khal should use
 # #  * Default: caldav
@@ -126,7 +131,6 @@
 # # It is also used if vCal datetimes or timezone is not understood
 # #
 #
-#
 # timeformat: %H:%M
 # dateformat: %m-%d
 # longdateformat: %Y-%m-%d
@@ -134,10 +138,19 @@
 # longdatetimeformat: %Y-%m-%d %H:%M
 # # Siet the format Time and Date should be displayed in khal
 # #   * Long version should contain the current year
-#
+# #
 # # Specify date/time in standard strftime format
 # # http://strftime.net/
 # #   * Example date in ISO-8601 format, "American"
+#
+# encoding: utf-8
+# # Enable UTF-8 encoding
+# #   * Set this if your terminal is using to utf-8
+#
+# unicode_symbols: True
+# # Enable unicode symbols to display event properties
+# # Set this to False if your terminal's character set dose not support them
+# #   * Default: True
 #
 #------------------------------------------------------------------------------
 # ## Debug Level ##
@@ -152,6 +165,7 @@
 ## Example Configuration
 ##
 [Account home]
+write_support: YesPleaseIDoHaveABackupOfMyData
 user: jdoe
 passwd: 2342
 resource: https://exmaple.com/davical/caldav.php/jdoe/home/
