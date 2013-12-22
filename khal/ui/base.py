@@ -26,6 +26,42 @@
 import urwid
 
 
+def vimify(key):
+    if key == 'h':
+        return 'left'
+    elif key == 'j':
+        return 'down'
+    elif key == 'k':
+        return 'up'
+    elif key == 'l':
+        return 'right'
+    # not really sure if these last to make any sense (not yet at least)
+    elif key == '0':
+        return 'home'
+    elif key == '$':
+        return 'end'
+    else:
+        return key
+
+
+class CColumns(urwid.Columns):
+    def keypress(self, size, key):
+        key = vimify(key)
+        return urwid.Columns.keypress(self, size, key)
+
+
+class CPile(urwid.Pile):
+    def keypress(self, size, key):
+        key = vimify(key)
+        return urwid.Pile.keypress(self, size, key)
+
+
+class CSimpleFocusListWalker(urwid.SimpleFocusListWalker):
+    def keypress(self, size, key):
+        key = vimify(key)
+        return urwid.SimpleFocusListWalker.keypress(self, size, key)
+
+
 class Pane(urwid.WidgetWrap):
     """An abstract Pane to be used in a Window object."""
     def __init__(self, widget, title=None, description=None):

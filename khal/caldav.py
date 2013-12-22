@@ -323,27 +323,81 @@ class Syncer(object):
         root = etree.XML(response.text.encode(response.encoding))
         vhe = list()
         for element in root.iter('{DAV:}response'):
-            href = element.find('{DAV:}href').text
-            vevent = element.find('{DAV:}propstat').find('{DAV:}prop').find('{urn:ietf:params:xml:ns:caldav}calendar-data').text
-            etag = element.find('{DAV:}propstat').find('{DAV:}prop').find('{DAV:}getetag').text
-            vhe.append((vevent, href, etag))
-        if vhe == list():
+            try:
+                href = element.find('{DAV:}href').text
+                vevent = element.find('{DAV:}propstat').find('{DAV:}prop').find('{urn:ietf:params:xml:ns:caldav}calendar-data').text
+                etag = element.find('{DAV:}propstat').find('{DAV:}prop').find('{DAV:}getetag').text
+                vhe.append((vevent, href, etag))
+            except AttributeError:
+                continue
+        if not vhe:
             return True
-        else:
-            return False
+        return False
 
-    def upload(self, vevent):
+
+    def _create_calendar(self):
+        """
+        create the calendar
+
+        :returns: calendar
+        :rtype: icalendar.Calendar()
+        """
+        calendar = icalendar.Calendar()
+        calendar.add('version','2.0')
+        calendar.add('prodid','-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
+
+        return calendar
+
+
+    def _create_timezone(self,conf):
+        """
+        create the timezone information
+
+        :param conf: the configuration settings
+        :type conf: Namespace()
+        :returns: timezone information set
+        :rtype: icalendar.Timezone()
+        """
+        timezone = icalendar.Timezone()
+        tz = conf.default.default_timezone
+        timezone.add('TZID', tz)
+        daylight, standard = [(num, dt) for num,dt in enumerate(tz._utc_transition_times) if dt.year == datetime.datetime.today().year]
+
+        timezone_daylight = icalendar.TimezoneDaylight()
+        timezone_daylight.add('TZNAME', tz._transition_info[daylight[0]][2])
+        timezone_daylight.add('DTSTART', daylight[1])
+        timezone_daylight.add('TZOFFSETFROM', tz._transition_info[daylight[0]][0])
+        timezone_daylight.add('TZOFFSETTO', tz._transition_info[standard[0]][0])
+
+        timezone_standard = icalendar.TimezoneStandard()
+        timezone_standard.add('TZNAME', tz._transition_info[standard[0]][2])
+        timezone_standard.add('DTSTART', standard[1])
+        timezone_standard.add('TZOFFSETFROM', tz._transition_info[standard[0]][0])
+        timezone_standard.add('TZOFFSETTO', tz._transition_info[daylight[0]][0])
+
+        timezone.add_component(timezone_daylight)
+        timezone.add_component(timezone_standard)
+
+        return timezone
+
+
+    def upload(self, conf, vevent):
         """
         uploads a new event to the server
 
+        :param conf: the configuration settings
+        :type conf: Namespace()
         :param vevent: the event to upload
         :type vevent: icalendar.cal.Event
         :returns: new url of the event and its etag
         :rtype: tuple(str, str)
         """
         self._check_write_support()
-        calendar = icalendar.Calendar()
+        calendar = self._create_calendar()
+        timezone = self._create_timezone(conf)
+        calendar.add_component(timezone)
         calendar.add_component(vevent)
+
         for _ in range(5):
             randstr = get_random_href()
             remotepath = str(self.url.resource + randstr + ".ics")
@@ -354,6 +408,7 @@ class Syncer(object):
                                     data=calendar.to_ical(),
                                     headers=headers,
                                     **self._settings)
+
             if response.ok:
                 parsed_url = urlparse.urlparse(remotepath)
                 if ('etag' not in response.headers.keys()

@@ -176,6 +176,7 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
             try:
                 # next element time only
                 dtend = timefstr(date_list, timeformat)
+                dtend =  datetime(*(dtstart.timetuple()[:3] + dtend.timetuple()[3:5]))
             except ValueError:
                 dtend = dtstart + timedelta(minutes=defaulttimelen)
 
@@ -184,12 +185,13 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
                          dtend.timetuple()[3:5])
     if dtend < dtstart:
         dtend = dtend + timedelta(days=1)
-
     if all_day:
         dtstart = dtstart.date()
         dtend = dtend.date()
+
     else:
         try:
+            # next element is a valid Olson db timezone string
             dtstart = pytz.timezone(date_list[0]).localize(dtstart)
             dtend = pytz.timezone(date_list[0]).localize(dtend)
             date_list.pop(0)
@@ -200,6 +202,7 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
+    event.add('dtstamp', datetime.now())
     event.add('summary', ' '.join(date_list).decode(encoding))
     event.add('uid', generate_random_uid())
     return event
@@ -238,6 +241,7 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None):
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
+    event.add('dtstamp', datetime.now())
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
     return event
