@@ -161,6 +161,7 @@ class Syncer(object):
             from requests.auth import HTTPDigestAuth
             self._settings['auth'] = HTTPDigestAuth(user, passwd)
         self._default_headers = {"User-Agent": "khal"}
+        self._default_headers["Content-Type"] = "application/xml; charset=UTF-8"
 
         headers = self.headers
         headers['Depth'] = '1'
