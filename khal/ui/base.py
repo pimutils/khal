@@ -36,10 +36,11 @@ def vimify(key):
     elif key == 'l':
         return 'right'
     # not really sure if these last to make any sense (not yet at least)
-    elif key == '0':
-        return 'home'
-    elif key == '$':
-        return 'end'
+    # at least for the time being, they are more trouble, than they are worth
+    #elif key == '0':
+        #return 'home'
+    #elif key == '$':
+        #return 'end'
     else:
         return key
 
