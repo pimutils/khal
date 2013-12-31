@@ -210,7 +210,7 @@ def construct_week(week, view):
             this_week.append((2, urwid.AttrMap(Date(day, view),
                                                None, 'reveal focus')))
     week = DateCColumns(this_week, view=view, dividechars=1,
-                       focus_column=today)
+                        focus_column=today)
     return week, bool(today)
 
 
@@ -220,7 +220,7 @@ def calendar_walker(view):
     lines = list()
     daynames = 'Mo Tu We Th Fr Sa Su'.split(' ')
     daynames = CColumns([(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in daynames],
-                       dividechars=1)
+                        dividechars=1)
     lines = []
     focus_item = None
     for number, week in enumerate(week_list()):
@@ -756,7 +756,11 @@ class EventEditor(EventViewer):
 
         if self.startendeditor.changed:
             self.event.vevent['DTSTART'].dt = self.startendeditor.newstart
-            self.event.vevent['DTEND'].dt = self.startendeditor.newend
+            try:
+                self.event.vevent['DTEND'].dt = self.startendeditor.newend
+            except KeyError:
+                self.event.vevent['DURATION'].dt = self.startendeditor.newend - self.startendeditor.newstart
+
             changed = True
         if self.accountchooser.changed:
             changed = True
@@ -825,7 +829,7 @@ class ClassicView(Pane):
         weeks = calendar_walker(view=self)
         events = self.eventscolumn
         columns = CColumns([(25, weeks), events],
-                          dividechars=2, box_columns=[0, 1])
+                           dividechars=2, box_columns=[0, 1])
         self.eventscolumn.update(date.today())  # showing with today's events
         Pane.__init__(self, columns, title=title, description=description)
 

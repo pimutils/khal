@@ -82,9 +82,12 @@ class Event(object):
 
     @property
     def end(self):
-        # TODO take care of events with no DTEND but DURATION and neither DTEND
-        # nor DURATION
-        end = self.vevent['DTEND'].dt
+        # TODO take care of events with neither DTEND nor DURATION
+        try:
+            end = self.vevent['DTEND'].dt
+        except KeyError:
+            duration = self.vevent['DURATION']
+            end = self.start + duration.dt
         if self.allday:
             return end
         if end.tzinfo is None:

@@ -4,9 +4,8 @@ TODO
 * exceptions to recurrent events
 * use a writable calendar for as a default calendar
 * make read-only calendars static
+* edit duration of events (while adding and in ikhal)
 
-* khal default ui:
-  * show which calendar/resource an events belongs to
 
 * ikhal:
   * new weeks should be loaded into the walker
