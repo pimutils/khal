@@ -41,6 +41,7 @@ class DateConversionError(Exception):
 
 
 class AccountList(urwid.WidgetWrap):
+    """used as the popup in the AccountChooser popup"""
     signals = ['close']
 
     def __init__(self, accounts, account_chooser):
@@ -61,6 +62,9 @@ class AccountList(urwid.WidgetWrap):
 
 
 class AccountChooser(urwid.PopUpLauncher):
+    """show current account and lets user choose another account
+
+    does NOT handle the actual moving of an event to another account"""
     def __init__(self, active_account, accounts):
         self.active_account = active_account
         self.original_account = active_account
@@ -103,7 +107,7 @@ class AccountChooser(urwid.PopUpLauncher):
 
 
 class Date(urwid.Text):
-    """used in the main calendar for dates"""
+    """used in the main calendar for dates (a number)"""
 
     def __init__(self, date, view):
         self.date = date
