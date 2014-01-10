@@ -222,7 +222,8 @@ class DefaultSection(Section):
             ('datetimeformat', '', None),
             ('longdatetimeformat', '', None),
             ('encoding', 'utf-8', None),
-            ('unicode_symbols', 'True', self._parse_bool_string)
+            ('unicode_symbols', 'True', self._parse_bool_string),
+            ('firstweekday', 0, lambda x: x)
         ]
 
 

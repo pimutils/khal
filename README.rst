@@ -20,9 +20,6 @@ Features
 - ikhal (interactive khal) can show and edit events in the current and next two months
 - simple recurring events support (no exceptions just yet)
 - you cannot edit the timezones of events
-- is pretty Euro centric, weeks start on Mondays, khal uses a 24 hour clock and
-  the default time zone is 'Europe/Berlin' (apart from the week start issue, it
-  is all configurable now)
 - khal should run on all major
   operating systems [1]_ (has been tested on FreeBSD and Debian GNU/Linux)
 

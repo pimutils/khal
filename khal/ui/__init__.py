@@ -131,12 +131,12 @@ class Date(urwid.Text):
             return key
 
 
-def week_list(count=6):
+def week_list(count=6, firstweekday=0):
     month = date.today().month
     year = date.today().year
     cal = list()
     for _ in range(count):
-        for week in calendar.Calendar(0).monthdatescalendar(year, month):
+        for week in calendar.Calendar(firstweekday).monthdatescalendar(year, month):
             if week not in cal:
                 cal.append(week)
         month = month + 1
@@ -218,16 +218,17 @@ def construct_week(week, view):
     return week, bool(today)
 
 
-def calendar_walker(view):
+def calendar_walker(view, firstweekday=0):
     """hopefully this will soon become a real "walker",
     loading new weeks as nedded"""
     lines = list()
-    daynames = 'Mo Tu We Th Fr Sa Su'.split(' ')
+    calendar.setfirstweekday(firstweekday)
+    daynames = calendar.weekheader(2).split(' ')
     daynames = CColumns([(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in daynames],
                         dividechars=1)
     lines = []
     focus_item = None
-    for number, week in enumerate(week_list()):
+    for number, week in enumerate(week_list(firstweekday=firstweekday)):
         week, contains_today = construct_week(week, view)
         if contains_today:
             focus_item = number
@@ -828,7 +829,7 @@ class ClassicView(Pane):
     """
     def __init__(self, conf=None, dbtool=None, title=u'', description=u''):
         self.eventscolumn = EventColumn(conf=conf, dbtool=dbtool)
-        weeks = calendar_walker(view=self)
+        weeks = calendar_walker(view=self, firstweekday=conf.default.firstweekday)
         events = self.eventscolumn
         columns = CColumns([(25, weeks), events],
                            dividechars=2, box_columns=[0, 1])

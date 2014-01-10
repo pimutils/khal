@@ -1,6 +1,6 @@
 #/etc/khal/khal.conf.sample
 #
-# The default configuration file locations
+# The default configuration file locations are:
 # ~/.khal/khal.conf
 # ~/.config/khal/khal.conf
 #
@@ -42,7 +42,7 @@
 #
 #
 # resource: https://exmaple.com/davical/caldav.php/jdoe/home/
-# # Spesify the URL for the CalDAV Calendar
+# # Specify the URL for the CalDAV Calendar
 #
 #
 # color: dark blue
@@ -136,7 +136,7 @@
 # longdateformat: %Y-%m-%d
 # datetimeformat: %m-%d %H:%M
 # longdatetimeformat: %Y-%m-%d %H:%M
-# # Siet the format Time and Date should be displayed in khal
+# # Set the format Time and Date should be displayed in khal
 # #   * Long version should contain the current year
 # #
 # # Specify date/time in standard strftime format
@@ -151,6 +151,9 @@
 # # Enable unicode symbols to display event properties
 # # Set this to False if your terminal's character set dose not support them
 # #   * Default: True
+#
+# firstweekday: 6
+# # Set the first day of the week, 0 is Monday, 6 is Sunday
 #
 #------------------------------------------------------------------------------
 # ## Debug Level ##
@@ -168,12 +171,12 @@
 write_support: YesPleaseIDoHaveABackupOfMyData
 user: jdoe
 passwd: 2342
-resource: https://exmaple.com/davical/caldav.php/jdoe/home/
+resource: https://example.com/davical/caldav.php/jdoe/home/
 color: dark blue
 
 [Account work]
 user: doe
-resource: https://blobhal.de/owncloud/remote.php/caldav/calendars/doe/work
+resource: https://examp.le/owncloud/remote.php/caldav/calendars/doe/work
 verify: /etc/ssl/certs/3b015462.0
 
 [Account simple]
@@ -195,5 +198,7 @@ dateformat: %d.%m.
 longdateformat: %d.%m.%Y
 datetimeformat: %d.%m. %H:%M
 longdatetimeformat: %d.%m.%Y %H:%M
+
+firstweekday: 0
 
 DEBUG: 0

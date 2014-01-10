@@ -190,7 +190,8 @@ class Display(Controller):
             for event in events:
                 event_column.append(aux.colored(event.compact(day), event.color))
 
-        calendar_column = calendar_display.vertical_month()
+        calendar_column = calendar_display.vertical_month(
+            firstweekday=conf.default.firstweekday)
 
         missing = len(event_column) - len(calendar_column)
         if missing > 0:

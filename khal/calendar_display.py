@@ -94,7 +94,8 @@ def vertical_month(month=datetime.date.today().month,
                    year=datetime.date.today().year,
                    today=datetime.date.today(),
                    weeknumber=False,
-                   count=3):
+                   count=3,
+                   firstweekday=0):
     """
     returns a list() of str() of weeks for a vertical arranged calendar
 
@@ -116,9 +117,10 @@ def vertical_month(month=datetime.date.today().month,
     """
     khal = list()
     w_number = '    ' if weeknumber else ''
-    khal.append(bstring('    Mo Tu We Th Fr Sa Su ') + w_number)
+    calendar.setfirstweekday(firstweekday)
+    khal.append(bstring('    ' + calendar.weekheader(2) + ' ' + w_number))
     for _ in range(count):
-        for week in calendar.Calendar(0).monthdatescalendar(year, month):
+        for week in calendar.Calendar(firstweekday).monthdatescalendar(year, month):
             new_month = len([day for day in week if day.day == 1])
             strweek = str_week(week, today)
             if new_month:
@@ -127,7 +129,7 @@ def vertical_month(month=datetime.date.today().month,
                 m_name = '    '
             w_number = bstring(' ' + str(getweeknumber(week[0]))) if weeknumber else ''
             sweek = m_name + strweek + w_number
-            if sweek not in khal:
+            if sweek != khal[-1]:
                 khal.append(sweek)
         month = month + 1
         if month > 12:
