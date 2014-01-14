@@ -82,7 +82,7 @@ will show all events today and tomorrow
 
  ikhal
 
-opens and interactive calendar browser, showing all events on the selected day
+opens an interactive calendar browser, showing all events on the selected day
 
 
 **quick event adding**
@@ -109,7 +109,7 @@ In a more abstract form:
 
   khal --new startdatetime [enddatetime] description
 
-where stard- and enddatetime are either datetimes or times in the format defined
+where start- and enddatetime are either datetimes or times in the format defined
 in the config file. Start- and enddatetime can be one of the following:
 
   * datetime datetime
