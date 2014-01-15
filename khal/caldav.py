@@ -349,20 +349,20 @@ class Syncer(object):
 
         return calendar
 
-
-    def _create_timezone(self,conf):
+    def _create_timezone(self, tz):
         """
-        create the timezone information
+        create an icalendar timezone from a pytz.tzinfo
 
-        :param conf: the configuration settings
-        :type conf: Namespace()
+        :param tz: the timezone
+        :type conf: pytz.tzinfo
         :returns: timezone information set
         :rtype: icalendar.Timezone()
         """
         timezone = icalendar.Timezone()
-        tz = conf.default.default_timezone
         timezone.add('TZID', tz)
-        daylight, standard = [(num, dt) for num,dt in enumerate(tz._utc_transition_times) if dt.year == datetime.datetime.today().year]
+
+        # FIXME should match year of the event, not this year
+        daylight, standard = [(num, dt) for num, dt in enumerate(tz._utc_transition_times) if dt.year == datetime.datetime.today().year]
 
         timezone_daylight = icalendar.TimezoneDaylight()
         timezone_daylight.add('TZNAME', tz._transition_info[daylight[0]][2])
@@ -395,7 +395,7 @@ class Syncer(object):
         """
         self._check_write_support()
         calendar = self._create_calendar()
-        timezone = self._create_timezone(conf)
+        timezone = self._create_timezone(conf.default.default_timezone)  # FIXME
         calendar.add_component(timezone)
         calendar.add_component(vevent)
 
@@ -420,3 +420,38 @@ class Syncer(object):
 
                 return (parsed_url.path, etag)
         response.raise_for_status()
+
+    def update(self, vevent, href, etag):
+        """
+        updates a modified event on the server
+
+        :param vevent: the event to upload
+        :type vevent: icalendar.cal.Event
+        :param href: the href of the event
+        :type href: str
+        :param etag: etag of the event
+        :type etag: str
+        :returns: new etag (if the server returns it)
+        :rtype: str or None
+        """
+        self._check_write_support()
+        calendar = self._create_calendar()
+        if (vevent['DTSTART'].dt, 'tzinfo'):  # FIXME as most other timezone related stuff
+            timezone = self._create_timezone(vevent['DTSTART'].dt.tzinfo)
+            calendar.add_component(timezone)
+        calendar.add_component(vevent)
+
+        remotepath = str(self.url.base + href)
+        headers = self.headers
+        headers['content-type'] = 'text/calendar'
+        headers['If-Match'] = etag
+        response = requests.put(remotepath,
+                                data=calendar.to_ical(),
+                                headers=headers,
+                                **self._settings)
+        response.raise_for_status()
+
+        if 'etag' in response.headers.keys():
+            return response.headers['etag']
+        else:
+            return None

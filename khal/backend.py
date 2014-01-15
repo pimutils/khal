@@ -217,6 +217,9 @@ class SQLiteDb(object):
     def update(self, vevent, account_name, href='', etag='', status=OK):
         """insert a new or update an existing card in the db
 
+        This is mostly a wrapper around two SQL statements, doing some cleanup
+        before.
+
         :param vcard: vcard to be inserted or updated
         :type vcard: unicode
         :param href: href of the card on the server, if this href already
@@ -343,7 +346,7 @@ class SQLiteDb(object):
             self.sql_ex(sql_s, (newhref, oldhref))
 
     def href_exists(self, href, account_name):
-        """returns True if href already exist in db
+        """returns True if href already exists in db
 
         :param href: href
         :type href: str()
@@ -493,8 +496,11 @@ class SQLiteDb(object):
         """returns the Event matching href, if start and end are given, a
         specific Event from a Recursion set is returned, the Event as saved in
         the db
+
+        All other parameters given to this function are handed over to the
+        Event.
         """
-        sql_s = 'SELECT vevent, status FROM {0} WHERE href=(?)'.format(account_name)
+        sql_s = 'SELECT vevent, status, etag FROM {0} WHERE href=(?)'.format(account_name)
         result = self.sql_ex(sql_s, (href, ))
         return Event(result[0][0],
                      local_tz =self.conf.default.local_timezone,
@@ -506,10 +512,11 @@ class SQLiteDb(object):
                      account=account_name,
                      status=result[0][1],
                      readonly=readonly,
+                     etag=result[0][2],
                      unicode_symbols=unicode_symbols)
 
     def get_changed(self, account_name):
-        """returns list of hrefs of locally edited vcards
+        """returns list of hrefs of locally edited vevents
         """
         sql_s = 'SELECT href FROM {0} WHERE status == (?)'.format(account_name)
         result = self.sql_ex(sql_s, (CHANGED, ))

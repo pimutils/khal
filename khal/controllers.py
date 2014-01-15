@@ -137,6 +137,12 @@ class Sync(Controller):
                          'you need to enable write support to use this feature'
                          ', see the documentation.')
 
+        # syncing locally modified events
+        hrefs = self.dbtool.get_changed(sync_account.name)
+        for href in hrefs:
+            event = self.dbtool.get_vevent_from_db(href, sync_account.name)
+            etag = self.syncer.update(event.vevent, event.href, event.etag)
+
         # looking for events deleted on the server but still in the local db
         locale_hrefs = self.dbtool.hrefs_by_time_range(start_utc,
                                                        end_utc,

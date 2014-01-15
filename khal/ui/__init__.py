@@ -804,6 +804,7 @@ class EventEditor(EventViewer):
             self.dbtool.update(self.event.vevent.to_ical(),
                                self.event.account,
                                self.event.href,
+                               etag=self.event.etag,
                                status=status)
         self.cancel(refresh=True)
 

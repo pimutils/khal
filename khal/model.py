@@ -33,7 +33,7 @@ from .status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
 class Event(object):
     def __init__(self, ical, status=0, href=None, account=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
-                 readonly=False, unicode_symbols=True, dbtool=None):
+                 readonly=False, unicode_symbols=True, dbtool=None, etag=None):
         self.vevent = icalendar.Event.from_ical(ical)
         if account is None:
             raise TypeError('account must not be None')
@@ -45,6 +45,7 @@ class Event(object):
         self.readonly = readonly
         self.unicode_symbols = unicode_symbols
         self.dbtool = dbtool
+        self.etag = etag
 
         if unicode_symbols:
             self.recurstr = u' ⟳'
@@ -110,6 +111,8 @@ class Event(object):
             status = 'X '
         elif self.status == NEW:
             status = 'N '
+        elif self.status == CHANGED:
+            status = 'M '
         else:
             status = ''
         if self.allday:
