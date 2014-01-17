@@ -57,17 +57,12 @@ class UploadFailed(Exception):
     pass
 
 
-class NoWriteSupport(Exception):
-    """write support has not been enabled"""
-    pass
-
-
 class HTTPSyncer(object):
     """class for getting an ics file from an http(s) url
 
     mostly a wrapper around requests.get, being instantiated the same way
     as (CalDAV)Syncer"""
-    def __init__(self, resource, debug='', user='', passwd='',
+    def __init__(self, resource, debug='', user='', password='',
                  verify=True, auth='basic'):
         #shutup urllib3
         urllog = logging.getLogger('requests.packages.urllib3.connectionpool')
@@ -84,10 +79,10 @@ class HTTPSyncer(object):
         self.session = requests.session()
         self._settings = {'verify': verify}
         if auth == 'basic':
-            self._settings['auth'] = (user, passwd,)
+            self._settings['auth'] = (user, password,)
         if auth == 'digest':
             from requests.auth import HTTPDigestAuth
-            self._settings['auth'] = HTTPDigestAuth(user, passwd)
+            self._settings['auth'] = HTTPDigestAuth(user, password)
         self._default_headers = {"User-Agent": "khal"}
 
     def get_ics(self):
@@ -117,14 +112,10 @@ class Syncer(object):
     :type debug: bool
     :param user: user name for accessing the CalDAV resource
     :type user: str
-    :param passwd: password for accessing the CalDAV resource
-    :type passwd: str
+    :param password: password for accessing the CalDAV resource
+    :type password: str
     :param verify: should a https connection be verifiey or not
     :type param: bool
-    :param write_support: should write support be enabled or not, if set
-                          to false, Syncer will raise an NoWriteSupport
-                          Exception when trying to upload a new event
-    :type write_support: bool
     :param auth: which http authentication is used, supported are 'basic'
                  and 'digest'
     :type param: str
@@ -136,8 +127,8 @@ class Syncer(object):
 
     """
 
-    def __init__(self, resource, debug='', user='', passwd='',
-                 verify=True, write_support=False, auth='basic'):
+    def __init__(self, resource, debug='', user='', password='',
+                 verify=True, auth='basic'):
         """
         """
         #shutup urllib3
@@ -153,13 +144,12 @@ class Syncer(object):
                              split_url.path)
         self.debug = debug
         self.session = requests.session()
-        self.write_support = write_support
         self._settings = {'verify': verify}
         if auth == 'basic':
-            self._settings['auth'] = (user, passwd,)
+            self._settings['auth'] = (user, password,)
         if auth == 'digest':
             from requests.auth import HTTPDigestAuth
-            self._settings['auth'] = HTTPDigestAuth(user, passwd)
+            self._settings['auth'] = HTTPDigestAuth(user, password)
         self._default_headers = {"User-Agent": "khal"}
         self._default_headers["Content-Type"] = "application/xml; charset=UTF-8"
 
@@ -169,7 +159,6 @@ class Syncer(object):
                                         self.url.resource,
                                         headers=headers,
                                         **self._settings)
-
 
         response.raise_for_status()   # raises error on not 2XX HTTP status
         if response.headers['DAV'].count('calendar-access') == 0:
@@ -201,14 +190,6 @@ class Syncer(object):
         :rtype: dict
         """
         return dict(self._default_headers)
-
-    def _check_write_support(self):
-        """checks if user really wants his data destroyed
-
-        :raises: NoWriteSupport
-        """
-        if not self.write_support:
-            raise NoWriteSupport
 
     def get_hel(self, start=None, end=None):
         """
@@ -354,7 +335,7 @@ class Syncer(object):
         create an icalendar timezone from a pytz.tzinfo
 
         :param tz: the timezone
-        :type conf: pytz.tzinfo
+        :type tz: pytz.tzinfo
         :returns: timezone information set
         :rtype: icalendar.Timezone()
         """
@@ -381,21 +362,19 @@ class Syncer(object):
 
         return timezone
 
-
-    def upload(self, conf, vevent):
+    def upload(self, vevent, default_timezone):
         """
         uploads a new event to the server
 
-        :param conf: the configuration settings
-        :type conf: Namespace()
+        :param default_timezone:
+        :type default_timezone:
         :param vevent: the event to upload
         :type vevent: icalendar.cal.Event
         :returns: new url of the event and its etag
         :rtype: tuple(str, str)
         """
-        self._check_write_support()
         calendar = self._create_calendar()
-        timezone = self._create_timezone(conf.default.default_timezone)  # FIXME
+        timezone = self._create_timezone(default_timezone)  # FIXME
         calendar.add_component(timezone)
         calendar.add_component(vevent)
 
@@ -434,7 +413,6 @@ class Syncer(object):
         :returns: new etag (if the server returns it)
         :rtype: str or None
         """
-        self._check_write_support()
         calendar = self._create_calendar()
         if (vevent['DTSTART'].dt, 'tzinfo'):  # FIXME as most other timezone related stuff
             timezone = self._create_timezone(vevent['DTSTART'].dt.tzinfo)

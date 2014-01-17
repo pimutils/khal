@@ -21,17 +21,11 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-try:
-    import logging
-    import sys
+import sys
 
-    from khal import ConfigurationParser
-    from khal import controllers
-    from khal import capture_user_interruption
-
-except ImportError as error:
-    sys.stderr.write(str(error))
-    sys.exit(1)
+from khal import ConfigurationParser
+from khal import controllers
+from khal import capture_user_interruption
 
 capture_user_interruption()
 
@@ -45,4 +39,28 @@ if conf is None:
 if conf.debug:
     conf_parser.dump(conf)
 
-controllers.Interactive(conf)
+# TODO move this into the init
+from khal import khalendar, backend
+dbtool = backend.SQLiteDb(conf)
+
+collection = khalendar.CalendarCollection()
+for calendar_name in conf.sync.accounts:
+    cal_conf = conf.accounts[calendar_name]
+    collection.append(khalendar.Calendar(
+        name=calendar_name,
+        dbtool=dbtool,
+        resource=cal_conf['resource'],
+        username=cal_conf['user'],
+        password=cal_conf['password'],
+        auth=cal_conf['auth'],
+        ssl_verify=cal_conf['ssl_verify'],
+        server_type=cal_conf['server_type'],
+        readonly=cal_conf['readonly'],
+        color=cal_conf['color'],
+        unicode_symbols=conf.default.unicode_symbols,
+        local_timezone=conf.default.local_timezone,
+        default_timezone=conf.default.default_timezone,
+        debug=conf.default.debug
+    ))
+
+controllers.Interactive(collection, conf)

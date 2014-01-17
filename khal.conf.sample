@@ -10,6 +10,7 @@
 # - Timezone and Time Display Formating Interface settings
 # - Debug level
 #
+# Look at the end of this file for an example config.
 #------------------------------------------------------------------------------
 # ## CalDAV Account Configuration ##
 #------------------------------------------------------------------------------
@@ -17,25 +18,20 @@
 # # Each Account configuration must start with an Account Tag
 # # Each Account Tag must be unique
 #
-# write_support: YesPleaseIDoHaveABackupOfMyData
-# # Enable writing events and event changes to CalDAV Server
-# #   * Default: Disabled
-# #   * Make Sure you have a Backup of your calender before enabling
-#
-# type: caldav
+# server_type: caldav
 # # Set the protocol khal should use
 # #  * Default: caldav
 # #
-# # type: http
-# # Setting the type to http makes a simple read only
-# #   * user: and passwd: still must be set, put anything if no auth required
+# # server_type: http
+# # Setting the server_type to http makes this a simple read only resource
+# #   * user: and password: still must be set, put anything if no auth required
 # 
 #
 # user: stallman
 # # Username to access the CalDAV Account
 #
 #
-# passwd: GodSexLoveSecret
+# password: GodSexLoveSecret
 # # You can place your plain-text password here
 # # If the password is not specified it will be asked for while syncing
 # # If pykeychain is installed, it will store the passwords
@@ -170,7 +166,7 @@
 [Account home]
 write_support: YesPleaseIDoHaveABackupOfMyData
 user: jdoe
-passwd: 2342
+password: 2342
 resource: https://example.com/davical/caldav.php/jdoe/home/
 color: dark blue
 
@@ -180,11 +176,11 @@ resource: https://examp.le/owncloud/remote.php/caldav/calendars/doe/work
 verify: /etc/ssl/certs/3b015462.0
 
 [Account simple]
-type: http
+server_type: http
 resource: https://test.tld/calendars/meetings.ics
 verify: False
 user: XXX
-passwd: XXX
+password: XXX
 
 [sqlite]
 path: /home/jd/.khal/khal.db

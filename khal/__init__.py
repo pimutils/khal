@@ -27,17 +27,11 @@ try:
     import ConfigParser
 except ImportError:
     import configparser as ConfigParser
-import getpass
 import logging
 import os
 import re
 import signal
 import sys
-from netrc import netrc
-try:
-    from urlparse import urlsplit
-except ImportError:
-    from urllib.parse import urlsplit
 
 import pytz
 import xdg.BaseDirectory
@@ -163,15 +157,6 @@ class Section(object):
         else:
             return os.path.expanduser(value)
 
-    def _parse_write_support(self, value):
-        """returns True if value is YesPlease..., this is a rather dirty
-        solution, but it works fine (TM)"""
-        value = value.strip()
-        if value == 'YesPleaseIDoHaveABackupOfMyData':
-            return True
-        else:
-            return False
-
     def _parse_time_zone(self, value):
         """returns pytz timezone"""
         return pytz.timezone(value)
@@ -181,14 +166,13 @@ class AccountSection(Section):
     def __init__(self, parser):
         Section.__init__(self, parser, 'accounts')
         self._schema = [
-            ('user', '', None),
-            ('passwd', '', None),
+            ('user', None, None),
+            ('password', None, None),
             ('resource', '', None),
             ('auth', 'basic', None),
-            ('verify', 'True', self._parse_bool_string),
-            ('write_support', '', self._parse_write_support),
+            ('ssl_verify', 'True', self._parse_bool_string),
             ('color', '', None),
-            ('type', 'caldav', None)
+            ('server_type', 'caldav', None)
         ]
 
     def is_collection(self):
@@ -350,11 +334,11 @@ class ConfigurationParser(object):
             ns.sync.accounts = accounts
 
         for account in ns.accounts:
-            if account.type == 'caldav':
+            if account.server_type == 'caldav':
                 account.readonly = False
             else:
                 account.readonly = True
-            if account.resource[-1] != '/' and account.type == 'caldav':
+            if account.resource[-1] != '/' and account.server_type == 'caldav':
                 account.resource = account.resource + '/'
 
         ns.sync.accounts = set(ns.sync.accounts)
@@ -368,9 +352,9 @@ class ConfigurationParser(object):
 
     def check_account(self, ns):
         result = True
-        if not ns.type in ['caldav', 'http']:
+        if not ns.server_type in ['caldav', 'http']:
             logging.error("Value %s is not allowed for in Account %s:type",
-                          ns.type, ns.name)
+                          ns.server_type, ns.name)
             result = False
 
         if not ns.auth in ['basic', 'digest']:
@@ -378,33 +362,9 @@ class ConfigurationParser(object):
                           ns.auth, ns.name)
             result = False
 
-        if not self.check_property(ns, 'resource', 'Account %s:resource' % ns.name):
+        if not self.check_property(ns, 'resource',
+                                   'Account {0}:resource'.format(ns.name)):
             return False
-
-        if not len(ns.passwd):
-            hostname = urlsplit(ns.resource).hostname
-            try:
-                auths = netrc().authenticators(hostname)
-            except IOError:
-                auths = False
-            if auths:
-                if not ns.user or auths[0] == ns.user:
-                    logging.debug("Read password for user %s on %s in .netrc",
-                                  auths[0], hostname)
-                    ns.user = auths[0]
-                    ns.passwd = auths[2]
-                else:
-                    logging.error("User %s not found for %s in .netrc",
-                                  ns.user, hostname)
-                    result = False
-            elif ns.user:
-                # Do not ask for password if execution is already doomed.
-                if result:
-                    prompt = 'Server password (account ' + ns.name + '): '
-                    ns.passwd = getpass.getpass(prompt=prompt)
-            else:
-                logging.error("Missing credentials for %s", hostname)
-                result = False
 
         return result
 
@@ -432,7 +392,7 @@ class ConfigurationParser(object):
         """
         logging.debug(intro)
 
-        if not type(conf) is 'dict':
+        if not type(conf) is 'dict':  # FIXME
             return
         for name, value in sorted(dict.copy(conf).items()):
             if type(value) is list:
@@ -443,7 +403,7 @@ class ConfigurationParser(object):
                     self.dump(value[o], '\t'*tab + name + ':', tab + 1)
             elif type(value) is Namespace:
                 self.dump(value, '\t'*tab + name + ':', tab + 1)
-            elif name != 'passwd':
+            elif name != 'password':
                 logging.debug('%s%s: %s', '\t'*tab, name, value)
 
     def _read_command_line(self):

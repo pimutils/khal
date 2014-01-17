@@ -319,7 +319,7 @@ class EventList(urwid.WidgetWrap):
             readonly = self.conf.accounts[account]['readonly']
             all_day_events += self.dbtool.get_allday_range(
                 this_date,
-                account_name=account,
+                account=account,
                 color=color,
                 readonly=readonly,
                 show_deleted=False)
@@ -828,7 +828,9 @@ class ClassicView(Pane):
     showing a CalendarWalker on the left and the eventList + eventviewer/editor
     on the right
     """
-    def __init__(self, conf=None, dbtool=None, title=u'', description=u''):
+    def __init__(self, collection, conf=None, dbtool=None, title=u'',
+                 description=u''):
+        self.collection = collection
         self.eventscolumn = EventColumn(conf=conf, dbtool=dbtool)
         weeks = calendar_walker(view=self, firstweekday=conf.default.firstweekday)
         events = self.eventscolumn

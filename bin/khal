@@ -21,17 +21,11 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-try:
-    import logging
-    import sys
+import sys
 
-    from khal import ConfigurationParser
-    from khal import controllers
-    from khal import capture_user_interruption
-
-except ImportError as error:
-    sys.stderr.write(str(error))
-    sys.exit(1)
+from khal import ConfigurationParser
+from khal import controllers
+from khal import capture_user_interruption
 
 capture_user_interruption()
 
@@ -49,24 +43,38 @@ if conf.debug:
 if conf.list_accounts:
     for name in conf.accounts:
         print(name)
-elif conf.syncrun:
-    rvalue = 0
-    for account_name in conf.sync.accounts:
-        logging.debug('start syncing account {0}'.format(account_name))
-        try:
-            if conf.accounts[account_name].type == 'caldav':
-                controllers.Sync(conf, account_name)
-            elif conf.accounts[account_name].type == 'http':
-                controllers.SimpleSync(conf, account_name)
-        except Exception as error:
-            if conf.debug:
-                raise
-            logging.critical('While syncing account "{0}" an error '
-                             'occured:\n  '.format(account_name)
-                             + str(error))
-            rvalue = 1
-    sys.exit(rvalue)
+    sys.exit()
+
+# TODO move this into the init
+from khal import khalendar, backend
+dbtool = backend.SQLiteDb(conf)
+
+collection = khalendar.CalendarCollection()
+for calendar_name in conf.sync.accounts:
+    cal_conf = conf.accounts[calendar_name]
+    collection.append(khalendar.Calendar(
+        name=calendar_name,
+        dbtool=dbtool,
+        resource=cal_conf['resource'],
+        username=cal_conf['user'],
+        password=cal_conf['password'],
+        auth=cal_conf['auth'],
+        ssl_verify=cal_conf['ssl_verify'],
+        server_type=cal_conf['server_type'],
+        readonly=cal_conf['readonly'],
+        color=cal_conf['color'],
+        unicode_symbols=conf.default.unicode_symbols,
+        local_timezone=conf.default.local_timezone,
+        default_timezone=conf.default.default_timezone,
+        debug=conf.default.debug
+    ))
+
+
+if conf.syncrun:
+    sys.exit(collection.sync())
 elif conf.new:
     controllers.NewFromString(conf)
 else:
-    controllers.Display(conf)
+    controllers.Display(collection,
+                        firstweekday=conf.default.firstweekday,
+                        encoding=conf.default.encoding)
