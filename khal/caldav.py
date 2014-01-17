@@ -414,7 +414,7 @@ class Syncer(object):
         :rtype: str or None
         """
         calendar = self._create_calendar()
-        if (vevent['DTSTART'].dt, 'tzinfo'):  # FIXME as most other timezone related stuff
+        if hasattr(vevent['DTSTART'].dt, 'tzinfo'):  # FIXME as most other timezone related stuff
             timezone = self._create_timezone(vevent['DTSTART'].dt.tzinfo)
             calendar.add_component(timezone)
         calendar.add_component(vevent)
