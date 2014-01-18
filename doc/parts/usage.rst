@@ -24,8 +24,8 @@ will show all events today and tomorrow
 
  ikhal
 
-opens an interactive calendar browser, showing all events on the selected day
-
+opens an interactive calendar browser, showing all events on the selected day.
+See below for usage notes on ikhal.
 
 **quick event adding**
 
@@ -44,22 +44,19 @@ adds a new event on 25th of October lasting from 16:00 to 18:00
 
 adds a new all day event on 26.07.
 
-khal --new should be able to understand quite a range of dates, have a look at
-the tests for more examples.
-
-In a more abstract form:
+khal --new should understand the following syntax:
 
   khal --new startdatetime [enddatetime] description
 
-where start- and enddatetime are either datetimes or times in the format defined
+where start- and enddatetime are either datetimes or times in the formats defined
 in the config file. Start- and enddatetime can be one of the following:
 
   * datetime datetime
-      start and end datetime specified, if no year is given, this year
-      is used, if the second datetime has no year, the same year as for
-      the first datetime object will be used, unless that would make
-      the event end before it begins, in which case the next year is
-      used
+      start and end datetime specified, if no year is given (like the non-long
+      version of dateformat, see config file, should allow), this year is used,
+      if the second datetime has no year, the same year as for the first
+      datetime object will be used, unless that would make the event end before
+      it begins, in which case the next year is used
   * datetime time
       end date will be same as start date, unless that would make the
       event end before it has started, then the next day is used as
@@ -81,18 +78,21 @@ At the moment default length is either 1h or 1 day (should be configurable soon,
 too).
 
 
-Write Support
--------------
-To enable uploading events on the server, you need to enable write support.
-Please note, that write support is experimental and please make sure you either
-*really do have a backup* or only use it on test calendars.
+ikhal
+-----
+Use the arrow keys to navigate in the calendar. Press 'tab' or 'enter' to move
+the focus into the events column and 'left arrow' to return the focus to the
+calendar area. You can navigate the events column with the up and down arrows
+and view an event via pressing 'enter'. Pressing 'enter' again will open the
+currently selected event in a simple event editor you can navigate with the
+arrow keys again. As long as the event has not been edited you can leave the
+editor with pressing 'escape'. Once it has been edited you need to move down the
+'Cancel' button and press the 'enter' key to discard your edits or press the
+'Save' button to save your edits (and upload them on the next sync).
 
-To enable write support you need to put 
+While the calendar area is focused, pressing 'n' will add a new event on the
+currently selected date.
 
- write_support: YesPleaseIDoHaveABackupOfMyData
-
-into every *Account* section you want to enable write support on in your config
-file.
 
 
 Notes on Timezones
@@ -115,13 +115,20 @@ khal expects you want *all* start and end dates displayed in *local time* (which
 can be configured in the config file).
 
 *VTIMEZONE* components of calendars are totally ignored at the moment, as are
-daylight saving times.
+daylight saving times, instead it assumes that the TZID of DTSTART and DTEND
+properties are valid OlsonDB values, e.g. America/New_York (seems to be the
+default for at least the calendar applications I tend to use).
 
-To summarize: as long as it is not daylight saving time, you are always in the
-same timezone and your calendar is, too, khal probably shows the right start and
-end times. Otherwise: Good Luck!
+To summarize: as long as you are always in the same timezone and your calendar
+is, too, khal probably shows the right start and end times. Otherwise: Good
+Luck!
 
 Seriously: be careful when changing timezones and do check if khal shows the
 correct times anyway (and please report back if it doesn't).
 
-
+Notes on Conflict Resolution
+----------------------------
+In case of conflicting edits (locally changed event while remote event was also
+changed), are "resolved" by khal through overwriting the local event with
+the remote one (meaning local edits are lost in this case). Syncing more
+frequently can prevent this.
