@@ -3,11 +3,9 @@ About
 *Khal* is a CLI (console), CalDAV_ based calendar program, `allowing syncing of
 calendars with a variety of other programs on a host of different platforms`__.
 
-*khal* is currently in a very early stage of development, has a very limited
-feature set and is probably full of bugs. If you still want to take it out for a
-spin, please know, that as long as you don't enable write support, there is no
-chance at all that you might mess up your remote calendar. If you do try it out,
-please report back any bugs you might encounter.
+*khal* is currently in a early stage of development, has a limited feature set
+and is probably full of bugs. If you do try it out, please make sure you have a
+backup of your date and please report back any bugs you might encounter.
 
 .. image:: http://lostpackets.de/images/khal.png
 
@@ -15,7 +13,8 @@ Features
 --------
 (or rather: limitations)
 
-- khal can sync events from CalDAV calendar collections
+- khal can sync events from CalDAV calendar collections (and load plain
+  icalendar files over http(s))
 - add simple new events to a calendar and upload them
 - ikhal (interactive khal) can show and edit events in the current and next two months
 - simple recurring events support (no exceptions just yet)
