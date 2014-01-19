@@ -75,7 +75,7 @@ class Calendar(object):
         self._unicode_symbols = unicode_symbols
         self._default_timezone = default_timezone
         self._local_timezone = local_timezone
-        self._debug = False
+        self._debug = debug
 
     def get_by_time_range(self, start, end, show_deleted=False):
         return self._dbtool.get_time_range(start,

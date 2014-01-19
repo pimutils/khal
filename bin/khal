@@ -50,6 +50,7 @@ from khal import khalendar, backend
 dbtool = backend.SQLiteDb(conf)
 
 collection = khalendar.CalendarCollection()
+
 for calendar_name in conf.sync.accounts:
     cal_conf = conf.accounts[calendar_name]
     collection.append(khalendar.Calendar(
@@ -66,7 +67,7 @@ for calendar_name in conf.sync.accounts:
         unicode_symbols=conf.default.unicode_symbols,
         local_timezone=conf.default.local_timezone,
         default_timezone=conf.default.default_timezone,
-        debug=conf.default.debug
+        debug=conf.debug
     ))
 
 
