@@ -30,81 +30,6 @@ import icalendar
 from .status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
 
 
-class BaseCalendar(object):
-    """base class for Calendar and CalendarCollection"""
-
-    def get_by_time_range(self, start, end):
-        raise NotImplementedError
-
-    def get_allday_by_time_range(self, start, end):
-        raise NotImplementedError
-
-    def get_datetime_by_time_range(self, start, end):
-        raise NotImplementedError
-
-    def sync(self):
-        raise NotImplementedError
-
-
-class Calendar(object):
-    def __init__(self, name, dbtool, username=None, password=None,
-                 auth='basic', ssl_verify=True, server_type='caldav',
-                 readonly=False, color=''):
-        self.name = name
-        self.color = color
-
-        self._username = username
-        self._password = password
-        self._ssl_verify = ssl_verify
-        self._server_type = server_type
-        self._auth = auth
-        self._dbtool = dbtool
-        self._readonly = readonly
-
-    def get_by_time_range(self, start, end, show_deleted=False):
-        return self._dbtool.get_time_range(start,
-                                           end,
-                                           self.name,
-                                           self.color,
-                                           self._readonly,
-                                           self._unicode_symbols,
-                                           show_deleted)
-
-    def get_allday_by_time_range(self, start, end):
-        raise NotImplementedError
-
-    def get_datetime_by_time_range(self, start, end):
-        raise NotImplementedError
-
-    def sync(self):
-        # TODO check for password here
-        raise NotImplementedError
-
-
-class CalendarCollection(object):
-    def get_by_time_range(self, start, end):
-        result = list()
-        for one in self:
-            result = result + one.get_by_time_range(start, end)
-        return result
-
-    def get_allday_by_time_range(self, start, end):
-        result = list()
-        for one in self:
-            result = result + one.get_allday_by_time_range(start, end)
-        return result
-
-    def get_datetime_by_time_range(self, start, end):
-        result = list()
-        for one in self:
-            result = result + one.get_datetime_by_time_range(start, end)
-        return result
-
-    def sync(self):
-        for one in self:
-            one.sync()
-
-
 class Event(object):
     def __init__(self, ical, status=0, href=None, account=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
@@ -262,7 +187,8 @@ class Event(object):
         pass
 
     def toggle_delete(self):
-        """mark this event for deletion if it isn't yet and the other way around"""
+        """mark this event for deletion if it isn't yet and the
+        other way around"""
         pass
 
     def delete(self):
