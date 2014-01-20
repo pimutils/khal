@@ -383,28 +383,26 @@ class ConfigurationParser(object):
 
         return True
 
-    def dump(self, conf, intro='Using configuration:', tab=1):
+    def dump(self, conf, intro='Using configuration:', tab=0):
         """Dump the loaded configuration using the logging framework.
 
         The values displayed here are the exact values which are seen by
         the program, and not the raw values as they are read in the
         configuration file.
         """
-        logging.debug(intro)
+        if isinstance(conf, (Namespace, dict, list)):
+            logging.debug('{0}{1}:'.format('\t' * tab, intro))
 
-        if not type(conf) is 'dict':  # FIXME
+        if isinstance(conf, (Namespace, dict)):
+            for name, value in sorted(dict.copy(conf).items()):
+                self.dump(value, name, tab=tab + 1)
+        elif isinstance(conf, list):
+            for o in conf:
+                self.dump(o, '\t'*tab + intro + ':', tab + 1)
+        elif intro != 'password':
+            logging.debug('{0}{1}: {2}'.format('\t'*tab, intro, conf))
+        else:  # should be only the password case
             return
-        for name, value in sorted(dict.copy(conf).items()):
-            if type(value) is list:
-                for o in value:
-                    self.dump(o, '\t'*tab + name + ':', tab + 1)
-            elif type(value) is dict:
-                for o in value:
-                    self.dump(value[o], '\t'*tab + name + ':', tab + 1)
-            elif type(value) is Namespace:
-                self.dump(value, '\t'*tab + name + ':', tab + 1)
-            elif name != 'password':
-                logging.debug('%s%s: %s', '\t'*tab, name, value)
 
     def _read_command_line(self):
         items = {}
