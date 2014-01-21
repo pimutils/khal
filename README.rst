@@ -140,8 +140,12 @@ ikhal
 Use the arrow keys to navigate in the calendar. Press 'tab' or 'enter' to move
 the focus into the events column and 'left arrow' to return the focus to the
 calendar area. You can navigate the events column with the up and down arrows
-and view an event via pressing 'enter'. Pressing 'enter' again will open the
-currently selected event in a simple event editor you can navigate with the
+and view an event via pressing 'enter'. Pressing 'd' will delete an event (a 'D'
+will appear in front of the events description, or 'RO' if you cannot delete
+that event). Pressing 'd' again will undelete that event.
+
+When viewing an event's details, pressing 'enter' again will open the
+currently selected event in a simple event editor; you can navigate with the
 arrow keys again. As long as the event has not been edited you can leave the
 editor with pressing 'escape'. Once it has been edited you need to move down the
 'Cancel' button and press the 'enter' key to discard your edits or press the
