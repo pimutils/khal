@@ -29,6 +29,8 @@ this file is name khalendar since calendar and icalendar are already taken
 
 import datetime
 import logging
+import traceback
+
 import pytz
 
 from khal import backend, caldav
@@ -55,7 +57,7 @@ class Calendar(object):
     def __init__(self, name, dbtool, resource, username=None, password=None,
                  auth='basic', ssl_verify=True, server_type='caldav',
                  readonly=False, color='', unicode_symbols=True,
-                 default_timezone=None, local_timezone=None, debug=False):
+                 default_timezone=None, local_timezone=None):
 
         if local_timezone is None:
             local_timezone = default_timezone  # sync time might be off by a
@@ -75,7 +77,6 @@ class Calendar(object):
         self._unicode_symbols = unicode_symbols
         self._default_timezone = default_timezone
         self._local_timezone = local_timezone
-        self._debug = debug
 
     def get_by_time_range(self, start, end, show_deleted=False):
         return self._dbtool.get_time_range(start,
@@ -137,8 +138,7 @@ class Calendar(object):
             elif self._server_type == 'http':
                 self._sync_http()
         except Exception as error:
-            if self._debug:
-                raise
+            logging.debug(traceback.format_exc())
             logging.critical('While syncing account `{0}` an error '
                              'occured:\n  '.format(self.name)
                              + str(error))

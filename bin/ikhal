@@ -59,8 +59,7 @@ for calendar_name in conf.sync.accounts:
         color=cal_conf['color'],
         unicode_symbols=conf.default.unicode_symbols,
         local_timezone=conf.default.local_timezone,
-        default_timezone=conf.default.default_timezone,
-        debug=conf.debug
+        default_timezone=conf.default.default_timezone
     ))
 
 controllers.Interactive(collection, conf)
