@@ -151,6 +151,7 @@ class Calendar(object):
                                password=self._password,
                                verify=self._ssl_verify,
                                auth=self._auth)
+        self._dbtool.check_account_table(self.name)
         logging.debug('syncing events in the next 365 days')
         start = datetime.datetime.utcnow() - datetime.timedelta(days=30)
         start_utc = self._local_timezone.localize(start).astimezone(pytz.UTC)

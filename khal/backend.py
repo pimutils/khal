@@ -100,7 +100,7 @@ class SQLiteDb(object):
 
         db_path = conf.sqlite.path
         if db_path is None:
-            db_path = xdg.BaseDirectory.save_data_path('pycard') + 'abook.db'
+            db_path = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
         self.db_path = path.expanduser(db_path)
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
@@ -136,7 +136,7 @@ class SQLiteDb(object):
                             "You should consider to remove it and sync again.")
 
     def _create_default_tables(self):
-        """creates version and account tables and instert table version number
+        """creates version and account tables and inserts table version number
         """
         try:
             self.sql_ex('CREATE TABLE IF NOT EXISTS version (version INTEGER)')
@@ -145,12 +145,13 @@ class SQLiteDb(object):
             sys.stderr.write('Failed to connect to database,'
                              'Unknown Error: ' + str(error) + "\n")
         self.conn.commit()
+
         try:
             self.cursor.execute('''CREATE TABLE IF NOT EXISTS accounts (
-                account TEXT NOT NULL,
+                account TEXT NOT NULL UNIQUE,
                 resource TEXT NOT NULL,
                 last_sync TEXT,
-                etag TEXT
+                ctag TEXT
                 )''')
             logging.debug("created accounts table")
         except Exception as error:
@@ -170,7 +171,7 @@ class SQLiteDb(object):
     def check_account_table(self, account):
         count_sql_s = """SELECT count(*) FROM accounts
                 WHERE account = ? AND resource = ?"""
-        stuple = (account + '_m',
+        stuple = (account,
                   self.conf.accounts[account].resource)
         self.cursor.execute(count_sql_s, stuple)
         result = self.cursor.fetchone()
