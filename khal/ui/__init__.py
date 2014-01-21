@@ -675,19 +675,20 @@ class EventEditor(EventViewer):
     def __init__(self, conf, dbtool, event, cancel=None):
         """
         :type event: khal.model.Event
+        :param cancel: to be executed on pressing the cancel button
+        :type cancel: function/method
         """
-
         super(EventEditor, self).__init__(conf, dbtool)
         self.event = event
         self.cancel = cancel
         try:
-            self.description = event.vevent['DESCRIPTION'].encode('utf-8')
+            self.description = event.vevent['DESCRIPTION']
         except KeyError:
-            self.description = ''
+            self.description = u''
         try:
-            self.location = event.vevent['LOCATION'].encode('utf-8')
+            self.location = event.vevent['LOCATION']
         except KeyError:
-            self.location = ''
+            self.location = u''
 
         self.startendeditor = StartEndEditor(event.start, event.end, self.conf)
         try:
@@ -696,17 +697,17 @@ class EventEditor(EventViewer):
             rrule = None
         self.recursioneditor = RecursionEditor(rrule)
         self.summary = urwid.Edit(
-            edit_text=event.vevent['SUMMARY'].encode('utf-8'))
+            edit_text=event.vevent['SUMMARY'])
         self.accountchooser = AccountChooser(self.event.account,
                                              self.conf.sync.accounts)
-        accounts = CColumns([(9, urwid.Text('Calendar: ')),
-                            self.accountchooser])
-        self.description = urwid.Edit(caption='Description: ',
+        accounts = CColumns([(9, urwid.Text(u'Calendar: ')),
+                             self.accountchooser])
+        self.description = urwid.Edit(caption=u'Description: ',
                                       edit_text=self.description)
-        self.location = urwid.Edit(caption='Location: ',
+        self.location = urwid.Edit(caption=u'Location: ',
                                    edit_text=self.location)
-        cancel = urwid.Button('Cancel', on_press=self.cancel)
-        save = urwid.Button('Save', on_press=self.save)
+        cancel = urwid.Button(u'Cancel', on_press=self.cancel)
+        save = urwid.Button(u'Save', on_press=self.save)
         buttons = CColumns([cancel, save])
 
         self.pile = urwid.ListBox(CSimpleFocusListWalker(
