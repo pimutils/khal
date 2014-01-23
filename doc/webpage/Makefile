@@ -28,6 +28,7 @@ assemble: ../parts/about.rst ../parts/license.rst ../parts/usage.rst ../parts/mi
 	echo 'Usage\n=====\n' > src/pages/usage.rst
 	cat ../parts/installation.rst ../parts/usage.rst >> src/pages/usage.rst
 	cat ../parts/about.rst ../parts/license.rst > src/pages/about.rst
+	cat ../parts/faq.rst > src/pages/faq.rst
 
 test: html
 	cd output && python -mSimpleHTTPServer
