@@ -1,8 +1,6 @@
 TODO
 ====
 
-* [IMPORTANT] modified events don't get uploaded on the server, but instead
-  overwrittten by last version on server
 * exceptions to recurrent events
 * use a writable calendar for as a default calendar
 * make read-only calendars static
@@ -19,6 +17,8 @@ TODO
 
 DONE
 ====
+* [IMPORTANT] modified events don't get uploaded on the server, but instead
+  overwrittten by last version on server
 * made first day of the week configurable
 * [BUG] no exceptions on bad input in start or end dates
 * exception on pressing save and cancel
