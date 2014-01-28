@@ -174,19 +174,14 @@ class Calendar(object):
 
         logging.debug('{number} new events need to be '
                       'uploaded'.format(number=len(hrefs)))
-        try:
-            for href in hrefs:
-                event = self._dbtool.get_vevent_from_db(href, self.name)
-                (href_new, etag_new) = syncer.upload(event.vevent,
-                                                     self._default_timezone)
-                self._dbtool.update_href(href,
-                                         href_new,
-                                         self.name,
-                                         status=OK)
-        except caldav.NoWriteSupport:
-            logging.info('failed to upload a new event, '
-                         'you need to enable write support to use this feature'
-                         ', see the documentation.')
+        for href in hrefs:
+            event = self._dbtool.get_vevent_from_db(href, self.name)
+            (href_new, etag_new) = syncer.upload(event.vevent,
+                                                 self._default_timezone)
+            self._dbtool.update_href(href,
+                                     href_new,
+                                     self.name,
+                                     status=OK)
 
         # syncing locally modified events
         hrefs = self._dbtool.get_changed(self.name)
