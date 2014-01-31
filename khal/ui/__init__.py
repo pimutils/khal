@@ -436,6 +436,7 @@ class EventColumn(urwid.WidgetWrap):
 
 class RecursionEditor(urwid.WidgetWrap):
     def __init__(self, rrule):
+        # TODO: actually implement the Recursion Editor
         self.recursive = False if rrule is None else True
         self.checkRecursion = urwid.CheckBox('repeat', state=self.recursive,
                                              on_state_change=self.toggle)
@@ -483,6 +484,14 @@ class StartEndEditor(urwid.WidgetWrap):
         self.toggle(None, self.allday)
 
     def toggle(self, checkbox, state):
+        """change from allday to datetime event
+
+        :param checkbox: the checkbox instance that is used for toggling, gets
+                         automatically passed by urwid (is not used)
+        :type checkbox: checkbox
+        :param state: True if allday event, False if datetime
+        :type state: bool
+        """
         self.allday = state
         datewidth = len(self.startdate) + 7
 
@@ -778,7 +787,7 @@ class EventEditor(EventViewer):
         saves the event to the db (only when it has been changed)
         :param button: not needed, passed via the button press
         """
-        changed = self.changed  # need to call this to set startdate_bg etc. to False
+        changed = self.changed  # need to call this to set date backgrounds to False
         self.update()
         if 'alert' in [self.startendeditor.startdate_bg,
                        self.startendeditor.starttime_bg,
