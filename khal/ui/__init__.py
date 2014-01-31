@@ -131,21 +131,6 @@ class Date(urwid.Text):
             return key
 
 
-def week_list(count=6, firstweekday=0):
-    month = date.today().month
-    year = date.today().year
-    cal = list()
-    for _ in range(count):
-        for week in calendar.Calendar(firstweekday).monthdatescalendar(year, month):
-            if week not in cal:
-                cal.append(week)
-        month = month + 1
-        if month > 12:
-            month = 1
-            year = year + 1
-    return cal
-
-
 class DateCColumns(CColumns):
     """container for one week worth of dates
 
@@ -191,54 +176,128 @@ CColumns is empty, or when set to an invalid index.
             return key
 
 
-def construct_week(week, view):
-    """
-    :param week: list of datetime.date objects
-    :param view: passed along for back calling
-    :type view: a View (ClassicView) object
-    returns urwid.CColumns
-    """
-    if 1 in [day.day for day in week]:
-        month_name = calendar.month_abbr[week[-1].month].ljust(4)
-    else:
-        month_name = '    '
-
-    this_week = [(4, urwid.Text(month_name))]
-    today = None
-    for number, day in enumerate(week):
-        if day == date.today():
-            this_week.append((2, urwid.AttrMap(Date(day, view),
-                                               'today', 'today_focus')))
-            today = number + 1
-        else:
-            this_week.append((2, urwid.AttrMap(Date(day, view),
-                                               None, 'reveal focus')))
-    week = DateCColumns(this_week, view=view, dividechars=1,
-                        focus_column=today)
-    return week, bool(today)
-
-
 def calendar_walker(view, firstweekday=0):
     """hopefully this will soon become a real "walker",
-    loading new weeks as nedded"""
-    lines = list()
+    loading new weeks as needed"""
     calendar.setfirstweekday(firstweekday)
-    daynames = calendar.weekheader(2).split(' ')
-    daynames = CColumns([(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in daynames],
-                        dividechars=1)
-    lines = []
-    focus_item = None
-    for number, week in enumerate(week_list(firstweekday=firstweekday)):
-        week, contains_today = construct_week(week, view)
-        if contains_today:
-            focus_item = number
-        lines.append(week)
+    dnames = calendar.weekheader(2).split(' ')
+    dnames = CColumns(
+        [(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in dnames],
+        dividechars=1)
 
-    weeks = CSimpleFocusListWalker(lines)
-    weeks.set_focus(focus_item)
-    weeks = urwid.ListBox(weeks)
-    weeks = urwid.Frame(weeks, header=daynames)
-    return weeks
+    weeks = CalendarWalker(view=view, firstweekday=firstweekday)
+    box = urwid.ListBox(weeks)
+    frame = urwid.Frame(box, header=dnames)
+    return frame
+
+
+class CalendarWalker(urwid.SimpleFocusListWalker):
+    def __init__(self, view, firstweekday=0):
+        self.firstweekday = firstweekday
+        self.view = view
+        weeks, focus_item = self._construct_month()
+        urwid.SimpleFocusListWalker.__init__(self, weeks)
+        self.set_focus(focus_item)
+
+    def set_focus(self, position):
+        if position == 0:
+            position = self._autoprepend()
+        elif position + 1 == len(self):
+            self._autoextend()
+        return urwid.SimpleFocusListWalker.set_focus(self, position)
+
+    def _autoextend(self):
+        """appends the next month"""
+        date_last_month = self[-1][1].date  # a date from the last month
+        last_month = date_last_month.month
+        last_year = date_last_month.year
+        month = last_month % 12 + 1
+        year = last_year if not last_month == 12 else last_year + 1
+        weeks, _ = self._construct_month(year, month, clean_first_row=True)
+        self.extend(weeks)
+
+    def _autoprepend(self):
+        """prepends the previous month
+
+        :returns: number of weeks prepended
+        :rtype: int
+        """
+        date_first_month = self[0][-1].date  # a date from the first month
+        first_month = date_first_month.month
+        first_year = date_first_month.year
+        if first_month == 1:
+            month = 12
+            year = first_year - 1
+        else:
+            month = first_month - 1
+            year = first_year
+        weeks, _ = self._construct_month(year, month, clean_last_row=True)
+        weeks.reverse()
+        for one in weeks:
+            self.insert(0, one)
+        return len(weeks)
+
+    def _construct_week(self, week):
+        """
+        :param week: list of datetime.date objects
+        :returns: the week as an CColumns object and True or False depending on
+                  if today is in this week
+        :rtype: tuple(urwid.CColumns, bool)
+        """
+        if 1 in [day.day for day in week]:
+            month_name = calendar.month_abbr[week[-1].month].ljust(4)
+        else:
+            month_name = '    '
+
+        this_week = [(4, urwid.Text(month_name))]
+        today = None
+        for number, day in enumerate(week):
+            if day == date.today():
+                this_week.append((2, urwid.AttrMap(Date(day, self.view),
+                                                   'today', 'today_focus')))
+                today = number + 1
+            else:
+                this_week.append((2, urwid.AttrMap(Date(day, self.view),
+                                                   None, 'reveal focus')))
+        week = DateCColumns(this_week, view=self.view, dividechars=1,
+                            focus_column=today)
+        return week, bool(today)
+
+    def _construct_month(self,
+                         year=date.today().year,
+                         month=date.today().month,
+                         clean_first_row=False,
+                         clean_last_row=False):
+        """construct one month of DateCColumns
+
+        :param year: the year this month is set in
+        :type year: int
+        :param month: the number of the month to be constructed
+        :type month: int (1-12)
+        :param first_month: if unset, it will make sure, that the first element
+                            returned is completely in `month` and not partly in
+                            the one before (which would lead to that line
+                            occurring twice
+        :type first_month: bool
+        :returns: list of DateCColumns and the number of the list element which
+                  contains today (or None if it isn't in there)
+        :rtype: tuple(list(dateCColumns, int or None))
+        """
+
+        plain_weeks = calendar.Calendar(self.firstweekday).monthdatescalendar(year, month)
+        weeks = list()
+        focus_item = None
+        for number, week in enumerate(plain_weeks):
+            week, contains_today = self._construct_week(week)
+            if contains_today:
+                focus_item = number
+            weeks.append(week)
+        if clean_first_row and weeks[0][1].date.month != weeks[0][7].date.month:
+            return weeks[1:], focus_item - 1
+        elif clean_last_row and weeks[-1][1].date.month != weeks[-1][7].date.month:
+            return weeks[:-1], focus_item
+        else:
+            return weeks, focus_item
 
 
 class Event(urwid.Text):
@@ -248,7 +307,7 @@ class Event(urwid.Text):
         representation of an event in EventList
 
         :param event: the encapsulated event
-        :tpye event: khal.model.event
+        :type event: khal.model.event
         """
 
         self.event = event
