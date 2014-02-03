@@ -133,9 +133,12 @@ class Date(urwid.Text):
 
 class DateCColumns(CColumns):
     """container for one week worth of dates
+    which are horizontally aligned
+
+    TODO: rename, awful name
 
     focus can only move away by pressing 'TAB',
-    calls 'call' on every focus change
+    calls 'view.show_date' on every focus change (see below for details)
     """
     def __init__(self, widget_list, view=None, **kwargs):
         self.view = view
@@ -239,6 +242,9 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
     def _construct_week(self, week):
         """
+        constructs a CColumns week from a week of datetime.date objects. Also prepends the month name
+        if the first day of the month is included in that week.
+
         :param week: list of datetime.date objects
         :returns: the week as an CColumns object and True or False depending on
                   if today is in this week
@@ -274,11 +280,14 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         :type year: int
         :param month: the number of the month to be constructed
         :type month: int (1-12)
-        :param first_month: if unset, it will make sure, that the first element
-                            returned is completely in `month` and not partly in
-                            the one before (which would lead to that line
-                            occurring twice
-        :type first_month: bool
+        :param clean_first_row: makes sure that the first element returned is completely in `month` and
+                                not partly in the one before (which might lead to that line occurring
+                                twice
+        :type clean_first_row: bool
+        :param clean_last_row: makes sure that the last element returned is completely in `month` and
+                                not partly in the one after (which might lead to that line occurring
+                                twice
+        :type clean_last_row: bool
         :returns: list of DateCColumns and the number of the list element which
                   contains today (or None if it isn't in there)
         :rtype: tuple(list(dateCColumns, int or None))

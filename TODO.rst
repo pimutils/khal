@@ -8,7 +8,7 @@ TODO
 
 
 * ikhal:
-  * new weeks should be loaded into the walker
+  * fill calendar column on startup
   * make it look prettier
   * edit recurrence rules
   * do not loose chosen day highlight when focussing on Event Column
@@ -39,6 +39,7 @@ DONE
   * new event on pressing n in calendar
   * reload EventList after editing or adding an event
   * show which resource/calendar an event belongs to and make it editable
+  * new weeks should be loaded into the walker
   * prevent user from leaving EventEditor by pressing left or top (at least when event has been modified)
 
         * layout should probably be::
