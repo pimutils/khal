@@ -302,7 +302,9 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
                 focus_item = number
             weeks.append(week)
         if clean_first_row and weeks[0][1].date.month != weeks[0][7].date.month:
-            return weeks[1:], focus_item - 1
+            if focus_item is not None:
+                focus_item = focus_item - 1
+            return weeks[1:], focus_item
         elif clean_last_row and weeks[-1][1].date.month != weeks[-1][7].date.month:
             return weeks[:-1], focus_item
         else:
