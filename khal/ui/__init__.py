@@ -142,6 +142,7 @@ class DateCColumns(CColumns):
     """
     def __init__(self, widget_list, view=None, **kwargs):
         self.view = view
+        self.number_events = 0
         super(DateCColumns, self).__init__(widget_list, **kwargs)
 
     def _set_focus_position(self, position):
@@ -152,7 +153,7 @@ class DateCColumns(CColumns):
         # since first Column is month name, focus should only be 0 during
         # construction
         if not self.contents.focus == 0:
-            self.view.show_date(self.contents[position][0].original_widget.date)
+            self.number_events = self.view.show_date(self.contents[position][0].original_widget.date)
 
     focus_position = property(CColumns._get_focus_position,
                               _set_focus_position, doc="""
@@ -165,7 +166,7 @@ CColumns is empty, or when set to an invalid index.
 
         old_pos = self.focus_position
         key = super(DateCColumns, self).keypress(size, key)
-        if key in ['tab', 'enter']:
+        if key in ['tab', 'enter'] and self.number_events:
             return 'right'
         elif old_pos == 7 and key == 'right':
             self.focus_position = 1
@@ -416,11 +417,13 @@ class EventList(urwid.WidgetWrap):
                                     eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
+        number_events = len(event_list)
         if not event_list:
-            event_list = [urwid.Text('no scheduled events')]
+            event_list = [urwid.Text("no scheduled events")]
         pile = urwid.ListBox(CSimpleFocusListWalker(event_list))
         pile = urwid.Frame(pile, header=date_text)
         self._w = pile
+        return number_events
 
 
 class EventColumn(urwid.WidgetWrap):
@@ -439,9 +442,10 @@ class EventColumn(urwid.WidgetWrap):
         # TODO make this switch from pile to columns depending on terminal size
         events = EventList(conf=self.conf, dbtool=self.dbtool,
                            eventcolumn=self)
-        events.update(date)
+        number_events = events.update(date)
         self.container = CPile([events])
         self._w = self.container
+        return number_events
 
     def view(self, event):
         """
@@ -916,7 +920,7 @@ class ClassicView(Pane):
         events = self.eventscolumn
         columns = CColumns([(25, weeks), events],
                            dividechars=2, box_columns=[0, 1])
-        self.eventscolumn.update(date.today())  # showing with today's events
+        self.eventscolumn.update(date.today())  # starting with showing today's events
         Pane.__init__(self, columns, title=title, description=description)
 
     def get_keys(self):
@@ -926,7 +930,7 @@ class ClassicView(Pane):
                 ]
 
     def show_date(self, date):
-        self.eventscolumn.update(date)
+        return self.eventscolumn.update(date)
 
     def new_event(self, date):
         self.eventscolumn.new(date)
