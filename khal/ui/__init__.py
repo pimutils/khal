@@ -416,11 +416,13 @@ class EventList(urwid.WidgetWrap):
                                     eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
+        event_count = len(event_list)
         if not event_list:
             event_list = [urwid.Text('no scheduled events')]
         pile = urwid.ListBox(CSimpleFocusListWalker(event_list))
         pile = urwid.Frame(pile, header=date_text)
         self._w = pile
+        return event_count
 
 
 class EventColumn(urwid.WidgetWrap):
@@ -431,6 +433,7 @@ class EventColumn(urwid.WidgetWrap):
         self.divider = urwid.Divider('-')
         self.editor = False
         self.date = None
+        self.eventcount = 0
 
     def update(self, date):
         """create an EventList populated with Events for `date` and display it
@@ -439,7 +442,7 @@ class EventColumn(urwid.WidgetWrap):
         # TODO make this switch from pile to columns depending on terminal size
         events = EventList(conf=self.conf, dbtool=self.dbtool,
                            eventcolumn=self)
-        events.update(date)
+        self.eventcount = events.update(date)
         self.container = CPile([events])
         self._w = self.container
 
@@ -498,10 +501,10 @@ class EventColumn(urwid.WidgetWrap):
         event = model.Event(ical=event.to_ical(), status=NEW,
                             account=list(self.conf.sync.accounts)[-1])
         self.edit(event)
+        self.eventcount += 1
 
-    @classmethod
-    def selectable(cls):
-        return True
+    def selectable(self):
+        return bool(self.eventcount)
 
 
 class RecursionEditor(urwid.WidgetWrap):
