@@ -48,10 +48,10 @@ class Event(object):
         self.etag = etag
 
         if unicode_symbols:
-            self.recurstr = u' ⟳'
-            self.rangestr = u'↔ '
-            self.rangestopstr = u'⇥ '
-            self.rangestartstr = u'↦ '
+            self.recurstr = u' \N{Clockwise gapped circle arrow}'
+            self.rangestr = u'\N{Left right arrow} '
+            self.rangestopstr = u'\N{Rightwards arrow to bar} '
+            self.rangestartstr = u'\N{Rightwards arrow from bar} '
         else:
             self.recurstr = u' R'
             self.rangestr = u' <->'
