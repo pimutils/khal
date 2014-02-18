@@ -611,7 +611,7 @@ class StartEndEditor(urwid.WidgetWrap):
     def newstart(self):
         newstartdatetime = self._newstartdate
         if not self.checkallday.state:
-            if self.startdt.tzinfo is None:
+            if not hasattr(self.startdt, 'tzinfo') or self.startdt.tzinfo is None:
                 tzinfo = self.conf.default.default_timezone
             else:
                 tzinfo = self.startdt.tzinfo
@@ -653,7 +653,7 @@ class StartEndEditor(urwid.WidgetWrap):
     def newend(self):
         newenddatetime = self._newenddate
         if not self.checkallday.state:
-            if self.enddt.tzinfo is None:
+            if not hasattr(self.enddt, 'tzinfo') or self.enddt.tzinfo is None:
                 tzinfo = self.conf.default.default_timezone
             else:
                 tzinfo = self.enddt.tzinfo
@@ -843,11 +843,19 @@ class EventEditor(EventViewer):
                 changed = True
 
         if self.startendeditor.changed:
-            self.event.vevent['DTSTART'].dt = self.startendeditor.newstart
+            # TODO look up why this is needed
+            # self.event.vevent.dt = newstart would not work
+            # (timezone was missing after to_ical() )
+            self.event.vevent.pop('DTSTART')
+            self.event.vevent.add('DTSTART', self.startendeditor.newstart)
             try:
-                self.event.vevent['DTEND'].dt = self.startendeditor.newend
+                self.event.vevent.pop('DTEND')
+                self.event.vevent.add('DTEND', self.startendeditor.newend)
             except KeyError:
-                self.event.vevent['DURATION'].dt = self.startendeditor.newend - self.startendeditor.newstart
+                self.event.vevent.pop('DURATION')
+                duration = (self.startendeditor.newend -
+                            self.startendeditor.newstart)
+                self.event.vevent.add('DURATION', duration)
 
             changed = True
         if self.accountchooser.changed:
