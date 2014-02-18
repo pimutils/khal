@@ -124,11 +124,16 @@ class Calendar(object):
                                   self._user, hostname)
                     result = False
             else:
+                try:
+                    import keyring
+                except ImportError:
+                    pass
+                else:
+                    self._password = keyring.get_password('khal:'+self.name, self._username)
                 # Do not ask for password if execution is already doomed.
-                if result:
+                if result and not self._password:
                     prompt = 'Server password (account ' + self.name + '): '
                     self._password = getpass.getpass(prompt=prompt)
-                    # TODO keychain
 
         rvalue = 0
         try:

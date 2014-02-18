@@ -281,7 +281,10 @@ class SQLiteDb(object):
             if hasattr(dtstart, 'tzinfo') and dtstart.tzinfo is not None:
                 # would be better to check if self is all day event
                 today = self.conf.default.default_timezone.localize(today)
-            rrule._until = today + datetime.timedelta(days=15 * 365)
+            if not set(['UNTIL', 'COUNT']).intersection(vevent['RRULE'].keys()):
+                # rrule really doesn't like to calculate all recurrences until
+                # eternity
+                rrule._until = today + datetime.timedelta(days=15 * 365)
             logging.debug('calculating recurrence dates for {0}, '
                           'this might take some time.'.format(href))
             dtstartl = list(rrule)

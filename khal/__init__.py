@@ -325,7 +325,7 @@ class ConfigurationParser(object):
         if not os.path.isdir(dbdir):
             try:
                 logging.debug('trying to create the directory for the db')
-                os.makedirs(dbdir, mode=0770)
+                os.makedirs(dbdir, mode=0o770)
                 logging.debug('success')
             except OSError as error:
                 logging.fatal('failed to create {0}: {1}'.format(dbdir, error))
