@@ -33,7 +33,7 @@ from .status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
 class Event(object):
     def __init__(self, ical, status=0, href=None, account=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
-                 readonly=False, unicode_symbols=True, dbtool=None, etag=None):
+                 readonly=False, unicode_symbols=True, etag=None):
         self.vevent = icalendar.Event.from_ical(ical)
         if account is None:
             raise TypeError('account must not be None')
@@ -44,7 +44,6 @@ class Event(object):
         self.account = account
         self.readonly = readonly
         self.unicode_symbols = unicode_symbols
-        self.dbtool = dbtool
         self.etag = etag
 
         if unicode_symbols:
@@ -174,25 +173,3 @@ class Event(object):
             endstr = self.end.strftime(timeformat)
 
         return startstr + tostr + endstr + ': ' + self.summary + recurstr
-
-    def save(self):
-        """save to db"""
-        pass
-
-    def change_calendar(self, newcal):
-        """change the calendar this event is associated with
-
-        this will only be saved to the db when `save()` is called
-        """
-        pass
-
-    def toggle_delete(self):
-        """mark this event for deletion if it isn't yet and the
-        other way around"""
-        pass
-
-    def delete(self):
-        """mark this event for deletion
-
-        will be deleted on the server on next sync
-        """

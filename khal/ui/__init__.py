@@ -29,8 +29,9 @@ from datetime import datetime
 
 import urwid
 
-from .. import aux, model
-from ..status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
+from .. import aux
+from ..event import Event
+from ..status import OK, NEW, CHANGED, NEWNOTSAVED, DELETED, NEWDELETE, CALCHANGED
 
 
 from base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker
@@ -311,23 +312,22 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             return weeks, focus_item
 
 
-class Event(urwid.Text):
-    def __init__(self, event, this_date=None, conf=None, dbtool=None,
+class U_Event(urwid.Text):
+    def __init__(self, event, this_date=None, conf=None,
                  eventcolumn=None):
         """
         representation of an event in EventList
 
         :param event: the encapsulated event
-        :type event: khal.model.event
+        :type event: khal.event.Event
         """
 
         self.event = event
         self.this_date = this_date
-        self.dbtool = dbtool
         self.conf = conf
         self.eventcolumn = eventcolumn
         self.view = False
-        super(Event, self).__init__(self.event.compact(self.this_date))
+        super(U_Event, self).__init__(self.event.compact(self.this_date))
 
     @classmethod
     def selectable(cls):
@@ -335,6 +335,7 @@ class Event(urwid.Text):
 
     def toggle_delete(self):
         if self.event.readonly is False:
+            # TODO update for NEWNOTSAVED
             if self.event.status == OK:
                 toggle = DELETED
             elif self.event.status == DELETED:
@@ -347,7 +348,7 @@ class Event(urwid.Text):
                 toggle = DELETED
             self.event.status = toggle
             self.set_text(self.event.compact(self.this_date))
-            self.dbtool.set_status(self.event.href, toggle, self.event.account)
+            self.eventcolumn.collection.mark(toggle, self.event)
         else:
             self.set_text('RO' + self.event.compact(self.this_date))
 
@@ -366,9 +367,9 @@ class Event(urwid.Text):
 
 class EventList(urwid.WidgetWrap):
     """list of events"""
-    def __init__(self, conf=None, dbtool=None, eventcolumn=None):
+    def __init__(self, conf=None, collection=None, eventcolumn=None):
         self.conf = conf
-        self.dbtool = dbtool
+        self.collection = collection
         self.eventcolumn = eventcolumn
         pile = urwid.Filler(CPile([]))
         urwid.WidgetWrap.__init__(self, pile)
@@ -382,38 +383,23 @@ class EventList(urwid.WidgetWrap):
         date_text = urwid.Text(
             this_date.strftime(self.conf.default.longdateformat))
         event_column = list()
-        all_day_events = list()
-        events = list()
-        for account in self.conf.sync.accounts:
-            color = self.conf.accounts[account]['color']
-            readonly = self.conf.accounts[account]['readonly']
-            all_day_events += self.dbtool.get_allday_range(
-                this_date,
-                account=account,
-                color=color,
-                readonly=readonly,
-                show_deleted=False)
-            events += self.dbtool.get_time_range(start, end, account,
-                                                 color=color,
-                                                 readonly=readonly,
-                                                 show_deleted=False)
+        all_day_events = self.collection.get_allday_by_time_range(this_date)
+        events = self.collection.get_datetime_by_time_range(start, end)
 
         for event in all_day_events:
             event_column.append(
-                urwid.AttrMap(Event(event,
-                                    conf=self.conf,
-                                    dbtool=self.dbtool,
-                                    this_date=this_date,
-                                    eventcolumn=self.eventcolumn),
+                urwid.AttrMap(U_Event(event,
+                                      conf=self.conf,
+                                      this_date=this_date,
+                                      eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
         events.sort(key=lambda e: e.start)
         for event in events:
             event_column.append(
-                urwid.AttrMap(Event(event,
-                                    conf=self.conf,
-                                    dbtool=self.dbtool,
-                                    this_date=this_date,
-                                    eventcolumn=self.eventcolumn),
+                urwid.AttrMap(U_Event(event,
+                                      conf=self.conf,
+                                      this_date=this_date,
+                                      eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
         event_count = len(event_list)
@@ -427,9 +413,9 @@ class EventList(urwid.WidgetWrap):
 
 class EventColumn(urwid.WidgetWrap):
     """contains the eventlist as well as the event viewer/editor"""
-    def __init__(self, conf=None, dbtool=None):
+    def __init__(self, conf=None, collection=None):
         self.conf = conf
-        self.dbtool = dbtool
+        self.collection = collection
         self.divider = urwid.Divider('-')
         self.editor = False
         self.date = None
@@ -440,8 +426,7 @@ class EventColumn(urwid.WidgetWrap):
         """
         self.date = date
         # TODO make this switch from pile to columns depending on terminal size
-        events = EventList(conf=self.conf, dbtool=self.dbtool,
-                           eventcolumn=self)
+        events = EventList(conf=self.conf, collection=self.collection, eventcolumn=self)
         self.eventcount = events.update(date)
         self.container = CPile([events])
         self._w = self.container
@@ -451,21 +436,21 @@ class EventColumn(urwid.WidgetWrap):
         show an event's details
 
         :param event: event to view
-        :type event: khal.model.Event
+        :type event: khal.event.Event
         """
         self.destroy()
         self.container.contents.append((self.divider,
                                         ('pack', None)))
                                         #self.container.options()))
         self.container.contents.append(
-            (EventDisplay(self.conf, self.dbtool, event),
+            (EventDisplay(self.conf, event, collection=self.collection),
              self.container.options()))
 
     def edit(self, event):
         """create an EventEditor and display it
 
         :param event: event to edit
-        :type event: khal.model.Event
+        :type event: khal.event.Event
         """
         self.destroy()
         self.editor = True
@@ -474,7 +459,7 @@ class EventColumn(urwid.WidgetWrap):
         self.container.contents.append((self.divider,
                                         ('pack', None)))
         self.container.contents.append(
-            (EventEditor(self.conf, self.dbtool, event, cancel=self.destroy),
+            (EventEditor(self.conf, event, collection=self.collection, cancel=self.destroy),
              self.container.options()))
         self.container.set_focus(2)
 
@@ -498,8 +483,8 @@ class EventColumn(urwid.WidgetWrap):
         """
         event = aux.new_event(dtstart=date,
                               timezone=self.conf.default.default_timezone)
-        event = model.Event(ical=event.to_ical(), status=NEW,
-                            account=list(self.conf.sync.accounts)[-1])
+        event = Event(ical=event.to_ical(), status=NEWNOTSAVED,
+                      account=list(self.conf.sync.accounts)[-1])
         self.edit(event)
         self.eventcount += 1
 
@@ -696,9 +681,9 @@ class EventViewer(urwid.WidgetWrap):
     """
     Base Class for EventEditor and EventDisplay
     """
-    def __init__(self, conf, dbtool):
+    def __init__(self, conf, collection):
         self.conf = conf
-        self.dbtool = dbtool
+        self.collection = collection
         pile = CPile([])
         urwid.WidgetWrap.__init__(self, pile)
 
@@ -708,8 +693,8 @@ class EventDisplay(EventViewer):
 
     widget for displaying one event's details
     """
-    def __init__(self, conf, dbtool, event):
-        super(EventDisplay, self).__init__(conf, dbtool)
+    def __init__(self, conf, event, collection=None):
+        super(EventDisplay, self).__init__(conf, collection)
         lines = []
         lines.append(urwid.Text(event.vevent['SUMMARY']))
 
@@ -754,13 +739,13 @@ class EventEditor(EventViewer):
     """
     Widget for event Editing
     """
-    def __init__(self, conf, dbtool, event, cancel=None):
+    def __init__(self, conf, event, collection=None, cancel=None):
         """
-        :type event: khal.model.Event
+        :type event: khal.event.Event
         :param cancel: to be executed on pressing the cancel button
         :type cancel: function/method
         """
-        super(EventEditor, self).__init__(conf, dbtool)
+        super(EventEditor, self).__init__(conf, collection)
         self.event = event
         self.cancel = cancel
         try:
@@ -826,7 +811,6 @@ class EventEditor(EventViewer):
         if self.startendeditor.changed:
             changed = True
         if self.accountchooser.changed:
-            self.event.account = self.accountchooser.account
             changed = True
         return changed
 
@@ -860,7 +844,7 @@ class EventEditor(EventViewer):
             changed = True
         if self.accountchooser.changed:
             changed = True
-            self.event.account = self.accountchooser.account
+            # TODO self.newaccount = self.accountchooser.account ?
         return changed
 
     def save(self, button):
@@ -881,22 +865,16 @@ class EventEditor(EventViewer):
             try:
                 self.event.vevent['SEQUENCE'] += 1
             except KeyError:
-                self.event.vevent['SEQUNCE'] = 0
-            if self.event.status == NEW:
-                status = NEW
+                self.event.vevent['SEQUENCE'] = 0
+
+            if self.event.status == NEWNOTSAVED:
+                self.collection.new(self.event)
+            elif self.accountchooser.changed:
+                self.collection.change_collection(self.event,
+                                                  self.accountchooser.account)
             else:
-                status = CHANGED
-            if self.accountchooser.changed:
-                delstatus = NEWDELETE if self.event.status == NEW else CALCHANGED
-                self.dbtool.set_status(self.event.href,
-                                       delstatus,
-                                       self.accountchooser.original_account)
-                status = NEW
-            self.dbtool.update(self.event.vevent.to_ical(),
-                               self.event.account,
-                               self.event.href,
-                               etag=self.event.etag,
-                               status=status)
+                self.collection.update(self.event)
+
         self.cancel(refresh=True)
 
     def keypress(self, size, key):
@@ -919,10 +897,10 @@ class ClassicView(Pane):
     showing a CalendarWalker on the left and the eventList + eventviewer/editor
     on the right
     """
-    def __init__(self, collection, conf=None, dbtool=None, title=u'',
+    def __init__(self, collection, conf=None, title=u'',
                  description=u''):
         self.collection = collection
-        self.eventscolumn = EventColumn(conf=conf, dbtool=dbtool)
+        self.eventscolumn = EventColumn(conf=conf, collection=collection)
         weeks = calendar_walker(view=self, firstweekday=conf.default.firstweekday)
         events = self.eventscolumn
         columns = CColumns([(25, weeks), events],

@@ -21,10 +21,7 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-"""
-syncs the remote database to the local db
-"""
-
+#
 import datetime
 try:
     from itertools import izip_longest
@@ -94,7 +91,6 @@ class Interactive(object):
         self.dbtool = backend.SQLiteDb(conf)
         ui.start_pane(ui.ClassicView(collection,
                                      conf,
-                                     self.dbtool,
                                      title='select an event',
                                      description='do something'),
                       header=u'{0} v{1}'.format(__productname__, __version__))

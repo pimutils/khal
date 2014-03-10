@@ -34,7 +34,7 @@ import traceback
 import pytz
 
 from khal import backend, caldav
-from khal.status import OK, NEW
+from khal.status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
 
 
 class BaseCalendar(object):
@@ -96,6 +96,25 @@ class Calendar(object):
         return self._dbtool.get_time_range(
             start, end, self.name, self.color, self._readonly,
             self._unicode_symbols, show_deleted)
+
+    def update(self, event):
+        """update an event in the database"""
+        self._dbtool.update(event.vevent.to_ical(),
+                            self.name,
+                            event.href,
+                            etag=event.etag,
+                            status=CHANGED)
+
+    def new(self, event):
+        """save a new event to the database"""
+        self._dbtool.update(event.vevent.to_ical(),
+                            self.name,
+                            href='',
+                            etag=event.etag,
+                            status=NEW)
+
+    def mark(self, status, event):
+        self._dbtool.set_status(event.href, status, self.name)
 
     def sync(self):
         # looking for the password
@@ -245,9 +264,14 @@ class Calendar(object):
 
 class CalendarCollection(object):
     def __init__(self):
-        self.calendars = list()
+        self._calnames = dict()
+
+    @property
+    def calendars(self):
+        return self._calnames.values()
 
     def append(self, calendar):
+        self._calnames[calendar.name] = calendar
         self.calendars.append(calendar)
 
     def get_by_time_range(self, start, end):
@@ -267,6 +291,20 @@ class CalendarCollection(object):
         for one in self.calendars:
             result = result + one.get_datetime_by_time_range(start, end)
         return result
+
+    def update(self, event):
+        self._calnames[event.account].update(event)
+
+    def new(self, event):
+        self._calnames[event.account].new(event)
+
+    def change_collection(self, event, new_collection):
+        self._calnames[new_collection].new(event)
+        delstatus = NEWDELETE if event.status == NEW else CALCHANGED
+        self._calnames[event.account].mark(delstatus, event)
+
+    def mark(self, status, event):
+        self._calnames[event.account].mark(status, event)
 
     def sync(self):
         rvalue = 0
