@@ -77,7 +77,7 @@ import icalendar
 import pytz
 import xdg.BaseDirectory
 
-from .model import Event
+from .event import Event
 from .status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
 
 
@@ -315,7 +315,7 @@ class SQLiteDb(object):
                 dbname = account + '_d'
             else:
                 # TODO: extract strange (aka non Olson) TZs from params['TZID']
-                # perhaps better done in model/vevent
+                # perhaps better done in event/vevent
                 if dtstart.tzinfo is None:
                     dtstart = self.conf.default.default_timezone.localize(dtstart)
                 if dtend.tzinfo is None:
