@@ -106,7 +106,7 @@
 # [sqlite]
 # # This configuration file must have a [sqlite] Tag
 # 
-# path: ~/.config/khal/khal.db
+# path: ~/.khal/khal.db
 # # This specifies the location of the khal SQLite3 Database file
 # #   * Default: ~/.local/share/khal/khal.db
 #
@@ -182,7 +182,7 @@ user: XXX
 password: XXX
 
 [sqlite]
-path: /home/jd/.khal/khal.db
+path: ~/.khal/khal.db
 
 [default]
 local_timezone: Europe/Berlin
