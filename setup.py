@@ -55,7 +55,8 @@ requirements = [
     'lxml',
     'requests',
     'urwid',
-    'pyxdg'
+    'pyxdg',
+    'icalendar'
 ]
 if sys.version_info[:2] in ((2, 6),):
     # there is no argparse in python2.6
