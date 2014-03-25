@@ -1,7 +1,6 @@
 Installation
 ------------
-You can install *khal* from *pypi* via *pip install khal* or install it from
-source by executing *python setup.py install*. 
+You can install *khal* from source by executing *python setup.py install*.
 
 Copy and edit the supplied khal.conf.sample file (default location is
 ~/.config/khal/khal.conf). If you don't want to store the password in clear

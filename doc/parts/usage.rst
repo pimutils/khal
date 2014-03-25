@@ -53,10 +53,7 @@ in the config file. Start- and enddatetime can be one of the following:
 
   * datetime datetime
       start and end datetime specified, if no year is given (like the non-long
-      version of dateformat, see config file, should allow), this year is used,
-      if the second datetime has no year, the same year as for the first
-      datetime object will be used, unless that would make the event end before
-      it begins, in which case the next year is used
+      version of dateformat, see config file, should allow), this year is used.
   * datetime time
       end date will be same as start date, unless that would make the
       event end before it has started, then the next day is used as

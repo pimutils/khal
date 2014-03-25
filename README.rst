@@ -36,7 +36,7 @@ if it doesn't. You can reach me by email at khal (at) lostpackets (dot) de
 
 Installation
 ------------
-You can install *khal* from source by executing *python setup.py install*. 
+You can install *khal* from source by executing *python setup.py install*.
 
 Copy and edit the supplied khal.conf.sample file (default location is
 ~/.config/khal/khal.conf). If you don't want to store the password in clear
@@ -109,10 +109,7 @@ in the config file. Start- and enddatetime can be one of the following:
 
   * datetime datetime
       start and end datetime specified, if no year is given (like the non-long
-      version of dateformat, see config file, should allow), this year is used,
-      if the second datetime has no year, the same year as for the first
-      datetime object will be used, unless that would make the event end before
-      it begins, in which case the next year is used
+      version of dateformat, see config file, should allow), this year is used.
   * datetime time
       end date will be same as start date, unless that would make the
       event end before it has started, then the next day is used as
@@ -192,7 +189,6 @@ In case of conflicting edits (locally changed event while remote event was also
 changed), are "resolved" by khal through overwriting the local event with
 the remote one (meaning local edits are lost in this case). Syncing more
 frequently can prevent this.
-
 Miscellaneous
 -------------
 *khal* is written in python using among others requests_, lxml_, icalendar_,
@@ -209,9 +205,9 @@ the Expat/MIT license.
 
 License
 -------
-pyCardDAV is released under the Expat/MIT License:
+khal is released under the Expat/MIT License:
 
-Copyright (c) 2013 Christian Geier and contributors
+Copyright (c) 2013-2014 Christian Geier and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
