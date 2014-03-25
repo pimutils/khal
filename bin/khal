@@ -26,7 +26,7 @@ import sys
 try:
     from setproctitle import setproctitle
 except ImportError:
-    setproctitle = lamda x: None
+    setproctitle = lambda x: None
 
 from khal import ConfigurationParser
 from khal import controllers
