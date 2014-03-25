@@ -107,7 +107,7 @@ class SQLiteDb(object):
         self.debug = conf.debug
         self._create_default_tables()
         self._check_table_version()
-        self.conf = conf
+        self.conf = conf  # TODO FIXME get rid of the config
         self._accounts = []
 
     def __del__(self):
@@ -152,7 +152,7 @@ class SQLiteDb(object):
                 account TEXT NOT NULL UNIQUE,
                 resource TEXT NOT NULL,
                 last_sync TEXT,
-                ctag TEXT
+                ctag FLOAT
                 )''')
             logging.debug("created accounts table")
         except Exception as error:
@@ -180,7 +180,7 @@ class SQLiteDb(object):
         count_sql_s = """SELECT count(*) FROM accounts
                 WHERE account = ? AND resource = ?"""
         stuple = (account,
-                  self.conf.accounts[account].resource)
+                  self.conf.calendars[account].path)
         self.cursor.execute(count_sql_s, stuple)
         result = self.cursor.fetchone()
 
@@ -204,7 +204,7 @@ class SQLiteDb(object):
             href TEXT ); '''.format(account + '_d')
         self.sql_ex(sql_s)
         sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
-        stuple = (account, self.conf.accounts[account].resource)
+        stuple = (account, self.conf.calendars[account].path)
         self.sql_ex(sql_s, stuple)
         logging.debug("made sure tables for {0} exists".format(account))
 
@@ -349,6 +349,21 @@ class SQLiteDb(object):
         self.sql_ex(sql_s, stuple, commit=False)
         self.conn.commit()
 
+    def get_ctag(self, account):
+        stuple = (account, )
+        sql_s = 'SELECT ctag FROM accounts WHERE account = ?'
+        try:
+            ctag = self.sql_ex(sql_s, stuple)[0][0]
+            return ctag
+        except IndexError:
+            return None
+
+    def set_ctag(self, account, ctag):
+        stuple = (ctag, account, )
+        sql_s = 'UPDATE accounts SET ctag = ? WHERE account = ?'
+        self.sql_ex(sql_s, stuple)
+        self.conn.commit()
+
     def update_href(self, oldhref, newhref, account, etag='', status=OK):
         """updates old_href to new_href, can also alter etag and status,
         see update() for an explanation of these parameters"""
@@ -369,7 +384,7 @@ class SQLiteDb(object):
         :returns: True or False
         """
         self._check_account(account)
-        sql_s = 'SELECT href FROM {0} WHERE href = ?;'.format(account)
+        sql_s = 'SELECT href FROM {1} WHERE href = ?;'.format(account)
         if len(self.sql_ex(sql_s, (href, ))) == 0:
             return False
         else:
@@ -384,8 +399,11 @@ class SQLiteDb(object):
         """
         self._check_account(account)
         sql_s = 'SELECT etag FROM {0} WHERE href=(?);'.format(account + '_m')
-        etag = self.sql_ex(sql_s, (href,))[0][0]
-        return etag
+        try:
+            etag = self.sql_ex(sql_s, (href,))[0][0]
+            return etag
+        except IndexError:
+            return None
 
     def delete(self, href, account):
         """

@@ -54,17 +54,12 @@ from khal import khalendar, backend
 dbtool = backend.SQLiteDb(conf)
 
 collection = khalendar.CalendarCollection()
-for calendar_name in conf.sync.accounts:
-    cal_conf = conf.accounts[calendar_name]
+for calendar_name in conf.active_calendars:
+    cal_conf = conf.calendars[calendar_name]
     collection.append(khalendar.Calendar(
         name=calendar_name,
         dbtool=dbtool,
-        resource=cal_conf['resource'],
-        username=cal_conf['user'],
-        password=cal_conf['password'],
-        auth=cal_conf['auth'],
-        ssl_verify=cal_conf['ssl_verify'],
-        server_type=cal_conf['server_type'],
+        path=cal_conf['path'],
         readonly=cal_conf['readonly'],
         color=cal_conf['color'],
         unicode_symbols=conf.default.unicode_symbols,

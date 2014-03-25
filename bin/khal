@@ -61,13 +61,12 @@ dbtool = backend.SQLiteDb(conf)
 
 collection = khalendar.CalendarCollection()
 
-import ipdb; ipdb.set_trace()
-
-for calendar_name in conf.sync.calendars:
+for calendar_name in conf.active_calendars:
     cal_conf = conf.calendars[calendar_name]
     collection.append(khalendar.Calendar(
         name=calendar_name,
         dbtool=dbtool,
+        path=cal_conf['path'],
         readonly=cal_conf['readonly'],
         color=cal_conf['color'],
         unicode_symbols=conf.default.unicode_symbols,
@@ -76,8 +75,8 @@ for calendar_name in conf.sync.calendars:
     ))
 
 
-if conf.syncrun:
-    sys.exit(collection.sync())
+if conf.update:
+    sys.exit(collection.updatedb)
 elif conf.new:
     controllers.NewFromString(conf)
 else:

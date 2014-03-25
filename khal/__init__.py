@@ -238,12 +238,12 @@ class ConfigurationParser(object):
             "--debug", action="store_true", dest="debug",
             help="enables debugging")
         self._arg_parser.add_argument(
-            "-a", "--calendar", action="append", dest="sync__calendars",
+            "-a", "--calendar", action="append", dest="active_calendars",
             metavar="NAME",
             help="use only calendar NAME (can be used more than once)")
         self._arg_parser.add_argument(
-            '--sync', action='store_true', dest='syncrun',
-            help="start syncing")
+            '--sync', action='store_true', dest='update',
+            help="update the database")
         self._arg_parser.add_argument(
             "-i", "--import", metavar="FILE",
             type=argparse.FileType("r"), dest="importing",
@@ -308,13 +308,13 @@ class ConfigurationParser(object):
             for option in self._conf_parser.options(section):
                 logging.debug("Ignoring %s:%s in configuration file", section, option)
 
-        if ns.syncrun:
-            if self.check_property(ns, 'calendars'):
-                for calendar in ns.calendars:
-                    result &= self.check_calendar(calendar)
-            else:
-                logging.error("No calendar found")
-                result = False
+        #if ns.syncrun:  # TODO when are we doing this?
+        if self.check_property(ns, 'calendars'):
+            for calendar in ns.calendars:
+                result &= self.check_calendar(calendar)
+        else:
+            logging.error("No calendar found")
+            result = False
 
         # create the db dir if it doesn't exist
         dbdir = ns.sqlite.path.rsplit('/', 1)[0]
@@ -329,18 +329,18 @@ class ConfigurationParser(object):
 
         calendars = [calendar.name for calendar in ns.calendars]
 
-        if ns.sync.calendars:
-            for name in set(ns.sync.calendars):
+        if ns.active_calendars:
+            for name in set(ns.active_calendars):
                 if not name in [a.name for a in ns.calendars]:
                     logging.warn('Unknown calendar %s', name)
-                    ns.sync.calendars.remove(name)
-            if len(ns.sync.calendars) == 0:
+                    ns.active_calendars.remove(name)
+            if len(ns.active_calendars) == 0:
                 logging.error('No valid calendar selected')
                 result = False
         else:
-            ns.sync.calendars = calendars
+            ns.active_calendars = calendars
 
-        ns.sync.calendars = set(ns.sync.calendars)
+        ns.active_calendars = set(ns.active_calendars)
         # converting conf.calendars to a dict (where calendar.names are the keys)
         out = dict()
         for one in ns.calendars:
@@ -350,13 +350,11 @@ class ConfigurationParser(object):
         return result
 
     def check_calendar(self, ns):
-        result = True
-
-        if not self.check_property(ns, 'Calendar',
+        if not self.check_property(ns, 'path',
                                    'Calendar {0}:path'.format(ns.name)):
             return False
-
-        return result
+        else:
+            return True
 
     def check_property(self, ns, property_, display_name=None):
         names = property_.split('.')
