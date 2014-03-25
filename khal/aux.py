@@ -245,7 +245,7 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
-    event.add('dtstamp', _now)
+    event.add('dtstamp', _now())
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
     return event
