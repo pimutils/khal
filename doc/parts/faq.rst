@@ -17,7 +17,6 @@ Frequently Asked Questions (FAQ)
         You do not have the Python development headers installed, on Debian based
         Distributions you can install them via *aptitude install python-dev*.
 
-
 * **During sync an error occurs: TypeError: request() got an unexpected keyword argument 'verify'**
         You need to update your version of `requests`.
 

@@ -9,12 +9,6 @@ Usage
 copy *khal.conf.sample* to ~/.khal/khal.conf or ~/.config/khal/khal.conf and
 edit to your liking
 
-**syncing**
-
- khal --sync
-
-syncs all events in the last month and next 365 days
-
 
 **basic usage**
 
@@ -127,10 +121,4 @@ Luck!
 Seriously: be careful when changing timezones and do check if khal shows the
 correct times anyway (and please report back if it doesn't).
 
-Notes on Conflict Resolution
-----------------------------
-In case of conflicting edits (locally changed event while remote event was also
-changed), are "resolved" by khal through overwriting the local event with
-the remote one (meaning local edits are lost in this case). Syncing more
-frequently can prevent this.
 
