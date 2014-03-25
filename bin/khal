@@ -31,6 +31,7 @@ except ImportError:
 from khal import ConfigurationParser
 from khal import controllers
 from khal import capture_user_interruption
+from khal import khalendar
 
 capture_user_interruption()
 
@@ -56,8 +57,7 @@ if conf.list_calendars:
     sys.exit()
 
 # TODO move this into the init
-from khal import khalendar, backend
-dbtool = backend.SQLiteDb(conf)
+#
 
 collection = khalendar.CalendarCollection()
 
@@ -65,7 +65,7 @@ for calendar_name in conf.active_calendars:
     cal_conf = conf.calendars[calendar_name]
     collection.append(khalendar.Calendar(
         name=calendar_name,
-        dbtool=dbtool,
+        dbpath=conf.sqlite.path,
         path=cal_conf['path'],
         readonly=cal_conf['readonly'],
         color=cal_conf['color'],
@@ -78,7 +78,7 @@ for calendar_name in conf.active_calendars:
 if conf.update:
     sys.exit(collection.updatedb)
 elif conf.new:
-    controllers.NewFromString(conf)
+    controllers.NewFromString(collection, conf)
 else:
     controllers.Display(collection,
                         firstweekday=conf.default.firstweekday,

@@ -26,21 +26,24 @@
 import datetime
 
 import icalendar
-
-from .status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
-
+from icalendar.tools import UIDGenerator
 
 class Event(object):
-    def __init__(self, ical, status=0, href=None, account=None, local_tz=None,
+    def __init__(self, ical, uid=None, account=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
                  readonly=False, unicode_symbols=True, etag=None):
-        self.vevent = icalendar.Event.from_ical(ical)
+        if isinstance(ical, basestring):
+            self.vevent = icalendar.Event.from_ical(ical)
+        elif isinstance(ical, icalendar.cal.Event):
+            self.vevent = ical
         if account is None:
             raise TypeError('account must not be None')
         self.allday = True
         self.color = color
-        self.status = status
-        self.href = href
+        if uid is None and 'UID' not in self.vevent:
+            self.uid = UIDGenerator().uid().to_ical()
+        else:
+            self.uid = self.vevent['UID']
         self.account = account
         self.readonly = readonly
         self.unicode_symbols = unicode_symbols
@@ -103,22 +106,19 @@ class Event(object):
     def recur(self):
         return 'RRULE' in self.vevent.keys()
 
+    @property
+    def raw(self):
+        return self.vevent.to_ical()
+
+    def to_ical(self):
+        return self.vevent.to_ical()
+
     def compact(self, day, timeformat='%H:%M'):
-        if self.status == DELETED:
-            status = 'D '
-        elif self.status == NEWDELETE:
-            status = 'X '
-        elif self.status == NEW:
-            status = 'N '
-        elif self.status == CHANGED:
-            status = 'M '
-        else:
-            status = ''
         if self.allday:
             compact = self._compact_allday(day)
         else:
             compact = self._compact_datetime(day, timeformat)
-        return status + compact
+        return compact
 
     def _compact_allday(self, day):
         if 'RRULE' in self.vevent.keys():

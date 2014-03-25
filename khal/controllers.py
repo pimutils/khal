@@ -28,7 +28,7 @@ try:
 except ImportError:
     from itertools import zip_longest as izip_longest
 
-from khal import aux, backend, calendar_display
+from khal import aux, calendar_display
 from khal import __version__, __productname__
 from khal.aux import bstring
 
@@ -49,7 +49,6 @@ class Display(object):
 
             all_day_events = collection.get_allday_by_time_range(day)
             events = collection.get_datetime_by_time_range(start, end)
-
             for event in all_day_events:
                 event_column.append(aux.colored(event.compact(day), event.color))
             events.sort(key=lambda e: e.start)
@@ -70,8 +69,7 @@ class Display(object):
 
 
 class NewFromString(object):
-    def __init__(self, conf):
-        self.dbtool = backend.SQLiteDb(conf)
+    def __init__(self, collection, conf):
         date_list = conf.new
         event = aux.construct_event(date_list,
                                     conf.default.timeformat,
@@ -82,13 +80,15 @@ class NewFromString(object):
                                     conf.default.local_timezone,
                                     encoding=conf.default.encoding)
         # TODO proper default calendar
-        self.dbtool.update(event, conf.sync.accounts.pop(), status=backend.NEW)
+        event = collection.new_event(event, conf.active_calendars.pop())
+
+        collection.new(event)
 
 
 class Interactive(object):
     def __init__(self, collection, conf):
         import ui
-        self.dbtool = backend.SQLiteDb(conf)
+        #self.dbtool = backend.SQLiteDb(conf)
         ui.start_pane(ui.ClassicView(collection,
                                      conf,
                                      title='select an event',

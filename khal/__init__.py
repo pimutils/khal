@@ -167,7 +167,7 @@ class CalendarSection(Section):
         Section.__init__(self, parser, 'calendars')
         self._schema = [
             ('path', '', os.path.expanduser),
-            ('readonly', 'False', None),
+            ('readonly', False, None),
             ('color', '', None)
         ]
 

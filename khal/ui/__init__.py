@@ -30,7 +30,6 @@ from datetime import datetime
 import urwid
 
 from .. import aux
-from ..event import Event
 from ..status import OK, NEW, CHANGED, NEWNOTSAVED, DELETED, NEWDELETE, CALCHANGED
 
 
@@ -327,6 +326,7 @@ class U_Event(urwid.Text):
         self.conf = conf
         self.eventcolumn = eventcolumn
         self.view = False
+        self.status = OK
         super(U_Event, self).__init__(self.event.compact(self.this_date))
 
     @classmethod
@@ -336,19 +336,20 @@ class U_Event(urwid.Text):
     def toggle_delete(self):
         if self.event.readonly is False:
             # TODO update for NEWNOTSAVED
-            if self.event.status == OK:
+            if self.status == OK:
                 toggle = DELETED
-            elif self.event.status == DELETED:
+            elif self.status == DELETED:
                 toggle = OK
-            elif self.event.status == NEW:
+            elif self.status == NEW:
                 toggle = NEWDELETE
-            elif self.event.status == NEWDELETE:
+            elif self.status == NEWDELETE:
                 toggle = NEW
             else:
                 toggle = DELETED
-            self.event.status = toggle
+            self.status = toggle
             self.set_text(self.event.compact(self.this_date))
-            self.eventcolumn.collection.mark(toggle, self.event)
+            #self.eventcolumn.collection.mark(toggle, self.event)
+            # TODO reenable deleting, preferably in a way to undo
         else:
             self.set_text('RO' + self.event.compact(self.this_date))
 
@@ -483,8 +484,8 @@ class EventColumn(urwid.WidgetWrap):
         """
         event = aux.new_event(dtstart=date,
                               timezone=self.conf.default.default_timezone)
-        event = Event(ical=event.to_ical(), status=NEWNOTSAVED,
-                      account=list(self.conf.sync.accounts)[-1])
+
+        event = self.collection.new_event(event.to_ical(), self.conf.active_calendars.pop())
         self.edit(event)
         self.eventcount += 1
 
@@ -766,7 +767,7 @@ class EventEditor(EventViewer):
         self.summary = urwid.Edit(
             edit_text=event.vevent['SUMMARY'])
         self.accountchooser = AccountChooser(self.event.account,
-                                             self.conf.sync.accounts)
+                                             self.conf.active_calendars)
         accounts = CColumns([(9, urwid.Text(u'Calendar: ')),
                              self.accountchooser])
         self.description = urwid.Edit(caption=u'Description: ',
@@ -867,7 +868,7 @@ class EventEditor(EventViewer):
             except KeyError:
                 self.event.vevent['SEQUENCE'] = 0
 
-            if self.event.status == NEWNOTSAVED:
+            if self.event.etag is None:  # has not been saved before
                 self.collection.new(self.event)
             elif self.accountchooser.changed:
                 self.collection.change_collection(self.event,

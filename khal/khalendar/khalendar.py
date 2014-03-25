@@ -24,14 +24,20 @@
 
 
 """
-this file is name khalendar since calendar and icalendar are already taken
+khalendar.Calendar and CalendarCollection should be a nice, abstract interface
+to a calendar (collection). Calendar operates on vdirs but uses an sqlite db
+for caching (see backend if you're interested).
+
+If you want to see how the sausage is made:
+    Welcome to the sausage factory!
 """
-import logging
 import os
 import os.path
 
+from vdirsyncer.storage import FilesystemStorage
 
-from khal.status import OK, NEW, CHANGED, DELETED, NEWDELETE, CALCHANGED
+from . import backend
+from .event import Event
 
 
 class BaseCalendar(object):
@@ -51,7 +57,7 @@ class BaseCalendar(object):
 
 
 class Calendar(object):
-    def __init__(self, name, dbtool, path, readonly=False, color='',
+    def __init__(self, name, dbpath, path, readonly=False, color='',
                  unicode_symbols=True, default_timezone=None,
                  local_timezone=None):
 
@@ -62,7 +68,12 @@ class Calendar(object):
         self.name = name
         self.color = color
         self.path = path
-        self._dbtool = dbtool
+        self._dbtool = backend.SQLiteDb(
+            dbpath,
+            default_timezone=default_timezone,
+            local_timezone=local_timezone,
+            debug=True)  # TODO make debug a Calendar param
+        self._storage = FilesystemStorage(path, '.ics')
         self._readonly = readonly
         self._unicode_symbols = unicode_symbols
         self._default_timezone = default_timezone
@@ -70,6 +81,9 @@ class Calendar(object):
 
         if self._db_needs_update():
             self.db_update()
+
+    def local_ctag(self):
+        return os.path.getmtime(self.path)
 
     def get_by_time_range(self, start, end, show_deleted=False):
         return self._dbtool.get_time_range(start,
@@ -91,46 +105,56 @@ class Calendar(object):
             self._unicode_symbols, show_deleted)
 
     def update(self, event):
-        """update an event in the database"""
-        self._dbtool.update(event.vevent.to_ical(),
-                            self.name,
-                            event.href,
-                            etag=event.etag,
-                            status=CHANGED)
+        """update an event in the database
+
+        param event: the event that should be updated
+        type event: event.Event
+        """
+        if event.etag is None:
+            self.new(event)
+        else:
+            self._storage.update(event.uid, event, event.etag)
+            self._dbtool.update(event.vevent.to_ical(),
+                                self.name,
+                                event.uid,
+                                etag=event.etag)
 
     def new(self, event):
-        """save a new event to the database"""
-        self._dbtool.update(event.vevent.to_ical(),
-                            self.name,
-                            href='',
-                            etag=event.etag,
-                            status=NEW)
+        """save a new event to the database
 
-    def mark(self, status, event):
-        self._dbtool.set_status(event.href, status, self.name)
+        param event: the event that should be updated
+        type event: event.Event
+        """
+        href, etag = self._storage.upload(event)
+        self._dbtool.update(event.to_ical(),
+                            self.name,
+                            href=href,
+                            etag=etag)
+        self._dbtool.set_ctag(self.name, self.local_ctag())
 
     def _db_needs_update(self):
-        mtime = os.path.getmtime(self.path)
-        if mtime == self._dbtool.get_ctag(self.name):
+        if self.local_ctag() == self._dbtool.get_ctag(self.name):
             return False
         else:
             return True
 
     def db_update(self):
-        files = os.listdir(self.path)
-        for filename in files:
-            mtime = os.path.getmtime(self.path + filename)
-            if mtime != self._dbtool.get_etag(filename, self.name):
-                self.update_vevent(filename)
+        """update the db from the vdir,
 
-        self._dbtool.set_ctag(self.name, os.path.getmtime(self.path))
+        should be called after every change to the vdir
+        """
+        for href, etag in self._storage.list():
+            if etag != self._dbtool.get_etag(href, self.name):
+                self.update_vevent(href)
+        self._dbtool.set_ctag(self.name, self.local_ctag())
 
-    def update_vevent(self, filename):
-        with open(self.path + filename) as eventfile:
-            logging.warning('updating {0}'.format(filename))
-            event = ''.join(eventfile.readlines())
-        mtime = os.path.getmtime(self.path + filename)
-        self._dbtool.update(event, self.name, href=filename, etag=mtime)
+    def update_vevent(self, href):
+        event, etag = self._storage.get(href)
+        self._dbtool.update(event.raw, self.name, href=href, etag=etag)
+
+    def new_event(self, ical):
+        """creates new event form ical string"""
+        return Event(ical=ical, account=self.name)
 
 
 class CalendarCollection(object):
@@ -148,37 +172,34 @@ class CalendarCollection(object):
     def get_by_time_range(self, start, end):
         result = list()
         for one in self.calendars:
-            result = result + one.get_by_time_range(start, end)
+            result.extend(one.get_by_time_range(start, end))
         return result
 
     def get_allday_by_time_range(self, start, end=None):
         result = list()
         for one in self.calendars:
-            result = result + one.get_allday_by_time_range(start, end)
+            result.extend(one.get_allday_by_time_range(start, end))
         return result
 
     def get_datetime_by_time_range(self, start, end):
         result = list()
         for one in self.calendars:
-            result = result + one.get_datetime_by_time_range(start, end)
+            result.extend(one.get_datetime_by_time_range(start, end))
         return result
 
     def update(self, event):
         self._calnames[event.account].update(event)
 
-    def new(self, event):
-        self._calnames[event.account].new(event)
+    def new(self, event, collection=None):
+        if collection:
+            self._calnames[collection].new(event)
+        else:
+            self._calnames[event.account].new(event)
 
     def change_collection(self, event, new_collection):
         self._calnames[new_collection].new(event)
-        delstatus = NEWDELETE if event.status == NEW else CALCHANGED
-        self._calnames[event.account].mark(delstatus, event)
+        # XXX TODO
 
-    def mark(self, status, event):
-        self._calnames[event.account].mark(status, event)
-
-    def sync(self):
-        rvalue = 0
-        for one in self.calendars:
-            rvalue += one.sync()
-        return rvalue
+    def new_event(self, ical, collection):
+        """returns a new event"""
+        return self._calnames[collection].new_event(ical)

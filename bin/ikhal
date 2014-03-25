@@ -50,15 +50,14 @@ if conf.debug:
     conf_parser.dump(conf)
 
 # TODO move this into the init
-from khal import khalendar, backend
-dbtool = backend.SQLiteDb(conf)
+from khal import khalendar
 
 collection = khalendar.CalendarCollection()
 for calendar_name in conf.active_calendars:
     cal_conf = conf.calendars[calendar_name]
     collection.append(khalendar.Calendar(
         name=calendar_name,
-        dbtool=dbtool,
+        dbpath=conf.sqlite.path,
         path=cal_conf['path'],
         readonly=cal_conf['readonly'],
         color=cal_conf['color'],

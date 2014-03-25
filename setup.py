@@ -10,7 +10,7 @@ import warnings
 from setuptools import setup
 
 MAJOR = 0
-MINOR = 1
+MINOR = 2
 PATCH = 0
 
 RELEASE = False
@@ -77,7 +77,7 @@ setup(
     author_email='khal@lostpackets.de',
     url='http://lostpackets.de/khal/',
     license='Expat/MIT',
-    packages=['khal', 'khal/ui'],
+    packages=['khal', 'khal/ui', 'khal/khalendar'],
     scripts=['bin/khal', 'bin/ikhal'],
     requires=requirements,
     extras_require = extra_requirements,
