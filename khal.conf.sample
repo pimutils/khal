@@ -14,35 +14,16 @@
 #------------------------------------------------------------------------------
 # ## CalDAV Account Configuration ##
 #------------------------------------------------------------------------------
-# [Account home]
-# # Each Account configuration must start with an Account Tag
-# # Each Account Tag must be unique
+# [Calendar home]
+# # Each  calendar configuration must start with a Calendar tag
+# # Each Calendar Tag must be unique.
 #
-# server_type: caldav
-# # Set the protocol khal should use
-# #  * Default: caldav
-# #
-# # server_type: http
-# # Setting the server_type to http makes this a simple read only resource
-# #   * user: and password: can still be set if needed
-# 
-#
-# user: stallman
-# # Username to access the CalDAV Account
-#
-#
-# password: GodSexLoveSecret
-# # You can place your plain-text password here
-# # If the password is not specified it will be asked for while syncing
-# # If pykeychain is installed, it will store the passwords
-#
-#
-# resource: https://exmaple.com/davical/caldav.php/jdoe/home/
-# # Specify the URL for the CalDAV Calendar
+# location: ~/.khal/calendars/home/
+# # Specify the location of the vdir
 #
 #
 # color: dark blue
-# # Set the color for this CalDAV Account
+# # Set the color for this calendar
 # # If color is not set, events will be in your default terminal color
 # #   * Colors may not be what you expect by their name.
 # #   * Your terminal's terminfo and termcap define these values.
@@ -53,51 +34,6 @@
 # # 'light grey' 'light green' 'light blue'
 # # 'dark magenta' 'dark cyan' 'dark red' 
 # # 'light magenta' 'light cyan''light red' 
-#
-#
-# ssl_verify: True
-# # SSL Certificate Verification
-# # This setting is unique for each account
-# #
-# # ssl_verify: True
-# # The servers SSL Certificate will be verified.
-# # If verification fails the account will not be synchronized
-# #   * Default: True
-# #
-# # ssl_verify: False
-# # SSL Certificate Verification will be disabled for this account.
-# #
-# # ssl_verify: /etc/ssl/certs/3b015462.0
-# # Specify the CA Certificate used to sign the CalDAV Server's SSL Certificate
-# # This is useful when using a Self Signed Certificate, or Corporate PKI
-# ######
-# ## Install SSL Certificate Authority Certificate to Trusted Key Store
-# ##   * See, `man update-ca-certificates`
-# #
-# ## Create a directory for the CA Issuer in: /usr/local/share/ca-certificates
-# # mkdir -p /usr/local/share/ca-certificates/MyCACerts
-# #
-# ## Copy the PEM encoded CA Certificates into the directory.
-# ##   * Make sure to name the Certificates with extension: .crt
-# # cp MyCACertificate.crt /usr/local/share/ca-certificates/MyCACerts
-# #
-# ## Add/Update SSL Trusted Key Store with: update-ca-certificates
-# ## This utility should have been installed along with OpenSSL
-# # update-ca-certificates --verbose
-# #
-# ## You will need the Certificate Hash for the new CA Certificate
-# # _C_HASH=`locate c_hash |grep ssl/misc`
-# # chmod +x ${_C_HASH}
-# # ${_C_HASH} /usr/local/share/ca-certificates/MyCACert/MyCACertificate.crt
-# #
-# ## Almost done ;)
-# ## Now you can add the, verify: line for this CalDAV Account
-# ## The file name will be the Certificate Hash
-# ## The Path will be, /etc/ssl/certs
-# #
-# # ssl_verify: /etc/ssl/certs/21c04162.0
-# #
-# ######
 #
 #------------------------------------------------------------------------------
 # ## khal SQLite3 Database Configuration ##
@@ -163,23 +99,13 @@
 ##
 ## Example Configuration
 ##
-[Account home]
-user: jdoe
-password: 2342
-resource: https://example.com/davical/caldav.php/jdoe/home/
+[Calendar home]
+path: ~/.khal/calendars/home/
 color: dark blue
 
-[Account work]
-user: doe
-resource: https://examp.le/owncloud/remote.php/caldav/calendars/doe/work
-ssl_verify: /etc/ssl/certs/3b015462.0
-
-[Account simple]
-server_type: http
-resource: https://test.tld/calendars/meetings.ics
-ssl_verify: False
-user: XXX
-password: XXX
+[Calendar work]
+path: ~/.khal/calendars/work/
+readonly: True
 
 [sqlite]
 path: ~/.khal/khal.db

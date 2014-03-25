@@ -162,24 +162,20 @@ class Section(object):
         return pytz.timezone(value)
 
 
-class AccountSection(Section):
+class CalendarSection(Section):
     def __init__(self, parser):
-        Section.__init__(self, parser, 'accounts')
+        Section.__init__(self, parser, 'calendars')
         self._schema = [
-            ('user', None, None),
-            ('password', None, None),
-            ('resource', '', None),
-            ('auth', 'basic', None),
-            ('ssl_verify', 'True', self._parse_bool_string),
-            ('color', '', None),
-            ('server_type', 'caldav', None)
+            ('path', '', os.path.expanduser),
+            ('readonly', 'False', None),
+            ('color', '', None)
         ]
 
     def is_collection(self):
         return True
 
     def matches(self, name):
-        match = re.match('account (?P<name>.*)', name, re.I)
+        match = re.match('calendar (?P<name>.*)', name, re.I)
         if match:
             self._parsed['name'] = match.group('name')
         return match is not None
@@ -223,12 +219,12 @@ class ConfigurationParser(object):
     DEFAULT_PATH = "khal"
     DEFAULT_FILE = "khal.conf"
 
-    def __init__(self, desc, check_accounts=True):
+    def __init__(self, desc, check_calendars=True):
         # Set the configuration current schema.
-        self._sections = [AccountSection, SQLiteSection, DefaultSection]
+        self._sections = [CalendarSection, SQLiteSection, DefaultSection]
 
         # Build parsers and set common options.
-        self._check_accounts = check_accounts
+        self._check_calendars = check_calendars
         self._conf_parser = ConfigParser.SafeConfigParser()
         self._arg_parser = argparse.ArgumentParser(description=desc)
 
@@ -242,20 +238,20 @@ class ConfigurationParser(object):
             "--debug", action="store_true", dest="debug",
             help="enables debugging")
         self._arg_parser.add_argument(
-            "-a", "--account", action="append", dest="sync__accounts",
+            "-a", "--calendar", action="append", dest="sync__calendars",
             metavar="NAME",
-            help="use only the NAME account (can be used more than once)")
+            help="use only calendar NAME (can be used more than once)")
         self._arg_parser.add_argument(
             '--sync', action='store_true', dest='syncrun',
             help="start syncing")
         self._arg_parser.add_argument(
             "-i", "--import", metavar="FILE",
             type=argparse.FileType("r"), dest="importing",
-            help="import ics from FILE into the first specified account")
+            help="import ics from FILE into the first specified calendar")
         self._arg_parser.add_argument(
             '--new', nargs='+',
             help="create a new event")
-        self._arg_parser.add_argument('--list-accounts', action='store_true',
+        self._arg_parser.add_argument('--list-calendars', action='store_true',
                                       help=argparse.SUPPRESS)
 
     def parse(self):
@@ -313,11 +309,11 @@ class ConfigurationParser(object):
                 logging.debug("Ignoring %s:%s in configuration file", section, option)
 
         if ns.syncrun:
-            if self.check_property(ns, 'accounts'):
-                for account in ns.accounts:
-                    result &= self.check_account(account)
+            if self.check_property(ns, 'calendars'):
+                for calendar in ns.calendars:
+                    result &= self.check_calendar(calendar)
             else:
-                logging.error("No account found")
+                logging.error("No calendar found")
                 result = False
 
         # create the db dir if it doesn't exist
@@ -331,50 +327,33 @@ class ConfigurationParser(object):
                 logging.fatal('failed to create {0}: {1}'.format(dbdir, error))
                 return False
 
-        accounts = [account.name for account in ns.accounts]
+        calendars = [calendar.name for calendar in ns.calendars]
 
-        if ns.sync.accounts:
-            for name in set(ns.sync.accounts):
-                if not name in [a.name for a in ns.accounts]:
-                    logging.warn('Unknown account %s', name)
-                    ns.sync.accounts.remove(name)
-            if len(ns.sync.accounts) == 0:
-                logging.error('No valid account selected')
+        if ns.sync.calendars:
+            for name in set(ns.sync.calendars):
+                if not name in [a.name for a in ns.calendars]:
+                    logging.warn('Unknown calendar %s', name)
+                    ns.sync.calendars.remove(name)
+            if len(ns.sync.calendars) == 0:
+                logging.error('No valid calendar selected')
                 result = False
         else:
-            ns.sync.accounts = accounts
+            ns.sync.calendars = calendars
 
-        for account in ns.accounts:
-            if account.server_type == 'caldav':
-                account.readonly = False
-            else:
-                account.readonly = True
-            if account.resource[-1] != '/' and account.server_type == 'caldav':
-                account.resource = account.resource + '/'
-
-        ns.sync.accounts = set(ns.sync.accounts)
-        # converting conf.accounts to a dict (where account.names are the keys)
+        ns.sync.calendars = set(ns.sync.calendars)
+        # converting conf.calendars to a dict (where calendar.names are the keys)
         out = dict()
-        for one in ns.accounts:
+        for one in ns.calendars:
             out[one.name] = one
-        ns.accounts = out
+        ns.calendars = out
 
         return result
 
-    def check_account(self, ns):
+    def check_calendar(self, ns):
         result = True
-        if not ns.server_type in ['caldav', 'http']:
-            logging.error("Value %s is not allowed for in Account %s:type",
-                          ns.server_type, ns.name)
-            result = False
 
-        if not ns.auth in ['basic', 'digest']:
-            logging.error("Value %s is not allowed for in  Account %s:auth",
-                          ns.auth, ns.name)
-            result = False
-
-        if not self.check_property(ns, 'resource',
-                                   'Account {0}:resource'.format(ns.name)):
+        if not self.check_property(ns, 'Calendar',
+                                   'Calendar {0}:path'.format(ns.name)):
             return False
 
         return result
