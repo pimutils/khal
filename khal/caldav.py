@@ -307,7 +307,10 @@ class Syncer(object):
             # some CalDAV servers, i.e. at least SabreDAV as deployed by
             # fruux.com, return 404 if an event is deleted
             #
-            if response.status_code == 404: return True else: raise
+            if response.status_code == 404:
+                return True
+            else:
+                raise
 
         root = etree.XML(response.text.encode(response.encoding))
         vhe = list()
