@@ -62,6 +62,12 @@ if sys.version_info[:2] in ((2, 6),):
     # there is no argparse in python2.6
     requirements.append('argparse')
 
+
+extra_requirements = {
+    'proctitle': ['setproctitle'],
+    'keychain': ['keyring']
+}
+
 setup(
     name='khal',
     version=VERSION,
@@ -74,6 +80,7 @@ setup(
     packages=['khal', 'khal/ui'],
     scripts=['bin/khal', 'bin/ikhal'],
     requires=requirements,
+    extras_require = extra_requirements,
     classifiers=[
         "Development Status :: 1 - Planning"
         "License :: OSI Approved :: MIT License",

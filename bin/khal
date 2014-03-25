@@ -23,11 +23,21 @@
 
 import sys
 
+try:
+    from setproctitle import setproctitle
+except ImportError:
+    setproctitle = lamda x: None
+
 from khal import ConfigurationParser
 from khal import controllers
 from khal import capture_user_interruption
 
 capture_user_interruption()
+
+# setting the process title so it looks nicer in ps
+# shows up as 'khal' under linux and as 'python: khal (python2.7)'
+# under FreeBSD, which is still nicer than the default
+setproctitle('ikhal')
 
 # Read configuration.
 conf_parser = ConfigurationParser('khal is a CalDAV based calendar')
