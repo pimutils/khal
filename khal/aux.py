@@ -93,13 +93,15 @@ def generate_random_uid():
 
 def construct_event(date_list, timeformat, dateformat, longdateformat,
                     datetimeformat, longdatetimeformat, defaulttz,
-                    defaulttimelen=60, defaultdatelen=1, encoding='utf-8'):
-    """takes a list of strings and constructs a vevent from it,
+                    defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
+                    _now=datetime.now):
+    """takes a list of strings and constructs a vevent from it
 
     :param encoding: the encoding of your terminal, should be a valid encoding
     :type encoding: str
+    :param _now: function that returns now, used for testing
 
-    can be either of this:
+    the parts of the list can be either of these:
         * datetime datetime description
             start and end datetime specified, if no year is given, this year
             is used, if the second datetime has no year, the same year as for
@@ -202,13 +204,14 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
-    event.add('dtstamp', datetime.now())
+    event.add('dtstamp', _now())
     event.add('summary', ' '.join(date_list).decode(encoding))
     event.add('uid', generate_random_uid())
     return event
 
 
-def new_event(dtstart=None, dtend=None, summary=None, timezone=None):
+def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
+              _now=datetime.now):
     """create a new event
 
     :param dtstart: starttime of that event
@@ -219,6 +222,7 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None):
     :type summary: unicode
     :param timezone: timezone of the event (start and end)
     :type timezone: pytz.timezone
+    :param _now: a function that return now, used for testing
     :returns: event
     :rtype: icalendar.Event
     """
@@ -241,7 +245,7 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None):
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
-    event.add('dtstamp', datetime.now())
+    event.add('dtstamp', _now)
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
     return event
