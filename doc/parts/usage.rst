@@ -133,3 +133,4 @@ In case of conflicting edits (locally changed event while remote event was also
 changed), are "resolved" by khal through overwriting the local event with
 the remote one (meaning local edits are lost in this case). Syncing more
 frequently can prevent this.
+
