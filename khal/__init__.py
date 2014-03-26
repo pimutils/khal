@@ -544,6 +544,7 @@ def get_auth_creds(username, resource):
         import keyring
     except ImportError:
         keyring = None
+        password = None
     else:
         password = keyring.get_password(
             __productname__ + hostname, username)
