@@ -315,7 +315,7 @@ class ConfigurationParser(object):
         if ns.syncrun:
             if self.check_property(ns, 'accounts'):
                 for account in ns.accounts:
-                    if account.name in ns.sync.accounts:
+                    if not ns.sync.accounts or account.name in ns.sync.accounts:
                         result &= self.check_account(account)
             else:
                 logging.error("No account found")
@@ -546,7 +546,7 @@ def get_auth_creds(username, resource):
         keyring = None
     else:
         password = keyring.get_password(
-            'khal:' + hostname, username)
+            __productname__ + hostname, username)
         if password is not None:
             logging.debug("Got password for user {0}@{1} from keyring".format(
                 username, hostname))
@@ -563,6 +563,6 @@ def get_auth_creds(username, resource):
             answer = raw_input(prompt)
         if answer.lower() == 'y':
             password = keyring.set_password(
-                'khal:' + hostname, username, password)
+                __productname__ + hostname, username, password)
 
     return password
