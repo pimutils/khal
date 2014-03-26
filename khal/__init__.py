@@ -315,7 +315,8 @@ class ConfigurationParser(object):
         if ns.syncrun:
             if self.check_property(ns, 'accounts'):
                 for account in ns.accounts:
-                    result &= self.check_account(account)
+                    if account.name in ns.sync.accounts:
+                        result &= self.check_account(account)
             else:
                 logging.error("No account found")
                 result = False
@@ -376,7 +377,8 @@ class ConfigurationParser(object):
         if not self.check_property(ns, 'resource',
                                    'Account {0}:resource'.format(ns.name)):
             return False
-
+        if ns.user is not None and ns.password is None:
+            ns.password = get_auth_creds(ns.user, ns.resource)
         return result
 
     def check_property(self, ns, property_, display_name=None):
@@ -491,3 +493,76 @@ class ConfigurationParser(object):
                 return path
 
         return None
+
+
+def get_auth_creds(username, resource):
+    """tries to access saved password or asks user for it
+
+    will try the following in this order:
+        1. read password from netrc (and only the password, username
+           in netrc will be ignored)
+        2. read password from keyring (keyring needs to be installed)
+        3a ask user for the password
+         b save in keyring if installed and user agrees
+
+    :param username: user's name on the server
+    :type username: str/unicode
+    :param resource: a resource to which the user has access via password,
+                     it will be shortened to just the hostname. It is assumed
+                     that each unique username/hostname combination only ever
+                     uses the same password.
+    :type resource: str/unicode
+    :return: password
+    :rtype: str/unicode
+
+
+    """
+    import getpass
+    from netrc import netrc
+    try:
+        from urlparse import urlsplit
+    except ImportError:
+        from urllib.parse import urlsplit
+
+    # XXX is it save to asume that a password is always the same for
+    # any given (hostname, username) combination?
+    hostname = urlsplit(resource).hostname
+
+    # netrc
+    try:
+        auths = netrc().authenticators(hostname)
+        # auths = (user, password)
+    except IOError:
+        pass
+    else:
+        logging.debug("Read password for user {0} on {1} in .netrc".format(
+            auths[0], hostname))
+        return auths[1]
+
+    # keyring
+    try:
+        import keyring
+    except ImportError:
+        keyring = None
+    else:
+        password = keyring.get_password(
+            'khal:' + hostname, username)
+        if password is not None:
+            logging.debug("Got password for user {0}@{1} from keyring".format(
+                username, hostname))
+            return password
+
+    if password is None:
+        prompt = 'Server password {0}@{1}: '.format(username, hostname)
+        password = getpass.getpass(prompt=prompt)
+
+    if keyring:
+        answer = 'x'
+        while answer.lower() not in ['', 'y', 'n']:
+            prompt = 'Save this password in the keyring? [y/N] '
+            answer = raw_input(prompt)
+        if answer.lower() == 'y':
+            password = keyring.set_password(
+                'khal:' + hostname, username, password)
+
+    return password

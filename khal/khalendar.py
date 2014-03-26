@@ -117,43 +117,6 @@ class Calendar(object):
         self._dbtool.set_status(event.href, status, self.name)
 
     def sync(self):
-        # looking for the password
-        if self._username is not None and self._password is None:
-            import getpass
-            from netrc import netrc
-            try:
-                from urlparse import urlsplit
-            except ImportError:
-                from urllib.parse import urlsplit
-            # netrc
-            result = True
-            hostname = urlsplit(self._resource).hostname
-            try:
-                auths = netrc().authenticators(hostname)
-            except IOError:
-                auths = False
-            if auths:
-                if not self._user or auths[0] == self._user:
-                    logging.debug("Read password for user %s on %s in .netrc",
-                                  auths[0], hostname)
-                    self._user = auths[0]
-                    self._password = auths[2]
-                else:
-                    logging.error("User %s not found for %s in .netrc",
-                                  self._user, hostname)
-                    result = False
-            else:
-                try:
-                    import keyring
-                except ImportError:
-                    pass
-                else:
-                    self._password = keyring.get_password('khal:'+self.name, self._username)
-                # Do not ask for password if execution is already doomed.
-                if result and not self._password:
-                    prompt = 'Server password (account ' + self.name + '): '
-                    self._password = getpass.getpass(prompt=prompt)
-
         rvalue = 0
         try:
             logging.debug("starting to sync calendar `{0}`".format(self.name))
