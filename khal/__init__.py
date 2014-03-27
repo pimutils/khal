@@ -563,7 +563,7 @@ def get_auth_creds(username, resource):
             prompt = 'Save this password in the keyring? [y/N] '
             answer = raw_input(prompt)
         if answer.lower() == 'y':
-            password = keyring.set_password(
+            keyring.set_password(
                 __productname__ + hostname, username, password)
 
     return password
