@@ -535,9 +535,10 @@ def get_auth_creds(username, resource):
     except IOError:
         pass
     else:
-        logging.debug("Read password for user {0} on {1} in .netrc".format(
-            auths[0], hostname))
-        return auths[1]
+        if auths is not None:
+            logging.debug("Read password for user {0} on {1} in .netrc".format(
+                auths[0], hostname))
+            return auths[1]
 
     # keyring
     try:
@@ -547,7 +548,7 @@ def get_auth_creds(username, resource):
         password = None
     else:
         password = keyring.get_password(
-            __productname__ + hostname, username)
+            __productname__ + ':' + hostname, username)
         if password is not None:
             logging.debug("Got password for user {0}@{1} from keyring".format(
                 username, hostname))
@@ -563,7 +564,7 @@ def get_auth_creds(username, resource):
             prompt = 'Save this password in the keyring? [y/N] '
             answer = raw_input(prompt)
         if answer.lower() == 'y':
-            password = keyring.set_password(
-                __productname__ + hostname, username, password)
+            keyring.set_password(
+                __productname__ + ':' + hostname, username, password)
 
     return password
