@@ -535,9 +535,10 @@ def get_auth_creds(username, resource):
     except IOError:
         pass
     else:
-        logging.debug("Read password for user {0} on {1} in .netrc".format(
-            auths[0], hostname))
-        return auths[1]
+        if auths is not None:
+            logging.debug("Read password for user {0} on {1} in .netrc".format(
+                auths[0], hostname))
+            return auths[1]
 
     # keyring
     try:
