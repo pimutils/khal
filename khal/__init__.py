@@ -548,7 +548,7 @@ def get_auth_creds(username, resource):
         password = None
     else:
         password = keyring.get_password(
-            __productname__ + hostname, username)
+            __productname__ + ':' + hostname, username)
         if password is not None:
             logging.debug("Got password for user {0}@{1} from keyring".format(
                 username, hostname))
@@ -565,6 +565,6 @@ def get_auth_creds(username, resource):
             answer = raw_input(prompt)
         if answer.lower() == 'y':
             keyring.set_password(
-                __productname__ + hostname, username, password)
+                __productname__ + ':' + hostname, username, password)
 
     return password
