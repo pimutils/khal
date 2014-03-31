@@ -228,3 +228,60 @@ def test_construct_event_format_de_complexer():
                                 defaulttz=DEFAULTTZ,
                                 _now=_now).to_ical()
         assert event == vevent
+
+
+test_set_description = [
+    # now events where the start date has to be inferred, too
+    # today
+    ('8:00 Äwesöme Event :: this is going to be awesome',
+     '\r\n'.join(['BEGIN:VEVENT',
+                  'SUMMARY:Äwesöme Event',
+                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{0}T080000',
+                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{0}T090000',
+                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+                  'DESCRIPTION:this is going to be awesome',
+                  'END:VEVENT',
+                  '']).format(today_s)),
+    # today until tomorrow
+    ('22:00  1:00 Äwesöme Event :: Will be even better',
+     '\r\n'.join(['BEGIN:VEVENT',
+                  'SUMMARY:Äwesöme Event',
+                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{0}T220000',
+                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{1}T010000',
+                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+                  'DESCRIPTION:Will be even better',
+                  'END:VEVENT',
+                  '']).format(today_s, tomorrow_s)),
+    ('15.06. Äwesöme Event :: and again',
+     '\r\n'.join(['BEGIN:VEVENT',
+                  'SUMMARY:Äwesöme Event',
+                  'DTSTART;VALUE=DATE:{0}0615',
+                  'DTEND;VALUE=DATE:{0}0616',
+                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+                  'DESCRIPTION:and again',
+                  'END:VEVENT',
+                  '']).format(this_year_s)),
+]
+
+def test_description():
+    timeformat = '%H:%M'
+    dateformat = '%d.%m.'
+    longdateformat = '%d.%m.%Y'
+    datetimeformat = '%d.%m. %H:%M'
+    longdatetimeformat = '%d.%m.%Y %H:%M'
+    DEFAULTTZ = pytz.timezone('Europe/Berlin')
+    for data_list, vevent in test_set_description:
+        random.seed(1)
+        event = construct_event(data_list.split(),
+                                timeformat=timeformat,
+                                dateformat=dateformat,
+                                longdateformat=longdateformat,
+                                datetimeformat=datetimeformat,
+                                longdatetimeformat=longdatetimeformat,
+                                defaulttz=DEFAULTTZ,
+                                _now=_now).to_ical()
+        assert event == vevent
+
