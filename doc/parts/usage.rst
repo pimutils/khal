@@ -29,9 +29,9 @@ adds a new event starting today at 18:00 with summary 'awesome event' (lasting
 for the default time of one hour, will be configurable soon) to the default
 calendar
 
-  khal --new 25.10. 16:00 18:00 Another Event
+  khal --new 25.10. 16:00 18:00 Another Event :: with Alice and Bob
 
-adds a new event on 25th of October lasting from 16:00 to 18:00
+adds a new event on 25th of October lasting from 16:00 to 18:00 with additional description
 
 
   khal --new 26.07. Great Event
