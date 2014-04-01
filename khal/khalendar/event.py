@@ -22,28 +22,34 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+"""this module will the event model, hopefully soon in a cleaned up version"""
 
 import datetime
 
 import icalendar
 from icalendar.tools import UIDGenerator
 
+
 class Event(object):
+    """the base event class"""
     def __init__(self, ical, uid=None, account=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
                  readonly=False, unicode_symbols=True, etag=None):
+
         if isinstance(ical, basestring):
             self.vevent = icalendar.Event.from_ical(ical)
         elif isinstance(ical, icalendar.cal.Event):
             self.vevent = ical
+
         if account is None:
             raise TypeError('account must not be None')
+
         self.allday = True
         self.color = color
-        if uid is None and 'UID' not in self.vevent:
+
+        if uid is None and self.vevent.get('UID', '') == '':
             self.uid = UIDGenerator().uid().to_ical()
-        else:
-            self.uid = self.vevent['UID']
+
         self.account = account
         self.readonly = readonly
         self.unicode_symbols = unicode_symbols
@@ -71,6 +77,14 @@ class Event(object):
                 self.vevent['DTEND'].dt = end
         self.local_tz = local_tz
         self.default_tz = default_tz
+
+    @property
+    def uid(self):
+        return self.vevent['UID']
+
+    @uid.setter
+    def uid(self, value):
+        self.vevent['UID'] = value
 
     @property
     def start(self):
@@ -108,10 +122,21 @@ class Event(object):
 
     @property
     def raw(self):
-        return self.vevent.to_ical()
+        return self.to_ical()
 
     def to_ical(self):
-        return self.vevent.to_ical()
+        calendar = self._create_calendar()
+
+        if hasattr(self.start, 'tzinfo'):
+            tzs = [self.start.tzinfo]
+            if self.end.tzinfo != self.start.tzinfo:
+                tzs.append(self.end.tzinfo)
+            for tzinfo in tzs:
+                timezone = self._create_timezone(tzinfo)
+                calendar.add_component(timezone)
+
+        calendar.add_component(self.vevent)
+        return calendar.to_ical()
 
     def compact(self, day, timeformat='%H:%M'):
         if self.allday:
@@ -173,3 +198,48 @@ class Event(object):
             endstr = self.end.strftime(timeformat)
 
         return startstr + tostr + endstr + ': ' + self.summary + recurstr
+
+    def _create_calendar(self):
+        """
+        create the calendar
+
+        :returns: calendar
+        :rtype: icalendar.Calendar()
+        """
+        calendar = icalendar.Calendar()
+        calendar.add('version', '2.0')
+        calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
+
+        return calendar
+
+    def _create_timezone(self, tz):
+        """
+        create an icalendar timezone from a pytz.tzinfo
+
+        :param tz: the timezone
+        :type tz: pytz.tzinfo
+        :returns: timezone information set
+        :rtype: icalendar.Timezone()
+        """
+        timezone = icalendar.Timezone()
+        timezone.add('TZID', tz)
+
+        # FIXME should match year of the event, not this year
+        daylight, standard = [(num, dt) for num, dt in enumerate(tz._utc_transition_times) if dt.year == datetime.datetime.today().year]
+
+        timezone_daylight = icalendar.TimezoneDaylight()
+        timezone_daylight.add('TZNAME', tz._transition_info[daylight[0]][2])
+        timezone_daylight.add('DTSTART', daylight[1])
+        timezone_daylight.add('TZOFFSETFROM', tz._transition_info[daylight[0]][0])
+        timezone_daylight.add('TZOFFSETTO', tz._transition_info[standard[0]][0])
+
+        timezone_standard = icalendar.TimezoneStandard()
+        timezone_standard.add('TZNAME', tz._transition_info[standard[0]][2])
+        timezone_standard.add('DTSTART', standard[1])
+        timezone_standard.add('TZOFFSETFROM', tz._transition_info[standard[0]][0])
+        timezone_standard.add('TZOFFSETTO', tz._transition_info[daylight[0]][0])
+
+        timezone.add_component(timezone_daylight)
+        timezone.add_component(timezone_standard)
+
+        return timezone
