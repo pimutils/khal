@@ -1,0 +1,4 @@
+icalendar
+pytest
+urwid
+pyxdg

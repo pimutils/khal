@@ -52,8 +52,6 @@ write_version()
 
 
 requirements = [
-    'lxml',
-    'requests',
     'urwid',
     'pyxdg',
     'icalendar'
