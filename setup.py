@@ -13,7 +13,7 @@ MAJOR = 0
 MINOR = 1
 PATCH = 0
 
-RELEASE = False
+RELEASE = True
 
 VERSION = "{0}.{1}.{2}".format(MAJOR, MINOR, PATCH)
 
@@ -80,15 +80,15 @@ setup(
     packages=['khal', 'khal/ui'],
     scripts=['bin/khal', 'bin/ikhal'],
     requires=requirements,
-    extras_require = extra_requirements,
+    extras_require=extra_requirements,
     classifiers=[
-        "Development Status :: 1 - Planning"
+        "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
         "Environment :: Console :: Curses",
         "Intended Audience :: End Users/Desktop",
         "Operating System :: POSIX",
         "Programming Language :: Python :: 2 :: Only",
         "Topic :: Utilities",
-        "Topic :: Communications :: Email :: Address Book"
+        "Topic :: Office/Business :: Scheduling"
     ],
 )
