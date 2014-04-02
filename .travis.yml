@@ -8,7 +8,8 @@ install:
         - pip install .
 # command to run tests, e.g. python setup.py test
 script:  py.test tests/
-#branches:
-  #except:
-    #- webpage
-    #- master
+branches:
+        only:
+            - vdir
+        except:
+            - master
