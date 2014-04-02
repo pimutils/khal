@@ -485,7 +485,9 @@ class EventColumn(urwid.WidgetWrap):
         event = aux.new_event(dtstart=date,
                               timezone=self.conf.default.default_timezone)
 
-        event = self.collection.new_event(event.to_ical(), self.conf.active_calendars.pop())
+        # TODO proper default cal
+        event = self.collection.new_event(event.to_ical(),
+                                          list(self.conf.active_calendars)[0])
         self.edit(event)
         self.eventcount += 1
 
