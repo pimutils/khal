@@ -54,7 +54,8 @@ write_version()
 requirements = [
     'urwid',
     'pyxdg',
-    'icalendar'
+    'icalendar',
+    'vdirsyncer'
 ]
 if sys.version_info[:2] in ((2, 6),):
     # there is no argparse in python2.6

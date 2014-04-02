@@ -2,3 +2,4 @@ icalendar
 pytest
 urwid
 pyxdg
+vdirsyncer
