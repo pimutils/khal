@@ -868,6 +868,7 @@ class EventEditor(EventViewer):
                 self.event.vevent['SEQUENCE'] = 0
 
             if self.event.status == NEWNOTSAVED:
+                self.event.account = self.accountchooser.account
                 self.collection.new(self.event)
             elif self.accountchooser.changed:
                 self.collection.change_collection(self.event,
