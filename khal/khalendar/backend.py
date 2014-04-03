@@ -221,21 +221,27 @@ class SQLiteDb(object):
                 needs_update.append(href)
         return needs_update
 
-    def update(self, vevent, account, href=None, etag=''):
+    def update(self, vevent, account, href=None, etag='',
+               ignore_invalid_items=False):
         """insert a new or update an existing card in the db
 
         This is mostly a wrapper around two SQL statements, doing some cleanup
         before.
 
-        :param vcard: vcard to be inserted or updated
-        :type vcard: unicode
+        :param vevent: event to be inserted or updated. If this is a calendar
+                       object, it will be searched for an event.
+        :type vevent: unicode
+        :param ignore_invalid_items: If true, raise UpdateFailed if given
+                                     vevent is not a valid event or calendar
+                                     object. If false, don't do anything.
+        :type ignore_invalid_items: bool
         :param href: href of the card on the server, if this href already
                      exists in the db the card gets updated. If no href is
                      given, a random href is chosen and it is implied that this
                      card does not yet exist on the server, but will be
                      uploaded there on next sync.
         :type href: str()
-        :param etag: the etga of the vcard, if this etag does not match the
+        :param etag: the etag of the vcard, if this etag does not match the
                      remote etag on next sync, this card will be updated from
                      the server. For locally created vcards this should not be
                      set
@@ -246,9 +252,18 @@ class SQLiteDb(object):
         self._check_account(account)
         if not isinstance(vevent, icalendar.cal.Event):
             ical = icalendar.Event.from_ical(vevent)
+            vevent = None
             for component in ical.walk():
                 if component.name == 'VEVENT':
                     vevent = component
+                    break
+
+        if vevent is None:
+            if ignore_invalid_items:
+                return
+            else:
+                raise UpdateFailed(u'Could not find event in {}'.format(ical))
+
         all_day_event = False
         if href == '' or href is None:
             href = get_random_href()

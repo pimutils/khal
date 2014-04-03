@@ -150,7 +150,8 @@ class Calendar(object):
 
     def update_vevent(self, href):
         event, etag = self._storage.get(href)
-        self._dbtool.update(event.raw, self.name, href=href, etag=etag)
+        self._dbtool.update(event.raw, self.name, href=href, etag=etag,
+                            ignore_invalid_items=True)
 
     def new_event(self, ical):
         """creates new event form ical string"""
