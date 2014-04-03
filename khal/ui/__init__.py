@@ -871,6 +871,8 @@ class EventEditor(EventViewer):
                 self.event.vevent['SEQUENCE'] = 0
 
             if self.event.etag is None:  # has not been saved before
+                # TODO look for better way to detect this
+                self.event.account = self.accountchooser.account
                 self.collection.new(self.event)
             elif self.accountchooser.changed:
                 self.collection.change_collection(self.event,
