@@ -18,7 +18,7 @@
 # # Each  calendar configuration must start with a Calendar tag
 # # Each Calendar Tag must be unique.
 #
-# location: ~/.khal/calendars/home/
+# path: ~/.khal/calendars/home/
 # # Specify the location of the vdir
 #
 #
