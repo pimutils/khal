@@ -320,7 +320,6 @@ class U_Event(urwid.Text):
         :param event: the encapsulated event
         :type event: khal.event.Event
         """
-
         self.event = event
         self.this_date = this_date
         self.conf = conf
@@ -328,30 +327,26 @@ class U_Event(urwid.Text):
         self.view = False
         self.status = OK
         super(U_Event, self).__init__(self.event.compact(self.this_date))
+        self.set_title()
 
     @classmethod
     def selectable(cls):
         return True
 
+    def set_title(self, mark=''):
+        if self.event.uid in self.eventcolumn.deleted:
+            mark = 'D'
+        self.set_text(mark + ' ' + self.event.compact(self.this_date))
+
     def toggle_delete(self):
-        if self.event.readonly is False:
-            # TODO update for NEWNOTSAVED
-            if self.status == OK:
-                toggle = DELETED
-            elif self.status == DELETED:
-                toggle = OK
-            elif self.status == NEW:
-                toggle = NEWDELETE
-            elif self.status == NEWDELETE:
-                toggle = NEW
-            else:
-                toggle = DELETED
-            self.status = toggle
-            self.set_text(self.event.compact(self.this_date))
-            #self.eventcolumn.collection.mark(toggle, self.event)
-            # TODO reenable deleting, preferably in a way to undo
+        if self.event.readonly is True:
+            self.set_title('RO')
+            return
+        if self.event.uid in self.eventcolumn.deleted:
+            self.eventcolumn.deleted.remove(self.event.uid)
         else:
-            self.set_text('RO' + self.event.compact(self.this_date))
+            self.eventcolumn.deleted.append(self.event.uid)
+        self.set_title()
 
     def keypress(self, _, key):
         if key == 'enter' and self.view is False:
@@ -421,6 +416,7 @@ class EventColumn(urwid.WidgetWrap):
         self.editor = False
         self.date = None
         self.eventcount = 0
+        self.deleted = []
 
     def update(self, date):
         """create an EventList populated with Events for `date` and display it
