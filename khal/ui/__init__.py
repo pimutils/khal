@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # coding: utf-8
 # vim: set ts=4 sw=4 expandtab sts=4:
 # Copyright (c) 2011-2014 Christian Geier & contributors
@@ -30,8 +29,6 @@ from datetime import datetime
 import urwid
 
 from .. import aux
-from ..status import OK
-
 
 from base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker
 
@@ -338,7 +335,6 @@ class U_Event(urwid.Text):
         self.conf = conf
         self.eventcolumn = eventcolumn
         self.view = False
-        self.status = OK
         super(U_Event, self).__init__(self.event.compact(self.this_date))
         self.set_title()
 
