@@ -30,7 +30,7 @@ from datetime import datetime
 import urwid
 
 from .. import aux
-from ..status import OK, NEW, CHANGED, NEWNOTSAVED, DELETED, NEWDELETE, CALCHANGED
+from ..status import OK
 
 
 from base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker
@@ -250,8 +250,9 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
     def _construct_week(self, week):
         """
-        constructs a CColumns week from a week of datetime.date objects. Also prepends the month name
-        if the first day of the month is included in that week.
+        constructs a CColumns week from a week of datetime.date objects. Also
+        prepends the month name if the first day of the month is included in
+        that week.
 
         :param week: list of datetime.date objects
         :returns: the week as an CColumns object and True or False depending on
@@ -288,13 +289,15 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         :type year: int
         :param month: the number of the month to be constructed
         :type month: int (1-12)
-        :param clean_first_row: makes sure that the first element returned is completely in `month` and
-                                not partly in the one before (which might lead to that line occurring
+        :param clean_first_row: makes sure that the first element returned is
+                                completely in `month` and not partly in the one
+                                before (which might lead to that line occurring
                                 twice
         :type clean_first_row: bool
-        :param clean_last_row: makes sure that the last element returned is completely in `month` and
-                                not partly in the one after (which might lead to that line occurring
-                                twice
+        :param clean_last_row: makes sure that the last element returned is
+                               completely in `month` and not partly in the one
+                               after (which might lead to that line occurring
+                               twice
         :type clean_last_row: bool
         :returns: list of DateCColumns and the number of the list element which
                   contains today (or None if it isn't in there)
@@ -830,26 +833,20 @@ class EventEditor(EventViewer):
 
     @property
     def changed(self):
-        # TODO refactor
-        changed = False
         if self.summary.get_edit_text() != self.event.vevent['SUMMARY']:
-            changed = True
+            return True
 
-        key = 'DESCRIPTION'
-        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key]) or
-                self.description.get_edit_text() != ''):
-            changed = True
+        if self.description.get_edit_text() != \
+                self.event.vevent.get('DESCRIPTION', ''):
+            return True
 
-        key = 'LOCATION'
-        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key]) or
-                self.location.get_edit_text() != ''):
-            changed = True
+        if self.location.get_edit_text() != \
+                self.event.vevent.get('LOCATION', ''):
+            return True
 
-        if self.startendeditor.changed:
-            changed = True
-        if self.accountchooser.changed:
-            changed = True
-        return changed
+        if self.startendeditor.changed or self.accountchooser.changed:
+            return True
+        return False
 
     def update(self):
         changed = False
