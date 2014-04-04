@@ -30,7 +30,7 @@ from datetime import datetime
 import urwid
 
 from .. import aux
-from ..status import OK, NEW, CHANGED, NEWNOTSAVED, DELETED, NEWDELETE, CALCHANGED
+from ..status import OK
 
 
 from base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker
@@ -41,6 +41,7 @@ class DateConversionError(Exception):
 
 
 class AccountList(urwid.WidgetWrap):
+
     """used as the popup in the AccountChooser popup"""
     signals = ['close']
 
@@ -62,9 +63,11 @@ class AccountList(urwid.WidgetWrap):
 
 
 class AccountChooser(urwid.PopUpLauncher):
+
     """show current account and lets user choose another account
 
     does NOT handle the actual moving of an event to another account"""
+
     def __init__(self, active_account, accounts):
         self.active_account = active_account
         self.original_account = active_account
@@ -107,6 +110,7 @@ class AccountChooser(urwid.PopUpLauncher):
 
 
 class Date(urwid.Text):
+
     """used in the main calendar for dates (a number)"""
 
     def __init__(self, date, view):
@@ -132,6 +136,7 @@ class Date(urwid.Text):
 
 
 class DateCColumns(CColumns):
+
     """container for one week worth of dates
     which are horizontally aligned
 
@@ -140,6 +145,7 @@ class DateCColumns(CColumns):
     focus can only move away by pressing 'TAB',
     calls 'view.show_date' on every focus change (see below for details)
     """
+
     def __init__(self, widget_list, view=None, **kwargs):
         self.view = view
         super(DateCColumns, self).__init__(widget_list, **kwargs)
@@ -152,7 +158,8 @@ class DateCColumns(CColumns):
         # since first Column is month name, focus should only be 0 during
         # construction
         if not self.contents.focus == 0:
-            self.view.show_date(self.contents[position][0].original_widget.date)
+            self.view.show_date(
+                self.contents[position][0].original_widget.date)
 
     focus_position = property(CColumns._get_focus_position,
                               _set_focus_position, doc="""
@@ -195,6 +202,7 @@ def calendar_walker(view, firstweekday=0):
 
 
 class CalendarWalker(urwid.SimpleFocusListWalker):
+
     def __init__(self, view, firstweekday=0):
         self.firstweekday = firstweekday
         self.view = view
@@ -242,8 +250,9 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
     def _construct_week(self, week):
         """
-        constructs a CColumns week from a week of datetime.date objects. Also prepends the month name
-        if the first day of the month is included in that week.
+        constructs a CColumns week from a week of datetime.date objects. Also
+        prepends the month name if the first day of the month is included in
+        that week.
 
         :param week: list of datetime.date objects
         :returns: the week as an CColumns object and True or False depending on
@@ -280,20 +289,23 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         :type year: int
         :param month: the number of the month to be constructed
         :type month: int (1-12)
-        :param clean_first_row: makes sure that the first element returned is completely in `month` and
-                                not partly in the one before (which might lead to that line occurring
+        :param clean_first_row: makes sure that the first element returned is
+                                completely in `month` and not partly in the one
+                                before (which might lead to that line occurring
                                 twice
         :type clean_first_row: bool
-        :param clean_last_row: makes sure that the last element returned is completely in `month` and
-                                not partly in the one after (which might lead to that line occurring
-                                twice
+        :param clean_last_row: makes sure that the last element returned is
+                               completely in `month` and not partly in the one
+                               after (which might lead to that line occurring
+                               twice
         :type clean_last_row: bool
         :returns: list of DateCColumns and the number of the list element which
                   contains today (or None if it isn't in there)
         :rtype: tuple(list(dateCColumns, int or None))
         """
 
-        plain_weeks = calendar.Calendar(self.firstweekday).monthdatescalendar(year, month)
+        plain_weeks = calendar.Calendar(
+            self.firstweekday).monthdatescalendar(year, month)
         weeks = list()
         focus_item = None
         for number, week in enumerate(plain_weeks):
@@ -312,6 +324,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
 
 class U_Event(urwid.Text):
+
     def __init__(self, event, this_date=None, conf=None,
                  eventcolumn=None):
         """
@@ -362,7 +375,9 @@ class U_Event(urwid.Text):
 
 
 class EventList(urwid.WidgetWrap):
+
     """list of events"""
+
     def __init__(self, conf=None, collection=None, eventcolumn=None):
         self.conf = conf
         self.collection = collection
@@ -397,7 +412,8 @@ class EventList(urwid.WidgetWrap):
                                       this_date=this_date,
                                       eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
-        event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
+        event_list = [urwid.AttrMap(event, None, 'reveal focus')
+                      for event in event_column]
         event_count = len(event_list)
         if not event_list:
             event_list = [urwid.Text('no scheduled events')]
@@ -408,7 +424,9 @@ class EventList(urwid.WidgetWrap):
 
 
 class EventColumn(urwid.WidgetWrap):
+
     """contains the eventlist as well as the event viewer/editor"""
+
     def __init__(self, conf=None, collection=None):
         self.conf = conf
         self.collection = collection
@@ -423,7 +441,8 @@ class EventColumn(urwid.WidgetWrap):
         """
         self.date = date
         # TODO make this switch from pile to columns depending on terminal size
-        events = EventList(conf=self.conf, collection=self.collection, eventcolumn=self)
+        events = EventList(
+            conf=self.conf, collection=self.collection, eventcolumn=self)
         self.eventcount = events.update(date)
         self.container = CPile([events])
         self._w = self.container
@@ -438,7 +457,7 @@ class EventColumn(urwid.WidgetWrap):
         self.destroy()
         self.container.contents.append((self.divider,
                                         ('pack', None)))
-                                        #self.container.options()))
+                                        # self.container.options()))
         self.container.contents.append(
             (EventDisplay(self.conf, event, collection=self.collection),
              self.container.options()))
@@ -451,8 +470,8 @@ class EventColumn(urwid.WidgetWrap):
         """
         self.destroy()
         self.editor = True
-        #self.container.contents.append((self.divider,
-                                        #self.container.options()))
+        # self.container.contents.append((self.divider,
+                                        # self.container.options()))
         self.container.contents.append((self.divider,
                                         ('pack', None)))
         self.container.contents.append(
@@ -492,6 +511,7 @@ class EventColumn(urwid.WidgetWrap):
 
 
 class RecursionEditor(urwid.WidgetWrap):
+
     def __init__(self, rrule):
         # TODO: actually implement the Recursion Editor
         self.recursive = False if rrule is None else True
@@ -508,6 +528,7 @@ class RecursionEditor(urwid.WidgetWrap):
 
 
 class StartEndEditor(urwid.WidgetWrap):
+
     """
     editing start and nd times of the event
 
@@ -520,7 +541,8 @@ class StartEndEditor(urwid.WidgetWrap):
         self.startdt = start
         self.enddt = end
         # TODO cleanup
-        self.startdate = self.startdt.strftime(self.conf.default.longdateformat)
+        self.startdate = self.startdt.strftime(
+            self.conf.default.longdateformat)
         self.starttime = self.startdt.strftime(self.conf.default.timeformat)
         self.enddate = self.enddt.strftime(self.conf.default.longdateformat)
         self.endtime = self.enddt.strftime(self.conf.default.timeformat)
@@ -552,14 +574,18 @@ class StartEndEditor(urwid.WidgetWrap):
         self.allday = state
         datewidth = len(self.startdate) + 7
 
-        edit = urwid.Edit(caption=('', 'From: '), edit_text=self.startdate, wrap='any')
+        edit = urwid.Edit(
+            caption=('', 'From: '), edit_text=self.startdate, wrap='any')
         edit = urwid.AttrMap(edit, self.startdate_bg, 'editcp', )
-        edit = urwid.Padding(edit, align='left', width=datewidth, left=0, right=1)
+        edit = urwid.Padding(
+            edit, align='left', width=datewidth, left=0, right=1)
         self.startdatewidget = edit
 
-        edit = urwid.Edit(caption=('', 'To:   '), edit_text=self.enddate, wrap='any')
+        edit = urwid.Edit(
+            caption=('', 'To:   '), edit_text=self.enddate, wrap='any')
         edit = urwid.AttrMap(edit, self.enddate_bg, 'editcp', )
-        edit = urwid.Padding(edit, align='left', width=datewidth, left=0, right=1)
+        edit = urwid.Padding(
+            edit, align='left', width=datewidth, left=0, right=1)
         self.enddatewidget = edit
         if state is True:
             timewidth = 1
@@ -569,17 +595,21 @@ class StartEndEditor(urwid.WidgetWrap):
             timewidth = len(self.starttime) + 1
             edit = urwid.Edit(edit_text=self.starttime, wrap='any')
             edit = urwid.AttrMap(edit, self.starttime_bg, 'editcp', )
-            edit = urwid.Padding(edit, align='left', width=len(self.starttime) + 1, left=1)
+            edit = urwid.Padding(
+                edit, align='left', width=len(self.starttime) + 1, left=1)
             self.starttimewidget = edit
 
             edit = urwid.Edit(edit_text=self.endtime, wrap='any')
             edit = urwid.AttrMap(edit, self.endtime_bg, 'editcp', )
-            edit = urwid.Padding(edit, align='left', width=len(self.endtime) + 1, left=1)
+            edit = urwid.Padding(
+                edit, align='left', width=len(self.endtime) + 1, left=1)
             self.endtimewidget = edit
 
         columns = CPile([
-            CColumns([(datewidth, self.startdatewidget), (timewidth, self.starttimewidget)], dividechars=1),
-            CColumns([(datewidth, self.enddatewidget), (timewidth, self.endtimewidget)], dividechars=1),
+            CColumns([(datewidth, self.startdatewidget), (
+                timewidth, self.starttimewidget)], dividechars=1),
+            CColumns(
+                [(datewidth, self.enddatewidget), (timewidth, self.endtimewidget)], dividechars=1),
             self.checkallday], focus_item=2)
         urwid.WidgetWrap.__init__(self, columns)
 
@@ -601,7 +631,8 @@ class StartEndEditor(urwid.WidgetWrap):
                 tzinfo = self.startdt.tzinfo
             try:
                 newstarttime = self._newstarttime
-                newstartdatetime = datetime.combine(newstartdatetime, newstarttime)
+                newstartdatetime = datetime.combine(
+                    newstartdatetime, newstarttime)
                 newstartdatetime = tzinfo.localize(newstartdatetime)
             except TypeError:
                 return None
@@ -610,7 +641,8 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newstartdate(self):
         try:
-            self.startdate = self.startdatewidget.original_widget.original_widget.get_edit_text()
+            self.startdate = self.startdatewidget.original_widget.original_widget.get_edit_text(
+            )
             newstartdate = datetime.strptime(
                 self.startdate,
                 self.conf.default.longdateformat).date()
@@ -623,7 +655,8 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newstarttime(self):
         try:
-            self.starttime = self.starttimewidget.original_widget.original_widget.get_edit_text()
+            self.starttime = self.starttimewidget.original_widget.original_widget.get_edit_text(
+            )
             newstarttime = datetime.strptime(
                 self.starttime,
                 self.conf.default.timeformat).time()
@@ -652,7 +685,8 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newenddate(self):
         try:
-            self.enddate = self.enddatewidget.original_widget.original_widget.get_edit_text()
+            self.enddate = self.enddatewidget.original_widget.original_widget.get_edit_text(
+            )
             newenddate = datetime.strptime(
                 self.enddate,
                 self.conf.default.longdateformat).date()
@@ -665,7 +699,8 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newendtime(self):
         try:
-            self.endtime = self.endtimewidget.original_widget.original_widget.get_edit_text()
+            self.endtime = self.endtimewidget.original_widget.original_widget.get_edit_text(
+            )
             newendtime = datetime.strptime(
                 self.endtime,
                 self.conf.default.timeformat).time()
@@ -677,9 +712,11 @@ class StartEndEditor(urwid.WidgetWrap):
 
 
 class EventViewer(urwid.WidgetWrap):
+
     """
     Base Class for EventEditor and EventDisplay
     """
+
     def __init__(self, conf, collection):
         self.conf = conf
         self.collection = collection
@@ -688,10 +725,12 @@ class EventViewer(urwid.WidgetWrap):
 
 
 class EventDisplay(EventViewer):
+
     """showing events
 
     widget for displaying one event's details
     """
+
     def __init__(self, conf, event, collection=None):
         super(EventDisplay, self).__init__(conf, collection)
         lines = []
@@ -735,9 +774,11 @@ class EventDisplay(EventViewer):
 
 
 class EventEditor(EventViewer):
+
     """
     Widget for event Editing
     """
+
     def __init__(self, conf, event, collection=None, cancel=None):
         """
         :type event: khal.event.Event
@@ -792,26 +833,20 @@ class EventEditor(EventViewer):
 
     @property
     def changed(self):
-        # TODO refactor
-        changed = False
         if self.summary.get_edit_text() != self.event.vevent['SUMMARY']:
-            changed = True
+            return True
 
-        key = 'DESCRIPTION'
-        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key]) or
-                self.description.get_edit_text() != ''):
-            changed = True
+        if self.description.get_edit_text() != \
+                self.event.vevent.get('DESCRIPTION', ''):
+            return True
 
-        key = 'LOCATION'
-        if ((key in self.event.vevent and self.description.get_edit_text() != self.event.vevent[key]) or
-                self.location.get_edit_text() != ''):
-            changed = True
+        if self.location.get_edit_text() != \
+                self.event.vevent.get('LOCATION', ''):
+            return True
 
-        if self.startendeditor.changed:
-            changed = True
-        if self.accountchooser.changed:
-            changed = True
-        return changed
+        if self.startendeditor.changed or self.accountchooser.changed:
+            return True
+        return False
 
     def update(self):
         changed = False
@@ -893,16 +928,19 @@ class EventEditor(EventViewer):
 
 
 class ClassicView(Pane):
+
     """default Pane for khal
 
     showing a CalendarWalker on the left and the eventList + eventviewer/editor
     on the right
     """
+
     def __init__(self, collection, conf=None, title=u'',
                  description=u''):
         self.collection = collection
         self.eventscolumn = EventColumn(conf=conf, collection=collection)
-        weeks = calendar_walker(view=self, firstweekday=conf.default.firstweekday)
+        weeks = calendar_walker(
+            view=self, firstweekday=conf.default.firstweekday)
         events = self.eventscolumn
         columns = CColumns([(25, weeks), events],
                            dividechars=2, box_columns=[0, 1])

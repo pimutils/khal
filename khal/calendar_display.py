@@ -112,7 +112,21 @@ def vertical_month(month=datetime.date.today().month,
     :rtype: list() of str()
 
     >>> vertical_month(month=12, year=2011, today=datetime.date(2011,12,12))
-    ['\\x1b[1m    Mo Tu We Th Fr Sa Su\\x1b[0m ', '\\x1b[1mDec \\x1b[0m28 29 30  1  2  3  4 ', '     5  6  7  8  9 10 11 ', '    \\x1b[7m12\\x1b[0m 13 14 15 16 17 18 ', '    19 20 21 22 23 24 25 ', '\\x1b[1mJan \\x1b[0m26 27 28 29 30 31  1 ', '     2  3  4  5  6  7  8 ', '     9 10 11 12 13 14 15 ', '    16 17 18 19 20 21 22 ', '    23 24 25 26 27 28 29 ', '\\x1b[1mFeb \\x1b[0m30 31  1  2  3  4  5 ', '     6  7  8  9 10 11 12 ', '    13 14 15 16 17 18 19 ', '    20 21 22 23 24 25 26 ', '\\x1b[1mMar \\x1b[0m27 28 29  1  2  3  4 ']
+    ['\\x1b[1m    Mo Tu We Th Fr Sa Su\\x1b[0m ',
+     '\\x1b[1mDec \\x1b[0m28 29 30  1  2  3  4 ',
+     '     5  6  7  8  9 10 11 ',
+     '    \\x1b[7m12\\x1b[0m 13 14 15 16 17 18 ',
+     '    19 20 21 22 23 24 25 ',
+     '\\x1b[1mJan \\x1b[0m26 27 28 29 30 31  1 ',
+     '     2  3  4  5  6  7  8 ',
+     '     9 10 11 12 13 14 15 ',
+     '    16 17 18 19 20 21 22 ',
+     '    23 24 25 26 27 28 29 ',
+     '\\x1b[1mFeb \\x1b[0m30 31  1  2  3  4  5 ',
+     '     6  7  8  9 10 11 12 ',
+     '    13 14 15 16 17 18 19 ',
+     '    20 21 22 23 24 25 26 ',
+     '\\x1b[1mMar \\x1b[0m27 28 29  1  2  3  4 ']
 
     """
     khal = list()
@@ -127,7 +141,8 @@ def vertical_month(month=datetime.date.today().month,
                 m_name = bstring(calendar.month_abbr[week[6].month].ljust(4))
             else:
                 m_name = '    '
-            w_number = bstring(' ' + str(getweeknumber(week[0]))) if weeknumber else ''
+            w_number = bstring(
+                ' ' + str(getweeknumber(week[0]))) if weeknumber else ''
             sweek = m_name + strweek + w_number
             if sweek != khal[-1]:
                 khal.append(sweek)
@@ -151,7 +166,7 @@ def config_parser():
     args = vars(carg_parser.parse_args())
     return args
 
-#print(print_month())
+# print(print_month())
 #print(print_month(month=12, year=2011, today=datetime.date(2011, 12, 1)))
 #print(print_month(month=7, year=2012))
 #print(vertical_month(month=12, year=2011))

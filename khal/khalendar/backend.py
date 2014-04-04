@@ -83,11 +83,13 @@ from .event import Event
 
 
 class UpdateFailed(Exception):
+
     """raised if update not possible"""
     pass
 
 
 class SQLiteDb(object):
+
     """Querying the addressbook database
 
     the type() of parameters named "account" should be something like str()
@@ -215,7 +217,8 @@ class SQLiteDb(object):
         needs_update = list()
         for href, etag in href_etag_list:
             stuple = (href,)
-            sql_s = 'SELECT etag FROM {0} WHERE href = ?'.format(account + '_m')
+            sql_s = 'SELECT etag FROM {0} WHERE href = ?'.format(
+                account + '_m')
             result = self.sql_ex(sql_s, stuple)
             if not result or etag != result[0][0]:
                 needs_update.append(href)
@@ -441,7 +444,8 @@ class SQLiteDb(object):
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
         for href, start, end in result:
-            start = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(start))
+            start = pytz.UTC.localize(
+                datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
             event = self.get_vevent_from_db(href, account,
                                             start=start, end=end,
@@ -527,7 +531,8 @@ class SQLiteDb(object):
         Event.
         """
         self._check_account(account)
-        sql_s = 'SELECT vevent, etag FROM {0} WHERE href=(?)'.format(account + '_m')
+        sql_s = 'SELECT vevent, etag FROM {0} WHERE href=(?)'.format(
+            account + '_m')
         result = self.sql_ex(sql_s, (href, ))
         return Event(result[0][0],
                      local_tz=self.local_timezone,

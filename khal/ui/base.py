@@ -37,34 +37,39 @@ def vimify(key):
         return 'right'
     # not really sure if these last to make any sense (not yet at least)
     # at least for the time being, they are more trouble, than they are worth
-    #elif key == '0':
-        #return 'home'
-    #elif key == '$':
-        #return 'end'
+    # elif key == '0':
+        # return 'home'
+    # elif key == '$':
+        # return 'end'
     else:
         return key
 
 
 class CColumns(urwid.Columns):
+
     def keypress(self, size, key):
 #        key = vimify(key)
         return urwid.Columns.keypress(self, size, key)
 
 
 class CPile(urwid.Pile):
+
     def keypress(self, size, key):
 #        key = vimify(key)
         return urwid.Pile.keypress(self, size, key)
 
 
 class CSimpleFocusListWalker(urwid.SimpleFocusListWalker):
+
     def keypress(self, size, key):
 #        key = vimify(key)
         return urwid.SimpleFocusListWalker.keypress(self, size, key)
 
 
 class Pane(urwid.WidgetWrap):
+
     """An abstract Pane to be used in a Window object."""
+
     def __init__(self, widget, title=None, description=None):
         self.widget = widget
         urwid.WidgetWrap.__init__(self, widget)
@@ -99,7 +104,9 @@ class Pane(urwid.WidgetWrap):
 
 
 class HelpPane(Pane):
+
     """A contextual help screen."""
+
     def __init__(self, pane):
         content = []
         for key_list, description in pane.get_keys():
@@ -118,6 +125,7 @@ class HelpPane(Pane):
 
 
 class Window(urwid.Frame):
+
     """The main user interface frame.
 
     A window is a frame which displays a header, a footer and a body.
