@@ -20,8 +20,9 @@ VERSION = "{0}.{1}.{2}".format(MAJOR, MINOR, PATCH)
 if not RELEASE:
     try:
         try:
-            pipe = subprocess.Popen(["git", "describe", "--dirty", "--tags"],
-                                    stdout=subprocess.PIPE)
+            pipe = subprocess.Popen(
+                ["git", "describe", "--always", "--dirty", "--tags"],
+                stdout=subprocess.PIPE)
         except EnvironmentError:
             warnings.warn("WARNING: git not installed or failed to run")
 
