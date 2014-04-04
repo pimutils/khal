@@ -207,7 +207,7 @@ class Calendar(object):
         for component in cal.walk():
             if component.name in ['VEVENT']:
                 counter += 1
-                remote_uid = str(component['UID']) if component.has_key('UID') else str(counter)
+                remote_uid = str(component.get('UID',counter)
                 remote_uids.append(remote_uid)
                 try:
                     self._dbtool.update(component,
@@ -216,7 +216,7 @@ class Calendar(object):
                                         etag='',
                                         status=OK)
                 except backend.UpdateFailed as error:
-                    logging.error(error)       
+                    logging.error(error) 
         # events from an icalendar retrieved over stupid http have no href
         # themselves, so their uid is safed in the `href` column
         locale_uids = [uid for uid, account in self._dbtool.get_all_href_from_db([self.name])]
