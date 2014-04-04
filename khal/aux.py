@@ -66,8 +66,6 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat):
         parts = longdatetimeformat.count(' ') + 1
         dtstring = ' '.join(date_list[0:parts])
         dtstart = datetime.strptime(dtstring, longdatetimeformat)
-        for _ in range(parts):
-            date_list.pop(0)
     except ValueError:
         # without year
         parts = datetimeformat.count(' ') + 1
@@ -80,8 +78,8 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat):
         # if dtstart < datetime.today():
             # dtstart = datetime(dtstart.timetuple()[0] + 1,
                                #*dtstart.timetuple()[1:6])
-        for _ in range(parts):
-            date_list.pop(0)
+    for _ in range(parts):
+        date_list.pop(0)
     return dtstart
 
 
