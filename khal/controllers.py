@@ -26,7 +26,7 @@ import datetime
 
 from khal import aux, calendar_display
 from khal import __version__, __productname__
-from .terminal import bstring, merge_columns
+from .terminal import bstring, colored, merge_columns
 
 
 class Display(object):
@@ -48,11 +48,11 @@ class Display(object):
             events = collection.get_datetime_by_time_range(start, end)
             for event in all_day_events:
                 event_column.append(
-                    aux.colored(event.compact(day), event.color))
+                    colored(event.compact(day), event.color))
             events.sort(key=lambda e: e.start)
             for event in events:
                 event_column.append(
-                    aux.colored(event.compact(day), event.color))
+                    colored(event.compact(day), event.color))
 
         calendar_column = calendar_display.vertical_month(
             firstweekday=firstweekday)
