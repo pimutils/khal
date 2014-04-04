@@ -23,14 +23,10 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 import datetime
-try:
-    from itertools import izip_longest
-except ImportError:
-    from itertools import zip_longest as izip_longest
 
 from khal import aux, calendar_display
 from khal import __version__, __productname__
-from .terminal import bstring
+from .terminal import bstring, merge_columns
 
 
 class Display(object):
@@ -61,14 +57,7 @@ class Display(object):
         calendar_column = calendar_display.vertical_month(
             firstweekday=firstweekday)
 
-        # if the event column is longer than the calendar_column: increase
-        # length of the former
-        missing = len(event_column) - len(calendar_column)
-        if missing > 0:
-            calendar_column = calendar_column + missing * [25 * ' ']
-
-        rows = ['     '.join(one) for one in izip_longest(
-            calendar_column, event_column, fillvalue='')]
+        rows = merge_columns(calendar_column, event_column)
         print('\n'.join(rows).encode(encoding))
 
 

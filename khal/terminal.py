@@ -20,8 +20,13 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+#
 """all functions related to terminal display are collected here"""
+
+try:
+    from itertools import izip_longest
+except ImportError:
+    from itertools import zip_longest as izip_longest
 
 RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal
@@ -70,3 +75,21 @@ def colored(string, colorstring):
     except KeyError:
         color = ''
     return color + string + RESET
+
+
+def merge_columns(lcolumn, rcolumn, width=25):
+    """merge two lists elementwise together
+
+    If the right list(column) is longer, first lengthen the left one.
+    We assume that the left column has width `width`, we cannot find
+    out its (real) width automatically since it might contain ANSI
+    escape sequences.
+    """
+    missing = len(rcolumn) - len(lcolumn)
+    if missing > 0:
+        lcolumn = lcolumn + missing * [width * ' ']
+    rows = ['    '.join(one) for one in izip_longest(
+        lcolumn, rcolumn, fillvalue='')]
+    return rows
+
+
