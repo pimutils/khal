@@ -201,18 +201,20 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
             dtstart = defaulttz.localize(dtstart)
             dtend = defaulttz.localize(dtend)
 
+    event = icalendar.Event()
     text = ' '.join(date_list).decode(encoding)
     summary = text.split(' :: ',1)[0]
-    if (len(text.split(' :: ',1)) > 1):
+
+    try:
         description = text.split(' :: ',1)[1]
-    
-    event = icalendar.Event()
+        event.add('description',description)
+    except IndexError:
+        pass
+
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
     event.add('dtstamp', _now())
     event.add('summary', summary)
-    if (len(text.split(' :: ',1)) > 1):
-        event.add('description',description)
     event.add('uid', generate_random_uid())
     return event
 

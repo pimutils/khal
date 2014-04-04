@@ -1,0 +1,7 @@
+03.04.2014: khal v0.1 released
+  The first release of khal is here: khal v0.1.0(and also available on
+  pypi now).
+
+  The next release, hopefully coming rather sooner than later, will get
+  rid of its own CalDAV implementation, but instead use vdirsyncer; you
+  can already try it out via checking out the branch *vdir* at github.
