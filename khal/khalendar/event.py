@@ -31,7 +31,9 @@ from icalendar.tools import UIDGenerator
 
 
 class Event(object):
+
     """the base event class"""
+
     def __init__(self, ical, uid=None, account=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
                  readonly=False, unicode_symbols=True, etag=None):
@@ -225,19 +227,24 @@ class Event(object):
         timezone.add('TZID', tz)
 
         # FIXME should match year of the event, not this year
-        daylight, standard = [(num, dt) for num, dt in enumerate(tz._utc_transition_times) if dt.year == datetime.datetime.today().year]
+        daylight, standard = [(num, dt) for num, dt in enumerate(
+            tz._utc_transition_times) if dt.year == datetime.datetime.today().year]
 
         timezone_daylight = icalendar.TimezoneDaylight()
         timezone_daylight.add('TZNAME', tz._transition_info[daylight[0]][2])
         timezone_daylight.add('DTSTART', daylight[1])
-        timezone_daylight.add('TZOFFSETFROM', tz._transition_info[daylight[0]][0])
-        timezone_daylight.add('TZOFFSETTO', tz._transition_info[standard[0]][0])
+        timezone_daylight.add(
+            'TZOFFSETFROM', tz._transition_info[daylight[0]][0])
+        timezone_daylight.add(
+            'TZOFFSETTO', tz._transition_info[standard[0]][0])
 
         timezone_standard = icalendar.TimezoneStandard()
         timezone_standard.add('TZNAME', tz._transition_info[standard[0]][2])
         timezone_standard.add('DTSTART', standard[1])
-        timezone_standard.add('TZOFFSETFROM', tz._transition_info[standard[0]][0])
-        timezone_standard.add('TZOFFSETTO', tz._transition_info[daylight[0]][0])
+        timezone_standard.add(
+            'TZOFFSETFROM', tz._transition_info[standard[0]][0])
+        timezone_standard.add(
+            'TZOFFSETTO', tz._transition_info[daylight[0]][0])
 
         timezone.add_component(timezone_daylight)
         timezone.add_component(timezone_standard)

@@ -41,6 +41,7 @@ from .event import Event
 
 
 class BaseCalendar(object):
+
     """base class for Calendar and CalendarCollection"""
 
     def get_by_time_range(self, start, end):
@@ -57,6 +58,7 @@ class BaseCalendar(object):
 
 
 class Calendar(object):
+
     def __init__(self, name, dbpath, path, readonly=False, color='',
                  unicode_symbols=True, default_timezone=None,
                  local_timezone=None):
@@ -159,6 +161,7 @@ class Calendar(object):
 
 
 class CalendarCollection(object):
+
     def __init__(self):
         self._calnames = dict()
 

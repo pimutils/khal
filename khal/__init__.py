@@ -57,6 +57,7 @@ def capture_user_interruption():
 
 
 class Namespace(dict):
+
     """The khal configuration holder.
 
     Mostly taken from pycarddav.
@@ -72,6 +73,7 @@ class Namespace(dict):
 
     See http://code.activestate.com/recipes/577887-a-simple-namespace-class/
     """
+
     def __init__(self, obj=None):
         dict.__init__(self, obj if obj else {})
 
@@ -163,6 +165,7 @@ class Section(object):
 
 
 class CalendarSection(Section):
+
     def __init__(self, parser):
         Section.__init__(self, parser, 'calendars')
         self._schema = [
@@ -182,6 +185,7 @@ class CalendarSection(Section):
 
 
 class SQLiteSection(Section):
+
     def __init__(self, parser):
         Section.__init__(self, parser, 'sqlite')
         self._schema = [
@@ -190,6 +194,7 @@ class SQLiteSection(Section):
 
 
 class DefaultSection(Section):
+
     def __init__(self, parser):
         Section.__init__(self, parser, 'default')
         self._schema = [
@@ -208,6 +213,7 @@ class DefaultSection(Section):
 
 
 class ConfigurationParser(object):
+
     """A Configuration setup tool.
 
     This object takes care of command line parsing as well as
@@ -268,7 +274,8 @@ class ConfigurationParser(object):
         args = self._read_command_line()
 
         # Prepare the logger with the level read from command line.
-        logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
+        logging.basicConfig(
+            level=logging.DEBUG if args.debug else logging.INFO)
 
         if not args.filename:
             logging.error('Could not find configuration file')
@@ -286,7 +293,8 @@ class ConfigurationParser(object):
         conf = self._read_configuration(args)
 
         # Update the logger using the definitive output level.
-        logging.getLogger().setLevel(logging.DEBUG if conf.debug else logging.INFO)
+        logging.getLogger().setLevel(
+            logging.DEBUG if conf.debug else logging.INFO)
 
         return conf if self.check(conf) else None
 
@@ -306,9 +314,10 @@ class ConfigurationParser(object):
 
         for section in self._conf_parser.sections():
             for option in self._conf_parser.options(section):
-                logging.debug("Ignoring %s:%s in configuration file", section, option)
+                logging.debug(
+                    "Ignoring %s:%s in configuration file", section, option)
 
-        #if ns.syncrun:  # TODO when are we doing this?
+        # if ns.syncrun:  # TODO when are we doing this?
         if self.check_property(ns, 'calendars'):
             for calendar in ns.calendars:
                 result &= self.check_calendar(calendar)
@@ -341,7 +350,8 @@ class ConfigurationParser(object):
             ns.active_calendars = calendars
 
         ns.active_calendars = set(ns.active_calendars)
-        # converting conf.calendars to a dict (where calendar.names are the keys)
+        # converting conf.calendars to a dict (where calendar.names are the
+        # keys)
         out = dict()
         for one in ns.calendars:
             out[one.name] = one
@@ -386,9 +396,9 @@ class ConfigurationParser(object):
                 self.dump(value, name, tab=tab + 1)
         elif isinstance(conf, list):
             for o in conf:
-                self.dump(o, '\t'*tab + intro + ':', tab + 1)
+                self.dump(o, '\t' * tab + intro + ':', tab + 1)
         elif intro != 'password':
-            logging.debug('{0}{1}: {2}'.format('\t'*tab, intro, conf))
+            logging.debug('{0}{1}: {2}'.format('\t' * tab, intro, conf))
         else:  # should be only the password case
             return
 

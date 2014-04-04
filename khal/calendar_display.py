@@ -127,7 +127,8 @@ def vertical_month(month=datetime.date.today().month,
                 m_name = bstring(calendar.month_abbr[week[6].month].ljust(4))
             else:
                 m_name = '    '
-            w_number = bstring(' ' + str(getweeknumber(week[0]))) if weeknumber else ''
+            w_number = bstring(
+                ' ' + str(getweeknumber(week[0]))) if weeknumber else ''
             sweek = m_name + strweek + w_number
             if sweek != khal[-1]:
                 khal.append(sweek)
@@ -151,7 +152,7 @@ def config_parser():
     args = vars(carg_parser.parse_args())
     return args
 
-#print(print_month())
+# print(print_month())
 #print(print_month(month=12, year=2011, today=datetime.date(2011, 12, 1)))
 #print(print_month(month=7, year=2012))
 #print(vertical_month(month=12, year=2011))

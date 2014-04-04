@@ -34,6 +34,7 @@ from khal.aux import bstring
 
 
 class Display(object):
+
     def __init__(self, collection, firstweekday=0, encoding='utf-8'):
         today = datetime.date.today()
         tomorrow = today + datetime.timedelta(days=1)
@@ -50,10 +51,12 @@ class Display(object):
             all_day_events = collection.get_allday_by_time_range(day)
             events = collection.get_datetime_by_time_range(start, end)
             for event in all_day_events:
-                event_column.append(aux.colored(event.compact(day), event.color))
+                event_column.append(
+                    aux.colored(event.compact(day), event.color))
             events.sort(key=lambda e: e.start)
             for event in events:
-                event_column.append(aux.colored(event.compact(day), event.color))
+                event_column.append(
+                    aux.colored(event.compact(day), event.color))
 
         calendar_column = calendar_display.vertical_month(
             firstweekday=firstweekday)
@@ -64,11 +67,13 @@ class Display(object):
         if missing > 0:
             calendar_column = calendar_column + missing * [25 * ' ']
 
-        rows = ['     '.join(one) for one in izip_longest(calendar_column, event_column, fillvalue='')]
+        rows = ['     '.join(one) for one in izip_longest(
+            calendar_column, event_column, fillvalue='')]
         print('\n'.join(rows).encode(encoding))
 
 
 class NewFromString(object):
+
     def __init__(self, collection, conf):
         date_list = conf.new
         event = aux.construct_event(date_list,
@@ -86,6 +91,7 @@ class NewFromString(object):
 
 
 class Interactive(object):
+
     def __init__(self, collection, conf):
         import ui
         #self.dbtool = backend.SQLiteDb(conf)

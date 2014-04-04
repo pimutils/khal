@@ -31,6 +31,7 @@ import time
 import icalendar
 import pytz
 
+
 def timefstr(date_list, timeformat):
     """
     converts a time (as a string) to a datetimeobject
@@ -76,8 +77,8 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat):
             dtstart = datetime(date.today().timetuple()[0],
                                *dtstart.timetuple()[1:5])
         # if start date lies in the past use next year
-        #if dtstart < datetime.today():
-            #dtstart = datetime(dtstart.timetuple()[0] + 1,
+        # if dtstart < datetime.today():
+            # dtstart = datetime(dtstart.timetuple()[0] + 1,
                                #*dtstart.timetuple()[1:6])
         for _ in range(parts):
             date_list.pop(0)
@@ -178,7 +179,8 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
             try:
                 # next element time only
                 dtend = timefstr(date_list, timeformat)
-                dtend =  datetime(*(dtstart.timetuple()[:3] + dtend.timetuple()[3:5]))
+                dtend = datetime(
+                    *(dtstart.timetuple()[:3] + dtend.timetuple()[3:5]))
             except ValueError:
                 dtend = dtstart + timedelta(minutes=defaulttimelen)
 
