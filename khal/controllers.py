@@ -30,7 +30,7 @@ except ImportError:
 
 from khal import aux, calendar_display
 from khal import __version__, __productname__
-from khal.aux import bstring
+from .terminal import bstring
 
 
 class Display(object):

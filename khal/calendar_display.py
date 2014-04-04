@@ -25,7 +25,7 @@ from __future__ import print_function
 import calendar
 import datetime
 
-from khal.aux import bstring, rstring
+from .terminal import bstring, rstring
 
 
 def getweeknumber(date):
