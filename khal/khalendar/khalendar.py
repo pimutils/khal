@@ -174,22 +174,23 @@ class CalendarCollection(object):
         self.calendars.append(calendar)
 
     def get_by_time_range(self, start, end):
-        result = list()
+        events = list()
         for one in self.calendars:
-            result.extend(one.get_by_time_range(start, end))
-        return result
+            events.extend(one.get_by_time_range(start, end))
+
+        return events
 
     def get_allday_by_time_range(self, start, end=None):
-        result = list()
+        events = list()
         for one in self.calendars:
-            result.extend(one.get_allday_by_time_range(start, end))
-        return result
+            events.extend(one.get_allday_by_time_range(start, end))
+        return events
 
     def get_datetime_by_time_range(self, start, end):
-        result = list()
+        events = list()
         for one in self.calendars:
-            result.extend(one.get_datetime_by_time_range(start, end))
-        return result
+            events.extend(one.get_datetime_by_time_range(start, end))
+        return events
 
     def update(self, event):
         self._calnames[event.account].update(event)
