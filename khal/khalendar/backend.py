@@ -96,13 +96,13 @@ class SQLiteDb(object):
     and of parameters named "accountS" should be an iterable like list()
     """
 
-    def __init__(self, db_path, local_timezone, default_timezone, debug=False):
+    def __init__(self, db_path, local_tz, default_tz, debug=False):
 
         if db_path is None:
             db_path = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
         self.db_path = path.expanduser(db_path)
-        self.local_timezone = local_timezone
-        self.default_timezone = default_timezone
+        self.local_tz = local_tz
+        self.default_tz = default_tz
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
         self.debug = debug
@@ -282,7 +282,7 @@ class SQLiteDb(object):
             today = datetime.datetime.today()
             if hasattr(dtstart, 'tzinfo') and dtstart.tzinfo is not None:
                 # would be better to check if self is all day event
-                today = self.default_timezone.localize(today)
+                today = self.default_tz.localize(today)
             if not set(['UNTIL', 'COUNT']).intersection(vevent['RRULE'].keys()):
                 # rrule really doesn't like to calculate all recurrences until
                 # eternity
@@ -319,9 +319,9 @@ class SQLiteDb(object):
                 # TODO: extract strange (aka non Olson) TZs from params['TZID']
                 # perhaps better done in event/vevent
                 if dtstart.tzinfo is None:
-                    dtstart = self.default_timezone.localize(dtstart)
+                    dtstart = self.default_tz.localize(dtstart)
                 if dtend.tzinfo is None:
-                    dtend = self.default_timezone.localize(dtend)
+                    dtend = self.default_tz.localize(dtend)
 
                 dtstart_utc = dtstart.astimezone(pytz.UTC)
                 dtend_utc = dtend.astimezone(pytz.UTC)
@@ -535,8 +535,8 @@ class SQLiteDb(object):
             account + '_m')
         result = self.sql_ex(sql_s, (href, ))
         return Event(result[0][0],
-                     local_tz=self.local_timezone,
-                     default_tz=self.default_timezone,
+                     local_tz=self.local_tz,
+                     default_tz=self.default_tz,
                      start=start,
                      end=end,
                      color=color,
