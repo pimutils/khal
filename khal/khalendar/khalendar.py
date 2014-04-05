@@ -127,12 +127,20 @@ class Calendar(object):
         param event: the event that should be updated
         type event: event.Event
         """
-        href, etag = self._storage.upload(event)
+        uid, etag = self._storage.upload(event)
+        event.uid = uid
+        event.etag = etag
         self._dbtool.update(event.to_ical(),
                             self.name,
-                            href=href,
+                            href=uid,
                             etag=etag)
         self._dbtool.set_ctag(self.name, self.local_ctag())
+
+    def delete(self, event):
+        """delete event from this collection
+        """
+        self._storage.delete(event.uid, event.etag)
+        self._dbtool.delete(event.uid, event.account)
 
     def _db_needs_update(self):
         if self.local_ctag() == self._dbtool.get_ctag(self.name):
@@ -201,10 +209,22 @@ class CalendarCollection(object):
         else:
             self._calnames[event.account].new(event)
 
+    def delete(self, event):
+        self._calnames[event.account].delete(event)
+
     def change_collection(self, event, new_collection):
+        self._calnames[event.account].delete(event)
         self._calnames[new_collection].new(event)
-        # XXX TODO
+        # TODO would be better to first add to new collection, then delete
+        # currently not pssoible since new modifies event.etag
 
     def new_event(self, ical, collection):
         """returns a new event"""
         return self._calnames[collection].new_event(ical)
+
+    def _db_needs_update(self):
+        any([one._db_needs_update() for one in self.calendars])
+
+    def db_update(self):
+        for one in self.calendars:
+            one.db_update()

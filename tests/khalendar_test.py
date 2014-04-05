@@ -1,11 +1,14 @@
 import datetime
+import os
 
 import pytest
+import pytz
 
 from vdirsyncer.storage import FilesystemStorage
 from vdirsyncer.storage.base import Item
 
-from khal.khalendar import Calendar
+from khal.khalendar import Calendar, CalendarCollection
+from khal.khalendar.event import Event
 
 
 today = datetime.date.today()
@@ -26,14 +29,34 @@ event_today = event_allday_template.format(today.strftime('%Y%m%d'),
                                            tomorrow.strftime('%Y%m%d'))
 item_today = Item(event_today)
 
-calname = 'foobar'
+cal1 = 'foobar'
+cal2 = 'work'
+cal3 = 'private'
 
+example_cals = [cal1, cal2, cal3]
+
+kwargs = {
+    'default_tz': pytz.timezone('Europe/Berlin'),
+    'local_tz': pytz.timezone('Europe/Berlin'),
+}
 
 @pytest.fixture
 def cal_vdir(tmpdir):
-    cal = Calendar(calname, ':memory:', str(tmpdir))
+    cal = Calendar(cal1, ':memory:', str(tmpdir), **kwargs)
     vdir = FilesystemStorage(str(tmpdir), '.ics')
     return cal, vdir
+
+
+@pytest.fixture
+def coll_vdirs(tmpdir):
+    coll = CalendarCollection()
+    vdirs = dict()
+    for name in example_cals:
+        path = str(tmpdir) + '/' + name
+        os.makedirs(path, mode=0o770)
+        coll.append(Calendar(name, ':memory:', path, **kwargs))
+        vdirs[name] = FilesystemStorage(path, '.ics')
+    return coll, vdirs
 
 
 class TestCalendarTest(object):
@@ -49,7 +72,7 @@ class TestCalendarTest(object):
     def test_new_event(self, cal_vdir):
         cal, vdir = cal_vdir
         event = cal.new_event(event_today)
-        assert event.account == calname
+        assert event.account == cal1
         cal.new(event)
         events = cal.get_allday_by_time_range(today)
         assert len(events) == 1
@@ -70,3 +93,80 @@ class TestCalendarTest(object):
         event = cal.new_event(event_today)
         cal.new(event)
         assert cal._db_needs_update() is False
+
+today = datetime.date.today()
+yesterday = today - datetime.timedelta(days=1)
+tomorrow = today + datetime.timedelta(days=1)
+
+aday = datetime.date(2014, 04, 9)
+bday = datetime.date(2014, 04, 10)
+
+
+event_allday_template = u"""BEGIN:VEVENT
+SEQUENCE:0
+UID:uid3@host1.com
+DTSTART;VALUE=DATE:{}
+DTEND;VALUE=DATE:{}
+SUMMARY:a meeting
+DESCRIPTION:short description
+LOCATION:LDB Lobby
+END:VEVENT"""
+
+
+event_dt = """BEGIN:VEVENT
+SUMMARY:An Event
+DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140409T093000
+DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140409T103000
+DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
+UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
+END:VEVENT"""
+
+event_d = """BEGIN:VEVENT
+SUMMARY:Another Event
+DTSTART;VALUE=DATE:20140409
+DTEND;VALUE=DATE:20140409
+DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
+UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
+END:VEVENT"""
+
+
+class TestCollection(object):
+
+    astart = datetime.datetime.combine(aday, datetime.time.min)
+    aend = datetime.datetime.combine(aday, datetime.time.max)
+    bstart = datetime.datetime.combine(bday, datetime.time.min)
+    bend = datetime.datetime.combine(bday, datetime.time.max)
+
+    def test_empty(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        start = datetime.datetime.combine(today, datetime.time.min)
+        end = datetime.datetime.combine(today, datetime.time.max)
+        assert coll.get_allday_by_time_range(today) == list()
+        assert coll.get_datetime_by_time_range(start, end) == list()
+
+    def test_insert(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+
+        event = Event(event_dt, **kwargs)
+        coll.new(event, cal1)
+        events = coll.get_datetime_by_time_range(self.astart, self.aend)
+        assert len(events) == 1
+        assert events[0].account == cal1
+
+        assert len(list(vdirs[cal1].list())) == 1
+        assert len(list(vdirs[cal2].list())) == 0
+        assert len(list(vdirs[cal3].list())) == 0
+
+        assert coll.get_datetime_by_time_range(self.bstart, self.bend) == []
+
+    def test_change(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        event = Event(event_dt, **kwargs)
+        coll.new(event, cal1)
+        event = coll.get_datetime_by_time_range(self.astart, self.aend)[0]
+        assert event.account == cal1
+
+        coll.change_collection(event, cal2)
+        events = coll.get_datetime_by_time_range(self.astart, self.aend)
+        assert len(events) == 1
+        assert events[0].account == cal2

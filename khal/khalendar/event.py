@@ -37,14 +37,49 @@ class Event(object):
     def __init__(self, ical, uid=None, account=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
                  readonly=False, unicode_symbols=True, etag=None):
-
+        """
+        :param ical: the icalendar VEVENT this event is based on
+        :type ical: str or icalendar.cal.EVent
+        :param uid: the UID of the event (only needs to be set if the ical
+                    part does not contain a UID
+        :type uid: str
+        :param account: the account/calendar this event belongs to
+        :type account: str
+        :param local_tz: the local timezone the user wants event's times
+                         displayed in
+        :type local_tz: datetime.tzinfo
+        :param default_tz: the timezone used if the start and end time
+                           of the event have no timezone information
+                           (or none that icalendar understands)
+        :type default_tz: datetime.tzinfo
+        :param start: start date[time] of this event, this will override the
+                      start date from the vevent. This is useful for recurring
+                      events, since we only save the original event once and
+                      that original events start and end times might not be
+                      *this* event's start and end time.
+        :type start: datetime.date or datetime.datetime
+        :param end: see :param start:
+        :type end: datetime.date or datetime.datetime
+        :param color: the color this event should be shown in ikhal and khal,
+                      Supported color names are :
+                      black, white, brown, yellow, dark grey, dark green,
+                      dark blue, light grey, light green, light blue,
+                      dark magenta, dark cyan, dark red, light magenta,
+                      light cyan, light red
+        :type color: str
+        :param readonly: flag to show if this event may be modified or not
+        :type readonly: bool
+        :param unicode_symbols: some terminal fonts to not support fancey
+                                unicode symbols, if set to False pure ascii
+                                alternatives will be shown
+        :type unicode_symbols: bool
+        :param etag: the event's etag, will not be modified
+        :type etag: str
+        """
         if isinstance(ical, basestring):
             self.vevent = icalendar.Event.from_ical(ical)
         elif isinstance(ical, icalendar.cal.Event):
             self.vevent = ical
-
-        if account is None:
-            raise TypeError('account must not be None')
 
         self.allday = True
         self.color = color
@@ -184,7 +219,7 @@ class Event(object):
         local_start = self.local_tz.localize(start)
         local_end = self.local_tz.localize(end)
         if 'RRULE' in self.vevent.keys():
-            recurstr = u' ⟳'
+            recurstr = self.recurstr
         else:
             recurstr = ''
         tostr = '-'
