@@ -1,0 +1,158 @@
+.\" Process this file with
+.\" groff -man -Tascii khal.1
+.\"
+.TH KHAL 1 "APRIL 2014" "Linux User Manuals"
+.SH NAME
+khal \- khal is a command line CalDAV based calendar program.
+
+.SH SYNOPSIS
+.B khal
+.OP \fL\-\-new NEW
+.OP \fL\-\-sync
+.OP \fL\-\-debug
+.OP \fL\-h |\-\-help
+.OP \fL\-v |\-\-version
+.OP \fL\-c FILE | \-\-config FILE
+.OP \fL\-a NAME | \-\-account NAME
+.OP \fL\-i FILE | \-\-import FILE
+.TP
+.B ikhal
+
+.SH OPTIONS
+.TP
+.BI --new " new event"
+create a new event.
+.TP
+.BI --sync
+start synching with configured calendars.
+.TP
+.BI --debug
+enables debugging.
+.TP
+.BI -c " config file"
+use the specified config file.  If none found, defaults to
+.I $XDG_CONFIG_HOME/khal/khal.conf
+.TP
+.BI -a " name"
+use only the named account (NAME can be passed more than once).
+.TP
+.BI -i " file to import"
+import an .ics file into the first specified account.
+.TP
+.BI -h
+prints out a short usage summary.
+.TP
+.BI -v
+prints the version of Khal and exits.
+
+.SH DESCRIPTION
+.I khal 
+is a command line, CalDAV based calendar program, allowing syncing of
+calendars with a variety of other programs on a host of different platforms.
+.IP \[bu] 2
+.I khal 
+can sync events from CalDAV calendar collections (and load plain icalendar
+files over http(s))
+.IP \[bu]
+add simple new events to a calendar and upload them
+.IP \[bu]
+.I ikhal
+(interactive khal) can show and edit events in the current and next two months
+.IP \[bu]
+simple recurring events support (no exceptions just yet)
+.IP \[bu]
+you cannot edit the timezones of events
+.IP \[bu]
+.I khal 
+should run on all major operating systems (it has been tested on FreeBSD
+Arch Linux and Debian GNU/Linux).
+
+.SH QUICK START
+.TP
+.I khal --sync
+syncs all events in the last month and next 365 days
+.TP
+.I khal
+will show all events today and tomorrow
+.TP
+.I ikhal
+opens an interactive calendar browser, showing all events on the selected day.
+See below for usage notes on 
+.I ikhal
+.
+.TP
+.I khal --new 
+should understand the following syntax:
+.IP ""
+.I khal --new startdatetime [enddatetime] description
+.TP
+.I khal --new 18:00 Awesome Event
+adds a new event starting today at 18:00 with summary 'awesome event' (lasting
+for the default time of one hour, will be configurable soon) to the default
+calendar.
+.TP
+.I khal --new 25.10. 16:00 18:00 Another Event :: with Alice and Bob
+adds a new event on 25th of October lasting from 16:00 to 18:00 with additional
+description.
+
+.SS ikhal
+is khal's interactive mode. Use the arrow keys to navigate in the calendar.
+Press 
+.I Tab 
+or '
+.I Enter
+to move the focus into the events column and 
+.I Left arrow
+to return the focus to the calendar area.  You can navigate the events
+column with the 
+.I Up and 
+.I Down 
+arrows and view an event via pressing 
+.I Enter
+. Pressing 
+.I d
+will delete an event (a 
+.I D
+will appear in front of the events
+description, or 
+.I RO
+if you cannot delete that event). Pressing 
+.I d
+again will undelete that event.
+
+When viewing an event's details, pressing 
+.I Enter 
+again will open the currently
+selected event in a simple event editor; you can navigate with the arrow keys
+again. As long as the event has not been edited you can leave the editor with
+pressing 
+.I Escape
+. Once it has been edited you need to move down the 
+.I Cancel
+button and press the 
+.I Enter
+key to discard your edits or press the 
+.I Save
+button to save your edits (and upload them on the next sync).
+
+While the calendar area is focused, pressing 
+.I n
+will add a new event on the currently selected date.
+
+.SH FILES
+A sample config with commented examples is copied to
+.I /etc/skel/khal.conf
+Copy the sample to one of two locations: 
+.I $HOME/.config/khal/khal.conf
+or
+.I $HOME/.khal/khal.conf
+and edit to your liking.
+
+.SH BUGS
+There has not been any significant bug-hunting yet.
+.SH AUTHORS
+Christian Geier
+
+
+
+
