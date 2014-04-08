@@ -61,25 +61,22 @@ class Calendar(object):
 
     def __init__(self, name, dbpath, path, readonly=False, color='',
                  unicode_symbols=True, default_tz=None,
-                 local_tz=None):
+                 local_tz=None, debug=True):
 
-        if local_tz is None:
-            local_tz = default_tz  # sync time might be off by a
-            # couple of hours, perhaps we should just use UTC and be done with
-            # it
+        self._default_tz = default_tz
+        self._local_tz = default_tz if local_tz is None else local_tz
         self.name = name
         self.color = color
         self.path = path
+        self._debug = debug
         self._dbtool = backend.SQLiteDb(
             dbpath,
-            default_tz=default_tz,
-            local_tz=local_tz,
-            debug=True)  # TODO make debug a Calendar param
+            default_tz=self._default_tz,
+            local_tz=self._local_tz,
+            debug=self._debug)
         self._storage = FilesystemStorage(path, '.ics')
         self._readonly = readonly
         self._unicode_symbols = unicode_symbols
-        self._default_tz = default_tz
-        self._local_tz = local_tz
 
         if self._db_needs_update():
             self.db_update()
