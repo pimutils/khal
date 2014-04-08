@@ -187,7 +187,7 @@ class SQLiteDb(object):
             return
         sql_s = """CREATE TABLE IF NOT EXISTS {0} (
                 href TEXT UNIQUE,
-                etag FLOAT,
+                etag TEXT,
                 vevent TEXT
                 )""".format(account + '_m')
         self.sql_ex(sql_s)
