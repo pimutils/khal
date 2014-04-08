@@ -8,7 +8,6 @@ khal \- khal is a command line CalDAV based calendar program.
 .SH SYNOPSIS
 .B khal
 .OP \fL\-\-new NEW
-.OP \fL\-\-sync
 .OP \fL\-\-debug
 .OP \fL\-h |\-\-help
 .OP \fL\-v |\-\-version
@@ -22,9 +21,6 @@ khal \- khal is a command line CalDAV based calendar program.
 .TP
 .BI --new " new event"
 create a new event.
-.TP
-.BI --sync
-start synching with configured calendars.
 .TP
 .BI --debug
 enables debugging.
@@ -47,36 +43,31 @@ prints the version of Khal and exits.
 
 .SH DESCRIPTION
 .I khal 
-is a command line, CalDAV based calendar program, allowing syncing of
-calendars with a variety of other programs on a host of different platforms.
-.IP \[bu] 2
+is a command line calendar program operating on
+.I vdirs 
+(which can be synced with CalDAV servers using
+.I vdirsyncer,
+allowing interoperability with a variety of other programs on a host of different platforms).
+
 .I khal 
-can sync events from CalDAV calendar collections (and load plain icalendar
-files over http(s))
-.IP \[bu]
-add simple new events to a calendar and upload them
-.IP \[bu]
-.I ikhal
-(interactive khal) can show and edit events in the current and next two months
-.IP \[bu]
-simple recurring events support (no exceptions just yet)
-.IP \[bu]
-you cannot edit the timezones of events
-.IP \[bu]
+allows editing, deleting and adding of events to your calendars.
+
 .I khal 
+.IP \[bu]
+has simple recurring events support (no exceptions just yet)
+.IP \[bu]
+does not allow editing the timezones of events
+.IP \[bu]
 should run on all major operating systems (it has been tested on FreeBSD
 Arch Linux and Debian GNU/Linux).
 
 .SH QUICK START
 .TP
-.I khal --sync
-syncs all events in the last month and next 365 days
-.TP
 .I khal
 will show all events today and tomorrow
 .TP
 .I ikhal
-opens an interactive calendar browser, showing all events on the selected day.
+opens an interactive calendar browser and editor, showing all events on the selected day.
 See below for usage notes on 
 .I ikhal
 .
