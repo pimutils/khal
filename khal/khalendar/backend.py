@@ -540,7 +540,7 @@ class SQLiteDb(object):
                      start=start,
                      end=end,
                      color=color,
-                     uid=href,
+                     href=href,
                      account=account,
                      readonly=readonly,
                      etag=result[0][1],

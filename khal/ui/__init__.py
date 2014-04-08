@@ -342,8 +342,12 @@ class U_Event(urwid.Text):
     def selectable(cls):
         return True
 
+    @property
+    def uid(self):
+        return self.event.account + '\n' + str(self.event.href)
+
     def set_title(self, mark=''):
-        if self.event.uid in self.eventcolumn.deleted:
+        if self.uid in self.eventcolumn.deleted:
             mark = 'D'
         self.set_text(mark + ' ' + self.event.compact(self.this_date))
 
@@ -351,10 +355,10 @@ class U_Event(urwid.Text):
         if self.event.readonly is True:
             self.set_title('RO')
             return
-        if self.event.uid in self.eventcolumn.deleted:
-            self.eventcolumn.deleted.remove(self.event.uid)
+        if self.uid in self.eventcolumn.deleted:
+            self.eventcolumn.deleted.remove(self.uid)
         else:
-            self.eventcolumn.deleted.append(self.event.uid)
+            self.eventcolumn.deleted.append(self.uid)
         self.set_title()
 
     def keypress(self, _, key):
@@ -423,14 +427,14 @@ class EventColumn(urwid.WidgetWrap):
 
     """contains the eventlist as well as the event viewer/editor"""
 
-    def __init__(self, conf=None, collection=None):
+    def __init__(self, conf, collection, deleted):
         self.conf = conf
         self.collection = collection
+        self.deleted = deleted
         self.divider = urwid.Divider('-')
         self.editor = False
         self.date = None
         self.eventcount = 0
-        self.deleted = []
 
     def update(self, date):
         """create an EventList populated with Events for `date` and display it
@@ -471,7 +475,8 @@ class EventColumn(urwid.WidgetWrap):
         self.container.contents.append((self.divider,
                                         ('pack', None)))
         self.container.contents.append(
-            (EventEditor(self.conf, event, collection=self.collection, cancel=self.destroy),
+            (EventEditor(self.conf, event, collection=self.collection,
+                         cancel=self.destroy),
              self.container.options()))
         self.container.set_focus(2)
 
@@ -605,8 +610,11 @@ class StartEndEditor(urwid.WidgetWrap):
             CColumns([(datewidth, self.startdatewidget), (
                 timewidth, self.starttimewidget)], dividechars=1),
             CColumns(
-                [(datewidth, self.enddatewidget), (timewidth, self.endtimewidget)], dividechars=1),
-            self.checkallday], focus_item=2)
+                [(datewidth, self.enddatewidget),
+                 (timewidth, self.endtimewidget)],
+                dividechars=1),
+            self.checkallday
+            ], focus_item=2)
         urwid.WidgetWrap.__init__(self, columns)
 
     @property
@@ -934,13 +942,17 @@ class ClassicView(Pane):
     def __init__(self, collection, conf=None, title=u'',
                  description=u''):
         self.collection = collection
-        self.eventscolumn = EventColumn(conf=conf, collection=collection)
+        self.deleted = []
+        self.eventscolumn = EventColumn(conf=conf,
+                                        collection=collection,
+                                        deleted=self.deleted)
         weeks = calendar_walker(
             view=self, firstweekday=conf.default.firstweekday)
         events = self.eventscolumn
         columns = CColumns([(25, weeks), events],
-                           dividechars=2, box_columns=[0, 1])
-        self.eventscolumn.update(date.today())  # showing with today's events
+                           dividechars=2,
+                           box_columns=[0, 1])
+        self.eventscolumn.update(date.today())  # starting with today's events
         Pane.__init__(self, columns, title=title, description=description)
 
     def get_keys(self):
@@ -955,12 +967,19 @@ class ClassicView(Pane):
     def new_event(self, date):
         self.eventscolumn.new(date)
 
+    def cleanup(self, data):
+        for part in self.deleted:
+            account, uid = part.split('\n', 1)
+            event = self.collection.get_event(uid, account)
+            self.collection.delete(event)
+        pass
 
-def start_pane(pane, header=''):
+
+def start_pane(pane, callback, header=''):
     """Open the user interface with the given initial pane."""
     frame = Window(header=header,
                    footer='arrows: navigate, enter: select, q: quit, ?: help')
-    frame.open(pane)
+    frame.open(pane, callback)
     loop = urwid.MainLoop(frame, Window.PALETTE,
                           unhandled_input=frame.on_key_press,
                           pop_ups=True)

@@ -103,6 +103,11 @@ class Calendar(object):
             start, end, self.name, self.color, self._readonly,
             self._unicode_symbols, show_deleted)
 
+    def get_event(self, href):
+        return self._dbtool.get_vevent_from_db(
+            href, self.name, color=self.color, readonly=self._readonly,
+            unicode_symbols=self._unicode_symbols)
+
     def update(self, event):
         """update an event in the database
 
@@ -112,10 +117,10 @@ class Calendar(object):
         if event.etag is None:
             self.new(event)
         else:
-            self._storage.update(event.uid, event, event.etag)
+            self._storage.update(event.href, event, event.etag)
             self._dbtool.update(event.vevent.to_ical(),
                                 self.name,
-                                event.uid,
+                                event.href,
                                 etag=event.etag)
 
     def new(self, event):
@@ -124,20 +129,20 @@ class Calendar(object):
         param event: the event that should be updated
         type event: event.Event
         """
-        uid, etag = self._storage.upload(event)
-        event.uid = uid
+        href, etag = self._storage.upload(event)
+        event.href = href
         event.etag = etag
         self._dbtool.update(event.to_ical(),
                             self.name,
-                            href=uid,
+                            href=href,
                             etag=etag)
         self._dbtool.set_ctag(self.name, self.local_ctag())
 
     def delete(self, event):
         """delete event from this collection
         """
-        self._storage.delete(event.uid, event.etag)
-        self._dbtool.delete(event.uid, event.account)
+        self._storage.delete(event.href, event.etag)
+        self._dbtool.delete(event.href, event.account)
 
     def _db_needs_update(self):
         if self.local_ctag() == self._dbtool.get_ctag(self.name):
@@ -208,6 +213,9 @@ class CalendarCollection(object):
 
     def delete(self, event):
         self._calnames[event.account].delete(event)
+
+    def get_event(self, href, account):
+        return self._calnames[account].get_event(href)
 
     def change_collection(self, event, new_collection):
         self._calnames[event.account].delete(event)

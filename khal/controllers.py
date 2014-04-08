@@ -83,9 +83,9 @@ class Interactive(object):
 
     def __init__(self, collection, conf):
         import ui
-        #self.dbtool = backend.SQLiteDb(conf)
-        ui.start_pane(ui.ClassicView(collection,
-                                     conf,
-                                     title='select an event',
-                                     description='do something'),
+        pane = ui.ClassicView(collection,
+                              conf,
+                              title='select an event',
+                              description='do something')
+        ui.start_pane(pane, pane.cleanup,
                       header=u'{0} v{1}'.format(__productname__, __version__))

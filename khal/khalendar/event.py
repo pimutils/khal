@@ -27,24 +27,22 @@
 import datetime
 
 import icalendar
-from icalendar.tools import UIDGenerator
 
 
 class Event(object):
 
     """the base event class"""
 
-    def __init__(self, ical, uid=None, account=None, local_tz=None,
+    def __init__(self, ical, account, href=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
                  readonly=False, unicode_symbols=True, etag=None):
         """
         :param ical: the icalendar VEVENT this event is based on
         :type ical: str or icalendar.cal.EVent
-        :param uid: the UID of the event (only needs to be set if the ical
-                    part does not contain a UID
-        :type uid: str
         :param account: the account/calendar this event belongs to
         :type account: str
+        :param href: the href of the event, treated like a UID
+        :type href: str
         :param local_tz: the local timezone the user wants event's times
                          displayed in
         :type local_tz: datetime.tzinfo
@@ -84,13 +82,17 @@ class Event(object):
         self.allday = True
         self.color = color
 
-        if uid is None and self.vevent.get('UID', '') == '':
-            self.uid = UIDGenerator().uid().to_ical()
+        if href is None:
+            uid = self.vevent['UID']
+            href = uid + '.ics'
+
+        #if uid is None and self.vevent.get('UID', '') == '':
 
         self.account = account
         self.readonly = readonly
         self.unicode_symbols = unicode_symbols
         self.etag = etag
+        self.href = href
 
         if unicode_symbols:
             self.recurstr = u' \N{Clockwise gapped circle arrow}'
@@ -119,9 +121,9 @@ class Event(object):
     def uid(self):
         return self.vevent['UID']
 
-    @uid.setter
-    def uid(self, value):
-        self.vevent['UID'] = value
+    #@uid.setter
+    #def uid(self, value):
+        #self.vevent['UID'] = value
 
     @property
     def start(self):

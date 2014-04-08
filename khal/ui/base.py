@@ -94,7 +94,7 @@ class Pane(urwid.WidgetWrap):
         description.
 
         The abstract pane returns the default keys handled by the
-        window. Panes which do not override there keys should extend
+        window. Panes which do not override these keys should extend
         this list.
         """
         return [(['up', 'down', 'pg.up', 'pg.down'],
