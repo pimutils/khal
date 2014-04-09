@@ -1,5 +1,6 @@
 icalendar
 pytest
+pytz
 urwid
 pyxdg
 vdirsyncer
