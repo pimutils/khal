@@ -23,10 +23,29 @@
 #
 """all functions related to terminal display are collected here"""
 
+import textwrap
+
 try:
     from itertools import izip_longest
 except ImportError:
     from itertools import zip_longest as izip_longest
+
+try:
+    # python 3.3+
+    import shutil.get_terminal_size as get_terminal_size
+except ImportError:
+    def get_terminal_size():
+        import fcntl
+        import struct
+        import termios
+        try:
+            h, w, hp, wp = struct.unpack(
+                'HHHH',
+                fcntl.ioctl(0, termios.TIOCGWINSZ,
+                            struct.pack('HHHH', 0, 0, 0, 0)))
+        except IOError:
+            w, h = 80, 24
+        return w, h
 
 RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal
@@ -80,16 +99,24 @@ def colored(string, colorstring):
 def merge_columns(lcolumn, rcolumn, width=25):
     """merge two lists elementwise together
 
+    Wrap right columns to terminal width.
     If the right list(column) is longer, first lengthen the left one.
     We assume that the left column has width `width`, we cannot find
     out its (real) width automatically since it might contain ANSI
     escape sequences.
     """
-    missing = len(rcolumn) - len(lcolumn)
+    term_width, height = get_terminal_size()
+    rwidth = term_width - width - 4  # the divider is 4 spaces, see below
+    if rwidth < 20:  # we won't fit in terminals narrower than 50 chars
+        rwidth = 20
+    nrcolumn = list()
+    for element in rcolumn:
+        nrcolumn.extend(textwrap.wrap(element, rwidth))
+
+    missing = len(nrcolumn) - len(lcolumn)
     if missing > 0:
         lcolumn = lcolumn + missing * [width * ' ']
+
     rows = ['    '.join(one) for one in izip_longest(
-        lcolumn, rcolumn, fillvalue='')]
+        lcolumn, nrcolumn, fillvalue='')]
     return rows
-
-
