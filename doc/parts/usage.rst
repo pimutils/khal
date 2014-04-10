@@ -49,7 +49,7 @@ adds a new event on 25th of October lasting from 16:00 to 18:00 with additional 
 
 adds a new all day event on 26.07.
 
-`khal --new` should understand the following syntax:
+``khal --new`` should understand the following syntax:
 
 ::
 
@@ -71,10 +71,12 @@ in the config file. Start- and enddatetime can be one of the following:
   second time, unless that would make the event end before it has started, then
   the next day is used as end date
 
-  * **time:** event starting today at time, lasting for the default length
-  * **date date:** all day event starting on the first and ending on the last
-    event
-  * **date:** all day event starting at given date and lasting for default length
+* **time:** event starting today at time, lasting for the default length
+
+* **date date:** all day event starting on the first and ending on the last
+  event
+
+* **date:** all day event starting at given date and lasting for default length
 
 At the moment default length is either 1h or 1 day (should be configurable soon,
 too).
