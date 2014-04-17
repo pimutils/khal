@@ -52,11 +52,12 @@ write_version()
 
 
 requirements = [
+    'icalendar',
     'lxml',
-    'requests',
-    'urwid',
+    'pytz',
     'pyxdg',
-    'icalendar'
+    'requests',
+    'urwid'
 ]
 if sys.version_info[:2] in ((2, 6),):
     # there is no argparse in python2.6
@@ -79,7 +80,7 @@ setup(
     license='Expat/MIT',
     packages=['khal', 'khal/ui'],
     scripts=['bin/khal', 'bin/ikhal'],
-    requires=requirements,
+    install_requires=requirements,
     extras_require=extra_requirements,
     classifiers=[
         "Development Status :: 3 - Alpha",
