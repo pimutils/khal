@@ -53,9 +53,10 @@ write_version()
 
 
 requirements = [
+    'icalendar',
     'urwid',
     'pyxdg',
-    'icalendar',
+    'pytz',
     'vdirsyncer'
 ]
 if sys.version_info[:2] in ((2, 6),):
