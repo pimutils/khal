@@ -53,9 +53,10 @@ write_version()
 
 
 requirements = [
+    'icalendar',
     'urwid',
     'pyxdg',
-    'icalendar',
+    'pytz',
     'vdirsyncer'
 ]
 if sys.version_info[:2] in ((2, 6),):
@@ -79,8 +80,8 @@ setup(
     license='Expat/MIT',
     packages=['khal', 'khal/ui', 'khal/khalendar'],
     scripts=['bin/khal', 'bin/ikhal'],
-    requires=requirements,
-    extras_require = extra_requirements,
+    install_requires=requirements,
+    extras_require=extra_requirements,
     classifiers=[
         "Development Status :: 1 - Planning"
         "License :: OSI Approved :: MIT License",

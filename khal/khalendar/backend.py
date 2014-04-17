@@ -71,12 +71,12 @@ import sys
 import sqlite3
 import time
 
-import dateutil.rrule
 import icalendar
 import pytz
 import xdg.BaseDirectory
 
 from .event import Event
+from . import datetimehelper
 
 
 # TODO fix that event/vevent mess
@@ -274,37 +274,9 @@ class SQLiteDb(object):
             if vevent['DTSTART'].params['VALUE'] == 'DATE':
                 all_day_event = True
 
-        dtstart = vevent['DTSTART'].dt
-
-        if 'RRULE' in vevent.keys():
-            rrulestr = vevent['RRULE'].to_ical()
-            rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=dtstart)
-            today = datetime.datetime.today()
-            if hasattr(dtstart, 'tzinfo') and dtstart.tzinfo is not None:
-                # would be better to check if self is all day event
-                today = self.default_tz.localize(today)
-            if not set(['UNTIL', 'COUNT']).intersection(vevent['RRULE'].keys()):
-                # rrule really doesn't like to calculate all recurrences until
-                # eternity
-                rrule._until = today + datetime.timedelta(days=15 * 365)
-            logging.debug('calculating recurrence dates for {0}, '
-                          'this might take some time.'.format(href))
-            dtstartl = list(rrule)
-            if len(dtstartl) == 0:
-                raise UpdateFailed('Unsupported recursion rule for event '
-                                   '{0}:\n{1}'.format(href, vevent.to_ical()))
-
-            if 'DURATION' in vevent.keys():
-                duration = vevent['DURATION'].dt
-            else:
-                duration = vevent['DTEND'].dt - vevent['DTSTART'].dt
-            dtstartend = [(start, start + duration) for start in dtstartl]
-        else:
-            if 'DTEND' in vevent.keys():
-                dtend = vevent['DTEND'].dt
-            else:
-                dtend = vevent['DTSTART'].dt + vevent['DURATION'].dt
-            dtstartend = [(dtstart, dtend)]
+        dtstartend = datetimehelper.expand(vevent,
+                                           self.default_tz,
+                                           href)
 
         for dbname in [account + '_d', account + '_dt']:
             sql_s = ('DELETE FROM {0} WHERE href == ?'.format(dbname))
