@@ -203,11 +203,11 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
 
     event = icalendar.Event()
     text = ' '.join(date_list).decode(encoding)
-    summary = text.split(' :: ',1)[0]
+    summary = text.split(' :: ', 1)[0]
 
     try:
-        description = text.split(' :: ',1)[1]
-        event.add('description',description)
+        description = text.split(' :: ', 1)[1]
+        event.add('description', description)
     except IndexError:
         pass
 

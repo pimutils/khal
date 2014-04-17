@@ -81,7 +81,7 @@ setup(
     packages=['khal', 'khal/ui', 'khal/khalendar'],
     scripts=['bin/khal', 'bin/ikhal'],
     install_requires=requirements,
-    extras_require = extra_requirements,
+    extras_require=extra_requirements,
     classifiers=[
         "Development Status :: 1 - Planning"
         "License :: OSI Approved :: MIT License",
