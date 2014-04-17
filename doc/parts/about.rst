@@ -1,6 +1,7 @@
 About
 =====
-*Khal* is a standards based CLI (console) calendar program. CalDAV_ compatibiliy is achieved by using vdir_/vdirsyncer_ as a backend, `allowing syncing of
+*Khal* is a standards based CLI (console) calendar program. CalDAV_ compatibiliy
+is achieved by using vdir_/vdirsyncer_ as a backend, `allowing syncing of
 calendars with a variety of other programs on a host of different platforms`__.
 
 *khal* is currently in a early stage of development, has a limited feature set
@@ -13,9 +14,8 @@ Features
 --------
 (or rather: limitations)
 
-- khal can sync events from CalDAV calendar collections (and load plain
-  icalendar files over http(s))
-- add simple new events to a calendar and upload them
+- khal can read and write events/icalendars to vdirs_
+- fast and easy way to add new events
 - ikhal (interactive khal) shows and edit events interactively
 - simple recurring events support (no exceptions just yet)
 - you cannot edit the timezones of events
@@ -29,10 +29,11 @@ Feedback
 --------
 Please do provide feedback if *khal* works for you or even more importantly
 if it doesn't. You can reach me by email at khal (at) lostpackets (dot) de
-, by jabber/XMPP at geier (at) jabber (dot) ccc (dot) de or via github
+, by jabber/XMPP at geier (at) jabber (dot) ccc (dot) de or via github_.
 
 .. _vdir: https://github.com/untitaker/vdir
 .. _vdirsyncer: https://github.com/untitaker/vdirsyncer
 .. _CalDAV: http://en.wikipedia.org/wiki/CalDAV
+.. _github: https://github.com/geier/khal/
 .. __: http://en.wikipedia.org/wiki/Comparison_of_CalDAV_and_CardDAV_implementations
 

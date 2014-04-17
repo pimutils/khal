@@ -13,9 +13,8 @@ Features
 --------
 (or rather: limitations)
 
-- khal can sync events from CalDAV calendar collections (and load plain
-  icalendar files over http(s))
-- add simple new events to a calendar and upload them
+- khal can read and write events/icalendars to vdirs_
+- fast and easy way to add new events
 - ikhal (interactive khal) shows and edit events interactively
 - simple recurring events support (no exceptions just yet)
 - you cannot edit the timezones of events
@@ -43,14 +42,12 @@ You can install *khal* from source by executing *python setup.py install*.
 Copy and edit the supplied khal.conf.sample file (default location is
 ~/.config/khal/khal.conf).
 
-Make sure you have sqlite3 (normally available by default), icalendar_, requests
-(>0.10), urwid (>0.9) and pyxdg installed. Users of python 2.6 will also need to
-install argparse.
+Make sure you have sqlite3 (normally available by default), icalendar_, urwid
+(>0.9) and pyxdg installed.
 
 khal has so far been successfully tested on recent versions of FreeBSD,
-NetBSD, Debian and Ubuntu with python 2.6 and 2.7.
+NetBSD, Debian and Ubuntu with python 2.7.
 
-.. _keychain: https://pypi.python.org/pypi/keyring
 .. _icalendar: https://github.com/collective/icalendar
 
 Usage
@@ -66,6 +63,12 @@ Usage
 copy ``khal.conf.sample`` to ``~/.khal/khal.conf`` or
 ``~/.config/khal/khal.conf`` and edit to your liking.
 
+**syncing**
+To get *khal* working with CalDAV you will first need to setup vdirsyncer_.
+After each start *khal* will automatically check if anything has changed and
+automatically update its caching db (this may take some time after the initial
+sync, especially for large calendar collections). Therefore you might want to
+execute *khal* automatically after syncing with vdirsyncer_ (e.g. via cron).
 
 **basic usage**
 
@@ -191,6 +194,7 @@ Seriously: be careful when changing timezones and do check if khal shows the
 correct times anyway (and please report back if it doesn't).
 
 
+.. _vdirsyncer: https://github.com/untitaker/vdirsyncer
 Miscellaneous
 -------------
 *khal* is written in python using, among others, icalendar_, dateutil_ and
