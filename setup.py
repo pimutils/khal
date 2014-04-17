@@ -79,7 +79,7 @@ setup(
     license='Expat/MIT',
     packages=['khal', 'khal/ui', 'khal/khalendar'],
     scripts=['bin/khal', 'bin/ikhal'],
-    requires=requirements,
+    install_requires=requirements,
     extras_require = extra_requirements,
     classifiers=[
         "Development Status :: 1 - Planning"
