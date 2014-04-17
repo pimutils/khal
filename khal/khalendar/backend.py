@@ -27,7 +27,7 @@ The SQLite backend implementation.
 Database Layout
 ===============
 
-current version number: 1
+current version number: 2
 tables: version, accounts, account_$ACCOUNTNAME
 
 version:
@@ -123,7 +123,7 @@ class SQLiteDb(object):
         """tests for curent db Version
         if the table is still empty, insert db_version
         """
-        database_version = 1  # the current db VERSION
+        database_version = 2  # the current db VERSION
         self.cursor.execute('SELECT version FROM version')
         result = self.cursor.fetchone()
         if result is None:
