@@ -29,8 +29,11 @@ def expand(vevent, default_tz, href=''):
     else:
         duration = vevent['DTEND'].dt - vevent['DTSTART'].dt
 
+    # dateutil.rrule converts everything to datetime
+    allday = True if not isinstance(vevent['DTSTART'].dt, datetime) else False
+
     # icalendar did not understand the defined timezone
-    if ('TZID' in vevent['DTSTART'].params and
+    if (not allday and 'TZID' in vevent['DTSTART'].params and
             vevent['DTSTART'].dt.tzinfo is None):
         vevent['DTSTART'].dt = default_tz.localize(vevent['DTSTART'].dt)
 
@@ -42,9 +45,6 @@ def expand(vevent, default_tz, href=''):
             vevent['DTSTART'].dt.tzinfo is not None):
         events_tz = vevent['DTSTART'].dt.tzinfo
         vevent['DTSTART'].dt = vevent['DTSTART'].dt.astimezone(pytz.UTC)
-
-    # dateutil.rrule converts everything to datetime
-    allday = True if not isinstance(vevent['DTSTART'].dt, datetime) else False
 
     rrulestr = vevent['RRULE'].to_ical()
     rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=vevent['DTSTART'].dt)

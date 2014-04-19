@@ -31,7 +31,7 @@ END:VEVENT
 END:VCALENDAR"""
 
 # datetime zulu (in utc time)
-event_dtz = """BEGIN:VCALENDAR
+event_dttz = """BEGIN:VCALENDAR
 CALSCALE:GREGORIAN
 VERSION:2.0
 BEGIN:VEVENT
@@ -43,7 +43,7 @@ UID:datetimezulu123
 END:VEVENT
 END:VCALENDAR"""
 
-event_dtz_norr = """BEGIN:VCALENDAR
+event_dttz_norr = """BEGIN:VCALENDAR
 CALSCALE:GREGORIAN
 VERSION:2.0
 BEGIN:VEVENT
@@ -158,6 +158,48 @@ END:VEVENT
 END:VCALENDAR
 """
 
+# all day (date) event with timezone information
+event_dtz = """BEGIN:VCALENDAR
+CALSCALE:GREGORIAN
+VERSION:2.0
+BEGIN:VEVENT
+UID:datetz123
+DTSTART;TZID=Berlin/Europe;VALUE=DATE:20130301
+DTEND;TZID=Berlin/Europe;VALUE=DATE:20130302
+RRULE:FREQ=MONTHLY;INTERVAL=2;COUNT=6
+SUMMARY:Event
+END:VEVENT
+END:VCALENDAR
+"""
+
+event_dtzb = """BEGIN:VCALENDAR
+CALSCALE:GREGORIAN
+VERSION:2.0
+BEGIN:VTIMEZONE
+TZID:Pacific Time (US & Canada), Tijuana
+BEGIN:STANDARD
+DTSTART:20071104T020000
+TZOFFSETTO:-0800
+TZOFFSETFROM:-0700
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:20070311T020000
+TZOFFSETTO:-0700
+TZOFFSETFROM:-0800
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+END:DAYLIGHT
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;VALUE=DATE;TZID="Pacific Time (US & Canada), Tijuana":20130301
+DTEND;VALUE=DATE;TZID="Pacific Time (US & Canada), Tijuana":20130302
+RRULE:FREQ=MONTHLY;INTERVAL=2;COUNT=6
+SUMMARY:Event
+UID:eventdtzb123
+END:VEVENT
+END:VCALENDAR
+"""
+
 event_d_norr = """BEGIN:VCALENDAR
 CALSCALE:GREGORIAN
 VERSION:2.0
@@ -170,9 +212,6 @@ END:VEVENT
 END:VCALENDAR
 """
 berlin = pytz.timezone('Europe/Berlin')
-
-vevent_dt, vevent_dtb, vevent_dtf, vevent_dtz = None, None, None, None
-vevent_d = None
 
 
 def _get_vevent(event):
@@ -227,6 +266,20 @@ class TestExpand(object):
         (datetime.datetime(2014, 1, 1, 14, 0),
          datetime.datetime(2014, 1, 1, 16, 0))
     ]
+    dstartend = [
+        (datetime.date(2013, 3, 1,),
+         datetime.date(2013, 3, 2,)),
+        (datetime.date(2013, 5, 1,),
+         datetime.date(2013, 5, 2,)),
+        (datetime.date(2013, 7, 1,),
+         datetime.date(2013, 7, 2,)),
+        (datetime.date(2013, 9, 1,),
+         datetime.date(2013, 9, 2,)),
+        (datetime.date(2013, 11, 1),
+         datetime.date(2013, 11, 2)),
+        (datetime.date(2014, 1, 1,),
+         datetime.date(2014, 1, 2,))
+        ]
     offset_berlin = [
         datetime.timedelta(0, 3600),
         datetime.timedelta(0, 7200),
@@ -261,8 +314,8 @@ class TestExpand(object):
         assert [start.utcoffset() for start, _ in dtstart] == self.offset_berlin
         assert [end.utcoffset() for _, end in dtstart] == self.offset_berlin
 
-    def test_expand_dtz(self):
-        vevent = _get_vevent(event_dtz)
+    def test_expand_dttz(self):
+        vevent = _get_vevent(event_dttz)
         dtstart = datetimehelper.expand(vevent, berlin)
         assert dtstart == self.dtstartend_utc
         assert [start.utcoffset() for start, _ in dtstart] == self.offset_utc
@@ -278,20 +331,18 @@ class TestExpand(object):
     def test_expand_d(self):
         vevent = _get_vevent(event_d)
         dtstart = datetimehelper.expand(vevent, berlin)
-        assert dtstart == [
-            (datetime.date(2013, 3, 1,),
-             datetime.date(2013, 3, 2,)),
-            (datetime.date(2013, 5, 1,),
-             datetime.date(2013, 5, 2,)),
-            (datetime.date(2013, 7, 1,),
-             datetime.date(2013, 7, 2,)),
-            (datetime.date(2013, 9, 1,),
-             datetime.date(2013, 9, 2,)),
-            (datetime.date(2013, 11, 1),
-             datetime.date(2013, 11, 2)),
-            (datetime.date(2014, 1, 1,),
-             datetime.date(2014, 1, 2,))
-        ]
+        assert dtstart == self.dstartend
+
+    def test_expand_dtz(self):
+        vevent = _get_vevent(event_dtz)
+        dtstart = datetimehelper.expand(vevent, berlin)
+        assert dtstart == self.dstartend
+
+    def test_expand_dtzb(self):
+        vevent = _get_vevent(event_dtzb)
+        dtstart = datetimehelper.expand(vevent, berlin)
+        assert dtstart == self.dstartend
+
 
 class TestExpandNoRR(object):
     dtstartend_berlin = [
@@ -332,8 +383,8 @@ class TestExpandNoRR(object):
         assert [start.utcoffset() for start, _ in dtstart] == self.offset_berlin
         assert [end.utcoffset() for _, end in dtstart] == self.offset_berlin
 
-    def test_expand_dtz(self):
-        vevent = _get_vevent(event_dtz_norr)
+    def test_expand_dttz(self):
+        vevent = _get_vevent(event_dttz_norr)
         dtstart = datetimehelper.expand(vevent, berlin)
         assert dtstart == self.dtstartend_utc
         assert [start.utcoffset() for start, _ in dtstart] == self.offset_utc
