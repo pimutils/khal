@@ -76,7 +76,7 @@ for calendar_name in conf.active_calendars:
 
 
 if conf.update:
-    sys.exit(collection.updatedb)
+    sys.exit(collection.db_update())
 elif conf.new:
     controllers.NewFromString(collection, conf)
 else:
