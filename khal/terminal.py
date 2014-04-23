@@ -105,18 +105,11 @@ def merge_columns(lcolumn, rcolumn, width=25):
     out its (real) width automatically since it might contain ANSI
     escape sequences.
     """
-    term_width, height = get_terminal_size()
-    rwidth = term_width - width - 4  # the divider is 4 spaces, see below
-    if rwidth < 20:  # we won't fit in terminals narrower than 50 chars
-        rwidth = 20
-    nrcolumn = list()
-    for element in rcolumn:
-        nrcolumn.extend(textwrap.wrap(element, rwidth))
 
-    missing = len(nrcolumn) - len(lcolumn)
+    missing = len(rcolumn) - len(lcolumn)
     if missing > 0:
         lcolumn = lcolumn + missing * [width * ' ']
 
     rows = ['    '.join(one) for one in izip_longest(
-        lcolumn, nrcolumn, fillvalue='')]
+        lcolumn, rcolumn, fillvalue='')]
     return rows

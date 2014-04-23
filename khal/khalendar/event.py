@@ -165,7 +165,6 @@ class Event(object):
 
     def to_ical(self):
         calendar = self._create_calendar()
-
         if hasattr(self.start, 'tzinfo'):
             tzs = [self.start.tzinfo]
             if self.end.tzinfo != self.start.tzinfo:

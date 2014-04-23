@@ -23,10 +23,11 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 import datetime
+import textwrap
 
 from khal import aux, calendar_display
 from khal import __version__, __productname__
-from .terminal import bstring, colored, merge_columns
+from .terminal import bstring, colored, get_terminal_size, merge_columns
 
 
 class Display(object):
@@ -36,6 +37,10 @@ class Display(object):
         tomorrow = today + datetime.timedelta(days=1)
         daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
         event_column = list()
+
+        term_width, _ = get_terminal_size()
+        lwidth = 25
+        rwidth = term_width - lwidth - 4
 
         for day, dayname in daylist:
             # TODO unify allday and datetime events
@@ -47,12 +52,13 @@ class Display(object):
             all_day_events = collection.get_allday_by_time_range(day)
             events = collection.get_datetime_by_time_range(start, end)
             for event in all_day_events:
-                event_column.append(
-                    colored(event.compact(day), event.color))
+                desc = textwrap.wrap(event.compact(day), rwidth)
+                event_column.extend([colored(d, event.color) for d in desc])
+
             events.sort(key=lambda e: e.start)
             for event in events:
-                event_column.append(
-                    colored(event.compact(day), event.color))
+                desc = textwrap.wrap(event.compact(day), rwidth)
+                event_column.extend([colored(d, event.color) for d in desc])
 
         calendar_column = calendar_display.vertical_month(
             firstweekday=firstweekday)

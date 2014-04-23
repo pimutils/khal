@@ -40,24 +40,3 @@ class TestMergeColumns(object):
         right = ['123456', '234567']
         out = ['uiae    123456', 'nrtd    234567', 'xvlc    ']
         assert merge_columns(left, right, width=4) == out
-
-
-    def test_wrapping_long_lines(self):
-        left = ['    Mo Tu We Th Fr Sa Su ',
-                'Apr 31  1  2  3  4  5  6 ',
-                '     7  8  9 10 11 12 13 ']
-        right = [
-            '9:30 - 10:30 this is a super long and interesting event \
-description, in fact it it is so long, that it wont fit on \
-one line',
-            '10:30 - 11:30 another long event description, while it isnt as \
-intersting as the one before, it is even longer. Like a snake. \
-A realllllllllllly long snake.']
-        out = ['    Mo Tu We Th Fr Sa Su     9:30 - 10:30 this is a super long and interesting',
-               'Apr 31  1  2  3  4  5  6     event description, in fact it it is so long, that',
-               '     7  8  9 10 11 12 13     it wont fit on one line',
-               '                             10:30 - 11:30 another long event description, while',
-               '                             it isnt as intersting as the one before, it is even',
-               '                             longer. Like a snake. A realllllllllllly long',
-               '                             snake.']
-        assert merge_columns(left, right, width=25) == out
