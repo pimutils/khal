@@ -31,8 +31,10 @@ for caching (see backend if you're interested).
 If you want to see how the sausage is made:
     Welcome to the sausage factory!
 """
+import logging
 import os
 import os.path
+import traceback
 
 from vdirsyncer.storage import FilesystemStorage
 
@@ -117,11 +119,16 @@ class Calendar(object):
         if event.etag is None:
             self.new(event)
         else:
-            self._storage.update(event.href, event, event.etag)
-            self._dbtool.update(event.vevent.to_ical(),
-                                self.name,
-                                event.href,
-                                etag=event.etag)
+            try:
+                self._storage.update(event.href, event, event.etag)
+                self._dbtool.update(event.vevent.to_ical(),
+                                    self.name,
+                                    event.href,
+                                    etag=event.etag)
+            except Exception as error:
+                logging.critical('Failed to parse vcard {} during '
+                                 'update'.format(event.href))
+                logging.critical(traceback.format_exc(error))
 
     def new(self, event):
         """save a new event to the database
@@ -132,11 +139,17 @@ class Calendar(object):
         href, etag = self._storage.upload(event)
         event.href = href
         event.etag = etag
-        self._dbtool.update(event.to_ical(),
-                            self.name,
-                            href=href,
-                            etag=etag)
-        self._dbtool.set_ctag(self.name, self.local_ctag())
+        try:
+            self._dbtool.update(event.to_ical(),
+                                self.name,
+                                href=href,
+                                etag=etag)
+            self._dbtool.set_ctag(self.name, self.local_ctag())
+        except Exception as error:
+            logging.critical(
+                'Failed to parse vcard {} during new in collection '
+                '{}'.format(event.href, self.name))
+            logging.critical(traceback.format_exc(error))
 
     def delete(self, event):
         """delete event from this collection
@@ -162,8 +175,14 @@ class Calendar(object):
 
     def update_vevent(self, href):
         event, etag = self._storage.get(href)
-        self._dbtool.update(event.raw, self.name, href=href, etag=etag,
-                            ignore_invalid_items=True)
+        try:
+            self._dbtool.update(event.raw, self.name, href=href, etag=etag,
+                                ignore_invalid_items=True)
+        except Exception as error:
+            logging.critical(
+                'Failed to parse vcard {} during '
+                'update_href in collection ''{}'.format(href, self.name))
+            logging.critical(traceback.format_exc(error))
 
     def new_event(self, ical):
         """creates new event form ical string"""
@@ -221,7 +240,7 @@ class CalendarCollection(object):
         self._calnames[event.account].delete(event)
         self._calnames[new_collection].new(event)
         # TODO would be better to first add to new collection, then delete
-        # currently not pssoible since new modifies event.etag
+        # currently not possible since new modifies event.etag
 
     def new_event(self, ical, collection):
         """returns a new event"""
