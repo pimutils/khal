@@ -3,7 +3,6 @@
 import os
 import string
 import subprocess
-import sys
 import warnings
 
 #from distutils.core import setup
@@ -53,16 +52,13 @@ write_version()
 
 
 requirements = [
+    'argvard>=0.3.0',
     'icalendar',
     'urwid',
     'pyxdg',
     'pytz',
     'vdirsyncer'
 ]
-if sys.version_info[:2] in ((2, 6),):
-    # there is no argparse in python2.6
-    requirements.append('argparse')
-
 
 extra_requirements = {
     'proctitle': ['setproctitle'],
@@ -79,7 +75,12 @@ setup(
     url='http://lostpackets.de/khal/',
     license='Expat/MIT',
     packages=['khal', 'khal/ui', 'khal/khalendar'],
-    scripts=['bin/khal', 'bin/ikhal'],
+    entry_points={
+        'console_scripts': [
+            'khal = khal.cli:main_khal',
+            'ikhal = khal.cli:main_ikhal'
+        ]
+    },
     install_requires=requirements,
     extras_require=extra_requirements,
     classifiers=[

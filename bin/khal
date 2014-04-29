@@ -23,11 +23,15 @@
 
 import sys
 
+import argvard
+from argvard import Argvard
+
+
+
 try:
     from setproctitle import setproctitle
 except ImportError:
     setproctitle = lambda x: None
-
 from khal import ConfigurationParser
 from khal import controllers
 from khal import capture_user_interruption
