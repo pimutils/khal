@@ -161,7 +161,7 @@ class Event(object):
 
     @property
     def raw(self):
-        return self.to_ical()
+        return self.to_ical().decode('utf-8')
 
     def to_ical(self):
         calendar = self._create_calendar()
