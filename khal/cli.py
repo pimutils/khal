@@ -299,7 +299,7 @@ class ConfigParser(object):
             else:
                 items[parser.group] = values
 
-        failed = failed and self.check_required(items)
+        failed = self.check_required(items) or failed
         self.warn_leftovers()
         self.dump(items)
         if failed:
@@ -312,7 +312,7 @@ class ConfigParser(object):
         failed = True
         for group in groupnames:
             if group not in items:
-                logging.error("Missing recuqired section '{}'".format(group))
+                logging.error("Missing required section '{}'".format(group))
                 failed = True
         return failed
 
