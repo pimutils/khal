@@ -268,7 +268,7 @@ class ConfigParser(object):
                 return parser
         return None
 
-    def _parse_config(self, cfile):
+    def parse_config(self, cfile):
         self._conf_parser = RawConfigParser()
         try:
             if not self._conf_parser.read(cfile):
@@ -309,7 +309,7 @@ class ConfigParser(object):
 
     def check_required(self, items):
         groupnames = [sec(None).group for sec in self._required_sections]
-        failed = True
+        failed = False
         for group in groupnames:
             if group not in items:
                 logging.error("Missing required section '{}'".format(group))
@@ -428,7 +428,7 @@ def _khal(conf):
     if config_file is None:
         sys.exit('Cannot find any config file, exiting')
 
-    conf = ConfigParser()._parse_config(config_file)
+    conf = ConfigParser().parse_config(config_file)
     if conf is None:
         sys.exit('Invalid config file, exiting.')
 
