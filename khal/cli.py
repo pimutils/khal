@@ -256,7 +256,7 @@ class ConfigParser(object):
         DefaultSection, LocaleSection, SQLiteSection, CalendarSection
     ]
 
-    _recquired_sections = [DefaultSection, LocaleSection, CalendarSection]
+    _required_sections = [DefaultSection, LocaleSection, CalendarSection]
 
     def __init__(self):
         pass
@@ -299,7 +299,7 @@ class ConfigParser(object):
             else:
                 items[parser.group] = values
 
-        failed = failed and self.check_recquired(items)
+        failed = failed and self.check_required(items)
         self.warn_leftovers()
         self.dump(items)
         if failed:
@@ -307,8 +307,8 @@ class ConfigParser(object):
         else:
             return Namespace(items)
 
-    def check_recquired(self, items):
-        groupnames = [sec(None).group for sec in self._recquired_sections]
+    def check_required(self, items):
+        groupnames = [sec(None).group for sec in self._required_sections]
         failed = True
         for group in groupnames:
             if group not in items:
