@@ -30,7 +30,7 @@ Usage:
   khal interactive [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]
   khal new [-vc CONF] [-a cal] DESCRIPTION...
   khal [-vc CONF] printcalendars
-  khal [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]
+  khal [options]...
   khal (-h | --help)
   khal --version
 
@@ -164,6 +164,7 @@ class Section(object):
         self._group = group
         self._schema = None
         self._parsed = {}
+        self._logger = logging.getLogger(__productname__)
 
     def matches(self, name):
         return self._group == name.lower()
@@ -193,8 +194,6 @@ class Section(object):
                 self._parsed[option] = default
                 # Remove option once handled (see the check function).
                 self._parser.remove_option(section, option)
-            except ConfigParserError:
-                self._parsed[option] = default
 
         if failed:
             return None
@@ -270,7 +269,18 @@ class DefaultSection(Section):
         Section.__init__(self, parser, 'default')
         self._schema = [
             ('debug', False, None),
+            ('default_command', 'calendar', self._parse_commands),
         ]
+
+    def _parse_commands(self, command):
+        commands = [
+            'agenda', 'calendar', 'new', 'interactive', 'printcalendars']
+        if command not in commands:
+            logging.error("Invalid value '{}' for option 'default_command' in "
+                          "section 'default'".format(command))
+            return None
+        else:
+            return command
 
 
 class ConfigParser(object):
@@ -281,7 +291,7 @@ class ConfigParser(object):
     _required_sections = [DefaultSection, LocaleSection, CalendarSection]
 
     def __init__(self):
-        pass
+        self._logger = logging.getLogger(__productname__)
 
     def _get_section_parser(self, section):
         for cls in self._sections:
@@ -294,18 +304,18 @@ class ConfigParser(object):
         self._conf_parser = RawConfigParser()
         try:
             if not self._conf_parser.read(cfile):
-                logging.error("Cannot read config file' {}'".format(cfile))
+                self._logger.error("Cannot read config file' {}'".format(cfile))
                 return None
         except ConfigParserError as error:
-            logging.error("Could not parse config file "
-                          "'{}': {}".format(cfile, error))
+            self._logger.error("Could not parse config file "
+                               "'{}': {}".format(cfile, error))
             return None
         items = dict()
         failed = False
         for section in self._conf_parser.sections():
             parser = self._get_section_parser(section)
             if parser is None:
-                logging.warning(
+                self._logger.warning(
                     "Found unknown section '{}' in config file".format(section)
                 )
                 continue
@@ -335,15 +345,16 @@ class ConfigParser(object):
         failed = False
         for group in groupnames:
             if group not in items:
-                logging.error("Missing required section '{}'".format(group))
+                self._logger.error(
+                    "Missing required section '{}'".format(group))
                 failed = True
         return failed
 
     def warn_leftovers(self):
         for section in self._conf_parser.sections():
             for option in self._conf_parser.options(section):
-                logging.warn("Ignoring unknow option '{}' in section "
-                             "'{}'".format(option, section))
+                self._logger.warn("Ignoring unknow option '{}' in section "
+                                  "'{}'".format(option, section))
 
     def dump(self, conf, intro='Using configuration:', tab=0):
         """Dump the loaded configuration using the logging framework.
@@ -353,14 +364,14 @@ class ConfigParser(object):
         configuration file.
         """
         # TODO while this is fully functional it could be prettier
-        logging.debug('{0}{1}'.format('\t' * tab, intro))
+        self._logger.debug('{0}{1}'.format('\t' * tab, intro))
 
         if isinstance(conf, (Namespace, dict)):
             for name, value in sorted(dict.copy(conf).items()):
                 if isinstance(value, (Namespace, dict, list)):
                     self.dump(value, '[' + name + ']', tab=tab + 1)
                 else:
-                    logging.debug('{0}{1}: {2}'.format('\t' * (tab + 1), name, value))
+                    self._logger.debug('{0}{1}: {2}'.format('\t' * (tab + 1), name, value))
         elif isinstance(conf, list):
             for o in conf:
                 self.dump(o, '\t' * tab + intro + ':', tab + 1)
@@ -441,12 +452,16 @@ def main_khal():
     # under FreeBSD, which is still nicer than the default
     setproctitle('khal')
 
-    arguments = docopt(__doc__, version=__productname__ + ' ' + __version__)
+    logger = logging.getLogger(__productname__)
+    arguments = docopt(__doc__, version=__productname__ + ' ' + __version__,
+                       options_first=False)
 
     if arguments['-c'] is None:
         arguments['-c'] = _find_configuration_file()
     if arguments['-c'] is None:
         sys.exit('Cannot find any config file, exiting')
+    if arguments['-v']:
+        logger.setLevel(logging.DEBUG)
 
     conf = ConfigParser().parse_config(arguments['-c'])
     if conf is None:
@@ -468,8 +483,11 @@ def main_khal():
     commands = ['agenda', 'calendar', 'new', 'interactive', 'printcalendars']
 
     if not any([arguments[com] for com in commands]):
-        arguments['calendar'] = True
-        import ipdb; ipdb.set_trace()
+        arguments = docopt(__doc__,
+                           version=__productname__ + ' ' + __version__,
+                           options_first=True,
+                           argv=[conf.default.default_command] + sys.argv[1:])
+
         #arguments[conf.default.default_command] = True  # TODO
 
     if arguments['calendar']:
