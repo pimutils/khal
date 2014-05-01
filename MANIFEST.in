@@ -1,0 +1,8 @@
+include khal.conf.sample
+include README.rst
+include CONTRIBUTING.txt
+include CONTRIBUTORS.txt
+include COPYING
+include NEWS.txt
+include misc/__khal
+include misc/khal.1
