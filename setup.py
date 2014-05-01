@@ -52,7 +52,7 @@ write_version()
 
 
 requirements = [
-    'argvard>=0.3.0',
+    'docopt',
     'icalendar',
     'urwid',
     'pyxdg',

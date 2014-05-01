@@ -22,6 +22,28 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+"""khal
+
+Usage:
+  khal calendar [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]
+  khal agenda   [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]
+  khal interactive [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]
+  khal new [-vc CONF] [-a cal] DESCRIPTION...
+  khal [-vc CONF] printcalendars
+  khal [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]
+  khal (-h | --help)
+  khal --version
+
+
+Options:
+  -h --help    Show this help.
+  --version    Print version information.
+  -a CAL       Use this calendars (can be used several times)
+  -d CAL       Do not use this calendar (can be used several times)
+  -v           Be extra verbose.
+  -c CONF      Use this config file.
+
+"""
 import datetime
 import logging
 import os
@@ -44,7 +66,7 @@ try:
 except ImportError:
     setproctitle = lambda x: None
 
-import argvard
+from docopt import docopt
 import pytz
 import xdg
 
@@ -237,7 +259,9 @@ class LocaleSection(Section):
             ('longdateformat', None, None),
             ('datetimeformat', None, None),
             ('longdatetimeformat', None, None),
-            ('firstweekday', 0, lambda x: x)
+            ('firstweekday', 0, lambda x: x),
+            ('encoding', 'utf-8', None),
+            ('unicode_symbols', True, self._parse_bool_string),
         ]
 
 
@@ -246,8 +270,6 @@ class DefaultSection(Section):
         Section.__init__(self, parser, 'default')
         self._schema = [
             ('debug', False, None),
-            ('encoding', 'utf-8', None),
-            ('unicode_symbols', 'True', self._parse_bool_string),
         ]
 
 
@@ -302,6 +324,7 @@ class ConfigParser(object):
         failed = self.check_required(items) or failed
         self.warn_leftovers()
         self.dump(items)
+
         if failed:
             return None
         else:
@@ -418,63 +441,44 @@ def main_khal():
     # under FreeBSD, which is still nicer than the default
     setproctitle('khal')
 
-    _khal(None)
+    arguments = docopt(__doc__, version=__productname__ + ' ' + __version__)
 
-
-def _khal(conf):
-    khal = argvard.Argvard()
-    # Read configuration.
-    config_file = _find_configuration_file()
-    if config_file is None:
+    if arguments['-c'] is None:
+        arguments['-c'] = _find_configuration_file()
+    if arguments['-c'] is None:
         sys.exit('Cannot find any config file, exiting')
 
-    conf = ConfigParser().parse_config(config_file)
+    conf = ConfigParser().parse_config(arguments['-c'])
     if conf is None:
         sys.exit('Invalid config file, exiting.')
 
-    @khal.main()
-    def main(context):
-        context.argvard(context.command_path + ['--help'])
+    collection = khalendar.CalendarCollection()
+    for cal in conf.calendars:
+        if cal.name in arguments['-a'] or cal.name not in arguments['-d']:
+            collection.append(khalendar.Calendar(
+                name=cal.name,
+                dbpath=conf.sqlite.path,
+                path=cal.path,
+                readonly=cal.readonly,
+                color=cal.color,
+                unicode_symbols=conf.locale.unicode_symbols,
+                local_tz=conf.locale.local_timezone,
+                default_tz=conf.locale.default_timezone
+            ))
+    commands = ['agenda', 'calendar', 'new', 'interactive', 'printcalendars']
 
-    calendar = argvard.Command()
+    if not any([arguments[com] for com in commands]):
+        arguments['calendar'] = True
+        import ipdb; ipdb.set_trace()
+        #arguments[conf.default.default_command] = True  # TODO
 
-    @calendar.main('[calendar...]')
-    def calendar_main(context, calendar=None):
-#    (self, collection, firstweekday=0, encoding='utf-8'):
-#
-        today = datetime.date.today()
-        tomorrow = today + datetime.timedelta(days=1)
-        daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
-        event_column = list()
-
-        term_width, _ = get_terminal_size()
-        lwidth = 25
-        rwidth = term_width - lwidth - 4
-
-        for day, dayname in daylist:
-            # TODO unify allday and datetime events
-            start = datetime.datetime.combine(day, datetime.time.min)
-            end = datetime.datetime.combine(day, datetime.time.max)
-
-            event_column.append(bstring(dayname))
-
-            all_day_events = collection.get_allday_by_time_range(day)
-            events = collection.get_datetime_by_time_range(start, end)
-            for event in all_day_events:
-                desc = textwrap.wrap(event.compact(day), rwidth)
-                event_column.extend([colored(d, event.color) for d in desc])
-
-            events.sort(key=lambda e: e.start)
-            for event in events:
-                desc = textwrap.wrap(event.compact(day), rwidth)
-                event_column.extend([colored(d, event.color) for d in desc])
-
-        calendar_column = calendar_display.vertical_month(
-            firstweekday=firstweekday)
-
-        rows = merge_columns(calendar_column, event_column)
-        print('\n'.join(rows).encode(encoding))
-
-    khal.register_command('calendar', calendar)
-
-    khal()
+    if arguments['calendar']:
+        controllers.Calendar(collection,
+                             conf.locale.firstweekday,
+                             conf.locale.encoding)
+    elif arguments['agenda']:
+        controllers.Agenda(collection,
+                           conf.locale.firstweekday,
+                           conf.locale.encoding)
+    elif arguments['new']:
+        controllers.NewFromString(collection, conf, arguments['DESCRIPTION'])
