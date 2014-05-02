@@ -41,8 +41,7 @@ def expand(vevent, default_tz, href=''):
         return [(vevent['DTSTART'].dt, vevent['DTSTART'].dt + duration)]
 
     events_tz = None
-    if (hasattr(vevent['DTSTART'].dt, 'tzinfo') and
-            vevent['DTSTART'].dt.tzinfo is not None):
+    if getattr(vevent['DTSTART'].dt, 'tzinfo', False):
         events_tz = vevent['DTSTART'].dt.tzinfo
         vevent['DTSTART'].dt = vevent['DTSTART'].dt.astimezone(pytz.UTC)
 
@@ -52,10 +51,9 @@ def expand(vevent, default_tz, href=''):
         # rrule really doesn't like to calculate all recurrences until
         # eternity, so we only do it 15years into the future
         rrule._until = vevent['DTSTART'].dt + timedelta(days=15 * 365)
-    if (rrule._until is not None and
-            rrule._until.tzinfo is None and
-            vevent['DTSTART'].dt.tzinfo is not None):
-        rrule._until = vevent['DTSTART'].dt.tzinfo.localize(rrule._until)
+    if ((not getattr(rrule._until, 'tzinfo', True)) and
+            (not getattr(vevent['DTSTART'].dt, 'tzinfo', True))):
+                rrule._until = vevent['DTSTART'].dt.tzinfo.localize(rrule._until)
     logging.debug('calculating recurrence dates for {0}, '
                   'this might take some time.'.format(href))
     dtstartl = list(rrule)

@@ -126,9 +126,9 @@ class Calendar(object):
                                     event.href,
                                     etag=event.etag)
             except Exception as error:
-                logging.critical('Failed to parse vcard {} during '
-                                 'update'.format(event.href))
-                logging.critical(traceback.format_exc(error))
+                logging.error('Failed to parse vcard {} from collection {} '
+                              'during update'.format(event.href, self.name))
+                logging.debug(traceback.format_exc(error))
 
     def new(self, event):
         """save a new event to the database
@@ -146,10 +146,10 @@ class Calendar(object):
                                 etag=etag)
             self._dbtool.set_ctag(self.name, self.local_ctag())
         except Exception as error:
-            logging.critical(
+            logging.error(
                 'Failed to parse vcard {} during new in collection '
                 '{}'.format(event.href, self.name))
-            logging.critical(traceback.format_exc(error))
+            logging.debug(traceback.format_exc(error))
 
     def delete(self, event):
         """delete event from this collection
@@ -168,21 +168,25 @@ class Calendar(object):
 
         should be called after every change to the vdir
         """
+        status = True
         for href, etag in self._storage.list():
             if etag != self._dbtool.get_etag(href, self.name):
-                self.update_vevent(href)
-        self._dbtool.set_ctag(self.name, self.local_ctag())
+                status = status and self.update_vevent(href)
+        if status:
+            self._dbtool.set_ctag(self.name, self.local_ctag())
 
     def update_vevent(self, href):
         event, etag = self._storage.get(href)
         try:
             self._dbtool.update(event.raw, self.name, href=href, etag=etag,
                                 ignore_invalid_items=True)
+            return True
         except Exception as error:
-            logging.critical(
+            logging.error(
                 'Failed to parse vcard {} during '
                 'update_href in collection ''{}'.format(href, self.name))
-            logging.critical(traceback.format_exc(error))
+            logging.debug(traceback.format_exc(error))
+            return False
 
     def new_event(self, ical):
         """creates new event form ical string"""

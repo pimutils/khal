@@ -424,6 +424,19 @@ RRULE:FREQ=DAILY;UNTIL=20140220;WKST=SU
 END:VEVENT
 """
 
+event_until_d_notz = """BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:d470ef6d08
+DTSTART;VALUE=DATE:20140110
+DURATION:P1D
+RRULE:FREQ=WEEKLY;UNTIL=20140215;INTERVAL=1;BYDAY=FR
+SUMMARY:Fri
+END:VEVENT
+END:VCALENDAR
+"""
+
+
 class TestSpecial(object):
     @pytest.mark.xfail(reason='')
     def test_count(self):
@@ -441,3 +454,11 @@ class TestSpecial(object):
         assert len(starts) == 18
         assert dtstart[0][0] == datetime.datetime(2014, 2, 3, 7, 0, tzinfo=berlin)
         assert dtstart[-1][0] == datetime.datetime(2014, 2, 20, 7, 0, tzinfo=berlin)
+
+    def test_until_d_notz(self):
+        vevent = _get_vevent(event_until_d_notz)
+        dtstart = datetimehelper.expand(vevent, berlin)
+        starts = [start for start, _ in dtstart]
+        assert len(starts) == 6
+        assert dtstart[0][0] == datetime.date(2014, 1, 10)
+        assert dtstart[-1][0] == datetime.date(2014, 2, 14)
