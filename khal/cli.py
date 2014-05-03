@@ -154,11 +154,6 @@ class Namespace(dict):
 
 class Section(object):
 
-    READERS = {bool: SafeConfigParser.getboolean,
-               float: SafeConfigParser.getfloat,
-               int: SafeConfigParser.getint,
-               str: SafeConfigParser.get}
-
     def __init__(self, parser, group):
         self._parser = parser
         self._group = group
@@ -224,7 +219,7 @@ class CalendarSection(Section):
         Section.__init__(self, parser, 'calendars')
         self._schema = [
             ('path', None, os.path.expanduser),
-            ('readonly', False, None),
+            ('readonly', False, self._parse_bool_string),
             ('color', '', None)
         ]
 
@@ -258,7 +253,7 @@ class LocaleSection(Section):
             ('longdateformat', None, None),
             ('datetimeformat', None, None),
             ('longdatetimeformat', None, None),
-            ('firstweekday', 0, lambda x: x),
+            ('firstweekday', 0, int),
             ('encoding', 'utf-8', None),
             ('unicode_symbols', True, self._parse_bool_string),
         ]
@@ -268,7 +263,7 @@ class DefaultSection(Section):
     def __init__(self, parser):
         Section.__init__(self, parser, 'default')
         self._schema = [
-            ('debug', False, None),
+            ('debug', False, self._parse_bool_string),
             ('default_command', 'calendar', self._parse_commands),
         ]
 
@@ -464,6 +459,7 @@ def main_khal():
         logger.setLevel(logging.DEBUG)
 
     conf = ConfigParser().parse_config(arguments['-c'])
+
     if conf is None:
         sys.exit('Invalid config file, exiting.')
 
