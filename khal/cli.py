@@ -426,6 +426,8 @@ def main_khal():
         controllers.NewFromString(collection, conf, arguments['DESCRIPTION'])
     elif arguments['interactive']:
         controllers.Interactive(collection, conf)
+    elif arguments['printcalendars']:
+        print('\n'.join(collection.names))
 
 
 def main_ikhal():
