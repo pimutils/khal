@@ -44,12 +44,10 @@ Options:
   -c CONF      Use this config file.
 
 """
-import datetime
 import logging
 import os
 import re
 import sys
-import textwrap
 
 try:
     from ConfigParser import RawConfigParser
@@ -73,10 +71,7 @@ from khal import controllers
 from khal import capture_user_interruption
 from khal import khalendar
 
-
-from khal import aux, calendar_display
 from khal import __version__, __productname__
-from .terminal import bstring, colored, get_terminal_size, merge_columns
 
 
 def _find_configuration_file():
@@ -368,73 +363,6 @@ class ConfigParser(object):
         elif isinstance(conf, list):
             for o in conf:
                 self.dump(o, '\t' * tab + intro + ':', tab + 1)
-
-
-class Display(object):
-
-    def __init__(self, collection, firstweekday=0, encoding='utf-8'):
-        today = datetime.date.today()
-        tomorrow = today + datetime.timedelta(days=1)
-        daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
-        event_column = list()
-
-        term_width, _ = get_terminal_size()
-        lwidth = 25
-        rwidth = term_width - lwidth - 4
-
-        for day, dayname in daylist:
-            # TODO unify allday and datetime events
-            start = datetime.datetime.combine(day, datetime.time.min)
-            end = datetime.datetime.combine(day, datetime.time.max)
-
-            event_column.append(bstring(dayname))
-
-            all_day_events = collection.get_allday_by_time_range(day)
-            events = collection.get_datetime_by_time_range(start, end)
-            for event in all_day_events:
-                desc = textwrap.wrap(event.compact(day), rwidth)
-                event_column.extend([colored(d, event.color) for d in desc])
-
-            events.sort(key=lambda e: e.start)
-            for event in events:
-                desc = textwrap.wrap(event.compact(day), rwidth)
-                event_column.extend([colored(d, event.color) for d in desc])
-
-        calendar_column = calendar_display.vertical_month(
-            firstweekday=firstweekday)
-
-        rows = merge_columns(calendar_column, event_column)
-        print('\n'.join(rows).encode(encoding))
-
-
-class NewFromString(object):
-
-    def __init__(self, collection, conf):
-        date_list = conf.new
-        event = aux.construct_event(date_list,
-                                    conf.default.timeformat,
-                                    conf.default.dateformat,
-                                    conf.default.longdateformat,
-                                    conf.default.datetimeformat,
-                                    conf.default.longdatetimeformat,
-                                    conf.default.local_timezone,
-                                    encoding=conf.default.encoding)
-        # TODO proper default calendar
-        event = collection.new_event(event, conf.active_calendars.pop())
-
-        collection.new(event)
-
-
-class Interactive(object):
-
-    def __init__(self, collection, conf):
-        import ui
-        pane = ui.ClassicView(collection,
-                              conf,
-                              title='select an event',
-                              description='do something')
-        ui.start_pane(pane, pane.cleanup,
-                      header=u'{0} v{1}'.format(__productname__, __version__))
 
 
 def main_khal():
