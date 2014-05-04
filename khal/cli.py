@@ -373,6 +373,7 @@ def main_khal():
     # under FreeBSD, which is still nicer than the default
     setproctitle('khal')
 
+    logging.basicConfig()
     logger = logging.getLogger(__productname__)
     arguments = docopt(__doc__, version=__productname__ + ' ' + __version__,
                        options_first=False)
