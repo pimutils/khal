@@ -53,12 +53,10 @@ import textwrap
 
 try:
     from ConfigParser import RawConfigParser
-    from ConfigParser import SafeConfigParser
     from ConfigParser import Error as ConfigParserError
 
 except ImportError:
     from configparser import RawConfigParser
-    from configparser import SafeConfigParser
     from configparser import Error as ConfigParserError
 
 try:
@@ -496,3 +494,10 @@ def main_khal():
                            conf.locale.encoding)
     elif arguments['new']:
         controllers.NewFromString(collection, conf, arguments['DESCRIPTION'])
+    elif arguments['interactive']:
+        controllers.Interactive(collection, conf)
+
+
+def main_ikhal():
+    sys.argv = [sys.argv[0], 'interactive'] + sys.argv[1:]
+    main_khal()
