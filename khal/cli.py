@@ -463,7 +463,8 @@ def main_khal():
 
     collection = khalendar.CalendarCollection()
     for cal in conf.calendars:
-        if cal.name in arguments['-a'] or cal.name not in arguments['-d']:
+        if (cal.name in arguments['-a'] and arguments['-d'] == list()) or \
+           (cal.name not in arguments['-d'] and arguments['-a'] == list()):
             collection.append(khalendar.Calendar(
                 name=cal.name,
                 dbpath=conf.sqlite.path,
