@@ -14,7 +14,7 @@ Features
 --------
 (or rather: limitations)
 
-- khal can read and write events/icalendars to vdirs_
+- khal can read and write events/icalendars to vdir_
 - fast and easy way to add new events
 - ikhal (interactive khal) shows and edit events interactively
 - simple recurring events support (no exceptions just yet)
@@ -31,7 +31,7 @@ Please do provide feedback if *khal* works for you or even more importantly
 if it doesn't. You can reach me by email at khal (at) lostpackets (dot) de
 , by jabber/XMPP at geier (at) jabber (dot) ccc (dot) de or via github_.
 
-.. _vdirs: https://github.com/untitaker/vdir
+.. _vdir: https://github.com/untitaker/vdir
 .. _vdirsyncer: https://github.com/untitaker/vdirsyncer
 .. _CalDAV: http://en.wikipedia.org/wiki/CalDAV
 .. _github: https://github.com/geier/khal/
