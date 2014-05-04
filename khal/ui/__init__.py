@@ -392,7 +392,7 @@ class EventList(urwid.WidgetWrap):
         end = datetime.combine(this_date, time.max)
 
         date_text = urwid.Text(
-            this_date.strftime(self.conf.default.longdateformat))
+            this_date.strftime(self.conf.locale.longdateformat))
         event_column = list()
         all_day_events = self.collection.get_allday_by_time_range(this_date)
         events = self.collection.get_datetime_by_time_range(start, end)
@@ -499,11 +499,11 @@ class EventColumn(urwid.WidgetWrap):
         :type date: datetime.date
         """
         event = aux.new_event(dtstart=date,
-                              timezone=self.conf.default.default_timezone)
+                              timezone=self.conf.locale.default_timezone)
 
         # TODO proper default cal
         event = self.collection.new_event(event.to_ical(),
-                                          list(self.conf.active_calendars)[0])
+                                          self.collection.default_calendar_name)
         self.edit(event)
         self.eventcount += 1
 
@@ -543,10 +543,10 @@ class StartEndEditor(urwid.WidgetWrap):
         self.enddt = end
         # TODO cleanup
         self.startdate = self.startdt.strftime(
-            self.conf.default.longdateformat)
-        self.starttime = self.startdt.strftime(self.conf.default.timeformat)
-        self.enddate = self.enddt.strftime(self.conf.default.longdateformat)
-        self.endtime = self.enddt.strftime(self.conf.default.timeformat)
+            self.conf.locale.longdateformat)
+        self.starttime = self.startdt.strftime(self.conf.locale.timeformat)
+        self.enddate = self.enddt.strftime(self.conf.locale.longdateformat)
+        self.endtime = self.enddt.strftime(self.conf.locale.timeformat)
         self.startdate_bg = 'edit'
         self.starttime_bg = 'edit'
         self.enddate_bg = 'edit'
@@ -630,7 +630,7 @@ class StartEndEditor(urwid.WidgetWrap):
         newstartdatetime = self._newstartdate
         if not self.checkallday.state:
             if not hasattr(self.startdt, 'tzinfo') or self.startdt.tzinfo is None:
-                tzinfo = self.conf.default.default_timezone
+                tzinfo = self.conf.locale.default_timezone
             else:
                 tzinfo = self.startdt.tzinfo
             try:
@@ -649,7 +649,7 @@ class StartEndEditor(urwid.WidgetWrap):
             )
             newstartdate = datetime.strptime(
                 self.startdate,
-                self.conf.default.longdateformat).date()
+                self.conf.locale.longdateformat).date()
             self.startdate_bg = 'edit'
             return newstartdate
         except ValueError:
@@ -663,7 +663,7 @@ class StartEndEditor(urwid.WidgetWrap):
             )
             newstarttime = datetime.strptime(
                 self.starttime,
-                self.conf.default.timeformat).time()
+                self.conf.locale.timeformat).time()
             self.starttime_bg = 'edit'
             return newstarttime
         except ValueError:
@@ -675,7 +675,7 @@ class StartEndEditor(urwid.WidgetWrap):
         newenddatetime = self._newenddate
         if not self.checkallday.state:
             if not hasattr(self.enddt, 'tzinfo') or self.enddt.tzinfo is None:
-                tzinfo = self.conf.default.default_timezone
+                tzinfo = self.conf.locale.default_timezone
             else:
                 tzinfo = self.enddt.tzinfo
             try:
@@ -693,7 +693,7 @@ class StartEndEditor(urwid.WidgetWrap):
             )
             newenddate = datetime.strptime(
                 self.enddate,
-                self.conf.default.longdateformat).date()
+                self.conf.locale.longdateformat).date()
             self.enddate_bg = 'edit'
             return newenddate
         except ValueError:
@@ -707,7 +707,7 @@ class StartEndEditor(urwid.WidgetWrap):
             )
             newendtime = datetime.strptime(
                 self.endtime,
-                self.conf.default.timeformat).time()
+                self.conf.locale.timeformat).time()
             self.endtime_bg = 'edit'
             return newendtime
         except ValueError:
@@ -742,23 +742,23 @@ class EventDisplay(EventViewer):
 
         # start and end time/date
         if event.allday:
-            startstr = event.start.strftime(self.conf.default.dateformat)
+            startstr = event.start.strftime(self.conf.locale.dateformat)
             if event.start == event.end:
                 lines.append(urwid.Text('On: ' + startstr))
             else:
-                endstr = event.end.strftime(self.conf.default.dateformat)
+                endstr = event.end.strftime(self.conf.locale.dateformat)
                 lines.append(
                     urwid.Text('From: ' + startstr + ' to: ' + endstr))
 
         else:
-            startstr = event.start.strftime(self.conf.default.dateformat +
-                                            ' ' + self.conf.default.timeformat)
+            startstr = event.start.strftime(self.conf.locale.dateformat +
+                                            ' ' + self.conf.locale.timeformat)
             if event.start.date == event.end.date:
-                endstr = event.end.strftime(self.conf.default.timeformat)
+                endstr = event.end.strftime(self.conf.locale.timeformat)
             else:
-                endstr = event.end.strftime(self.conf.default.dateformat +
+                endstr = event.end.strftime(self.conf.locale.dateformat +
                                             ' ' +
-                                            self.conf.default.timeformat)
+                                            self.conf.locale.timeformat)
                 lines.append(urwid.Text('From: ' + startstr +
                                         ' To: ' + endstr))
 
@@ -810,7 +810,7 @@ class EventEditor(EventViewer):
         self.summary = urwid.Edit(
             edit_text=event.vevent['SUMMARY'])
         self.accountchooser = AccountChooser(self.event.account,
-                                             self.conf.active_calendars)
+                                             self.collection.names)
         accounts = CColumns([(9, urwid.Text(u'Calendar: ')),
                              self.accountchooser])
         self.description = urwid.Edit(caption=u'Description: ',
@@ -947,7 +947,7 @@ class ClassicView(Pane):
                                         collection=collection,
                                         deleted=self.deleted)
         weeks = calendar_walker(
-            view=self, firstweekday=conf.default.firstweekday)
+            view=self, firstweekday=conf.locale.firstweekday)
         events = self.eventscolumn
         columns = CColumns([(25, weeks), events],
                            dividechars=2,
