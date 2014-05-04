@@ -30,7 +30,7 @@ Usage:
   khal interactive [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]
   khal new [-vc CONF] [-a cal] DESCRIPTION...
   khal [-vc CONF] printcalendars
-  khal [options]...
+  khal [options]... [ (-a CAL ... | -d CAL ... ) ] [DATE]
   khal (-h | --help)
   khal --version
 
@@ -478,9 +478,9 @@ def main_khal():
     commands = ['agenda', 'calendar', 'new', 'interactive', 'printcalendars']
 
     if not any([arguments[com] for com in commands]):
+
         arguments = docopt(__doc__,
                            version=__productname__ + ' ' + __version__,
-                           options_first=True,
                            argv=[conf.default.default_command] + sys.argv[1:])
 
         #arguments[conf.default.default_command] = True  # TODO
