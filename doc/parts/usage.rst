@@ -22,9 +22,21 @@ execute *khal* automatically after syncing with vdirsyncer_ (e.g. via cron).
 
 ::
 
-    khal
+    khal calendar
 
-will show all events today and tomorrow
+will show a calendar of this and the next two month and today's and tomorrow's events
+
+::
+
+    khal agenda
+
+will show today's and tomorrow's events
+
+::
+
+    khal interactive
+
+or 
 
 ::
 
@@ -33,11 +45,15 @@ will show all events today and tomorrow
 opens an interactive calendar browser, showing all events on the selected day.
 See below for usage notes on ikhal.
 
+
+`khal` can be configured to execute on command (calendar, agenda or interactive)
+when no other command is given (see the provided example config).
+
 **quick event adding**
 
 ::
 
-    khal --new 18:00 Awesome Event
+    khal new 18:00 Awesome Event
 
 adds a new event starting today at 18:00 with summary 'awesome event' (lasting
 for the default time of one hour, will be configurable soon) to the default
@@ -45,21 +61,21 @@ calendar
 
 ::
 
-    khal --new 25.10. 16:00 18:00 Another Event :: with Alice and Bob
+    khal new 25.10. 16:00 18:00 Another Event :: with Alice and Bob
 
 adds a new event on 25th of October lasting from 16:00 to 18:00 with additional description
 
 ::
 
-    khal --new 26.07. Great Event
+    khal new 26.07. Great Event
 
 adds a new all day event on 26.07.
 
-``khal --new`` should understand the following syntax:
+``khal new`` should understand the following syntax:
 
 ::
 
-    khal --new startdatetime [enddatetime] description
+    khal new startdatetime [enddatetime] description
 
 where start- and enddatetime are either datetimes or times in the formats defined
 in the config file. Start- and enddatetime can be one of the following:
@@ -114,7 +130,7 @@ Notes on Timezones
 Getting localized time right, seems to be the most difficult part about
 calendaring (and messing it up ends in missing the one imported meeting of the
 week). So I'll briefly describe here, how khal tries to handle timezone
-information, which information it can handle and wich it can't.
+information, which information it can handle and which it can't.
 
 All datetimes are saved to the local database as UTC Time. Datetimes that are
 already UTC Time, e.g. ``19980119T070000Z`` are saved as such. Datetimes in
