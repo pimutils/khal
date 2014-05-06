@@ -66,7 +66,7 @@ from __future__ import print_function
 import calendar
 import datetime
 import logging
-from os import path
+from os import makedirs, path
 import sys
 import sqlite3
 import time
@@ -101,6 +101,7 @@ class SQLiteDb(object):
         if db_path is None:
             db_path = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
         self.db_path = path.expanduser(db_path)
+        self._create_dbdir()
         self.local_tz = local_tz
         self.default_tz = default_tz
         self.conn = sqlite3.connect(self.db_path)
@@ -118,6 +119,18 @@ class SQLiteDb(object):
         sql_s = 'SELECT * FROM {0}'.format(account + '_m')
         result = self.sql_ex(sql_s)
         return result
+
+    def _create_dbdir(self):
+        """create the dbdir if it doesn't exist"""
+        dbdir = self.db_path.rsplit('/', 1)[0]
+        if not path.isdir(dbdir):
+            try:
+                logging.debug('trying to create the directory for the db')
+                makedirs(dbdir, mode=0770)
+                logging.debug('success')
+            except OSError as error:
+                logging.fatal('failed to create {0}: {1}'.format(dbdir, error))
+                raise CouldNotCreateDbDir
 
     def _check_table_version(self):
         """tests for curent db Version
@@ -528,3 +541,11 @@ def get_random_href():
         rand_number = random.randint(0, 0x100000000)
         tmp_list.append("{0:x}".format(rand_number))
     return "-".join(tmp_list).upper()
+
+
+class Failure(Exception):
+    pass
+
+
+class CouldNotCreateDbDir(Failure):
+    pass
