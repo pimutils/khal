@@ -11,7 +11,7 @@ from setuptools import setup
 
 MAJOR = 0
 MINOR = 1
-PATCH = 0
+PATCH = 1
 
 RELEASE = True
 
