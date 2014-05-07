@@ -202,6 +202,14 @@ class CalendarCollection(object):
     def calendars(self):
         return self._calnames.values()
 
+    @property
+    def names(self):
+        return self._calnames.keys()
+
+    @property
+    def default_calendar_name(self):
+        return self.names[0]
+
     def append(self, calendar):
         self._calnames[calendar.name] = calendar
         self.calendars.append(calendar)

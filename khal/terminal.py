@@ -23,8 +23,6 @@
 #
 """all functions related to terminal display are collected here"""
 
-import textwrap
-
 try:
     from itertools import izip_longest
 except ImportError:

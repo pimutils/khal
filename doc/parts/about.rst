@@ -14,7 +14,7 @@ Features
 --------
 (or rather: limitations)
 
-- khal can read and write events/icalendars to vdirs_
+- khal can read and write events/icalendars to vdir_
 - fast and easy way to add new events
 - ikhal (interactive khal) shows and edit events interactively
 - simple recurring events support (no exceptions just yet)

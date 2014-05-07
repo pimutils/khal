@@ -50,7 +50,7 @@
 # ## Time Zone and Time Display Formating Configuration ##
 #------------------------------------------------------------------------------
 #
-# [default]
+# [locale]
 # # This configuration file must have a [default] Tag
 #
 # local_timezone: Pacific/Honolulu
@@ -88,12 +88,18 @@
 # # Set the first day of the week, 0 is Monday, 6 is Sunday
 #
 #------------------------------------------------------------------------------
-# ## Debug Level ##
+# ## Default Settings ##
 #------------------------------------------------------------------------------
+#
+# [default]
 #
 # DEBUG: 0
 # # Specify the Default Debug level (only 0 and 1 are supported at the moment)
-# 
+# default_command: calendar
+# # Specify the default command to execute if khal is called without any further
+# # commands. Valid khal commands are: calendar, agenda, interactive, new and
+# # printcalendars.
+#
 
 
 ##
@@ -110,7 +116,7 @@ readonly: True
 [sqlite]
 path: ~/.khal/khal.db
 
-[default]
+[locale]
 local_timezone: Europe/Berlin
 default_timezone: America/New_York
 
@@ -122,4 +128,6 @@ longdatetimeformat: %d.%m.%Y %H:%M
 
 firstweekday: 0
 
-DEBUG: 0
+[default]
+default_command: calendar
+debug: 0

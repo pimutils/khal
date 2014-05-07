@@ -30,35 +30,38 @@ from khal import __version__, __productname__
 from .terminal import bstring, colored, get_terminal_size, merge_columns
 
 
-class Display(object):
+def get_agenda(collection, width):
+    event_column = list()
+    today = datetime.date.today()
+    tomorrow = today + datetime.timedelta(days=1)
+    daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
+    for day, dayname in daylist:
+        # TODO unify allday and datetime events
+        start = datetime.datetime.combine(day, datetime.time.min)
+        end = datetime.datetime.combine(day, datetime.time.max)
 
+        event_column.append(bstring(dayname))
+
+        all_day_events = collection.get_allday_by_time_range(day)
+        events = collection.get_datetime_by_time_range(start, end)
+        for event in all_day_events:
+            desc = textwrap.wrap(event.compact(day), width)
+            event_column.extend([colored(d, event.color) for d in desc])
+
+        events.sort(key=lambda e: e.start)
+        for event in events:
+            desc = textwrap.wrap(event.compact(day), width)
+            event_column.extend([colored(d, event.color) for d in desc])
+    return event_column
+
+
+class Calendar(object):
     def __init__(self, collection, firstweekday=0, encoding='utf-8'):
-        today = datetime.date.today()
-        tomorrow = today + datetime.timedelta(days=1)
-        daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
-        event_column = list()
 
         term_width, _ = get_terminal_size()
         lwidth = 25
         rwidth = term_width - lwidth - 4
-
-        for day, dayname in daylist:
-            # TODO unify allday and datetime events
-            start = datetime.datetime.combine(day, datetime.time.min)
-            end = datetime.datetime.combine(day, datetime.time.max)
-
-            event_column.append(bstring(dayname))
-
-            all_day_events = collection.get_allday_by_time_range(day)
-            events = collection.get_datetime_by_time_range(start, end)
-            for event in all_day_events:
-                desc = textwrap.wrap(event.compact(day), rwidth)
-                event_column.extend([colored(d, event.color) for d in desc])
-
-            events.sort(key=lambda e: e.start)
-            for event in events:
-                desc = textwrap.wrap(event.compact(day), rwidth)
-                event_column.extend([colored(d, event.color) for d in desc])
+        event_column = get_agenda(collection, rwidth)
 
         calendar_column = calendar_display.vertical_month(
             firstweekday=firstweekday)
@@ -67,20 +70,25 @@ class Display(object):
         print('\n'.join(rows).encode(encoding))
 
 
-class NewFromString(object):
+class Agenda(object):
+    def __init__(self, collection, firstweekday=0, encoding='utf-8'):
+        term_width, _ = get_terminal_size()
+        event_column = get_agenda(collection, term_width)
+        print('\n'.join(event_column).encode(encoding))
 
-    def __init__(self, collection, conf):
-        date_list = conf.new
+
+class NewFromString(object):
+    def __init__(self, collection, conf, date_list):
         event = aux.construct_event(date_list,
-                                    conf.default.timeformat,
-                                    conf.default.dateformat,
-                                    conf.default.longdateformat,
-                                    conf.default.datetimeformat,
-                                    conf.default.longdatetimeformat,
-                                    conf.default.local_timezone,
-                                    encoding=conf.default.encoding)
+                                    conf.locale.timeformat,
+                                    conf.locale.dateformat,
+                                    conf.locale.longdateformat,
+                                    conf.locale.datetimeformat,
+                                    conf.locale.longdatetimeformat,
+                                    conf.locale.local_timezone,
+                                    encoding=conf.locale.encoding)
         # TODO proper default calendar
-        event = collection.new_event(event, conf.active_calendars.pop())
+        event = collection.new_event(event, collection.default_calendar_name)
 
         collection.new(event)
 

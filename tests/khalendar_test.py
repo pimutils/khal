@@ -10,6 +10,9 @@ from vdirsyncer.storage.base import Item
 from khal.khalendar import Calendar, CalendarCollection
 from khal.khalendar.event import Event
 
+from khal.khalendar.backend import CouldNotCreateDbDir
+
+
 
 today = datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)
@@ -171,3 +174,37 @@ class TestCollection(object):
         events = coll.get_datetime_by_time_range(self.astart, self.aend)
         assert len(events) == 1
         assert events[0].account == cal2
+
+
+@pytest.fixture
+def cal_dbpath(tmpdir):
+    name = 'testcal'
+    vdirpath = str(tmpdir) + '/' + name
+    dbpath = str(tmpdir) + '/subdir/' + 'khal.db'
+    cal = Calendar(name, dbpath, vdirpath, **KWARGS)
+
+    return cal, dbpath
+
+
+class TestDbCreation(object):
+
+    def test_create_db(self, tmpdir):
+        name = 'testcal'
+        vdirpath = str(tmpdir) + '/' + name
+        dbdir = str(tmpdir) + '/subdir/'
+        dbpath = dbdir + 'khal.db'
+
+        assert not os.path.isdir(dbdir)
+        Calendar(name, dbpath, vdirpath, **KWARGS)
+        assert os.path.isdir(dbdir)
+
+    def test_failed_create_db(self, tmpdir):
+        name = 'testcal'
+        vdirpath = str(tmpdir) + '/' + name
+        dbdir = str(tmpdir) + '/subdir/'
+        dbpath = dbdir + 'khal.db'
+
+        os.chmod(str(tmpdir), 400)
+
+        with pytest.raises(CouldNotCreateDbDir):
+            Calendar(name, dbpath, vdirpath, **KWARGS)
