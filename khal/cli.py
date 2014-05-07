@@ -29,7 +29,7 @@ Usage:
   khal agenda   [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]
   khal interactive [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]
   khal new [-vc CONF] [-a cal] DESCRIPTION...
-  khal [-vc CONF] printcalendars
+  khal printcalendars [-vc CONF]
   khal [options]... [ (-a CAL ... | -d CAL ... ) ] [DATE]
   khal (-h | --help)
   khal --version
