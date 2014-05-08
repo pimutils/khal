@@ -30,7 +30,7 @@ Usage:
   khal interactive [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]
   khal new [-vc CONF] [-a cal] DESCRIPTION...
   khal printcalendars [-vc CONF]
-  khal [options]... [ (-a CAL ... | -d CAL ... ) ] [DATE]
+  khal [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE]...
   khal (-h | --help)
   khal --version
 
