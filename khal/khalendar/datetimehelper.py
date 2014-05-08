@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import logging
 
 import dateutil.rrule
@@ -47,12 +47,18 @@ def expand(vevent, default_tz, href=''):
 
     rrulestr = vevent['RRULE'].to_ical()
     rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=vevent['DTSTART'].dt)
+
     if not set(['UNTIL', 'COUNT']).intersection(vevent['RRULE'].keys()):
         # rrule really doesn't like to calculate all recurrences until
         # eternity, so we only do it 15years into the future
-        rrule._until = vevent['DTSTART'].dt + timedelta(days=15 * 365)
+
+        dtstart = vevent['DTSTART'].dt
+        if isinstance(dtstart, date):
+            dtstart = datetime(*list(dtstart.timetuple())[:-3])
+        rrule._until = dtstart + timedelta(days=15 * 365)
+
     if ((not getattr(rrule._until, 'tzinfo', True)) and
-            (not getattr(vevent['DTSTART'].dt, 'tzinfo', True))):
+            (getattr(vevent['DTSTART'].dt, 'tzinfo', False))):
                 rrule._until = vevent['DTSTART'].dt.tzinfo.localize(rrule._until)
     logging.debug('calculating recurrence dates for {0}, '
                   'this might take some time.'.format(href))

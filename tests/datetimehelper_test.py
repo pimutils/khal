@@ -437,6 +437,30 @@ END:VCALENDAR
 """
 
 
+latest_bug = """BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:Reformationstag
+RRULE:FREQ=YEARLY;BYMONTHDAY=31;BYMONTH=10
+DTSTART;VALUE=DATE:20091031
+DTEND;VALUE=DATE:20091101
+END:VEVENT
+END:VCALENDAR
+"""
+
+another_problem = """BEGIN:VEVENT
+SUMMARY:PyCologne
+DTSTART;TZID=/freeassociation.sourceforge.net/Tzfile/Europe/Berlin:20131113T190000
+DTEND;TZID=/freeassociation.sourceforge.net/Tzfile/Europe/Berlin:20131113T210000
+DTSTAMP:20130610T160635Z
+UID:another_problem
+RECURRENCE-ID;TZID=/freeassociation.sourceforge.net/Tzfile/Europe/Berlin:20131113T190000
+RRULE:FREQ=MONTHLY;BYDAY=2WE;WKST=SU
+TRANSP:OPAQUE
+END:VEVENT
+"""
+
+
 class TestSpecial(object):
     @pytest.mark.xfail(reason='')
     def test_count(self):
@@ -452,8 +476,10 @@ class TestSpecial(object):
         dtstart = datetimehelper.expand(vevent, berlin)
         starts = [start for start, _ in dtstart]
         assert len(starts) == 18
-        assert dtstart[0][0] == datetime.datetime(2014, 2, 3, 7, 0, tzinfo=berlin)
-        assert dtstart[-1][0] == datetime.datetime(2014, 2, 20, 7, 0, tzinfo=berlin)
+        assert dtstart[0][0] == datetime.datetime(2014, 2, 3, 7, 0,
+                                                  tzinfo=berlin)
+        assert dtstart[-1][0] == datetime.datetime(2014, 2, 20, 7, 0,
+                                                   tzinfo=berlin)
 
     def test_until_d_notz(self):
         vevent = _get_vevent(event_until_d_notz)
@@ -462,3 +488,17 @@ class TestSpecial(object):
         assert len(starts) == 6
         assert dtstart[0][0] == datetime.date(2014, 1, 10)
         assert dtstart[-1][0] == datetime.date(2014, 2, 14)
+
+    def test_latest_bug(self):
+        vevent = _get_vevent(latest_bug)
+        dtstart = datetimehelper.expand(vevent, berlin)
+        assert dtstart[0][0] == datetime.date(2009, 10, 31)
+        assert dtstart[-1][0] == datetime.date(2023, 10, 31)
+
+    def test_another_problem(self):
+        vevent = _get_vevent(another_problem)
+        dtstart = datetimehelper.expand(vevent, berlin)
+        assert dtstart[0][0] == datetime.datetime(2013, 11, 13, 19, 0,
+                                                  tzinfo=berlin)
+        assert dtstart[-1][0] == datetime.datetime(2028, 11, 8, 19, 0,
+                                                   tzinfo=berlin)
