@@ -184,7 +184,7 @@ class Calendar(object):
         except Exception as error:
             logging.error(
                 'Failed to parse vcard {} during '
-                'update_href in collection ''{}'.format(href, self.name))
+                'update_vevent in collection ''{}'.format(href, self.name))
             logging.debug(traceback.format_exc(error))
             return False
 
