@@ -128,7 +128,6 @@ class Event(object):
     @property
     def start(self):
         start = self.vevent['DTSTART'].dt
-
         if self.allday:
             return start
         if start.tzinfo is None:

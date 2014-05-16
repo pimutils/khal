@@ -22,9 +22,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import calendar
-from datetime import date
-from datetime import time
-from datetime import datetime
+from datetime import date, datetime, time, timedelta
 
 import urwid
 
@@ -538,6 +536,11 @@ class StartEndEditor(urwid.WidgetWrap):
     """
 
     def __init__(self, start, end, conf):
+        self.allday = False
+        if not isinstance(start, datetime):
+            self.allday = True
+            end = end - timedelta(days=1)
+
         self.conf = conf
         self.startdt = start
         self.enddt = end
@@ -555,9 +558,6 @@ class StartEndEditor(urwid.WidgetWrap):
         self.starttimewidget = None
         self.enddatewidget = None
         self.endtimewidget = None
-        self.allday = False
-        if not isinstance(start, datetime):
-            self.allday = True
 
         self.checkallday = urwid.CheckBox('Allday', state=self.allday,
                                           on_state_change=self.toggle)
@@ -569,9 +569,11 @@ class StartEndEditor(urwid.WidgetWrap):
         :param checkbox: the checkbox instance that is used for toggling, gets
                          automatically passed by urwid (is not used)
         :type checkbox: checkbox
-        :param state: True if allday event, False if datetime
+        :param state: state the event will toggle to;
+                      True if allday event, False if datetime
         :type state: bool
         """
+
         self.allday = state
         datewidth = len(self.startdate) + 7
 
@@ -684,6 +686,8 @@ class StartEndEditor(urwid.WidgetWrap):
                 newenddatetime = tzinfo.localize(newenddatetime)
             except TypeError:
                 return None
+        else:
+            newenddatetime += timedelta(days=1)
         return newenddatetime
 
     @property
@@ -743,10 +747,11 @@ class EventDisplay(EventViewer):
         # start and end time/date
         if event.allday:
             startstr = event.start.strftime(self.conf.locale.dateformat)
-            if event.start == event.end:
+            end = event.end - timedelta(days=1)
+            if event.start == end:
                 lines.append(urwid.Text('On: ' + startstr))
             else:
-                endstr = event.end.strftime(self.conf.locale.dateformat)
+                endstr = end.strftime(self.conf.locale.dateformat)
                 lines.append(
                     urwid.Text('From: ' + startstr + ' to: ' + endstr))
 
@@ -914,6 +919,7 @@ class EventEditor(EventViewer):
                                                   self.accountchooser.account)
             else:
                 self.collection.update(self.event)
+            self.event.allday = self.startendeditor.allday
 
         self.cancel(refresh=True)
 
