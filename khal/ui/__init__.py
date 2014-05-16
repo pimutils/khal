@@ -913,6 +913,7 @@ class EventEditor(EventViewer):
             except KeyError:
                 self.event.vevent['SEQUENCE'] = 0
 
+            self.event.allday = self.startendeditor.allday
             if self.event.etag is None:  # has not been saved before
                 # TODO look for better way to detect this
                 self.event.account = self.accountchooser.account
@@ -922,7 +923,6 @@ class EventEditor(EventViewer):
                                                   self.accountchooser.account)
             else:
                 self.collection.update(self.event)
-            self.event.allday = self.startendeditor.allday
 
         self.cancel(refresh=True)
 
