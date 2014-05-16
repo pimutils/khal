@@ -188,9 +188,10 @@ class Calendar(object):
             logging.debug(traceback.format_exc(error))
             return False
 
-    def new_event(self, ical):
+    def new_event(self, ical, local_tz, default_tz):
         """creates new event form ical string"""
-        return Event(ical=ical, account=self.name)
+        return Event(ical=ical, account=self.name, local_tz=local_tz,
+                     default_tz=default_tz)
 
 
 class CalendarCollection(object):
@@ -254,9 +255,9 @@ class CalendarCollection(object):
         # TODO would be better to first add to new collection, then delete
         # currently not possible since new modifies event.etag
 
-    def new_event(self, ical, collection):
+    def new_event(self, ical, collection, local_tz, default_tz):
         """returns a new event"""
-        return self._calnames[collection].new_event(ical)
+        return self._calnames[collection].new_event(ical, local_tz, default_tz)
 
     def _db_needs_update(self):
         any([one._db_needs_update() for one in self.calendars])

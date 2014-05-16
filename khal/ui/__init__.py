@@ -500,8 +500,11 @@ class EventColumn(urwid.WidgetWrap):
                               timezone=self.conf.locale.default_timezone)
 
         # TODO proper default cal
-        event = self.collection.new_event(event.to_ical(),
-                                          self.collection.default_calendar_name)
+        event = self.collection.new_event(
+            event.to_ical(),
+            self.collection.default_calendar_name,
+            local_tz=self.conf.locale.local_timezone,
+            default_tz=self.conf.locale.default_timezone)
         self.edit(event)
         self.eventcount += 1
 
