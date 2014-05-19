@@ -26,6 +26,7 @@ from datetime import datetime
 import urwid
 
 from .base import CColumns, CPile
+from .widgets import DateWidget, TimeWidget
 
 
 class DateConversionError(Exception):
@@ -87,15 +88,17 @@ class StartEndEditor(urwid.WidgetWrap):
 
         datewidth = len(self.dts.startdate) + 7
 
-        edit = urwid.Edit(
-            caption=('', 'From: '), edit_text=self.dts.startdate, wrap='any')
+        edit = DateWidget(
+            self.conf.locale.longdateformat,
+            caption=('', 'From: '), edit_text=self.dts.startdate)
         edit = urwid.AttrMap(edit, self.bgs.startdate, 'editcp', )
         edit = urwid.Padding(
             edit, align='left', width=datewidth, left=0, right=1)
         self.widgets.startdate = edit
 
-        edit = urwid.Edit(
-            caption=('', 'To:   '), edit_text=self.dts.enddate, wrap='any')
+        edit = DateWidget(
+            self.conf.locale.longdateformat,
+            caption=('', 'To:   '), edit_text=self.dts.enddate)
         edit = urwid.AttrMap(edit, self.bgs.enddate, 'editcp', )
         edit = urwid.Padding(
             edit, align='left', width=datewidth, left=0, right=1)
@@ -106,13 +109,17 @@ class StartEndEditor(urwid.WidgetWrap):
             self.widgets.endtime = urwid.Text('')
         elif state is False:
             timewidth = len(self.dts.starttime) + 1
-            edit = urwid.Edit(edit_text=self.dts.starttime, wrap='any')
+            edit = TimeWidget(
+                self.conf.locale.timeformat,
+                edit_text=self.dts.starttime)
             edit = urwid.AttrMap(edit, self.bgs.starttime, 'editcp', )
             edit = urwid.Padding(
                 edit, align='left', width=len(self.dts.starttime) + 1, left=1)
             self.widgets.starttime = edit
 
-            edit = urwid.Edit(edit_text=self.dts.endtime, wrap='any')
+            edit = TimeWidget(
+                self.conf.locale.timeformat,
+                edit_text=self.dts.endtime)
             edit = urwid.AttrMap(edit, self.bgs.endtime, 'editcp', )
             edit = urwid.Padding(
                 edit, align='left', width=len(self.dts.endtime) + 1, left=1)
