@@ -617,7 +617,11 @@ class EventEditor(EventViewer):
         except KeyError:
             self.location = u''
 
-        self.startendeditor = StartEndEditor(event.start, event.end, self.conf)
+        if event.allday:
+            end = event.end - timedelta(days=1)
+        else:
+            end = event.end
+        self.startendeditor = StartEndEditor(event.start, end, self.conf)
         try:
             rrule = self.event.vevent['RRULE']
         except KeyError:
@@ -686,12 +690,16 @@ class EventEditor(EventViewer):
             # (timezone was missing after to_ical() )
             self.event.vevent.pop('DTSTART')
             self.event.vevent.add('DTSTART', self.startendeditor.newstart)
+            if self.event.allday:
+                end = self.startendeditor.newend + timedelta(days=1)
+            else:
+                end = self.startendeditor.newend
             try:
                 self.event.vevent.pop('DTEND')
-                self.event.vevent.add('DTEND', self.startendeditor.newend)
+                self.event.vevent.add('DTEND', end)
             except KeyError:
                 self.event.vevent.pop('DURATION')
-                duration = (self.startendeditor.newend -
+                duration = (end -
                             self.startendeditor.newstart)
                 self.event.vevent.add('DURATION', duration)
 

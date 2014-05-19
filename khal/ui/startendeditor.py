@@ -21,7 +21,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import urwid
 
@@ -55,12 +55,10 @@ class StartEndEditor(urwid.WidgetWrap):
         self.allday = False
         if not isinstance(start, datetime):
             self.allday = True
-            end = end - timedelta(days=1)
 
         self.conf = conf
         self.startdt = start
         self.enddt = end
-        # TODO cleanup
         self.dts = StartEnd(
             startdate=start.strftime(self.conf.locale.longdateformat),
             starttime=start.strftime(self.conf.locale.timeformat),
@@ -85,6 +83,7 @@ class StartEndEditor(urwid.WidgetWrap):
                       True if allday event, False if datetime
         :type state: bool
         """
+        self.allday = state
 
         datewidth = len(self.dts.startdate) + 7
 
@@ -135,13 +134,8 @@ class StartEndEditor(urwid.WidgetWrap):
         """
         returns True if content has been edited, False otherwise
         """
-        if self.checkallday.state:
-            rval = ((self.startdt != self.newstart) or
-                    (self.enddt != self.newend + timedelta(days=1)))
-        else:
-            rval = ((self.startdt != self.newstart) or
-                    (self.enddt != self.newend))
-        return rval
+        return ((self.startdt != self.newstart) or
+                (self.enddt != self.newend))
 
     @property
     def newstart(self):
@@ -202,17 +196,15 @@ class StartEndEditor(urwid.WidgetWrap):
                 newenddatetime = tzinfo.localize(newenddatetime)
             except TypeError:
                 return None
-        else:
-            newenddatetime += timedelta(days=1)
         return newenddatetime
 
     @property
     def _newenddate(self):
         try:
-            self.enddate = self.enddatewidget.original_widget.original_widget.get_edit_text(
+            self.dts.enddate = self.widgets.enddate.original_widget.original_widget.get_edit_text(
             )
             newenddate = datetime.strptime(
-                self.enddate,
+                self.dts.enddate,
                 self.conf.locale.longdateformat).date()
             self.bgs.enddate = 'edit'
             return newenddate
@@ -223,7 +215,7 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newendtime(self):
         try:
-            self.endtime = self.endtimewidget.original_widget.original_widget.get_edit_text(
+            self.endtime = self.widgets.endtime.original_widget.original_widget.get_edit_text(
             )
             newendtime = datetime.strptime(
                 self.endtime,
