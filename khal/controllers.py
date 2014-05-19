@@ -87,8 +87,11 @@ class NewFromString(object):
                                     conf.locale.longdatetimeformat,
                                     conf.locale.local_timezone,
                                     encoding=conf.locale.encoding)
-        # TODO proper default calendar
-        event = collection.new_event(event, collection.default_calendar_name)
+        event = collection.new_event(event,
+                                     collection.default_calendar_name,
+                                     conf.locale.local_timezone,
+                                     conf.locale.default_timezone,
+                                     )
 
         collection.new(event)
 

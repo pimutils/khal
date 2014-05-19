@@ -100,6 +100,9 @@
 # # commands. Valid khal commands are: calendar, agenda, interactive, new and
 # # printcalendars.
 #
+# default_calendar: None
+# # the default calendar used for new events, if none is given a random one
+# # will be used
 
 
 ##
@@ -130,4 +133,5 @@ firstweekday: 0
 
 [default]
 default_command: calendar
+default_calendar: home
 debug: 0

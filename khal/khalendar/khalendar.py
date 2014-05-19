@@ -198,6 +198,7 @@ class CalendarCollection(object):
 
     def __init__(self):
         self._calnames = dict()
+        self._default_calendar_name = None
 
     @property
     def calendars(self):
@@ -209,7 +210,10 @@ class CalendarCollection(object):
 
     @property
     def default_calendar_name(self):
-        return self.names[0]
+        if self._default_calendar_name in self.names:
+            return self._default_calendar_name
+        else:
+            return self.names[0]
 
     def append(self, calendar):
         self._calnames[calendar.name] = calendar
