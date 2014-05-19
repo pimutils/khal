@@ -29,6 +29,7 @@ from datetime import datetime
 import urwid
 
 from .. import aux
+from .widgets import DateWidget, TimeWidget
 
 from base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker
 
@@ -575,15 +576,19 @@ class StartEndEditor(urwid.WidgetWrap):
         self.allday = state
         datewidth = len(self.startdate) + 7
 
-        edit = urwid.Edit(
-            caption=('', 'From: '), edit_text=self.startdate, wrap='any')
+        edit = DateWidget(
+            self.conf.locale.longdateformat,
+            caption=('', 'From: '), edit_text=self.startdate,
+            )
         edit = urwid.AttrMap(edit, self.startdate_bg, 'editcp', )
         edit = urwid.Padding(
             edit, align='left', width=datewidth, left=0, right=1)
         self.startdatewidget = edit
 
-        edit = urwid.Edit(
-            caption=('', 'To:   '), edit_text=self.enddate, wrap='any')
+        edit = DateWidget(
+            self.conf.locale.longdateformat,
+            caption=('', 'To:   '), edit_text=self.enddate,
+            )
         edit = urwid.AttrMap(edit, self.enddate_bg, 'editcp', )
         edit = urwid.Padding(
             edit, align='left', width=datewidth, left=0, right=1)
@@ -594,13 +599,18 @@ class StartEndEditor(urwid.WidgetWrap):
             self.endtimewidget = urwid.Text('')
         elif state is False:
             timewidth = len(self.starttime) + 1
-            edit = urwid.Edit(edit_text=self.starttime, wrap='any')
+            edit = TimeWidget(
+                self.conf.locale.timeformat,
+                edit_text=self.starttime,
+            )
             edit = urwid.AttrMap(edit, self.starttime_bg, 'editcp', )
             edit = urwid.Padding(
                 edit, align='left', width=len(self.starttime) + 1, left=1)
             self.starttimewidget = edit
-
-            edit = urwid.Edit(edit_text=self.endtime, wrap='any')
+            edit = TimeWidget(
+                self.conf.locale.timeformat,
+                edit_text=self.endtime,
+            )
             edit = urwid.AttrMap(edit, self.endtime_bg, 'editcp', )
             edit = urwid.Padding(
                 edit, align='left', width=len(self.endtime) + 1, left=1)
