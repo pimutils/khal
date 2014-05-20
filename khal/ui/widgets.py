@@ -34,7 +34,6 @@ class DateTimeWidget(urwid.Edit):
         super(DateTimeWidget, self).__init__(wrap='any', **kwargs)
 
     def keypress(self, size, key):
-        self._get_dt()
         if key == 'ctrl x':
             self.decrease()
         elif key == 'ctrl a':
@@ -47,12 +46,18 @@ class DateTimeWidget(urwid.Edit):
         return datetime.datetime.strptime(date, self.dateformat)
 
     def increase(self):
-        date = self._get_dt() + self.timedelta
-        self.set_edit_text(date.strftime(self.dateformat))
+        try:
+            date = self._get_dt() + self.timedelta
+            self.set_edit_text(date.strftime(self.dateformat))
+        except ValueError:
+            pass
 
     def decrease(self):
-        date = self._get_dt() - self.timedelta
-        self.set_edit_text(date.strftime(self.dateformat))
+        try:
+            date = self._get_dt() - self.timedelta
+            self.set_edit_text(date.strftime(self.dateformat))
+        except ValueError:
+            pass
 
 
 class DateWidget(DateTimeWidget):
