@@ -28,6 +28,8 @@ import datetime
 
 import icalendar
 
+from ..compat import unicode_type, bytes_type
+
 
 class Event(object):
 
@@ -74,10 +76,14 @@ class Event(object):
         :param etag: the event's etag, will not be modified
         :type etag: str
         """
-        if isinstance(ical, basestring):
+        if isinstance(ical, unicode_type):
             self.vevent = icalendar.Event.from_ical(ical)
+        elif isinstance(ical, bytes_type):
+            self.vevent = icalendar.Event.from_ical(ical.decode('utf-8'))
         elif isinstance(ical, icalendar.cal.Event):
             self.vevent = ical
+        else:
+            raise ValueError
 
         self.allday = True
         self.color = color
@@ -119,6 +125,10 @@ class Event(object):
 
     @property
     def uid(self):
+        return self.vevent['UID']
+
+    @property
+    def ident(self):
         return self.vevent['UID']
 
     #@uid.setter
