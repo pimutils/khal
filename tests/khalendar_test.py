@@ -75,7 +75,7 @@ class TestCalendarTest(object):
 
     def test_new_event(self, cal_vdir):
         cal, vdir = cal_vdir
-        event = cal.new_event(event_today)
+        event = cal.new_event(event_today, **KWARGS)
         assert event.account == cal1
         cal.new(event)
         events = cal.get_allday_by_time_range(today)
@@ -94,7 +94,7 @@ class TestCalendarTest(object):
 
     def test_db_needs_update_after_insert(self, cal_vdir):
         cal, vdir = cal_vdir
-        event = cal.new_event(event_today)
+        event = cal.new_event(event_today, **KWARGS)
         cal.new(event)
         assert cal._db_needs_update() is False
 

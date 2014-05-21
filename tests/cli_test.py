@@ -60,7 +60,9 @@ goodlocale = Namespace(
 
 gooddefault = Namespace(
     {'default_command': 'calendar',
-     'debug': 0
+     'debug': 0,
+     'default_calendar': True,
+
      }
 )
 
