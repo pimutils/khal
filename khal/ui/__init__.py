@@ -22,15 +22,14 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import calendar
-from datetime import date
-from datetime import time
-from datetime import datetime
+from datetime import date, datetime, time, timedelta
 
 import urwid
 
 from .. import aux
 
-from base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker
+from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker
+from .startendeditor import StartEndEditor
 
 
 class DateConversionError(Exception):
@@ -502,8 +501,11 @@ class EventColumn(urwid.WidgetWrap):
                               timezone=self.conf.locale.default_timezone)
 
         # TODO proper default cal
-        event = self.collection.new_event(event.to_ical(),
-                                          self.collection.default_calendar_name)
+        event = self.collection.new_event(
+            event.to_ical(),
+            self.collection.default_calendar_name,
+            local_tz=self.conf.locale.local_timezone,
+            default_tz=self.conf.locale.default_timezone)
         self.edit(event)
         self.eventcount += 1
 
@@ -526,193 +528,6 @@ class RecursionEditor(urwid.WidgetWrap):
             text = 'Editing repitition rules is not supported yet'
             self.columns.contents.append((urwid.Text(text),
                                           self.columns.options()))
-
-
-class StartEndEditor(urwid.WidgetWrap):
-
-    """
-    editing start and nd times of the event
-
-    we cannot change timezones ATM  # TODO
-    pop up on strings not matching timeformat # TODO
-    """
-
-    def __init__(self, start, end, conf):
-        self.conf = conf
-        self.startdt = start
-        self.enddt = end
-        # TODO cleanup
-        self.startdate = self.startdt.strftime(
-            self.conf.locale.longdateformat)
-        self.starttime = self.startdt.strftime(self.conf.locale.timeformat)
-        self.enddate = self.enddt.strftime(self.conf.locale.longdateformat)
-        self.endtime = self.enddt.strftime(self.conf.locale.timeformat)
-        self.startdate_bg = 'edit'
-        self.starttime_bg = 'edit'
-        self.enddate_bg = 'edit'
-        self.endtime_bg = 'edit'
-        self.startdatewidget = None
-        self.starttimewidget = None
-        self.enddatewidget = None
-        self.endtimewidget = None
-        self.allday = False
-        if not isinstance(start, datetime):
-            self.allday = True
-
-        self.checkallday = urwid.CheckBox('Allday', state=self.allday,
-                                          on_state_change=self.toggle)
-        self.toggle(None, self.allday)
-
-    def toggle(self, checkbox, state):
-        """change from allday to datetime event
-
-        :param checkbox: the checkbox instance that is used for toggling, gets
-                         automatically passed by urwid (is not used)
-        :type checkbox: checkbox
-        :param state: True if allday event, False if datetime
-        :type state: bool
-        """
-        self.allday = state
-        datewidth = len(self.startdate) + 7
-
-        edit = urwid.Edit(
-            caption=('', 'From: '), edit_text=self.startdate, wrap='any')
-        edit = urwid.AttrMap(edit, self.startdate_bg, 'editcp', )
-        edit = urwid.Padding(
-            edit, align='left', width=datewidth, left=0, right=1)
-        self.startdatewidget = edit
-
-        edit = urwid.Edit(
-            caption=('', 'To:   '), edit_text=self.enddate, wrap='any')
-        edit = urwid.AttrMap(edit, self.enddate_bg, 'editcp', )
-        edit = urwid.Padding(
-            edit, align='left', width=datewidth, left=0, right=1)
-        self.enddatewidget = edit
-        if state is True:
-            timewidth = 1
-            self.starttimewidget = urwid.Text('')
-            self.endtimewidget = urwid.Text('')
-        elif state is False:
-            timewidth = len(self.starttime) + 1
-            edit = urwid.Edit(edit_text=self.starttime, wrap='any')
-            edit = urwid.AttrMap(edit, self.starttime_bg, 'editcp', )
-            edit = urwid.Padding(
-                edit, align='left', width=len(self.starttime) + 1, left=1)
-            self.starttimewidget = edit
-
-            edit = urwid.Edit(edit_text=self.endtime, wrap='any')
-            edit = urwid.AttrMap(edit, self.endtime_bg, 'editcp', )
-            edit = urwid.Padding(
-                edit, align='left', width=len(self.endtime) + 1, left=1)
-            self.endtimewidget = edit
-
-        columns = CPile([
-            CColumns([(datewidth, self.startdatewidget), (
-                timewidth, self.starttimewidget)], dividechars=1),
-            CColumns(
-                [(datewidth, self.enddatewidget),
-                 (timewidth, self.endtimewidget)],
-                dividechars=1),
-            self.checkallday
-            ], focus_item=2)
-        urwid.WidgetWrap.__init__(self, columns)
-
-    @property
-    def changed(self):
-        """
-        returns True if content has been edited, False otherwise
-        """
-        return ((self.startdt != self.newstart) or
-                (self.enddt != self.newend))
-
-    @property
-    def newstart(self):
-        newstartdatetime = self._newstartdate
-        if not self.checkallday.state:
-            if not hasattr(self.startdt, 'tzinfo') or self.startdt.tzinfo is None:
-                tzinfo = self.conf.locale.default_timezone
-            else:
-                tzinfo = self.startdt.tzinfo
-            try:
-                newstarttime = self._newstarttime
-                newstartdatetime = datetime.combine(
-                    newstartdatetime, newstarttime)
-                newstartdatetime = tzinfo.localize(newstartdatetime)
-            except TypeError:
-                return None
-        return newstartdatetime
-
-    @property
-    def _newstartdate(self):
-        try:
-            self.startdate = self.startdatewidget.original_widget.original_widget.get_edit_text(
-            )
-            newstartdate = datetime.strptime(
-                self.startdate,
-                self.conf.locale.longdateformat).date()
-            self.startdate_bg = 'edit'
-            return newstartdate
-        except ValueError:
-            self.startdate_bg = 'alert'
-            return None
-
-    @property
-    def _newstarttime(self):
-        try:
-            self.starttime = self.starttimewidget.original_widget.original_widget.get_edit_text(
-            )
-            newstarttime = datetime.strptime(
-                self.starttime,
-                self.conf.locale.timeformat).time()
-            self.starttime_bg = 'edit'
-            return newstarttime
-        except ValueError:
-            self.starttime_bg = 'alert'
-            return None
-
-    @property
-    def newend(self):
-        newenddatetime = self._newenddate
-        if not self.checkallday.state:
-            if not hasattr(self.enddt, 'tzinfo') or self.enddt.tzinfo is None:
-                tzinfo = self.conf.locale.default_timezone
-            else:
-                tzinfo = self.enddt.tzinfo
-            try:
-                newendtime = self._newendtime
-                newenddatetime = datetime.combine(newenddatetime, newendtime)
-                newenddatetime = tzinfo.localize(newenddatetime)
-            except TypeError:
-                return None
-        return newenddatetime
-
-    @property
-    def _newenddate(self):
-        try:
-            self.enddate = self.enddatewidget.original_widget.original_widget.get_edit_text(
-            )
-            newenddate = datetime.strptime(
-                self.enddate,
-                self.conf.locale.longdateformat).date()
-            self.enddate_bg = 'edit'
-            return newenddate
-        except ValueError:
-            self.enddate_bg = 'alert'
-            return None
-
-    @property
-    def _newendtime(self):
-        try:
-            self.endtime = self.endtimewidget.original_widget.original_widget.get_edit_text(
-            )
-            newendtime = datetime.strptime(
-                self.endtime,
-                self.conf.locale.timeformat).time()
-            self.endtime_bg = 'edit'
-            return newendtime
-        except ValueError:
-            self.endtime_bg = 'alert'
-            return None
 
 
 class EventViewer(urwid.WidgetWrap):
@@ -743,10 +558,11 @@ class EventDisplay(EventViewer):
         # start and end time/date
         if event.allday:
             startstr = event.start.strftime(self.conf.locale.dateformat)
-            if event.start == event.end:
+            end = event.end - timedelta(days=1)
+            if event.start == end:
                 lines.append(urwid.Text('On: ' + startstr))
             else:
-                endstr = event.end.strftime(self.conf.locale.dateformat)
+                endstr = end.strftime(self.conf.locale.dateformat)
                 lines.append(
                     urwid.Text('From: ' + startstr + ' to: ' + endstr))
 
@@ -801,7 +617,11 @@ class EventEditor(EventViewer):
         except KeyError:
             self.location = u''
 
-        self.startendeditor = StartEndEditor(event.start, event.end, self.conf)
+        if event.allday:
+            end = event.end - timedelta(days=1)
+        else:
+            end = event.end
+        self.startendeditor = StartEndEditor(event.start, end, self.conf)
         try:
             rrule = self.event.vevent['RRULE']
         except KeyError:
@@ -870,12 +690,16 @@ class EventEditor(EventViewer):
             # (timezone was missing after to_ical() )
             self.event.vevent.pop('DTSTART')
             self.event.vevent.add('DTSTART', self.startendeditor.newstart)
+            if self.event.allday:
+                end = self.startendeditor.newend + timedelta(days=1)
+            else:
+                end = self.startendeditor.newend
             try:
                 self.event.vevent.pop('DTEND')
-                self.event.vevent.add('DTEND', self.startendeditor.newend)
+                self.event.vevent.add('DTEND', end)
             except KeyError:
                 self.event.vevent.pop('DURATION')
-                duration = (self.startendeditor.newend -
+                duration = (end -
                             self.startendeditor.newstart)
                 self.event.vevent.add('DURATION', duration)
 
@@ -890,21 +714,24 @@ class EventEditor(EventViewer):
         saves the event to the db (only when it has been changed)
         :param button: not needed, passed via the button press
         """
-        changed = self.changed  # need to call this to set date backgrounds to False
+        # need to call this to set date backgrounds to False
+        changed = self.changed
         self.update()
-        if 'alert' in [self.startendeditor.startdate_bg,
-                       self.startendeditor.starttime_bg,
-                       self.startendeditor.enddate_bg,
-                       self.startendeditor.endtime_bg]:
-            self.startendeditor.toggle(None, state=self.startendeditor.allday)
+        if 'alert' in [self.startendeditor.bgs.startdate,
+                       self.startendeditor.bgs.starttime,
+                       self.startendeditor.bgs.enddate,
+                       self.startendeditor.bgs.endtime]:
+            self.startendeditor.refresh(None, state=self.startendeditor.allday)
             self.pile.set_focus(1)  # the startendeditor
             return
+
         if changed is True:
             try:
                 self.event.vevent['SEQUENCE'] += 1
             except KeyError:
                 self.event.vevent['SEQUENCE'] = 0
 
+            self.event.allday = self.startendeditor.allday
             if self.event.etag is None:  # has not been saved before
                 # TODO look for better way to detect this
                 self.event.account = self.accountchooser.account

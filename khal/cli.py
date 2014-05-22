@@ -211,6 +211,16 @@ class Section(object):
         """returns pytz timezone"""
         return pytz.timezone(value)
 
+    def _parse_commands(self, command):
+        commands = [
+            'agenda', 'calendar', 'new', 'interactive', 'printcalendars']
+        if command not in commands:
+            logging.error("Invalid value '{}' for option 'default_command' in "
+                          "section 'default'".format(command))
+            return None
+        else:
+            return command
+
 
 class CalendarSection(Section):
 
@@ -265,17 +275,8 @@ class DefaultSection(Section):
         self._schema = [
             ('debug', False, self._parse_bool_string),
             ('default_command', 'calendar', self._parse_commands),
+            ('default_calendar', True, None),
         ]
-
-    def _parse_commands(self, command):
-        commands = [
-            'agenda', 'calendar', 'new', 'interactive', 'printcalendars']
-        if command not in commands:
-            logging.error("Invalid value '{}' for option 'default_command' in "
-                          "section 'default'".format(command))
-            return None
-        else:
-            return command
 
 
 class ConfigParser(object):
@@ -372,6 +373,25 @@ class ConfigParser(object):
                 self.dump(o, '\t' * tab + intro + ':', tab + 1)
 
 
+def validate(conf, logger):
+    """
+    validate the config
+    """
+    rval = True
+    cal_name = conf.default.default_calendar
+    if cal_name is True:
+        conf.default.default_calendar = conf.calendars[0].name
+
+    else:
+        if not cal_name in [cal.name for cal in conf.calendars]:
+            logger.fatal('{} is not a valid calendar'.format(cal_name))
+            rval = False
+    if rval:
+        return conf
+    else:
+        return None
+
+
 def main_khal():
     capture_user_interruption()
 
@@ -394,6 +414,10 @@ def main_khal():
 
     conf = ConfigParser().parse_config(arguments['-c'])
 
+    # TODO use some existing lib and move all the validation from ConfigParse
+    # into validate as well
+    conf = validate(conf, logger)
+
     if conf is None:
         sys.exit('Invalid config file, exiting.')
 
@@ -411,6 +435,7 @@ def main_khal():
                 local_tz=conf.locale.local_timezone,
                 default_tz=conf.locale.default_timezone
             ))
+    collection._default_calendar_name = conf.default.default_calendar
     commands = ['agenda', 'calendar', 'new', 'interactive', 'printcalendars']
 
     if not any([arguments[com] for com in commands]):
