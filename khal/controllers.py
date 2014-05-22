@@ -30,11 +30,26 @@ from khal import __version__, __productname__
 from .terminal import bstring, colored, get_terminal_size, merge_columns
 
 
-def get_agenda(collection, width):
+def get_agenda(collection, daylist, width=45):
+    """returns a list of events scheduled for all days in daylist
+
+    included are header "rows"
+    :param collection:
+    :type collection: khalendar.CalendarCollection
+    :param daylist: a list of all days for which the events should be return,
+                    including what should be printed as a header
+    :type collection: list(tuple(datetime.date, str))
+    :returns: a list to be printed as the agenda for the given days
+    :rtype: list(str)
+
+    """
     event_column = list()
-    today = datetime.date.today()
-    tomorrow = today + datetime.timedelta(days=1)
-    daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
+
+    if daylist is None:
+        today = datetime.date.today()
+        tomorrow = today + datetime.timedelta(days=1)
+        daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
+
     for day, dayname in daylist:
         # TODO unify allday and datetime events
         start = datetime.datetime.combine(day, datetime.time.min)
@@ -56,12 +71,12 @@ def get_agenda(collection, width):
 
 
 class Calendar(object):
-    def __init__(self, collection, firstweekday=0, encoding='utf-8'):
+    def __init__(self, collection, days=None, firstweekday=0, encoding='utf-8'):
 
         term_width, _ = get_terminal_size()
         lwidth = 25
         rwidth = term_width - lwidth - 4
-        event_column = get_agenda(collection, rwidth)
+        event_column = get_agenda(collection, days, width=rwidth)
 
         calendar_column = calendar_display.vertical_month(
             firstweekday=firstweekday)
@@ -71,9 +86,9 @@ class Calendar(object):
 
 
 class Agenda(object):
-    def __init__(self, collection, firstweekday=0, encoding='utf-8'):
+    def __init__(self, collection, days=None, firstweekday=0, encoding='utf-8'):
         term_width, _ = get_terminal_size()
-        event_column = get_agenda(collection, term_width)
+        event_column = get_agenda(collection, days, term_width)
         print('\n'.join(event_column).encode(encoding))
 
 

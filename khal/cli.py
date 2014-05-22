@@ -423,12 +423,12 @@ def main_khal():
 
     if arguments['calendar']:
         controllers.Calendar(collection,
-                             conf.locale.firstweekday,
-                             conf.locale.encoding)
+                             firstweekday=conf.locale.firstweekday,
+                             encoding=conf.locale.encoding)
     elif arguments['agenda']:
         controllers.Agenda(collection,
-                           conf.locale.firstweekday,
-                           conf.locale.encoding)
+                           firstweekday=conf.locale.firstweekday,
+                           encoding=conf.locale.encoding)
     elif arguments['new']:
         controllers.NewFromString(collection, conf, arguments['DESCRIPTION'])
     elif arguments['interactive']:
