@@ -59,7 +59,8 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat):
 
     removes "used" elements of list
 
-    :returns: datetimeobject
+    :returns: a datetime
+    :rtype: datetime.datetime
     """
     try:
         # including year
@@ -81,6 +82,31 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat):
     for _ in range(parts):
         date_list.pop(0)
     return dtstart
+
+
+def datefstr(datestr, dateformat, longdateformat):
+    """
+    converts a date as a string to datetime.date
+
+    if no year is given, the current year is used
+
+    :returns: a date
+    :rtype: datetime.date
+    """
+    try:
+        # including year
+        dtstart = datetime.strptime(datestr, longdateformat)
+    except ValueError:
+        # without year
+        try:
+            dtstart = datetime.strptime(datestr, dateformat)
+            if dtstart.timetuple()[0] == 1900:
+                dtstart = datetime(date.today().timetuple()[0],
+                                   *dtstart.timetuple()[1:5])
+        except ValueError:
+            raise InvalidDate(
+                '"{}" does not look like a valid date'.format(datestr))
+    return dtstart.date()
 
 
 def generate_random_uid():
@@ -258,3 +284,7 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
     return event
+
+
+class InvalidDate(Exception):
+    pass

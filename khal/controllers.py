@@ -22,7 +22,10 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+
 import datetime
+import logging
+import sys
 import textwrap
 
 from khal import aux, calendar_display
@@ -30,25 +33,34 @@ from khal import __version__, __productname__
 from .terminal import bstring, colored, get_terminal_size, merge_columns
 
 
-def get_agenda(collection, daylist, width=45):
+def get_agenda(collection, dateformat, longdateformat, dates=[], width=45):
     """returns a list of events scheduled for all days in daylist
 
     included are header "rows"
     :param collection:
     :type collection: khalendar.CalendarCollection
-    :param daylist: a list of all days for which the events should be return,
+    :param dates: a list of all dates for which the events should be return,
                     including what should be printed as a header
-    :type collection: list(tuple(datetime.date, str))
+    :type collection: list(str)
     :returns: a list to be printed as the agenda for the given days
     :rtype: list(str)
 
     """
     event_column = list()
 
-    if daylist is None:
+    if dates == []:
         today = datetime.date.today()
         tomorrow = today + datetime.timedelta(days=1)
         daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
+    else:
+        try:
+            daylist = [aux.datefstr(date, dateformat, longdateformat) for date in dates]
+        except aux.InvalidDate as error:
+            logging.fatal(error)
+            sys.exit(1)
+        daynames = [date.strftime(longdateformat) for date in daylist]
+
+        daylist = zip(daylist, daynames)
 
     for day, dayname in daylist:
         # TODO unify allday and datetime events
@@ -71,13 +83,12 @@ def get_agenda(collection, daylist, width=45):
 
 
 class Calendar(object):
-    def __init__(self, collection, days=None, firstweekday=0, encoding='utf-8'):
-
+    def __init__(self, collection, date=[], firstweekday=0, encoding='utf-8',
+                 **kwargs):
         term_width, _ = get_terminal_size()
         lwidth = 25
         rwidth = term_width - lwidth - 4
-        event_column = get_agenda(collection, days, width=rwidth)
-
+        event_column = get_agenda(collection, dates=date, width=rwidth, **kwargs)
         calendar_column = calendar_display.vertical_month(
             firstweekday=firstweekday)
 
@@ -86,9 +97,10 @@ class Calendar(object):
 
 
 class Agenda(object):
-    def __init__(self, collection, days=None, firstweekday=0, encoding='utf-8'):
+    def __init__(self, collection, date=None, firstweekday=0, encoding='utf-8',
+                 **kwargs):
         term_width, _ = get_terminal_size()
-        event_column = get_agenda(collection, days, term_width)
+        event_column = get_agenda(collection, dates=date, width=term_width, **kwargs)
         print('\n'.join(event_column).encode(encoding))
 
 
