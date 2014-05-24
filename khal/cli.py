@@ -216,7 +216,7 @@ class Section(object):
             'agenda', 'calendar', 'new', 'interactive', 'printcalendars']
         if command not in commands:
             logger.error("Invalid value '{}' for option 'default_command' in "
-                          "section 'default'".format(command))
+                         "section 'default'".format(command))
             return None
         else:
             return command

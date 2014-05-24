@@ -77,8 +77,8 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat):
                                *dtstart.timetuple()[1:5])
         # if start date lies in the past use next year
         # if dtstart < datetime.today():
-            # dtstart = datetime(dtstart.timetuple()[0] + 1,
-                               #*dtstart.timetuple()[1:6])
+        #     dtstart = datetime(dtstart.timetuple()[0] + 1,
+        #                        *dtstart.timetuple()[1:6])
     for _ in range(parts):
         date_list.pop(0)
     return dtstart

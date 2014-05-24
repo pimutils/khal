@@ -148,7 +148,7 @@ class StartEndEditor(urwid.WidgetWrap):
     def newstart(self):
         newstartdatetime = self._newstartdate
         if not self.checkallday.state:
-            if not hasattr(self.startdt, 'tzinfo') or self.startdt.tzinfo is None:
+            if getattr(self.startdt, 'tzinfo', None) is None:
                 tzinfo = self.conf.locale.default_timezone
             else:
                 tzinfo = self.startdt.tzinfo
@@ -164,8 +164,10 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newstartdate(self):
         try:
-            self.dts.startdate = self.widgets.startdate.original_widget.original_widget.get_edit_text(
-            )
+            self.dts.startdate = \
+                self.widgets.startdate. \
+                original_widget.original_widget.get_edit_text()
+
             newstartdate = datetime.strptime(
                 self.dts.startdate,
                 self.conf.locale.longdateformat).date()
@@ -178,8 +180,10 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newstarttime(self):
         try:
-            self.dts.starttime = self.widgets.starttime.original_widget.original_widget.get_edit_text(
-            )
+            self.dts.starttime = \
+                self.widgets.starttime. \
+                original_widget.original_widget.get_edit_text()
+
             newstarttime = datetime.strptime(
                 self.dts.starttime,
                 self.conf.locale.timeformat).time()
@@ -208,8 +212,9 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newenddate(self):
         try:
-            self.dts.enddate = self.widgets.enddate.original_widget.original_widget.get_edit_text(
-            )
+            self.dts.enddate = self.widgets.enddate. \
+                original_widget.original_widget.get_edit_text()
+
             newenddate = datetime.strptime(
                 self.dts.enddate,
                 self.conf.locale.longdateformat).date()
@@ -222,8 +227,9 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def _newendtime(self):
         try:
-            self.endtime = self.widgets.endtime.original_widget.original_widget.get_edit_text(
-            )
+            self.endtime = self.widgets.endtime. \
+                original_widget.original_widget.get_edit_text()
+
             newendtime = datetime.strptime(
                 self.endtime,
                 self.conf.locale.timeformat).time()

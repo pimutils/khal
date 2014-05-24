@@ -1,5 +1,4 @@
 from datetime import date, datetime, timedelta
-import logging
 
 import dateutil.rrule
 import pytz
@@ -63,9 +62,10 @@ def expand(vevent, default_tz, href=''):
 
     if ((not getattr(rrule._until, 'tzinfo', True)) and
             (getattr(vevent['DTSTART'].dt, 'tzinfo', False))):
-                rrule._until = vevent['DTSTART'].dt.tzinfo.localize(rrule._until)
+                rrule._until = vevent['DTSTART'].dt.tzinfo \
+                    .localize(rrule._until)
     logger.debug('calculating recurrence dates for {0}, '
-                  'this might take some time.'.format(href))
+                 'this might take some time.'.format(href))
     dtstartl = list(rrule)
 
     if len(dtstartl) == 0:

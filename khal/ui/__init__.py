@@ -309,11 +309,13 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             if contains_today:
                 focus_item = number
             weeks.append(week)
-        if clean_first_row and weeks[0][1].date.month != weeks[0][7].date.month:
+        if clean_first_row and \
+           weeks[0][1].date.month != weeks[0][7].date.month:
             if focus_item is not None:
                 focus_item = focus_item - 1
             return weeks[1:], focus_item
-        elif clean_last_row and weeks[-1][1].date.month != weeks[-1][7].date.month:
+        elif clean_last_row and \
+                weeks[-1][1].date.month != weeks[-1][7].date.month:
             return weeks[:-1], focus_item
         else:
             return weeks, focus_item
@@ -456,7 +458,6 @@ class EventColumn(urwid.WidgetWrap):
         self.destroy()
         self.container.contents.append((self.divider,
                                         ('pack', None)))
-                                        # self.container.options()))
         self.container.contents.append(
             (EventDisplay(self.conf, event, collection=self.collection),
              self.container.options()))
@@ -470,7 +471,7 @@ class EventColumn(urwid.WidgetWrap):
         self.destroy()
         self.editor = True
         # self.container.contents.append((self.divider,
-                                        # self.container.options()))
+        #                                 self.container.options()))
         self.container.contents.append((self.divider,
                                         ('pack', None)))
         self.container.contents.append(
@@ -483,7 +484,7 @@ class EventColumn(urwid.WidgetWrap):
         """
         if an EventViewer or EventEditor is displayed, remove it
         """
-        if refresh and not self.date is None:
+        if refresh and self.date is not None:
             self.update(self.date)
         self.editor = False
         if (len(self.container.contents) > 2 and
@@ -678,9 +679,11 @@ class EventEditor(EventViewer):
             self.event.vevent['SUMMARY'] = self.summary.get_edit_text()
             changed = True
 
-        for key, prop in [('DESCRIPTION', self.description), ('LOCATION', self.location)]:
-            if ((key in self.event.vevent and prop.get_edit_text() != self.event.vevent[key]) or
-                    prop.get_edit_text() != ''):
+        for key, prop in [
+            ('DESCRIPTION', self.description),
+            ('LOCATION', self.location)
+        ]:
+            if prop.get_edit_text() != self.event.vevent.get(key, ''):
                 self.event.vevent[key] = prop.get_edit_text()
                 changed = True
 

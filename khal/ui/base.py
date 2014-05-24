@@ -48,21 +48,21 @@ def vimify(key):
 class CColumns(urwid.Columns):
 
     def keypress(self, size, key):
-#        key = vimify(key)
+        # key = vimify(key)
         return urwid.Columns.keypress(self, size, key)
 
 
 class CPile(urwid.Pile):
 
     def keypress(self, size, key):
-#        key = vimify(key)
+        # key = vimify(key)
         return urwid.Pile.keypress(self, size, key)
 
 
 class CSimpleFocusListWalker(urwid.SimpleFocusListWalker):
 
     def keypress(self, size, key):
-#        key = vimify(key)
+        # key = vimify(key)
         return urwid.SimpleFocusListWalker.keypress(self, size, key)
 
 

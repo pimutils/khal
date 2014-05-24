@@ -65,7 +65,6 @@ from __future__ import print_function
 
 import calendar
 import datetime
-import logging
 from os import makedirs, path
 import sys
 import sqlite3
@@ -443,8 +442,9 @@ class SQLiteDb(object):
             event_list.append(event)
         return event_list
 
-    def get_allday_range(self, start, end=None, account=None,
-                         color='', readonly=False, unicode_symbols=True, show_deleted=True):
+    def get_allday_range(self, start, end=None, account=None, color='',
+                         readonly=False, unicode_symbols=True,
+                         show_deleted=True):
         self._check_account(account)
         if account is None:
             raise Exception('need to specify an account')

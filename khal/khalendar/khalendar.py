@@ -31,7 +31,6 @@ for caching (see backend if you're interested).
 If you want to see how the sausage is made:
     Welcome to the sausage factory!
 """
-import logging
 import os
 import os.path
 import traceback
@@ -130,7 +129,7 @@ class Calendar(object):
                                     etag=event.etag)
             except Exception as error:
                 logger.error('Failed to parse vcard {} from collection {} '
-                              'during update'.format(event.href, self.name))
+                             'during update'.format(event.href, self.name))
                 logger.debug(traceback.format_exc(error))
 
     def new(self, event):
