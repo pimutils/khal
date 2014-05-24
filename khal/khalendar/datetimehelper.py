@@ -4,6 +4,10 @@ import logging
 import dateutil.rrule
 import pytz
 
+from .. import log
+
+logger = log.logger
+
 
 class UnsupportedRecursion(Exception):
     """raised if the RRULE is not understood by dateutil.rrule"""
@@ -60,7 +64,7 @@ def expand(vevent, default_tz, href=''):
     if ((not getattr(rrule._until, 'tzinfo', True)) and
             (getattr(vevent['DTSTART'].dt, 'tzinfo', False))):
                 rrule._until = vevent['DTSTART'].dt.tzinfo.localize(rrule._until)
-    logging.debug('calculating recurrence dates for {0}, '
+    logger.debug('calculating recurrence dates for {0}, '
                   'this might take some time.'.format(href))
     dtstartl = list(rrule)
 
