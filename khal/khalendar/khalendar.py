@@ -31,7 +31,6 @@ for caching (see backend if you're interested).
 If you want to see how the sausage is made:
     Welcome to the sausage factory!
 """
-import logging
 import os
 import os.path
 import traceback
@@ -40,6 +39,9 @@ from vdirsyncer.storage import FilesystemStorage
 
 from . import backend
 from .event import Event
+from .. import log
+
+logger = log.logger
 
 
 class BaseCalendar(object):
@@ -126,9 +128,9 @@ class Calendar(object):
                                     event.href,
                                     etag=event.etag)
             except Exception as error:
-                logging.error('Failed to parse vcard {} from collection {} '
-                              'during update'.format(event.href, self.name))
-                logging.debug(traceback.format_exc(error))
+                logger.error('Failed to parse vcard {} from collection {} '
+                             'during update'.format(event.href, self.name))
+                logger.debug(traceback.format_exc(error))
 
     def new(self, event):
         """save a new event to the database
@@ -146,10 +148,10 @@ class Calendar(object):
                                 etag=etag)
             self._dbtool.set_ctag(self.name, self.local_ctag())
         except Exception as error:
-            logging.error(
+            logger.error(
                 'Failed to parse vcard {} during new in collection '
                 '{}'.format(event.href, self.name))
-            logging.debug(traceback.format_exc(error))
+            logger.debug(traceback.format_exc(error))
 
     def delete(self, event):
         """delete event from this collection
@@ -182,10 +184,10 @@ class Calendar(object):
                                 ignore_invalid_items=True)
             return True
         except Exception as error:
-            logging.error(
+            logger.error(
                 'Failed to parse vcard {} during '
                 'update_vevent in collection ''{}'.format(href, self.name))
-            logging.debug(traceback.format_exc(error))
+            logger.debug(traceback.format_exc(error))
             return False
 
     def new_event(self, ical, local_tz, default_tz):

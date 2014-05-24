@@ -65,7 +65,6 @@ from __future__ import print_function
 
 import calendar
 import datetime
-import logging
 from os import makedirs, path
 import sys
 import sqlite3
@@ -77,6 +76,9 @@ import xdg.BaseDirectory
 
 from .event import Event
 from . import datetimehelper
+from .. import log
+
+logger = log.logger
 
 
 # TODO fix that event/vevent mess
@@ -125,11 +127,11 @@ class SQLiteDb(object):
         dbdir = self.db_path.rsplit('/', 1)[0]
         if not path.isdir(dbdir):
             try:
-                logging.debug('trying to create the directory for the db')
+                logger.debug('trying to create the directory for the db')
                 makedirs(dbdir, mode=0770)
-                logging.debug('success')
+                logger.debug('success')
             except OSError as error:
-                logging.fatal('failed to create {0}: {1}'.format(dbdir, error))
+                logger.fatal('failed to create {0}: {1}'.format(dbdir, error))
                 raise CouldNotCreateDbDir
 
     def _check_table_version(self):
@@ -154,7 +156,7 @@ class SQLiteDb(object):
         """
         try:
             self.sql_ex('CREATE TABLE IF NOT EXISTS version (version INTEGER)')
-            logging.debug("created version table")
+            logger.debug("created version table")
         except Exception as error:
             sys.stderr.write('Failed to connect to database,'
                              'Unknown Error: ' + str(error) + "\n")
@@ -167,7 +169,7 @@ class SQLiteDb(object):
                 last_sync TEXT,
                 ctag FLOAT
                 )''')
-            logging.debug("created accounts table")
+            logger.debug("created accounts table")
         except Exception as error:
             sys.stderr.write('Failed to connect to database,'
                              'Unknown Error: ' + str(error) + "\n")
@@ -217,7 +219,7 @@ class SQLiteDb(object):
         sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
         stuple = (account, '')
         self.sql_ex(sql_s, stuple)
-        logging.debug("made sure tables for {0} exists".format(account))
+        logger.debug("made sure tables for {0} exists".format(account))
 
     def needs_update(self, account, href_etag_list):
         """checks if we need to update this vcard
@@ -440,8 +442,9 @@ class SQLiteDb(object):
             event_list.append(event)
         return event_list
 
-    def get_allday_range(self, start, end=None, account=None,
-                         color='', readonly=False, unicode_symbols=True, show_deleted=True):
+    def get_allday_range(self, start, end=None, account=None, color='',
+                         readonly=False, unicode_symbols=True,
+                         show_deleted=True):
         self._check_account(account)
         if account is None:
             raise Exception('need to specify an account')

@@ -92,7 +92,7 @@ class Event(object):
             uid = self.vevent['UID']
             href = uid + '.ics'
 
-        #if uid is None and self.vevent.get('UID', '') == '':
+        # if uid is None and self.vevent.get('UID', '') == '':
 
         self.account = account
         self.readonly = readonly
@@ -131,9 +131,9 @@ class Event(object):
     def ident(self):
         return self.vevent['UID']
 
-    #@uid.setter
-    #def uid(self, value):
-        #self.vevent['UID'] = value
+    # @uid.setter
+    # def uid(self, value):
+    #     self.vevent['UID'] = value
 
     @property
     def start(self):
@@ -272,8 +272,10 @@ class Event(object):
         timezone.add('TZID', tz)
 
         # FIXME should match year of the event, not this year
-        daylight, standard = [(num, dt) for num, dt in enumerate(
-            tz._utc_transition_times) if dt.year == datetime.datetime.today().year]
+        this_year = datetime.datetime.today().year
+        daylight, standard = [(num, dt) for num, dt
+                              in enumerate(tz._utc_transition_times)
+                              if dt.year == this_year]
 
         timezone_daylight = icalendar.TimezoneDaylight()
         timezone_daylight.add('TZNAME', tz._transition_info[daylight[0]][2])

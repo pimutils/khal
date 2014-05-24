@@ -54,7 +54,8 @@ def get_agenda(collection, dateformat, longdateformat, dates=[], width=45):
         daylist = [(today, 'Today:'), (tomorrow, 'Tomorrow:')]
     else:
         try:
-            daylist = [aux.datefstr(date, dateformat, longdateformat) for date in dates]
+            daylist = [aux.datefstr(date, dateformat, longdateformat)
+                       for date in dates]
         except aux.InvalidDate as error:
             logging.fatal(error)
             sys.exit(1)
@@ -88,7 +89,8 @@ class Calendar(object):
         term_width, _ = get_terminal_size()
         lwidth = 25
         rwidth = term_width - lwidth - 4
-        event_column = get_agenda(collection, dates=date, width=rwidth, **kwargs)
+        event_column = get_agenda(collection, dates=date, width=rwidth,
+                                  **kwargs)
         calendar_column = calendar_display.vertical_month(
             firstweekday=firstweekday)
 
@@ -100,7 +102,8 @@ class Agenda(object):
     def __init__(self, collection, date=None, firstweekday=0, encoding='utf-8',
                  **kwargs):
         term_width, _ = get_terminal_size()
-        event_column = get_agenda(collection, dates=date, width=term_width, **kwargs)
+        event_column = get_agenda(collection, dates=date, width=term_width,
+                                  **kwargs)
         print('\n'.join(event_column).encode(encoding))
 
 
