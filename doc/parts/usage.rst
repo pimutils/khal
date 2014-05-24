@@ -1,10 +1,19 @@
 Usage
 -----
+
 **install**
 
-::
+You can install *khal* from source by executing::
 
-    python setup.py install
+     pip install git+git://github.com/geier/khal.git
+
+Make sure you have ``sqlite3`` (normally available by default), icalendar_, urwid
+(>0.9) and ``pyxdg`` installed.
+
+khal has so far been successfully tested on recent versions of FreeBSD,
+NetBSD, Debian and Ubuntu with python 2.7.
+
+.. _icalendar: https://github.com/collective/icalendar
 
 **configure**
 
@@ -12,11 +21,14 @@ copy ``khal.conf.sample`` to ``~/.khal/khal.conf`` or
 ``~/.config/khal/khal.conf`` and edit to your liking.
 
 **syncing**
+
 To get *khal* working with CalDAV you will first need to setup vdirsyncer_.
 After each start *khal* will automatically check if anything has changed and
 automatically update its caching db (this may take some time after the initial
 sync, especially for large calendar collections). Therefore you might want to
-execute *khal* automatically after syncing with vdirsyncer_ (e.g. via cron).
+execute *khal* automatically after syncing with vdirsyncer (e.g. via cron).
+
+.. _vdirsyncer: https://github.com/untitaker/vdirsyncer
 
 **basic usage**
 
@@ -156,6 +168,3 @@ Luck!
 
 Seriously: be careful when changing timezones and do check if khal shows the
 correct times anyway (and please report back if it doesn't).
-
-
-.. _vdirsyncer: https://github.com/untitaker/vdirsyncer

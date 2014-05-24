@@ -26,7 +26,7 @@ help:
 assemble: ../parts/about.rst ../parts/license.rst ../parts/usage.rst ../parts/misc.rst
 	rm -f src/pages/usage.rst src/pages/about.rst
 	echo 'Usage\n=====\n' > src/pages/usage.rst
-	cat ../parts/installation.rst ../parts/usage.rst >> src/pages/usage.rst
+	cat ../parts/usage.rst >> src/pages/usage.rst
 	cat ../parts/about.rst ../parts/license.rst > src/pages/about.rst
 	cat ../parts/faq.rst > src/pages/faq.rst
 
