@@ -1,5 +1,9 @@
 About
 =====
+
+.. image:: https://travis-ci.org/geier/khal.svg?branch=master
+    :target: https://travis-ci.org/geier/khal
+
 *Khal* is a standards based CLI (console) calendar program. CalDAV_ compatibiliy
 is achieved by using vdir_/vdirsyncer_ as a backend, `allowing syncing of
 calendars with a variety of other programs on a host of different platforms`__.
@@ -37,28 +41,22 @@ if it doesn't. You can reach me by email at khal (at) lostpackets (dot) de
 .. _github: https://github.com/geier/khal/
 .. __: http://en.wikipedia.org/wiki/Comparison_of_CalDAV_and_CardDAV_implementations
 
-Installation
-------------
-You can install *khal* from source by executing *python setup.py install*.
+Usage
+-----
 
-Copy and edit the supplied khal.conf.sample file (default location is
-~/.config/khal/khal.conf).
+**install**
 
-Make sure you have sqlite3 (normally available by default), icalendar_, urwid
-(>0.9) and pyxdg installed.
+You can install *khal* from source by executing::
+
+     pip install git+git://github.com/geier/khal.git
+
+Make sure you have ``sqlite3`` (normally available by default), icalendar_, urwid
+(>0.9) and ``pyxdg`` installed.
 
 khal has so far been successfully tested on recent versions of FreeBSD,
 NetBSD, Debian and Ubuntu with python 2.7.
 
 .. _icalendar: https://github.com/collective/icalendar
-
-Usage
------
-**install**
-
-::
-
-    python setup.py install
 
 **configure**
 
@@ -66,11 +64,14 @@ copy ``khal.conf.sample`` to ``~/.khal/khal.conf`` or
 ``~/.config/khal/khal.conf`` and edit to your liking.
 
 **syncing**
+
 To get *khal* working with CalDAV you will first need to setup vdirsyncer_.
 After each start *khal* will automatically check if anything has changed and
 automatically update its caching db (this may take some time after the initial
 sync, especially for large calendar collections). Therefore you might want to
-execute *khal* automatically after syncing with vdirsyncer_ (e.g. via cron).
+execute *khal* automatically after syncing with vdirsyncer (e.g. via cron).
+
+.. _vdirsyncer: https://github.com/untitaker/vdirsyncer
 
 **basic usage**
 
@@ -210,9 +211,6 @@ Luck!
 
 Seriously: be careful when changing timezones and do check if khal shows the
 correct times anyway (and please report back if it doesn't).
-
-
-.. _vdirsyncer: https://github.com/untitaker/vdirsyncer
 Miscellaneous
 -------------
 *khal* is written in python using, among others, icalendar_, dateutil_ and
