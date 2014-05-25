@@ -33,7 +33,7 @@ def expand(vevent, default_tz, href=''):
         duration = vevent['DTEND'].dt - vevent['DTSTART'].dt
 
     # dateutil.rrule converts everything to datetime
-    allday = True if not isinstance(vevent['DTSTART'].dt, datetime) else False
+    allday = not isinstance(vevent['DTSTART'].dt, datetime)
 
     # icalendar did not understand the defined timezone
     if (not allday and 'TZID' in vevent['DTSTART'].params and
