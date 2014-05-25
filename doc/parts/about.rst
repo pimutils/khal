@@ -1,5 +1,9 @@
 About
 =====
+
+.. image:: https://travis-ci.org/geier/khal.svg?branch=master
+    :target: https://travis-ci.org/geier/khal
+
 *Khal* is a standards based CLI (console) calendar program. CalDAV_ compatibiliy
 is achieved by using vdir_/vdirsyncer_ as a backend, `allowing syncing of
 calendars with a variety of other programs on a host of different platforms`__.
