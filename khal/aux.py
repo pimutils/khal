@@ -50,7 +50,8 @@ def timefstr(date_list, timeformat):
     return dtstart
 
 
-def datetimefstr(date_list, datetimeformat, longdatetimeformat):
+def datetimefstr(date_list, datetimeformat, longdatetimeformat,
+                 inferyear=None):
     """
     converts a datetime (as one or several string elements of a list) to
     a datetimeobject
@@ -58,6 +59,9 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat):
     if no year is given, the current year is used
 
     removes "used" elements of list
+
+    :param intferyear: year to which should be used if datetimeformat is used
+    :type inferyear: int
 
     :returns: a datetime
     :rtype: datetime.datetime
@@ -73,8 +77,12 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat):
         dtstring = ' '.join(date_list[0:parts])
         dtstart = datetime.strptime(dtstring, datetimeformat)
         if dtstart.timetuple()[0] == 1900:
-            dtstart = datetime(date.today().timetuple()[0],
-                               *dtstart.timetuple()[1:5])
+            if inferyear is None:
+                dtstart = datetime(date.today().timetuple()[0],
+                                   *dtstart.timetuple()[1:5])
+            else:
+                dtstart = datetime(inferyear,
+                                   *dtstart.timetuple()[1:5])
         # if start date lies in the past use next year
         # if dtstart < datetime.today():
         #     dtstart = datetime(dtstart.timetuple()[0] + 1,
@@ -198,7 +206,8 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     else:
         try:
             # next element datetime
-            dtend = datetimefstr(date_list, datetimeformat, longdateformat)
+            dtend = datetimefstr(date_list, datetimeformat, longdatetimeformat,
+                                 dtstart.year)
         except ValueError:
             try:
                 # next element time only
@@ -223,7 +232,7 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
             dtstart = pytz.timezone(date_list[0]).localize(dtstart)
             dtend = pytz.timezone(date_list[0]).localize(dtend)
             date_list.pop(0)
-        except (pytz.UnknownTimeZoneError,  UnicodeDecodeError):
+        except (pytz.UnknownTimeZoneError, UnicodeDecodeError):
             dtstart = defaulttz.localize(dtstart)
             dtend = defaulttz.localize(dtend)
 

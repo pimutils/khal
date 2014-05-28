@@ -71,15 +71,15 @@ test_set_format_de = [
                   'END:VEVENT',
                   ''])),
     # start and end date same, explicit end date (but no year) given
-    #('25.10.2013 18:00 26.10. 20:00 Äwesöme Event',   # XXX FIXME: if no explicit year is given for the end, this_year is used
-    #'\r\n'.join(['BEGIN:VEVENT',
-                 #'SUMMARY:Äwesöme Event',
-                 #'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
-                 #'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T200000',
-                 #'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                 #'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                 #'END:VEVENT',
-                 #''])),
+    ('25.10.2013 18:00 26.10. 20:00 Äwesöme Event',   # XXX FIXME: if no explicit year is given for the end, this_year is used
+     '\r\n'.join(['BEGIN:VEVENT',
+                  'SUMMARY:Äwesöme Event',
+                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
+                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T200000',
+                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+                  'END:VEVENT',
+                  ''])),
     # date ends next day, but end date not given
     ('25.10.2013 23:00 0:30 Äwesöme Event',
      '\r\n'.join(['BEGIN:VEVENT',
