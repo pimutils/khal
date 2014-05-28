@@ -223,18 +223,18 @@ def _get_vevent(event):
 
 class TestExpand(object):
     dtstartend_berlin = [
-        (datetime.datetime(2013, 3, 1, 14, 0, tzinfo=berlin),
-         datetime.datetime(2013, 3, 1, 16, 0, tzinfo=berlin)),
-        (datetime.datetime(2013, 5, 1, 14, 0, tzinfo=berlin),
-         datetime.datetime(2013, 5, 1, 16, 0, tzinfo=berlin)),
-        (datetime.datetime(2013, 7, 1, 14, 0, tzinfo=berlin),
-         datetime.datetime(2013, 7, 1, 16, 0, tzinfo=berlin)),
-        (datetime.datetime(2013, 9, 1, 14, 0, tzinfo=berlin),
-         datetime.datetime(2013, 9, 1, 16, 0, tzinfo=berlin)),
-        (datetime.datetime(2013, 11, 1, 14, 0, tzinfo=berlin),
-         datetime.datetime(2013, 11, 1, 16, 0, tzinfo=berlin)),
-        (datetime.datetime(2014, 1, 1, 14, 0, tzinfo=berlin),
-         datetime.datetime(2014, 1, 1, 16, 0, tzinfo=berlin))
+        (berlin.localize(datetime.datetime(2013, 3, 1, 14, 0, )),
+         berlin.localize(datetime.datetime(2013, 3, 1, 16, 0, ))),
+        (berlin.localize(datetime.datetime(2013, 5, 1, 14, 0, )),
+         berlin.localize(datetime.datetime(2013, 5, 1, 16, 0, ))),
+        (berlin.localize(datetime.datetime(2013, 7, 1, 14, 0, )),
+         berlin.localize(datetime.datetime(2013, 7, 1, 16, 0, ))),
+        (berlin.localize(datetime.datetime(2013, 9, 1, 14, 0, )),
+         berlin.localize(datetime.datetime(2013, 9, 1, 16, 0, ))),
+        (berlin.localize(datetime.datetime(2013, 11, 1, 14, 0,)),
+         berlin.localize(datetime.datetime(2013, 11, 1, 16, 0,))),
+        (berlin.localize(datetime.datetime(2014, 1, 1, 14, 0, )),
+         berlin.localize(datetime.datetime(2014, 1, 1, 16, 0, )))
     ]
 
     dtstartend_utc = [
@@ -279,7 +279,7 @@ class TestExpand(object):
          datetime.date(2013, 11, 2)),
         (datetime.date(2014, 1, 1,),
          datetime.date(2014, 1, 2,))
-        ]
+    ]
     offset_berlin = [
         datetime.timedelta(0, 3600),
         datetime.timedelta(0, 7200),
@@ -346,8 +346,8 @@ class TestExpand(object):
 
 class TestExpandNoRR(object):
     dtstartend_berlin = [
-        (datetime.datetime(2013, 3, 1, 14, 0, tzinfo=berlin),
-         datetime.datetime(2013, 3, 1, 16, 0, tzinfo=berlin)),
+        (berlin.localize(datetime.datetime(2013, 3, 1, 14, 0)),
+         berlin.localize(datetime.datetime(2013, 3, 1, 16, 0))),
     ]
 
     dtstartend_utc = [
@@ -476,10 +476,10 @@ class TestSpecial(object):
         dtstart = datetimehelper.expand(vevent, berlin)
         starts = [start for start, _ in dtstart]
         assert len(starts) == 18
-        assert dtstart[0][0] == datetime.datetime(2014, 2, 3, 7, 0,
-                                                  tzinfo=berlin)
-        assert dtstart[-1][0] == datetime.datetime(2014, 2, 20, 7, 0,
-                                                   tzinfo=berlin)
+        assert dtstart[0][0] == berlin.localize(
+            datetime.datetime(2014, 2, 3, 7, 0))
+        assert dtstart[-1][0] == berlin.localize(
+            datetime.datetime(2014, 2, 20, 7, 0))
 
     def test_until_d_notz(self):
         vevent = _get_vevent(event_until_d_notz)
@@ -498,7 +498,7 @@ class TestSpecial(object):
     def test_another_problem(self):
         vevent = _get_vevent(another_problem)
         dtstart = datetimehelper.expand(vevent, berlin)
-        assert dtstart[0][0] == datetime.datetime(2013, 11, 13, 19, 0,
-                                                  tzinfo=berlin)
-        assert dtstart[-1][0] == datetime.datetime(2028, 11, 8, 19, 0,
-                                                   tzinfo=berlin)
+        assert dtstart[0][0] == berlin.localize(
+            datetime.datetime(2013, 11, 13, 19, 0))
+        assert dtstart[-1][0] == berlin.localize(
+            datetime.datetime(2028, 11, 8, 19, 0))

@@ -56,7 +56,7 @@ requirements = [
     'icalendar',
     'urwid',
     'pyxdg',
-    'pytz==2014.2',
+    'pytz',
     'vdirsyncer'
 ]
 

@@ -45,25 +45,27 @@ def expand(vevent, default_tz, href=''):
 
     events_tz = None
     if getattr(vevent['DTSTART'].dt, 'tzinfo', False):
+        # dst causes problem while expanding the rrule, therefor we transform
+        # everything to naive datetime objects and tranform back after
+        # expanding
         events_tz = vevent['DTSTART'].dt.tzinfo
-        vevent['DTSTART'].dt = vevent['DTSTART'].dt.astimezone(pytz.UTC)
+        vevent['DTSTART'].dt = vevent['DTSTART'].dt.replace(tzinfo=None)
 
     rrulestr = vevent['RRULE'].to_ical()
     rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=vevent['DTSTART'].dt)
 
     if not set(['UNTIL', 'COUNT']).intersection(vevent['RRULE'].keys()):
         # rrule really doesn't like to calculate all recurrences until
-        # eternity, so we only do it 15years into the future
-
+        # eternity, so we only do it 15 years into the future
         dtstart = vevent['DTSTART'].dt
         if isinstance(dtstart, date):
             dtstart = datetime(*list(dtstart.timetuple())[:-3])
         rrule._until = dtstart + timedelta(days=15 * 365)
 
-    if ((not getattr(rrule._until, 'tzinfo', True)) and
-            (getattr(vevent['DTSTART'].dt, 'tzinfo', False))):
-                rrule._until = vevent['DTSTART'].dt.tzinfo \
-                    .localize(rrule._until)
+    if getattr(rrule._until, 'tzinfo', False):
+        rrule._until = rrule._until.astimezone(events_tz)
+        rrule._until = rrule._until.replace(tzinfo=None)
+
     logger.debug('calculating recurrence dates for {0}, '
                  'this might take some time.'.format(href))
     dtstartl = list(rrule)
@@ -72,7 +74,7 @@ def expand(vevent, default_tz, href=''):
         raise UnsupportedRecursion
 
     if events_tz is not None:
-        dtstartl = [start.astimezone(events_tz) for start in dtstartl]
+        dtstartl = [events_tz.localize(start) for start in dtstartl]
     elif allday:
         dtstartl = [start.date() for start in dtstartl]
 
