@@ -284,6 +284,8 @@ class SQLiteDb(object):
             else:
                 raise UpdateFailed(u'Could not find event in {}'.format(ical))
 
+        vevent = datetimehelper.sanitize(vevent)
+
         all_day_event = False
         if href == '' or href is None:
             href = get_random_href()

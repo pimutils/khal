@@ -79,3 +79,27 @@ def expand(vevent, default_tz, href=''):
 
     dtstartend = [(start, start + duration) for start in dtstartl]
     return dtstartend
+
+
+def sanitize(vevent):
+    """
+    clean up vevents we do not understand
+
+    Currently this only transform vevents with neither DTEND or DURATION into
+    all day events lasting one day.
+
+    :param vevent: the vevent that needs to be cleaned
+    :type vevent: icalendar.cal.event
+    :returns: clean vevent
+    :rtype: icalendar.cal.event
+    """
+
+    if 'DTEND' not in vevent and 'DURATION' not in vevent:
+        if isinstance(vevent['DTSTART'].dt, datetime):
+            vevent['DTSTART'].dt = vevent['DTSTART'].dt.date()
+
+        vevent.add('DTEND', vevent['DTSTART'].dt + timedelta(days=1))
+
+        return vevent
+    else:
+        return vevent
