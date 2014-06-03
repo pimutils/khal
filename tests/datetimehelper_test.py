@@ -502,3 +502,37 @@ class TestSpecial(object):
             datetime.datetime(2013, 11, 13, 19, 0))
         assert dtstart[-1][0] == berlin.localize(
             datetime.datetime(2028, 11, 8, 19, 0))
+
+noend_date = """
+BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:noend123
+DTSTART;VALUE=DATE:20140829
+SUMMARY:No DTEND
+END:VEVENT
+END:VCALENDAR
+"""
+
+noend_datetime = """
+BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:noend123
+DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140829T080000
+SUMMARY:No DTEND
+END:VEVENT
+END:VCALENDAR
+"""
+
+
+class TestSenatize(object):
+    def test_noend_date(self):
+        vevent = _get_vevent(noend_date)
+        vevent = datetimehelper.sanitize(vevent)
+        assert vevent['DTSTART'].dt == datetime.date(2014, 8, 29)
+        assert vevent['DTEND'].dt == datetime.date(2014, 8, 30)
+
+    def test_noend_datetime(self):
+        vevent = _get_vevent(noend_datetime)
+        vevent = datetimehelper.sanitize(vevent)
+        assert vevent['DTSTART'].dt == datetime.date(2014, 8, 29)
+        assert vevent['DTEND'].dt == datetime.date(2014, 8, 30)
