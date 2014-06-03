@@ -130,7 +130,7 @@ class SQLiteDb(object):
         if not path.isdir(dbdir):
             try:
                 logger.debug('trying to create the directory for the db')
-                makedirs(dbdir, mode=0770)
+                makedirs(dbdir, mode=0o770)
                 logger.debug('success')
             except OSError as error:
                 logger.fatal('failed to create {0}: {1}'.format(dbdir, error))
