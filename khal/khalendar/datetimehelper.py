@@ -1,7 +1,6 @@
 from datetime import date, datetime, timedelta
 
 import dateutil.rrule
-import pytz
 
 from .. import log
 

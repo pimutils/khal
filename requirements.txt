@@ -5,4 +5,4 @@ pytz
 urwid
 pyxdg
 vdirsyncer
-datetutil
+python-dateutil

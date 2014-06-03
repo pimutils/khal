@@ -57,7 +57,8 @@ requirements = [
     'urwid',
     'pyxdg',
     'pytz',
-    'vdirsyncer'
+    'vdirsyncer',
+    'python-dateutil',
 ]
 
 extra_requirements = {
