@@ -3,6 +3,7 @@
 # The default configuration file locations are:
 # ~/.khal/khal.conf
 # $XDG_CONFIG_HOME/khal/khal.conf
+# (where $XDG_CONFIG_HOME is usually ~/.config/)
 #
 # In this file you need to specify:
 # - CalDAV Account settings
@@ -45,6 +46,7 @@
 # path: ~/.khal/khal.db
 # # This specifies the location of the khal SQLite3 Database file
 # #   * Default: $XDG_CACHE_HOME/khal/khal.db
+# #              (where $XDG_CACHE_HOME is usually ~/.local/share/)
 #
 #------------------------------------------------------------------------------
 # ## Time Zone and Time Display Formating Configuration ##
