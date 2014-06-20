@@ -111,13 +111,15 @@ class Event(object):
             self.rangestopstr = u' ->|'
             self.rangestartstr = u' |->'
 
+        if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
+            self.allday = False
+
         if start is not None:
             if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
-                self.allday = False  # TODO detect allday even if start is None
                 start = start.astimezone(local_tz)
                 end = end.astimezone(local_tz)
             self.vevent['DTSTART'].dt = start
-        if start is not None:
+
             if 'DTEND' in self.vevent.keys():
                 self.vevent['DTEND'].dt = end
         self.local_tz = local_tz
