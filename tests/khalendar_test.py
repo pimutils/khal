@@ -7,11 +7,11 @@ import pytz
 from vdirsyncer.storage import FilesystemStorage
 from vdirsyncer.storage.base import Item
 
+from khal import aux
+
 from khal.khalendar import Calendar, CalendarCollection
 from khal.khalendar.event import Event
-
 from khal.khalendar.backend import CouldNotCreateDbDir
-
 
 
 today = datetime.date.today()
@@ -42,6 +42,8 @@ KWARGS = {
     'default_tz': pytz.timezone('Europe/Berlin'),
     'local_tz': pytz.timezone('Europe/Berlin'),
 }
+
+berlin = pytz.timezone('Europe/Berlin')
 
 
 @pytest.fixture
@@ -174,6 +176,16 @@ class TestCollection(object):
         events = coll.get_datetime_by_time_range(self.astart, self.aend)
         assert len(events) == 1
         assert events[0].account == cal2
+
+    def test_newevent(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        event = aux.new_event(dtstart=aday,
+                              timezone=berlin)
+        event = coll.new_event(
+            event.to_ical(),
+            coll.default_calendar_name,
+            **KWARGS)
+        assert event.allday is False
 
 
 @pytest.fixture

@@ -507,6 +507,7 @@ class EventColumn(urwid.WidgetWrap):
             self.collection.default_calendar_name,
             local_tz=self.conf.locale.local_timezone,
             default_tz=self.conf.locale.default_timezone)
+
         self.edit(event)
         self.eventcount += 1
 
@@ -622,6 +623,7 @@ class EventEditor(EventViewer):
             end = event.end - timedelta(days=1)
         else:
             end = event.end
+
         self.startendeditor = StartEndEditor(event.start, end, self.conf)
         try:
             rrule = self.event.vevent['RRULE']
