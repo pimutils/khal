@@ -8,7 +8,7 @@ About
 is achieved by using vdir_/vdirsyncer_ as a backend, `allowing syncing of
 calendars with a variety of other programs on a host of different platforms`__.
 
-*khal* is currently in a early stage of development, has a limited feature set
+*khal* is currently in an early stage of development, has a limited feature set
 and is probably full of bugs. If you do try it out, please make sure you have a
 backup of your date and please report back any bugs you might encounter.
 
@@ -44,7 +44,8 @@ if it doesn't. You can reach me by email at khal (at) lostpackets (dot) de
 Usage
 -----
 
-**install**
+install
+*******
 
 You can install *khal* from source by executing::
 
@@ -58,12 +59,14 @@ NetBSD, Debian and Ubuntu with python 2.7.
 
 .. _icalendar: https://github.com/collective/icalendar
 
-**configure**
+configure
+*********
 
 copy ``khal.conf.sample`` to ``~/.khal/khal.conf`` or
 ``~/.config/khal/khal.conf`` and edit to your liking.
 
-**syncing**
+syncing
+*******
 
 To get *khal* working with CalDAV you will first need to setup vdirsyncer_.
 After each start *khal* will automatically check if anything has changed and
@@ -73,7 +76,8 @@ execute *khal* automatically after syncing with vdirsyncer (e.g. via cron).
 
 .. _vdirsyncer: https://github.com/untitaker/vdirsyncer
 
-**basic usage**
+basic usage
+***********
 
 ::
 
@@ -104,7 +108,8 @@ See below for usage notes on ikhal.
 `khal` can be configured to execute on command (calendar, agenda or interactive)
 when no other command is given (see the provided example config).
 
-**quick event adding**
+quick event adding
+******************
 
 ::
 
@@ -215,7 +220,7 @@ correct times anyway (and please report back if it doesn't).
 Standards Compliance
 --------------------
 *khal* tries to follow standards and RFCs whereever possible. Known intentional
-and unintentional deviations should are listed here:
+and unintentional deviations are listed here:
 
 
 Events with neither END nor DURATION

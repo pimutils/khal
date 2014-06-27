@@ -8,7 +8,7 @@ About
 is achieved by using vdir_/vdirsyncer_ as a backend, `allowing syncing of
 calendars with a variety of other programs on a host of different platforms`__.
 
-*khal* is currently in a early stage of development, has a limited feature set
+*khal* is currently in an early stage of development, has a limited feature set
 and is probably full of bugs. If you do try it out, please make sure you have a
 backup of your date and please report back any bugs you might encounter.
 

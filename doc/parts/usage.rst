@@ -1,7 +1,8 @@
 Usage
 -----
 
-**install**
+install
+*******
 
 You can install *khal* from source by executing::
 
@@ -15,12 +16,14 @@ NetBSD, Debian and Ubuntu with python 2.7.
 
 .. _icalendar: https://github.com/collective/icalendar
 
-**configure**
+configure
+*********
 
 copy ``khal.conf.sample`` to ``~/.khal/khal.conf`` or
 ``~/.config/khal/khal.conf`` and edit to your liking.
 
-**syncing**
+syncing
+*******
 
 To get *khal* working with CalDAV you will first need to setup vdirsyncer_.
 After each start *khal* will automatically check if anything has changed and
@@ -30,7 +33,8 @@ execute *khal* automatically after syncing with vdirsyncer (e.g. via cron).
 
 .. _vdirsyncer: https://github.com/untitaker/vdirsyncer
 
-**basic usage**
+basic usage
+***********
 
 ::
 
@@ -61,7 +65,8 @@ See below for usage notes on ikhal.
 `khal` can be configured to execute on command (calendar, agenda or interactive)
 when no other command is given (see the provided example config).
 
-**quick event adding**
+quick event adding
+******************
 
 ::
 
@@ -172,7 +177,7 @@ correct times anyway (and please report back if it doesn't).
 Standards Compliance
 --------------------
 *khal* tries to follow standards and RFCs whereever possible. Known intentional
-and unintentional deviations should are listed here:
+and unintentional deviations are listed here:
 
 
 Events with neither END nor DURATION

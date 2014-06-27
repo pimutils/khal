@@ -1,13 +1,15 @@
 khal v0.2 released
 ==================
-:date: 25.06.2014
+:date: 27.06.2014
 :category: News
 :tags: Releases
 
-A new release of khal is here: `khal v0.2.0`__ (and also available on pypi_
-now).
+A new release of khal is here: `khal v0.2.0`__ (also available on pypi_).
 
 __ https://lostpackets.de/khal/downloads/khal-0.2.0.tar.gz
+
+If you want to update your installation from pypi_, you can run `sudo pip
+install --upgrade khal`.
 
 From now on *khal* relies on vdirsyncer_ for CalDAV sync. While this makes
 *khal* a bit more complicated to setup, *vdirsyncer* is much better tested than
