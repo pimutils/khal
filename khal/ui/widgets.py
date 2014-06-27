@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # coding: utf-8
 # vim: set ts=4 sw=4 expandtab sts=4:
 # Copyright (c) 2011-2014 Christian Geier & contributors
