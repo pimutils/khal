@@ -40,7 +40,7 @@ class Event(object):
                  readonly=False, unicode_symbols=True, etag=None):
         """
         :param ical: the icalendar VEVENT this event is based on
-        :type ical: str or icalendar.cal.EVent
+        :type ical: str or icalendar.cal.Event
         :param account: the account/calendar this event belongs to
         :type account: str
         :param href: the href of the event, treated like a UID
