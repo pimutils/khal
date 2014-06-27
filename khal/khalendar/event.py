@@ -85,6 +85,9 @@ class Event(object):
         else:
             raise ValueError
 
+        assert local_tz is not None
+        assert default_tz is not None
+
         self.allday = True
         self.color = color
 

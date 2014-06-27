@@ -1,9 +1,11 @@
 import datetime
 
 import pytest
+import pytz
 
 from khal.khalendar.event import Event
 
+berlin = pytz.timezone('Europe/Berlin')
 
 today = datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)
@@ -79,8 +81,9 @@ END:VCALENDAR
 """.split('\n')
 
 event_kwargs = {'account': 'foobar',
-                'local_tz': None,
-                'default_tz': None}
+                'local_tz': berlin,
+                'default_tz': berlin,
+                }
 
 
 class TestEvent(object):
