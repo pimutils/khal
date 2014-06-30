@@ -1,7 +1,5 @@
 import datetime
 
-import pytest
-
 from khal.calendar_display import vertical_month, getweeknumber, str_week
 
 
@@ -11,10 +9,10 @@ tomorrow = today + datetime.timedelta(days=1)
 
 
 def test_getweeknumber():
-    assert getweeknumber(datetime.date(2011,12,12)) == 50
-    assert getweeknumber(datetime.date(2011,12,31)) == 52
-    assert getweeknumber(datetime.date(2012,1,1)) == 52
-    assert getweeknumber(datetime.date(2012,1,2)) == 1
+    assert getweeknumber(datetime.date(2011, 12, 12)) == 50
+    assert getweeknumber(datetime.date(2011, 12, 31)) == 52
+    assert getweeknumber(datetime.date(2012, 1, 1)) == 52
+    assert getweeknumber(datetime.date(2012, 1, 2)) == 1
 
 
 def test_str_week():
@@ -32,8 +30,7 @@ def test_str_week():
     assert str_week(week, bday) == ' 6  7 \x1b[7m 8\x1b[0m  9 10 11 12 13 '
 
 
-
-example1 =  [
+example1 = [
     '\x1b[1m    Mo Tu We Th Fr Sa Su \x1b[0m',
     '\x1b[1mDec \x1b[0m28 29 30  1  2  3  4 ',
     '     5  6  7  8  9 10 11 ',
@@ -85,7 +82,6 @@ example_we_start_su = [
     '\x1b[1mMar \x1b[0m26 27 28 29  1  2  3 ']
 
 
-
 def test_vertical_month():
     vert_str = vertical_month(month=12, year=2011,
                               today=datetime.date(2011, 12, 12))
@@ -95,7 +91,6 @@ def test_vertical_month():
                               today=datetime.date(2011, 12, 12),
                               weeknumber=True)
     assert weno_str == example_weno
-
 
     we_start_su_str = vertical_month(
         month=12, year=2011,

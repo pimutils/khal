@@ -304,14 +304,16 @@ class TestExpand(object):
         vevent = _get_vevent(event_dt)
         dtstart = datetimehelper.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
-        assert [start.utcoffset() for start, _ in dtstart] == self.offset_berlin
+        assert [start.utcoffset()
+                for start, _ in dtstart] == self.offset_berlin
         assert [end.utcoffset() for _, end in dtstart] == self.offset_berlin
 
     def test_expand_dtb(self):
         vevent = _get_vevent(event_dtb)
         dtstart = datetimehelper.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
-        assert [start.utcoffset() for start, _ in dtstart] == self.offset_berlin
+        assert [start.utcoffset()
+                for start, _ in dtstart] == self.offset_berlin
         assert [end.utcoffset() for _, end in dtstart] == self.offset_berlin
 
     def test_expand_dttz(self):
@@ -373,14 +375,16 @@ class TestExpandNoRR(object):
         vevent = _get_vevent(event_dt_norr)
         dtstart = datetimehelper.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
-        assert [start.utcoffset() for start, _ in dtstart] == self.offset_berlin
+        assert [start.utcoffset()
+                for start, _ in dtstart] == self.offset_berlin
         assert [end.utcoffset() for _, end in dtstart] == self.offset_berlin
 
     def test_expand_dtb(self):
         vevent = _get_vevent(event_dtb_norr)
         dtstart = datetimehelper.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
-        assert [start.utcoffset() for start, _ in dtstart] == self.offset_berlin
+        assert [start.utcoffset()
+                for start, _ in dtstart] == self.offset_berlin
         assert [end.utcoffset() for _, end in dtstart] == self.offset_berlin
 
     def test_expand_dttz(self):
@@ -462,6 +466,7 @@ END:VEVENT
 
 
 class TestSpecial(object):
+
     @pytest.mark.xfail(reason='')
     def test_count(self):
         vevent = _get_vevent(vevent_count)
@@ -525,6 +530,7 @@ END:VCALENDAR
 
 
 class TestSenatize(object):
+
     def test_noend_date(self):
         vevent = _get_vevent(noend_date)
         vevent = datetimehelper.sanitize(vevent)

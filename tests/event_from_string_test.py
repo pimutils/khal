@@ -71,7 +71,8 @@ test_set_format_de = [
                   'END:VEVENT',
                   ''])),
     # start and end date same, explicit end date (but no year) given
-    ('25.10.2013 18:00 26.10. 20:00 Äwesöme Event',   # XXX FIXME: if no explicit year is given for the end, this_year is used
+    # XXX FIXME: if no explicit year is given for the end, this_year is used
+    ('25.10.2013 18:00 26.10. 20:00 Äwesöme Event',
      '\r\n'.join(['BEGIN:VEVENT',
                   'SUMMARY:Äwesöme Event',
                   'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
@@ -104,8 +105,10 @@ test_set_format_de = [
     ('25.10.2013 06:00 America/New_York Äwesöme Event',
      '\r\n'.join(['BEGIN:VEVENT',
                   'SUMMARY:Äwesöme Event',
-                  'DTSTART;TZID=America/New_York;VALUE=DATE-TIME:20131025T060000',
-                  'DTEND;TZID=America/New_York;VALUE=DATE-TIME:20131025T070000',
+                  ('DTSTART;TZID=America/New_York;VALUE=DATE-TIME:'
+                   '20131025T060000'),
+                  ('DTEND;TZID=America/New_York;VALUE=DATE-TIME:'
+                   '20131025T070000'),
                   'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
                   'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
                   'END:VEVENT',
@@ -137,8 +140,10 @@ test_set_format_us = [
     ('12/31/1999 06:00 Äwesöme Event',
      '\r\n'.join(['BEGIN:VEVENT',
                   'SUMMARY:Äwesöme Event',
-                  'DTSTART;TZID=America/New_York;VALUE=DATE-TIME:19991231T060000',
-                  'DTEND;TZID=America/New_York;VALUE=DATE-TIME:19991231T070000',
+                  ('DTSTART;TZID=America/New_York;VALUE=DATE-TIME:'
+                   '19991231T060000'),
+                  ('DTEND;TZID=America/New_York;VALUE=DATE-TIME:'
+                   '19991231T070000'),
                   'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
 
                   'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
@@ -266,6 +271,7 @@ test_set_description = [
                   '']).format(this_year_s)),
 ]
 
+
 def test_description():
     timeformat = '%H:%M'
     dateformat = '%d.%m.'
@@ -284,4 +290,3 @@ def test_description():
                                 defaulttz=DEFAULTTZ,
                                 _now=_now).to_ical()
         assert event == vevent
-

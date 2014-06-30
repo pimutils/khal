@@ -226,7 +226,8 @@ class CalendarSection(Section):
     def __init__(self, parser):
         Section.__init__(self, parser, 'calendars')
         self._schema = [
-            ('path', None, lambda x: os.path.expanduser(os.path.expandvars(x))),
+            ('path', None, lambda x: os.path.expanduser(
+                os.path.expandvars(x))),
             ('readonly', False, self._parse_bool_string),
             ('color', '', None)
         ]
@@ -247,11 +248,13 @@ class SQLiteSection(Section):
         Section.__init__(self, parser, 'sqlite')
         default_path = xdg.BaseDirectory.xdg_cache_home + '/khal/khal.db'
         self._schema = [
-            ('path', default_path, lambda x: os.path.expanduser(os.path.expandvars(x))),
+            ('path', default_path, lambda x: os.path.expanduser(
+                os.path.expandvars(x))),
         ]
 
 
 class LocaleSection(Section):
+
     def __init__(self, parser):
         Section.__init__(self, parser, 'locale')
         self._schema = [
@@ -269,6 +272,7 @@ class LocaleSection(Section):
 
 
 class DefaultSection(Section):
+
     def __init__(self, parser):
         Section.__init__(self, parser, 'default')
         self._schema = [

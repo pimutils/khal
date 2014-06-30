@@ -5,7 +5,6 @@ import string
 import subprocess
 import warnings
 
-#from distutils.core import setup
 from setuptools import setup
 
 MAJOR = 0

@@ -8,6 +8,7 @@ logger = log.logger
 
 
 class UnsupportedRecursion(Exception):
+
     """raised if the RRULE is not understood by dateutil.rrule"""
     pass
 

@@ -95,6 +95,7 @@ goodcalendars = [
 
 
 class TestConfigParser(object):
+
     def test_easy(self, tmpdir):
         goodconf = Namespace(
             {'locale': goodlocale,

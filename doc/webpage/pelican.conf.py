@@ -7,16 +7,16 @@ SITEURL = '/khal'
 
 TIMEZONE = 'Europe/Berlin'
 
-DEFAULT_LANG='en'
+DEFAULT_LANG = 'en'
 
 # Blogroll
-LINKS =  (
-         )
+LINKS = (
+)
 
 # Social widget
 SOCIAL = (
-         )
+)
 
-TAG_FEED_ATOM=('feeds/%s.atom.xml')
+TAG_FEED_ATOM = ('feeds/%s.atom.xml')
 
 DEFAULT_PAGINATION = 10

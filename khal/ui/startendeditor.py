@@ -35,6 +35,7 @@ class DateConversionError(Exception):
 
 class StartEnd(object):
     # TODO convert to namespace
+
     def __init__(self, startdate, starttime, enddate, endtime):
         """collecting some common properties"""
         self.startdate = startdate
@@ -133,7 +134,7 @@ class StartEndEditor(urwid.WidgetWrap):
                  (timewidth, self.widgets.endtime)],
                 dividechars=1),
             self.checkallday
-            ], focus_item=2)
+        ], focus_item=2)
         urwid.WidgetWrap.__init__(self, columns)
 
     @property
