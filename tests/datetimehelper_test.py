@@ -436,6 +436,49 @@ END:VEVENT
 END:VCALENDAR
 """
 
+event_exdate_dt = """BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:event_exdate_dt123
+DTSTAMP:20140627T162546Z
+DTSTART;TZID=Europe/Berlin:20140702T190000
+DTEND;TZID=Europe/Berlin:20140702T193000
+SUMMARY:Test event
+RRULE:FREQ=DAILY;COUNT=10
+EXDATE:20140703T190000
+END:VEVENT
+END:VCALENDAR
+"""
+
+event_exdates_dt = """BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:event_exdates_dt123
+DTSTAMP:20140627T162546Z
+DTSTART;TZID=Europe/Berlin:20140702T190000
+DTEND;TZID=Europe/Berlin:20140702T193000
+SUMMARY:Test event
+RRULE:FREQ=DAILY;COUNT=10
+EXDATE:20140703T190000
+EXDATE:20140705T190000
+END:VEVENT
+END:VCALENDAR
+"""
+
+event_exdatesl_dt = """BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:event_exdatesl_dt123
+DTSTAMP:20140627T162546Z
+DTSTART;TZID=Europe/Berlin:20140702T190000
+DTEND;TZID=Europe/Berlin:20140702T193000
+SUMMARY:Test event
+RRULE:FREQ=DAILY;COUNT=10
+EXDATE:20140703T190000
+EXDATE:20140705T190000,20140707T190000
+END:VEVENT
+END:VCALENDAR
+"""
 
 latest_bug = """BEGIN:VCALENDAR
 VERSION:2.0
@@ -462,7 +505,7 @@ END:VEVENT
 
 
 class TestSpecial(object):
-    @pytest.mark.xfail(reason='')
+    @pytest.mark.xfail(reason='This needs to be debugged ASAP')
     def test_count(self):
         vevent = _get_vevent(vevent_count)
         dtstart = datetimehelper.expand(vevent, berlin)
@@ -502,6 +545,36 @@ class TestSpecial(object):
             datetime.datetime(2013, 11, 13, 19, 0))
         assert dtstart[-1][0] == berlin.localize(
             datetime.datetime(2028, 11, 8, 19, 0))
+
+    def test_event_exdate_dt(self):
+        """recurring event, one date excluded via EXCLUDE"""
+        vevent = _get_vevent(event_exdate_dt)
+        dtstart = datetimehelper.expand(vevent, berlin)
+        assert len(dtstart) == 9
+        assert dtstart[0][0] == berlin.localize(
+            datetime.datetime(2014, 7, 2, 19, 0))
+        assert dtstart[-1][0] == berlin.localize(
+            datetime.datetime(2014, 7, 11, 19, 0))
+
+    def test_event_exdates_dt(self):
+        """recurring event, two dates excluded via EXCLUDE"""
+        vevent = _get_vevent(event_exdates_dt)
+        dtstart = datetimehelper.expand(vevent, berlin)
+        assert len(dtstart) == 8
+        assert dtstart[0][0] == berlin.localize(
+            datetime.datetime(2014, 7, 2, 19, 0))
+        assert dtstart[-1][0] == berlin.localize(
+            datetime.datetime(2014, 7, 11, 19, 0))
+
+    def test_event_exdatesl_dt(self):
+        """recurring event, three dates exclude via two EXCLUDEs"""
+        vevent = _get_vevent(event_exdatesl_dt)
+        dtstart = datetimehelper.expand(vevent, berlin)
+        assert len(dtstart) == 7
+        assert dtstart[0][0] == berlin.localize(
+            datetime.datetime(2014, 7, 2, 19, 0))
+        assert dtstart[-1][0] == berlin.localize(
+            datetime.datetime(2014, 7, 11, 19, 0))
 
 noend_date = """
 BEGIN:VCALENDAR

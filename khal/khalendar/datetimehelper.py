@@ -72,6 +72,15 @@ def expand(vevent, default_tz, href=''):
     if len(dtstartl) == 0:
         raise UnsupportedRecursion
 
+    #remove excluded dates
+    if 'EXDATE' in vevent:
+        if not isinstance(vevent['EXDATE'], list):
+            exdates = [vevent['EXDATE']]
+        else:
+            exdates = vevent['EXDATE']
+        exdates = [leaf.dt for tree in exdates for leaf in tree.dts]
+        dtstartl = [start for start in dtstartl if start not in exdates]
+
     if events_tz is not None:
         dtstartl = [events_tz.localize(start) for start in dtstartl]
     elif allday:
