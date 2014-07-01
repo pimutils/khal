@@ -83,6 +83,7 @@ def get_agenda(collection, dateformat, longdateformat, dates=[], width=45):
 
 
 class Calendar(object):
+
     def __init__(self, collection, date=[], firstweekday=0, encoding='utf-8',
                  **kwargs):
         term_width, _ = get_terminal_size()
@@ -98,6 +99,7 @@ class Calendar(object):
 
 
 class Agenda(object):
+
     def __init__(self, collection, date=None, firstweekday=0, encoding='utf-8',
                  **kwargs):
         term_width, _ = get_terminal_size()
@@ -107,6 +109,7 @@ class Agenda(object):
 
 
 class NewFromString(object):
+
     def __init__(self, collection, conf, date_list):
         event = aux.construct_event(date_list,
                                     conf.locale.timeformat,

@@ -66,6 +66,7 @@ def coll_vdirs(tmpdir):
 
 
 class TestCalendarTest(object):
+
     def test_create(self, cal_vdir):
         assert True
 

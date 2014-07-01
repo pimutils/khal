@@ -2,11 +2,6 @@
 # vim: set ts=4 sw=4 expandtab sts=4:
 
 
-import datetime
-
-import pytest
-
-from khal.calendar_display import vertical_month, getweeknumber, str_week
 from khal.terminal import merge_columns, colored, bstring, rstring
 
 
@@ -25,8 +20,8 @@ def test_colored():
     assert colored(u'täst', 'white') == u'\33[37mtäst\x1b[0m'
 
 
-
 class TestMergeColumns(object):
+
     def test_longer_right(self):
         left = ['uiae', 'nrtd']
         right = ['123456', '234567', '345678']

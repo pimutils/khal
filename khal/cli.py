@@ -226,7 +226,8 @@ class CalendarSection(Section):
     def __init__(self, parser):
         Section.__init__(self, parser, 'calendars')
         self._schema = [
-            ('path', None, lambda x: os.path.expanduser(os.path.expandvars(x))),
+            ('path', None, lambda x: os.path.expanduser(
+                os.path.expandvars(x))),
             ('readonly', False, self._parse_bool_string),
             ('color', '', None)
         ]
@@ -247,11 +248,13 @@ class SQLiteSection(Section):
         Section.__init__(self, parser, 'sqlite')
         default_path = xdg.BaseDirectory.xdg_cache_home + '/khal/khal.db'
         self._schema = [
-            ('path', default_path, lambda x: os.path.expanduser(os.path.expandvars(x))),
+            ('path', default_path, lambda x: os.path.expanduser(
+                os.path.expandvars(x))),
         ]
 
 
 class LocaleSection(Section):
+
     def __init__(self, parser):
         Section.__init__(self, parser, 'locale')
         self._schema = [
@@ -269,6 +272,7 @@ class LocaleSection(Section):
 
 
 class DefaultSection(Section):
+
     def __init__(self, parser):
         Section.__init__(self, parser, 'default')
         self._schema = [
@@ -348,26 +352,28 @@ class ConfigParser(object):
                 logger.warn("Ignoring unknow option '{}' in section "
                             "'{}'".format(option, section))
 
-    def dump(self, conf, intro='Using configuration:', tab=0):
+    def dump(self, conf, intro='Using configuration', _tab=0, _tabchar='    '):
         """Dump the loaded configuration using the logging framework.
 
         The values displayed here are the exact values which are seen by
         the program, and not the raw values as they are read in the
         configuration file.
         """
-        # TODO while this is fully functional it could be prettier
-        logger.debug('{0}{1}'.format('\t' * tab, intro))
+
+        def write(text):
+            logger.debug('{}{}'.format(_tab * _tabchar, text))
 
         if isinstance(conf, (Namespace, dict)):
-            for name, value in sorted(dict.copy(conf).items()):
-                if isinstance(value, (Namespace, dict, list)):
-                    self.dump(value, '[' + name + ']', tab=tab + 1)
-                else:
-                    logger.debug('{0}{1}: {2}'.format('\t' * (tab + 1), name,
-                                                      value))
+            iterable = sorted(dict.copy(conf).items())
         elif isinstance(conf, list):
-            for o in conf:
-                self.dump(o, '\t' * tab + intro + ':', tab + 1)
+            iterable = enumerate(conf)
+        else:
+            write('{}: {}'.format(intro, conf))
+            return
+
+        write('{}:'.format(intro))
+        for name, value in iterable:
+            self.dump(value, name, _tab=_tab + 1)
 
 
 def validate(conf, logger):

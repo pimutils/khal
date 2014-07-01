@@ -28,6 +28,7 @@ import urwid
 
 
 class DateTimeWidget(urwid.Edit):
+
     def __init__(self, dateformat, **kwargs):
         self.dateformat = dateformat
         super(DateTimeWidget, self).__init__(wrap='any', **kwargs)

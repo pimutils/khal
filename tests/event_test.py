@@ -1,6 +1,5 @@
 import datetime
 
-import pytest
 import pytz
 
 from khal.khalendar.event import Event
@@ -87,6 +86,7 @@ event_kwargs = {'account': 'foobar',
 
 
 class TestEvent(object):
+
     def test_raw_dt(self):
         assert Event(event_dt, **event_kwargs).raw.split('\r\n') == cal_dt
 
