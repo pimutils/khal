@@ -21,6 +21,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from .compat import to_unicode
+
 from datetime import date, datetime, timedelta
 from datetime import time as dtime
 import random
@@ -236,7 +238,7 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
             dtend = defaulttz.localize(dtend)
 
     event = icalendar.Event()
-    text = ' '.join(date_list).decode(encoding)
+    text = to_unicode(' '.join(date_list), encoding)
     summary = text.split(' :: ', 1)[0]
 
     try:

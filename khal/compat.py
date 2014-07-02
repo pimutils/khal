@@ -24,11 +24,25 @@
 import sys
 
 
+def to_unicode(string, *args, **kwargs):
+    if not isinstance(string, unicode_type):
+        return string.decode(*args, **kwargs)
+    return string
+
+
+def to_bytes(string, *args, **kwargs):
+    if not isinstance(string, bytes_type):
+        return string.encode(*args, **kwargs)
+    return string
+
+
 if sys.version_info[0] == 2:
     unicode_type = unicode
     bytes_type = str
+    to_native = to_bytes
     iteritems = lambda d, *args, **kwargs: iter(d.iteritems(*args, **kwargs))
 else:
     unicode_type = str
     bytes_type = bytes
+    to_native = to_unicode
     iteritems = lambda d, *args, **kwargs: iter(d.items(*args, **kwargs))

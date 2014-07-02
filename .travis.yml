@@ -1,11 +1,14 @@
 language: python
 
 python:
-  - 2.7
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install:
-        - pip install -r requirements.txt
-        - pip install .
-        - pip install pytest-capturelog
-# command to run tests, e.g. python setup.py test
-script:  py.test tests/
+    - 2.7
+    - pypy
+    - 3.3
+    - 3.4
+install: pip install tox
+script: tox -e $(echo py$TRAVIS_PYTHON_VERSION | tr -d . | sed -e 's/pypypy/pypy/')
+
+matrix:
+    allow_failures:
+        - python: 3.3
+        - python: 3.4
