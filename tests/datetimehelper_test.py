@@ -580,6 +580,39 @@ class TestSpecial(object):
         assert dtstart[-1][0] == berlin.localize(
             datetime.datetime(2014, 7, 11, 19, 0))
 
+
+simple_rdate = """BEGIN:VEVENT
+SUMMARY:Simple Rdate
+DTSTART;TZID=Europe/Berlin:20131113T190000
+DTEND;TZID=Europe/Berlin:20131113T210000
+UID:simple_rdate
+RDATE:20131213T190000
+RDATE:20140113T190000,20140213T190000
+END:VEVENT
+"""
+
+rrule_and_rdate = """BEGIN:VEVENT
+SUMMARY:Datetime Event
+DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20130301T140000
+DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20130301T160000
+RRULE:FREQ=MONTHLY;INTERVAL=2;COUNT=6
+RDATE:20131213T190000
+UID:datetime123
+END:VEVENT"""
+
+
+class TestRDate(object):
+    def test_simple_rdate(self):
+        vevent = _get_vevent(simple_rdate)
+        dtstart = datetimehelper.expand(vevent, berlin)
+        assert len(dtstart) == 4
+
+    def test_rrule_and_rdate(self):
+        vevent = _get_vevent(rrule_and_rdate)
+        dtstart = datetimehelper.expand(vevent, berlin)
+        assert len(dtstart) == 7
+
+
 noend_date = """
 BEGIN:VCALENDAR
 BEGIN:VEVENT
@@ -601,7 +634,7 @@ END:VCALENDAR
 """
 
 
-class TestSenatize(object):
+class TestSenitize(object):
 
     def test_noend_date(self):
         vevent = _get_vevent(noend_date)

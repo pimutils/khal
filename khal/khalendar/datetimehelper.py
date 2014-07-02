@@ -15,13 +15,21 @@ class UnsupportedRecursion(Exception):
 
 def expand(vevent, default_tz, href=''):
     """
+    Constructs a list of start and end dates for all recurring instances of the
+    event defined in vevent.
+
+    It considers RRULE as well as RDATE and EXDATE properties. In case of
+    unsupported recursion rules an UnsupportedRecursion exception is thrown.
+    If timezone defined in vevent is not understood by icalendar, default_tz
+    is used.
 
     :param vevent: vevent to be expanded
     :type vevent: icalendar.cal.Event
     :param default_tz: the default timezone used when we (icalendar)
                        don't understand the embedded timezone
     :type default_tz: pytz.timezone
-    :param href: the href of the vevent, used for more informative logging
+    :param href: the href of the vevent, used for more informative logging and
+                 nothing else
     :type href: str
     :returns: list of start and end (date)times of the expanded event
     :rtyped list(tuple(datetime, datetime))
@@ -40,7 +48,7 @@ def expand(vevent, default_tz, href=''):
             vevent['DTSTART'].dt.tzinfo is None):
         vevent['DTSTART'].dt = default_tz.localize(vevent['DTSTART'].dt)
 
-    if 'RRULE' not in vevent.keys():
+    if 'RRULE' not in vevent.keys() and 'RDATE' not in vevent.keys():
         return [(vevent['DTSTART'].dt, vevent['DTSTART'].dt + duration)]
 
     events_tz = None
@@ -51,27 +59,39 @@ def expand(vevent, default_tz, href=''):
         events_tz = vevent['DTSTART'].dt.tzinfo
         vevent['DTSTART'].dt = vevent['DTSTART'].dt.replace(tzinfo=None)
 
-    rrulestr = vevent['RRULE'].to_ical()
-    rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=vevent['DTSTART'].dt)
+    if 'RRULE' in vevent:
+        rrulestr = vevent['RRULE'].to_ical()
+        rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=vevent['DTSTART'].dt)
 
-    if not set(['UNTIL', 'COUNT']).intersection(vevent['RRULE'].keys()):
-        # rrule really doesn't like to calculate all recurrences until
-        # eternity, so we only do it 15 years into the future
-        dtstart = vevent['DTSTART'].dt
-        if isinstance(dtstart, date):
-            dtstart = datetime(*list(dtstart.timetuple())[:-3])
-        rrule._until = dtstart + timedelta(days=15 * 365)
+        if not set(['UNTIL', 'COUNT']).intersection(vevent['RRULE'].keys()):
+            # rrule really doesn't like to calculate all recurrences until
+            # eternity, so we only do it 15 years into the future
+            dtstart = vevent['DTSTART'].dt
+            if isinstance(dtstart, date):
+                dtstart = datetime(*list(dtstart.timetuple())[:-3])
+            rrule._until = dtstart + timedelta(days=15 * 365)
 
-    if getattr(rrule._until, 'tzinfo', False):
-        rrule._until = rrule._until.astimezone(events_tz)
-        rrule._until = rrule._until.replace(tzinfo=None)
+        if getattr(rrule._until, 'tzinfo', False):
+            rrule._until = rrule._until.astimezone(events_tz)
+            rrule._until = rrule._until.replace(tzinfo=None)
 
-    logger.debug('calculating recurrence dates for {0}, '
-                 'this might take some time.'.format(href))
-    dtstartl = list(rrule)
+        logger.debug('calculating recurrence dates for {0}, '
+                     'this might take some time.'.format(href))
+        dtstartl = list(rrule)
+        if len(dtstartl) == 0:
+            raise UnsupportedRecursion
+    else:
+        dtstartl = [vevent['DTSTART'].dt]
 
-    if len(dtstartl) == 0:
-        raise UnsupportedRecursion
+
+    #include explicitly specified recursion dates
+    if 'RDATE' in vevent:
+        if not isinstance(vevent['RDATE'], list):
+            rdates = [vevent['RDATE']]
+        else:
+            rdates = vevent['RDATE']
+        rdates = [leaf.dt for tree in rdates for leaf in tree.dts]
+        dtstartl += rdates
 
     #remove excluded dates
     if 'EXDATE' in vevent:
@@ -86,6 +106,11 @@ def expand(vevent, default_tz, href=''):
         dtstartl = [events_tz.localize(start) for start in dtstartl]
     elif allday:
         dtstartl = [start.date() for start in dtstartl]
+
+    # RRULE and RDATE may specify the same date twice, it is recommended by
+    # the RFC to consider this as only one instance
+    dtstartl = list(set(dtstartl))
+    dtstartl.sort()  # this is not necessary, but I prefer an ordered list
 
     dtstartend = [(start, start + duration) for start in dtstartl]
     return dtstartend
