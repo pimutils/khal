@@ -5,6 +5,7 @@ import random
 import pytz
 
 from khal.aux import construct_event
+from khal.compat import to_bytes
 
 
 def _now():
@@ -17,103 +18,100 @@ today_s = '{0:02}{1:02}{2:02}'.format(*today.timetuple()[0:3])
 tomorrow_s = '{0:02}{1:02}{2:02}'.format(*tomorrow.timetuple()[0:3])
 this_year_s = str(today.year)
 
-test_set_format_de = [
+
+def _create_testcases(*cases):
+    return [(userinput, to_bytes('\r\n'.join(output) + '\r\n', 'utf-8'))
+            for userinput, output in cases]
+
+
+test_set_format_de = _create_testcases(
     # all-day-events
     # one day only
     ('25.10.2013 Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;VALUE=DATE:20131025',
-                  'DTEND;VALUE=DATE:20131026',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  ''])),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;VALUE=DATE:20131025',
+      'DTEND;VALUE=DATE:20131026',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     # 2 day
     ('15.08.2014 16.08. Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;VALUE=DATE:20140815',
-                  'DTEND;VALUE=DATE:20140817',  # XXX
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  ''])),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;VALUE=DATE:20140815',
+      'DTEND;VALUE=DATE:20140817',  # XXX
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     # end date in next year and not specified
     ('29.12.2014 03.01. Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;VALUE=DATE:20141229',
-                  'DTEND;VALUE=DATE:20150104',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  ''])),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;VALUE=DATE:20141229',
+      'DTEND;VALUE=DATE:20150104',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     # end date in next year
     ('29.12.2014 03.01.2015 Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;VALUE=DATE:20141229',
-                  'DTEND;VALUE=DATE:20150104',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  ''])),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;VALUE=DATE:20141229',
+      'DTEND;VALUE=DATE:20150104',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     # datetime events
     # start and end date same, no explicit end date given
     ('25.10.2013 18:00 20:00 Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
-                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T200000',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  ''])),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T200000',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     # start and end date same, explicit end date (but no year) given
     # XXX FIXME: if no explicit year is given for the end, this_year is used
     ('25.10.2013 18:00 26.10. 20:00 Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
-                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T200000',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  ''])),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T200000',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     # date ends next day, but end date not given
     ('25.10.2013 23:00 0:30 Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T230000',
-                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T003000',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  ''])),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T230000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T003000',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     # only start datetime given
     ('25.10.2013 06:00 Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T060000',
-                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T070000',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  ''])),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T060000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T070000',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     # timezone given
     ('25.10.2013 06:00 America/New_York Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  ('DTSTART;TZID=America/New_York;VALUE=DATE-TIME:'
-                   '20131025T060000'),
-                  ('DTEND;TZID=America/New_York;VALUE=DATE-TIME:'
-                   '20131025T070000'),
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  ''])),
-]
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      ('DTSTART;TZID=America/New_York;VALUE=DATE-TIME:'
+       '20131025T060000'),
+      ('DTEND;TZID=America/New_York;VALUE=DATE-TIME:'
+       '20131025T070000'),
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT'])
+)
 
 
 def test_construct_event_format_de():
@@ -136,29 +134,24 @@ def test_construct_event_format_de():
         assert event == vevent
 
 
-test_set_format_us = [
+test_set_format_us = _create_testcases(
     ('12/31/1999 06:00 Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  ('DTSTART;TZID=America/New_York;VALUE=DATE-TIME:'
-                   '19991231T060000'),
-                  ('DTEND;TZID=America/New_York;VALUE=DATE-TIME:'
-                   '19991231T070000'),
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  ''])),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=America/New_York;VALUE=DATE-TIME:19991231T060000',
+      'DTEND;TZID=America/New_York;VALUE=DATE-TIME:19991231T070000',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     ('12/18 12/20 Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;VALUE=DATE:{0}1218',
-                  'DTEND;VALUE=DATE:{0}1221',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  '']).format(this_year_s)),
-]
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;VALUE=DATE:{}1218'.format(this_year_s),
+      'DTEND;VALUE=DATE:{}1221'.format(this_year_s),
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
+)
 
 
 def test_construct_event_format_us():
@@ -181,38 +174,35 @@ def test_construct_event_format_us():
         assert event == vevent
 
 
-test_set_format_de_complexer = [
+test_set_format_de_complexer = _create_testcases(
     # now events where the start date has to be inferred, too
     # today
     ('8:00 Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{0}T080000',
-                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{0}T090000',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  '']).format(today_s)),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T080000'.format(today_s),
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T090000'.format(today_s),
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     # today until tomorrow
     ('22:00  1:00 Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{0}T220000',
-                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{1}T010000',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  '']).format(today_s, tomorrow_s)),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T220000'.format(today_s),
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T010000'.format(tomorrow_s),
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     ('15.06. Äwesöme Event',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;VALUE=DATE:{0}0615',
-                  'DTEND;VALUE=DATE:{0}0616',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'END:VEVENT',
-                  '']).format(this_year_s)),
-]
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;VALUE=DATE:{}0615'.format(this_year_s),
+      'DTEND;VALUE=DATE:{}0616'.format(this_year_s),
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
+)
 
 
 def test_construct_event_format_de_complexer():
@@ -235,41 +225,38 @@ def test_construct_event_format_de_complexer():
         assert event == vevent
 
 
-test_set_description = [
+test_set_description = _create_testcases(
     # now events where the start date has to be inferred, too
     # today
     ('8:00 Äwesöme Event :: this is going to be awesome',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{0}T080000',
-                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{0}T090000',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'DESCRIPTION:this is going to be awesome',
-                  'END:VEVENT',
-                  '']).format(today_s)),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T080000'.format(today_s),
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T090000'.format(today_s),
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'DESCRIPTION:this is going to be awesome',
+      'END:VEVENT']),
     # today until tomorrow
     ('22:00  1:00 Äwesöme Event :: Will be even better',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{0}T220000',
-                  'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{1}T010000',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'DESCRIPTION:Will be even better',
-                  'END:VEVENT',
-                  '']).format(today_s, tomorrow_s)),
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T220000'.format(today_s),
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T010000'.format(tomorrow_s),
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'DESCRIPTION:Will be even better',
+      'END:VEVENT']),
     ('15.06. Äwesöme Event :: and again',
-     '\r\n'.join(['BEGIN:VEVENT',
-                  'SUMMARY:Äwesöme Event',
-                  'DTSTART;VALUE=DATE:{0}0615',
-                  'DTEND;VALUE=DATE:{0}0616',
-                  'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
-                  'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
-                  'DESCRIPTION:and again',
-                  'END:VEVENT',
-                  '']).format(this_year_s)),
-]
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;VALUE=DATE:{}0615'.format(this_year_s),
+      'DTEND;VALUE=DATE:{}0616'.format(this_year_s),
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'DESCRIPTION:and again',
+      'END:VEVENT']),
+)
 
 
 def test_description():

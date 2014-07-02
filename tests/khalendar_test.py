@@ -105,8 +105,8 @@ today = datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)
 tomorrow = today + datetime.timedelta(days=1)
 
-aday = datetime.date(2014, 04, 9)
-bday = datetime.date(2014, 04, 10)
+aday = datetime.date(2014, 4, 9)
+bday = datetime.date(2014, 4, 10)
 
 
 event_allday_template = u"""BEGIN:VEVENT
