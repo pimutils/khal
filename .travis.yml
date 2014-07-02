@@ -1,12 +1,14 @@
 language: python
 
 python:
-  - 2.7
-  - pypy
-  - 3.3
-  - 3.4
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+    - 2.7
+    - pypy
+    - 3.3
+    - 3.4
 install: pip install tox
-# command to run tests, e.g. python setup.py test
-script:
-  - tox -e $(echo py$TRAVIS_PYTHON_VERSION | tr -d . | sed -e 's/pypypy/pypy/')
+script: tox -e $(echo py$TRAVIS_PYTHON_VERSION | tr -d . | sed -e 's/pypypy/pypy/')
+
+matrix:
+    allow_failures:
+        - python: 3.3
+        - python: 3.4
