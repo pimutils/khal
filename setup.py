@@ -8,10 +8,10 @@ import warnings
 from setuptools import setup
 
 MAJOR = 0
-MINOR = 3
+MINOR = 2
 PATCH = 0
 
-RELEASE = False
+RELEASE = True
 
 VERSION = "{0}.{1}.{2}".format(MAJOR, MINOR, PATCH)
 
@@ -84,7 +84,7 @@ setup(
     install_requires=requirements,
     extras_require=extra_requirements,
     classifiers=[
-        "Development Status :: 1 - Planning"
+        "Development Status :: 1 - Planning",
         "License :: OSI Approved :: MIT License",
         "Environment :: Console :: Curses",
         "Intended Audience :: End Users/Desktop",
