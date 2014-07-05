@@ -1,0 +1,10 @@
+{% extends "!layout.html" %}
+
+{% block linktags %}
+  {{ super() }}
+  <link rel="alternate"
+        type="application/rss+xml"
+        title="Khal News"
+        href="/index.rss" />
+{% endblock %}
+

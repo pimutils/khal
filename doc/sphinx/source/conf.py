@@ -32,6 +32,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
+    'sphinxcontrib.newsfeed',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -96,6 +97,8 @@ pygments_style = 'sphinx'
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
+
+todo_include_todos = True
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -163,7 +166,7 @@ html_static_path = ['ystatic']
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True
@@ -230,12 +233,12 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'khal', u'khal Documentation',
+    ('man', 'khal', u'khal Documentation',
      [u'Christan Geier & contributors'], 1)
 ]
 
 # If true, show URL addresses after external links.
-#man_show_urls = False
+man_show_urls = True
 
 
 # -- Options for Texinfo output -------------------------------------------
