@@ -1,5 +1,5 @@
-Contributin to khal
-===================
+Contributing to khal
+====================
 
 Submitting a Bug
 ----------------
@@ -9,15 +9,10 @@ expected, please check if that bug is either already reported at
 
 https://github.com/geier/khal/issues?state=open
 
-
 If it isn't, always run the command again with the -v option
 and paste the output of that (of course you can edit out any private
 details like your username and resource). 
 
-Also, it is often helpful if you include which OS you are on and which
-version of python you are using. You can just run the file at
-https://gist.github.com/geier/5814123#file-debug_helper-py and paste the
-output.
 
 
 Hacking
