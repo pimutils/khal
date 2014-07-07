@@ -1,10 +1,6 @@
 Usage
 =====
 
-Khal is a calendar program for the terminal for viewing, adding and editing
-events and calendars. Khal is build on the iCalendar_ and vdir_ (allowing the
-use of vdirsyncer_ for CalDAV compatibility) standards.
-
 Khal offers a set of commands, namely :command:`calendar`, :command:`agenda`,
 :command:`new`, :command:`printcalendars`, and :command:`interactive`. See
 below for a description of what each of these commands does. Calling
