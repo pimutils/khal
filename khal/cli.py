@@ -24,8 +24,8 @@
 """khal
 
 Usage:
-  khal calendar [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE ...]
-  khal agenda   [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [DATE ...]
+  khal calendar [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [--days=N| --events=N] [DATE ...]
+  khal agenda   [-vc CONF] [ (-a CAL ... | -d CAL ... ) ] [--days=N| --events=N] [DATE ...]
   khal interactive [-vc CONF] [ (-a CAL ... | -d CAL ... ) ]
   khal new [-vc CONF] [-a cal] DESCRIPTION...
   khal printcalendars [-vc CONF]
@@ -445,7 +445,8 @@ def main_khal():
                            version=__productname__ + ' ' + __version__,
                            argv=[conf.default.default_command] + sys.argv[1:])
 
-        # arguments[conf.default.default_command] = True  # TODO
+    days = int(arguments['--days']) if arguments['--days'] else None
+    events = int(arguments['--events']) if arguments['--events'] else None
 
     if arguments['calendar']:
         controllers.Calendar(collection,
@@ -454,6 +455,8 @@ def main_khal():
                              encoding=conf.locale.encoding,
                              dateformat=conf.locale.dateformat,
                              longdateformat=conf.locale.longdateformat,
+                             days=days,
+                             events=events,
                              )
     elif arguments['agenda']:
         controllers.Agenda(collection,
@@ -462,6 +465,8 @@ def main_khal():
                            encoding=conf.locale.encoding,
                            dateformat=conf.locale.dateformat,
                            longdateformat=conf.locale.longdateformat,
+                           days=days,
+                           events=events,
                            )
     elif arguments['new']:
         controllers.NewFromString(collection, conf, arguments['DESCRIPTION'])

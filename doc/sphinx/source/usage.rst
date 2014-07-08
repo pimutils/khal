@@ -55,11 +55,15 @@ the following syntax:
 
 ::
 
-    khal agenda [-a CALENDAR ... | -d CALENDAR ...] [DATE ...]
+    khal agenda [-a CALENDAR ... | -d CALENDAR ...] [--days N] [DATE ...]
 
 If no dates are supplied as arguments, today and tomorrow are used. Dates must
 be given in the format specified in khal's config file as *dateformat* or
-*longdateformat*. If dateformat is used, the current year is implied.
+*longdateformat*. If *dateformat* is used, the current year is implied.
+
+.. option:: --days N
+
+        Specify how many days' (following each DATE) events should be shown.
 
 
 calendar
@@ -69,11 +73,14 @@ should understand the following syntax:
 
 ::
 
-        khal calendar [-a CALENDAR ... | -d CALENDAR ...] [DATE ...]
+        khal calendar [-a CALENDAR ... | -d CALENDAR ...] [--days N] [DATE ...]
 
 Date selection works exactly as for ``khal agenda``. The displayed calendar
 contains three consecutive months, where the first month is the month
 containing the first given date. If today is included, it is highlighted.
+Have a look at ``khal agenda`` for a descrption of the options.
+
+
 
 interactive
 ***********
