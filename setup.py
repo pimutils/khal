@@ -62,7 +62,6 @@ requirements = [
 
 extra_requirements = {
     'proctitle': ['setproctitle'],
-    'keychain': ['keyring']
 }
 
 setup(
