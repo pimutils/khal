@@ -58,6 +58,7 @@ requirements = [
     'pytz',
     'vdirsyncer',
     'python-dateutil',
+    'configobj',
 ]
 
 extra_requirements = {
@@ -73,7 +74,11 @@ setup(
     author_email='khal@lostpackets.de',
     url='http://lostpackets.de/khal/',
     license='Expat/MIT',
-    packages=['khal', 'khal/ui', 'khal/khalendar'],
+    packages=['khal', 'khal/ui', 'khal/khalendar', 'khal/settings'],
+    package_data={'khal/settings': [
+        'settings/default.khal',
+        'settings/khal.spec',
+    ]},
     entry_points={
         'console_scripts': [
             'khal = khal.cli:main_khal',

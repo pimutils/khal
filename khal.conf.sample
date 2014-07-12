@@ -1,29 +1,32 @@
 #/etc/khal/khal.conf.sample
 #
+# TODO move this to the documentation
 # The default configuration file locations are:
 # ~/.khal/khal.conf
 # $XDG_CONFIG_HOME/khal/khal.conf
 # (where $XDG_CONFIG_HOME is usually ~/.config/)
 #
 # In this file you need to specify:
-# - CalDAV Account settings
+# - calendar settings
 # - khal SQLite3 Database settings
 # - Timezone and Time Display Formating Interface settings
 # - Debug level
 #
 # Look at the end of this file for an example config.
 #------------------------------------------------------------------------------
-# ## CalDAV Account Configuration ##
+# ## Calendars Configuration ##
 #------------------------------------------------------------------------------
-# [Calendar home]
+# TODO explain this section better
+# [calendars]
+# [[home]]
 # # Each  calendar configuration must start with a Calendar tag
 # # Each Calendar Tag must be unique.
 #
-# path: ~/.khal/calendars/home/
+# path= ~/.khal/calendars/home/
 # # Specify the location of the vdir
 #
 #
-# color: dark blue
+# color = dark blue
 # # Set the color for this calendar
 # # If color is not set, events will be in your default terminal color
 # #   * Colors may not be what you expect by their name.
@@ -43,7 +46,7 @@
 # [sqlite]
 # # This configuration file must have a [sqlite] Tag
 # 
-# path: ~/.khal/khal.db
+# path = ~/.khal/khal.db
 # # This specifies the location of the khal SQLite3 Database file
 # #   * Default: $XDG_CACHE_HOME/khal/khal.db
 # #              (where $XDG_CACHE_HOME is usually ~/.local/share/)
@@ -55,21 +58,21 @@
 # [locale]
 # # This configuration file must have a [default] Tag
 #
-# local_timezone: Pacific/Honolulu
+# local_timezone = Pacific/Honolulu
 # # Set the Local Timezone
 # #   * All date are shown in the Local Timezone
 #
-# default_timezone: Pacific/Honolulu
+# default_timezone = Pacific/Honolulu
 # # Set the Default Timezone
 # # The Default Timezone is used for new events added via khal --new
 # # It is also used if vCal datetime's timezone is not understood
 # #
 #
-# timeformat: %H:%M
-# dateformat: %m-%d
-# longdateformat: %Y-%m-%d
-# datetimeformat: %m-%d %H:%M
-# longdatetimeformat: %Y-%m-%d %H:%M
+# timeformat = %H:%M
+# dateformat = %m-%d
+# longdateformat = %Y-%m-%d
+# datetimeformat = %m-%d %H:%M
+# longdatetimeformat = %Y-%m-%d %H:%M
 # # Set the format Time and Date should be displayed in by khal
 # #   * Long version should contain the current year
 # #
@@ -77,16 +80,16 @@
 # # http://strftime.net/
 # #   * Example date in ISO-8601 format, "American"
 #
-# encoding: utf-8
-# # Enable UTF-8 encoding
-# #   * Set this if your terminal is using to utf-8
+# encoding = utf-8
+# # set the encoding of your terminal
+# #   * Sets the encoding to utf-8
 #
-# unicode_symbols: True
+# unicode_symbols = True
 # # Enable unicode symbols to display event properties
 # # Set this to False if your terminal's character set dose not support them
 # #   * Default: True
 #
-# firstweekday: 6
+# firstweekday = 6
 # # Set the first day of the week, 0 is Monday, 6 is Sunday
 #
 #------------------------------------------------------------------------------
@@ -95,14 +98,13 @@
 #
 # [default]
 #
-# DEBUG: 0
+# DEBUG = 0
 # # Specify the Default Debug level (only 0 and 1 are supported at the moment)
-# default_command: calendar
+# default_command = calendar
 # # Specify the default command to execute if khal is called without any further
-# # commands. Valid khal commands are: calendar, agenda, interactive, new and
-# # printcalendars.
+# # commands. Valid khal commands are: calendar, agenda and interactive
 #
-# default_calendar: None
+# default_calendar = None
 # # the default calendar used for new events, if none is given a random one
 # # will be used
 
@@ -110,30 +112,31 @@
 ##
 ## Example Configuration
 ##
-[Calendar home]
-path: ~/.khal/calendars/home/
-color: dark blue
+[[calendars]]
+[home]
+path = ~/.khal/calendars/home/
+color = dark blue
 
-[Calendar work]
-path: ~/.khal/calendars/work/
-readonly: True
+[work]
+path = ~/.khal/calendars/work/
+readonly = True
 
 [sqlite]
-path: ~/.khal/khal.db
+path = ~/.khal/khal.db
 
 [locale]
-local_timezone: Europe/Berlin
-default_timezone: America/New_York
+local_timezone = Europe/Berlin
+default_timezone = America/New_York
 
-timeformat: %H:%M
-dateformat: %d.%m.
-longdateformat: %d.%m.%Y
-datetimeformat: %d.%m. %H:%M
-longdatetimeformat: %d.%m.%Y %H:%M
+timeformat = %H:%M
+dateformat = %d.%m.
+longdateformat = %d.%m.%Y
+datetimeformat =  %d.%m. %H:%M
+longdatetimeformat = %d.%m.%Y %H:%M
 
-firstweekday: 0
+firstweekday = 0
 
 [default]
-default_command: calendar
-default_calendar: home
-debug: 0
+default_command = calendar
+default_calendar = home
+debug = 0

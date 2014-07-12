@@ -1,0 +1,18 @@
+[sqlite]
+path= $XDG_CACHE_HOME/khal/khal.db
+
+[locale]
+local_timezone= Europe/Berlin
+default_timezone= America/New_York
+
+#timeformat= %H:%M
+#dateformat= %d.%m.
+#longdateformat= %d.%m.%Y
+#datetimeformat= %d.%m. %H:%M
+#longdatetimeformat= %d.%m.%Y %H:%M
+
+firstweekday= 0
+
+[defaults]
+default_command = calendar
+debug = 0
