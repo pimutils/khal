@@ -29,6 +29,7 @@ from validate import Validator
 import xdg.BaseDirectory
 
 from khal import __productname__
+from khal.log import logger
 
 DEFAULTSPATH = os.path.join(os.path.dirname(__file__), 'default.khal')
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
@@ -90,6 +91,7 @@ def get_config(config_path=None):
     if config_path is None:
         config_path = _find_configuration_file()
 
+    logger.debug('using the config file at {}'.format(config_path))
     config = ConfigObj(DEFAULTSPATH)
 
     user_config = ConfigObj(config_path,

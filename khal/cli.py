@@ -45,6 +45,7 @@ Options:
 """
 import logging
 import signal
+import StringIO
 import sys
 
 try:
@@ -82,8 +83,14 @@ def main_khal():
 
     if arguments['-v']:
         logger.setLevel(logging.DEBUG)
+    logger.debug('this is {} version {}'.format(__productname__, __version__))
 
     conf = get_config(arguments['-c'])
+
+    out = StringIO.StringIO()
+    conf.write(out)
+    logger.debug('using config:')
+    logger.debug(out.getvalue())
 
     collection = khalendar.CalendarCollection()
 
