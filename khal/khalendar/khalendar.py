@@ -71,7 +71,7 @@ class Calendar(object):
         self._local_tz = default_tz if local_tz is None else local_tz
         self.name = name
         self.color = color
-        self.path = path
+        self.path = os.path.expanduser(path)
         self._debug = debug
         self._dbtool = backend.SQLiteDb(
             dbpath,

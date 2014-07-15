@@ -86,15 +86,16 @@ def main_khal():
     conf = get_config(arguments['-c'])
 
     collection = khalendar.CalendarCollection()
-    for cal in conf.calendars:
-        if (cal.name in arguments['-a'] and arguments['-d'] == list()) or \
-           (cal.name not in arguments['-d'] and arguments['-a'] == list()):
+
+    for name, cal in conf['calendars'].items():
+        if (name in arguments['-a'] and arguments['-d'] == list()) or \
+           (name not in arguments['-d'] and arguments['-a'] == list()):
             collection.append(khalendar.Calendar(
-                name=cal.name,
-                dbpath=conf.sqlite.path,
-                path=cal.path,
-                readonly=cal.readonly,
-                color=cal.color,
+                name=name,
+                dbpath=conf['sqlite']['path'],
+                path=cal['path'],
+                readonly=cal['readonly'],
+                color=cal['color'],
                 unicode_symbols=conf['locale']['unicode_symbols'],
                 local_tz=conf['locale']['local_timezone'],
                 default_tz=conf['locale']['default_timezone']
@@ -103,7 +104,6 @@ def main_khal():
     commands = ['agenda', 'calendar', 'new', 'interactive', 'printcalendars']
 
     if not any([arguments[com] for com in commands]):
-
         arguments = docopt(__doc__,
                            version=__productname__ + ' ' + __version__,
                            argv=[conf['default']['default_command']] + sys.argv[1:])

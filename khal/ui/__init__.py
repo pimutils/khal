@@ -393,7 +393,7 @@ class EventList(urwid.WidgetWrap):
         end = datetime.combine(this_date, time.max)
 
         date_text = urwid.Text(
-            this_date.strftime(self.conf.locale.longdateformat))
+            this_date.strftime(self.conf['locale']['longdateformat']))
         event_column = list()
         all_day_events = self.collection.get_allday_by_time_range(this_date)
         events = self.collection.get_datetime_by_time_range(start, end)
@@ -499,14 +499,14 @@ class EventColumn(urwid.WidgetWrap):
         :type date: datetime.date
         """
         event = aux.new_event(dtstart=date,
-                              timezone=self.conf.locale.default_timezone)
+                              timezone=self.conf['locale']['default_timezone'])
 
         # TODO proper default cal
         event = self.collection.new_event(
             event.to_ical(),
             self.collection.default_calendar_name,
-            local_tz=self.conf.locale.local_timezone,
-            default_tz=self.conf.locale.default_timezone)
+            local_tz=self.conf['locale']['locale_timezone'],
+            default_tz=self.conf['locale']['default_timezone'])
 
         self.edit(event)
         self.eventcount += 1
@@ -559,24 +559,24 @@ class EventDisplay(EventViewer):
 
         # start and end time/date
         if event.allday:
-            startstr = event.start.strftime(self.conf.locale.dateformat)
+            startstr = event.start.strftime(self.conf['locale']['dateformat'])
             end = event.end - timedelta(days=1)
             if event.start == end:
                 lines.append(urwid.Text('On: ' + startstr))
             else:
-                endstr = end.strftime(self.conf.locale.dateformat)
+                endstr = end.strftime(self.conf['locale']['dateformat'])
                 lines.append(
                     urwid.Text('From: ' + startstr + ' to: ' + endstr))
 
         else:
-            startstr = event.start.strftime(self.conf.locale.dateformat +
-                                            ' ' + self.conf.locale.timeformat)
+            startstr = event.start.strftime(self.conf['locale']['dateformat'] +
+                                            ' ' + self.conf['locale']['timeformat'])
             if event.start.date == event.end.date:
-                endstr = event.end.strftime(self.conf.locale.timeformat)
+                endstr = event.end.strftime(self.conf['locale']['timeformat'])
             else:
-                endstr = event.end.strftime(self.conf.locale.dateformat +
+                endstr = event.end.strftime(self.conf['locale']['dateformat'] +
                                             ' ' +
-                                            self.conf.locale.timeformat)
+                                            self.conf['locale']['timeformat'])
                 lines.append(urwid.Text('From: ' + startstr +
                                         ' To: ' + endstr))
 
@@ -779,7 +779,7 @@ class ClassicView(Pane):
                                         collection=collection,
                                         deleted=self.deleted)
         weeks = calendar_walker(
-            view=self, firstweekday=conf.locale.firstweekday)
+            view=self, firstweekday=conf['locale']['firstweekday'])
         events = self.eventscolumn
         columns = CColumns([(25, weeks), events],
                            dividechars=2,
