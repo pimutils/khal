@@ -30,6 +30,7 @@ import xdg.BaseDirectory
 
 from khal import __productname__
 from khal.log import logger
+from utils import is_timezone
 
 DEFAULTSPATH = os.path.join(os.path.dirname(__file__), 'default.khal')
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
@@ -92,7 +93,7 @@ def get_config(config_path=None):
         config_path = _find_configuration_file()
 
     logger.debug('using the config file at {}'.format(config_path))
-    config = ConfigObj(DEFAULTSPATH)
+    config = ConfigObj(DEFAULTSPATH, interpolation=False)
 
     user_config = ConfigObj(config_path,
                             configspec=SPECPATH,
@@ -100,7 +101,9 @@ def get_config(config_path=None):
                             file_error=True,
                             )
 
-    validator = Validator()
+    fdict = {'timezone': is_timezone}
+
+    validator = Validator(fdict)
     results = user_config.validate(validator, preserve_errors=True)
     if not results:
         for entry in flatten_errors(config, results):

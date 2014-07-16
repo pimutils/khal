@@ -8,8 +8,8 @@ readonly = boolean(default=False)
 encoding = string(default='utf-8')
 firstweekday = integer(0, 6, default=0)
 unicode_symbols = boolean(default=True)
-default_timezone = string(default=None)
-local_timezone = string(default=None)
+default_timezone = timezone(default=None)
+local_timezone = timezone(default=None)
 timeformat = string(default='%H:%M')
 dateformat = string(default='%d.%m.')
 longdateformat = string(default='%d.%m.%Y')
@@ -18,6 +18,6 @@ longdatetimeformat = string(default='%d.%m.%Y %H:%M')
 
 
 [default]
-default_command = options('calendar', 'agenda', 'interactive')
+default_command = options('calendar', 'agenda', 'interactive', default='calendar')
 debug = boolean(default=False)
 default_calendar = string(default=None)

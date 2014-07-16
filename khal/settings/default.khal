@@ -2,17 +2,17 @@
 path= $XDG_CACHE_HOME/khal/khal.db
 
 [locale]
-local_timezone= Europe/Berlin
-default_timezone= America/New_York
+local_timezone= UTC
+default_timezone= UTC
 
-#timeformat= %H:%M
-#dateformat= %d.%m.
-#longdateformat= %d.%m.%Y
-#datetimeformat= %d.%m. %H:%M
-#longdatetimeformat= %d.%m.%Y %H:%M
+timeformat= %H:%M
+dateformat= %Y-%m-%d
+longdateformat= %Y-%m-%d
+datetimeformat= %Y-%m-%d %H:%M
+longdatetimeformat= %Y-%m-%d %H:%M
 
 firstweekday= 0
 
-[defaults]
+[default]
 default_command = calendar
 debug = 0
