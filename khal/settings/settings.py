@@ -30,7 +30,7 @@ import xdg.BaseDirectory
 
 from khal import __productname__
 from khal.log import logger
-from utils import is_timezone
+from utils import is_timezone, config_checks
 
 DEFAULTSPATH = os.path.join(os.path.dirname(__file__), 'default.khal')
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
@@ -64,20 +64,6 @@ def _find_configuration_file():
             return path
 
     return None
-
-
-def _test_default_calendar(config):
-    """test if config['default']['default_calendar'] is set to a sensible
-    value
-    """
-    if config['default']['default_calendar'] is None:
-        config['default']['default_calendar'] = config['calendars'].keys()[0]
-    elif config['default']['default_calendar'] not in config['calendars']:
-        print("in section [default] {} is not valid for 'default_calendar', "
-              "must be one of {}".format(config['default']['default_calendar'],
-                                         config['calendars'].keys())
-              )
-        raise ValueError  # TODO own error class
 
 
 def get_config(config_path=None):
@@ -120,6 +106,6 @@ def get_config(config_path=None):
         raise ValueError  # TODO own error class
 
     config.merge(user_config)
-    _test_default_calendar(config)
+    config_checks(config)
 
     return config

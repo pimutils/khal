@@ -1,3 +1,5 @@
+[calendars]
+
 [sqlite]
 path= $XDG_CACHE_HOME/khal/khal.db
 

@@ -27,8 +27,33 @@ import pytz
 
 
 def is_timezone(tzstring):
+    """tries to convert tzstring into a pytz timezone
+
+    raises a VdtvalueError if tzstring is not valid
+    """
     try:
         tzone = pytz.timezone(tzstring)
     except pytz.UnknownTimeZoneError:
         raise VdtValueError("Unknown timezone {}".format(tzstring))
     return tzone
+
+
+def test_default_calendar(config):
+    """test if config['default']['default_calendar'] is set to a sensible
+    value
+    """
+    if config['default']['default_calendar'] is None:
+        config['default']['default_calendar'] = config['calendars'].keys()[0]
+    elif config['default']['default_calendar'] not in config['calendars']:
+        print("in section [default] {} is not valid for 'default_calendar', "
+              "must be one of {}".format(config['default']['default_calendar'],
+                                         config['calendars'].keys())
+              )
+        raise ValueError  # TODO own error class
+
+
+def config_checks(config):
+    """do some tests on the config we cannot do with configobj's validator"""
+    if len(config['calendars'].keys()) < 1:
+        raise ValueError('Found no calendar in the config file')
+    test_default_calendar(config)
