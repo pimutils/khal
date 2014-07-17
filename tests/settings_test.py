@@ -37,3 +37,29 @@ class TestSettings(object):
     def test_nocalendars(self):
         with pytest.raises(ValueError):
             get_config(PATH + 'nocalendars.conf')
+
+    def test_small(self):
+        config = get_config(PATH + 'small.conf')
+        assert config == {
+            'calendars': {
+                'home': {'path': '~/.calendars/home/', 'color': 'green', 'readonly': False},
+                'work': {'path': '~/.calendars/work/', 'readonly': True}},
+            'sqlite': {'path': '$XDG_CACHE_HOME/khal/khal.db'},
+            'locale': {
+                'local_timezone': None,
+                'default_timezone': None,
+                'timeformat': '%H:%M',
+                'dateformat': '%d.%m.',
+                'longdateformat': '%d.%m.%Y',
+                'datetimeformat': '%d.%m. %H:%M',
+                'longdatetimeformat': '%d.%m.%Y %H:%M',
+                'firstweekday': 0,
+                'encoding': 'utf-8',
+                'unicode_symbols': True,
+            },
+            'default': {
+                'default_command': 'calendar',
+                'debug': False,
+                'default_calendar': 'home',
+            }
+        }

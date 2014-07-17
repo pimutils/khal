@@ -75,7 +75,7 @@ setup(
     url='http://lostpackets.de/khal/',
     license='Expat/MIT',
     packages=['khal', 'khal/ui', 'khal/khalendar', 'khal/settings'],
-    package_data={'khal/settings': [
+    package_data={'khal': [
         'settings/default.khal',
         'settings/khal.spec',
     ]},
