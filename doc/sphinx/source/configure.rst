@@ -17,15 +17,7 @@ runtime.
 copy ``khal.conf.sample`` to ``~/.khal/khal.conf`` or
 ``~/.config/khal/khal.conf`` and edit to your liking.
 
-
-Calendar Section
-----------------
-The only section you need to have in your configuration file is a *[calendars]*
-section with at least one subsection, with a configured *path*. Here is a small
-example:
-
-.. literalinclude:: ../../../tests/configs/small.conf
-        :language: ini
+.. include:: configspec.rst
 
 syncing
 -------
