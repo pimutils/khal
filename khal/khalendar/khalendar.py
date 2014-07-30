@@ -190,7 +190,7 @@ class Calendar(object):
             return False
 
     def new_event(self, ical, local_tz, default_tz):
-        """creates new event form ical string"""
+        """creates and returns (but does not insert) new event from ical string"""
         return Event(ical=ical, account=self.name, local_tz=local_tz,
                      default_tz=default_tz)
 

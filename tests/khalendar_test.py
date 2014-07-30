@@ -136,6 +136,13 @@ DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
 UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
 END:VEVENT"""
 
+event_d_no_value = """BEGIN:VEVENT
+SUMMARY:Another Event
+DTSTART:20140409
+DTEND:20140410
+UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
+END:VEVENT"""
+
 
 class TestCollection(object):
 
@@ -152,8 +159,8 @@ class TestCollection(object):
         assert coll.get_datetime_by_time_range(start, end) == list()
 
     def test_insert(self, coll_vdirs):
+        """insert a datetime event"""
         coll, vdirs = coll_vdirs
-
         event = Event(event_dt, account='foo', **KWARGS)
         coll.new(event, cal1)
         events = coll.get_datetime_by_time_range(self.astart, self.aend)
@@ -164,6 +171,34 @@ class TestCollection(object):
         assert len(list(vdirs[cal2].list())) == 0
         assert len(list(vdirs[cal3].list())) == 0
 
+        assert coll.get_datetime_by_time_range(self.bstart, self.bend) == []
+
+    def test_insert_d(self, coll_vdirs):
+        """insert a date event"""
+        coll, vdirs = coll_vdirs
+
+        event = Event(event_d, account='foo', **KWARGS)
+        coll.new(event, cal1)
+        events = coll.get_allday_by_time_range(aday)
+        assert len(events) == 1
+        assert events[0].account == cal1
+        assert len(list(vdirs[cal1].list())) == 1
+        assert len(list(vdirs[cal2].list())) == 0
+        assert len(list(vdirs[cal3].list())) == 0
+        assert coll.get_datetime_by_time_range(self.bstart, self.bend) == []
+
+    def test_insert_d_no_value(self, coll_vdirs):
+        """insert a date event with no VALUE=DATE option"""
+        coll, vdirs = coll_vdirs
+
+        event = Event(event_d_no_value, account='foo', **KWARGS)
+        coll.new(event, cal1)
+        events = coll.get_allday_by_time_range(aday)
+        assert len(events) == 1
+        assert events[0].account == cal1
+        assert len(list(vdirs[cal1].list())) == 1
+        assert len(list(vdirs[cal2].list())) == 0
+        assert len(list(vdirs[cal3].list())) == 0
         assert coll.get_datetime_by_time_range(self.bstart, self.bend) == []
 
     def test_change(self, coll_vdirs):

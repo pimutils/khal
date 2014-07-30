@@ -288,9 +288,10 @@ class SQLiteDb(object):
         all_day_event = False
         if href == '' or href is None:
             href = get_random_href()
-        if 'VALUE' in vevent['DTSTART'].params:
-            if vevent['DTSTART'].params['VALUE'] == 'DATE':
-                all_day_event = True
+
+        # testing on datetime.date won't work as datetime is a child of date
+        if not isinstance(vevent['DTSTART'].dt, datetime.datetime):
+            all_day_event = True
 
         dtstartend = datetimehelper.expand(vevent,
                                            self.default_tz,
@@ -448,6 +449,8 @@ class SQLiteDb(object):
     def get_allday_range(self, start, end=None, account=None, color='',
                          readonly=False, unicode_symbols=True,
                          show_deleted=True):
+        # TODO type check on start and end
+        # should be datetime.date not datetime.datetime
         self._check_account(account)
         if account is None:
             raise Exception('need to specify an account')
