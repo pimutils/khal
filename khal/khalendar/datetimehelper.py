@@ -91,6 +91,7 @@ def expand(vevent, default_tz, href=''):
         else:
             rdates = vevent['RDATE']
         rdates = [leaf.dt for tree in rdates for leaf in tree.dts]
+        rdates = localize_strip_tz(rdates, events_tz)
         dtstartl += rdates
 
     #remove excluded dates
@@ -100,6 +101,8 @@ def expand(vevent, default_tz, href=''):
         else:
             exdates = vevent['EXDATE']
         exdates = [leaf.dt for tree in exdates for leaf in tree.dts]
+
+        exdates = localize_strip_tz(exdates, events_tz)
         dtstartl = [start for start in dtstartl if start not in exdates]
 
     if events_tz is not None:
@@ -138,3 +141,14 @@ def sanitize(vevent):
         return vevent
     else:
         return vevent
+
+
+def localize_strip_tz(dates, timezone):
+    """converts a list of dates to timezone, than removes tz info"""
+    outdates = []
+    for one_date in dates:
+        if hasattr(one_date, 'tzinfo') and not one_date.tzinfo is None:
+            one_date = one_date.astimezone(timezone)
+            one_date = one_date.replace(tzinfo=None)
+        outdates.append(one_date)
+    return outdates

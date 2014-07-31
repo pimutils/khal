@@ -409,6 +409,23 @@ class TestExpandNoRR(object):
              datetime.date(2013, 3, 2,)),
         ]
 
+    def test_expand_dtr_exdatez(self):
+        """a recurring event with an EXDATE in Zulu time while DTSTART is
+        localized"""
+        vevent = _get_vevent("""BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:event_dtr_exdatez
+SUMMARY:event_dtr_exdatez
+RRULE:FREQ=WEEKLY;UNTIL=20140725T053000Z
+EXDATE:20140721T053000Z
+DTSTART;TZID=Europe/Berlin:20140630T073000
+DURATION:PT4H30M
+END:VEVENT
+END:VCALENDAR""")
+        dtstart = datetimehelper.expand(vevent, berlin)
+        assert len(dtstart) == 3
+
 
 vevent_until_notz = """BEGIN:VEVENT
 SUMMARY:until 20. Februar
@@ -507,38 +524,9 @@ TRANSP:OPAQUE
 END:VEVENT
 """
 
-event_dtr_untilz = """BEGIN:VCALENDAR
-PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN
-VERSION:2.0
-BEGIN:VEVENT
-UID:event_dtr_untilz
-SUMMARY:Arbeit
-RRULE:FREQ=WEEKLY;UNTIL=20140725T053000Z
-EXDATE:20140721T053000Z
-DTSTART;TZID=Europe/Berlin:20140630T073000
-X-MOZ-GENERATION:5
-DURATION:PT4H30M
-SEQUENCE:4
-END:VEVENT
-
-BEGIN:VEVENT
-LAST-MODIFIED:20140706T111907Z
-DTSTAMP:20140706T111907Z
-UID:abe304dc-f7b1-4f2b-997d-5c8bcfaa7e0b
-UID:event_dtr_untilz22
-SUMMARY:Arbeit
-RECURRENCE-ID:20140707T053000Z
-DTSTART;TZID=Europe/Berlin:20140707T073000
-DTEND;TZID=Europe/Berlin:20140707T120000
-SEQUENCE:2
-END:VEVENT
-END:VCALENDAR
-"""
-
-
-
 
 class TestSpecial(object):
+    """collection of strange test cases that don't fit anywhere else really"""
 
     @pytest.mark.xfail(reason='This needs to be debugged ASAP')
     def test_count(self):
@@ -633,6 +621,7 @@ END:VEVENT"""
 
 
 class TestRDate(object):
+    """Testing expanding of recurrence rules"""
     def test_simple_rdate(self):
         vevent = _get_vevent(simple_rdate)
         dtstart = datetimehelper.expand(vevent, berlin)
