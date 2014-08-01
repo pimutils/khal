@@ -28,10 +28,10 @@ def write_section(specsection, key, comment):
             fun_args[0], fun_args[1])
         fun_args = []
 
-    print('     :type: {}'.format(fun_name))
+    print('    :type: {}'.format(fun_name))
     if fun_args != []:
-        print('     :args: {}'.format(fun_args))
-    print('     :default: {}'.format(default))
+        print('    :args: {}'.format(fun_args))
+    print('    :default: {}'.format(default))
 
 
 for secname in spec:

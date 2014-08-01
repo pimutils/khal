@@ -19,6 +19,10 @@ color = option('black', 'white', 'brown', 'yellow','dark grey', 'dark green', 'd
 # calendar
 readonly = boolean(default=False)
 
+[sqlite]
+# khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
+path = string
+
 # The most important options in the the **[locale]** section are probably (long-)time and dateformat.
 [locale]
 
