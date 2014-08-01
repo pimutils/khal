@@ -24,7 +24,7 @@
 
 import os
 
-from configobj import ConfigObj, flatten_errors
+from configobj import ConfigObj, flatten_errors, get_extra_values
 from validate import Validator
 import xdg.BaseDirectory
 
@@ -108,4 +108,22 @@ def get_config(config_path=None):
     config.merge(user_config)
     config_checks(config)
 
+    extras = get_extra_values(user_config)
+    for section, value in extras:
+        if section == ():
+            logger.warn('unknown section "{}" in config file'.format(value))
+        else:
+            section = sectionize(section)
+            logger.warn('unknown key or subsection "{}" in '
+                        'section "{}"'.format(value, section))
+
     return config
+
+
+def sectionize(sections, depth=1):
+    """converts list of string into [list][[of]][[[strings]]]"""
+    this_part = depth * '[' + sections[0] + depth * ']'
+    if len(sections) > 1:
+        return this_part + sectionize(sections[1:], depth=depth + 1)
+    else:
+        return this_part
