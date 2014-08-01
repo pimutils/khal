@@ -76,6 +76,8 @@ import xdg.BaseDirectory
 from .event import Event
 from . import datetimehelper
 from .. import log
+from ..exceptions import Error
+from exceptions import UnsupportedRruleExeptionError
 
 logger = log.logger
 
@@ -269,20 +271,26 @@ class SQLiteDb(object):
         if href is None:
             raise ValueError('href may not be one')
         self._check_account(account)
+        events = []
         if not isinstance(vevent, icalendar.cal.Event):
             ical = icalendar.Event.from_ical(vevent)
-            vevent = None
             for component in ical.walk():
                 if component.name == 'VEVENT':
-                    vevent = component
-                    break
+                    events.append(component)
 
-        if vevent is None:
+        if len(events) == 0:
             if ignore_invalid_items:
                 return
             else:
                 raise UpdateFailed(u'Could not find event in {}'.format(ical))
 
+        elif len(events) > 1:
+            if len(set([event['UID'] for event in events])):
+                raise UnsupportedRruleExeptionError
+            else:
+                raise Error('more than one event in .ics file')
+
+        vevent = events[0]
         vevent = datetimehelper.sanitize(vevent)
 
         all_day_event = False

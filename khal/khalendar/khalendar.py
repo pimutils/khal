@@ -39,6 +39,7 @@ from vdirsyncer.storage import FilesystemStorage
 from . import backend
 from .event import Event
 from .. import log
+from .exceptions import UnsupportedFeatureError
 
 logger = log.logger
 
@@ -182,10 +183,14 @@ class Calendar(object):
             self._dbtool.update(event.raw, self.name, href=href, etag=etag,
                                 ignore_invalid_items=True)
             return True
+        except UnsupportedFeatureError as error:
+            logger.error(
+                'During update_vevent we failed to parse vcard {}/{} '
+                'because of {}'.format(self.name, href, error))
         except Exception as error:
             logger.error(
-                'Failed to parse vcard {} during '
-                'update_vevent in collection ''{}'.format(href, self.name))
+                'During update_vevent we failed to parse vcard {}/{}, '
+                'because of {}'.format(self.name, href, error))
             logger.debug(traceback.format_exc(error))
             return False
 

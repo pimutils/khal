@@ -83,7 +83,6 @@ def expand(vevent, default_tz, href=''):
     else:
         dtstartl = [vevent['DTSTART'].dt]
 
-
     #include explicitly specified recursion dates
     if 'RDATE' in vevent:
         if not isinstance(vevent['RDATE'], list):
