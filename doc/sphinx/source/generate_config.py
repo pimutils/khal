@@ -12,10 +12,11 @@ config.validate(validator)
 spec = config.configspec
 
 
-def write_section(specsection, key, comment):
+def write_section(specsection, secname, key, comment):
     # why is _parse_check a "private" method? seems to be rather useful...
     # we don't need fun_kwargs
     fun_name, fun_args, fun_kwargs, default = validator._parse_check(specsection)
+    print('\n.. _{}-{}:'.format(secname, key))
     print('\n.. object:: {}\n'.format(key))
     print('    ' + '\n    '.join([line.strip('# ') for line in comment]))
     if fun_name == 'option':
@@ -27,11 +28,12 @@ def write_section(specsection, key, comment):
         fun_name += ', allowed values are between {} and {}'.format(
             fun_args[0], fun_args[1])
         fun_args = []
+    print()
 
-    print('    :type: {}'.format(fun_name))
+    print('      :type: {}'.format(fun_name))
     if fun_args != []:
-        print('    :args: {}'.format(fun_args))
-    print('    :default: {}'.format(default))
+        print('      :args: {}'.format(fun_args))
+    print('      :default: {}'.format(default))
 
 
 for secname in spec:
@@ -46,6 +48,7 @@ for secname in spec:
             comment = spec[secname].comments[key]
             print('\n'.join([line[2:] for line in comment]))
             for key, comment in spec[secname]['__many__'].comments.items():
-                write_section(spec[secname]['__many__'][key], key, comment)
+                write_section(spec[secname]['__many__'][key], secname,
+                              key, comment)
         else:
-            write_section(spec[secname][key], key, comment)
+            write_section(spec[secname][key], secname, key, comment)

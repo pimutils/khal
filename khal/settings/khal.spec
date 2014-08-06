@@ -1,11 +1,11 @@
 [calendars]
-# The only non-optional section is the *[calendars]* section, which must
-# contain at least one subsection. Every subsection must start with a unique
-# name enclosed by two square brackets. Each section needs exactly one *path*
-# setting, everything else is optional. Here is a small example:
-# 
+# The *[calendars]* is mandatory and must contain at least one subsection.
+# Every subsection must have a unique name (enclosed by two square brackets).
+# Each subection needs exactly one *path* setting, everything else is optional.
+# Here is a small example:
+#
 # .. literalinclude:: ../../../tests/configs/small.conf
-#     :language: ini
+#  :language: ini
 [[__many__]]
 # the path to a *vdir* where this calendar is saved
 path = string(default=None)
@@ -37,7 +37,7 @@ firstweekday = integer(0, 6, default=0)
 unicode_symbols = boolean(default=True)
 
 # this timezone will be used for new events (when no timezone is specified) and
-# when khal does not understand the timezone specified in the icalendar file 
+# when khal does not understand the timezone specified in the icalendar file
 default_timezone = timezone(default=None)
 
 # khal will show all times in this timezone
@@ -47,19 +47,19 @@ local_timezone = timezone(default=None)
 # format as understood by strftime, see https://strftime.net or :command:`man strftime`
 timeformat = string(default='%H:%M')
 
-# khal will display and understand all dates in this format, see :ref:`timeformat` for the format
+# khal will display and understand all dates in this format, see :ref:`timeformat <locale-timeformat>` for the format
 dateformat = string(default='%d.%m.')
 
 # khal will display and understand all dates in this format, it should
-# contain a year (e.g. *%Y*) see :ref:`timeformat` for the format.
+# contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
 longdateformat = string(default='%d.%m.%Y')
 
 # khal will display and understand all datetimes in this format, see
-# :ref:`timeformat` for the format.
+# :ref:`timeformat <locale-timeformat>` for the format.
 datetimeformat = string(default='%d.%m. %H:%M')
 
 # khal will display and understand all datetimes in this format, it should
-# contain a year (e.g. *%Y*) see :ref:`timeformat` for the format.
+# contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
 longdatetimeformat = string(default='%d.%m.%Y %H:%M')
 
 

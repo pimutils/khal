@@ -1,2 +1,4 @@
 configspec.rst: ../../../../khal/khal/settings/khal.spec
-	generate_config.py > configspec.rst
+	python generate_config.py > configspec.rst
+
+.PHONY: configspec.rst
