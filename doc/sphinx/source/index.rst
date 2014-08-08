@@ -49,6 +49,7 @@ Table of Contents
    standards
    timezones
    contributing
-   news
+   changelog
    faq
    license
+   news
