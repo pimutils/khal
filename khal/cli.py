@@ -380,19 +380,13 @@ def validate(conf, logger):
     """
     validate the config
     """
-    rval = True
     cal_name = conf.default.default_calendar
     if cal_name is True:
         conf.default.default_calendar = conf.calendars[0].name
-
-    else:
-        if cal_name not in [cal.name for cal in conf.calendars]:
-            logger.fatal('{} is not a valid calendar'.format(cal_name))
-            rval = False
-    if rval:
-        return conf
-    else:
+    elif not any(cal_name == cal.name for cal in conf.calendars):
+        logger.fatal('{} is not a valid calendar'.format(cal_name))
         return None
+    return conf
 
 
 def main_khal():
