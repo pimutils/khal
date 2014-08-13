@@ -24,8 +24,8 @@ import logging
 import sys
 
 from khal import __productname__
+from vdirsyncer.log import stdout_handler
 
-stdout_handler = logging.StreamHandler(sys.stdout)
 logger = logging.getLogger(__productname__)
 logger.setLevel(logging.INFO)
 logger.addHandler(stdout_handler)
