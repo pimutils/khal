@@ -52,7 +52,7 @@ write_version()
 
 
 requirements = [
-    'docopt',
+    'click',
     'icalendar',
     'urwid',
     'pyxdg',
