@@ -21,7 +21,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 import logging
-import signal
 import StringIO
 import sys
 
@@ -34,13 +33,13 @@ import click
 
 from khal import controllers
 from khal import khalendar
-from khal import __version__, __productname__
+from khal import __version__
 from khal.log import logger
 from khal.settings import get_config
 
 
 def _get_cli():
-    @click.group()
+    @click.group(invoke_without_command=True)
     @click.option('--config', '-c', default=None, metavar='PATH',
                   help='The config file to use.')
     @click.option('--verbose', '-v', is_flag=True,
@@ -95,6 +94,9 @@ def _get_cli():
                     default_tz=conf['locale']['default_timezone']
                 ))
         collection._default_calendar_name = conf['default']['default_calendar']
+
+        if not ctx.invoked_subcommand:
+            ctx.invoke(cli.commands[conf.default.default_command])
 
     days_option = click.option('--days', default=None, type=int)
     events_option = click.option('--events', default=None, type=int)

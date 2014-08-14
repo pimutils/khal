@@ -52,7 +52,7 @@ write_version()
 
 
 requirements = [
-    'click',
+    'click>=3.2',
     'icalendar',
     'urwid',
     'pyxdg',
