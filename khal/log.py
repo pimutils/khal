@@ -23,8 +23,39 @@
 import logging
 import sys
 
+import click
+
 from khal import __productname__
-from vdirsyncer.log import stdout_handler
+
+
+class ColorFormatter(logging.Formatter):
+    colors = {
+        'error': dict(fg='red'),
+        'exception': dict(fg='red'),
+        'critical': dict(fg='red'),
+        'debug': dict(fg='blue'),
+        'warning': dict(fg='yellow')
+    }
+
+    def format(self, record):
+        if not record.exc_info:
+            level = record.levelname.lower()
+            if level in self.colors:
+                prefix = click.style('{}: '.format(level),
+                                     **self.colors[level])
+                record.msg = '\n'.join(prefix + x
+                                       for x in str(record.msg).splitlines())
+
+        return logging.Formatter.format(self, record)
+
+
+class ClickStream(object):
+    def write(self, string):
+        click.echo(string, file=sys.stderr, nl=False)
+
+
+stdout_handler = logging.StreamHandler(ClickStream())
+stdout_handler.formatter = ColorFormatter()
 
 logger = logging.getLogger(__productname__)
 logger.setLevel(logging.INFO)
