@@ -77,7 +77,7 @@ from .event import Event
 from . import datetimehelper
 from .. import log
 from ..exceptions import Error
-from exceptions import UnsupportedRruleExeptionError
+from exceptions import UnsupportedRruleExceptionError
 
 logger = log.logger
 
@@ -135,7 +135,7 @@ class SQLiteDb(object):
                 logger.debug('success')
             except OSError as error:
                 logger.fatal('failed to create {0}: {1}'.format(dbdir, error))
-                raise CouldNotCreateDbDir
+                raise CouldNotCreateDbDir()
 
     def _check_table_version(self):
         """tests for curent db Version
@@ -286,7 +286,7 @@ class SQLiteDb(object):
 
         elif len(events) > 1:
             if len(set([event['UID'] for event in events])):
-                raise UnsupportedRruleExeptionError
+                raise UnsupportedRruleExceptionError()
             else:
                 raise Error('more than one event in .ics file')
 
