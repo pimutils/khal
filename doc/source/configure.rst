@@ -19,7 +19,7 @@ A minimal sample configuration could look like this:
 
 Example
 -------
-.. literalinclude:: ../../../tests/configs/simple.conf
+.. literalinclude:: ../../tests/configs/simple.conf
   :language: ini
 
 syncing

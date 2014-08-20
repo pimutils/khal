@@ -4,7 +4,7 @@
 # Each subection needs exactly one *path* setting, everything else is optional.
 # Here is a small example:
 #
-# .. literalinclude:: ../../../tests/configs/small.conf
+# .. literalinclude:: ../../tests/configs/small.conf
 #  :language: ini
 [[__many__]]
 # the path to a *vdir* where this calendar is saved

@@ -7,7 +7,7 @@ Every subsection must have a unique name (enclosed by two square brackets).
 Each subection needs exactly one *path* setting, everything else is optional.
 Here is a small example:
 
-.. literalinclude:: ../../../tests/configs/small.conf
+.. literalinclude:: ../../tests/configs/small.conf
  :language: ini
 
 .. _calendars-color:

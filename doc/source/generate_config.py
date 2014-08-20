@@ -5,7 +5,7 @@ from __future__ import print_function
 from configobj import ConfigObj
 import validate
 
-specpath = '../../../khal/settings/khal.spec'
+specpath = '../../khal/settings/khal.spec'
 config = ConfigObj(None, configspec=specpath, stringify=False, list_values=False)
 validator = validate.Validator()
 config.validate(validator)
