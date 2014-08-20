@@ -143,17 +143,17 @@ class NewFromString(object):
 
     def __init__(self, collection, conf, date_list):
         event = aux.construct_event(date_list,
-                                    conf.locale.timeformat,
-                                    conf.locale.dateformat,
-                                    conf.locale.longdateformat,
-                                    conf.locale.datetimeformat,
-                                    conf.locale.longdatetimeformat,
-                                    conf.locale.local_timezone,
-                                    encoding=conf.locale.encoding)
+                                    conf['locale']['timeformat'],
+                                    conf['locale']['dateformat'],
+                                    conf['locale']['longdateformat'],
+                                    conf['locale']['datetimeformat'],
+                                    conf['locale']['longdatetimeformat'],
+                                    conf['locale']['local_timezone'],
+                                    encoding=conf['locale']['encoding'])
         event = collection.new_event(event,
                                      collection.default_calendar_name,
-                                     conf.locale.local_timezone,
-                                     conf.locale.default_timezone,
+                                     conf['locale']['local_timezone'],
+                                     conf['locale']['default_timezone'],
                                      )
 
         collection.new(event)

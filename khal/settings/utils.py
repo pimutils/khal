@@ -1,0 +1,59 @@
+# coding: utf-8
+# vim: set ts=4 sw=4 expandtab sts=4:
+# Copyright (c) 2013-2014 Christian Geier & contributors
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
+from validate import VdtValueError
+import pytz
+
+
+def is_timezone(tzstring):
+    """tries to convert tzstring into a pytz timezone
+
+    raises a VdtvalueError if tzstring is not valid
+    """
+    try:
+        tzone = pytz.timezone(tzstring)
+    except pytz.UnknownTimeZoneError:
+        raise VdtValueError("Unknown timezone {}".format(tzstring))
+    return tzone
+
+
+def test_default_calendar(config):
+    """test if config['default']['default_calendar'] is set to a sensible
+    value
+    """
+    if config['default']['default_calendar'] is None:
+        config['default']['default_calendar'] = config['calendars'].keys()[0]
+    elif config['default']['default_calendar'] not in config['calendars']:
+        print("in section [default] {} is not valid for 'default_calendar', "
+              "must be one of {}".format(config['default']['default_calendar'],
+                                         config['calendars'].keys())
+              )
+        raise ValueError  # TODO own error class
+
+
+def config_checks(config):
+    """do some tests on the config we cannot do with configobj's validator"""
+    if len(config['calendars'].keys()) < 1:
+        raise ValueError('Found no calendar in the config file')
+    test_default_calendar(config)
