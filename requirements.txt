@@ -6,3 +6,4 @@ urwid
 pyxdg
 vdirsyncer
 python-dateutil
+configobj

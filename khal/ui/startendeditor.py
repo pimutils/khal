@@ -62,10 +62,10 @@ class StartEndEditor(urwid.WidgetWrap):
         self.startdt = start
         self.enddt = end
         self.dts = StartEnd(
-            startdate=start.strftime(self.conf.locale.longdateformat),
-            starttime=start.strftime(self.conf.locale.timeformat),
-            enddate=end.strftime(self.conf.locale.longdateformat),
-            endtime=end.strftime(self.conf.locale.timeformat))
+            startdate=start.strftime(self.conf['locale']['longdateformat']),
+            starttime=start.strftime(self.conf['locale']['timeformat']),
+            enddate=end.strftime(self.conf['locale']['longdateformat']),
+            endtime=end.strftime(self.conf['locale']['timeformat']))
         # this will contain the widgets for [start|end] [date|time]
         self.widgets = StartEnd(None, None, None, None)
         # and these are their background colors
@@ -90,7 +90,7 @@ class StartEndEditor(urwid.WidgetWrap):
         datewidth = len(self.dts.startdate) + 7
 
         edit = DateWidget(
-            self.conf.locale.longdateformat,
+            self.conf['locale']['longdateformat'],
             caption=('', 'From: '), edit_text=self.dts.startdate)
         edit = urwid.AttrMap(edit, self.bgs.startdate, 'editcp', )
         edit = urwid.Padding(
@@ -98,7 +98,7 @@ class StartEndEditor(urwid.WidgetWrap):
         self.widgets.startdate = edit
 
         edit = DateWidget(
-            self.conf.locale.longdateformat,
+            self.conf['locale']['longdateformat'],
             caption=('', 'To:   '), edit_text=self.dts.enddate)
         edit = urwid.AttrMap(edit, self.bgs.enddate, 'editcp', )
         edit = urwid.Padding(
@@ -111,7 +111,7 @@ class StartEndEditor(urwid.WidgetWrap):
         elif state is False:
             timewidth = len(self.dts.starttime) + 1
             edit = TimeWidget(
-                self.conf.locale.timeformat,
+                self.conf['locale']['timeformat'],
                 edit_text=self.dts.starttime)
             edit = urwid.AttrMap(edit, self.bgs.starttime, 'editcp', )
             edit = urwid.Padding(
@@ -119,7 +119,7 @@ class StartEndEditor(urwid.WidgetWrap):
             self.widgets.starttime = edit
 
             edit = TimeWidget(
-                self.conf.locale.timeformat,
+                self.conf['locale']['timeformat'],
                 edit_text=self.dts.endtime)
             edit = urwid.AttrMap(edit, self.bgs.endtime, 'editcp', )
             edit = urwid.Padding(
@@ -150,7 +150,7 @@ class StartEndEditor(urwid.WidgetWrap):
         newstartdatetime = self._newstartdate
         if not self.checkallday.state:
             if getattr(self.startdt, 'tzinfo', None) is None:
-                tzinfo = self.conf.locale.default_timezone
+                tzinfo = self.conf['locale']['default_timezone']
             else:
                 tzinfo = self.startdt.tzinfo
             try:
@@ -171,7 +171,7 @@ class StartEndEditor(urwid.WidgetWrap):
 
             newstartdate = datetime.strptime(
                 self.dts.startdate,
-                self.conf.locale.longdateformat).date()
+                self.conf['locale']['longdateformat']).date()
             self.bgs.startdate = 'edit'
             return newstartdate
         except ValueError:
@@ -187,7 +187,7 @@ class StartEndEditor(urwid.WidgetWrap):
 
             newstarttime = datetime.strptime(
                 self.dts.starttime,
-                self.conf.locale.timeformat).time()
+                self.conf['locale']['timeformat']).time()
             self.bgs.startime = 'edit'
             return newstarttime
         except ValueError:
@@ -199,7 +199,7 @@ class StartEndEditor(urwid.WidgetWrap):
         newenddatetime = self._newenddate
         if not self.checkallday.state:
             if not hasattr(self.enddt, 'tzinfo') or self.enddt.tzinfo is None:
-                tzinfo = self.conf.locale.default_timezone
+                tzinfo = self.conf['locale']['default_timezone']
             else:
                 tzinfo = self.enddt.tzinfo
             try:
@@ -218,7 +218,7 @@ class StartEndEditor(urwid.WidgetWrap):
 
             newenddate = datetime.strptime(
                 self.dts.enddate,
-                self.conf.locale.longdateformat).date()
+                self.conf['locale']['longdateformat']).date()
             self.bgs.enddate = 'edit'
             return newenddate
         except ValueError:
@@ -233,7 +233,7 @@ class StartEndEditor(urwid.WidgetWrap):
 
             newendtime = datetime.strptime(
                 self.endtime,
-                self.conf.locale.timeformat).time()
+                self.conf['locale']['timeformat']).time()
             self.bgs.endtime = 'edit'
             return newendtime
         except ValueError:
