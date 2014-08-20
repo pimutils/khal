@@ -26,12 +26,6 @@ While this should take care of installing all required dependencies, installing
 This should also take care of installing all required dependencies.
 
 
-
-Install From Source
--------------------
-
-.. todo:: describe installation from source
-
 .. _requirements:
 
 Requirements
