@@ -23,8 +23,9 @@
 #
 
 import os
+import sys
 
-from configobj import ConfigObj, flatten_errors, get_extra_values
+from configobj import ConfigObj, flatten_errors, get_extra_values, ConfigObjError
 from validate import Validator
 import xdg.BaseDirectory
 
@@ -81,11 +82,19 @@ def get_config(config_path=None):
     logger.debug('using the config file at {}'.format(config_path))
     config = ConfigObj(DEFAULTSPATH, interpolation=False)
 
-    user_config = ConfigObj(config_path,
-                            configspec=SPECPATH,
-                            interpolation=False,
-                            file_error=True,
-                            )
+    try:
+        user_config = ConfigObj(config_path,
+                                configspec=SPECPATH,
+                                interpolation=False,
+                                file_error=True,
+                                )
+    except ConfigObjError as error:
+        logger.fatal('parsing the config file file with the following error: '
+                     '{}'.format(error))
+        logger.fatal('if you recently updated khal, the config file format '
+                     'might have changed, in that case please consult the '
+                     'CHANGELOG or other documentation')
+        sys.exit(1)
 
     fdict = {'timezone': is_timezone}
 
