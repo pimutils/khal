@@ -183,19 +183,17 @@ class Calendar(object):
             self._dbtool.update(event.raw, self.name, href=href, etag=etag,
                                 ignore_invalid_items=True)
             return True
-        except UnsupportedFeatureError as error:
-            logger.error(
-                'During update_vevent we failed to parse vcard {}/{} '
-                'because of {}'.format(self.name, href, error))
         except Exception as error:
+            if not isinstance(error, UnsupportedFeatureError):
+                logger.exception('')
             logger.error(
-                'During update_vevent we failed to parse vcard {}/{}, '
-                'because of {}'.format(self.name, href, error))
-            logger.debug(traceback.format_exc(error))
+                'During update_vevent we failed to parse vcard {}/{}: {}'
+                .format(self.name, href, error))
             return False
 
     def new_event(self, ical, local_tz, default_tz):
-        """creates and returns (but does not insert) new event from ical string"""
+        """creates and returns (but does not insert) new event from ical
+        string"""
         return Event(ical=ical, account=self.name, local_tz=local_tz,
                      default_tz=default_tz)
 

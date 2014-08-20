@@ -24,8 +24,10 @@
 from ..exceptions import UnsupportedFeatureError
 
 
-class UnsupportedRruleExeptionError(UnsupportedFeatureError):
+class UnsupportedRruleExceptionError(UnsupportedFeatureError):
     """we do not support exceptions that do not delete events yet"""
     def __init__(self, message=''):
-        UnsupportedFeatureError.__init__(
-            self, 'Unsupported Recurrence Exceptions ' + message)
+        x = 'Recurrence Exceptions are unsupported'
+        if message:
+            x += ': {}'.format(message.strip())
+        UnsupportedFeatureError.__init__(self, x)

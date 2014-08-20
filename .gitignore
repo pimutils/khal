@@ -6,3 +6,5 @@ build/
 dist/
 *.db
 .tox
+.coverage
+htmlcov
