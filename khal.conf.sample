@@ -1,6 +1,6 @@
 #/etc/khal/khal.conf.sample
 [calendars]
-[home]]
+[[home]]
 path = ~/.khal/calendars/home/
 color = dark blue
 
