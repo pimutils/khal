@@ -21,7 +21,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 import logging
-import StringIO
 import sys
 
 try:
@@ -36,6 +35,11 @@ from khal import khalendar
 from khal import __version__
 from khal.log import logger
 from khal.settings import get_config
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 def _get_cli():
@@ -96,7 +100,12 @@ def _get_cli():
         collection._default_calendar_name = conf['default']['default_calendar']
 
         if not ctx.invoked_subcommand:
-            ctx.invoke(cli.commands[conf.default.default_command])
+            command = conf['default']['default_command']
+            if command:
+                ctx.invoke(cli.commands[command])
+            else:
+                click.echo(ctx.get_help())
+                ctx.exit(1)
 
     days_option = click.option('--days', default=None, type=int)
     events_option = click.option('--events', default=None, type=int)

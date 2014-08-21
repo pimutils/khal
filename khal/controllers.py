@@ -21,6 +21,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+from click import echo
+
 import datetime
 import logging
 import sys
@@ -112,7 +114,7 @@ def get_agenda(collection, dateformat, longdateformat, dates=[],
             event_column.extend([colored(d, event.color) for d in desc])
 
     if event_column == []:
-        event_column = [bstring('No Events')]
+        event_column = [bstring('No events')]
     return event_column
 
 
@@ -129,7 +131,7 @@ class Calendar(object):
             firstweekday=firstweekday)
 
         rows = merge_columns(calendar_column, event_column)
-        print('\n'.join(rows).encode(encoding))
+        echo('\n'.join(rows).encode(encoding))
 
 
 class Agenda(object):
@@ -139,7 +141,7 @@ class Agenda(object):
         term_width, _ = get_terminal_size()
         event_column = get_agenda(collection, dates=date, width=term_width,
                                   **kwargs)
-        print('\n'.join(event_column).encode(encoding))
+        echo('\n'.join(event_column).encode(encoding))
 
 
 class NewFromString(object):
