@@ -74,7 +74,7 @@ def get_agenda(collection, dateformat, longdateformat, dates=[],
     if days is None:
         days = 2
 
-    if dates == []:
+    if len(dates) == 0:
         dates = [datetime.date.today()]
     else:
         try:
