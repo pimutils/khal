@@ -1,10 +1,10 @@
 #/etc/khal/khal.conf.sample
-[[calendars]]
-[home]
+[calendars]
+[home]]
 path = ~/.khal/calendars/home/
 color = dark blue
 
-[work]
+[[work]]
 path = ~/.khal/calendars/work/
 readonly = True
 
