@@ -49,7 +49,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'khal'
-copyright = u'2014, Christan Geier & contributors'
+copyright = u'2014, Christan Geier et al.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -189,22 +189,22 @@ htmlhelp_basename = 'khaldoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'khal.tex', u'khal Documentation',
-   u'Christan Geier \\& contributors', 'manual'),
+    ('index', 'khal.tex', u'khal Documentation',
+     u'Christan Geier et al.', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -234,7 +234,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('man', 'khal', u'khal Documentation',
-     [u'Christan Geier & contributors'], 1)
+     [u'Christan Geier et al.'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -247,9 +247,9 @@ man_show_urls = True
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'khal', u'khal Documentation',
-   u'Christan Geier & contributors', 'khal', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'khal', u'khal Documentation',
+     u'Christan Geier et al.', 'khal', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.

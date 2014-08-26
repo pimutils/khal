@@ -2,14 +2,14 @@ Submitting a Bug
 ================
 
 If you found a bug or any part of khal isn't working as you
-expected, please check if that bug is either already reported at 
+expected, please check if that bug is either already reported at
 
 https://github.com/geier/khal/issues?state=open
 
 
 If it isn't, always run the command again with the -v option
 and paste the output of that (of course you can edit out any private
-details like your username and resource). 
+details like your username and resource).
 
 Also, it is often helpful if you include which OS you are on and which
 version of python you are using. You can just run the file at
@@ -27,7 +27,7 @@ best to contact me first and see if me or somebody else is already
 working on it.
 
 Before submitting your first patch, please add yourself to
-*CONTRIBUTORS.txt*.
+*AUTHORS.txt*.
 
 You can submit patches either via email (khal at lostpackets dot de) or
 via github pull requests.
