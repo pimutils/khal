@@ -3,6 +3,8 @@ import os.path
 import pytz
 import pytest
 
+from tzlocal import get_localzone
+
 from khal.settings import get_config
 
 PATH = __file__.rsplit('/', 1)[0] + '/configs/'
@@ -48,8 +50,8 @@ class TestSettings(object):
                 'work': {'path': os.path.expanduser('~/.calendars/work/'), 'readonly': True}},
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
-                'local_timezone': None,
-                'default_timezone': None,
+                'local_timezone': get_localzone(),
+                'default_timezone': get_localzone(),
                 'timeformat': '%H:%M',
                 'dateformat': '%d.%m.',
                 'longdateformat': '%d.%m.%Y',
