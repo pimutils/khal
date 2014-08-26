@@ -60,6 +60,7 @@ requirements = [
     'vdirsyncer',
     'python-dateutil',
     'configobj',
+    'tzlocal>=1.0',
 ]
 
 extra_requirements = {

@@ -4,9 +4,6 @@
 path= $XDG_DATA_HOME/khal/khal.db
 
 [locale]
-local_timezone= UTC
-default_timezone= UTC
-
 timeformat= %H:%M
 dateformat= %Y-%m-%d
 longdateformat= %Y-%m-%d

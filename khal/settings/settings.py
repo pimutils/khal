@@ -125,7 +125,6 @@ def get_config(config_path=None):
             section = sectionize(section)
             logger.warn('unknown key or subsection "{}" in '
                         'section "{}"'.format(value, section))
-
     return config
 
 

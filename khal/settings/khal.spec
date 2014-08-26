@@ -37,10 +37,12 @@ firstweekday = integer(0, 6, default=0)
 unicode_symbols = boolean(default=True)
 
 # this timezone will be used for new events (when no timezone is specified) and
-# when khal does not understand the timezone specified in the icalendar file
+# when khal does not understand the timezone specified in the icalendar file.
+# If no timezone is set, the timezone your computer is set to will be used.
 default_timezone = timezone(default=None)
 
 # khal will show all times in this timezone
+# If no timezone is set, the timezone your computer is set to will be used.
 local_timezone = timezone(default=None)
 
 # khal will display and understand all times in this format, use the standard

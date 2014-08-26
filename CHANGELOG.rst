@@ -14,6 +14,6 @@ For more detailed information have a look at the git log.
       version (for generating an RSS feed)
     * the man pages live doc/build/man/, they can be build by running
       `make man` in doc/sphinx/
-* new dependency: configobj
+* new dependencies: configobj, tzlocal>=1.0
 * **IMPORTANT**: the configuration file's syntax changed (again), have a look at the new
   documentation for details

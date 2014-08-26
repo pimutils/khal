@@ -23,9 +23,10 @@
 
 from os.path import expandvars, expanduser, join
 
-from validate import VdtValueError
 import pytz
 import xdg
+from tzlocal import get_localzone
+from validate import VdtValueError
 
 
 def is_timezone(tzstring):
@@ -33,11 +34,12 @@ def is_timezone(tzstring):
 
     raises a VdtvalueError if tzstring is not valid
     """
+    if not tzstring:
+        return get_localzone()
     try:
-        tzone = pytz.timezone(tzstring)
+        return pytz.timezone(tzstring)
     except pytz.UnknownTimeZoneError:
         raise VdtValueError("Unknown timezone {}".format(tzstring))
-    return tzone
 
 
 def expand_path(path):
@@ -72,3 +74,7 @@ def config_checks(config):
         raise ValueError('Found no calendar in the config file')
     test_default_calendar(config)
     config['sqlite']['path'] = expand_db_path(config['sqlite']['path'])
+    config['locale']['default_timezone'] = is_timezone(
+        config['locale']['default_timezone'])
+    config['locale']['local_timezone'] = is_timezone(
+        config['locale']['local_timezone'])
