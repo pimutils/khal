@@ -187,7 +187,9 @@ class Calendar(object):
             if not isinstance(error, UnsupportedFeatureError):
                 logger.exception('')
             logger.error(
-                'During update_vevent we failed to parse vcard {}/{}: {}'
+                "During `update_vevent` we failed to parse vcard {}/{} with "
+                "error\n\"{}\",\nthis means, that event is not available in "
+                "khal."
                 .format(self.name, href, error))
             return False
 
