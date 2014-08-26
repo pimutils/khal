@@ -17,3 +17,5 @@ For more detailed information have a look at the git log.
 * new dependencies: configobj, tzlocal>=1.0
 * **IMPORTANT**: the configuration file's syntax changed (again), have a look at the new
   documentation for details
+* local_timezone and default_timezone will now be set to the timezone the
+  computer is set to (if they are not set in the configuration file)
