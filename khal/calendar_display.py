@@ -1,5 +1,4 @@
-# coding: utf-8
-# vim: set ts=4 sw=4 expandtab sts=4:
+# vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
 # Copyright (c) 2011-2014 Christian Geier & contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining

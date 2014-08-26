@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
 
 import os
 import string
