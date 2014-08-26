@@ -1,3 +1,5 @@
+import os.path
+
 import pytz
 import pytest
 
@@ -11,10 +13,10 @@ class TestSettings(object):
         config = get_config(PATH + 'simple.conf')
         assert config == {
             'calendars': {
-                'home': {'path': '~/.calendars/home/', 'readonly': False},
-                'work': {'path': '~/.calendars/work/', 'readonly': False},
+                'home': {'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False},
+                'work': {'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False},
             },
-            'sqlite': {'path': '$XDG_CACHE_HOME/khal/khal.db'},
+            'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
                 'local_timezone': pytz.timezone('Europe/Berlin'),
                 'default_timezone': pytz.timezone('Europe/Berlin'),
@@ -42,9 +44,9 @@ class TestSettings(object):
         config = get_config(PATH + 'small.conf')
         assert config == {
             'calendars': {
-                'home': {'path': '~/.calendars/home/', 'color': 'green', 'readonly': False},
-                'work': {'path': '~/.calendars/work/', 'readonly': True}},
-            'sqlite': {'path': '$XDG_CACHE_HOME/khal/khal.db'},
+                'home': {'path': os.path.expanduser('~/.calendars/home/'), 'color': 'green', 'readonly': False},
+                'work': {'path': os.path.expanduser('~/.calendars/work/'), 'readonly': True}},
+            'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
                 'local_timezone': None,
                 'default_timezone': None,

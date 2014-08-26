@@ -1,7 +1,7 @@
 [calendars]
 
 [sqlite]
-path= $XDG_CACHE_HOME/khal/khal.db
+path= $XDG_DATA_HOME/khal/khal.db
 
 [locale]
 local_timezone= UTC

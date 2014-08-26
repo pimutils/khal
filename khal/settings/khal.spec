@@ -8,7 +8,7 @@
 #  :language: ini
 [[__many__]]
 # the path to a *vdir* where this calendar is saved
-path = string(default=None)
+path = expand_path(default=None)
 
 # khal will use this color for coloring this calendar's event. Depending on
 # your terminal emulator's settings, they might look different than what their
@@ -21,7 +21,7 @@ readonly = boolean(default=False)
 
 [sqlite]
 # khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
-path = string
+path = expand_db_path(default=None)
 
 # The most important options in the the **[locale]** section are probably (long-)time and dateformat.
 [locale]

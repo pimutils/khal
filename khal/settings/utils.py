@@ -22,8 +22,11 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+from os.path import expandvars, expanduser, join
+
 from validate import VdtValueError
 import pytz
+import xdg
 
 
 def is_timezone(tzstring):
@@ -36,6 +39,18 @@ def is_timezone(tzstring):
     except pytz.UnknownTimeZoneError:
         raise VdtValueError("Unknown timezone {}".format(tzstring))
     return tzone
+
+
+def expand_path(path):
+    """expands `~` as well as variable names"""
+    return expanduser(expandvars(path))
+
+
+def expand_db_path(path):
+    """expands `~` as well as variable names, defaults to $XDG_DATA_HOME"""
+    if path is None:
+        path = join(xdg.BaseDirectory.xdg_data_home, 'khal', 'khal.db')
+    return expanduser(expandvars(path))
 
 
 def test_default_calendar(config):
@@ -57,3 +72,4 @@ def config_checks(config):
     if len(config['calendars'].keys()) < 1:
         raise ValueError('Found no calendar in the config file')
     test_default_calendar(config)
+    config['sqlite']['path'] = expand_db_path(config['sqlite']['path'])

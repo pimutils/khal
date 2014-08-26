@@ -31,7 +31,7 @@ import xdg.BaseDirectory
 
 from khal import __productname__
 from khal.log import logger
-from utils import is_timezone, config_checks
+from utils import is_timezone, config_checks, expand_path
 
 DEFAULTSPATH = os.path.join(os.path.dirname(__file__), 'default.khal')
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
@@ -96,8 +96,9 @@ def get_config(config_path=None):
                      'CHANGELOG or other documentation')
         sys.exit(1)
 
-    fdict = {'timezone': is_timezone}
-
+    fdict = {'timezone': is_timezone,
+             'expand_path': expand_path,
+             }
     validator = Validator(fdict)
     results = user_config.validate(validator, preserve_errors=True)
     if not results:
