@@ -151,6 +151,18 @@ class TestCollection(object):
     bstart = datetime.datetime.combine(bday, datetime.time.min)
     bend = datetime.datetime.combine(bday, datetime.time.max)
 
+    def test_default_calendar(self, coll_vdirs):
+        coll, vdir = coll_vdirs
+        assert coll.names == ['foobar', 'work', 'private']
+        assert coll.default_calendar_name == 'foobar'
+
+    def test_default_calendar_not_readonly(self, tmpdir):
+        coll = CalendarCollection()
+        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, **KWARGS))
+        coll.append(Calendar('home', ':memory:', str(tmpdir), **KWARGS))
+        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, **KWARGS))
+        assert coll.default_calendar_name == 'home'
+
     def test_empty(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         start = datetime.datetime.combine(today, datetime.time.min)

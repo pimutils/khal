@@ -228,7 +228,7 @@ class CalendarCollection(object):
         if self._default_calendar_name in self.names:
             return self._default_calendar_name
         else:
-            return self.names[0]
+            return self.writeable_names[0]
 
     def append(self, calendar):
         self._calnames[calendar.name] = calendar
