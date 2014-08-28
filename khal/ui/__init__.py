@@ -632,7 +632,7 @@ class EventEditor(EventViewer):
         self.summary = urwid.Edit(
             edit_text=event.vevent['SUMMARY'])
         self.accountchooser = AccountChooser(self.event.account,
-                                             self.collection.names)
+                                             self.collection.writeable_names)
         accounts = CColumns([(9, urwid.Text(u'Calendar: ')),
                              self.accountchooser])
         self.description = urwid.Edit(caption=u'Description: ',

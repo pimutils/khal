@@ -38,7 +38,7 @@ from vdirsyncer.storage import FilesystemStorage
 from . import backend
 from .event import Event
 from .. import log
-from .exceptions import UnsupportedFeatureError
+from .exceptions import UnsupportedFeatureError, ReadOnlyCalendarError
 
 logger = log.logger
 
@@ -117,6 +117,8 @@ class Calendar(object):
         param event: the event that should be updated
         type event: event.Event
         """
+        if self._readonly:
+            raise ReadOnlyCalendarError()
         if event.etag is None:
             self.new(event)
         else:
@@ -137,6 +139,8 @@ class Calendar(object):
         param event: the event that should be updated
         type event: event.Event
         """
+        if self._readonly:
+            raise ReadOnlyCalendarError()
         href, etag = self._storage.upload(event)
         event.href = href
         event.etag = etag
@@ -155,6 +159,8 @@ class Calendar(object):
     def delete(self, event):
         """delete event from this collection
         """
+        if self._readonly:
+            raise ReadOnlyCalendarError()
         self._storage.delete(event.href, event.etag)
         self._dbtool.delete(event.href, event.account)
 
@@ -172,11 +178,11 @@ class Calendar(object):
         status = True
         for href, etag in self._storage.list():
             if etag != self._dbtool.get_etag(href, self.name):
-                status = status and self.update_vevent(href)
+                status = status and self._update_vevent(href)
         if status:
             self._dbtool.set_ctag(self.name, self.local_ctag())
 
-    def update_vevent(self, href):
+    def _update_vevent(self, href):
         event, etag = self._storage.get(href)
         try:
             self._dbtool.update(event.raw, self.name, href=href, etag=etag,
@@ -212,6 +218,10 @@ class CalendarCollection(object):
     @property
     def names(self):
         return self._calnames.keys()
+
+    @property
+    def writeable_names(self):
+        return [cal for cal in self._calnames if not self._calnames[cal]._readonly]
 
     @property
     def default_calendar_name(self):

@@ -30,3 +30,7 @@ class UnsupportedRruleExceptionError(UnsupportedFeatureError):
         if message:
             x += ': {}'.format(message.strip())
         UnsupportedFeatureError.__init__(self, x)
+
+
+class ReadOnlyCalendarError(Exception):
+    """this calendar is readonly and should not be modifiable from within khal"""
