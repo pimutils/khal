@@ -77,6 +77,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 
     
     khal will show all times in this timezone
+    If no timezone is set, the timezone your computer is set to will be used.
 
       :type: timezone
       :default: None
@@ -120,7 +121,8 @@ The most important options in the the **[locale]** section are probably (long-)t
 
     
     this timezone will be used for new events (when no timezone is specified) and
-    when khal does not understand the timezone specified in the icalendar file
+    when khal does not understand the timezone specified in the icalendar file.
+    If no timezone is set, the timezone your computer is set to will be used.
 
       :type: timezone
       :default: None
