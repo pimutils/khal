@@ -3,8 +3,10 @@ Changelog
 All notable changes to this project should be documented here.
 For more detailed information have a look at the git log.
 
-0.3.0 - not released yet
-------------------------
+0.3.0
+-----
+released on 2014-09-03
+
 * new unified documentation
     * html documentation (website) and man pages are all generated from the same
       sources via sphinx (type `make html` or `make man` in doc/, the result

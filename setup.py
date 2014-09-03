@@ -12,7 +12,7 @@ MAJOR = 0
 MINOR = 3
 PATCH = 0
 
-RELEASE = False
+RELEASE = True
 
 VERSION = "{0}.{1}.{2}".format(MAJOR, MINOR, PATCH)
 
