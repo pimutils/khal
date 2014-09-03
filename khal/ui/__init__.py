@@ -64,6 +64,9 @@ class AccountChooser(urwid.PopUpLauncher):
     does NOT handle the actual moving of an event to another account"""
 
     def __init__(self, active_account, accounts):
+        if accounts == list():
+            accounts = active_account = ['no writable calendars']
+
         self.active_account = active_account
         self.original_account = active_account
         self.accounts = accounts
@@ -631,6 +634,7 @@ class EventEditor(EventViewer):
         self.recursioneditor = RecursionEditor(rrule)
         self.summary = urwid.Edit(
             edit_text=event.vevent['SUMMARY'])
+        # TODO warning message if len(self.collection.writeable_names) == 0
         self.accountchooser = AccountChooser(self.event.account,
                                              self.collection.writeable_names)
         accounts = CColumns([(9, urwid.Text(u'Calendar: ')),

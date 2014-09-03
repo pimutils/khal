@@ -183,6 +183,8 @@ class Calendar(object):
             self._dbtool.set_ctag(self.name, self.local_ctag())
 
     def _update_vevent(self, href):
+        """should only be called during db_update, does not check for
+        readonly"""
         event, etag = self._storage.get(href)
         try:
             self._dbtool.update(event.raw, self.name, href=href, etag=etag,
@@ -227,8 +229,10 @@ class CalendarCollection(object):
     def default_calendar_name(self):
         if self._default_calendar_name in self.names:
             return self._default_calendar_name
-        else:
+        elif len(self.writeable_names) > 0:
             return self.writeable_names[0]
+        else:
+            return self._calnames.values()[0].name
 
     def append(self, calendar):
         self._calnames[calendar.name] = calendar

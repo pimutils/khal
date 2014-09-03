@@ -12,6 +12,7 @@ from khal import aux
 from khal.khalendar import Calendar, CalendarCollection
 from khal.khalendar.event import Event
 from khal.khalendar.backend import CouldNotCreateDbDir
+import khal.khalendar.exceptions
 
 
 today = datetime.date.today()
@@ -234,6 +235,15 @@ class TestCollection(object):
             coll.default_calendar_name,
             **KWARGS)
         assert event.allday is False
+
+    def test_insert_calendar_readonly(self, tmpdir):
+        coll = CalendarCollection()
+        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, **KWARGS))
+        coll.append(Calendar('home', ':memory:', str(tmpdir), **KWARGS))
+        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, **KWARGS))
+        event = Event(event_dt, account='home', **KWARGS)
+        with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
+            coll.new(event, cal1)
 
 
 @pytest.fixture

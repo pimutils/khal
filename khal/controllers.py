@@ -27,7 +27,10 @@ import sys
 import textwrap
 
 from khal import aux, calendar_display
+from khal.khalendar.exceptions import ReadOnlyCalendarError
+from khal.khalendar.event import Event
 from khal import __version__, __productname__
+from khal.log import logger
 from .terminal import bstring, colored, get_terminal_size, merge_columns
 
 
@@ -149,13 +152,18 @@ class NewFromString(object):
                                     conf['locale']['longdatetimeformat'],
                                     conf['locale']['local_timezone'],
                                     encoding=conf['locale']['encoding'])
-        event = collection.new_event(event,
-                                     collection.default_calendar_name,
-                                     conf['locale']['local_timezone'],
-                                     conf['locale']['default_timezone'],
-                                     )
+        event = Event(event,
+                      collection.default_calendar_name,
+                      local_tz=conf['locale']['local_timezone'],
+                      default_tz=conf['locale']['default_timezone'],
+                      )
 
-        collection.new(event)
+        try:
+            collection.new(event)
+        except ReadOnlyCalendarError:
+            logger.fatal('ERROR: Cannot modify calendar "{}" as it is '
+                         'read-only'.format(collection.default_calendar_name))
+            sys.exit(1)
 
 
 class Interactive(object):
