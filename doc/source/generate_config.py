@@ -29,6 +29,8 @@ def write_section(specsection, secname, key, comment):
             fun_args[0], fun_args[1])
         fun_args = []
     print()
+    if fun_name in ['expand_db_path', 'expand_path']:
+        fun_name = 'string'
 
     print('      :type: {}'.format(fun_name))
     if fun_args != []:

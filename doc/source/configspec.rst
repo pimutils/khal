@@ -53,7 +53,6 @@ The [sqlite] section
     khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
 
       :type: string
-      :args: ()
       :default: None
 
 The [locale] section
