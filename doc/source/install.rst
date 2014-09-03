@@ -42,3 +42,4 @@ packages installed.
 
 .. _icalendar: https://github.com/collective/icalendar
 .. _vdirsyncer: https://github.com/untitaker/vdirsyncer
+.. _lxml: http://lxml.de/
