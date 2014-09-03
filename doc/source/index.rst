@@ -31,12 +31,6 @@ Features
 .. __: http://en.wikipedia.org/wiki/Comparison_of_CalDAV_and_CardDAV_implementations
 
 
-Documentation ToDos
-===================
-
-.. todolist::
-
-
 Table of Contents
 =================
 
