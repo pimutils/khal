@@ -7,4 +7,5 @@ dist/
 *.db
 .tox
 .coverage
+.cache
 htmlcov
