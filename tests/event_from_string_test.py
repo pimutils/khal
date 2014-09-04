@@ -115,22 +115,19 @@ test_set_format_de = _create_testcases(
 
 
 def test_construct_event_format_de():
-    timeformat = '%H:%M'
-    dateformat = '%d.%m.'
-    longdateformat = '%d.%m.%Y'
-    datetimeformat = '%d.%m. %H:%M'
-    longdatetimeformat = '%d.%m.%Y %H:%M'
-    DEFAULTTZ = pytz.timezone('Europe/Berlin')
+    kwargs = {
+        'timeformat': '%H:%M',
+        'dateformat': '%d.%m.',
+        'longdateformat': '%d.%m.%Y',
+        'datetimeformat': '%d.%m. %H:%M',
+        'longdatetimeformat': '%d.%m.%Y %H:%M',
+        'default_timezone': pytz.timezone('Europe/Berlin'),
+    }
     for data_list, vevent in test_set_format_de:
         random.seed(1)
         event = construct_event(data_list.split(),
-                                timeformat=timeformat,
-                                dateformat=dateformat,
-                                longdateformat=longdateformat,
-                                datetimeformat=datetimeformat,
-                                longdatetimeformat=longdatetimeformat,
-                                default_timezone=DEFAULTTZ,
-                                _now=_now).to_ical()
+                                _now=_now,
+                                **kwargs).to_ical()
         assert event == vevent
 
 
@@ -155,22 +152,19 @@ test_set_format_us = _create_testcases(
 
 
 def test_construct_event_format_us():
-    timeformat = '%H:%M'
-    dateformat = '%m/%d'
-    longdateformat = '%m/%d/%Y'
-    datetimeformat = '%m/%d %H:%M'
-    longdatetimeformat = '%m/%d/%Y %H:%M'
-    DEFAULTTZ = pytz.timezone('America/New_York')
+    kwargs = {
+        'timeformat': '%H:%M',
+        'dateformat': '%m/%d',
+        'longdateformat': '%m/%d/%Y',
+        'datetimeformat': '%m/%d %H:%M',
+        'longdatetimeformat': '%m/%d/%Y %H:%M',
+        'default_timezone': pytz.timezone('America/New_York'),
+    }
     for data_list, vevent in test_set_format_us:
         random.seed(1)
         event = construct_event(data_list.split(),
-                                timeformat=timeformat,
-                                dateformat=dateformat,
-                                longdateformat=longdateformat,
-                                datetimeformat=datetimeformat,
-                                longdatetimeformat=longdatetimeformat,
-                                default_timezone=DEFAULTTZ,
-                                _now=_now).to_ical()
+                                _now=_now,
+                                **kwargs).to_ical()
         assert event == vevent
 
 
@@ -206,22 +200,19 @@ test_set_format_de_complexer = _create_testcases(
 
 
 def test_construct_event_format_de_complexer():
-    timeformat = '%H:%M'
-    dateformat = '%d.%m.'
-    longdateformat = '%d.%m.%Y'
-    datetimeformat = '%d.%m. %H:%M'
-    longdatetimeformat = '%d.%m.%Y %H:%M'
-    DEFAULTTZ = pytz.timezone('Europe/Berlin')
+    kwargs = {
+        'timeformat': '%H:%M',
+        'dateformat': '%d.%m.',
+        'longdateformat': '%d.%m.%Y',
+        'datetimeformat': '%d.%m. %H:%M',
+        'longdatetimeformat': '%d.%m.%Y %H:%M',
+        'default_timezone': pytz.timezone('Europe/Berlin'),
+    }
     for data_list, vevent in test_set_format_de_complexer:
         random.seed(1)
         event = construct_event(data_list.split(),
-                                timeformat=timeformat,
-                                dateformat=dateformat,
-                                longdateformat=longdateformat,
-                                datetimeformat=datetimeformat,
-                                longdatetimeformat=longdatetimeformat,
-                                default_timezone=DEFAULTTZ,
-                                _now=_now).to_ical()
+                                _now=_now,
+                                **kwargs).to_ical()
         assert event == vevent
 
 
@@ -260,20 +251,17 @@ test_set_description = _create_testcases(
 
 
 def test_description():
-    timeformat = '%H:%M'
-    dateformat = '%d.%m.'
-    longdateformat = '%d.%m.%Y'
-    datetimeformat = '%d.%m. %H:%M'
-    longdatetimeformat = '%d.%m.%Y %H:%M'
-    DEFAULTTZ = pytz.timezone('Europe/Berlin')
+    kwargs = {
+        'timeformat': '%H:%M',
+        'dateformat': '%d.%m.',
+        'longdateformat': '%d.%m.%Y',
+        'datetimeformat': '%d.%m. %H:%M',
+        'longdatetimeformat': '%d.%m.%Y %H:%M',
+        'default_timezone': pytz.timezone('Europe/Berlin'),
+    }
     for data_list, vevent in test_set_description:
         random.seed(1)
         event = construct_event(data_list.split(),
-                                timeformat=timeformat,
-                                dateformat=dateformat,
-                                longdateformat=longdateformat,
-                                datetimeformat=datetimeformat,
-                                longdatetimeformat=longdatetimeformat,
-                                default_timezone=DEFAULTTZ,
-                                _now=_now).to_ical()
+                                _now=_now,
+                                **kwargs).to_ical()
         assert event == vevent

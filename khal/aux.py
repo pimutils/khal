@@ -246,19 +246,25 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
 
     event = icalendar.Event()
     text = to_unicode(' '.join(date_list), encoding)
-    summary = text.split(' :: ', 1)[0]
+    if not description or not location:
+        summary = text.split(' :: ', 1)[0]
+        try:
+            description = text.split(' :: ', 1)[1]
+        except IndexError:
+            pass
+    else:
+        summary = text
 
-    try:
-        description = text.split(' :: ', 1)[1]
+    if description:
         event.add('description', description)
-    except IndexError:
-        pass
+    if location:
+        event.add('location', location)
 
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
     event.add('dtstamp', _now())
     event.add('summary', summary)
-    event.add('uid', generate_random_uid())
+    event.add('uid', generate_random_uid())  # TODO add proper UID
     return event
 
 
