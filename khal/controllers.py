@@ -28,6 +28,7 @@ import textwrap
 
 from khal import aux, calendar_display
 from khal.khalendar.exceptions import ReadOnlyCalendarError
+from khal.exceptions import FatalError
 from khal.khalendar.event import Event
 from khal import __version__, __productname__
 from khal.log import logger
@@ -144,9 +145,12 @@ class Agenda(object):
 class NewFromString(object):
 
     def __init__(self, collection, conf, date_list):
-        event = aux.construct_event(
-            date_list,
-            **conf['locale'])
+        try:
+            event = aux.construct_event(
+                date_list,
+                **conf['locale'])
+        except FatalError:
+            sys.exit(1)
         event = Event(event,
                       collection.default_calendar_name,
                       local_tz=conf['locale']['local_timezone'],

@@ -26,13 +26,13 @@ from datetime import date, datetime, timedelta
 from datetime import time as dtime
 import random
 import string
-import sys
 import time
 
 import icalendar
 import pytz
 
 from khal.log import logger
+from khal.exceptions import FatalError
 
 
 def timefstr(date_list, timeformat):
@@ -190,9 +190,9 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
                 dtstart = datetimefstr(date_list, dateformat, longdateformat)
                 all_day = True
             except ValueError:
-                logger.fatal("Cannot parse: '{}'\nPlease have a look at the "
+                logger.fatal("Cannot parse: '{}'\nPlease have a look at "
                              "the documentation.".format(' '.join(date_list)))
-                sys.exit()
+                raise FatalError()
 
     # now looking for the end
     if all_day:
