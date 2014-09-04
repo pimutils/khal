@@ -154,7 +154,8 @@ class TestCollection(object):
 
     def test_default_calendar(self, coll_vdirs):
         coll, vdir = coll_vdirs
-        assert coll.names == ['foobar', 'work', 'private']
+        # we don't care about order here
+        assert sorted(coll.names) == sorted(['foobar', 'work', 'private'])
         assert coll.default_calendar_name == 'foobar'
 
     def test_default_calendar_not_readonly(self, tmpdir):
