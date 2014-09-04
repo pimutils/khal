@@ -121,16 +121,19 @@ def datefstr(datestr, dateformat, longdateformat):
 
 
 def generate_random_uid():
-    """generate a random uid, when random isn't broken, getting a
-    random UID from a pool of roughly 10^56 should be good enough"""
+    """generate a random uid
+
+    when random isn't broken, getting a random UID from a pool of roughly 10^56
+    should be good enough"""
     choice = string.ascii_uppercase + string.digits
     return ''.join([random.choice(choice) for _ in range(36)])
 
 
 def construct_event(date_list, timeformat, dateformat, longdateformat,
-                    datetimeformat, longdatetimeformat, defaulttz,
+                    datetimeformat, longdatetimeformat, default_timezone,
                     defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
-                    _now=datetime.now):
+                    _now=datetime.now, location=None, description=None,
+                    **kwargs):
     """takes a list of strings and constructs a vevent from it
 
     :param encoding: the encoding of your terminal, should be a valid encoding
@@ -238,8 +241,8 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
             dtend = pytz.timezone(date_list[0]).localize(dtend)
             date_list.pop(0)
         except (pytz.UnknownTimeZoneError, UnicodeDecodeError):
-            dtstart = defaulttz.localize(dtstart)
-            dtend = defaulttz.localize(dtend)
+            dtstart = default_timezone.localize(dtstart)
+            dtend = default_timezone.localize(dtend)
 
     event = icalendar.Event()
     text = to_unicode(' '.join(date_list), encoding)

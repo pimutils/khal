@@ -129,7 +129,7 @@ def test_construct_event_format_de():
                                 longdateformat=longdateformat,
                                 datetimeformat=datetimeformat,
                                 longdatetimeformat=longdatetimeformat,
-                                defaulttz=DEFAULTTZ,
+                                default_timezone=DEFAULTTZ,
                                 _now=_now).to_ical()
         assert event == vevent
 
@@ -169,7 +169,7 @@ def test_construct_event_format_us():
                                 longdateformat=longdateformat,
                                 datetimeformat=datetimeformat,
                                 longdatetimeformat=longdatetimeformat,
-                                defaulttz=DEFAULTTZ,
+                                default_timezone=DEFAULTTZ,
                                 _now=_now).to_ical()
         assert event == vevent
 
@@ -220,7 +220,7 @@ def test_construct_event_format_de_complexer():
                                 longdateformat=longdateformat,
                                 datetimeformat=datetimeformat,
                                 longdatetimeformat=longdatetimeformat,
-                                defaulttz=DEFAULTTZ,
+                                default_timezone=DEFAULTTZ,
                                 _now=_now).to_ical()
         assert event == vevent
 
@@ -274,6 +274,6 @@ def test_description():
                                 longdateformat=longdateformat,
                                 datetimeformat=datetimeformat,
                                 longdatetimeformat=longdatetimeformat,
-                                defaulttz=DEFAULTTZ,
+                                default_timezone=DEFAULTTZ,
                                 _now=_now).to_ical()
         assert event == vevent

@@ -144,14 +144,9 @@ class Agenda(object):
 class NewFromString(object):
 
     def __init__(self, collection, conf, date_list):
-        event = aux.construct_event(date_list,
-                                    conf['locale']['timeformat'],
-                                    conf['locale']['dateformat'],
-                                    conf['locale']['longdateformat'],
-                                    conf['locale']['datetimeformat'],
-                                    conf['locale']['longdatetimeformat'],
-                                    conf['locale']['local_timezone'],
-                                    encoding=conf['locale']['encoding'])
+        event = aux.construct_event(
+            date_list,
+            **conf['locale'])
         event = Event(event,
                       collection.default_calendar_name,
                       local_tz=conf['locale']['local_timezone'],
