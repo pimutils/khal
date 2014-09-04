@@ -222,15 +222,15 @@ class CalendarCollection(object):
         return self._calnames.keys()
 
     @property
-    def writeable_names(self):
+    def writable_names(self):
         return [cal for cal in self._calnames if not self._calnames[cal]._readonly]
 
     @property
     def default_calendar_name(self):
         if self._default_calendar_name in self.names:
             return self._default_calendar_name
-        elif len(self.writeable_names) > 0:
-            return self.writeable_names[0]
+        elif len(self.writable_names) > 0:
+            return self.writable_names[0]
         else:
             return self._calnames.values()[0].name
 

@@ -634,9 +634,9 @@ class EventEditor(EventViewer):
         self.recursioneditor = RecursionEditor(rrule)
         self.summary = urwid.Edit(
             edit_text=event.vevent['SUMMARY'])
-        # TODO warning message if len(self.collection.writeable_names) == 0
+        # TODO warning message if len(self.collection.writable_names) == 0
         self.accountchooser = AccountChooser(self.event.account,
-                                             self.collection.writeable_names)
+                                             self.collection.writable_names)
         accounts = CColumns([(9, urwid.Text(u'Calendar: ')),
                              self.accountchooser])
         self.description = urwid.Edit(caption=u'Description: ',
