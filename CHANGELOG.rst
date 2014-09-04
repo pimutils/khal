@@ -3,6 +3,13 @@ Changelog
 All notable changes to this project should be documented here.
 For more detailed information have a look at the git log.
 
+0.4.0
+-----
+not released yet
+
+* FIX: calendars marked as read-only in the configuration file should now really
+  be read-only
+
 0.3.0
 -----
 released on 2014-09-03
