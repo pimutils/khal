@@ -18,6 +18,14 @@ today_s = '{0:02}{1:02}{2:02}'.format(*today.timetuple()[0:3])
 tomorrow_s = '{0:02}{1:02}{2:02}'.format(*tomorrow.timetuple()[0:3])
 this_year_s = str(today.year)
 
+kwargs_de = {
+    'timeformat': '%H:%M',
+    'dateformat': '%d.%m.',
+    'longdateformat': '%d.%m.%Y',
+    'datetimeformat': '%d.%m. %H:%M',
+    'longdatetimeformat': '%d.%m.%Y %H:%M',
+    'default_timezone': pytz.timezone('Europe/Berlin'),
+}
 
 def _create_testcases(*cases):
     return [(userinput, to_bytes('\r\n'.join(output) + '\r\n', 'utf-8'))
@@ -115,19 +123,11 @@ test_set_format_de = _create_testcases(
 
 
 def test_construct_event_format_de():
-    kwargs = {
-        'timeformat': '%H:%M',
-        'dateformat': '%d.%m.',
-        'longdateformat': '%d.%m.%Y',
-        'datetimeformat': '%d.%m. %H:%M',
-        'longdatetimeformat': '%d.%m.%Y %H:%M',
-        'default_timezone': pytz.timezone('Europe/Berlin'),
-    }
     for data_list, vevent in test_set_format_de:
         random.seed(1)
         event = construct_event(data_list.split(),
                                 _now=_now,
-                                **kwargs).to_ical()
+                                **kwargs_de).to_ical()
         assert event == vevent
 
 
@@ -200,19 +200,11 @@ test_set_format_de_complexer = _create_testcases(
 
 
 def test_construct_event_format_de_complexer():
-    kwargs = {
-        'timeformat': '%H:%M',
-        'dateformat': '%d.%m.',
-        'longdateformat': '%d.%m.%Y',
-        'datetimeformat': '%d.%m. %H:%M',
-        'longdatetimeformat': '%d.%m.%Y %H:%M',
-        'default_timezone': pytz.timezone('Europe/Berlin'),
-    }
     for data_list, vevent in test_set_format_de_complexer:
         random.seed(1)
         event = construct_event(data_list.split(),
                                 _now=_now,
-                                **kwargs).to_ical()
+                                **kwargs_de).to_ical()
         assert event == vevent
 
 
@@ -251,17 +243,34 @@ test_set_description = _create_testcases(
 
 
 def test_description():
-    kwargs = {
-        'timeformat': '%H:%M',
-        'dateformat': '%d.%m.',
-        'longdateformat': '%d.%m.%Y',
-        'datetimeformat': '%d.%m. %H:%M',
-        'longdatetimeformat': '%d.%m.%Y %H:%M',
-        'default_timezone': pytz.timezone('Europe/Berlin'),
-    }
     for data_list, vevent in test_set_description:
         random.seed(1)
         event = construct_event(data_list.split(),
                                 _now=_now,
-                                **kwargs).to_ical()
+                                **kwargs_de).to_ical()
+        assert event == vevent
+
+
+test_set_description_and_location = _create_testcases(
+    # now events where the start date has to be inferred, too
+    # today
+    ('8:00 Äwesöme Event',
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T080000'.format(today_s),
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T090000'.format(today_s),
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'DESCRIPTION:please describe the event',
+      'END:VEVENT']))
+
+
+
+def test_description_and_location():
+    for data_list, vevent in test_set_description_and_location:
+        random.seed(1)
+        event = construct_event(data_list.split(),
+                                description='please describe the event',
+                                _now=_now,
+                                **kwargs_de).to_ical()
         assert event == vevent
