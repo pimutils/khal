@@ -2,6 +2,7 @@
 # vim: set ts=4 sw=4 expandtab sts=4:
 
 import os
+import datetime
 from pkg_resources import parse_version
 import pytest
 import click
@@ -44,7 +45,7 @@ color = dark blue
 
 [locale]
 local_timezone = Europe/Berlin
-default_timezone = America/New_York
+default_timezone = Europe/Berlin
 
 timeformat = %H:%M
 dateformat = %d.%m.
@@ -62,7 +63,7 @@ debug = 1
 path = {dbpath}
 '''
 
-def test_simple(tmpdir, runner):
+def test_direct_modification(runner):
     runner = runner(command='NOPE')
 
     result = runner.invoke(main_khal, ['agenda'])
@@ -82,7 +83,25 @@ def test_simple(tmpdir, runner):
     assert result.output == 'No events\n'
 
 
-def test_default_command_empty(tmpdir, runner):
+def test_simple(runner):
+    runner = runner(command='agenda')
+
+    result = runner.invoke(main_khal)
+    assert not result.exception
+    assert result.output == 'No events\n'
+
+    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    result = runner.invoke(main_khal, ['new', '{} 18:00 myevent'.format(now)])
+    assert result.output == ''
+    assert not result.exception
+
+    result = runner.invoke(main_khal)
+    assert 'myevent' in result.output
+    assert '18:00' in result.output
+    assert not result.exception
+
+
+def test_default_command_empty(runner):
     runner = runner(command='')
 
     result = runner.invoke(main_khal)
@@ -91,7 +110,7 @@ def test_default_command_empty(tmpdir, runner):
     assert result.output.startswith('Usage: ')
 
 
-def test_default_command_nonempty(tmpdir, runner):
+def test_default_command_nonempty(runner):
     runner = runner(command='agenda')
 
     result = runner.invoke(main_khal)
