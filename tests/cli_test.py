@@ -1,6 +1,7 @@
 # coding: utf-8
 # vim: set ts=4 sw=4 expandtab sts=4:
 
+import os
 from pkg_resources import parse_version
 import pytest
 import click
@@ -9,9 +10,31 @@ from click.testing import CliRunner
 from khal.cli import main_khal
 
 
+class CustomCliRunner(CliRunner):
+    def __init__(self, config, db=None, calendars=None, **kwargs):
+        self.config = config
+        self.db = db
+        self.calendars = calendars
+        super(CustomCliRunner, self).__init__(**kwargs)
+
+    def invoke(self, cli, args=None, *a, **kw):
+        args = ['-c', str(self.config)] + (args or [])
+        return super(CustomCliRunner, self).invoke(cli, args, *a, **kw)
+
+
 @pytest.fixture
-def runner():
-    return CliRunner()
+def runner(tmpdir):
+    config = tmpdir.join('config.ini')
+    db = tmpdir.join('khal.db')
+    calendar = tmpdir.mkdir('calendar')
+
+    def inner(**kwargs):
+        config.write(config_template.format(calpath=str(calendar),
+                                            dbpath=str(db), **kwargs))
+        runner = CustomCliRunner(config=config, db=db,
+                                 calendars=dict(one=calendar))
+        return runner
+    return inner
 
 config_template = '''
 [calendars]
@@ -39,48 +62,38 @@ debug = 1
 path = {dbpath}
 '''
 
-
 def test_simple(tmpdir, runner):
-    config = tmpdir.join('config.ini')
-    db = tmpdir.join('khal.db')
-    calendar = tmpdir.mkdir('calendar')
+    runner = runner(command='NOPE')
 
-    config.write(config_template.format(calpath=str(calendar), dbpath=str(db),
-                                        command='NOPE'))
-    conf_arg = ['-c', str(config)]
-    result = runner.invoke(main_khal, conf_arg + ['agenda'])
+    result = runner.invoke(main_khal, ['agenda'])
     assert not result.exception
     assert result.output == 'No events\n'
 
     from .event_test import cal_dt
-    calendar.join('test.ics').write('\n'.join(cal_dt))
-    result = runner.invoke(main_khal, conf_arg + ['agenda', '09.04.2014'])
+    event = runner.calendars['one'].join('test.ics')
+    event.write('\n'.join(cal_dt))
+    result = runner.invoke(main_khal, ['agenda', '09.04.2014'])
     assert not result.exception
     assert result.output == u'09.04.2014\n09:30-10:30: An Event\n'
 
+    os.remove(str(event))
+    result = runner.invoke(main_khal, ['agenda'])
+    assert not result.exception
+    assert result.output == 'No events\n'
+
 
 def test_default_command_empty(tmpdir, runner):
-    config = tmpdir.join('config.ini')
-    db = tmpdir.join('khal.db')
-    calendar = tmpdir.mkdir('calendar')
-    config.write(config_template.format(calpath=str(calendar), dbpath=str(db),
-                                        command=''))
+    runner = runner(command='')
 
-    conf_arg = ['-c', str(config)]
-    result = runner.invoke(main_khal, conf_arg)
+    result = runner.invoke(main_khal)
     assert result.exception
     assert result.exit_code == 1
     assert result.output.startswith('Usage: ')
 
 
 def test_default_command_nonempty(tmpdir, runner):
-    config = tmpdir.join('config.ini')
-    db = tmpdir.join('khal.db')
-    calendar = tmpdir.mkdir('calendar')
-    config.write(config_template.format(calpath=str(calendar), dbpath=str(db),
-                                        command='agenda'))
+    runner = runner(command='agenda')
 
-    conf_arg = ['-c', str(config)]
-    result = runner.invoke(main_khal, conf_arg)
+    result = runner.invoke(main_khal)
     assert not result.exception
     assert result.output == 'No events\n'
