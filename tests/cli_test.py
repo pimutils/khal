@@ -28,20 +28,24 @@ dateformat = %d.%m.
 longdateformat = %d.%m.%Y
 datetimeformat =  %d.%m. %H:%M
 longdatetimeformat = %d.%m.%Y %H:%M
-
 firstweekday = 0
 
 [default]
 default_command = {command}
 default_calendar = one
-debug = 1'''
+debug = 1
+
+[sqlite]
+path = {dbpath}
+'''
 
 
 def test_simple(tmpdir, runner):
     config = tmpdir.join('config.ini')
+    db = tmpdir.join('khal.db')
     calendar = tmpdir.mkdir('calendar')
 
-    config.write(config_template.format(calpath=str(calendar),
+    config.write(config_template.format(calpath=str(calendar), dbpath=str(db),
                                         command='NOPE'))
     conf_arg = ['-c', str(config)]
     result = runner.invoke(main_khal, conf_arg + ['agenda'])
@@ -57,8 +61,10 @@ def test_simple(tmpdir, runner):
 
 def test_default_command_empty(tmpdir, runner):
     config = tmpdir.join('config.ini')
+    db = tmpdir.join('khal.db')
     calendar = tmpdir.mkdir('calendar')
-    config.write(config_template.format(calpath=str(calendar), command=''))
+    config.write(config_template.format(calpath=str(calendar), dbpath=str(db),
+                                        command=''))
 
     conf_arg = ['-c', str(config)]
     result = runner.invoke(main_khal, conf_arg)
@@ -69,8 +75,9 @@ def test_default_command_empty(tmpdir, runner):
 
 def test_default_command_nonempty(tmpdir, runner):
     config = tmpdir.join('config.ini')
+    db = tmpdir.join('khal.db')
     calendar = tmpdir.mkdir('calendar')
-    config.write(config_template.format(calpath=str(calendar),
+    config.write(config_template.format(calpath=str(calendar), dbpath=str(db),
                                         command='agenda'))
 
     conf_arg = ['-c', str(config)]
