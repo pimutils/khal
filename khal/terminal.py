@@ -90,7 +90,7 @@ def colored(string, colorstring):
         color = COLORS[colorstring]
     except KeyError:
         color = ''
-    return color + string + RESET
+    return color + string + (RESET if color else '')
 
 
 def merge_columns(lcolumn, rcolumn, width=25):
