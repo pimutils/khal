@@ -183,7 +183,7 @@ def _get_cli():
         controllers.NewFromString(
             build_collection(ctx),
             ctx.obj['conf'],
-            description
+            description.split()
         )
 
     @cli.command()
