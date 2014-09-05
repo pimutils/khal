@@ -124,7 +124,8 @@ def main_khal():
                              encoding=conf['locale']['encoding'],
                              dateformat=conf['locale']['dateformat'],
                              longdateformat=conf['locale']['longdateformat'],
-                             )
+                             days=days,
+                             events = events)
     elif arguments['agenda']:
         controllers.Agenda(collection,
                            date=arguments['DATE'],
@@ -132,7 +133,8 @@ def main_khal():
                            encoding=conf['locale']['encoding'],
                            dateformat=conf['locale']['dateformat'],
                            longdateformat=conf['locale']['longdateformat'],
-                           )
+                           days=days,
+                           events=events)
     elif arguments['new']:
         controllers.NewFromString(collection, conf, arguments['DESCRIPTION'])
     elif arguments['interactive']:
