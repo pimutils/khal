@@ -42,21 +42,75 @@ except ImportError:
     from io import StringIO
 
 
+days_option = click.option('--days', default=None, type=int)
+events_option = click.option('--events', default=None, type=int)
+dates_arg = click.argument('dates', nargs=-1)
+time_args = lambda f: dates_arg(events_option(days_option(f)))
+
+
+def _calendar_select_callback(ctx, option, calendars):
+    if not calendars:
+        return
+    if 'calendar_selection' in ctx.obj:
+        raise click.UsageError('Can\'t use both -a and -d.')
+
+    mode = option.name
+    selection = ctx.obj['calendar_selection'] = set()
+
+    if mode == 'include_calendar':
+        selection.update(calendars)
+    elif mode == 'exclude_calendar':
+        selection.update(ctx.obj['conf']['calendars'].keys())
+        for value in calendars:
+            calendars.remove(value)
+    else:
+        raise ValueError(mode)
+
+def calendar_selector(f):
+    a = click.option('--include-calendar', '-a', multiple=True, metavar='CAL',
+                     expose_value=False, callback=_calendar_select_callback,
+                     help=('Include the given calendar. Can be specified '
+                           'multiple times.'))
+    d = click.option('--exclude-calendar', '-d', multiple=True, metavar='CAL',
+                     expose_value=False, callback=_calendar_select_callback,
+                     help=('Exclude the given calendar. Can be specified '
+                           'multiple times.'))
+
+    return d(a(f))
+
+
+def build_collection(ctx):
+    conf = ctx.obj['conf']
+    collection = khalendar.CalendarCollection()
+    selection = ctx.obj.get('calendar_selection', None)
+    if selection is not None:
+        print(selection)
+    for name, cal in conf['calendars'].items():
+        if selection is None or name in ctx.obj['calendar_selection']:
+            collection.append(khalendar.Calendar(
+                name=name,
+                dbpath=conf['sqlite']['path'],
+                path=cal['path'],
+                readonly=cal['readonly'],
+                color=cal['color'],
+                unicode_symbols=conf['locale']['unicode_symbols'],
+                local_tz=conf['locale']['local_timezone'],
+                default_tz=conf['locale']['default_timezone']
+            ))
+
+    collection._default_calendar_name = conf['default']['default_calendar']
+    return collection
+
+
 def _get_cli():
     @click.group(invoke_without_command=True)
     @click.option('--config', '-c', default=None, metavar='PATH',
                   help='The config file to use.')
     @click.option('--verbose', '-v', is_flag=True,
                   help='Output debugging information.')
-    @click.option('--include-calendar', '-a', multiple=True, metavar='CAL',
-                  help=('Include the given calendar. Can be specified '
-                        'multiple times.'))
-    @click.option('--exclude-calendar', '-d', multiple=True, metavar='CAL',
-                  help=('Exclude the given calendar. Can be specified '
-                        'multiple times.'))
     @click.version_option(version=__version__)
     @click.pass_context
-    def cli(ctx, config, verbose, include_calendar, exclude_calendar):
+    def cli(ctx, config, verbose):
         # setting the process title so it looks nicer in ps
         # shows up as 'khal' under linux and as 'python: khal (python2.7)'
         # under FreeBSD, which is still nicer than the default
@@ -80,25 +134,6 @@ def _get_cli():
         if conf is None:
             raise click.UsageError('Invalid config file, exiting.')
 
-        if include_calendar and exclude_calendar:
-            raise click.UsageError('Can\'t use both -a and -d.')
-
-        ctx.obj['collection'] = collection = khalendar.CalendarCollection()
-        for name, cal in conf['calendars'].items():
-            if (not exclude_calendar and name in include_calendar) or \
-               (not include_calendar and name not in exclude_calendar):
-                collection.append(khalendar.Calendar(
-                    name=name,
-                    dbpath=conf['sqlite']['path'],
-                    path=cal['path'],
-                    readonly=cal['readonly'],
-                    color=cal['color'],
-                    unicode_symbols=conf['locale']['unicode_symbols'],
-                    local_tz=conf['locale']['local_timezone'],
-                    default_tz=conf['locale']['default_timezone']
-                ))
-        collection._default_calendar_name = conf['default']['default_calendar']
-
         if not ctx.invoked_subcommand:
             command = conf['default']['default_command']
             if command:
@@ -107,17 +142,13 @@ def _get_cli():
                 click.echo(ctx.get_help())
                 ctx.exit(1)
 
-    days_option = click.option('--days', default=None, type=int)
-    events_option = click.option('--events', default=None, type=int)
-    dates_arg = click.argument('dates', nargs=-1)
-    time_args = lambda f: dates_arg(events_option(days_option(f)))
-
     @cli.command()
     @time_args
+    @calendar_selector
     @click.pass_context
     def calendar(ctx, days, events, dates):
         controllers.Calendar(
-            ctx.obj['collection'],
+            build_collection(ctx),
             date=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
             encoding=ctx.obj['conf']['locale']['encoding'],
@@ -129,10 +160,11 @@ def _get_cli():
 
     @cli.command()
     @time_args
+    @calendar_selector
     @click.pass_context
     def agenda(ctx, days, events, dates):
         controllers.Agenda(
-            ctx.obj['collection'],
+            build_collection(ctx),
             date=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
             encoding=ctx.obj['conf']['locale']['encoding'],
@@ -143,24 +175,28 @@ def _get_cli():
         )
 
     @cli.command()
+    @click.option('--include-calendar', '-a', help=('The calendar to use.'),
+                  expose_value=False, callback=_calendar_select_callback)
     @click.argument('description')
     @click.pass_context
     def new(ctx, description):
         controllers.NewFromString(
-            ctx.obj['collection'],
+            build_collection(ctx),
             ctx.obj['conf'],
             description
         )
 
     @cli.command()
+    @calendar_selector
     @click.pass_context
     def interactive(ctx):
-        controllers.Interactive(ctx.obj['collection'], ctx.obj['conf'])
+        controllers.Interactive(build_collection(ctx), ctx.obj['conf'])
 
     @cli.command()
+    @calendar_selector
     @click.pass_context
     def printcalendars(ctx):
-        click.echo('\n'.join(ctx.obj['collection'].names))
+        click.echo('\n'.join(build_collection(ctx).names))
 
     return cli
 
