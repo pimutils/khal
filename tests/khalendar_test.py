@@ -279,3 +279,18 @@ class TestDbCreation(object):
 
         with pytest.raises(CouldNotCreateDbDir):
             Calendar(name, dbpath, vdirpath, **KWARGS)
+
+
+def test_default_calendar(cal_vdir):
+    cal, vdir = cal_vdir
+    event = cal.new_event(event_today, **KWARGS)
+    vdir.upload(event)
+    uid, etag = list(vdir.list())[0]
+    assert uid == 'uid3@host1.com.ics'
+    assert len(cal.get_allday_by_time_range(today)) == 0
+    cal.db_update()
+    assert len(cal.get_allday_by_time_range(today)) == 1
+    vdir.delete(uid, etag)
+    assert len(cal.get_allday_by_time_range(today)) == 1
+    cal.db_update()
+    assert len(cal.get_allday_by_time_range(today)) == 0
