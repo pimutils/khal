@@ -79,7 +79,7 @@ END:VEVENT
 END:VCALENDAR
 """.split('\n')
 
-event_kwargs = {'account': 'foobar',
+event_kwargs = {'calendar': 'foobar',
                 'local_tz': berlin,
                 'default_tz': berlin,
                 }

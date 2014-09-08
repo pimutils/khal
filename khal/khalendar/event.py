@@ -33,14 +33,14 @@ class Event(object):
 
     """the base event class"""
 
-    def __init__(self, ical, account, href=None, local_tz=None,
+    def __init__(self, ical, calendar, href=None, local_tz=None,
                  default_tz=None, start=None, end=None, color=None,
                  readonly=False, unicode_symbols=True, etag=None):
         """
         :param ical: the icalendar VEVENT this event is based on
         :type ical: str or icalendar.cal.Event
         :param account: the account/calendar this event belongs to
-        :type account: str
+        :type account: str TODO
         :param href: the href of the event, treated like a UID
         :type href: str
         :param local_tz: the local timezone the user wants event's times
@@ -95,7 +95,7 @@ class Event(object):
 
         # if uid is None and self.vevent.get('UID', '') == '':
 
-        self.account = account
+        self.calendar = calendar
         self.readonly = readonly
         self.unicode_symbols = unicode_symbols
         self.etag = etag

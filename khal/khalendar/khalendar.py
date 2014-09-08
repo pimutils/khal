@@ -73,6 +73,7 @@ class Calendar(object):
         self.path = os.path.expanduser(path)
         self._debug = debug
         self._dbtool = backend.SQLiteDb(
+            self.name,
             dbpath,
             default_tz=self._default_tz,
             local_tz=self._local_tz,
@@ -90,7 +91,6 @@ class Calendar(object):
     def get_by_time_range(self, start, end, show_deleted=False):
         return self._dbtool.get_time_range(start,
                                            end,
-                                           self.name,
                                            self.color,
                                            self._readonly,
                                            self._unicode_symbols,
@@ -98,17 +98,17 @@ class Calendar(object):
 
     def get_allday_by_time_range(self, start, end=None, show_deleted=False):
         return self._dbtool.get_allday_range(
-            start, end, self.name, self.color, self._readonly,
+            start, end, self.color, self._readonly,
             self._unicode_symbols, show_deleted)
 
     def get_datetime_by_time_range(self, start, end, show_deleted=False):
         return self._dbtool.get_time_range(
-            start, end, self.name, self.color, self._readonly,
+            start, end, self.color, self._readonly,
             self._unicode_symbols, show_deleted)
 
     def get_event(self, href):
         return self._dbtool.get_vevent_from_db(
-            href, self.name, color=self.color, readonly=self._readonly,
+            href, color=self.color, readonly=self._readonly,
             unicode_symbols=self._unicode_symbols)
 
     def update(self, event):
@@ -146,10 +146,9 @@ class Calendar(object):
         event.etag = etag
         try:
             self._dbtool.update(event.to_ical(),
-                                self.name,
                                 href=href,
                                 etag=etag)
-            self._dbtool.set_ctag(self.name, self.local_ctag())
+            self._dbtool.set_ctag(self.local_ctag())
         except Exception as error:
             logger.error(
                 'Failed to parse vcard {} during new in collection '
@@ -162,10 +161,10 @@ class Calendar(object):
         if self._readonly:
             raise ReadOnlyCalendarError()
         self._storage.delete(event.href, event.etag)
-        self._dbtool.delete(event.href, event.account)
+        self._dbtool.delete(event.href)
 
     def _db_needs_update(self):
-        if self.local_ctag() == self._dbtool.get_ctag(self.name):
+        if self.local_ctag() == self._dbtool.get_ctag():
             return False
         else:
             return True
@@ -177,17 +176,17 @@ class Calendar(object):
         """
         status = True
         for href, etag in self._storage.list():
-            if etag != self._dbtool.get_etag(href, self.name):
+            if etag != self._dbtool.get_etag(href):
                 status = status and self._update_vevent(href)
         if status:
-            self._dbtool.set_ctag(self.name, self.local_ctag())
+            self._dbtool.set_ctag(self.local_ctag())
 
     def _update_vevent(self, href):
         """should only be called during db_update, does not check for
         readonly"""
         event, etag = self._storage.get(href)
         try:
-            self._dbtool.update(event.raw, self.name, href=href, etag=etag,
+            self._dbtool.update(event.raw, href=href, etag=etag,
                                 ignore_invalid_items=True)
             return True
         except Exception as error:
@@ -203,7 +202,7 @@ class Calendar(object):
     def new_event(self, ical, local_tz, default_tz):
         """creates and returns (but does not insert) new event from ical
         string"""
-        return Event(ical=ical, account=self.name, local_tz=local_tz,
+        return Event(ical=ical, calendar=self.name, local_tz=local_tz,
                      default_tz=default_tz)
 
 
@@ -258,22 +257,22 @@ class CalendarCollection(object):
         return events
 
     def update(self, event):
-        self._calnames[event.account].update(event)
+        self._calnames[event.calendar].update(event)
 
     def new(self, event, collection=None):
         if collection:
             self._calnames[collection].new(event)
         else:
-            self._calnames[event.account].new(event)
+            self._calnames[event.calendar].new(event)
 
     def delete(self, event):
-        self._calnames[event.account].delete(event)
+        self._calnames[event.calendar].delete(event)
 
-    def get_event(self, href, account):
-        return self._calnames[account].get_event(href)
+    def get_event(self, href, calendar):
+        return self._calnames[calendar].get_event(href)
 
     def change_collection(self, event, new_collection):
-        self._calnames[event.account].delete(event)
+        self._calnames[event.calendar].delete(event)
         self._calnames[new_collection].new(event)
         # TODO would be better to first add to new collection, then delete
         # currently not possible since new modifies event.etag

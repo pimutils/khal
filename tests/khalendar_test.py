@@ -80,7 +80,7 @@ class TestCalendarTest(object):
     def test_new_event(self, cal_vdir):
         cal, vdir = cal_vdir
         event = cal.new_event(event_today, **KWARGS)
-        assert event.account == cal1
+        assert event.calendar == cal1
         cal.new(event)
         events = cal.get_allday_by_time_range(today)
         assert len(events) == 1
@@ -175,11 +175,11 @@ class TestCollection(object):
     def test_insert(self, coll_vdirs):
         """insert a datetime event"""
         coll, vdirs = coll_vdirs
-        event = Event(event_dt, account='foo', **KWARGS)
+        event = Event(event_dt, calendar='foo', **KWARGS)
         coll.new(event, cal1)
         events = coll.get_datetime_by_time_range(self.astart, self.aend)
         assert len(events) == 1
-        assert events[0].account == cal1
+        assert events[0].calendar == cal1
 
         assert len(list(vdirs[cal1].list())) == 1
         assert len(list(vdirs[cal2].list())) == 0
@@ -191,11 +191,11 @@ class TestCollection(object):
         """insert a date event"""
         coll, vdirs = coll_vdirs
 
-        event = Event(event_d, account='foo', **KWARGS)
+        event = Event(event_d, calendar='foo', **KWARGS)
         coll.new(event, cal1)
         events = coll.get_allday_by_time_range(aday)
         assert len(events) == 1
-        assert events[0].account == cal1
+        assert events[0].calendar == cal1
         assert len(list(vdirs[cal1].list())) == 1
         assert len(list(vdirs[cal2].list())) == 0
         assert len(list(vdirs[cal3].list())) == 0
@@ -205,11 +205,11 @@ class TestCollection(object):
         """insert a date event with no VALUE=DATE option"""
         coll, vdirs = coll_vdirs
 
-        event = Event(event_d_no_value, account='foo', **KWARGS)
+        event = Event(event_d_no_value, calendar='foo', **KWARGS)
         coll.new(event, cal1)
         events = coll.get_allday_by_time_range(aday)
         assert len(events) == 1
-        assert events[0].account == cal1
+        assert events[0].calendar == cal1
         assert len(list(vdirs[cal1].list())) == 1
         assert len(list(vdirs[cal2].list())) == 0
         assert len(list(vdirs[cal3].list())) == 0
@@ -217,15 +217,15 @@ class TestCollection(object):
 
     def test_change(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        event = Event(event_dt, account='foo', **KWARGS)
+        event = Event(event_dt, calendar='foo', **KWARGS)
         coll.new(event, cal1)
         event = coll.get_datetime_by_time_range(self.astart, self.aend)[0]
-        assert event.account == cal1
+        assert event.calendar == cal1
 
         coll.change_collection(event, cal2)
         events = coll.get_datetime_by_time_range(self.astart, self.aend)
         assert len(events) == 1
-        assert events[0].account == cal2
+        assert events[0].calendar == cal2
 
     def test_newevent(self, coll_vdirs):
         coll, vdirs = coll_vdirs
@@ -242,7 +242,7 @@ class TestCollection(object):
         coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, **KWARGS))
         coll.append(Calendar('home', ':memory:', str(tmpdir), **KWARGS))
         coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, **KWARGS))
-        event = Event(event_dt, account='home', **KWARGS)
+        event = Event(event_dt, calendar='home', **KWARGS)
         with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
             coll.new(event, cal1)
 

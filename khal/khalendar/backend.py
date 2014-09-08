@@ -98,11 +98,12 @@ class SQLiteDb(object):
     and of parameters named "accountS" should be an iterable like list()
     """
 
-    def __init__(self, db_path, local_tz, default_tz, debug=False):
+    def __init__(self, calendar, db_path, local_tz, default_tz, debug=False):
 
         if db_path is None:
             db_path = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
         self.db_path = path.expanduser(db_path)
+        self.calendar = calendar
         self._create_dbdir()
         self.local_tz = local_tz
         self.default_tz = default_tz
@@ -115,12 +116,6 @@ class SQLiteDb(object):
 
     def __del__(self):
         self.conn.close()
-
-    def _dump(self, account):
-        """return table self.account, used for testing"""
-        sql_s = 'SELECT * FROM {0}'.format(account + '_m')
-        result = self.sql_ex(sql_s)
-        return result
 
     def _create_dbdir(self):
         """create the dbdir if it doesn't exist"""
@@ -178,12 +173,12 @@ class SQLiteDb(object):
         self.conn.commit()
         self._check_table_version()  # insert table version
 
-    def _check_account(self, account):
-        if account in self._accounts:
+    def _check_account(self):
+        if self.calendar in self._accounts:
             return
         else:
-            self.create_account_table(account)
-            self._accounts.append(account)
+            self.create_account_table()
+            self._accounts.append(self.calendar)
 
     def sql_ex(self, statement, stuple='', commit=True):
         """wrapper for sql statements, does a "fetchall" """
@@ -193,10 +188,10 @@ class SQLiteDb(object):
             self.conn.commit()
         return result
 
-    def create_account_table(self, account):
+    def create_account_table(self):
         count_sql_s = """SELECT count(*) FROM accounts
                 WHERE account = ? AND resource = ?"""
-        stuple = (account, '')
+        stuple = (self.calendar, '')
         self.cursor.execute(count_sql_s, stuple)
         result = self.cursor.fetchone()
 
@@ -206,42 +201,39 @@ class SQLiteDb(object):
                 href TEXT UNIQUE,
                 etag TEXT,
                 vevent TEXT
-                )""".format(account + '_m')
+                )""".format(self.calendar + '_m')
         self.sql_ex(sql_s)
         sql_s = '''CREATE TABLE IF NOT EXISTS {0} (
             dtstart INT,
             dtend INT,
-            href TEXT ); '''.format(account + '_dt')
+            href TEXT ); '''.format(self.calendar + '_dt')
         self.sql_ex(sql_s)
         sql_s = '''CREATE TABLE IF NOT EXISTS {0} (
             dtstart INT,
             dtend INT,
-            href TEXT ); '''.format(account + '_d')
+            href TEXT ); '''.format(self.calendar + '_d')
         self.sql_ex(sql_s)
         sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
-        stuple = (account, '')
+        stuple = (self.calendar, '')
         self.sql_ex(sql_s, stuple)
-        logger.debug("made sure tables for {0} exists".format(account))
+        logger.debug("made sure tables for {0} exists".format(self.calendar))
 
-    def needs_update(self, account, href_etag_list):
+    def needs_update(self, href_etag_list):
         """checks if we need to update this vcard
-        :param account: account
-        :param account: string
         :param href_etag_list: list of tuples of (hrefs and etags)
         :return: list of hrefs that need an update
         """
-        self._check_account(account)
         needs_update = list()
         for href, etag in href_etag_list:
             stuple = (href,)
             sql_s = 'SELECT etag FROM {0} WHERE href = ?'.format(
-                account + '_m')
+                self.calendar + '_m')
             result = self.sql_ex(sql_s, stuple)
             if not result or etag != result[0][0]:
                 needs_update.append(href)
         return needs_update
 
-    def update(self, vevent, account, href=None, etag='',
+    def update(self, vevent, href=None, etag='',
                ignore_invalid_items=False):
         """insert a new or update an existing card in the db
 
@@ -269,7 +261,7 @@ class SQLiteDb(object):
         """
         if href is None:
             raise ValueError('href may not be one')
-        self._check_account(account)
+        self._check_account()
         events = []
         if not isinstance(vevent, icalendar.cal.Event):
             ical = icalendar.Event.from_ical(vevent)
@@ -304,7 +296,7 @@ class SQLiteDb(object):
                                            self.default_tz,
                                            href)
 
-        for dbname in [account + '_d', account + '_dt']:
+        for dbname in [self.calendar + '_d', self.calendar + '_dt']:
             sql_s = ('DELETE FROM {0} WHERE href == ?'.format(dbname))
             self.sql_ex(sql_s, (href, ), commit=False)
 
@@ -312,7 +304,7 @@ class SQLiteDb(object):
             if all_day_event:
                 dbstart = dtstart.strftime('%Y%m%d')
                 dbend = dtend.strftime('%Y%m%d')
-                dbname = account + '_d'
+                dbname = self.calendar + '_d'
             else:
                 # TODO: extract strange (aka non Olson) TZs from params['TZID']
                 # perhaps better done in event/vevent
@@ -325,7 +317,7 @@ class SQLiteDb(object):
                 dtend_utc = dtend.astimezone(pytz.UTC)
                 dbstart = calendar.timegm(dtstart_utc.timetuple())
                 dbend = calendar.timegm(dtend_utc.timetuple())
-                dbname = account + '_dt'
+                dbname = self.calendar + '_dt'
 
             sql_s = ('INSERT INTO {0} '
                      '(dtstart, dtend, href) '
@@ -339,7 +331,7 @@ class SQLiteDb(object):
                  '(vevent, etag, href) '
                  'VALUES (?, ?, '
                  'COALESCE((SELECT href FROM {0} WHERE href = ?), ?)'
-                 ');'.format(account + '_m'))
+                 ');'.format(self.calendar + '_m'))
 
         stuple = (vevent.to_ical().decode('utf-8'),
                   etag,
@@ -348,8 +340,8 @@ class SQLiteDb(object):
         self.sql_ex(sql_s, stuple, commit=False)
         self.conn.commit()
 
-    def get_ctag(self, account):
-        stuple = (account, )
+    def get_ctag(self):
+        stuple = (self.calendar, )
         sql_s = 'SELECT ctag FROM accounts WHERE account = ?'
         try:
             ctag = self.sql_ex(sql_s, stuple)[0][0]
@@ -357,60 +349,60 @@ class SQLiteDb(object):
         except IndexError:
             return None
 
-    def set_ctag(self, account, ctag):
-        stuple = (ctag, account, )
+    def set_ctag(self, ctag):
+        stuple = (ctag, self.calendar, )
         sql_s = 'UPDATE accounts SET ctag = ? WHERE account = ?'
         self.sql_ex(sql_s, stuple)
         self.conn.commit()
 
-    def update_href(self, oldhref, newhref, account, etag=''):
+    def update_href(self, oldhref, newhref, etag=''):
         """updates old_href to new_href, can also alter etag,
         see update() for an explanation of these parameters"""
-        self._check_account(account)
+        self._check_account()
         stuple = (newhref, etag, oldhref)
         sql_s = 'UPDATE {0} SET href = ?, etag = ?, \
-             WHERE href = ?;'.format(account + '_m')
+             WHERE href = ?;'.format(self.calendar + '_m')
         self.sql_ex(sql_s, stuple)
-        for dbname in [account + '_d', account + '_dt']:
+        for dbname in [self.calendar + '_d', self.calendar + '_dt']:
             sql_s = 'UPDATE {0} SET href = ? WHERE href = ?;'.format(dbname)
             self.sql_ex(sql_s, (newhref, oldhref))
 
-    def href_exists(self, href, account):
+    def href_exists(self, href):
         """returns True if href already exists in db
 
         :param href: href
         :type href: str()
         :returns: True or False
         """
-        self._check_account(account)
-        sql_s = 'SELECT href FROM {1} WHERE href = ?;'.format(account)
+        self._check_account()
+        sql_s = 'SELECT href FROM {1} WHERE href = ?;'.format(self.calendar)
         if len(self.sql_ex(sql_s, (href, ))) == 0:
             return False
         else:
             return True
 
-    def get_etag(self, href, account):
+    def get_etag(self, href):
         """get etag for href
 
         type href: str()
         return: etag
         rtype: str()
         """
-        self._check_account(account)
-        sql_s = 'SELECT etag FROM {0} WHERE href=(?);'.format(account + '_m')
+        self._check_account()
+        sql_s = 'SELECT etag FROM {0} WHERE href=(?);'.format(self.calendar + '_m')
         try:
             etag = self.sql_ex(sql_s, (href,))[0][0]
             return etag
         except IndexError:
             return None
 
-    def delete(self, href, account):
+    def delete(self, href):
         """
         removes the event from the db,
         returns nothing
         """
-        self._check_account(account)
-        for dbname in [account + '_d', account + '_dt', account + '_m']:
+        self._check_account()
+        for dbname in [self.calendar + '_d', self.calendar + '_dt', self.calendar + '_m']:
             sql_s = 'DELETE FROM {0} WHERE href = ? ;'.format(dbname)
             self.sql_ex(sql_s, (href, ))
 
@@ -419,25 +411,25 @@ class SQLiteDb(object):
         """
         result = list()
         for account in accounts:
-            self._check_account(account)
-            hrefs = self.sql_ex('SELECT href FROM {0}'.format(account + '_m'))
+            self._check_account()
+            hrefs = self.sql_ex('SELECT href FROM {0}'.format(self.calendar + '_m'))
             result = result + [(href[0], account) for href in hrefs]
         return result
 
-    def get_time_range(self, start, end, account, color='', readonly=False,
+    def get_time_range(self, start, end, color='', readonly=False,
                        unicode_symbols=True, show_deleted=True):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
         :param deleted: include deleted events in returned lsit
         """
-        self._check_account(account)
+        self._check_account()
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
         sql_s = ('SELECT href, dtstart, dtend FROM {0} WHERE '
                  'dtstart >= ? AND dtstart <= ? OR '
                  'dtend >= ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend >= ?').format(account + '_dt')
+                 'dtstart <= ? AND dtend >= ?').format(self.calendar + '_dt')
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
@@ -445,22 +437,21 @@ class SQLiteDb(object):
             start = pytz.UTC.localize(
                 datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
-            event = self.get_vevent_from_db(href, account,
-                                            start=start, end=end,
+            event = self.get_vevent_from_db(href,
+                                            start=start,
+                                            end=end,
                                             color=color,
                                             readonly=readonly,
                                             unicode_symbols=unicode_symbols)
             event_list.append(event)
         return event_list
 
-    def get_allday_range(self, start, end=None, account=None, color='',
+    def get_allday_range(self, start, end=None, color='',
                          readonly=False, unicode_symbols=True,
                          show_deleted=True):
         # TODO type check on start and end
         # should be datetime.date not datetime.datetime
-        self._check_account(account)
-        if account is None:
-            raise Exception('need to specify an account')
+        self._check_account()
         strstart = start.strftime('%Y%m%d')
         if end is None:
             end = start + datetime.timedelta(days=1)
@@ -468,7 +459,7 @@ class SQLiteDb(object):
         sql_s = ('SELECT href, dtstart, dtend FROM {0} WHERE '
                  'dtstart >= ? AND dtstart < ? OR '
                  'dtend > ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend > ? ').format(account + '_d')
+                 'dtstart <= ? AND dtend > ? ').format(self.calendar + '_d')
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
@@ -477,34 +468,33 @@ class SQLiteDb(object):
             end = time.strptime(str(end), '%Y%m%d')
             start = datetime.date(start.tm_year, start.tm_mon, start.tm_mday)
             end = datetime.date(end.tm_year, end.tm_mon, end.tm_mday)
-            event = self.get_vevent_from_db(href, account,
-                                            start=start, end=end,
+            event = self.get_vevent_from_db(href,
+                                            start=start,
+                                            end=end,
                                             color=color,
                                             readonly=readonly,
                                             unicode_symbols=unicode_symbols)
             event_list.append(event)
         return event_list
 
-    def hrefs_by_time_range_datetime(self, start, end, account, color=''):
+    def hrefs_by_time_range_datetime(self, start, end, color=''):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
         """
-        self._check_account(account)
+        self._check_account()
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
         sql_s = ('SELECT href FROM {0} WHERE '
                  'dtstart >= ? AND dtstart <= ? OR '
                  'dtend >= ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend >= ?').format(account + '_dt')
+                 'dtstart <= ? AND dtend >= ?').format(self.calendar + '_dt')
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s, stuple)
         return [one[0] for one in result]
 
-    def hrefs_by_time_range_date(self, start, end=None, account=None):
-        self._check_account(account)
-        if account is None:
-            raise Exception('need to specify an account')
+    def hrefs_by_time_range_date(self, start, end=None):
+        self._check_account()
         strstart = start.strftime('%Y%m%d')
         if end is None:
             end = start + datetime.timedelta(days=1)
@@ -512,16 +502,16 @@ class SQLiteDb(object):
         sql_s = ('SELECT href FROM {0} WHERE '
                  'dtstart >= ? AND dtstart < ? OR '
                  'dtend > ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend > ? ').format(account + '_d')
+                 'dtstart <= ? AND dtend > ? ').format(self.calendar + '_d')
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s, stuple)
         return [one[0] for one in result]
 
-    def hrefs_by_time_range(self, start, end, account):
-        return list(set(self.hrefs_by_time_range_date(start, end, account) +
-                    self.hrefs_by_time_range_datetime(start, end, account)))
+    def hrefs_by_time_range(self, start, end):
+        return list(set(self.hrefs_by_time_range_date(start, end) +
+                    self.hrefs_by_time_range_datetime(start, end)))
 
-    def get_vevent_from_db(self, href, account, start=None, end=None,
+    def get_vevent_from_db(self, href, start=None, end=None,
                            readonly=False, color=lambda x: x,
                            unicode_symbols=True):
         """returns the Event matching href, if start and end are given, a
@@ -531,9 +521,9 @@ class SQLiteDb(object):
         All other parameters given to this function are handed over to the
         Event.
         """
-        self._check_account(account)
+        self._check_account()
         sql_s = 'SELECT vevent, etag FROM {0} WHERE href=(?)'.format(
-            account + '_m')
+            self.calendar + '_m')
         result = self.sql_ex(sql_s, (href, ))
         return Event(result[0][0],
                      local_tz=self.local_tz,
@@ -542,7 +532,7 @@ class SQLiteDb(object):
                      end=end,
                      color=color,
                      href=href,
-                     account=account,
+                     calendar=self.calendar,
                      readonly=readonly,
                      etag=result[0][1],
                      unicode_symbols=unicode_symbols)

@@ -347,7 +347,7 @@ class U_Event(urwid.Text):
 
     @property
     def uid(self):
-        return self.event.account + '\n' + str(self.event.href)
+        return self.event.calendar + '\n' + str(self.event.href)
 
     def set_title(self, mark=''):
         if self.uid in self.eventcolumn.deleted:
@@ -583,7 +583,7 @@ class EventDisplay(EventViewer):
                                         ' To: ' + endstr))
 
         # resource
-        lines.append(urwid.Text('Calendar: ' + event.account))
+        lines.append(urwid.Text('Calendar: ' + event.calendar))
 
         # description and location
         for key, desc in [('DESCRIPTION', 'Desc'), ('LOCATION', 'Loc')]:
@@ -635,7 +635,7 @@ class EventEditor(EventViewer):
         self.summary = urwid.Edit(
             edit_text=event.vevent['SUMMARY'])
         # TODO warning message if len(self.collection.writable_names) == 0
-        self.accountchooser = AccountChooser(self.event.account,
+        self.accountchooser = AccountChooser(self.event.calendar,
                                              self.collection.writable_names)
         accounts = CColumns([(9, urwid.Text(u'Calendar: ')),
                              self.accountchooser])
@@ -742,7 +742,7 @@ class EventEditor(EventViewer):
             self.event.allday = self.startendeditor.allday
             if self.event.etag is None:  # has not been saved before
                 # TODO look for better way to detect this
-                self.event.account = self.accountchooser.account
+                self.event.calendar = self.accountchooser.account
                 self.collection.new(self.event)
             elif self.accountchooser.changed:
                 self.collection.change_collection(self.event,
