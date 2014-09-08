@@ -91,7 +91,8 @@ def test_simple(runner):
     assert result.output == 'No events\n'
 
     now = datetime.datetime.now().strftime('%d.%m.%Y')
-    result = runner.invoke(main_khal, ['new', '{} 18:00 myevent'.format(now)])
+    result = runner.invoke(
+        main_khal, ['new'] + '{} 18:00 myevent'.format(now).split())
     assert result.output == ''
     assert not result.exception
 

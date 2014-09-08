@@ -66,6 +66,7 @@ def _calendar_select_callback(ctx, option, calendars):
     else:
         raise ValueError(mode)
 
+
 def calendar_selector(f):
     a = click.option('--include-calendar', '-a', multiple=True, metavar='CAL',
                      expose_value=False, callback=_calendar_select_callback,
@@ -177,13 +178,13 @@ def _get_cli():
     @cli.command()
     @click.option('--include-calendar', '-a', help=('The calendar to use.'),
                   expose_value=False, callback=_calendar_select_callback)
-    @click.argument('description')
+    @click.argument('description', nargs=-1)
     @click.pass_context
     def new(ctx, description):
         controllers.NewFromString(
             build_collection(ctx),
             ctx.obj['conf'],
-            description.split()
+            list(description)
         )
 
     @cli.command()
