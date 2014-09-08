@@ -475,38 +475,6 @@ class SQLiteDb(object):
             event_list.append(event)
         return event_list
 
-    def hrefs_by_time_range_datetime(self, start, end, color=''):
-        """returns
-        :type start: datetime.datetime
-        :type end: datetime.datetime
-        """
-        start = time.mktime(start.timetuple())
-        end = time.mktime(end.timetuple())
-        sql_s = ('SELECT href FROM {0} WHERE '
-                 'dtstart >= ? AND dtstart <= ? OR '
-                 'dtend >= ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend >= ?').format(self.calendar + '_dt')
-        stuple = (start, end, start, end, start, end)
-        result = self.sql_ex(sql_s, stuple)
-        return [one[0] for one in result]
-
-    def hrefs_by_time_range_date(self, start, end=None):
-        strstart = start.strftime('%Y%m%d')
-        if end is None:
-            end = start + datetime.timedelta(days=1)
-        strend = end.strftime('%Y%m%d')
-        sql_s = ('SELECT href FROM {0} WHERE '
-                 'dtstart >= ? AND dtstart < ? OR '
-                 'dtend > ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend > ? ').format(self.calendar + '_d')
-        stuple = (strstart, strend, strstart, strend, strstart, strend)
-        result = self.sql_ex(sql_s, stuple)
-        return [one[0] for one in result]
-
-    def hrefs_by_time_range(self, start, end):
-        return list(set(self.hrefs_by_time_range_date(start, end) +
-                    self.hrefs_by_time_range_datetime(start, end)))
-
     def get(self, href, start=None, end=None,
             readonly=False, color=lambda x: x,
             unicode_symbols=True):
