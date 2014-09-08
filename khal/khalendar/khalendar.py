@@ -98,6 +98,8 @@ class Calendar(object):
             dbpath,
             default_tz=self._default_tz,
             local_tz=self._local_tz,
+            color=self.color,
+            readonly=readonly,
             debug=self._debug)
         self._storage = FilesystemStorage(path, '.ics')
         self._readonly = readonly
@@ -110,27 +112,16 @@ class Calendar(object):
         return os.path.getmtime(self.path)
 
     def get_by_time_range(self, start, end, show_deleted=False):
-        return self._dbtool.get_time_range(start,
-                                           end,
-                                           self.color,
-                                           self._readonly,
-                                           self._unicode_symbols,
-                                           show_deleted)
+        return self._dbtool.get_time_range(start, end, show_deleted)
 
     def get_allday_by_time_range(self, start, end=None, show_deleted=False):
-        return self._dbtool.get_allday_range(
-            start, end, self.color, self._readonly,
-            self._unicode_symbols, show_deleted)
+        return self._dbtool.get_allday_range(start, end, show_deleted)
 
     def get_datetime_by_time_range(self, start, end, show_deleted=False):
-        return self._dbtool.get_time_range(
-            start, end, self.color, self._readonly,
-            self._unicode_symbols, show_deleted)
+        return self._dbtool.get_time_range(start, end, show_deleted)
 
     def get_event(self, href):
-        return self._dbtool.get(
-            href, color=self.color, readonly=self._readonly,
-            unicode_symbols=self._unicode_symbols)
+        return self._dbtool.get(href)
 
     def update(self, event):
         """update an event in the database

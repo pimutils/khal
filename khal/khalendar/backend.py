@@ -100,7 +100,9 @@ class SQLiteDb(object):
 
     _calendars = []
 
-    def __init__(self, calendar, db_path, local_tz, default_tz, debug=False):
+    def __init__(self, calendar, db_path, local_tz, default_tz,
+                 color=None, readonly=False, unicode_symbols=True,
+                 debug=False):
 
         if db_path is None:
             db_path = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
@@ -111,6 +113,9 @@ class SQLiteDb(object):
         self.default_tz = default_tz
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
+        self.color = color
+        self.readonly = readonly
+        self.unicode_symbols = unicode_symbols
         self.debug = debug
         self._create_default_tables()
         self._check_table_version()
@@ -383,8 +388,7 @@ class SQLiteDb(object):
         """
         return self.sql_ex('SELECT href, etag FROM {0}_m'.format(self.calendar))
 
-    def get_time_range(self, start, end, color='', readonly=False,
-                       unicode_symbols=True, show_deleted=True):
+    def get_time_range(self, start, end, show_deleted=True):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
@@ -403,18 +407,11 @@ class SQLiteDb(object):
             start = pytz.UTC.localize(
                 datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
-            event = self.get(href,
-                             start=start,
-                             end=end,
-                             color=color,
-                             readonly=readonly,
-                             unicode_symbols=unicode_symbols)
+            event = self.get(href, start=start, end=end)
             event_list.append(event)
         return event_list
 
-    def get_allday_range(self, start, end=None, color='',
-                         readonly=False, unicode_symbols=True,
-                         show_deleted=True):
+    def get_allday_range(self, start, end=None, show_deleted=True):
         # TODO type check on start and end
         # should be datetime.date not datetime.datetime
         strstart = start.strftime('%Y%m%d')
@@ -433,18 +430,11 @@ class SQLiteDb(object):
             end = time.strptime(str(end), '%Y%m%d')
             start = datetime.date(start.tm_year, start.tm_mon, start.tm_mday)
             end = datetime.date(end.tm_year, end.tm_mon, end.tm_mday)
-            event = self.get(href,
-                             start=start,
-                             end=end,
-                             color=color,
-                             readonly=readonly,
-                             unicode_symbols=unicode_symbols)
+            event = self.get(href, start=start, end=end)
             event_list.append(event)
         return event_list
 
-    def get(self, href, start=None, end=None,
-            readonly=False, color=lambda x: x,
-            unicode_symbols=True):
+    def get(self, href, start=None, end=None):
         """returns the Event matching href, if start and end are given, a
         specific Event from a Recursion set is returned, the Event as saved in
         the db
@@ -460,12 +450,12 @@ class SQLiteDb(object):
                      default_tz=self.default_tz,
                      start=start,
                      end=end,
-                     color=color,
+                     color=self.color,
                      href=href,
                      calendar=self.calendar,
-                     readonly=readonly,
+                     readonly=self.readonly,
                      etag=result[0][1],
-                     unicode_symbols=unicode_symbols)
+                     unicode_symbols=self.unicode_symbols)
 
 
 def get_random_href():
