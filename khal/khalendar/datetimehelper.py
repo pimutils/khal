@@ -20,8 +20,8 @@ def expand(vevent, default_tz, href=''):
 
     It considers RRULE as well as RDATE and EXDATE properties. In case of
     unsupported recursion rules an UnsupportedRecursion exception is thrown.
-    If timezone defined in vevent is not understood by icalendar, default_tz
-    is used.
+    If the timezone defined in vevent is not understood by icalendar,
+    default_tz is used.
 
     :param vevent: vevent to be expanded
     :type vevent: icalendar.cal.Event
