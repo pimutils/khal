@@ -66,7 +66,7 @@ def coll_vdirs(tmpdir):
     return coll, vdirs
 
 
-class TestCalendarTest(object):
+class TestCalendar(object):
 
     def test_create(self, cal_vdir):
         assert True
@@ -101,6 +101,19 @@ class TestCalendarTest(object):
         event = cal.new_event(event_today, **KWARGS)
         cal.new(event)
         assert cal._db_needs_update() is False
+
+
+class TestVdirsyncerCompat(object):
+    def test_list(self, cal_vdir):
+        cal, vdir = cal_vdir
+        event = Event(event_d, cal.name, **KWARGS)
+        cal.new(event)
+        event = Event(event_today, cal.name, **KWARGS)
+        cal.new(event)
+        assert [href for (href, uid) in cal._dbtool.list()] == [
+            'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU.ics',
+            'uid3@host1.com.ics']
+        assert cal._dbtool.get('uid3@host1.com.ics').uid == 'uid3@host1.com'
 
 today = datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)

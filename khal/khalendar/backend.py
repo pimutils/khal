@@ -390,14 +390,22 @@ class SQLiteDb(object):
         except IndexError:
             return None
 
-    def delete(self, href):
+    def delete(self, href, etag=None):
         """
         removes the event from the db,
         returns nothing
+        :param etag: only there for compatiblity with vdirsyncer's Storage,
+                     we always delete
         """
         for dbname in [self.calendar + '_d', self.calendar + '_dt', self.calendar + '_m']:
             sql_s = 'DELETE FROM {0} WHERE href = ? ;'.format(dbname)
             self.sql_ex(sql_s, (href, ))
+
+    def list(self):
+        """
+        :returns: list of (href, etag)
+        """
+        return self.sql_ex('SELECT href, etag FROM {0}_m'.format(self.calendar))
 
     def get_all_href_from_db(self, accounts):
         """returns a list with all hrefs
@@ -499,9 +507,9 @@ class SQLiteDb(object):
         return list(set(self.hrefs_by_time_range_date(start, end) +
                     self.hrefs_by_time_range_datetime(start, end)))
 
-    def get_vevent_from_db(self, href, start=None, end=None,
-                           readonly=False, color=lambda x: x,
-                           unicode_symbols=True):
+    def get(self, href, start=None, end=None,
+            readonly=False, color=lambda x: x,
+            unicode_symbols=True):
         """returns the Event matching href, if start and end are given, a
         specific Event from a Recursion set is returned, the Event as saved in
         the db
@@ -523,6 +531,12 @@ class SQLiteDb(object):
                      readonly=readonly,
                      etag=result[0][1],
                      unicode_symbols=unicode_symbols)
+
+    def get_vevent_from_db(self, href, start=None, end=None,
+                           readonly=False, color=lambda x: x,
+                           unicode_symbols=True):
+        # TODO depracated, use `get()` instead
+        return self.get(href, start, end, readonly, color, unicode_symbols)
 
 
 def get_random_href():
