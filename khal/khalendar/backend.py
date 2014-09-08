@@ -352,30 +352,6 @@ class SQLiteDb(object):
         self.sql_ex(sql_s, stuple)
         self.conn.commit()
 
-    def update_href(self, oldhref, newhref, etag=''):
-        """updates old_href to new_href, can also alter etag,
-        see update() for an explanation of these parameters"""
-        stuple = (newhref, etag, oldhref)
-        sql_s = 'UPDATE {0} SET href = ?, etag = ?, \
-             WHERE href = ?;'.format(self.calendar + '_m')
-        self.sql_ex(sql_s, stuple)
-        for dbname in [self.calendar + '_d', self.calendar + '_dt']:
-            sql_s = 'UPDATE {0} SET href = ? WHERE href = ?;'.format(dbname)
-            self.sql_ex(sql_s, (newhref, oldhref))
-
-    def href_exists(self, href):
-        """returns True if href already exists in db
-
-        :param href: href
-        :type href: str()
-        :returns: True or False
-        """
-        sql_s = 'SELECT href FROM {1} WHERE href = ?;'.format(self.calendar)
-        if len(self.sql_ex(sql_s, (href, ))) == 0:
-            return False
-        else:
-            return True
-
     def get_etag(self, href):
         """get etag for href
 
@@ -406,15 +382,6 @@ class SQLiteDb(object):
         :returns: list of (href, etag)
         """
         return self.sql_ex('SELECT href, etag FROM {0}_m'.format(self.calendar))
-
-    def get_all_href_from_db(self, accounts):
-        """returns a list with all hrefs
-        """
-        result = list()
-        for account in accounts:
-            hrefs = self.sql_ex('SELECT href FROM {0}'.format(self.calendar + '_m'))
-            result = result + [(href[0], account) for href in hrefs]
-        return result
 
     def get_time_range(self, start, end, color='', readonly=False,
                        unicode_symbols=True, show_deleted=True):
