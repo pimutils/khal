@@ -3,10 +3,15 @@ Changelog
 All notable changes to this project should be documented here.
 For more detailed information have a look at the git log.
 
-0.4.0
+0.3.1
 -----
 not released yet
 
+* FIX: in some cases non-ascii characters were printed even if unicode_symbols
+  is set to False in the config
+* FIX: events with different start and end timezones are now properly exported
+  (the end timezone was disregarded when building an icalendar, but since
+  timezones cannot be edited anyway, this shouldn't have caused any problems)
 * FIX: calendars marked as read-only in the configuration file should now really
   be read-only
 

@@ -43,23 +43,6 @@ from .exceptions import UnsupportedFeatureError, ReadOnlyCalendarError
 logger = log.logger
 
 
-class BaseCalendar(object):
-
-    """base class for Calendar and CalendarCollection"""
-
-    def get_by_time_range(self, start, end):
-        raise NotImplementedError
-
-    def get_allday_by_time_range(self, start, end):
-        raise NotImplementedError
-
-    def get_datetime_by_time_range(self, start, end):
-        raise NotImplementedError
-
-    def sync(self):
-        raise NotImplementedError
-
-
 class Calendar(object):
 
     def __init__(self, name, dbpath, path, readonly=False, color='',

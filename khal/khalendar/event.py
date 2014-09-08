@@ -106,11 +106,13 @@ class Event(object):
             self.rangestr = u'\N{Left right arrow} '
             self.rangestopstr = u'\N{Rightwards arrow to bar} '
             self.rangestartstr = u'\N{Rightwards arrow from bar} '
+            self.rightarrow = u'\N{Rightwards arrow}'
         else:
             self.recurstr = u' R'
             self.rangestr = u' <->'
             self.rangestopstr = u' ->|'
             self.rangestartstr = u' |->'
+            self.rightarrow = u'->'
 
         if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
             self.allday = False
@@ -177,10 +179,12 @@ class Event(object):
 
     def to_ical(self):
         calendar = self._create_calendar()
-        if hasattr(self.start, 'tzinfo'):
+        if hasattr(self.vevent['DTSTART'].dt, 'tzinfo'):
             tzs = [self.start.tzinfo]
-            if self.end.tzinfo != self.start.tzinfo:
-                tzs.append(self.end.tzinfo)
+            if 'DTEND' in self.vevent.keys() and \
+                    hasattr(self.vevent['DTEND'].dt, 'tzinfo') and \
+                    self.vevent['DTSTART'].dt.tzinfo != self.vevent['DTEND'].dt.tzinfo:
+                tzs.append(self.vevent['DTEND'].dt.tzinfo)
             for tzinfo in tzs:
                 timezone = self._create_timezone(tzinfo)
                 calendar.add_component(timezone)
@@ -189,6 +193,18 @@ class Event(object):
         return calendar.to_ical()
 
     def compact(self, day, timeformat='%H:%M'):
+        """
+        returns a short description of the event
+
+        :param day: print information in regards to this day, if the event
+                    starts and ends on this day, the start and end time will be
+                    given (only the description for all day events), otherwise
+                    arrows will indicate if the events started before `day`
+                    and/or lasts longer.
+        :type day: datetime.date
+        :return: compact description of Event
+        :rtype: unicode()
+        """
         if self.allday:
             compact = self._compact_allday(day)
         else:
@@ -200,33 +216,32 @@ class Event(object):
             recurstr = self.recurstr
         else:
             recurstr = ''
-        if self.start < day and self.end > day + datetime.timedelta(days=1):
-            # event started in the past and goes on longer than today:
+        if day < self.start or day + datetime.timedelta(days=1) > self.end:
+            raise ValueError('please supply a `day` this event is scheduled on')
+        elif self.start < day and self.end > day + datetime.timedelta(days=1):
+            # event starts before and goes on longer than `day`:
             rangestr = self.rangestr
-            pass
         elif self.start < day:
-            # event started in past
+            # event started before `day`
             rangestr = self.rangestopstr
-            pass
-
         elif self.end > day + datetime.timedelta(days=1):
-            # event goes on longer than today
+            # event goes on longer than `day`
             rangestr = self.rangestartstr
-        else:
+        elif self.start == day and self.end - datetime.timedelta(days=1) == day:
+            # only on `day`
             rangestr = ''
         return rangestr + self.summary + recurstr
 
     def _compact_datetime(self, day, timeformat='%M:%H'):
         """compact description of this event
 
-        TODO: explain day param
-
-        :param day:
-        :type day: datetime.date
+        see compact() for description of `day`
 
         :return: compact description of Event
         :rtype: unicode()
         """
+        if day < self.start.date() or day > self.end.date():
+            raise ValueError('please supply a `day` this event is scheduled on')
         start = datetime.datetime.combine(day, datetime.time.min)
         end = datetime.datetime.combine(day, datetime.time.max)
         local_start = self.local_tz.localize(start)
@@ -237,12 +252,12 @@ class Event(object):
             recurstr = ''
         tostr = '-'
         if self.start < local_start:
-            startstr = u'→ '
+            startstr = self.rightarrow + ' '
             tostr = ''
         else:
             startstr = self.start.strftime(timeformat)
         if self.end > local_end:
-            endstr = u' → '
+            endstr = self.rightarrow + ' '
             tostr = ''
         else:
             endstr = self.end.strftime(timeformat)

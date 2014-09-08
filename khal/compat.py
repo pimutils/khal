@@ -35,12 +35,12 @@ def to_bytes(string, *args, **kwargs):
     return string
 
 
-if sys.version_info[0] == 2:
+if sys.version_info[0] == 2:  # pragma: nocover
     unicode_type = unicode
     bytes_type = str
     to_native = to_bytes
     iteritems = lambda d, *args, **kwargs: iter(d.iteritems(*args, **kwargs))
-else:
+else:  # pragma: nocover
     unicode_type = str
     bytes_type = bytes
     to_native = to_unicode
