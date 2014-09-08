@@ -65,6 +65,27 @@ class Calendar(object):
     def __init__(self, name, dbpath, path, readonly=False, color='',
                  unicode_symbols=True, default_tz=None,
                  local_tz=None, debug=True):
+        """
+        :param name: the name of the calendar
+        :type name: str
+        :param dbpath: path where the local chaching db should be saved
+        :type dbpath: str
+        :param readonly: if True, this Calendar cannot be modified
+        :type readonly: bool
+        :param color: the color which this calendar's events should be
+                      printed in
+        :type color: str
+        :param unicode_symbols: if True, unicode symbols will be used for
+                                representing this calendars's events properties
+        :type unicode_symbols: bool
+        :param default_tz: timezone used by default
+        :tpye default_tz: pytz.timezone
+        :param local_tz: the timezone this calendar's event's times should be
+                         shown in
+        :type local_tz: pytz.timezone
+        :param debug: if True, some debugging information will be printed
+        :type debug: bool
+        """
 
         self._default_tz = default_tz
         self._local_tz = default_tz if local_tz is None else local_tz
