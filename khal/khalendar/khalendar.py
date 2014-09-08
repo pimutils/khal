@@ -107,7 +107,7 @@ class Calendar(object):
             self._unicode_symbols, show_deleted)
 
     def get_event(self, href):
-        return self._dbtool.get_vevent_from_db(
+        return self._dbtool.get(
             href, color=self.color, readonly=self._readonly,
             unicode_symbols=self._unicode_symbols)
 

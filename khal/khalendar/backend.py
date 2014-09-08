@@ -436,12 +436,12 @@ class SQLiteDb(object):
             start = pytz.UTC.localize(
                 datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
-            event = self.get_vevent_from_db(href,
-                                            start=start,
-                                            end=end,
-                                            color=color,
-                                            readonly=readonly,
-                                            unicode_symbols=unicode_symbols)
+            event = self.get(href,
+                             start=start,
+                             end=end,
+                             color=color,
+                             readonly=readonly,
+                             unicode_symbols=unicode_symbols)
             event_list.append(event)
         return event_list
 
@@ -466,12 +466,12 @@ class SQLiteDb(object):
             end = time.strptime(str(end), '%Y%m%d')
             start = datetime.date(start.tm_year, start.tm_mon, start.tm_mday)
             end = datetime.date(end.tm_year, end.tm_mon, end.tm_mday)
-            event = self.get_vevent_from_db(href,
-                                            start=start,
-                                            end=end,
-                                            color=color,
-                                            readonly=readonly,
-                                            unicode_symbols=unicode_symbols)
+            event = self.get(href,
+                             start=start,
+                             end=end,
+                             color=color,
+                             readonly=readonly,
+                             unicode_symbols=unicode_symbols)
             event_list.append(event)
         return event_list
 
@@ -498,13 +498,7 @@ class SQLiteDb(object):
                      calendar=self.calendar,
                      readonly=readonly,
                      etag=result[0][1],
-                     unicode_symbols=unicode_symbols)
-
-    def get_vevent_from_db(self, href, start=None, end=None,
-                           readonly=False, color=lambda x: x,
-                           unicode_symbols=True):
-        # TODO depracated, use `get()` instead
-        return self.get(href, start, end, readonly, color, unicode_symbols)
+                     unicode_symbols=unicode_symbols), result[0][1]
 
 
 def get_random_href():
