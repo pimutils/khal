@@ -5,8 +5,11 @@ For more detailed information have a look at the git log.
 
 0.3.1
 -----
-not released yet
+released on 2014-09-08
 
+* FIX: events deleted in the vdir are not shown anymore in khal. You might want
+  to delete your local database file, if you have deleted any events on the
+  server.
 * FIX: in some cases non-ascii characters were printed even if unicode_symbols
   is set to False in the config
 * FIX: events with different start and end timezones are now properly exported

@@ -1,7 +1,7 @@
 News
 ====
 
-Below is a list of new releases and other khal related news. Both is also
+Below is a list of new releases and other khal related news. This is also
 available as an `rss feed <https://lostpackets.de/khal/index.rss>`_ |rss|.
 
  .. |rss| image:: images/rss.png
@@ -12,6 +12,7 @@ available as an `rss feed <https://lostpackets.de/khal/index.rss>`_ |rss|.
     :title: khal news
     :link: http://lostpackets.de/khal/
 
+    news/khal031
     news/khal03
     news/khal02
     news/khal011

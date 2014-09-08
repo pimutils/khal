@@ -9,10 +9,10 @@ import warnings
 from setuptools import setup
 
 MAJOR = 0
-MINOR = 4
-PATCH = 0
+MINOR = 3
+PATCH = 1
 
-RELEASE = False
+RELEASE = True
 
 VERSION = "{0}.{1}.{2}".format(MAJOR, MINOR, PATCH)
 
