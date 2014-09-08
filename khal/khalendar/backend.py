@@ -498,7 +498,7 @@ class SQLiteDb(object):
                      calendar=self.calendar,
                      readonly=readonly,
                      etag=result[0][1],
-                     unicode_symbols=unicode_symbols), result[0][1]
+                     unicode_symbols=unicode_symbols)
 
 
 def get_random_href():
