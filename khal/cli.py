@@ -53,6 +53,8 @@ def _calendar_select_callback(ctx, option, calendars):
         return
     if 'calendar_selection' in ctx.obj:
         raise click.UsageError('Can\'t use both -a and -d.')
+    if not isinstance(calendars, tuple):
+        calendars = (calendars,)
 
     mode = option.name
     selection = ctx.obj['calendar_selection'] = set()
