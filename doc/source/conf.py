@@ -14,7 +14,14 @@
 
 import sys
 import os
-from khal import __version__
+
+try:
+    from khal import __version__
+except ImportError:
+    raise ImportError(
+        'Khal needs to be installed to correctly infer its version. '
+        'Please run `python setup.py develop` before building docs. '
+    )
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
