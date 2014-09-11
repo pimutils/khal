@@ -76,7 +76,7 @@ from .event import Event
 from . import datetimehelper
 from .. import log
 from ..exceptions import Error
-from exceptions import UnsupportedRruleExceptionError
+from .exceptions import UnsupportedRruleExceptionError
 
 logger = log.logger
 

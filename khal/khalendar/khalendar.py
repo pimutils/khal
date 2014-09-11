@@ -235,7 +235,6 @@ class CalendarCollection(object):
 
     def append(self, calendar):
         self._calnames[calendar.name] = calendar
-        self.calendars.append(calendar)
 
     def get_by_time_range(self, start, end):
         events = list()
