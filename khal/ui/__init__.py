@@ -571,16 +571,19 @@ class EventDisplay(EventViewer):
                     urwid.Text('From: ' + startstr + ' to: ' + endstr))
 
         else:
-            startstr = event.start.strftime(self.conf['locale']['dateformat'] +
-                                            ' ' + self.conf['locale']['timeformat'])
+            startstr = event.start.strftime(
+                '{} {}'.format(self.conf['locale']['dateformat'],
+                               self.conf['locale']['timeformat'])
+            )
             if event.start.date == event.end.date:
                 endstr = event.end.strftime(self.conf['locale']['timeformat'])
             else:
-                endstr = event.end.strftime(self.conf['locale']['dateformat'] +
-                                            ' ' +
-                                            self.conf['locale']['timeformat'])
-                lines.append(urwid.Text('From: ' + startstr +
-                                        ' To: ' + endstr))
+                endstr = event.end.strftime(
+                    '{} {}'.format(self.conf['locale']['dateformat'],
+                                   self.conf['locale']['timeformat'])
+                )
+                lines.append(urwid.Text('From: {} To: {}'
+                                        .format(startstr, endstr)))
 
         # resource
         lines.append(urwid.Text('Calendar: ' + event.calendar))

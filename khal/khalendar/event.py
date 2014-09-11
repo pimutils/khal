@@ -181,10 +181,14 @@ class Event(object):
         calendar = self._create_calendar()
         if hasattr(self.vevent['DTSTART'].dt, 'tzinfo'):
             tzs = [self.start.tzinfo]
-            if 'DTEND' in self.vevent.keys() and \
-                    hasattr(self.vevent['DTEND'].dt, 'tzinfo') and \
-                    self.vevent['DTSTART'].dt.tzinfo != self.vevent['DTEND'].dt.tzinfo:
+            if (
+                'DTEND' in self.vevent and
+                hasattr(self.vevent['DTEND'].dt, 'tzinfo') and
+                (self.vevent['DTSTART'].dt.tzinfo !=
+                 self.vevent['DTEND'].dt.tzinfo)
+            ):
                 tzs.append(self.vevent['DTEND'].dt.tzinfo)
+
             for tzinfo in tzs:
                 timezone = self._create_timezone(tzinfo)
                 calendar.add_component(timezone)
@@ -217,7 +221,8 @@ class Event(object):
         else:
             recurstr = ''
         if day < self.start or day + datetime.timedelta(days=1) > self.end:
-            raise ValueError('please supply a `day` this event is scheduled on')
+            raise ValueError(
+                'please supply a `day` this event is scheduled on')
         elif self.start < day and self.end > day + datetime.timedelta(days=1):
             # event starts before and goes on longer than `day`:
             rangestr = self.rangestr
@@ -227,7 +232,7 @@ class Event(object):
         elif self.end > day + datetime.timedelta(days=1):
             # event goes on longer than `day`
             rangestr = self.rangestartstr
-        elif self.start == day and self.end - datetime.timedelta(days=1) == day:
+        elif self.start == self.end - datetime.timedelta(days=1) == day:
             # only on `day`
             rangestr = ''
         return rangestr + self.summary + recurstr
@@ -241,7 +246,8 @@ class Event(object):
         :rtype: unicode()
         """
         if day < self.start.date() or day > self.end.date():
-            raise ValueError('please supply a `day` this event is scheduled on')
+            raise ValueError(
+                'please supply a `day` this event is scheduled on')
         start = datetime.datetime.combine(day, datetime.time.min)
         end = datetime.datetime.combine(day, datetime.time.max)
         local_start = self.local_tz.localize(start)

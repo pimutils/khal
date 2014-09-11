@@ -87,7 +87,8 @@ def get_agenda(collection, dateformat, longdateformat, dates=[],
             sys.exit(1)
 
     if days is not None:
-        daylist = [date + datetime.timedelta(days=one) for one in range(days) for date in dates]
+        daylist = [date + datetime.timedelta(days=one)
+                   for one in range(days) for date in dates]
         daylist.sort()
 
     daylist = construct_daynames(daylist, longdateformat)

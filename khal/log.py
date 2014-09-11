@@ -50,6 +50,7 @@ class ColorFormatter(logging.Formatter):
 
 
 class ClickStream(object):
+
     def write(self, string):
         click.echo(string, file=sys.stderr, nl=False)
 

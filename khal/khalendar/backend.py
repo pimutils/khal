@@ -359,7 +359,8 @@ class SQLiteDb(object):
         return: etag
         rtype: str()
         """
-        sql_s = 'SELECT etag FROM {0} WHERE href=(?);'.format(self.calendar + '_m')
+        sql_s = ('SELECT etag FROM {0} WHERE href=(?);'
+                 .format(self.calendar + '_m'))
         try:
             etag = self.sql_ex(sql_s, (href,))[0][0]
             return etag
@@ -373,7 +374,9 @@ class SQLiteDb(object):
         :param etag: only there for compatiblity with vdirsyncer's Storage,
                      we always delete
         """
-        for dbname in [self.calendar + '_d', self.calendar + '_dt', self.calendar + '_m']:
+        for dbname in [self.calendar + '_d',
+                       self.calendar + '_dt',
+                       self.calendar + '_m']:
             sql_s = 'DELETE FROM {0} WHERE href = ? ;'.format(dbname)
             self.sql_ex(sql_s, (href, ))
 
@@ -381,7 +384,8 @@ class SQLiteDb(object):
         """
         :returns: list of (href, etag)
         """
-        return self.sql_ex('SELECT href, etag FROM {0}_m'.format(self.calendar))
+        return self.sql_ex('SELECT href, etag FROM {0}_m'
+                           .format(self.calendar))
 
     def get_time_range(self, start, end, show_deleted=True):
         """returns

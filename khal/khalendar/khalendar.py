@@ -221,7 +221,8 @@ class CalendarCollection(object):
 
     @property
     def writable_names(self):
-        return [cal for cal in self._calnames if not self._calnames[cal]._readonly]
+        return [cal for cal in self._calnames
+                if not self._calnames[cal]._readonly]
 
     @property
     def default_calendar_name(self):

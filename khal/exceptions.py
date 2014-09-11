@@ -22,13 +22,18 @@
 
 
 class Error(Exception):
+
     """base class for all of khal's Exceptions"""
     pass
 
+
 class FatalError(Error):
+
     """execution cannot continue"""
     pass
 
+
 class UnsupportedFeatureError(Error):
+
     """something Failed but we know why"""
     pass

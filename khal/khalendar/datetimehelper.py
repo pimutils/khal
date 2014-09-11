@@ -83,7 +83,7 @@ def expand(vevent, default_tz, href=''):
     else:
         dtstartl = [vevent['DTSTART'].dt]
 
-    #include explicitly specified recursion dates
+    # include explicitly specified recursion dates
     if 'RDATE' in vevent:
         if not isinstance(vevent['RDATE'], list):
             rdates = [vevent['RDATE']]
@@ -93,7 +93,7 @@ def expand(vevent, default_tz, href=''):
         rdates = localize_strip_tz(rdates, events_tz)
         dtstartl += rdates
 
-    #remove excluded dates
+    # remove excluded dates
     if 'EXDATE' in vevent:
         if not isinstance(vevent['EXDATE'], list):
             exdates = [vevent['EXDATE']]
@@ -146,7 +146,7 @@ def localize_strip_tz(dates, timezone):
     """converts a list of dates to timezone, than removes tz info"""
     outdates = []
     for one_date in dates:
-        if hasattr(one_date, 'tzinfo') and not one_date.tzinfo is None:
+        if hasattr(one_date, 'tzinfo') and one_date.tzinfo is not None:
             one_date = one_date.astimezone(timezone)
             one_date = one_date.replace(tzinfo=None)
         outdates.append(one_date)

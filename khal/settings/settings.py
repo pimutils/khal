@@ -24,7 +24,8 @@
 import os
 import sys
 
-from configobj import ConfigObj, flatten_errors, get_extra_values, ConfigObjError
+from configobj import ConfigObj, flatten_errors, get_extra_values, \
+    ConfigObjError
 from validate import Validator
 import xdg.BaseDirectory
 

@@ -24,7 +24,9 @@ from ..exceptions import UnsupportedFeatureError
 
 
 class UnsupportedRruleExceptionError(UnsupportedFeatureError):
+
     """we do not support exceptions that do not delete events yet"""
+
     def __init__(self, message=''):
         x = 'This kind of recurrence exception is currently unsupported'
         if message:
@@ -33,4 +35,6 @@ class UnsupportedRruleExceptionError(UnsupportedFeatureError):
 
 
 class ReadOnlyCalendarError(Exception):
-    """this calendar is readonly and should not be modifiable from within khal"""
+
+    """this calendar is readonly and should not be modifiable from within
+    khal"""
