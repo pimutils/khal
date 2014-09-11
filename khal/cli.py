@@ -86,8 +86,6 @@ def build_collection(ctx):
     conf = ctx.obj['conf']
     collection = khalendar.CalendarCollection()
     selection = ctx.obj.get('calendar_selection', None)
-    if selection is not None:
-        print(selection)
     for name, cal in conf['calendars'].items():
         if selection is None or name in ctx.obj['calendar_selection']:
             collection.append(khalendar.Calendar(
