@@ -98,8 +98,6 @@ class SQLiteDb(object):
     and of parameters named "accountS" should be an iterable like list()
     """
 
-    _calendars = []
-
     def __init__(self, calendar, db_path, local_tz, default_tz,
                  color=None, readonly=False, unicode_symbols=True,
                  debug=False):
@@ -119,10 +117,7 @@ class SQLiteDb(object):
         self.debug = debug
         self._create_default_tables()
         self._check_table_version()
-
-        if not self.calendar in self._calendars or db_path == ':memory:':
-                self.create_account_table()
-                self._calendars.append(self.calendar)
+        self.create_account_table()
 
     def __del__(self):
         self.conn.close()
