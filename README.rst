@@ -22,11 +22,9 @@ Features
 - fast and easy way to add new events
 - ikhal (interactive khal) lets you browse and edit calendars and events
 - support for recurring events is not complete yet, they cannot be deleted or
-  edited and some recursion patterns are not understood yet
+  edited and some recursion patterns are not understood
 - you cannot edit the timezones of events
-- khal should run on all major
-  operating systems [1]_ (has been tested on FreeBSD and Debian GNU/Linux)
-
+- khal should run on all major operating systems [1]_
 
 .. [1] except for Microsoft Windows
 
@@ -34,8 +32,8 @@ Feedback
 --------
 Please do provide feedback if *khal* works for you or even more importantly if
 it doesn't. The preferred way to get in contact (especially if something isn't
-working) is via github, otherwise you can reach me (the original author via
-email at khal (at) lostpackets (dot) de , by jabber/XMPP at geier (at) jabber
+working) is via github, otherwise you can reach the original author via
+email at khal (at) lostpackets (dot) de or via jabber/XMPP at geier (at) jabber
 (dot) ccc (dot) de.
 
 .. _vdir: https://github.com/untitaker/vdir
