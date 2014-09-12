@@ -179,7 +179,7 @@ def _get_cli():
     @click.option('--include-calendar', '-a', help=('The calendar to use.'),
                   expose_value=False, callback=_calendar_select_callback,
                   metavar='CAL')
-    @click.argument('description', nargs=-1)
+    @click.argument('description', nargs=-1, required=True)
     @click.pass_context
     def new(ctx, description):
         controllers.NewFromString(

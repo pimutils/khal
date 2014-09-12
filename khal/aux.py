@@ -20,6 +20,9 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+"""this module contains some helper functions converting strings or list of
+strings to date(time) or event objects"""
+
 from .compat import to_unicode
 
 from datetime import date, datetime, timedelta
