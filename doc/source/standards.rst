@@ -7,7 +7,9 @@ are listed below.
 
 Events with neither END nor DURATION
 ------------------------------------
-While the RFC states
+
+While the RFC states::
+
    A calendar entry with a "DTSTART" property but no "DTEND"
    property does not take up any time. It is intended to represent
    an event that is associated with a given calendar date and time
