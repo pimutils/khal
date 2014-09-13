@@ -42,8 +42,10 @@ except ImportError:
     from io import StringIO
 
 
-days_option = click.option('--days', default=None, type=int)
-events_option = click.option('--events', default=None, type=int)
+days_option = click.option('--days', default=None, type=int,
+                           help='How many days to include.')
+events_option = click.option('--events', default=None, type=int,
+                             help='How many events to include.')
 dates_arg = click.argument('dates', nargs=-1)
 time_args = lambda f: dates_arg(events_option(days_option(f)))
 
@@ -82,6 +84,16 @@ def calendar_selector(f):
     return d(a(f))
 
 
+def global_options(f):
+    config = click.option('--config', '-c', default=None, metavar='PATH',
+                  help='The config file to use.')
+    verbose = click.option('--verbose', '-v', is_flag=True,
+                  help='Output debugging information.')
+    version = click.version_option(version=__version__)
+
+    return config(verbose(version(f)))
+
+
 def build_collection(ctx):
     conf = ctx.obj['conf']
     collection = khalendar.CalendarCollection()
@@ -103,40 +115,40 @@ def build_collection(ctx):
     return collection
 
 
+def prepare_context(ctx, config, verbose):
+    if ctx.obj is not None:
+        return
+
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+
+    ctx.obj = {}
+    ctx.obj['conf'] = conf = get_config(config)
+
+    out = StringIO()
+    conf.write(out)
+    logger.debug('Using config:')
+    logger.debug(out.getvalue())
+
+    if conf is None:
+        raise click.UsageError('Invalid config file, exiting.')
+
+
 def _get_cli():
     @click.group(invoke_without_command=True)
-    @click.option('--config', '-c', default=None, metavar='PATH',
-                  help='The config file to use.')
-    @click.option('--verbose', '-v', is_flag=True,
-                  help='Output debugging information.')
-    @click.version_option(version=__version__)
+    @global_options
     @click.pass_context
     def cli(ctx, config, verbose):
         # setting the process title so it looks nicer in ps
         # shows up as 'khal' under linux and as 'python: khal (python2.7)'
         # under FreeBSD, which is still nicer than the default
         setproctitle('khal')
-
-        if verbose:
-            logger.setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.INFO)
-
-        if ctx.obj is None:
-            ctx.obj = {}
-
-        ctx.obj['conf'] = conf = get_config(config)
-
-        out = StringIO()
-        conf.write(out)
-        logger.debug('Using config:')
-        logger.debug(out.getvalue())
-
-        if conf is None:
-            raise click.UsageError('Invalid config file, exiting.')
+        prepare_context(ctx, config, verbose)
 
         if not ctx.invoked_subcommand:
-            command = conf['default']['default_command']
+            command = ctx.obj['conf']['default']['default_command']
             if command:
                 ctx.invoke(cli.commands[command])
             else:
@@ -148,6 +160,7 @@ def _get_cli():
     @calendar_selector
     @click.pass_context
     def calendar(ctx, days, events, dates):
+        '''Print calendar with agenda.'''
         controllers.Calendar(
             build_collection(ctx),
             date=dates,
@@ -164,6 +177,7 @@ def _get_cli():
     @calendar_selector
     @click.pass_context
     def agenda(ctx, days, events, dates):
+        '''Print agenda.'''
         controllers.Agenda(
             build_collection(ctx),
             date=dates,
@@ -182,6 +196,7 @@ def _get_cli():
     @click.argument('description', nargs=-1, required=True)
     @click.pass_context
     def new(ctx, description):
+        '''Create a new event.'''
         controllers.NewFromString(
             build_collection(ctx),
             ctx.obj['conf'],
@@ -192,19 +207,26 @@ def _get_cli():
     @calendar_selector
     @click.pass_context
     def interactive(ctx):
+        '''Interactive UI. Also launchable via `ikhal`.'''
+        controllers.Interactive(build_collection(ctx), ctx.obj['conf'])
+
+    @click.command()
+    @calendar_selector
+    @global_options
+    @click.pass_context
+    def interactive_cli(ctx, config, verbose):
+        '''Interactive UI. Also launchable via `khal interactive`.'''
+        prepare_context(ctx, config, verbose)
         controllers.Interactive(build_collection(ctx), ctx.obj['conf'])
 
     @cli.command()
     @calendar_selector
     @click.pass_context
     def printcalendars(ctx):
+        '''List all calendars.'''
         click.echo('\n'.join(build_collection(ctx).names))
 
-    return cli
+    return cli, interactive_cli
 
 
-main_khal = _get_cli()
-
-
-def main_ikhal(args=sys.argv[1:]):
-    main_khal(['interactive'] + args)
+main_khal, main_ikhal = _get_cli()
