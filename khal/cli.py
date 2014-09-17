@@ -21,7 +21,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 import logging
-import sys
 
 try:
     from setproctitle import setproctitle
@@ -86,9 +85,9 @@ def calendar_selector(f):
 
 def global_options(f):
     config = click.option('--config', '-c', default=None, metavar='PATH',
-                  help='The config file to use.')
+                          help='The config file to use.')
     verbose = click.option('--verbose', '-v', is_flag=True,
-                  help='Output debugging information.')
+                           help='Output debugging information.')
     version = click.version_option(version=__version__)
 
     return config(verbose(version(f)))
