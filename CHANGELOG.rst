@@ -3,6 +3,13 @@ Changelog
 All notable changes to this project should be documented here.
 For more detailed information have a look at the git log.
 
+0.4.0
+-----
+not yet released
+
+* new dependency: click>3.2
+* removed dependency: docopt
+
 0.3.1
 -----
 released on 2014-09-08
