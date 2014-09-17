@@ -147,10 +147,11 @@ class Agenda(object):
 
 class NewFromString(object):
 
-    def __init__(self, collection, conf, date_list):
+    def __init__(self, collection, conf, date_list, location=None):
         try:
             event = aux.construct_event(
                 date_list,
+                location=location,
                 **conf['locale'])
         except FatalError:
             sys.exit(1)

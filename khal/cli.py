@@ -192,14 +192,17 @@ def _get_cli():
     @click.option('--include-calendar', '-a', help=('The calendar to use.'),
                   expose_value=False, callback=_calendar_select_callback,
                   metavar='CAL')
+    @click.option('--location', '-l',
+                  help=('The location of the new event.'))
     @click.argument('description', nargs=-1, required=True)
     @click.pass_context
-    def new(ctx, description):
+    def new(ctx, description, location):
         '''Create a new event.'''
         controllers.NewFromString(
             build_collection(ctx),
             ctx.obj['conf'],
-            list(description)
+            list(description),
+            location=location,
         )
 
     @cli.command()
