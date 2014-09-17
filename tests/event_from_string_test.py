@@ -250,7 +250,6 @@ def test_description():
                                 **kwargs_de).to_ical()
         assert event == vevent
 
-
 test_set_description_and_location = _create_testcases(
     # now events where the start date has to be inferred, too
     # today
@@ -262,8 +261,8 @@ test_set_description_and_location = _create_testcases(
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'DESCRIPTION:please describe the event',
+      'LOCATION:in the office',
       'END:VEVENT']))
-
 
 
 def test_description_and_location():
@@ -272,5 +271,6 @@ def test_description_and_location():
         event = construct_event(data_list.split(),
                                 description='please describe the event',
                                 _now=_now,
+                                location='in the office',
                                 **kwargs_de).to_ical()
         assert event == vevent

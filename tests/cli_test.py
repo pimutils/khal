@@ -63,6 +63,7 @@ debug = 1
 path = {dbpath}
 '''
 
+
 def test_direct_modification(runner):
     runner = runner(command='NOPE')
 
