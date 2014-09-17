@@ -29,9 +29,10 @@ from configobj import ConfigObj, flatten_errors, get_extra_values, \
 from validate import Validator
 import xdg.BaseDirectory
 
+from exceptions import InvalidSettingsError
 from khal import __productname__
 from ..log import logger
-from .utils import is_timezone, config_checks, expand_path
+from .utils import is_timezone, config_checks, expand_path, expand_db_path
 
 DEFAULTSPATH = os.path.join(os.path.dirname(__file__), 'default.khal')
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
@@ -98,22 +99,29 @@ def get_config(config_path=None):
 
     fdict = {'timezone': is_timezone,
              'expand_path': expand_path,
+             'expand_db_path': expand_db_path,
              }
     validator = Validator(fdict)
     results = user_config.validate(validator, preserve_errors=True)
-    if not results:
-        for entry in flatten_errors(config, results):
-            # each entry is a tuple
-            section_list, key, error = entry
-            if key is not None:
-                section_list.append(key)
-            else:
-                section_list.append('[missing section]')
-            section_string = ', '.join(section_list)
-            if error is False:
-                error = 'Missing value or section.'
-            print(section_string, ' = ', error)
-        raise ValueError  # TODO own error class
+
+    abort = False
+    for section, subsection, error in flatten_errors(config, results):
+        abort = True
+        if isinstance(error, Exception):
+            logger.fatal(
+                'config error:\n'
+                'in [{}] {}: {}'.format(section[0], subsection, error))
+        else:
+            for key in error:
+                if isinstance(error[key], Exception):
+                    logger.fatal('config error:\nin {} {}: {}'.format(
+                        sectionize(section + [subsection]),
+                        key,
+                        str(error[key]))
+                    )
+
+    if abort or not results:
+        raise InvalidSettingsError()
 
     config.merge(user_config)
     config_checks(config)

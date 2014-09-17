@@ -5,7 +5,7 @@ import pytest
 
 from tzlocal import get_localzone
 
-from khal.settings import get_config
+from khal.settings import get_config, InvalidSettingsError
 
 PATH = __file__.rsplit('/', 1)[0] + '/configs/'
 
@@ -15,8 +15,8 @@ class TestSettings(object):
         config = get_config(PATH + 'simple.conf')
         assert config == {
             'calendars': {
-                'home': {'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False},
-                'work': {'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False},
+                'home': {'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False, 'color': ''},
+                'work': {'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False, 'color': ''},
             },
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
@@ -39,15 +39,15 @@ class TestSettings(object):
         }
 
     def test_nocalendars(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(InvalidSettingsError):
             get_config(PATH + 'nocalendars.conf')
 
     def test_small(self):
         config = get_config(PATH + 'small.conf')
         assert config == {
             'calendars': {
-                'home': {'path': os.path.expanduser('~/.calendars/home/'), 'color': 'green', 'readonly': False},
-                'work': {'path': os.path.expanduser('~/.calendars/work/'), 'readonly': True}},
+                'home': {'path': os.path.expanduser('~/.calendars/home/'), 'color': 'dark green', 'readonly': False},
+                'work': {'path': os.path.expanduser('~/.calendars/work/'), 'readonly': True, 'color': ''}},
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
                 'local_timezone': get_localzone(),

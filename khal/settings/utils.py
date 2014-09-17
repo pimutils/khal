@@ -28,6 +28,9 @@ import xdg
 from tzlocal import get_localzone
 from validate import VdtValueError
 
+from ..log import logger
+from exceptions import InvalidSettingsError
+
 
 def is_timezone(tzstring):
     """tries to convert tzstring into a pytz timezone
@@ -61,17 +64,19 @@ def test_default_calendar(config):
     if config['default']['default_calendar'] is None:
         config['default']['default_calendar'] = config['calendars'].keys()[0]
     elif config['default']['default_calendar'] not in config['calendars']:
-        print("in section [default] {} is not valid for 'default_calendar', "
-              "must be one of {}".format(config['default']['default_calendar'],
-                                         config['calendars'].keys())
-              )
-        raise ValueError  # TODO own error class
+        logger.fatal(
+            "in section [default] {} is not valid for 'default_calendar', "
+            "must be one of {}".format(config['default']['default_calendar'],
+                                       config['calendars'].keys())
+        )
+        raise InvalidSettingsError()
 
 
 def config_checks(config):
     """do some tests on the config we cannot do with configobj's validator"""
     if len(config['calendars'].keys()) < 1:
-        raise ValueError('Found no calendar in the config file')
+        logger.fatal('Found no calendar section in the config file')
+        raise InvalidSettingsError()
     test_default_calendar(config)
     config['sqlite']['path'] = expand_db_path(config['sqlite']['path'])
     if not config['locale']['default_timezone']:

@@ -21,6 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 import logging
+import sys
 
 try:
     from setproctitle import setproctitle
@@ -33,7 +34,7 @@ from khal import controllers
 from khal import khalendar
 from khal import __version__
 from khal.log import logger
-from khal.settings import get_config
+from khal.settings import get_config, InvalidSettingsError
 
 try:
     from StringIO import StringIO
@@ -124,7 +125,10 @@ def prepare_context(ctx, config, verbose):
         logger.setLevel(logging.INFO)
 
     ctx.obj = {}
-    ctx.obj['conf'] = conf = get_config(config)
+    try:
+        ctx.obj['conf'] = conf = get_config(config)
+    except InvalidSettingsError:
+        sys.exit(1)
 
     out = StringIO()
     conf.write(out)

@@ -13,7 +13,7 @@ path = expand_path(default=None)
 # khal will use this color for coloring this calendar's event. Depending on
 # your terminal emulator's settings, they might look different than what their
 # name implies.
-color = option('black', 'white', 'brown', 'yellow','dark grey', 'dark green', 'dark blue','light grey', 'light green', 'light blue','dark magenta', 'dark cyan', 'dark red','light magenta', 'light cyan', 'light red')
+color = option('black', 'white', 'brown', 'yellow','dark grey', 'dark green', 'dark blue','light grey', 'light green', 'light blue','dark magenta', 'dark cyan', 'dark red','light magenta', 'light cyan', 'light red', '', default='')
 
 # setting this to *True*, will keep khal from making any changes to this
 # calendar
