@@ -46,8 +46,7 @@ logger = log.logger
 class Calendar(object):
 
     def __init__(self, name, dbpath, path, readonly=False, color='',
-                 unicode_symbols=True, default_tz=None,
-                 local_tz=None, debug=True):
+                 unicode_symbols=True, default_tz=None, local_tz=None):
         """
         :param name: the name of the calendar
         :type name: str
@@ -66,8 +65,6 @@ class Calendar(object):
         :param local_tz: the timezone this calendar's event's times should be
                          shown in
         :type local_tz: pytz.timezone
-        :param debug: if True, some debugging information will be printed
-        :type debug: bool
         """
 
         self._default_tz = default_tz
@@ -75,7 +72,6 @@ class Calendar(object):
         self.name = name
         self.color = color
         self.path = os.path.expanduser(path)
-        self._debug = debug
         self._dbtool = backend.SQLiteDb(
             self.name,
             dbpath,
