@@ -218,7 +218,7 @@ class SQLiteDb(object):
         self.sql_ex(sql_s, stuple)
         logger.debug("made sure tables for {0} exists".format(self.calendar))
 
-    def update(self, vevent, href=None, etag=''):
+    def update(self, vevent, href, etag=''):
         """insert a new or update an existing card in the db
 
         This is mostly a wrapper around two SQL statements, doing some cleanup
@@ -261,8 +261,6 @@ class SQLiteDb(object):
         vevent = datetimehelper.sanitize(vevent)
 
         all_day_event = False
-        if href == '' or href is None:
-            href = get_random_href()
 
         # testing on datetime.date won't work as datetime is a child of date
         if not isinstance(vevent['DTSTART'].dt, datetime.datetime):

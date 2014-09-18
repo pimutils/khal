@@ -31,7 +31,6 @@ If you want to see how the sausage is made:
 """
 import os
 import os.path
-import traceback
 
 from vdirsyncer.storage import FilesystemStorage
 
@@ -115,16 +114,10 @@ class Calendar(object):
         if event.etag is None:
             self.new(event)
         else:
-            try:
-                self._storage.update(event.href, event, event.etag)
-                self._dbtool.update(event.vevent.to_ical(),
-                                    self.name,
-                                    event.href,
-                                    etag=event.etag)
-            except Exception as error:
-                logger.error('Failed to parse vcard {} from collection {} '
-                             'during update'.format(event.href, self.name))
-                logger.debug(traceback.format_exc(error))
+            self._storage.update(event.href, event, event.etag)
+            self._dbtool.update(event.vevent.to_ical(),
+                                event.href,
+                                etag=event.etag)
 
     def new(self, event):
         """save a new event to the database
@@ -135,16 +128,8 @@ class Calendar(object):
         if self._readonly:
             raise ReadOnlyCalendarError()
         event.href, event.etag = self._storage.upload(event)
-        try:
-            self._dbtool.update(event.to_ical(),
-                                href=event.href,
-                                etag=event.etag)
-            self._dbtool.set_ctag(self.local_ctag())
-        except Exception as error:
-            logger.error(
-                'Failed to parse vcard {} during new in collection '
-                '{}'.format(event.href, self.name))
-            logger.debug(traceback.format_exc(error))
+        self._dbtool.update(event.to_ical(), event.href, event.etag)
+        self._dbtool.set_ctag(self.local_ctag())
 
     def delete(self, event):
         """delete event from this collection
