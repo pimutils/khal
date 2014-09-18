@@ -64,7 +64,6 @@ from __future__ import print_function
 import calendar
 import datetime
 from os import makedirs, path
-import sys
 import sqlite3
 import time
 
@@ -162,8 +161,9 @@ class SQLiteDb(object):
             self.sql_ex('CREATE TABLE IF NOT EXISTS version (version INTEGER)')
             logger.debug("created version table")
         except Exception as error:
-            sys.stderr.write('Failed to connect to database,'
-                             'Unknown Error: ' + str(error) + "\n")
+            logger.fatal('Failed to connect to database,'
+                         'Unknown Error: {}'.format(error))
+            raise
         self.conn.commit()
 
         try:
@@ -175,8 +175,9 @@ class SQLiteDb(object):
                 )''')
             logger.debug("created accounts table")
         except Exception as error:
-            sys.stderr.write('Failed to connect to database,'
-                             'Unknown Error: ' + str(error) + "\n")
+            logger.fatal('Failed to connect to database,'
+                         'Unknown Error: {}'.format(error))
+            raise
         self.conn.commit()
         self._check_table_version()  # insert table version
 
