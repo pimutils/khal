@@ -119,9 +119,6 @@ class SQLiteDb(object):
         self._check_table_version()
         self.create_account_table()
 
-    def __del__(self):
-        self.conn.close()
-
     def _create_dbdir(self):
         """create the dbdir if it doesn't exist"""
         if self.db_path == ':memory:':
