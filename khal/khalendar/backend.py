@@ -218,8 +218,7 @@ class SQLiteDb(object):
         self.sql_ex(sql_s, stuple)
         logger.debug("made sure tables for {0} exists".format(self.calendar))
 
-    def update(self, vevent, href=None, etag='',
-               ignore_invalid_items=False):
+    def update(self, vevent, href=None, etag=''):
         """insert a new or update an existing card in the db
 
         This is mostly a wrapper around two SQL statements, doing some cleanup
@@ -228,10 +227,6 @@ class SQLiteDb(object):
         :param vevent: event to be inserted or updated. If this is a calendar
                        object, it will be searched for an event.
         :type vevent: unicode
-        :param ignore_invalid_items: If true, raise UpdateFailed if given
-                                     vevent is not a valid event or calendar
-                                     object. If false, don't do anything.
-        :type ignore_invalid_items: bool
         :param href: href of the card on the server, if this href already
                      exists in the db the card gets updated. If no href is
                      given, a random href is chosen and it is implied that this
@@ -254,10 +249,7 @@ class SQLiteDb(object):
                     events.append(component)
 
         if len(events) == 0:
-            if ignore_invalid_items:
-                return
-            else:
-                raise UpdateFailed(u'Could not find event in {}'.format(ical))
+            raise UpdateFailed(u'Could not find event in {}'.format(ical))
 
         elif len(events) > 1:
             if len(set([event['UID'] for event in events])):

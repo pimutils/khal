@@ -183,8 +183,7 @@ class Calendar(object):
         readonly"""
         event, etag = self._storage.get(href)
         try:
-            self._dbtool.update(event.raw, href=href, etag=etag,
-                                ignore_invalid_items=True)
+            self._dbtool.update(event.raw, href=href, etag=etag)
             return True
         except Exception as error:
             if not isinstance(error, UnsupportedFeatureError):
