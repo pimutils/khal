@@ -34,16 +34,12 @@ version:
 account:
     account (TEXT): name of the account
     resource (TEXT)
-    last_sync (TEXT)
-    etag (TEX)
+    ctag (TEX): *collection* tag, used to check if this account has been changed
+               this last usage
 
 $ACCOUNTNAME_m:  # as in master
     href (TEXT)
-    href (TEXT)
     etag (TEXT)
-    start (INT): start date of event (unix time)
-    end (INT): start date of event (unix time)
-    all_day (INT): 1 if event is 'all day event', 0 otherwise
     vevent (TEXT): the actual vcard
 
 $ACCOUNTNAME_d: #all day events
@@ -164,7 +160,6 @@ class SQLiteDb(object):
             self.cursor.execute('''CREATE TABLE IF NOT EXISTS accounts (
                 account TEXT NOT NULL UNIQUE,
                 resource TEXT NOT NULL,
-                last_sync TEXT,
                 ctag FLOAT
                 )''')
             logger.debug("created accounts table")
@@ -191,6 +186,7 @@ class SQLiteDb(object):
         result = self.cursor.fetchone()
 
         if(result[0] != 0):
+            logger.debug("tables for calendar {0} exist".format(self.calendar))
             return
         sql_s = """CREATE TABLE IF NOT EXISTS {0} (
                 href TEXT UNIQUE,
@@ -211,7 +207,7 @@ class SQLiteDb(object):
         sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
         stuple = (self.calendar, '')
         self.sql_ex(sql_s, stuple)
-        logger.debug("made sure tables for {0} exists".format(self.calendar))
+        logger.debug("created table for calendar {0}".format(self.calendar))
 
     def update(self, vevent, href, etag=''):
         """insert a new or update an existing card in the db
@@ -363,7 +359,7 @@ class SQLiteDb(object):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
-        :param deleted: include deleted events in returned lsit
+        :param show_deleted: include deleted events in returned lsit
         """
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
@@ -407,11 +403,8 @@ class SQLiteDb(object):
 
     def get(self, href, start=None, end=None):
         """returns the Event matching href, if start and end are given, a
-        specific Event from a Recursion set is returned, the Event as saved in
-        the db
-
-        All other parameters given to this function are handed over to the
-        Event.
+        specific Event from a Recursion set is returned, otherwise the Event
+        returned exactly as saved in the db
         """
         sql_s = 'SELECT vevent, etag FROM {0} WHERE href=(?)'.format(
             self.calendar + '_m')
