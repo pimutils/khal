@@ -20,7 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from ..exceptions import UnsupportedFeatureError
+from ..exceptions import UnsupportedFeatureError, Error, FatalError
 
 
 class UnsupportedRruleExceptionError(UnsupportedFeatureError):
@@ -34,7 +34,17 @@ class UnsupportedRruleExceptionError(UnsupportedFeatureError):
         UnsupportedFeatureError.__init__(self, x)
 
 
-class ReadOnlyCalendarError(Exception):
+class ReadOnlyCalendarError(Error):
 
     """this calendar is readonly and should not be modifiable from within
     khal"""
+
+
+class CouldNotCreateDbDir(FatalError):
+
+    """the db directory could not be created. Abort."""
+
+
+class UpdateFailed(Error):
+
+    """could not update the event in the database"""

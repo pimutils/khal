@@ -75,18 +75,12 @@ from .event import Event
 from . import datetimehelper
 from .. import log
 from ..exceptions import Error
-from .exceptions import UnsupportedRruleExceptionError
+from .exceptions import UnsupportedRruleExceptionError, CouldNotCreateDbDir, \
+    UpdateFailed
 
 logger = log.logger
 
-
 # TODO fix that event/vevent mess
-
-
-class UpdateFailed(Exception):
-
-    """raised if update not possible"""
-    pass
 
 
 class SQLiteDb(object):
@@ -431,11 +425,3 @@ class SQLiteDb(object):
                      calendar=self.calendar,
                      etag=result[0][1],
                      )
-
-
-class Failure(Exception):
-    pass
-
-
-class CouldNotCreateDbDir(Failure):
-    pass
