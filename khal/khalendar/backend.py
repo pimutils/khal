@@ -91,17 +91,26 @@ class UpdateFailed(Exception):
 
 
 class SQLiteDb(object):
+    """
+    This class should provide a caching database for a calendar, keeping raw
+    vevents in one table but allowing to retrieve events by dates (via the help
+    of some auxiliary tables)
 
-    """Querying the addressbook database
-
-    the type() of parameters named "account" should be something like str()
-    and of parameters named "accountS" should be an iterable like list()
+    :param calendar: the `name` of this calendar, if the same *name* and
+                     *dbpath* is given on next creation of an SQLiteDb object
+                     the same tables will be used
+    :type calendar: str
+    :param db_path: path where this sqlite database will be saved, if this is
+                    None, a place according to the XDG specifications will be
+                    chosen
+    :type db_path: str or None
+    :param local_tz: the local time zone
+    :type local_tz: pytz.timezone
+    :param default_tz: the default time zone
+    :type default_tz: pytz.timezone
     """
 
-    def __init__(self, calendar, db_path, local_tz, default_tz,
-                 color=None, readonly=False, unicode_symbols=True,
-                 debug=False):
-
+    def __init__(self, calendar, db_path, local_tz, default_tz):
         if db_path is None:
             db_path = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
         self.db_path = path.expanduser(db_path)
@@ -111,10 +120,6 @@ class SQLiteDb(object):
         self.default_tz = default_tz
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
-        self.color = color
-        self.readonly = readonly
-        self.unicode_symbols = unicode_symbols
-        self.debug = debug
         self._create_default_tables()
         self._check_table_version()
         self.create_account_table()
@@ -446,12 +451,10 @@ class SQLiteDb(object):
                      default_tz=self.default_tz,
                      start=start,
                      end=end,
-                     color=self.color,
                      href=href,
                      calendar=self.calendar,
-                     readonly=self.readonly,
                      etag=result[0][1],
-                     unicode_symbols=self.unicode_symbols)
+                     )
 
 
 def get_random_href():
