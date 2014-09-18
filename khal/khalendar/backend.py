@@ -432,17 +432,6 @@ class SQLiteDb(object):
                      )
 
 
-def get_random_href():
-    """returns a random href
-    """
-    import random
-    tmp_list = list()
-    for _ in xrange(3):
-        rand_number = random.randint(0, 0x100000000)
-        tmp_list.append("{0:x}".format(rand_number))
-    return "-".join(tmp_list).upper()
-
-
 class Failure(Exception):
     pass
 
