@@ -134,13 +134,11 @@ class Calendar(object):
         """
         if self._readonly:
             raise ReadOnlyCalendarError()
-        href, etag = self._storage.upload(event)
-        event.href = href
-        event.etag = etag
+        event.href, event.etag = self._storage.upload(event)
         try:
             self._dbtool.update(event.to_ical(),
-                                href=href,
-                                etag=etag)
+                                href=event.href,
+                                etag=event.etag)
             self._dbtool.set_ctag(self.local_ctag())
         except Exception as error:
             logger.error(
