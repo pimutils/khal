@@ -32,7 +32,8 @@ import xdg.BaseDirectory
 from exceptions import InvalidSettingsError
 from khal import __productname__
 from ..log import logger
-from .utils import is_timezone, config_checks, expand_path, expand_db_path
+from .utils import is_timezone, weeknumber_option, config_checks, \
+    expand_path, expand_db_path
 
 DEFAULTSPATH = os.path.join(os.path.dirname(__file__), 'default.khal')
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
@@ -100,6 +101,7 @@ def get_config(config_path=None):
     fdict = {'timezone': is_timezone,
              'expand_path': expand_path,
              'expand_db_path': expand_db_path,
+             'weeknumbers': weeknumber_option,
              }
     validator = Validator(fdict)
     results = user_config.validate(validator, preserve_errors=True)

@@ -11,6 +11,7 @@ datetimeformat= %Y-%m-%d %H:%M
 longdatetimeformat= %Y-%m-%d %H:%M
 
 firstweekday= 0
+weeknumbers= off
 
 [default]
 default_command = calendar

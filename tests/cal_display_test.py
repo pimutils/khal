@@ -89,7 +89,7 @@ def test_vertical_month():
 
     weno_str = vertical_month(month=12, year=2011,
                               today=datetime.date(2011, 12, 12),
-                              weeknumber=True)
+                              weeknumber='right')
     assert weno_str == example_weno
 
     we_start_su_str = vertical_month(

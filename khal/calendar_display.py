@@ -76,13 +76,18 @@ def vertical_month(month=datetime.date.today().month,
     :type year: int
     :param today: day highlighted, if non is given, current date is assumed
     :type today: datetime.date()
+    :param weeknumber: if not False the iso weeknumber will be shown for each
+                       week, if weeknumber is 'right' it will be shown in its
+                       own column, if it is 'left' it will be shown interleaved
+                       with the month names
+    :type weeknumber: str/bool
     :returns: calendar strings,  may also include some
               ANSI (color) escape strings
     :rtype: list() of str()
     """
 
     khal = list()
-    w_number = '    ' if weeknumber else ''
+    w_number = '    ' if weeknumber == 'right' else ''
     calendar.setfirstweekday(firstweekday)
     _calendar = calendar.Calendar(firstweekday)
     khal.append(bstring('    ' + calendar.weekheader(2) + ' ' + w_number))
@@ -92,10 +97,15 @@ def vertical_month(month=datetime.date.today().month,
             strweek = str_week(week, today)
             if new_month:
                 m_name = bstring(calendar.month_abbr[week[6].month].ljust(4))
+            elif weeknumber == 'left':
+                m_name = bstring(' {:2} '.format(getweeknumber(week[0])))
             else:
                 m_name = '    '
-            w_number = bstring(
-                ' ' + str(getweeknumber(week[0]))) if weeknumber else ''
+            if weeknumber == 'right':
+                w_number = bstring(' {}'.format(getweeknumber(week[0])))
+            else:
+                w_number = ''
+
             sweek = m_name + strweek + w_number
             if sweek != khal[-1]:
                 khal.append(sweek)

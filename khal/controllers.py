@@ -122,14 +122,14 @@ def get_agenda(collection, dateformat, longdateformat, dates=[],
 class Calendar(object):
 
     def __init__(self, collection, date=[], firstweekday=0, encoding='utf-8',
-                 **kwargs):
+                 weeknumber=False, **kwargs):
         term_width, _ = get_terminal_size()
         lwidth = 25
         rwidth = term_width - lwidth - 4
-        event_column = get_agenda(collection, dates=date, width=rwidth,
-                                  **kwargs)
+        event_column = get_agenda(
+            collection, dates=date, width=rwidth, **kwargs)
         calendar_column = calendar_display.vertical_month(
-            firstweekday=firstweekday)
+            firstweekday=firstweekday, weeknumber=weeknumber)
 
         rows = merge_columns(calendar_column, event_column)
         echo('\n'.join(rows).encode(encoding))

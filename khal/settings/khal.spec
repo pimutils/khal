@@ -65,6 +65,10 @@ datetimeformat = string(default='%d.%m. %H:%M')
 longdatetimeformat = string(default='%d.%m.%Y %H:%M')
 
 
+# Enable weeknumbers in `calendar` and `interactive` (ikhal) mode. As those are
+# iso weeknumbers, they only work properly if `firstweekday` is set to 0
+weeknumbers = weeknumbers(default='off')
+
 # The default section begins with a **[default]** tag. Some default values and
 # behaviours are set here.
 [default]

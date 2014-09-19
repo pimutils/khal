@@ -30,6 +30,7 @@ class TestSettings(object):
                 'firstweekday': 0,
                 'encoding': 'utf-8',
                 'unicode_symbols': True,
+                'weeknumbers': False,
             },
             'default': {
                 'default_command': 'calendar',
@@ -60,6 +61,7 @@ class TestSettings(object):
                 'firstweekday': 0,
                 'encoding': 'utf-8',
                 'unicode_symbols': True,
+                'weeknumbers': False,
             },
             'default': {
                 'default_command': 'calendar',

@@ -45,6 +45,27 @@ def is_timezone(tzstring):
         raise VdtValueError("Unknown timezone {}".format(tzstring))
 
 
+def weeknumber_option(option):
+    """checks if *option* is a valid value
+
+    :param option: the option the user set in the config file
+    :type option: str
+    :returns: off, left, right
+    :rtype: str/bool
+    """
+    option = option.lower()
+    if option == 'left':
+        return 'left'
+    elif option == 'right':
+        return 'right'
+    elif option in ['off', 'false', '0', 'no', 'none']:
+        return False
+    else:
+        raise VdtValueError(
+            "Invalid value '{}' for option 'weeknumber', must be one of "
+            "'off', 'left' or 'right'".format(option))
+
+
 def expand_path(path):
     """expands `~` as well as variable names"""
     return expanduser(expandvars(path))
