@@ -99,7 +99,7 @@ class SQLiteDb(object):
     :type default_tz: pytz.timezone
     """
 
-    def __init__(self, calendar, db_path, local_tz, default_tz):
+    def __init__(self, calendar, db_path, local_tz, default_tz, color):
         if db_path is None:
             db_path = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
         self.db_path = path.expanduser(db_path)
@@ -107,6 +107,7 @@ class SQLiteDb(object):
         self._create_dbdir()
         self.local_tz = local_tz
         self.default_tz = default_tz
+        self.color = color
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
         self._create_default_tables()
@@ -374,7 +375,7 @@ class SQLiteDb(object):
             start = pytz.UTC.localize(
                 datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
-            event = self.get(href, start=start, end=end)
+            event = self.get(href, start=start, end=end, color=self.color)
             event_list.append(event)
         return event_list
 
@@ -397,11 +398,11 @@ class SQLiteDb(object):
             end = time.strptime(str(end), '%Y%m%d')
             start = datetime.date(start.tm_year, start.tm_mon, start.tm_mday)
             end = datetime.date(end.tm_year, end.tm_mon, end.tm_mday)
-            event = self.get(href, start=start, end=end)
+            event = self.get(href, start=start, end=end, color=self.color)
             event_list.append(event)
         return event_list
 
-    def get(self, href, start=None, end=None):
+    def get(self, href, start=None, end=None, color=None):
         """returns the Event matching href, if start and end are given, a
         specific Event from a Recursion set is returned, otherwise the Event
         returned exactly as saved in the db
@@ -417,4 +418,5 @@ class SQLiteDb(object):
                      href=href,
                      calendar=self.calendar,
                      etag=result[0][1],
+                     color=self.color,
                      )

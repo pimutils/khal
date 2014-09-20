@@ -76,6 +76,7 @@ class Calendar(object):
             dbpath,
             default_tz=self._default_tz,
             local_tz=self._local_tz,
+            color=color,
         )
         self._storage = FilesystemStorage(path, '.ics')
         self._readonly = readonly
