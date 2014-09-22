@@ -241,6 +241,7 @@ class SQLiteDb(object):
                     events.append(component)
 
         if len(events) == 0:
+            logger.debug(u'Could not find event in {}'.format(ical))
             raise UpdateFailed(u'Could not find event in {}'.format(ical))
 
         elif len(events) > 1:

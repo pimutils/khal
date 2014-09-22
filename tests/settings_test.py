@@ -106,4 +106,4 @@ foo = bar
         with open(conf_path, 'w+') as conf:
             conf.write(config)
         get_config(conf_path)
-        assert False
+        # FIXME test for log entries

@@ -37,7 +37,8 @@ from vdirsyncer.storage import FilesystemStorage
 from . import backend
 from .event import Event
 from .. import log
-from .exceptions import UnsupportedFeatureError, ReadOnlyCalendarError
+from .exceptions import UnsupportedFeatureError, ReadOnlyCalendarError, \
+    UpdateFailed
 
 logger = log.logger
 
@@ -169,6 +170,8 @@ class Calendar(object):
         try:
             self._dbtool.update(event.raw, href=href, etag=etag)
             return True
+        except UpdateFailed:
+            return False
         except Exception as error:
             if not isinstance(error, UnsupportedFeatureError):
                 logger.exception('')
