@@ -49,7 +49,7 @@ berlin = pytz.timezone('Europe/Berlin')
 
 @pytest.fixture
 def cal_vdir(tmpdir):
-    cal = Calendar(cal1, ':memory:', str(tmpdir), **KWARGS)
+    cal = Calendar(cal1, ':memory:', str(tmpdir), color='dark blue', **KWARGS)
     vdir = FilesystemStorage(str(tmpdir), '.ics')
     return cal, vdir
 
@@ -61,7 +61,8 @@ def coll_vdirs(tmpdir):
     for name in example_cals:
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
-        coll.append(Calendar(name, ':memory:', path, **KWARGS))
+        coll.append(
+            Calendar(name, ':memory:', path, color='dark blue', **KWARGS))
         vdirs[name] = FilesystemStorage(path, '.ics')
     return coll, vdirs
 
@@ -84,6 +85,7 @@ class TestCalendar(object):
         cal.new(event)
         events = cal.get_allday_by_time_range(today)
         assert len(events) == 1
+        assert events[0].color == 'dark blue'
         events = cal.get_allday_by_time_range(tomorrow)
         assert len(events) == 0
         events = cal.get_allday_by_time_range(yesterday)
@@ -192,6 +194,7 @@ class TestCollection(object):
         coll.new(event, cal1)
         events = coll.get_datetime_by_time_range(self.astart, self.aend)
         assert len(events) == 1
+        assert events[0].color == 'dark blue'
         assert events[0].calendar == cal1
 
         assert len(list(vdirs[cal1].list())) == 1
@@ -209,6 +212,7 @@ class TestCollection(object):
         events = coll.get_allday_by_time_range(aday)
         assert len(events) == 1
         assert events[0].calendar == cal1
+        assert events[0].color == 'dark blue'
         assert len(list(vdirs[cal1].list())) == 1
         assert len(list(vdirs[cal2].list())) == 0
         assert len(list(vdirs[cal3].list())) == 0
