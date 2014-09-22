@@ -40,6 +40,11 @@ class ReadOnlyCalendarError(Error):
     khal"""
 
 
+class OutdatedDbVersionError(FatalError):
+
+    """the db file has an older version and needs to be deleted"""
+
+
 class CouldNotCreateDbDir(FatalError):
 
     """the db directory could not be created. Abort."""

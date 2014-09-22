@@ -72,7 +72,7 @@ from . import datetimehelper
 from .. import log
 from ..exceptions import Error
 from .exceptions import UnsupportedRruleExceptionError, CouldNotCreateDbDir, \
-    UpdateFailed
+    UpdateFailed, OutdatedDbVersionError
 
 logger = log.logger
 
@@ -141,9 +141,10 @@ class SQLiteDb(object):
                                 (DB_VERSION, ))
             self.conn.commit()
         elif not result[0] == DB_VERSION:
-            raise Exception(str(self.db_path) +
-                            " is probably an invalid or outdated database.\n"
-                            "You should consider to remove it and sync again.")
+            raise OutdatedDbVersionError(
+                str(self.db_path) +
+                " is probably an invalid or outdated database.\n"
+                "You should consider to remove it and sync again.")
 
     def _create_default_tables(self):
         """creates version and account tables and inserts table version number
