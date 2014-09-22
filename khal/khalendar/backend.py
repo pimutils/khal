@@ -110,6 +110,9 @@ class SQLiteDb(object):
         self.local_tz = local_tz
         self.default_tz = default_tz
         self.color = color
+        self.table_m = calendar + '_m'
+        self.table_d = calendar + '_d'
+        self.table_dt = calendar + '_dt'
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
         self._create_default_tables()
@@ -194,17 +197,17 @@ class SQLiteDb(object):
                 href TEXT UNIQUE,
                 etag TEXT,
                 vevent TEXT
-                )""".format(self.calendar + '_m')
+                )""".format(self.table_m)
         self.sql_ex(sql_s)
         sql_s = '''CREATE TABLE IF NOT EXISTS {0} (
             dtstart INT,
             dtend INT,
-            href TEXT ); '''.format(self.calendar + '_dt')
+            href TEXT ); '''.format(self.table_dt)
         self.sql_ex(sql_s)
         sql_s = '''CREATE TABLE IF NOT EXISTS {0} (
             dtstart INT,
             dtend INT,
-            href TEXT ); '''.format(self.calendar + '_d')
+            href TEXT ); '''.format(self.table_d)
         self.sql_ex(sql_s)
         sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
         stuple = (self.calendar, '')
@@ -264,7 +267,7 @@ class SQLiteDb(object):
                                            self.default_tz,
                                            href)
 
-        for dbname in [self.calendar + '_d', self.calendar + '_dt']:
+        for dbname in [self.table_dt, self.table_d]:
             sql_s = ('DELETE FROM {0} WHERE href == ?'.format(dbname))
             self.sql_ex(sql_s, (href, ), commit=False)
 
@@ -272,7 +275,7 @@ class SQLiteDb(object):
             if all_day_event:
                 dbstart = dtstart.strftime('%Y%m%d')
                 dbend = dtend.strftime('%Y%m%d')
-                dbname = self.calendar + '_d'
+                table = self.table_d
             else:
                 # TODO: extract strange (aka non Olson) TZs from params['TZID']
                 # perhaps better done in event/vevent
@@ -285,11 +288,11 @@ class SQLiteDb(object):
                 dtend_utc = dtend.astimezone(pytz.UTC)
                 dbstart = calendar.timegm(dtstart_utc.timetuple())
                 dbend = calendar.timegm(dtend_utc.timetuple())
-                dbname = self.calendar + '_dt'
+                table = self.table_dt
 
             sql_s = ('INSERT INTO {0} '
                      '(dtstart, dtend, href) '
-                     'VALUES (?, ?, ?);'.format(dbname))
+                     'VALUES (?, ?, ?);'.format(table))
             stuple = (dbstart,
                       dbend,
                       href)
@@ -299,7 +302,7 @@ class SQLiteDb(object):
                  '(vevent, etag, href) '
                  'VALUES (?, ?, '
                  'COALESCE((SELECT href FROM {0} WHERE href = ?), ?)'
-                 ');'.format(self.calendar + '_m'))
+                 ');'.format(self.table_m))
 
         stuple = (vevent.to_ical().decode('utf-8'),
                   etag,
@@ -331,7 +334,7 @@ class SQLiteDb(object):
         rtype: str()
         """
         sql_s = ('SELECT etag FROM {0} WHERE href=(?);'
-                 .format(self.calendar + '_m'))
+                 .format(self.table_m))
         try:
             etag = self.sql_ex(sql_s, (href,))[0][0]
             return etag
@@ -345,18 +348,16 @@ class SQLiteDb(object):
         :param etag: only there for compatiblity with vdirsyncer's Storage,
                      we always delete
         """
-        for dbname in [self.calendar + '_d',
-                       self.calendar + '_dt',
-                       self.calendar + '_m']:
-            sql_s = 'DELETE FROM {0} WHERE href = ? ;'.format(dbname)
+        for table in [self.table_m, self.table_dt, self.table_d]:
+            sql_s = 'DELETE FROM {0} WHERE href = ? ;'.format(table)
             self.sql_ex(sql_s, (href, ))
 
     def list(self):
         """
         :returns: list of (href, etag)
         """
-        return self.sql_ex('SELECT href, etag FROM {0}_m'
-                           .format(self.calendar))
+        return self.sql_ex('SELECT href, etag FROM {0}'
+                           .format(self.table_m))
 
     def get_time_range(self, start, end, show_deleted=True):
         """returns
@@ -369,7 +370,7 @@ class SQLiteDb(object):
         sql_s = ('SELECT href, dtstart, dtend FROM {0} WHERE '
                  'dtstart >= ? AND dtstart <= ? OR '
                  'dtend >= ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend >= ?').format(self.calendar + '_dt')
+                 'dtstart <= ? AND dtend >= ?').format(self.table_dt)
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
@@ -391,7 +392,7 @@ class SQLiteDb(object):
         sql_s = ('SELECT href, dtstart, dtend FROM {0} WHERE '
                  'dtstart >= ? AND dtstart < ? OR '
                  'dtend > ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend > ? ').format(self.calendar + '_d')
+                 'dtstart <= ? AND dtend > ? ').format(self.table_d)
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
@@ -410,7 +411,7 @@ class SQLiteDb(object):
         returned exactly as saved in the db
         """
         sql_s = 'SELECT vevent, etag FROM {0} WHERE href=(?)'.format(
-            self.calendar + '_m')
+            self.table_m)
         result = self.sql_ex(sql_s, (href, ))
         return Event(result[0][0],
                      local_tz=self.local_tz,
