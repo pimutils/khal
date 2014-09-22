@@ -57,7 +57,6 @@ $ACCOUNTNAME_dt: #other events, same as above
 
 from __future__ import print_function
 
-import calendar
 import datetime
 from os import makedirs, path
 import sqlite3
@@ -284,10 +283,9 @@ class SQLiteDb(object):
                 if dtend.tzinfo is None:
                     dtend = self.default_tz.localize(dtend)
 
-                dtstart_utc = dtstart.astimezone(pytz.UTC)
-                dtend_utc = dtend.astimezone(pytz.UTC)
-                dbstart = calendar.timegm(dtstart_utc.timetuple())
-                dbend = calendar.timegm(dtend_utc.timetuple())
+                dbstart = datetimehelper.to_unix_time(dtstart)
+                dbend = datetimehelper.to_unix_time(dtend)
+
                 table = self.table_dt
 
             sql_s = ('INSERT INTO {0} '

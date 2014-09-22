@@ -1,16 +1,14 @@
 from datetime import date, datetime, timedelta
 
+import calendar
 import dateutil.rrule
+import pytz
 
 from .. import log
 
+from .exceptions import UnsupportedRecursion
+
 logger = log.logger
-
-
-class UnsupportedRecursion(Exception):
-
-    """raised if the RRULE is not understood by dateutil.rrule"""
-    pass
 
 
 def expand(vevent, default_tz, href=''):
@@ -151,3 +149,10 @@ def localize_strip_tz(dates, timezone):
             one_date = one_date.replace(tzinfo=None)
         outdates.append(one_date)
     return outdates
+
+
+def to_unix_time(dtime):
+    """convert a datetime object to unix time in UTC"""
+    dtime_utc = dtime.astimezone(pytz.UTC)
+    unix_time = calendar.timegm(dtime_utc.timetuple())
+    return unix_time
