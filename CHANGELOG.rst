@@ -3,6 +3,10 @@ Changelog
 All notable changes to this project should be documented here.
 For more detailed information have a look at the git log.
 
+Package maintainers and users who have to manually update their installation
+may want to subscribe to `GitHub's tag feed
+<https://github.com/geier/khal/tags.atom>`_.
+
 0.4.0
 -----
 not yet released
