@@ -22,14 +22,13 @@
 #
 
 import os
-import sys
 
 from configobj import ConfigObj, flatten_errors, get_extra_values, \
     ConfigObjError
 from validate import Validator
 import xdg.BaseDirectory
 
-from exceptions import InvalidSettingsError
+from exceptions import InvalidSettingsError, CannotParseConfigFileError
 from khal import __productname__
 from ..log import logger
 from .utils import is_timezone, weeknumber_option, config_checks, \
@@ -96,7 +95,7 @@ def get_config(config_path=None):
         logger.fatal('if you recently updated khal, the config file format '
                      'might have changed, in that case please consult the '
                      'CHANGELOG or other documentation')
-        sys.exit(1)
+        raise CannotParseConfigFileError()
 
     fdict = {'timezone': is_timezone,
              'expand_path': expand_path,

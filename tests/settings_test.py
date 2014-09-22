@@ -5,7 +5,9 @@ import pytest
 
 from tzlocal import get_localzone
 
-from khal.settings import get_config, InvalidSettingsError
+from khal.settings import get_config
+from khal.settings.exceptions import InvalidSettingsError, \
+    CannotParseConfigFileError
 
 PATH = __file__.rsplit('/', 1)[0] + '/configs/'
 
@@ -69,3 +71,39 @@ class TestSettings(object):
                 'default_calendar': 'home',
             }
         }
+
+    def test_old_config(self, tmpdir):
+        old_config = """
+[Calendar home]
+path: ~/.khal/calendars/home/
+color: dark blue
+[sqlite]
+path: ~/.khal/khal.db
+[locale]
+timeformat: %H:%M
+dateformat: %d.%m.
+longdateformat: %d.%m.%Y
+[default]
+default_command: calendar
+"""
+        conf_path = str(tmpdir.join('old.conf'))
+        with open(conf_path, 'w+') as conf:
+            conf.write(old_config)
+        with pytest.raises(CannotParseConfigFileError):
+            get_config(conf_path)
+
+    def test_extra_sections(self, tmpdir):
+        config = """
+[calendars]
+[[home]]
+path = ~/.khal/calendars/home/
+color = dark blue
+unknown = 42
+[unknownsection]
+foo = bar
+"""
+        conf_path = str(tmpdir.join('old.conf'))
+        with open(conf_path, 'w+') as conf:
+            conf.write(config)
+        get_config(conf_path)
+        assert False
