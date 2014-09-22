@@ -99,7 +99,7 @@ class Calendar(object):
         event = self._dbtool.get(href)
         event.color = self.color
         event.readonly = self._readonly
-        event.unicode_symbols = self.unicode_symbols
+        event.unicode_symbols = self._unicode_symbols
         return event
 
     def update(self, event):
