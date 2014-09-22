@@ -67,7 +67,7 @@ import pytz
 import xdg.BaseDirectory
 
 from .event import Event
-from . import datetimehelper
+from . import aux
 from .. import log
 from ..exceptions import Error
 from .exceptions import UnsupportedRruleExceptionError, CouldNotCreateDbDir, \
@@ -254,7 +254,7 @@ class SQLiteDb(object):
                 raise Error('more than one event in .ics file')
 
         vevent = events[0]
-        vevent = datetimehelper.sanitize(vevent)
+        vevent = aux.sanitize(vevent)
 
         all_day_event = False
 
@@ -262,14 +262,10 @@ class SQLiteDb(object):
         if not isinstance(vevent['DTSTART'].dt, datetime.datetime):
             all_day_event = True
 
-        dtstartend = datetimehelper.expand(vevent,
-                                           self.default_tz,
-                                           href)
-
+        dtstartend = aux.expand(vevent, self.default_tz, href)
         for dbname in [self.table_dt, self.table_d]:
             sql_s = ('DELETE FROM {0} WHERE href == ?'.format(dbname))
             self.sql_ex(sql_s, (href, ), commit=False)
-
         for dtstart, dtend in dtstartend:
             if all_day_event:
                 dbstart = dtstart.strftime('%Y%m%d')
@@ -283,8 +279,8 @@ class SQLiteDb(object):
                 if dtend.tzinfo is None:
                     dtend = self.default_tz.localize(dtend)
 
-                dbstart = datetimehelper.to_unix_time(dtstart)
-                dbend = datetimehelper.to_unix_time(dtend)
+                dbstart = aux.to_unix_time(dtstart)
+                dbend = aux.to_unix_time(dtend)
 
                 table = self.table_dt
 
