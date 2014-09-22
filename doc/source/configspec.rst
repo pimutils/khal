@@ -19,8 +19,8 @@ Here is a small example:
     your terminal emulator's settings, they might look different than what their
     name implies.
 
-      :type: option, allowed values are *black*, *white*, *brown*, *yellow*, *dark grey*, *dark green*, *dark blue*, *light grey*, *light green*, *light blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light cyan* and *light red*
-      :default: None
+      :type: option, allowed values are *black*, *white*, *brown*, *yellow*, *dark grey*, *dark green*, *dark blue*, *light grey*, *light green*, *light blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light cyan*, *light red* and **
+      :default: 
 
 .. _calendars-path:
 
@@ -137,6 +137,18 @@ The most important options in the the **[locale]** section are probably (long-)t
       :type: string
       :default: %d.%m. %H:%M
 
+.. _locale-weeknumbers:
+
+.. object:: weeknumbers
+
+    
+    
+    Enable weeknumbers in `calendar` and `interactive` (ikhal) mode. As those are
+    iso weeknumbers, they only work properly if `firstweekday` is set to 0
+
+      :type: weeknumbers
+      :default: off
+
 .. _locale-timeformat:
 
 .. object:: timeformat
@@ -170,7 +182,6 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 The [default] section
 ~~~~~~~~~~~~~~~~~~~~~
-
 
 The default section begins with a **[default]** tag. Some default values and
 behaviours are set here.
