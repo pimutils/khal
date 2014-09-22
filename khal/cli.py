@@ -171,6 +171,7 @@ def _get_cli():
             encoding=ctx.obj['conf']['locale']['encoding'],
             dateformat=ctx.obj['conf']['locale']['dateformat'],
             longdateformat=ctx.obj['conf']['locale']['longdateformat'],
+            weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
             days=days,
             events=events
         )
@@ -188,6 +189,7 @@ def _get_cli():
             encoding=ctx.obj['conf']['locale']['encoding'],
             dateformat=ctx.obj['conf']['locale']['dateformat'],
             longdateformat=ctx.obj['conf']['locale']['longdateformat'],
+            weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
             days=days,
             events=events,
         )
