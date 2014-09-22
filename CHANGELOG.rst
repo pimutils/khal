@@ -13,6 +13,7 @@ not yet released
 
 * new dependency: click>3.2
 * removed dependency: docopt
+* khal can now display weeknumbers
 
 0.3.1
 -----
