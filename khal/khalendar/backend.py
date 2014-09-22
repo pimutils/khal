@@ -76,6 +76,8 @@ from .exceptions import UnsupportedRruleExceptionError, CouldNotCreateDbDir, \
 
 logger = log.logger
 
+DB_VERSION = 2  # The current db layout version
+
 # TODO fix that event/vevent mess
 
 
@@ -132,15 +134,13 @@ class SQLiteDb(object):
         """tests for curent db Version
         if the table is still empty, insert db_version
         """
-        database_version = 2  # the current db VERSION
         self.cursor.execute('SELECT version FROM version')
         result = self.cursor.fetchone()
         if result is None:
-            stuple = (database_version, )  # database version db Version
             self.cursor.execute('INSERT INTO version (version) VALUES (?)',
-                                stuple)
+                                (DB_VERSION, ))
             self.conn.commit()
-        elif not result[0] == database_version:
+        elif not result[0] == DB_VERSION:
             raise Exception(str(self.db_path) +
                             " is probably an invalid or outdated database.\n"
                             "You should consider to remove it and sync again.")
