@@ -26,6 +26,7 @@ from datetime import date, datetime, time, timedelta
 import urwid
 
 from .. import aux
+from ..calendar_display import getweeknumber
 
 from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker
 from .startendeditor import StartEndEditor
@@ -184,16 +185,18 @@ CColumns is empty, or when set to an invalid index.
             return key
 
 
-def calendar_walker(view, firstweekday=0):
+def calendar_walker(view, firstweekday=0, weeknumbers=False):
     """hopefully this will soon become a real "walker",
     loading new weeks as needed"""
     calendar.setfirstweekday(firstweekday)
     dnames = calendar.weekheader(2).split(' ')
+    if weeknumbers == 'right':
+        dnames.append('#w')
     dnames = CColumns(
         [(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in dnames],
         dividechars=1)
 
-    weeks = CalendarWalker(view=view, firstweekday=firstweekday)
+    weeks = CalendarWalker(view, firstweekday, weeknumbers)
     box = urwid.ListBox(weeks)
     frame = urwid.Frame(box, header=dnames)
     return frame
@@ -201,8 +204,9 @@ def calendar_walker(view, firstweekday=0):
 
 class CalendarWalker(urwid.SimpleFocusListWalker):
 
-    def __init__(self, view, firstweekday=0):
+    def __init__(self, view, firstweekday=0, weeknumbers=False):
         self.firstweekday = firstweekday
+        self.weeknumbers = weeknumbers
         self.view = view
         weeks, focus_item = self._construct_month()
         urwid.SimpleFocusListWalker.__init__(self, weeks)
@@ -231,7 +235,11 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         :returns: number of weeks prepended
         :rtype: int
         """
-        date_first_month = self[0][-1].date  # a date from the first month
+        try:
+            date_first_month = self[0][-1].date  # a date from the first month
+        except AttributeError:
+            # rightmost column is weeknumber
+            date_first_month = self[0][-2].date
         first_month = date_first_month.month
         first_year = date_first_month.year
         if first_month == 1:
@@ -259,6 +267,8 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         """
         if 1 in [day.day for day in week]:
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
+        elif self.weeknumbers == 'left':
+            month_name = ' {:2} '.format(getweeknumber(week[0]))
         else:
             month_name = '    '
 
@@ -272,6 +282,9 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             else:
                 this_week.append((2, urwid.AttrMap(Date(day, self.view),
                                                    None, 'reveal focus')))
+        if self.weeknumbers == 'right':
+            this_week.append((2, urwid.Text('{:2}'.format(getweeknumber(week[0])))))
+
         week = DateCColumns(this_week, view=self.view, dividechars=1,
                             focus_column=today)
         return week, bool(today)
@@ -785,9 +798,12 @@ class ClassicView(Pane):
                                         collection=collection,
                                         deleted=self.deleted)
         weeks = calendar_walker(
-            view=self, firstweekday=conf['locale']['firstweekday'])
+            view=self, firstweekday=conf['locale']['firstweekday'],
+            weeknumbers=conf['locale']['weeknumbers']
+        )
         events = self.eventscolumn
-        columns = CColumns([(25, weeks), events],
+        lwidth = 29 if conf['locale']['weeknumbers'] else 25
+        columns = CColumns([(lwidth, weeks), events],
                            dividechars=2,
                            box_columns=[0, 1])
         self.eventscolumn.update(date.today())  # starting with today's events
