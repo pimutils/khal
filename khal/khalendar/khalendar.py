@@ -98,7 +98,7 @@ class Calendar(object):
     def get_event(self, href):
         event = self._dbtool.get(href)
         event.color = self.color
-        event.readonly = self.readonly
+        event.readonly = self._readonly
         event.unicode_symbols = self.unicode_symbols
         return event
 
