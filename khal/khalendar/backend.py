@@ -69,13 +69,12 @@ import xdg.BaseDirectory
 from .event import Event
 from . import aux
 from .. import log
-from ..exceptions import Error
-from .exceptions import UnsupportedRruleExceptionError, CouldNotCreateDbDir, \
-    UpdateFailed, OutdatedDbVersionError
+from .exceptions import CouldNotCreateDbDir, UpdateFailed, \
+    OutdatedDbVersionError
 
 logger = log.logger
 
-DB_VERSION = 2  # The current db layout version
+DB_VERSION = 3  # The current db layout version
 
 # TODO fix that event/vevent mess
 
@@ -188,6 +187,7 @@ class SQLiteDb(object):
             return
         sql_s = """CREATE TABLE IF NOT EXISTS [{0}] (
                 href TEXT UNIQUE,
+                recuid TEXT UNIQUE,
                 etag TEXT,
                 vevent TEXT
                 )""".format(self.table_m)
@@ -195,12 +195,14 @@ class SQLiteDb(object):
         sql_s = '''CREATE TABLE IF NOT EXISTS [{0}] (
             dtstart INT,
             dtend INT,
-            href TEXT ); '''.format(self.table_dt)
+            href TEXT,
+            recuid TEXT); '''.format(self.table_dt)
         self.sql_ex(sql_s)
         sql_s = '''CREATE TABLE IF NOT EXISTS [{0}] (
             dtstart INT,
             dtend INT,
-            href TEXT ); '''.format(self.table_d)
+            href TEXT,
+            recuid TEXT); '''.format(self.table_d)
         self.sql_ex(sql_s)
         sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
         stuple = (self.calendar, '')
@@ -241,16 +243,18 @@ class SQLiteDb(object):
             logger.debug('Could not find event in {}'.format(ical))
             raise UpdateFailed('Could not find event in {}'.format(ical))
 
-        elif len(events) > 1:
-            if len(set([event['UID'] for event in events])):
-                raise UnsupportedRruleExceptionError()
-            else:
-                raise Error('more than one event in .ics file')
+        for vevent in events:
+            self._update_one(vevent, href, etag)
 
-        vevent = events[0]
+    def _update_one(self, vevent, href, etag):
+
         vevent = aux.sanitize(vevent)
 
         all_day_event = False
+
+        recuid = href
+        if 'RECURRENCE-ID' in vevent.keys():
+            recuid += str(aux.to_unix_time(vevent['RECURRENCE-ID'].dt))
 
         # testing on datetime.date won't work as datetime is a child of date
         if not isinstance(vevent['DTSTART'].dt, datetime.datetime):
@@ -279,23 +283,20 @@ class SQLiteDb(object):
                 table = self.table_dt
 
             sql_s = ('INSERT INTO [{0}] '
-                     '(dtstart, dtend, href) '
-                     'VALUES (?, ?, ?);'.format(table))
-            stuple = (dbstart,
-                      dbend,
-                      href)
+                     '(dtstart, dtend, href, recuid) '
+                     'VALUES (?, ?, ?, ?);'.format(table))
+            stuple = (dbstart, dbend, href, recuid)
             self.sql_ex(sql_s, stuple, commit=False)
 
         sql_s = ('INSERT OR REPLACE INTO [{0}] '
-                 '(vevent, etag, href) '
-                 'VALUES (?, ?, '
-                 'COALESCE((SELECT href FROM [{0}] WHERE href = ?), ?)'
+                 '(vevent, etag, href, recuid) '
+                 'VALUES (?, ?, ?, '
+                 'COALESCE((SELECT recuid FROM [{0}] WHERE recuid = ?), ?)'
                  ');'.format(self.table_m))
 
         stuple = (vevent.to_ical().decode('utf-8'),
-                  etag,
-                  href,
-                  href)
+                  etag, href, recuid, recuid)
+
         self.sql_ex(sql_s, stuple, commit=False)
         self.conn.commit()
 
@@ -344,8 +345,8 @@ class SQLiteDb(object):
         """
         :returns: list of (href, etag)
         """
-        return self.sql_ex('SELECT href, etag FROM [{0}]'
-                           .format(self.table_m))
+        return list(set(self.sql_ex('SELECT href, etag FROM [{0}]'
+                                    .format(self.table_m))))
 
     def get_time_range(self, start, end, show_deleted=True):
         """returns
@@ -355,18 +356,18 @@ class SQLiteDb(object):
         """
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
-        sql_s = ('SELECT href, dtstart, dtend FROM [{0}] WHERE '
+        sql_s = ('SELECT recuid, dtstart, dtend FROM [{0}] WHERE '
                  'dtstart >= ? AND dtstart <= ? OR '
                  'dtend >= ? AND dtend <= ? OR '
                  'dtstart <= ? AND dtend >= ?').format(self.table_dt)
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
-        for href, start, end in result:
+        for recuid, start, end in result:
             start = pytz.UTC.localize(
                 datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
-            event = self.get(href, start=start, end=end)
+            event = self.get(recuid, start=start, end=end)
             event_list.append(event)
         return event_list
 
@@ -377,34 +378,34 @@ class SQLiteDb(object):
         if end is None:
             end = start + datetime.timedelta(days=1)
         strend = end.strftime('%Y%m%d')
-        sql_s = ('SELECT href, dtstart, dtend FROM [{0}] WHERE '
+        sql_s = ('SELECT recuid, dtstart, dtend FROM [{0}] WHERE '
                  'dtstart >= ? AND dtstart < ? OR '
                  'dtend > ? AND dtend <= ? OR '
                  'dtstart <= ? AND dtend > ? ').format(self.table_d)
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
-        for href, start, end in result:
+        for recuid, start, end in result:
             start = time.strptime(str(start), '%Y%m%d')
             end = time.strptime(str(end), '%Y%m%d')
             start = datetime.date(start.tm_year, start.tm_mon, start.tm_mday)
             end = datetime.date(end.tm_year, end.tm_mon, end.tm_mday)
-            event = self.get(href, start=start, end=end)
+            event = self.get(recuid, start=start, end=end)
             event_list.append(event)
         return event_list
 
-    def get(self, href, start=None, end=None):
-        """returns the Event matching href, if start and end are given, a
+    def get(self, recuid, start=None, end=None):
+        """returns the Event matching recuid, if start and end are given, a
         specific Event from a Recursion set is returned, otherwise the Event
         returned exactly as saved in the db
         """
-        sql_s = 'SELECT vevent, etag FROM [{0}] WHERE href=(?)'.format(
+        sql_s = 'SELECT vevent, etag FROM [{0}] WHERE recuid=(?)'.format(
             self.table_m)
-        result = self.sql_ex(sql_s, (href, ))
+        result = self.sql_ex(sql_s, (recuid, ))
         return Event(result[0][0],
                      start=start,
                      end=end,
-                     href=href,
+                     href=recuid,
                      calendar=self.calendar,
                      etag=result[0][1],
                      locale=self.locale,
