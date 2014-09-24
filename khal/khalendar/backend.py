@@ -247,13 +247,12 @@ class SQLiteDb(object):
             self._update_one(vevent, href, etag)
 
     def _update_one(self, vevent, href, etag):
-
         vevent = aux.sanitize(vevent)
 
         all_day_event = False
 
         recuid = href
-        if 'RECURRENCE-ID' in vevent.keys():
+        if 'RECURRENCE-ID' in vevent:
             recuid += str(aux.to_unix_time(vevent['RECURRENCE-ID'].dt))
 
         # testing on datetime.date won't work as datetime is a child of date
@@ -261,9 +260,10 @@ class SQLiteDb(object):
             all_day_event = True
 
         dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
-        for dbname in [self.table_dt, self.table_d]:
-            sql_s = ('DELETE FROM [{0}] WHERE href == ?'.format(dbname))
-            self.sql_ex(sql_s, (href, ), commit=False)
+        for table in [self.table_d, self.table_m]:
+            sql_s = ('DELETE FROM {0} WHERE recuid == ?'.format(table))
+            self.sql_ex(sql_s, (recuid, ), commit=False)
+
         for dtstart, dtend in dtstartend:
             if all_day_event:
                 dbstart = dtstart.strftime('%Y%m%d')
@@ -282,10 +282,11 @@ class SQLiteDb(object):
 
                 table = self.table_dt
 
-            sql_s = ('INSERT INTO [{0}] '
-                     '(dtstart, dtend, href, recuid) '
-                     'VALUES (?, ?, ?, ?);'.format(table))
-            stuple = (dbstart, dbend, href, recuid)
+            sql_s = (
+                'INSERT OR REPLACE INTO [{0}] (dtstart, dtend, href, recuid) '
+                'VALUES (?, ?, ?, COALESCE((SELECT recuid FROM [{0}] WHERE '
+                'recuid = ?), ?));'.format(table))
+            stuple = (dbstart, dbend, href, recuid, recuid)
             self.sql_ex(sql_s, stuple, commit=False)
 
         sql_s = ('INSERT OR REPLACE INTO [{0}] '
