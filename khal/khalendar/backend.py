@@ -249,12 +249,15 @@ class SQLiteDb(object):
     def _update_one(self, vevent, href, etag):
         vevent = aux.sanitize(vevent)
 
-        all_day_event = False
+        if 'RECURRENCE-ID' not in vevent:
+            # this is a "master" event, therefore clean the db first
+            self.delete(href)
 
         recuid = href
         if 'RECURRENCE-ID' in vevent:
             recuid += str(aux.to_unix_time(vevent['RECURRENCE-ID'].dt))
 
+        all_day_event = False
         # testing on datetime.date won't work as datetime is a child of date
         if not isinstance(vevent['DTSTART'].dt, datetime.datetime):
             all_day_event = True
