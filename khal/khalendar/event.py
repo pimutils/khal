@@ -197,7 +197,8 @@ class Event(object):
 
     @property
     def recur(self):
-        return 'RRULE' in self.vevent.keys() or 'RDATE' in self.vevent.keys()
+        return 'RRULE' in self.vevent or 'RECURRENCE-ID' in self.vevent or \
+            'RDATE' in self.vevent
 
     @property
     def raw(self):
@@ -287,7 +288,7 @@ class Event(object):
                           .format(self.href, str(e)))
 
     def _compact_allday(self, day):
-        if 'RRULE' in self.vevent:
+        if self.recur:
             recurstr = self.symbol_strings['recurring']
         else:
             recurstr = ''
@@ -326,7 +327,7 @@ class Event(object):
         end = datetime.datetime.combine(day, datetime.time.max)
         local_start = self.locale['local_timezone'].localize(start)
         local_end = self.locale['local_timezone'].localize(end)
-        if 'RRULE' in self.vevent:
+        if self.recur:
             recurstr = ' ' + self.symbol_strings['recurring']
         else:
             recurstr = ''
