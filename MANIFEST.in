@@ -8,3 +8,4 @@ include misc/__khal
 include misc/khal.1
 include khal/settings/khal.spec
 include khal/settings/default.khal
+include version.py
