@@ -118,3 +118,14 @@ def test_default_command_nonempty(runner):
     result = runner.invoke(main_khal)
     assert not result.exception
     assert result.output == 'No events\n'
+
+
+def test_no_vevent(runner, tmpdir):
+    runner = runner(command='agenda')
+    broken_item = runner.calendars['one'].join('broken_item.ics')
+    broken_item.write(u"BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\n"
+                      u"END:VCALENDAR\n".encode('utf-8'), mode='wb')
+
+    result = runner.invoke(main_khal)
+    assert not result.exception
+    assert result.output == 'No events\n'
