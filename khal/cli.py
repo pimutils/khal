@@ -199,15 +199,18 @@ def _get_cli():
                   metavar='CAL')
     @click.option('--location', '-l',
                   help=('The location of the new event.'))
+    @click.option('--repeat', '-r',
+            help=('Repeat event: daily, weekly, monthly or yearly.'))
     @click.argument('description', nargs=-1, required=True)
     @click.pass_context
-    def new(ctx, description, location):
+    def new(ctx, description, location, repeat):
         '''Create a new event.'''
         controllers.NewFromString(
             build_collection(ctx),
             ctx.obj['conf'],
             list(description),
             location=location,
+            repeat=repeat,
         )
 
     @cli.command()

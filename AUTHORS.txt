@@ -4,3 +4,4 @@ Aaron Bishop - abishop [at] linux [dot] com
 Thomas Dwyer - github [at] tomd [dot] tel - http://tomd.tel
 Thomas Tschager - github [at] tschager [dot] net - https://thomas.tschager.net
 Patrice Peterson - runiq [at] archlinux [dot] us
+Eric Scheibler - email [at] eric-scheibler [dot] de - http://eric-scheibler.de

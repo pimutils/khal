@@ -135,7 +135,7 @@ def generate_random_uid():
 def construct_event(date_list, timeformat, dateformat, longdateformat,
                     datetimeformat, longdatetimeformat, default_timezone,
                     defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
-                    _now=datetime.now, location=None, description=None,
+                    _now=datetime.now, location=None, repeat=None, description=None,
                     **kwargs):
     """takes a list of strings and constructs a vevent from it
 
@@ -247,6 +247,16 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
             dtstart = default_timezone.localize(dtstart)
             dtend = default_timezone.localize(dtend)
 
+    # repeat option
+    if repeat == "":
+        logger.fatal("Missing value for the repeat option. \
+                Possible values are: daily, weekly, monthly or yearly")
+        raise FatalError()
+    elif repeat not in ["daily", "weekly", "monthly", "yearly"]:
+        logger.fatal("Invalid value for the repeat option. \
+                Possible values are: daily, weekly, monthly or yearly")
+        raise FatalError()
+
     event = icalendar.Event()
     text = to_unicode(' '.join(date_list), encoding)
     if not description or not location:
@@ -262,6 +272,8 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
         event.add('description', description)
     if location:
         event.add('location', location)
+    if repeat:
+        event.add('rrule', {'freq': repeat})
 
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
