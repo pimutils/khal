@@ -14,6 +14,7 @@ not yet released
 * new dependency: click>3.2
 * removed dependency: docopt
 * khal can now display weeknumbers
+* khal new can now create repetitive events (with --repeat)
 
 0.3.1
 -----
