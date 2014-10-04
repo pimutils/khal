@@ -29,6 +29,7 @@ from .. import aux
 from ..calendar_display import getweeknumber
 
 from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker
+from .widgets import CEdit as Edit
 from .startendeditor import StartEndEditor
 
 
@@ -674,17 +675,17 @@ class EventEditor(EventViewer):
         except KeyError:
             rrule = None
         self.recursioneditor = RecursionEditor(rrule)
-        self.summary = urwid.Edit(
+        self.summary = Edit(
             edit_text=event.vevent['SUMMARY'])
         # TODO warning message if len(self.collection.writable_names) == 0
         self.accountchooser = AccountChooser(self.event.calendar,
                                              self.collection.writable_names)
         accounts = CColumns([(9, urwid.Text(u'Calendar: ')),
                              self.accountchooser])
-        self.description = urwid.Edit(caption=u'Description: ',
-                                      edit_text=self.description)
-        self.location = urwid.Edit(caption=u'Location: ',
-                                   edit_text=self.location)
+        self.description = Edit(caption=u'Description: ',
+                                edit_text=self.description)
+        self.location = Edit(caption=u'Location: ',
+                             edit_text=self.location)
         cancel = urwid.Button(u'Cancel', on_press=self.cancel)
         save = urwid.Button(u'Save', on_press=self.save)
         buttons = CColumns([cancel, save])

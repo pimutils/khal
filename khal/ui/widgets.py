@@ -26,7 +26,29 @@ from datetime import timedelta
 import urwid
 
 
-class DateTimeWidget(urwid.Edit):
+class CEdit(urwid.Edit):
+    def keypress(self, size, key):
+        if key == 'ctrl w':
+            self._delete_word()
+        else:
+            return super(CEdit, self).keypress(size, key)
+
+    def _delete_word(self):
+        """delete word before cursor"""
+        text = str(self.get_edit_text())
+        f_text = text[:self.edit_pos].rstrip()
+        b_text = text[self.edit_pos:]
+        pos = f_text.rfind(' ')
+        if pos == -1:
+            f_text = ''
+        else:
+            f_text = f_text[:pos + 1]
+        text = f_text + b_text
+        self.set_edit_text(text)
+        self.set_edit_pos(len(f_text))
+
+
+class DateTimeWidget(CEdit):
 
     def __init__(self, dateformat, **kwargs):
         self.dateformat = dateformat
