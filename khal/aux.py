@@ -135,8 +135,8 @@ def generate_random_uid():
 def construct_event(date_list, timeformat, dateformat, longdateformat,
                     datetimeformat, longdatetimeformat, default_timezone,
                     defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
-                    _now=datetime.now, location=None, repeat=None, description=None,
-                    **kwargs):
+                    description=None, location=None, repeat=None,
+                    _now=datetime.now, **kwargs):
     """takes a list of strings and constructs a vevent from it
 
     :param encoding: the encoding of your terminal, should be a valid encoding

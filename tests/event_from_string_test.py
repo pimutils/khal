@@ -250,6 +250,32 @@ def test_description():
                                 **kwargs_de).to_ical()
         assert event == vevent
 
+test_set_repeat = _create_testcases(
+    # now events where the start date has to be inferred, too
+    # today
+    ('8:00 Äwesöme Event',
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T080000'.format(today_s),
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T090000'.format(today_s),
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'DESCRIPTION:please describe the event',
+      'RRULE:FREQ=DAILY',
+      'END:VEVENT']))
+
+
+def test_repeat():
+    for data_list, vevent in test_set_repeat:
+        random.seed(1)
+        event = construct_event(data_list.split(),
+                                description='please describe the event',
+                                repeat='daily',
+                                _now=_now,
+                                **kwargs_de).to_ical()
+        assert event == vevent
+
+
 test_set_description_and_location = _create_testcases(
     # now events where the start date has to be inferred, too
     # today
@@ -274,3 +300,4 @@ def test_description_and_location():
                                 location='in the office',
                                 **kwargs_de).to_ical()
         assert event == vevent
+
