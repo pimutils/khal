@@ -247,16 +247,6 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
             dtstart = default_timezone.localize(dtstart)
             dtend = default_timezone.localize(dtend)
 
-    # repeat option
-    if repeat == "":
-        logger.fatal("Missing value for the repeat option. \
-                Possible values are: daily, weekly, monthly or yearly")
-        raise FatalError()
-    elif repeat not in ["daily", "weekly", "monthly", "yearly"]:
-        logger.fatal("Invalid value for the repeat option. \
-                Possible values are: daily, weekly, monthly or yearly")
-        raise FatalError()
-
     event = icalendar.Event()
     text = to_unicode(' '.join(date_list), encoding)
     if not description or not location:
@@ -273,7 +263,12 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     if location:
         event.add('location', location)
     if repeat:
-        event.add('rrule', {'freq': repeat})
+        if repeat in ["daily", "weekly", "monthly", "yearly"]:
+            event.add('rrule', {'freq': repeat})
+        else:
+            logger.fatal("Invalid value for the repeat option. \
+                    Possible values are: daily, weekly, monthly or yearly")
+            raise FatalError()
 
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
