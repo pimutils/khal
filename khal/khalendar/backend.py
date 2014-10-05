@@ -192,18 +192,18 @@ class SQLiteDb(object):
         if(result[0] != 0):
             logger.debug("tables for calendar {0} exist".format(self.calendar))
             return
-        sql_s = """CREATE TABLE IF NOT EXISTS {0} (
+        sql_s = """CREATE TABLE IF NOT EXISTS [{0}] (
                 href TEXT UNIQUE,
                 etag TEXT,
                 vevent TEXT
                 )""".format(self.table_m)
         self.sql_ex(sql_s)
-        sql_s = '''CREATE TABLE IF NOT EXISTS {0} (
+        sql_s = '''CREATE TABLE IF NOT EXISTS [{0}] (
             dtstart INT,
             dtend INT,
             href TEXT ); '''.format(self.table_dt)
         self.sql_ex(sql_s)
-        sql_s = '''CREATE TABLE IF NOT EXISTS {0} (
+        sql_s = '''CREATE TABLE IF NOT EXISTS [{0}] (
             dtstart INT,
             dtend INT,
             href TEXT ); '''.format(self.table_d)
@@ -264,7 +264,7 @@ class SQLiteDb(object):
 
         dtstartend = aux.expand(vevent, self.default_tz, href)
         for dbname in [self.table_dt, self.table_d]:
-            sql_s = ('DELETE FROM {0} WHERE href == ?'.format(dbname))
+            sql_s = ('DELETE FROM [{0}] WHERE href == ?'.format(dbname))
             self.sql_ex(sql_s, (href, ), commit=False)
         for dtstart, dtend in dtstartend:
             if all_day_event:
@@ -284,7 +284,7 @@ class SQLiteDb(object):
 
                 table = self.table_dt
 
-            sql_s = ('INSERT INTO {0} '
+            sql_s = ('INSERT INTO [{0}] '
                      '(dtstart, dtend, href) '
                      'VALUES (?, ?, ?);'.format(table))
             stuple = (dbstart,
@@ -292,10 +292,10 @@ class SQLiteDb(object):
                       href)
             self.sql_ex(sql_s, stuple, commit=False)
 
-        sql_s = ('INSERT OR REPLACE INTO {0} '
+        sql_s = ('INSERT OR REPLACE INTO [{0}] '
                  '(vevent, etag, href) '
                  'VALUES (?, ?, '
-                 'COALESCE((SELECT href FROM {0} WHERE href = ?), ?)'
+                 'COALESCE((SELECT href FROM [{0}] WHERE href = ?), ?)'
                  ');'.format(self.table_m))
 
         stuple = (vevent.to_ical().decode('utf-8'),
@@ -327,7 +327,7 @@ class SQLiteDb(object):
         return: etag
         rtype: str()
         """
-        sql_s = ('SELECT etag FROM {0} WHERE href=(?);'
+        sql_s = ('SELECT etag FROM [{0}] WHERE href=(?);'
                  .format(self.table_m))
         try:
             etag = self.sql_ex(sql_s, (href,))[0][0]
@@ -343,14 +343,14 @@ class SQLiteDb(object):
                      we always delete
         """
         for table in [self.table_m, self.table_dt, self.table_d]:
-            sql_s = 'DELETE FROM {0} WHERE href = ? ;'.format(table)
+            sql_s = 'DELETE FROM [{0}] WHERE href = ? ;'.format(table)
             self.sql_ex(sql_s, (href, ))
 
     def list(self):
         """
         :returns: list of (href, etag)
         """
-        return self.sql_ex('SELECT href, etag FROM {0}'
+        return self.sql_ex('SELECT href, etag FROM [{0}]'
                            .format(self.table_m))
 
     def get_time_range(self, start, end, show_deleted=True):
@@ -361,7 +361,7 @@ class SQLiteDb(object):
         """
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
-        sql_s = ('SELECT href, dtstart, dtend FROM {0} WHERE '
+        sql_s = ('SELECT href, dtstart, dtend FROM [{0}] WHERE '
                  'dtstart >= ? AND dtstart <= ? OR '
                  'dtend >= ? AND dtend <= ? OR '
                  'dtstart <= ? AND dtend >= ?').format(self.table_dt)
@@ -383,7 +383,7 @@ class SQLiteDb(object):
         if end is None:
             end = start + datetime.timedelta(days=1)
         strend = end.strftime('%Y%m%d')
-        sql_s = ('SELECT href, dtstart, dtend FROM {0} WHERE '
+        sql_s = ('SELECT href, dtstart, dtend FROM [{0}] WHERE '
                  'dtstart >= ? AND dtstart < ? OR '
                  'dtend > ? AND dtend <= ? OR '
                  'dtstart <= ? AND dtend > ? ').format(self.table_d)
@@ -404,7 +404,7 @@ class SQLiteDb(object):
         specific Event from a Recursion set is returned, otherwise the Event
         returned exactly as saved in the db
         """
-        sql_s = 'SELECT vevent, etag FROM {0} WHERE href=(?)'.format(
+        sql_s = 'SELECT vevent, etag FROM [{0}] WHERE href=(?)'.format(
             self.table_m)
         result = self.sql_ex(sql_s, (href, ))
         return Event(result[0][0],
