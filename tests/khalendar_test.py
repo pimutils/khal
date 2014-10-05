@@ -1,5 +1,6 @@
 import datetime
 import os
+from textwrap import dedent
 
 import pytest
 import pytz
@@ -311,3 +312,48 @@ def test_default_calendar(cal_vdir):
     assert len(cal.get_allday_by_time_range(today)) == 1
     cal.db_update()
     assert len(cal.get_allday_by_time_range(today)) == 0
+
+
+def test_only_update_old_event(cal_vdir, monkeypatch):
+    cal, vdir = cal_vdir
+
+    href_one, etag_one = vdir.upload(cal.new_event(dedent("""
+    BEGIN:VEVENT
+    UID:meeting-one
+    DTSTART;VALUE=DATE:20140909
+    DTEND;VALUE=DATE:20140910
+    SUMMARY:first meeting
+    END:VEVENT
+    """), **KWARGS))
+
+    href_two, etag_two = vdir.upload(cal.new_event(dedent("""
+    BEGIN:VEVENT
+    UID:meeting-two
+    DTSTART;VALUE=DATE:20140910
+    DTEND;VALUE=DATE:20140911
+    SUMMARY:second meeting
+    END:VEVENT
+    """), **KWARGS))
+
+    cal.db_update()
+    assert not cal._db_needs_update()
+
+    old_update_vevent = cal._update_vevent
+    updated_hrefs = []
+    def _update_vevent(href):
+        updated_hrefs.append(href)
+        return old_update_vevent(href)
+    monkeypatch.setattr(cal, '_update_vevent', _update_vevent)
+
+    href_three, etag_three = vdir.upload(cal.new_event(dedent("""
+    BEGIN:VEVENT
+    UID:meeting-three
+    DTSTART;VALUE=DATE:20140911
+    DTEND;VALUE=DATE:20140912
+    SUMMARY:third meeting
+    END:VEVENT
+    """), **KWARGS))
+
+    assert cal._db_needs_update()
+    cal.db_update()
+    assert updated_hrefs == [href_three]
