@@ -208,10 +208,15 @@ class CListBox(urwid.ListBox):
     it should containe a `CalendarWalker` which it autoextends on rendering,
     if needed
     """
+    init = True
+
     def render(self, size, focus=False):
-        while 'bottom' in self.ends_visible(size):
-            self.body._autoextend()
-        self.set_focus_valign('middle')
+        if self.init:
+            while 'bottom' in self.ends_visible(size):
+                self.body._autoextend()
+            self.set_focus_valign('middle')
+            self.init = False
+
         return super(CListBox, self).render(size, focus)
 
 
