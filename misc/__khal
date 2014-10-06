@@ -17,7 +17,7 @@ local -a common_ops
 common_ops=(
   {-h,--help}"[show help]"
   {-v,--verbose}"[give more output]"
-  {-V,--version}"[show version and exit]"
+  --version"[show version and exit]"
   {-q,--quiet}"[give less output]"
   {-c,--config=}"[config file]:filename:_files"
 )
