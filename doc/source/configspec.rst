@@ -186,16 +186,6 @@ The [default] section
 The default section begins with a **[default]** tag. Some default values and
 behaviours are set here.
 
-.. _default-debug:
-
-.. object:: debug
-
-    
-    whether to print debugging information or not
-
-      :type: boolean
-      :default: False
-
 .. _default-default_calendar:
 
 .. object:: default_calendar

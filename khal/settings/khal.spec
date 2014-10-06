@@ -77,9 +77,6 @@ weeknumbers = weeknumbers(default='off')
 # this is a rather important subcommand
 default_command = option('calendar', 'agenda', 'interactive', default='calendar')
 
-# whether to print debugging information or not
-debug = boolean(default=False)
-
 # the calendar to use if no one is specified but only one can be used (e.g. if
 # adding a new event), this should be a valid calendar name.
 default_calendar = string(default=None)

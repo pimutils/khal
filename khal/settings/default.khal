@@ -15,4 +15,3 @@ weeknumbers= off
 
 [default]
 default_command = calendar
-debug = 0

@@ -17,6 +17,7 @@ not yet released
 * khal new can now create repetitive events (with --repeat)
 * ikhal's calendar should now be filled on startup
 * ikhal: pressing `t` refocuses on today
+* config file: the debug option has been removed (use `khal -v` instead)
 
 0.3.1
 -----

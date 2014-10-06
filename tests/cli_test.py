@@ -57,7 +57,6 @@ firstweekday = 0
 [default]
 default_command = {command}
 default_calendar = one
-debug = 1
 
 [sqlite]
 path = {dbpath}
