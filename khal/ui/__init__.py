@@ -219,6 +219,12 @@ class CListBox(urwid.ListBox):
 
         return super(CListBox, self).render(size, focus)
 
+    def keypress(self, size, key):
+        if key in ['t']:
+            self.body.set_focus(self.body.today)
+            self.set_focus_valign(('relative', 10))
+        return super(CListBox, self).keypress(size, key)
+
 
 class CalendarWalker(urwid.SimpleFocusListWalker):
 
@@ -227,12 +233,14 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         self.weeknumbers = weeknumbers
         self.view = view
         weeks, focus_item = self._construct_month()
+        self.today = focus_item  # the item number which contains today
         urwid.SimpleFocusListWalker.__init__(self, weeks)
         self.set_focus(focus_item)
 
     def set_focus(self, position):
         if position == 0:
             position = self._autoprepend()
+            self.today += position
         elif position + 1 == len(self):
             self._autoextend()
         return urwid.SimpleFocusListWalker.set_focus(self, position)
@@ -829,6 +837,7 @@ class ClassicView(Pane):
 
     def get_keys(self):
         return [(['arrows'], 'navigate through the calendar'),
+                (['t'], 're-focus on today'),
                 (['enter'], 'select a date'),
                 (['q'], 'quit')
                 ]
