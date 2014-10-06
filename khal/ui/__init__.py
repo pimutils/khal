@@ -197,9 +197,22 @@ def calendar_walker(view, firstweekday=0, weeknumbers=False):
         dividechars=1)
 
     weeks = CalendarWalker(view, firstweekday, weeknumbers)
-    box = urwid.ListBox(weeks)
+    box = CListBox(weeks)
     frame = urwid.Frame(box, header=dnames)
     return frame
+
+
+class CListBox(urwid.ListBox):
+    """our custom version of ListBox for containing CalendarWalker
+
+    it should containe a `CalendarWalker` which it autoextends on rendering,
+    if needed
+    """
+    def render(self, size, focus=False):
+        while 'bottom' in self.ends_visible(size):
+            self.body._autoextend()
+        self.set_focus_valign('middle')
+        return super(CListBox, self).render(size, focus)
 
 
 class CalendarWalker(urwid.SimpleFocusListWalker):

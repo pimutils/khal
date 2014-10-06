@@ -15,6 +15,7 @@ not yet released
 * removed dependency: docopt
 * khal can now display weeknumbers
 * khal new can now create repetitive events (with --repeat)
+* ikhal's calendar should now be filled on startup
 
 0.3.1
 -----
