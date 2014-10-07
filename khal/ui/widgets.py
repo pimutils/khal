@@ -22,8 +22,22 @@
 
 import datetime
 from datetime import timedelta
+import re
 
 import urwid
+
+from ..compat import unicode_type
+
+
+def delete_last_word(text, number=1):
+    """delete last `number` of words from text"""
+    words = re.findall(r"[\w]+|[^\w\s]", text, re.UNICODE)
+    for one in range(1, number + 1):
+        text = text.rstrip()
+        if text == '':
+            return text
+        text = text[:len(text) - len(words[-one])]
+    return text
 
 
 class CEdit(urwid.Edit):
@@ -35,16 +49,9 @@ class CEdit(urwid.Edit):
 
     def _delete_word(self):
         """delete word before cursor"""
-        text = str(self.get_edit_text())
-        f_text = text[:self.edit_pos].rstrip()
-        b_text = text[self.edit_pos:]
-        pos = f_text.rfind(' ')
-        if pos == -1:
-            f_text = ''
-        else:
-            f_text = f_text[:pos + 1]
-        text = f_text + b_text
-        self.set_edit_text(text)
+        text = unicode_type(self.get_edit_text())
+        f_text = delete_last_word(text[:self.edit_pos])
+        self.set_edit_text(f_text + text[self.edit_pos:])
         self.set_edit_pos(len(f_text))
 
 
