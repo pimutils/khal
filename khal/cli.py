@@ -35,6 +35,7 @@ from khal import khalendar
 from khal import __version__
 from khal.log import logger
 from khal.settings import get_config, InvalidSettingsError
+from khal.exceptions import FatalError
 
 try:
     from StringIO import StringIO
@@ -95,21 +96,25 @@ def global_options(f):
 
 
 def build_collection(ctx):
-    conf = ctx.obj['conf']
-    collection = khalendar.CalendarCollection()
-    selection = ctx.obj.get('calendar_selection', None)
-    for name, cal in conf['calendars'].items():
-        if selection is None or name in ctx.obj['calendar_selection']:
-            collection.append(khalendar.Calendar(
-                name=name,
-                dbpath=conf['sqlite']['path'],
-                path=cal['path'],
-                readonly=cal['readonly'],
-                color=cal['color'],
-                unicode_symbols=conf['locale']['unicode_symbols'],
-                local_tz=conf['locale']['local_timezone'],
-                default_tz=conf['locale']['default_timezone']
-            ))
+    try:
+        conf = ctx.obj['conf']
+        collection = khalendar.CalendarCollection()
+        selection = ctx.obj.get('calendar_selection', None)
+        for name, cal in conf['calendars'].items():
+            if selection is None or name in ctx.obj['calendar_selection']:
+                collection.append(khalendar.Calendar(
+                    name=name,
+                    dbpath=conf['sqlite']['path'],
+                    path=cal['path'],
+                    readonly=cal['readonly'],
+                    color=cal['color'],
+                    unicode_symbols=conf['locale']['unicode_symbols'],
+                    local_tz=conf['locale']['local_timezone'],
+                    default_tz=conf['locale']['default_timezone']
+                ))
+    except FatalError as error:
+        logger.fatal(error)
+        sys.exit(1)
 
     collection._default_calendar_name = conf['default']['default_calendar']
     return collection
