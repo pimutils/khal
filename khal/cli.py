@@ -205,7 +205,7 @@ def _get_cli():
     @click.option('--location', '-l',
                   help=('The location of the new event.'))
     @click.option('--repeat', '-r',
-            help=('Repeat event: daily, weekly, monthly or yearly.'))
+                  help=('Repeat event: daily, weekly, monthly or yearly.'))
     @click.argument('description', nargs=-1, required=True)
     @click.pass_context
     def new(ctx, description, location, repeat):
