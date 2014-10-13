@@ -148,6 +148,10 @@ class DateCColumns(CColumns):
 
     def __init__(self, widget_list, view=None, **kwargs):
         self.view = view
+        # we need the next two attributes to for attribute resetting when a
+        # cell regains focus after having lost it the the events column before
+        self._old_attr_map = False
+        self._old_pos = 0
         super(DateCColumns, self).__init__(widget_list, **kwargs)
 
     def _set_focus_position(self, position):
@@ -168,13 +172,20 @@ CColumns is empty, or when set to an invalid index.
 """)
 
     def keypress(self, size, key):
-        """only leave calendar area on pressing 'TAB'"""
+        """only leave calendar area on pressing 'tab' or 'enter'"""
 
         old_pos = self.focus_position
         key = super(DateCColumns, self).keypress(size, key)
         if key in ['tab', 'enter']:
+            self._old_attr_map = self.contents[self.focus_position][0].get_attr_map()
+            self._old_pos = old_pos
+            self.contents[self.focus_position][0].set_attr_map({None: 'today_focus'})
             return 'right'
-        elif old_pos == 7 and key == 'right':
+        elif self._old_attr_map:
+            self.contents[self._old_pos][0].set_attr_map(self._old_attr_map)
+            self._old_attr_map = False
+
+        if old_pos == 7 and key == 'right':
             self.focus_position = 1
             return 'down'
         elif old_pos == 1 and key == 'left':
@@ -182,13 +193,10 @@ CColumns is empty, or when set to an invalid index.
             return 'up'
         elif key not in ['right']:
             return key
-        else:
-            return key
 
 
 def calendar_walker(view, firstweekday=0, weeknumbers=False):
-    """hopefully this will soon become a real "walker",
-    loading new weeks as needed"""
+    """creates a `Frame` filled with a `CalendarWalker`"""
     calendar.setfirstweekday(firstweekday)
     dnames = calendar.weekheader(2).split(' ')
     if weeknumbers == 'right':
@@ -839,8 +847,9 @@ class ClassicView(Pane):
     def get_keys(self):
         return [(['arrows'], 'navigate through the calendar'),
                 (['t'], 're-focus on today'),
-                (['enter'], 'select a date'),
-                (['q'], 'quit')
+                (['enter'], 'select a date/event, show/edit event'),
+                (['d'], 'delete event under cursor'),
+                (['q'], 'quit'),
                 ]
 
     def show_date(self, date):
