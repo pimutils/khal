@@ -25,34 +25,6 @@ The SQLite backend implementation.
 Database Layout
 ===============
 
-current version number: 2
-tables: version, accounts, account_$ACCOUNTNAME
-
-version:
-    version (INT): only one line: current db version
-
-account:
-    account (TEXT): name of the account
-    resource (TEXT)
-    ctag (TEX): *collection* tag, used to check if this account has been changed
-               this last usage
-
-$ACCOUNTNAME_m:  # as in master
-    href (TEXT)
-    etag (TEXT)
-    vevent (TEXT): the actual vcard
-
-$ACCOUNTNAME_d: #all day events
-    # keeps start and end dates of all events, incl. recurrent dates
-    dtstart (INT)
-    dtend (INT)
-    href (TEXT)
-
-$ACCOUNTNAME_dt: #other events, same as above
-    dtstart (INT)
-    dtend (INT)
-    href (TEXT)
-
 """
 
 from __future__ import print_function
@@ -109,7 +81,7 @@ class SQLiteDb(object):
         self.cursor = self.conn.cursor()
         self._create_default_tables()
         self._check_table_version()
-        self.create_account_table()
+        self._check_calendar_exists()
 
     def _create_dbdir(self):
         """create the dbdir if it doesn't exist"""
@@ -142,30 +114,53 @@ class SQLiteDb(object):
                 "You should consider removing it and running khal again.")
 
     def _create_default_tables(self):
-        """creates version and account tables and inserts table version number
+        """creates version and calendar tables and inserts table version number
         """
-        try:
-            self.sql_ex('CREATE TABLE IF NOT EXISTS version (version INTEGER)')
-            logger.debug("created version table")
-        except Exception as error:
-            logger.fatal('Failed to connect to database,'
-                         'Unknown Error: {}'.format(error))
-            raise
+        self.sql_ex('CREATE TABLE IF NOT EXISTS version (version INTEGER)')
+        logger.debug("created version table")
+
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS calendars (
+            calendar TEXT NOT NULL UNIQUE,
+            resource TEXT NOT NULL,
+            ctag FLOAT
+            )''')
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS events (
+                href TEXT,
+                recuid TEXT UNIQUE,
+                calendar TEXT,
+                sequence INT,
+                etag TEXT,
+                type TEXT,
+                item TEXT
+                );''')
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS recs_loc (
+            dtstart INT,
+            dtend INT,
+            href TEXT,
+            recuid TEXT NOT NULL REFERENCES events( recuid )
+            );''')
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS recs_float (
+            dtstart INT,
+            dtend INT,
+            href TEXT,
+            recuid TEXT NOT NULL REFERENCES events( recuid )
+            );''')
         self.conn.commit()
 
-        try:
-            self.cursor.execute('''CREATE TABLE IF NOT EXISTS accounts (
-                account TEXT NOT NULL UNIQUE,
-                resource TEXT NOT NULL,
-                ctag FLOAT
-                )''')
-            logger.debug("created accounts table")
-        except Exception as error:
-            logger.fatal('Failed to connect to database,'
-                         'Unknown Error: {}'.format(error))
-            raise
-        self.conn.commit()
-        self._check_table_version()  # insert table version
+    def _check_calendar_exists(self):
+        """make sure an entry for the current calendar exists in `calendar`
+        table
+        """
+        self.cursor.execute('''SELECT count(*) FROM calendars
+                WHERE calendar = ?;''', (self.calendar,))
+        result = self.cursor.fetchone()
+
+        if(result[0] != 0):
+            logger.debug("tables for calendar {0} exist".format(self.calendar))
+        else:
+            sql_s = 'INSERT INTO calendars (calendar, resource) VALUES (?, ?);'
+            stuple = (self.calendar, '')
+            self.sql_ex(sql_s, stuple)
 
     def sql_ex(self, statement, stuple='', commit=True):
         """wrapper for sql statements, does a "fetchall" """
@@ -174,40 +169,6 @@ class SQLiteDb(object):
         if commit:
             self.conn.commit()
         return result
-
-    def create_account_table(self):
-        count_sql_s = """SELECT count(*) FROM accounts
-                WHERE account = ? AND resource = ?"""
-        stuple = (self.calendar, '')
-        self.cursor.execute(count_sql_s, stuple)
-        result = self.cursor.fetchone()
-
-        if(result[0] != 0):
-            logger.debug("tables for calendar {0} exist".format(self.calendar))
-            return
-        sql_s = """CREATE TABLE IF NOT EXISTS [{0}] (
-                href TEXT UNIQUE,
-                recuid TEXT UNIQUE,
-                etag TEXT,
-                vevent TEXT
-                )""".format(self.table_m)
-        self.sql_ex(sql_s)
-        sql_s = '''CREATE TABLE IF NOT EXISTS [{0}] (
-            dtstart INT,
-            dtend INT,
-            href TEXT,
-            recuid TEXT); '''.format(self.table_dt)
-        self.sql_ex(sql_s)
-        sql_s = '''CREATE TABLE IF NOT EXISTS [{0}] (
-            dtstart INT,
-            dtend INT,
-            href TEXT,
-            recuid TEXT); '''.format(self.table_d)
-        self.sql_ex(sql_s)
-        sql_s = 'INSERT INTO accounts (account, resource) VALUES (?, ?)'
-        stuple = (self.calendar, '')
-        self.sql_ex(sql_s, stuple)
-        logger.debug("created table for calendar {0}".format(self.calendar))
 
     def update(self, vevent, href, etag=''):
         """insert a new or update an existing card in the db
@@ -244,16 +205,13 @@ class SQLiteDb(object):
             raise UpdateFailed('Could not find event in {}'.format(ical))
 
         for vevent in events:
+            vevent = aux.sanitize(vevent)
             self._update_one(vevent, href, etag)
 
     def _update_one(self, vevent, href, etag):
-        vevent = aux.sanitize(vevent)
+        vtype = 'VEVENT'
 
-        if 'RECURRENCE-ID' not in vevent:
-            # this is a "master" event, therefore clean the db first
-            self.delete(href)
-
-        recuid = href
+        recuid = self.calendar + '__' + href
         if 'RECURRENCE-ID' in vevent:
             recuid += str(aux.to_unix_time(vevent['RECURRENCE-ID'].dt))
 
@@ -262,51 +220,42 @@ class SQLiteDb(object):
         if not isinstance(vevent['DTSTART'].dt, datetime.datetime):
             all_day_event = True
 
-        dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
-        for table in [self.table_d, self.table_m]:
-            sql_s = ('DELETE FROM {0} WHERE recuid == ?'.format(table))
-            self.sql_ex(sql_s, (recuid, ), commit=False)
-
+        dtstartend = aux.expand(vevent, self.default_tz, href)
         for dtstart, dtend in dtstartend:
             if all_day_event:
                 dbstart = dtstart.strftime('%Y%m%d')
                 dbend = dtend.strftime('%Y%m%d')
-                table = self.table_d
+                table = 'recs_float'
             else:
                 # TODO: extract strange (aka non Olson) TZs from params['TZID']
-                # perhaps better done in event/vevent
+                # perhaps better done in event/vevent or directly in icalendar
                 if dtstart.tzinfo is None:
                     dtstart = self.locale['default_timezone'].localize(dtstart)
                 if dtend.tzinfo is None:
                     dtend = self.locale['default_timezone'].localize(dtend)
-
                 dbstart = aux.to_unix_time(dtstart)
                 dbend = aux.to_unix_time(dtend)
-
-                table = self.table_dt
+                table = 'recs_loc'
 
             sql_s = (
-                'INSERT OR REPLACE INTO [{0}] (dtstart, dtend, href, recuid) '
-                'VALUES (?, ?, ?, COALESCE((SELECT recuid FROM [{0}] WHERE '
-                'recuid = ?), ?));'.format(table))
-            stuple = (dbstart, dbend, href, recuid, recuid)
-            self.sql_ex(sql_s, stuple, commit=False)
+                'INSERT INTO {} (dtstart, dtend, recuid)'
+                'VALUES (?, ?, ?);'.format(table))
+            stuple = (dbstart, dbend, recuid)
+            self.sql_ex(sql_s, stuple, commit=True)
 
-        sql_s = ('INSERT OR REPLACE INTO [{0}] '
-                 '(vevent, etag, href, recuid) '
-                 'VALUES (?, ?, ?, '
-                 'COALESCE((SELECT recuid FROM [{0}] WHERE recuid = ?), ?)'
-                 ');'.format(self.table_m))
+        sql_s = ('INSERT INTO events '
+                 '(item, etag, href, recuid, type, calendar) '
+                 'VALUES (?, ?, ?, ?, ?, ?);')
 
         stuple = (vevent.to_ical().decode('utf-8'),
-                  etag, href, recuid, recuid)
+                  etag, href, recuid, vtype, self.calendar)
 
-        self.sql_ex(sql_s, stuple, commit=False)
+        self.sql_ex(sql_s, stuple, commit=True)
         self.conn.commit()
 
     def get_ctag(self):
         stuple = (self.calendar, )
-        sql_s = 'SELECT ctag FROM accounts WHERE account = ?'
+        sql_s = 'SELECT ctag FROM calendars WHERE calendar = ?;'
         try:
             ctag = self.sql_ex(sql_s, stuple)[0][0]
             return ctag
@@ -315,7 +264,7 @@ class SQLiteDb(object):
 
     def set_ctag(self, ctag):
         stuple = (ctag, self.calendar, )
-        sql_s = 'UPDATE accounts SET ctag = ? WHERE account = ?'
+        sql_s = 'UPDATE calendars SET ctag = ? WHERE calendar = ?;'
         self.sql_ex(sql_s, stuple)
         self.conn.commit()
 
@@ -326,10 +275,9 @@ class SQLiteDb(object):
         return: etag
         rtype: str()
         """
-        sql_s = ('SELECT etag FROM [{0}] WHERE href=(?);'
-                 .format(self.table_m))
+        sql_s = 'SELECT etag FROM events WHERE href = ? AND calendar = ?;'
         try:
-            etag = self.sql_ex(sql_s, (href,))[0][0]
+            etag = self.sql_ex(sql_s, (href, self.calendar))[0][0]
             return etag
         except IndexError:
             return None
@@ -341,30 +289,30 @@ class SQLiteDb(object):
         :param etag: only there for compatiblity with vdirsyncer's Storage,
                      we always delete
         """
-        for table in [self.table_m, self.table_dt, self.table_d]:
-            sql_s = 'DELETE FROM [{0}] WHERE href = ? ;'.format(table)
-            self.sql_ex(sql_s, (href, ))
+        for table in ['events', 'recs_loc', 'recs_float']:
+            sql_s = 'DELETE FROM {0} WHERE href = ? AND calendar = ?;'.format(table)
+            self.sql_ex(sql_s, (href, self.calendar))
 
     def list(self):
         """
         :returns: list of (href, etag)
         """
-        return list(set(self.sql_ex('SELECT href, etag FROM [{0}]'
-                                    .format(self.table_m))))
+        sql_s = 'SELECT href, etag FROM events WHERE calendar = ?;'
+        return list(set(self.sql_ex(sql_s, (self.calendar, ))))
 
-    def get_time_range(self, start, end, show_deleted=True):
+    def get_time_range(self, start, end):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
-        :param show_deleted: include deleted events in returned lsit
         """
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
-        sql_s = ('SELECT recuid, dtstart, dtend FROM [{0}] WHERE '
-                 'dtstart >= ? AND dtstart <= ? OR '
+        sql_s = ('SELECT recs_loc.recuid, dtstart, dtend FROM '
+                 'recs_loc JOIN events ON recs_loc.recuid = events.recuid WHERE '
+                 '(dtstart >= ? AND dtstart <= ? OR '
                  'dtend >= ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend >= ?').format(self.table_dt)
-        stuple = (start, end, start, end, start, end)
+                 'dtstart <= ? AND dtend >= ?) AND calendar = ?;')
+        stuple = (start, end, start, end, start, end, self.calendar)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
         for recuid, start, end in result:
@@ -375,18 +323,19 @@ class SQLiteDb(object):
             event_list.append(event)
         return event_list
 
-    def get_allday_range(self, start, end=None, show_deleted=True):
+    def get_allday_range(self, start, end=None):
         # TODO type check on start and end
         # should be datetime.date not datetime.datetime
         strstart = start.strftime('%Y%m%d')
         if end is None:
             end = start + datetime.timedelta(days=1)
         strend = end.strftime('%Y%m%d')
-        sql_s = ('SELECT recuid, dtstart, dtend FROM [{0}] WHERE '
-                 'dtstart >= ? AND dtstart < ? OR '
+        sql_s = ('SELECT recs_float.recuid, dtstart, dtend FROM '
+                 'recs_float JOIN events ON recs_float.recuid = events.recuid WHERE '
+                 '(dtstart >= ? AND dtstart < ? OR '
                  'dtend > ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend > ? ').format(self.table_d)
-        stuple = (strstart, strend, strstart, strend, strstart, strend)
+                 'dtstart <= ? AND dtend > ? ) AND calendar = ?;')
+        stuple = (strstart, strend, strstart, strend, strstart, strend, self.calendar)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
         for recuid, start, end in result:
@@ -403,8 +352,7 @@ class SQLiteDb(object):
         specific Event from a Recursion set is returned, otherwise the Event
         returned exactly as saved in the db
         """
-        sql_s = 'SELECT vevent, etag FROM [{0}] WHERE recuid=(?)'.format(
-            self.table_m)
+        sql_s = 'SELECT item, etag FROM events WHERE recuid = ?;'
         result = self.sql_ex(sql_s, (recuid, ))
         return Event(result[0][0],
                      start=start,
