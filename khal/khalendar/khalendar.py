@@ -247,10 +247,9 @@ class CalendarCollection(object):
         return self._calnames[calendar].get_event(href)
 
     def change_collection(self, event, new_collection):
-        self._calnames[event.calendar].delete(event.href, event.etag)
+        href, etag, calendar = event.href, event.etag, event.calendar
         self._calnames[new_collection].new(event)
-        # TODO would be better to first add to new collection, then delete
-        # currently not possible since new modifies event.etag
+        self._calnames[calendar].delete(href, etag)
 
     def new_event(self, ical, collection):
         """returns a new event"""

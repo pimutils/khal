@@ -289,11 +289,11 @@ class SQLiteDb(object):
         :param etag: only there for compatiblity with vdirsyncer's Storage,
                      we always delete
         """
-        sql_s = 'SELECT recuid FROM events WHERE href = ?;'
-        result = self.sql_ex(sql_s, (href, ))
+        sql_s = 'SELECT recuid FROM events WHERE href = ? AND calendar = ?;'
+        result = self.sql_ex(sql_s, (href, self.calendar))
         for recuid, in result:
             for table in ['recs_loc', 'recs_float']:
-                sql_s = 'DELETE FROM {0} WHERE recuid = ? ;'.format(table)
+                sql_s = 'DELETE FROM {0} WHERE recuid = ?;'.format(table)
                 self.sql_ex(sql_s, (recuid, ))
         sql_s = 'DELETE FROM events WHERE href = ? AND calendar = ?;'
         self.sql_ex(sql_s, (href, self.calendar))
