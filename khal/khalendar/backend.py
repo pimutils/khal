@@ -227,7 +227,7 @@ class SQLiteDb(object):
                 dbend = dtend.strftime('%Y%m%d')
                 table = 'recs_float'
             else:
-                # TODO: extract strange (aka non Olson) TZs from params['TZID']
+                # TODO: extract non-Olson TZs from params['TZID']
                 # perhaps better done in event/vevent or directly in icalendar
                 if dtstart.tzinfo is None:
                     dtstart = self.locale['default_timezone'].localize(dtstart)
@@ -289,9 +289,14 @@ class SQLiteDb(object):
         :param etag: only there for compatiblity with vdirsyncer's Storage,
                      we always delete
         """
-        for table in ['events', 'recs_loc', 'recs_float']:
-            sql_s = 'DELETE FROM {0} WHERE href = ? AND calendar = ?;'.format(table)
-            self.sql_ex(sql_s, (href, self.calendar))
+        sql_s = 'SELECT recuid FROM events WHERE href = ?;'
+        result = self.sql_ex(sql_s, (href, ))
+        for recuid, in result:
+            for table in ['recs_loc', 'recs_float']:
+                sql_s = 'DELETE FROM {0} WHERE recuid = ? ;'.format(table)
+                self.sql_ex(sql_s, (recuid, ))
+        sql_s = 'DELETE FROM events WHERE href = ? AND calendar = ?;'
+        self.sql_ex(sql_s, (href, self.calendar))
 
     def list(self):
         """
@@ -352,13 +357,16 @@ class SQLiteDb(object):
         specific Event from a Recursion set is returned, otherwise the Event
         returned exactly as saved in the db
         """
-        sql_s = 'SELECT item, etag FROM events WHERE recuid = ?;'
+        sql_s = 'SELECT href, etag, item FROM events WHERE recuid = ?;'
         result = self.sql_ex(sql_s, (recuid, ))
-        return Event(result[0][0],
+        href, etag, item = result[0]
+        return Event(item,
+                     local_tz=self.local_tz,
+                     default_tz=self.default_tz,
                      start=start,
                      end=end,
-                     href=recuid,
+                     href=href,
                      calendar=self.calendar,
-                     etag=result[0][1],
-                     locale=self.locale,
+                     etag=etag,
+                     color=self.color,
                      )

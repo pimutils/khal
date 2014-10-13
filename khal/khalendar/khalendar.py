@@ -131,13 +131,13 @@ class Calendar(object):
         self._dbtool.update(event.to_ical(), event.href, event.etag)
         self._dbtool.set_ctag(self.local_ctag())
 
-    def delete(self, event):
+    def delete(self, href, etag):
         """delete event from this collection
         """
         if self._readonly:
             raise ReadOnlyCalendarError()
-        self._storage.delete(event.href, event.etag)
-        self._dbtool.delete(event.href)
+        self._storage.delete(href, etag)
+        self._dbtool.delete(href)
 
     def _db_needs_update(self):
         if self.local_ctag() == self._dbtool.get_ctag():
@@ -240,14 +240,14 @@ class CalendarCollection(object):
         else:
             self._calnames[event.calendar].new(event)
 
-    def delete(self, event):
-        self._calnames[event.calendar].delete(event)
+    def delete(self, href, etag, calendar):
+        self._calnames[calendar].delete(href, etag)
 
     def get_event(self, href, calendar):
         return self._calnames[calendar].get_event(href)
 
     def change_collection(self, event, new_collection):
-        self._calnames[event.calendar].delete(event)
+        self._calnames[event.calendar].delete(event.href, event.etag)
         self._calnames[new_collection].new(event)
         # TODO would be better to first add to new collection, then delete
         # currently not possible since new modifies event.etag

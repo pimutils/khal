@@ -399,7 +399,8 @@ class U_Event(urwid.Text):
 
     @property
     def uid(self):
-        return self.event.calendar + '\n' + str(self.event.href)
+        return self.event.calendar + '\n' + \
+            str(self.event.href) + '\n' + str(self.event.etag)
 
     def set_title(self, mark=''):
         if self.uid in self.eventcolumn.deleted:
@@ -868,9 +869,9 @@ class ClassicView(Pane):
 
     def cleanup(self, data):
         for part in self.deleted:
-            account, uid = part.split('\n', 1)
-            event = self.collection.get_event(uid, account)
-            self.collection.delete(event)
+            account, href, etag = part.split('\n', 2)
+            self.collection.delete(href, etag, account)
+        pass
 
 
 def start_pane(pane, callback, header=''):
