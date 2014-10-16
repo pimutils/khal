@@ -243,7 +243,7 @@ class TestEvent(object):
         with pytest.raises(ValueError):
             event.compact(datetime.date(2014, 4, 8))
         assert event.compact(datetime.date(2014, 4, 9)) == u'09:30→ : An Event'
-        # FIXME ugly! replace with one arro
+        # FIXME ugly! replace with one arrow
         assert event.compact(datetime.date(2014, 4, 10)) == u'→ → : An Event'
         assert event.compact(datetime.date(2014, 4, 12)) == u'→ 10:30: An Event'
         with pytest.raises(ValueError):
