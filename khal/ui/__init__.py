@@ -749,7 +749,7 @@ class EventEditor(EventViewer):
             # (timezone was missing after to_ical() )
             self.event.vevent.pop('DTSTART')
             self.event.vevent.add('DTSTART', self.startendeditor.newstart)
-            if self.event.allday:
+            if self.startendeditor.allday:
                 end = self.startendeditor.newend + timedelta(days=1)
             else:
                 end = self.startendeditor.newend
