@@ -190,7 +190,7 @@ class Event(object):
                 tzs.append(self.vevent['DTEND'].dt.tzinfo)
 
             for tzinfo in tzs:
-                timezone = self._create_timezone(tzinfo)
+                timezone = create_timezone(tzinfo)
                 calendar.add_component(timezone)
 
         calendar.add_component(self.vevent)
@@ -283,41 +283,73 @@ class Event(object):
 
         return calendar
 
-    def _create_timezone(self, tz):
-        """
-        create an icalendar timezone from a pytz.tzinfo
 
-        :param tz: the timezone
-        :type tz: pytz.tzinfo
-        :returns: timezone information set
-        :rtype: icalendar.Timezone()
-        """
-        timezone = icalendar.Timezone()
-        timezone.add('TZID', tz)
+def create_timezone(tz, first_date=None, last_date=None):
+    """
+    create an icalendar vtimezone from a pytz.tzinfo
 
-        # FIXME should match year of the event, not this year
-        this_year = datetime.datetime.today().year
-        daylight, standard = [(num, dt) for num, dt
-                              in enumerate(tz._utc_transition_times)
-                              if dt.year == this_year]
+    :param tz: the timezone
+    :type tz: pytz.tzinfo
+    :param first_date: the very first datetime that needs to be included in the
+    transition times, typically the DTSTART value of the (first recurring)
+    event
+    :type first_date: datetime.datetime
+    :param last_date: the last datetime that needs to included, typically the
+    end of the (very last) event (of a recursion set)
+    :returns: timezone information
+    :rtype: icalendar.Timezone()
 
-        timezone_daylight = icalendar.TimezoneDaylight()
-        timezone_daylight.add('TZNAME', tz._transition_info[daylight[0]][2])
-        timezone_daylight.add('DTSTART', daylight[1])
-        timezone_daylight.add(
-            'TZOFFSETFROM', tz._transition_info[daylight[0]][0])
-        timezone_daylight.add(
-            'TZOFFSETTO', tz._transition_info[standard[0]][0])
+    we currently have a problem here:
 
-        timezone_standard = icalendar.TimezoneStandard()
-        timezone_standard.add('TZNAME', tz._transition_info[standard[0]][2])
-        timezone_standard.add('DTSTART', standard[1])
-        timezone_standard.add(
-            'TZOFFSETFROM', tz._transition_info[standard[0]][0])
-        timezone_standard.add(
-            'TZOFFSETTO', tz._transition_info[daylight[0]][0])
+       pytz.timezones only carry the absolute dates of time zone transitions,
+       not their RRULEs. This will a) make for rather bloated VTIMEZONE
+       components, especially for long recurring events, b) we'll need to
+       specify for which time range this VTIMEZONE shouuld be generated and c)
+       will not be valid for recurring events that go into eternity.
 
-        timezone.add_component(timezone_daylight)
-        timezone.add_component(timezone_standard)
+    Possible Solutions:
 
-        return timezone
+    As this information is not provided by pytz at all, there is no
+    easy solution, we'd really need to ship another version of the OLSON DB.
+
+    """
+
+    # TODO last_date = None, recurring to infintiy
+    # TODO use RDATE, not seperate subcomponents
+
+    first_date = datetime.datetime.today() if not first_date else first_date
+    last_date = datetime.datetime.today() if not last_date else last_date
+    timezone = icalendar.Timezone()
+    timezone.add('TZID', tz)
+
+    dst = {one[2]: 'DST' in two.__repr__() for one, two in tz._tzinfos.iteritems()}
+    # let's hope those transition times are alway ordered (but it does look
+    # like it)
+
+    # looking for the first and last transition time we need to include
+    first_num, last_num = 0, len(tz._utc_transition_times) - 1
+    first_tt = tz._utc_transition_times[0]
+    last_tt = tz._utc_transition_times[-1]
+    for num, dt in enumerate(tz._utc_transition_times):
+        if dt > first_tt and dt < first_date:
+            first_num = num
+            first_tt = dt
+        if dt < last_tt and dt > last_date:
+            last_num = num
+            last_tt = dt
+
+    for num in range(first_num, last_num + 1):
+        name = tz._transition_info[num][2]
+        if dst[name]:
+            subcomp = icalendar.TimezoneDaylight()
+        else:
+            subcomp = icalendar.TimezoneStandard()
+
+        subcomp.add('TZNAME', tz._transition_info[num][2])
+        subcomp.add('DTSTART',
+                    tz.fromutc(tz._utc_transition_times[num]).replace(tzinfo=None))
+        subcomp.add('TZOFFSETTO', tz._transition_info[num][0])
+        subcomp.add('TZOFFSETFROM', tz._transition_info[num - 1][0])
+        timezone.add_component(subcomp)
+
+    return timezone
