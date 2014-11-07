@@ -2,7 +2,24 @@ Installing khal
 ===============
 
 If khal is packaged for your OS/distribution, using your system's
-standard package manager is probably the easiest way to install khal.
+standard package manager is probably the easiest way to install khal:
+
+- pkgsrc_
+- Personal repos for openSUSE:
+
+  - openSUSE 13.1::
+
+      sudo zypper ar -f http://download.opensuse.org/repositories/home:/seilerphilipp/openSUSE_13.1/home_seilerphilipp
+
+  - openSUSE 13.2::
+
+      sudo zypper ar -f http://download.opensuse.org/repositories/home:/seilerphilipp/openSUSE_13.2/home_seilerphilipp
+
+- AUR packages for ArchLinux: stable_ and development_ version.
+
+.. _pkgsrc: http://pkgsrc.se/wip/khal-git
+.. _stable: https://aur.archlinux.org/packages/khal/
+.. _development: https://aur.archlinux.org/packages/khal-git/
 
 If a package isn't available (or it is outdated) you need to fall back to one
 of the methods mentioned below.
