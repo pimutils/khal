@@ -315,7 +315,6 @@ def create_timezone(tz, first_date=None, last_date=None):
     """
 
     # TODO last_date = None, recurring to infintiy
-    # TODO use RDATE, not seperate subcomponents
 
     first_date = datetime.datetime.today() if not first_date else first_date
     last_date = datetime.datetime.today() if not last_date else last_date
@@ -323,8 +322,6 @@ def create_timezone(tz, first_date=None, last_date=None):
     timezone.add('TZID', tz)
 
     dst = {one[2]: 'DST' in two.__repr__() for one, two in tz._tzinfos.iteritems()}
-    # let's hope those transition times are alway ordered (but it does look
-    # like it)
 
     # looking for the first and last transition time we need to include
     first_num, last_num = 0, len(tz._utc_transition_times) - 1
@@ -338,18 +335,32 @@ def create_timezone(tz, first_date=None, last_date=None):
             last_num = num
             last_tt = dt
 
+    timezones = dict()
     for num in range(first_num, last_num + 1):
         name = tz._transition_info[num][2]
+        if name in timezones:
+            ttime = tz.fromutc(tz._utc_transition_times[num]).replace(tzinfo=None)
+            if 'RDATE' in timezones[name]:
+                timezones[name]['RDATE'].dts.append(
+                    icalendar.prop.vDDDTypes(ttime))
+            else:
+                timezones[name].add('RDATE', ttime)
+            continue
+
         if dst[name]:
             subcomp = icalendar.TimezoneDaylight()
         else:
             subcomp = icalendar.TimezoneStandard()
 
         subcomp.add('TZNAME', tz._transition_info[num][2])
-        subcomp.add('DTSTART',
-                    tz.fromutc(tz._utc_transition_times[num]).replace(tzinfo=None))
+        subcomp.add(
+            'DTSTART',
+            tz.fromutc(tz._utc_transition_times[num]).replace(tzinfo=None))
         subcomp.add('TZOFFSETTO', tz._transition_info[num][0])
         subcomp.add('TZOFFSETFROM', tz._transition_info[num - 1][0])
+        timezones[name] = subcomp
+
+    for subcomp in timezones.values():
         timezone.add_component(subcomp)
 
     return timezone
