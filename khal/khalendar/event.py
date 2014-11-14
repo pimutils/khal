@@ -305,7 +305,7 @@ def create_timezone(tz, first_date=None, last_date=None):
        pytz.timezones only carry the absolute dates of time zone transitions,
        not their RRULEs. This will a) make for rather bloated VTIMEZONE
        components, especially for long recurring events, b) we'll need to
-       specify for which time range this VTIMEZONE shouuld be generated and c)
+       specify for which time range this VTIMEZONE should be generated and c)
        will not be valid for recurring events that go into eternity.
 
     Possible Solutions:
