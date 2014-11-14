@@ -1,5 +1,5 @@
 Changelog
-=========
+#########
 All notable changes to this project should be documented here.
 For more detailed information have a look at the git log.
 
@@ -8,19 +8,28 @@ may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
 0.4.0
------
+=====
 not yet released
 
 * new dependency: click>3.2
 * removed dependency: docopt
-* khal can now display weeknumbers
+
+* khal (and ical) can now display weeknumbers
 * khal new can now create repetitive events (with --repeat)
-* ikhal's calendar should now be filled on startup
-* ikhal: pressing `t` refocuses on today
 * config file: the debug option has been removed (use `khal -v` instead)
+* FIX: vtimezones were not assembled properly, this lead to spurious offsets of
+  evnets in some other calendar applications
+
+ikhal
+-----
+* ikhal's calendar should now be filled on startup
+* pressing `t` refocuses on today
+* pressing ctrl-w in input fields should delete the last word
+* when the focus is set on the events list/editor, the current date should
+  still be visible in the calendar
 
 0.3.1
------
+=====
 released on 2014-09-08
 
 * FIX: events deleted in the vdir are not shown anymore in khal. You might want
@@ -35,7 +44,7 @@ released on 2014-09-08
   be read-only
 
 0.3.0
------
+=====
 released on 2014-09-03
 
 * new unified documentation
