@@ -27,6 +27,7 @@ import datetime
 import icalendar
 
 from ..compat import unicode_type, bytes_type
+from aux import to_naive_utc
 
 
 class Event(object):
@@ -190,7 +191,7 @@ class Event(object):
                 tzs.append(self.vevent['DTEND'].dt.tzinfo)
 
             for tzinfo in tzs:
-                timezone = create_timezone(tzinfo)
+                timezone = create_timezone(tzinfo, self.start)
                 calendar.add_component(timezone)
 
         calendar.add_component(self.vevent)
@@ -316,8 +317,8 @@ def create_timezone(tz, first_date=None, last_date=None):
 
     # TODO last_date = None, recurring to infintiy
 
-    first_date = datetime.datetime.today() if not first_date else first_date
-    last_date = datetime.datetime.today() if not last_date else last_date
+    first_date = datetime.datetime.today() if not first_date else to_naive_utc(first_date)
+    last_date = datetime.datetime.today() if not last_date else to_naive_utc(last_date)
     timezone = icalendar.Timezone()
     timezone.add('TZID', tz)
 

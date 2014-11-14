@@ -156,3 +156,15 @@ def to_unix_time(dtime):
     dtime_utc = dtime.astimezone(pytz.UTC)
     unix_time = calendar.timegm(dtime_utc.timetuple())
     return unix_time
+
+
+def to_naive_utc(dtime):
+    """convert a datetime object to UTC and than remove the tzinfo, if
+    datetime is naive already, return it
+    """
+    if not hasattr(dtime, 'tzinfo') or dtime.tzinfo is None:
+        return dtime
+
+    dtime_utc = dtime.astimezone(pytz.UTC)
+    dtime_naive = dtime_utc.replace(tzinfo=None)
+    return dtime_naive
