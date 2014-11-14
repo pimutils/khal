@@ -171,6 +171,15 @@ DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
 UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
 END:VEVENT"""
 
+event_dt_rd = """BEGIN:VEVENT
+SUMMARY:An Event
+DTSTART;VALUE=DATE-TIME:20140409T093000
+DTEND;VALUE=DATE-TIME:20140409T103000
+RDATE;VALUE=DATE-TIME:20140410T093000
+DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
+UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
+END:VEVENT"""
+
 event_dt_long = """BEGIN:VEVENT
 SUMMARY:An Event
 DTSTART;VALUE=DATE-TIME:20140409T093000
@@ -263,6 +272,10 @@ class TestEvent(object):
         event = Event(event_d_rr, **event_kwargs)
         assert event.recur is True
         assert event.compact(datetime.date(2014, 4, 9)) == u'Another Event ⟳'
+
+    def test_event_rd(self):
+        event = Event(event_dt_rd, **event_kwargs)
+        assert event.recur is True
 
     def test_event_d_long(self):
         event = Event(event_d_long, **event_kwargs)

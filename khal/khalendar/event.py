@@ -172,7 +172,7 @@ class Event(object):
 
     @property
     def recur(self):
-        return 'RRULE' in self.vevent.keys()
+        return 'RRULE' in self.vevent.keys() or 'RDATE' in self.vevent.keys()
 
     @property
     def raw(self):
