@@ -233,96 +233,94 @@ event_kwargs = {'calendar': 'foobar',
                 }
 
 
-class TestEvent(object):
+def test_raw_dt():
+    event = Event(event_dt, **event_kwargs)
+    assert event.raw.split('\r\n') == cal_dt
+    assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
+    event = Event(event_dt, unicode_symbols=False, **event_kwargs)
+    assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
+    assert event.recur is False
 
-    def test_raw_dt(self):
-        event = Event(event_dt, **event_kwargs)
-        assert event.raw.split('\r\n') == cal_dt
-        assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
-        event = Event(event_dt, unicode_symbols=False, **event_kwargs)
-        assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
-        assert event.recur is False
+def test_raw_d():
+    event = Event(event_d, **event_kwargs)
+    assert event.raw.split('\r\n') == cal_d
+    assert event.compact(datetime.date(2014, 4, 9)) == u'Another Event'
 
-    def test_raw_d(self):
-        event = Event(event_d, **event_kwargs)
-        assert event.raw.split('\r\n') == cal_d
-        assert event.compact(datetime.date(2014, 4, 9)) == u'Another Event'
+def test_dt_two_tz():
+    event = Event(event_dt_two_tz, **event_kwargs)
+    assert event.raw.split('\r\n') == cal_dt_two_tz
 
-    def test_dt_two_tz(self):
-        event = Event(event_dt_two_tz, **event_kwargs)
-        assert event.raw.split('\r\n') == cal_dt_two_tz
+    # local (Berlin) time!
+    assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-16:30: An Event'
 
-        # local (Berlin) time!
-        assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-16:30: An Event'
+def test_event_dt_duration():
+    """event has no end, but duration"""
+    event = Event(event_dt_duration, **event_kwargs)
+    assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
+    assert event.end == berlin.localize(datetime.datetime(2014, 4, 9, 10, 30))
 
-    def test_event_dt_duration(self):
-        """event has no end, but duration"""
-        event = Event(event_dt_duration, **event_kwargs)
-        assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
-        assert event.end == berlin.localize(datetime.datetime(2014, 4, 9, 10, 30))
+def test_event_dt_no_tz():
+    """start and end time of no timezone"""
+    event = Event(event_dt_no_tz, **event_kwargs)
+    assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
 
-    def test_event_dt_no_tz(self):
-        """start and end time of no timezone"""
-        event = Event(event_dt_no_tz, **event_kwargs)
-        assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
+def test_event_rr():
+    event = Event(event_dt_rr, **event_kwargs)
+    assert event.recur is True
+    assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event ⟳'
+    event = Event(event_d_rr, **event_kwargs)
+    assert event.recur is True
+    assert event.compact(datetime.date(2014, 4, 9)) == u'Another Event ⟳'
 
-    def test_event_rr(self):
-        event = Event(event_dt_rr, **event_kwargs)
-        assert event.recur is True
-        assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event ⟳'
-        event = Event(event_d_rr, **event_kwargs)
-        assert event.recur is True
-        assert event.compact(datetime.date(2014, 4, 9)) == u'Another Event ⟳'
+def test_event_rd():
+    event = Event(event_dt_rd, **event_kwargs)
+    assert event.recur is True
 
-    def test_event_rd(self):
-        event = Event(event_dt_rd, **event_kwargs)
-        assert event.recur is True
+def test_event_d_long():
+    event = Event(event_d_long, **event_kwargs)
+    with pytest.raises(ValueError):
+        event.compact(datetime.date(2014, 4, 8))
+    assert event.compact(datetime.date(2014, 4, 9)) == u'↦ Another Event'
+    assert event.compact(datetime.date(2014, 4, 10)) == u'↔ Another Event'
+    assert event.compact(datetime.date(2014, 4, 11)) == u'⇥ Another Event'
+    with pytest.raises(ValueError):
+        event.compact(datetime.date(2014, 4, 12))
 
-    def test_event_d_long(self):
-        event = Event(event_d_long, **event_kwargs)
-        with pytest.raises(ValueError):
-            event.compact(datetime.date(2014, 4, 8))
-        assert event.compact(datetime.date(2014, 4, 9)) == u'↦ Another Event'
-        assert event.compact(datetime.date(2014, 4, 10)) == u'↔ Another Event'
-        assert event.compact(datetime.date(2014, 4, 11)) == u'⇥ Another Event'
-        with pytest.raises(ValueError):
-            event.compact(datetime.date(2014, 4, 12))
+def test_event_dt_long():
+    event = Event(event_dt_long, **event_kwargs)
+    with pytest.raises(ValueError):
+        event.compact(datetime.date(2014, 4, 8))
+    assert event.compact(datetime.date(2014, 4, 9)) == u'09:30→ : An Event'
+    # FIXME ugly! replace with one arrow
+    assert event.compact(datetime.date(2014, 4, 10)) == u'→ → : An Event'
+    assert event.compact(datetime.date(2014, 4, 12)) == u'→ 10:30: An Event'
+    with pytest.raises(ValueError):
+        event.compact(datetime.date(2014, 4, 13))
 
-    def test_event_dt_long(self):
-        event = Event(event_dt_long, **event_kwargs)
-        with pytest.raises(ValueError):
-            event.compact(datetime.date(2014, 4, 8))
-        assert event.compact(datetime.date(2014, 4, 9)) == u'09:30→ : An Event'
-        # FIXME ugly! replace with one arrow
-        assert event.compact(datetime.date(2014, 4, 10)) == u'→ → : An Event'
-        assert event.compact(datetime.date(2014, 4, 12)) == u'→ 10:30: An Event'
-        with pytest.raises(ValueError):
-            event.compact(datetime.date(2014, 4, 13))
+def test_event_no_dst():
+    """test the creation of a corect VTIMEZONE for timezones with no dst"""
+    event = Event(event_no_dst,
+                  calendar='foobar',
+                  local_tz=bogota,
+                  default_tz=bogota)
+    assert event.raw.split('\r\n') == cal_no_dst
 
-    def test_event_no_dst(self):
-        """test the creation of a corect VTIMEZONE for timezones with no dst"""
-        event = Event(event_no_dst,
-                      calendar='foobar',
-                      local_tz=bogota,
-                      default_tz=bogota)
-        assert event.raw.split('\r\n') == cal_no_dst
+def test_dtend_equals_dtstart():
+    text = textwrap.dedent("""
+        BEGIN:VEVENT
+        CREATED:20141112T153944Z
+        DESCRIPTION:asdf
+        DTEND;VALUE=DATE:20141127
+        DTSTAMP:20141112T153944Z
+        DTSTART;VALUE=DATE:20141127
+        LAST-MODIFIED:20141112T153944Z
+        SEQUENCE:0
+        SUMMARY:asdfevent
+        UID:937569nfv37689g
+        END:VEVENT
+        """)
 
-    def test_dtend_equals_dtstart(self):
-        text = textwrap.dedent("""
-            BEGIN:VEVENT
-            CREATED:20141112T153944Z
-            DESCRIPTION:asdf
-            DTEND;VALUE=DATE:20141127
-            DTSTAMP:20141112T153944Z
-            DTSTART;VALUE=DATE:20141127
-            LAST-MODIFIED:20141112T153944Z
-            SEQUENCE:0
-            SUMMARY:asdfevent
-            UID:937569nfv37689g
-            END:VEVENT
-            """)
+    event = Event(text, calendar='foobar', local_tz=berlin,
+                  default_tz=berlin)
 
-        event = Event(text, calendar='foobar', local_tz=berlin,
-                      default_tz=berlin)
-
-        assert event.end - event.start == datetime.timedelta(days=1)
+    assert event.end - event.start == datetime.timedelta(days=1)
