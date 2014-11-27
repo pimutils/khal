@@ -1,7 +1,6 @@
 # vim: set fileencoding=utf-8:
 from datetime import date, datetime, timedelta
 import random
-import textwrap
 
 import pytz
 
