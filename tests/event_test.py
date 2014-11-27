@@ -1,5 +1,6 @@
  # vim: set fileencoding=utf-8 :
 import datetime
+import textwrap
 
 import pytest
 import pytz
@@ -305,3 +306,23 @@ class TestEvent(object):
                       local_tz=bogota,
                       default_tz=bogota)
         assert event.raw.split('\r\n') == cal_no_dst
+
+    def test_dtend_equals_dtstart(self):
+        text = textwrap.dedent("""
+            BEGIN:VEVENT
+            CREATED:20141112T153944Z
+            DESCRIPTION:asdf
+            DTEND;VALUE=DATE:20141127
+            DTSTAMP:20141112T153944Z
+            DTSTART;VALUE=DATE:20141127
+            LAST-MODIFIED:20141112T153944Z
+            SEQUENCE:0
+            SUMMARY:asdfevent
+            UID:937569nfv37689g
+            END:VEVENT
+            """)
+
+        event = Event(text, calendar='foobar', local_tz=berlin,
+                      default_tz=berlin)
+
+        assert event.end - event.start == datetime.timedelta(days=1)

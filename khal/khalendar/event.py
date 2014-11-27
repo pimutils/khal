@@ -27,7 +27,8 @@ import datetime
 import icalendar
 
 from ..compat import unicode_type, bytes_type
-from aux import to_naive_utc
+from .aux import to_naive_utc
+from ..log import logger
 
 
 class Event(object):
@@ -159,8 +160,19 @@ class Event(object):
         except KeyError:
             duration = self.vevent['DURATION']
             end = self.start + duration.dt
+
         if self.allday:
+            if end == self.start:
+                # https://github.com/geier/khal/issues/129
+                logger.warning('{} ("{}"): The event\'s end date property '
+                               'contains the same value as the start date, '
+                               'which is invalid as per RFC 2445. Khal will '
+                               'assume this is meant to be single-day event '
+                               'on {}'.format(self.href, self.summary,
+                                              self.start))
+                end += datetime.timedelta(days=1)
             return end
+
         if end.tzinfo is None:
             end = self.default_tz.localize(end)
         end = end.astimezone(self.local_tz)

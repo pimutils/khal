@@ -1,6 +1,7 @@
 # vim: set fileencoding=utf-8:
 from datetime import date, datetime, timedelta
 import random
+import textwrap
 
 import pytz
 
@@ -300,4 +301,3 @@ def test_description_and_location():
                                 location='in the office',
                                 **kwargs_de).to_ical()
         assert event == vevent
-
