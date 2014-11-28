@@ -146,13 +146,15 @@ class DateCColumns(CColumns):
     calls 'view.show_date' on every focus change (see below for details)
     """
 
-    def __init__(self, widget_list, view=None, **kwargs):
+    def __init__(self, widget_list, view=None, today=None, **kwargs):
         self.view = view
+        self.today = today
         # we need the next two attributes to for attribute resetting when a
         # cell regains focus after having lost it the the events column before
         self._old_attr_map = False
         self._old_pos = 0
-        super(DateCColumns, self).__init__(widget_list, **kwargs)
+        super(DateCColumns, self).__init__(widget_list, focus_column=today,
+                                           **kwargs)
 
     def _set_focus_position(self, position):
         """calls view.show_date before calling super()._set_focus_position"""
@@ -231,6 +233,8 @@ class CListBox(urwid.ListBox):
     def keypress(self, size, key):
         if key in ['t']:
             self.body.set_focus(self.body.today)
+            week = self.body[self.body.today]
+            week.set_focus(week.today)
             self.set_focus_valign(('relative', 10))
         return super(CListBox, self).keypress(size, key)
 
@@ -321,7 +325,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             this_week.append((2, urwid.Text('{:2}'.format(getweeknumber(week[0])))))
 
         week = DateCColumns(this_week, view=self.view, dividechars=1,
-                            focus_column=today)
+                            today=today)
         return week, bool(today)
 
     def _construct_month(self,
