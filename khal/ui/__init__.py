@@ -843,7 +843,7 @@ class ClassicView(Pane):
         events = self.eventscolumn
         lwidth = 29 if conf['locale']['weeknumbers'] else 25
         columns = CColumns([(lwidth, weeks), events],
-                           dividechars=2,
+                           dividechars=4,
                            box_columns=[0, 1])
         self.eventscolumn.update(date.today())  # starting with today's events
         Pane.__init__(self, columns, title=title, description=description)
