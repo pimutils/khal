@@ -26,7 +26,7 @@ import datetime
 
 import icalendar
 
-from ..compat import unicode_type, bytes_type
+from ..compat import unicode_type, bytes_type, iteritems
 from .aux import to_naive_utc
 from ..log import logger
 
@@ -334,7 +334,7 @@ def create_timezone(tz, first_date=None, last_date=None):
     timezone = icalendar.Timezone()
     timezone.add('TZID', tz)
 
-    dst = {one[2]: 'DST' in two.__repr__() for one, two in tz._tzinfos.iteritems()}
+    dst = {one[2]: 'DST' in two.__repr__() for one, two in iteritems(tz._tzinfos)}
 
     # looking for the first and last transition time we need to include
     first_num, last_num = 0, len(tz._utc_transition_times) - 1
