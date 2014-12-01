@@ -80,3 +80,8 @@ default_command = option('calendar', 'agenda', 'interactive', '', default='calen
 # the calendar to use if no one is specified but only one can be used (e.g. if
 # adding a new event), this should be a valid calendar name.
 default_calendar = string(default=None)
+
+# By default, khal displays only dates with event in "agenda' view.
+# Setting this to *True* will show all days in "agenda", even
+# when there is no event
+show_all_days = boolean(default=False)
