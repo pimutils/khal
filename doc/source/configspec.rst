@@ -207,3 +207,13 @@ behaviours are set here.
 
       :type: option, allowed values are *calendar*, *agenda* and *interactive*
       :default: calendar
+
+.. _default-show_all_days:
+
+.. object:: show_all_days
+
+    by default, khal does not show days without event in calendar and
+    agenda displays. Setting this to True makes khal show all days.
+
+      :type: boolean
+      :default: False
