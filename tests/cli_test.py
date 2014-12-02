@@ -3,9 +3,7 @@
 
 import os
 import datetime
-from pkg_resources import parse_version
 import pytest
-import click
 from click.testing import CliRunner
 
 from khal.cli import main_khal
@@ -102,13 +100,13 @@ def test_simple(runner):
     assert not result.exception
 
 
-#def test_default_command_empty(runner):
-    #runner = runner(command='')
+def test_default_command_empty(runner):
+    runner = runner(command='')
 
-    #result = runner.invoke(main_khal)
-    #assert result.exception
-    #assert result.exit_code == 1
-    #assert result.output.startswith('Usage: ')
+    result = runner.invoke(main_khal)
+    assert result.exception
+    assert result.exit_code == 1
+    assert result.output.startswith('Usage: ')
 
 
 def test_default_command_nonempty(runner):
