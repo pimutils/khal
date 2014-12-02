@@ -241,10 +241,12 @@ def test_raw_dt():
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
     assert event.recur is False
 
+
 def test_raw_d():
     event = Event(event_d, **event_kwargs)
     assert event.raw.split('\r\n') == cal_d
     assert event.compact(datetime.date(2014, 4, 9)) == u'Another Event'
+
 
 def test_dt_two_tz():
     event = Event(event_dt_two_tz, **event_kwargs)
@@ -253,16 +255,19 @@ def test_dt_two_tz():
     # local (Berlin) time!
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-16:30: An Event'
 
+
 def test_event_dt_duration():
     """event has no end, but duration"""
     event = Event(event_dt_duration, **event_kwargs)
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
     assert event.end == berlin.localize(datetime.datetime(2014, 4, 9, 10, 30))
 
+
 def test_event_dt_no_tz():
     """start and end time of no timezone"""
     event = Event(event_dt_no_tz, **event_kwargs)
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
+
 
 def test_event_rr():
     event = Event(event_dt_rr, **event_kwargs)
@@ -272,9 +277,11 @@ def test_event_rr():
     assert event.recur is True
     assert event.compact(datetime.date(2014, 4, 9)) == u'Another Event ⟳'
 
+
 def test_event_rd():
     event = Event(event_dt_rd, **event_kwargs)
     assert event.recur is True
+
 
 def test_event_d_long():
     event = Event(event_d_long, **event_kwargs)
@@ -285,6 +292,7 @@ def test_event_d_long():
     assert event.compact(datetime.date(2014, 4, 11)) == u'⇥ Another Event'
     with pytest.raises(ValueError):
         event.compact(datetime.date(2014, 4, 12))
+
 
 def test_event_dt_long():
     event = Event(event_dt_long, **event_kwargs)
@@ -297,6 +305,7 @@ def test_event_dt_long():
     with pytest.raises(ValueError):
         event.compact(datetime.date(2014, 4, 13))
 
+
 def test_event_no_dst():
     """test the creation of a corect VTIMEZONE for timezones with no dst"""
     event = Event(event_no_dst,
@@ -304,6 +313,7 @@ def test_event_no_dst():
                   local_tz=bogota,
                   default_tz=bogota)
     assert event.raw.split('\r\n') == cal_no_dst
+
 
 def test_dtend_equals_dtstart():
     text = textwrap.dedent("""
