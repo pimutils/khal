@@ -63,6 +63,23 @@ END:VEVENT
 END:VCALENDAR
 """.split('\n')
 
+cal_dt_cet = [b'BEGIN:STANDARD',
+              b'DTSTART;VALUE=DATE-TIME:20141026T020000',
+              b'TZNAME:CET',
+              b'TZOFFSETFROM:+0200',
+              b'TZOFFSETTO:+0100',
+              b'END:STANDARD'
+              ]
+
+cal_dt_cest = [b'BEGIN:DAYLIGHT',
+               b'DTSTART;VALUE=DATE-TIME:20140330T030000',
+               b'RDATE:20150329T030000',
+               b'TZNAME:CEST',
+               b'TZOFFSETFROM:+0100',
+               b'TZOFFSETTO:+0200',
+               b'END:DAYLIGHT',
+               ]
+
 event_dt_two_tz = """BEGIN:VEVENT
 SUMMARY:An Event
 DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140409T093000
@@ -235,7 +252,11 @@ event_kwargs = {'calendar': 'foobar',
 
 def test_raw_dt():
     event = Event(event_dt, **event_kwargs)
-    assert event.raw.split('\r\n') == cal_dt
+    # timezone components might be ordered differently on different runs
+    assert cal_dt[:3] == event.raw.split('\r\n')[:3]
+    assert cal_dt[18:] == event.raw.split('\r\n')[18:]
+    assert '\r\n'.join(cal_dt_cet) in event.raw
+    assert '\r\n'.join(cal_dt_cest) in event.raw
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
     event = Event(event_dt, unicode_symbols=False, **event_kwargs)
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
@@ -250,7 +271,12 @@ def test_raw_d():
 
 def test_dt_two_tz():
     event = Event(event_dt_two_tz, **event_kwargs)
-    assert event.raw.split('\r\n') == cal_dt_two_tz
+    assert '\r\n'.join(cal_dt_two_tz[:3]) in event.raw
+    assert '\r\n'.join(cal_dt_two_tz[5:11]) in event.raw  # cet
+    assert '\r\n'.join(cal_dt_two_tz[11:18]) in event.raw  # cest
+    assert '\r\n'.join(cal_dt_two_tz[21:27]) in event.raw  # est
+    assert '\r\n'.join(cal_dt_two_tz[27:34]) in event.raw  # edt
+    assert '\r\n'.join(cal_dt_two_tz[35:]) in event.raw  # edt
 
     # local (Berlin) time!
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-16:30: An Event'
