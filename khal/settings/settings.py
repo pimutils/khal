@@ -28,7 +28,7 @@ from configobj import ConfigObj, flatten_errors, get_extra_values, \
 from validate import Validator
 import xdg.BaseDirectory
 
-from exceptions import InvalidSettingsError, CannotParseConfigFileError
+from .exceptions import InvalidSettingsError, CannotParseConfigFileError
 from khal import __productname__
 from ..log import logger
 from .utils import is_timezone, weeknumber_option, config_checks, \
