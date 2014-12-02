@@ -26,6 +26,6 @@ firstweekday = 0
 [default]
 default_command = calendar
 default_calendar = home
-# in agenda display, shows all days even if there is no event (default: False)
-show_all_days = True
+# in agenda/calendar display, shows all days even if there is no event
+show_all_days = False
 debug = 0
