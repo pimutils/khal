@@ -130,7 +130,7 @@ class Calendar(object):
         rwidth = term_width - lwidth - 4
         event_column = get_agenda(
             collection, dates=date, width=rwidth, show_all_days=show_all_days,
-	    **kwargs)
+            **kwargs)
         calendar_column = calendar_display.vertical_month(
             firstweekday=firstweekday, weeknumber=weeknumber)
 
