@@ -101,7 +101,7 @@ def test_simple(runner):
     assert 'myevent' in result.output
     assert '18:00' in result.output
     # test show_all_days default value
-    assert not ('Tomorrow:' in result.output)
+    assert 'Tomorrow:' not in result.output
     assert not result.exception
 
 def test_showalldays(runner):
