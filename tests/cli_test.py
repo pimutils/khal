@@ -55,6 +55,7 @@ firstweekday = 0
 [default]
 default_command = {command}
 default_calendar = one
+show_all_days = {showalldays}
 
 [sqlite]
 path = {dbpath}
@@ -62,7 +63,7 @@ path = {dbpath}
 
 
 def test_direct_modification(runner):
-    runner = runner(command='agenda')
+    runner = runner(command='agenda', showalldays=False)
 
     result = runner.invoke(main_khal, ['agenda'])
     assert not result.exception
@@ -82,7 +83,7 @@ def test_direct_modification(runner):
 
 
 def test_simple(runner):
-    runner = runner(command='agenda')
+    runner = runner(command='agenda', showalldays=False)
 
     result = runner.invoke(main_khal)
     assert not result.exception
@@ -97,11 +98,19 @@ def test_simple(runner):
     result = runner.invoke(main_khal)
     assert 'myevent' in result.output
     assert '18:00' in result.output
+    # test show_all_days default value
+    assert not ('Tomorrow:' in result.output)
     assert not result.exception
 
+def test_showalldays(runner):
+    runner = runner(command='agenda', showalldays=True)
+
+    result = runner.invoke(main_khal)
+    assert 'Tomorrow:' in result.output
+    assert not result.exception
 
 def test_default_command_empty(runner):
-    runner = runner(command='')
+    runner = runner(command='', showalldays=False)
 
     result = runner.invoke(main_khal)
     assert result.exception
@@ -110,7 +119,7 @@ def test_default_command_empty(runner):
 
 
 def test_default_command_nonempty(runner):
-    runner = runner(command='agenda')
+    runner = runner(command='agenda', showalldays=False)
 
     result = runner.invoke(main_khal)
     assert not result.exception
@@ -118,7 +127,7 @@ def test_default_command_nonempty(runner):
 
 
 def test_no_vevent(runner, tmpdir):
-    runner = runner(command='agenda')
+    runner = runner(command='agenda', showalldays=False)
     broken_item = runner.calendars['one'].join('broken_item.ics')
     broken_item.write(u"BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\n"
                       u"END:VCALENDAR\n".encode('utf-8'), mode='wb')
