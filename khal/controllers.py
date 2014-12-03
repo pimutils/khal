@@ -57,7 +57,7 @@ def construct_daynames(daylist, longdateformat):
 
 
 def get_agenda(collection, dateformat, longdateformat, dates=[],
-               days=None, events=None, width=45):
+               days=None, events=None, width=45, show_all_days=False):
     """returns a list of events scheduled for all days in daylist
 
     included are header "rows"
@@ -66,6 +66,8 @@ def get_agenda(collection, dateformat, longdateformat, dates=[],
     :param dates: a list of all dates for which the events should be return,
                     including what should be printed as a header
     :type collection: list(str)
+    :param show_all_days: True if all days must be shown, event without event
+    :type show_all_days: Boolean
     :returns: a list to be printed as the agenda for the given days
     :rtype: list(str)
 
@@ -100,7 +102,7 @@ def get_agenda(collection, dateformat, longdateformat, dates=[],
 
         all_day_events = collection.get_allday_by_time_range(day)
         events = collection.get_datetime_by_time_range(start, end)
-        if len(events) == 0 and len(all_day_events) == 0:
+        if len(events) == 0 and len(all_day_events) == 0 and not show_all_days:
             continue
 
         event_column.append(bstring(dayname))
@@ -122,12 +124,13 @@ def get_agenda(collection, dateformat, longdateformat, dates=[],
 class Calendar(object):
 
     def __init__(self, collection, date=[], firstweekday=0, encoding='utf-8',
-                 weeknumber=False, **kwargs):
+                 weeknumber=False, show_all_days=False, **kwargs):
         term_width, _ = get_terminal_size()
         lwidth = 25
         rwidth = term_width - lwidth - 4
         event_column = get_agenda(
-            collection, dates=date, width=rwidth, **kwargs)
+            collection, dates=date, width=rwidth, show_all_days=show_all_days,
+	    **kwargs)
         calendar_column = calendar_display.vertical_month(
             firstweekday=firstweekday, weeknumber=weeknumber)
 
@@ -138,10 +141,10 @@ class Calendar(object):
 class Agenda(object):
 
     def __init__(self, collection, date=None, firstweekday=0, encoding='utf-8',
-                 **kwargs):
+                 show_all_days=False, **kwargs):
         term_width, _ = get_terminal_size()
         event_column = get_agenda(collection, dates=date, width=term_width,
-                                  **kwargs)
+                                  show_all_days=show_all_days, **kwargs)
         echo('\n'.join(event_column).encode(encoding))
 
 
