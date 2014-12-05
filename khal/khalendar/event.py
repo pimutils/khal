@@ -330,7 +330,7 @@ def create_timezone(tz, first_date=None, last_date=None):
 
     """
 
-    # TODO last_date = None, recurring to infintiy
+    # TODO last_date = None, recurring to infinity
 
     first_date = datetime.datetime.today() if not first_date else to_naive_utc(first_date)
     last_date = datetime.datetime.today() if not last_date else to_naive_utc(last_date)
