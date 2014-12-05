@@ -211,6 +211,7 @@ SUMMARY:Event
 END:VEVENT
 END:VCALENDAR
 """
+
 berlin = pytz.timezone('Europe/Berlin')
 
 
@@ -559,7 +560,7 @@ class TestSpecial(object):
         vevent = _get_vevent(latest_bug)
         dtstart = aux.expand(vevent, berlin)
         assert dtstart[0][0] == datetime.date(2009, 10, 31)
-        assert dtstart[-1][0] == datetime.date(2023, 10, 31)
+        assert dtstart[-1][0] == datetime.date(2037, 10, 31)
 
     def test_another_problem(self):
         vevent = _get_vevent(another_problem)
@@ -567,7 +568,7 @@ class TestSpecial(object):
         assert dtstart[0][0] == berlin.localize(
             datetime.datetime(2013, 11, 13, 19, 0))
         assert dtstart[-1][0] == berlin.localize(
-            datetime.datetime(2028, 11, 8, 19, 0))
+            datetime.datetime(2037, 12, 9, 19, 0))
 
     def test_event_exdate_dt(self):
         """recurring event, one date excluded via EXCLUDE"""
@@ -619,6 +620,17 @@ RDATE:20131213T190000
 UID:datetime123
 END:VEVENT"""
 
+event_r_past = """BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:EVENT
+DTSTART;VALUE=DATE:19650423
+DURATION:P1D
+UID:date_event_past
+RRULE:FREQ=YEARLY
+SUMMARY:Dummy's Birthday (1965)
+END:VEVENT
+END:VCALENDAR"""
+
 
 class TestRDate(object):
     """Testing expanding of recurrence rules"""
@@ -631,6 +643,13 @@ class TestRDate(object):
         vevent = _get_vevent(rrule_and_rdate)
         dtstart = aux.expand(vevent, berlin)
         assert len(dtstart) == 7
+
+    def test_rrule_past(self):
+        vevent = _get_vevent(event_r_past)
+        dtstarts = aux.expand(vevent, berlin)
+        assert len(dtstarts) == 73
+        assert dtstarts[0][0] == datetime.date(1965, 4, 23)
+        assert dtstarts[-1][0] == datetime.date(2037, 4, 23)
 
 
 noend_date = """

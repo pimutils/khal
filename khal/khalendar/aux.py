@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 import calendar
 import dateutil.rrule
@@ -63,11 +63,10 @@ def expand(vevent, default_tz, href=''):
 
         if not set(['UNTIL', 'COUNT']).intersection(vevent['RRULE'].keys()):
             # rrule really doesn't like to calculate all recurrences until
-            # eternity, so we only do it 15 years into the future
-            dtstart = vevent['DTSTART'].dt
-            if isinstance(dtstart, date):
-                dtstart = datetime(*list(dtstart.timetuple())[:-3])
-            rrule._until = dtstart + timedelta(days=15 * 365)
+            # eternity, so we only do it until 2037, because a) I'm not sure
+            # if python can deal with larger datetime values yet and b) pytz
+            # doesn't know any larger transition times
+            rrule._until = datetime(2037, 12, 31)
 
         if getattr(rrule._until, 'tzinfo', False):
             rrule._until = rrule._until.astimezone(events_tz)
