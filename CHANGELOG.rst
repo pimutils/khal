@@ -13,18 +13,25 @@ not yet released
 
 * new dependency: click>3.2
 * removed dependency: docopt
+* note to package mantainers: `requirements.txt` has been removed, dependencies
+  are still listed in `setup.py`
 
-* khal (and ical) can now display weeknumbers
-* khal new can now create repetitive events (with --repeat)
+* new config option: `[default] show_all_days` lets users decide if they want to
+  see days without any events in agenda and calendar view (thanks to Pierre
+  David)
+* khal (and ikhal) can now display weeknumbers
+* khal new can now create repetitive events (with --repeat), see documentation
+  (thanks to Eric Scheibler)
 * config file: the debug option has been removed (use `khal -v` instead)
 * FIX: vtimezones were not assembled properly, this lead to spurious offsets of
-  evnets in some other calendar applications
+  events in some other calendar applications
+* change in behaviour: recurring events are now always expanded until 2037
 
 ikhal
 -----
 * ikhal's calendar should now be filled on startup
 * pressing `t` refocuses on today
-* pressing ctrl-w in input fields should delete the last word
+* pressing ctrl-w in input fields should delete the last word before the cursor
 * when the focus is set on the events list/editor, the current date should
   still be visible in the calendar
 
