@@ -109,8 +109,7 @@ def build_collection(ctx):
                     readonly=cal['readonly'],
                     color=cal['color'],
                     unicode_symbols=conf['locale']['unicode_symbols'],
-                    local_tz=conf['locale']['local_timezone'],
-                    default_tz=conf['locale']['default_timezone']
+                    locale=conf['locale']
                 ))
     except FatalError as error:
         logger.fatal(error)
@@ -174,8 +173,7 @@ def _get_cli():
             date=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
             encoding=ctx.obj['conf']['locale']['encoding'],
-            dateformat=ctx.obj['conf']['locale']['dateformat'],
-            longdateformat=ctx.obj['conf']['locale']['longdateformat'],
+            locale=ctx.obj['conf']['locale'],
             weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
             show_all_days=ctx.obj['conf']['default']['show_all_days'],
             days=days,
@@ -193,9 +191,8 @@ def _get_cli():
             date=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
             encoding=ctx.obj['conf']['locale']['encoding'],
-            dateformat=ctx.obj['conf']['locale']['dateformat'],
-            longdateformat=ctx.obj['conf']['locale']['longdateformat'],
             show_all_days=ctx.obj['conf']['default']['show_all_days'],
+            locale=ctx.obj['conf']['locale'],
             days=days,
             events=events,
         )

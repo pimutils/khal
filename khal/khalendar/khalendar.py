@@ -46,7 +46,7 @@ logger = log.logger
 class Calendar(object):
 
     def __init__(self, name, dbpath, path, readonly=False, color='',
-                 unicode_symbols=True, default_tz=None, local_tz=None):
+                 unicode_symbols=True, locale=None):
         """
         :param name: the name of the calendar
         :type name: str
@@ -60,24 +60,15 @@ class Calendar(object):
         :param unicode_symbols: if True, unicode symbols will be used for
                                 representing this calendars's events properties
         :type unicode_symbols: bool
-        :param default_tz: timezone used by default
-        :tpye default_tz: pytz.timezone
-        :param local_tz: the timezone this calendar's event's times should be
-                         shown in
-        :type local_tz: pytz.timezone
+        :param locale: the locale settings
+        :type locale: dict()
         """
+        self._locale = locale
 
-        self._default_tz = default_tz
-        self._local_tz = default_tz if local_tz is None else local_tz
         self.name = name
         self.color = color
         self.path = os.path.expanduser(path)
-        self._dbtool = backend.SQLiteDb(
-            self.name,
-            dbpath,
-            default_tz=self._default_tz,
-            local_tz=self._local_tz,
-        )
+        self._dbtool = backend.SQLiteDb(self.name, dbpath, locale=self._locale)
         self._storage = FilesystemStorage(path, '.ics')
         self._readonly = readonly
         self._unicode_symbols = unicode_symbols
@@ -184,11 +175,10 @@ class Calendar(object):
                 .format(self.name, href, error))
             return False
 
-    def new_event(self, ical, local_tz, default_tz):
+    def new_event(self, ical):
         """creates and returns (but does not insert) new event from ical
         string"""
-        return Event(ical=ical, calendar=self.name, local_tz=local_tz,
-                     default_tz=default_tz)
+        return Event(ical=ical, calendar=self.name, locale=self._locale)
 
 
 class CalendarCollection(object):
@@ -255,9 +245,9 @@ class CalendarCollection(object):
         # TODO would be better to first add to new collection, then delete
         # currently not possible since new modifies event.etag
 
-    def new_event(self, ical, collection, local_tz, default_tz):
+    def new_event(self, ical, collection):
         """returns a new event"""
-        return self._calnames[collection].new_event(ical, local_tz, default_tz)
+        return self._calnames[collection].new_event(ical, self._locale)
 
     def _db_needs_update(self):
         any([one._db_needs_update() for one in self.calendars])

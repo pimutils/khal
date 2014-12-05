@@ -94,20 +94,15 @@ class SQLiteDb(object):
                     None, a place according to the XDG specifications will be
                     chosen
     :type db_path: str or None
-    :param local_tz: the local time zone
-    :type local_tz: pytz.timezone
-    :param default_tz: the default time zone
-    :type default_tz: pytz.timezone
     """
 
-    def __init__(self, calendar, db_path, local_tz, default_tz):
+    def __init__(self, calendar, db_path, locale):
         if db_path is None:
             db_path = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
         self.db_path = path.expanduser(db_path)
         self.calendar = calendar
         self._create_dbdir()
-        self.local_tz = local_tz
-        self.default_tz = default_tz
+        self.locale = locale
         self.table_m = calendar + '_m'
         self.table_d = calendar + '_d'
         self.table_dt = calendar + '_dt'
@@ -261,7 +256,7 @@ class SQLiteDb(object):
         if not isinstance(vevent['DTSTART'].dt, datetime.datetime):
             all_day_event = True
 
-        dtstartend = aux.expand(vevent, self.default_tz, href)
+        dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
         for dbname in [self.table_dt, self.table_d]:
             sql_s = ('DELETE FROM [{0}] WHERE href == ?'.format(dbname))
             self.sql_ex(sql_s, (href, ), commit=False)
@@ -274,9 +269,9 @@ class SQLiteDb(object):
                 # TODO: extract strange (aka non Olson) TZs from params['TZID']
                 # perhaps better done in event/vevent
                 if dtstart.tzinfo is None:
-                    dtstart = self.default_tz.localize(dtstart)
+                    dtstart = self['locale']['default_timezone'].localize(dtstart)
                 if dtend.tzinfo is None:
-                    dtend = self.default_tz.localize(dtend)
+                    dtend = self['locale']['default_timezone'].localize(dtend)
 
                 dbstart = aux.to_unix_time(dtstart)
                 dbend = aux.to_unix_time(dtend)
@@ -407,10 +402,10 @@ class SQLiteDb(object):
             self.table_m)
         result = self.sql_ex(sql_s, (href, ))
         return Event(result[0][0],
-                     local_tz=self.local_tz,
-                     default_tz=self.default_tz,
                      start=start,
                      end=end,
                      href=href,
                      calendar=self.calendar,
-                     etag=result[0][1])
+                     etag=result[0][1],
+                     locale=self.locale,
+                     )

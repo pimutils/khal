@@ -35,9 +35,9 @@ class Event(object):
 
     """the base event class"""
 
-    def __init__(self, ical, calendar, href=None, local_tz=None,
-                 default_tz=None, start=None, end=None, color=None,
-                 readonly=False, unicode_symbols=True, etag=None):
+    def __init__(self, ical, calendar, href=None, start=None, end=None,
+                 color=None, readonly=False, unicode_symbols=True, etag=None,
+                 locale=None):
         """
         :param ical: the icalendar VEVENT this event is based on
         :type ical: str or icalendar.cal.Event
@@ -45,13 +45,8 @@ class Event(object):
         :type account: str TODO
         :param href: the href of the event, treated like a UID
         :type href: str
-        :param local_tz: the local timezone the user wants event's times
-                         displayed in
-        :type local_tz: datetime.tzinfo
-        :param default_tz: the timezone used if the start and end time
-                           of the event have no timezone information
-                           (or none that icalendar understands)
-        :type default_tz: datetime.tzinfo
+        :param locale: the locale settings
+        :type locale: dict()
         :param start: start date[time] of this event, this will override the
                       start date from the vevent. This is useful for recurring
                       events, since we only save the original event once and
@@ -85,9 +80,8 @@ class Event(object):
         else:
             raise ValueError
 
-        assert local_tz is not None
-        assert default_tz is not None
-
+        assert locale is not None
+        self.locale = locale
         self.allday = True
         self.color = color
 
@@ -108,14 +102,12 @@ class Event(object):
 
         if start is not None:
             if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
-                start = start.astimezone(local_tz)
-                end = end.astimezone(local_tz)
+                start = start.astimezone(locale['local_timezone'])
+                end = end.astimezone(locale['local_timezone'])
             self.vevent['DTSTART'].dt = start
 
             if 'DTEND' in self.vevent.keys():
                 self.vevent['DTEND'].dt = end
-        self.local_tz = local_tz
-        self.default_tz = default_tz
 
     @property
     def symbol_strings(self):
@@ -154,8 +146,8 @@ class Event(object):
         if self.allday:
             return start
         if start.tzinfo is None:
-            start = self.default_tz.localize(start)
-        start = start.astimezone(self.local_tz)
+            start = self.locale['local_timezone'].localize(start)
+        start = start.astimezone(self.locale['local_timezone'])
         return start
 
     @property
@@ -180,8 +172,8 @@ class Event(object):
             return end
 
         if end.tzinfo is None:
-            end = self.default_tz.localize(end)
-        end = end.astimezone(self.local_tz)
+            end = self.locale['default_timezone'].localize(end)
+        end = end.astimezone(self.locale['local_timezone'])
         return end
 
     @property
@@ -271,8 +263,8 @@ class Event(object):
                 'please supply a `day` this event is scheduled on')
         start = datetime.datetime.combine(day, datetime.time.min)
         end = datetime.datetime.combine(day, datetime.time.max)
-        local_start = self.local_tz.localize(start)
-        local_end = self.local_tz.localize(end)
+        local_start = self.locale['local_timezone'].localize(start)
+        local_end = self.locale['local_timezone'].localize(end)
         if 'RRULE' in self.vevent:
             recurstr = ' ' + self.symbol_strings['recurring']
         else:

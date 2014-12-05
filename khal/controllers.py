@@ -56,7 +56,7 @@ def construct_daynames(daylist, longdateformat):
             yield (date, date.strftime(longdateformat))
 
 
-def get_agenda(collection, dateformat, longdateformat, dates=[],
+def get_agenda(collection, locale, dates=[],
                days=None, events=None, width=45, show_all_days=False):
     """returns a list of events scheduled for all days in daylist
 
@@ -82,7 +82,7 @@ def get_agenda(collection, dateformat, longdateformat, dates=[],
         dates = [datetime.date.today()]
     else:
         try:
-            dates = [aux.datefstr(date, dateformat, longdateformat)
+            dates = [aux.datefstr(date, locale['dateformat'], locale['longdateformat'])
                      for date in dates]
         except aux.InvalidDate as error:
             logging.fatal(error)
@@ -93,7 +93,7 @@ def get_agenda(collection, dateformat, longdateformat, dates=[],
                    for one in range(days) for date in dates]
         daylist.sort()
 
-    daylist = construct_daynames(daylist, longdateformat)
+    daylist = construct_daynames(daylist, locale['longdateformat'])
 
     for day, dayname in daylist:
         # TODO unify allday and datetime events
@@ -161,8 +161,7 @@ class NewFromString(object):
             sys.exit(1)
         event = Event(event,
                       collection.default_calendar_name,
-                      local_tz=conf['locale']['local_timezone'],
-                      default_tz=conf['locale']['default_timezone'],
+                      locale=conf['locale'],
                       )
 
         try:
