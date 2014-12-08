@@ -205,15 +205,27 @@ behaviours are set here.
     command to be executed if no command is given when executing khal
     this is a rather important subcommand
 
-      :type: option, allowed values are *calendar*, *agenda* and *interactive*
+      :type: option, allowed values are *calendar*, *agenda*, *interactive* and **
       :default: calendar
+
+.. _default-print_new:
+
+.. object:: print_new
+
+    
+    after adding a new event, what should be printed
+
+      :type: option, allowed values are *event*, *path* and *False*
+      :default: False
 
 .. _default-show_all_days:
 
 .. object:: show_all_days
 
-    by default, khal does not show days without event in calendar and
-    agenda displays. Setting this to True makes khal show all days.
+    
+    By default, khal displays only dates with event in "agenda' view.
+    Setting this to *True* will show all days in "agenda", even
+    when there is no event
 
       :type: boolean
       :default: False

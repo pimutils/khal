@@ -170,6 +170,11 @@ class NewFromString(object):
             logger.fatal('ERROR: Cannot modify calendar "{}" as it is '
                          'read-only'.format(collection.default_calendar_name))
             sys.exit(1)
+        if conf['default']['print_new'] == 'event':
+            print(event.long())
+        elif conf['default']['print_new'] == 'path':
+            path = collection._calnames[event.calendar].path + event.href
+            print(path.encode(conf['locale']['encoding']))
 
 
 class Interactive(object):

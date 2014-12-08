@@ -244,12 +244,16 @@ END:VEVENT
 END:VCALENDAR
 """.split('\n')
 
-event_kwargs = {'calendar': 'foobar',
-                'locale': {
-                    'default_timezone': berlin,
-                    'local_timezone': berlin,
-                }
-                }
+locale = {
+    'default_timezone': berlin,
+    'local_timezone': berlin,
+    'dateformat': '%d.%m.',
+    'timeformat': '%H:%M',
+    'longdateformat': '%d.%m.%Y',
+    'datetimeformat': '%d.%m. %H:%M',
+    'longdatetimeformat': '%d.%m.%Y %H:%M',
+}
+event_kwargs = {'calendar': 'foobar', 'locale': locale}
 
 
 def test_raw_dt():
@@ -262,6 +266,7 @@ def test_raw_dt():
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
     event = Event(event_dt, unicode_symbols=False, **event_kwargs)
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
+    assert event.long() == u'09:30-10:30 09.04.2014: An Event'
     assert event.recur is False
 
 
@@ -269,6 +274,7 @@ def test_raw_d():
     event = Event(event_d, **event_kwargs)
     assert event.raw.split('\r\n') == cal_d
     assert event.compact(datetime.date(2014, 4, 9)) == u'Another Event'
+    assert event.long() == u'09.04.2014: Another Event'
 
 
 def test_dt_two_tz():
@@ -282,6 +288,7 @@ def test_dt_two_tz():
 
     # local (Berlin) time!
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-16:30: An Event'
+    assert event.long() == u'09:30-16:30 09.04.2014: An Event'
 
 
 def test_event_dt_duration():
@@ -289,21 +296,25 @@ def test_event_dt_duration():
     event = Event(event_dt_duration, **event_kwargs)
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
     assert event.end == berlin.localize(datetime.datetime(2014, 4, 9, 10, 30))
+    assert event.long() == u'09:30-10:30 09.04.2014: An Event'
 
 
 def test_event_dt_no_tz():
     """start and end time of no timezone"""
     event = Event(event_dt_no_tz, **event_kwargs)
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
+    assert event.long() == u'09:30-10:30 09.04.2014: An Event'
 
 
 def test_event_rr():
     event = Event(event_dt_rr, **event_kwargs)
     assert event.recur is True
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event ⟳'
+    assert event.long() == u'09:30-10:30 09.04.2014: An Event\nRepeat: FREQ=DAILY;COUNT=10'
     event = Event(event_d_rr, **event_kwargs)
     assert event.recur is True
     assert event.compact(datetime.date(2014, 4, 9)) == u'Another Event ⟳'
+    assert event.long() == u'09.04.2014: Another Event\nRepeat: FREQ=DAILY;COUNT=10'
 
 
 def test_event_rd():
@@ -320,6 +331,7 @@ def test_event_d_long():
     assert event.compact(datetime.date(2014, 4, 11)) == u'⇥ Another Event'
     with pytest.raises(ValueError):
         event.compact(datetime.date(2014, 4, 12))
+    assert event.long() == u'09.04. - 11.04.2014: Another Event'
 
 
 def test_event_dt_long():
@@ -332,16 +344,18 @@ def test_event_dt_long():
     assert event.compact(datetime.date(2014, 4, 12)) == u'→ 10:30: An Event'
     with pytest.raises(ValueError):
         event.compact(datetime.date(2014, 4, 13))
+    assert event.long() == u'09.04.2014 09:30 - 12.04.2014 10:30: An Event'
 
 
 def test_event_no_dst():
     """test the creation of a corect VTIMEZONE for timezones with no dst"""
-    event = Event(
-        event_no_dst,
-        calendar='foobar',
-        locale={'local_timezone': bogota, 'default_timezone': bogota}
-    )
+    bogota_locale = locale.copy()
+    bogota_locale['local_timezone'] = bogota
+    bogota_locale['default_timezone'] = bogota
+
+    event = Event(event_no_dst, calendar='foobar', locale=bogota_locale)
     assert event.raw.split('\r\n') == cal_no_dst
+    assert event.long() == u'09:30-10:30 09.04.2014: An Event'
 
 
 def test_dtend_equals_dtstart():
@@ -359,9 +373,5 @@ def test_dtend_equals_dtstart():
         END:VEVENT
         """)
 
-    event = Event(
-        text, calendar='foobar',
-        locale={'local_timezone': berlin, 'default_timezone': berlin}
-    )
-
+    event = Event(text, calendar='foobar', locale=locale)
     assert event.end - event.start == datetime.timedelta(days=1)

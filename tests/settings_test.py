@@ -38,6 +38,7 @@ class TestSettings(object):
                 'default_command': 'calendar',
                 'default_calendar': 'home',
                 'show_all_days': False,
+                'print_new': 'False',
             }
         }
 
@@ -66,8 +67,9 @@ class TestSettings(object):
                 'weeknumbers': False,
             },
             'default': {
-                'default_command': 'calendar',
                 'default_calendar': 'home',
+                'default_command': 'calendar',
+                'print_new': 'False',
                 'show_all_days': False,
             }
         }

@@ -141,6 +141,14 @@ class Event(object):
     #     self.vevent['UID'] = value
 
     @property
+    def location(self):
+        return self.vevent.get('LOCATION', None)
+
+    @property
+    def description(self):
+        return self.vevent.get('DESCRIPTION', None)
+
+    @property
     def start(self):
         start = self.vevent['DTSTART'].dt
         if self.allday:
@@ -181,6 +189,13 @@ class Event(object):
         return self.vevent['SUMMARY']
 
     @property
+    def recurpattern(self):
+        if 'RRULE' in self.vevent:
+            return self.vevent['RRULE'].to_ical()
+        else:
+            return None
+
+    @property
     def recur(self):
         return 'RRULE' in self.vevent.keys() or 'RDATE' in self.vevent.keys()
 
@@ -206,6 +221,48 @@ class Event(object):
 
         calendar.add_component(self.vevent)
         return calendar.to_ical()
+
+    def long(self):
+        """complete description of this event in text form
+
+        :rtype: str
+        :returns: event description
+        """
+        if self.allday:
+            end = self.end - datetime.timedelta(days=1)
+            if self.start == end:
+                rangestr = self.start.strftime(self.locale['longdateformat'])
+            else:
+                if self.start.year == self.end.year:
+                    startstr = self.start.strftime(self.locale['dateformat'])
+                else:
+                    startstr = self.start.strftime(self.locale['longdateformat'])
+                endstr = end.strftime(self.locale['longdateformat'])
+                rangestr = startstr + ' - ' + endstr
+        else:
+            # same day
+            if self.start.utctimetuple()[:3] == self.end.utctimetuple()[:3]:
+                starttime = self.start.strftime(self.locale['timeformat'])
+                endtime = self.end.strftime(self.locale['timeformat'])
+                date = self.end.strftime(self.locale['longdateformat'])
+                rangestr = starttime + '-' + endtime + ' ' + date
+            else:
+                startstr = self.start.strftime(self.locale['longdatetimeformat'])
+                endstr = self.end.strftime(self.locale['longdatetimeformat'])
+                rangestr = startstr + ' - ' + endstr
+            if self.start.tzinfo.zone != self.locale['local_timezone'].zone:
+                #doesn't work yet
+                pass
+
+        location = '\nLocation: ' + self.location if \
+            self.location is not None else ''
+        description = '\nDescription: ' + self.description if \
+            self.description is not None else ''
+        repitition = '\nRepeat: ' + self.recurpattern if \
+            self.recurpattern is not None else ''
+
+        return '{}: {}{}{}{}'.format(
+            rangestr, self.summary, location, repitition, description)
 
     def compact(self, day, timeformat='%H:%M'):
         """
