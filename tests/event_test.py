@@ -245,8 +245,10 @@ END:VCALENDAR
 """.split('\n')
 
 event_kwargs = {'calendar': 'foobar',
-                'local_tz': berlin,
-                'default_tz': berlin,
+                'locale': {
+                    'default_timezone': berlin,
+                    'local_timezone': berlin,
+                }
                 }
 
 
@@ -334,10 +336,11 @@ def test_event_dt_long():
 
 def test_event_no_dst():
     """test the creation of a corect VTIMEZONE for timezones with no dst"""
-    event = Event(event_no_dst,
-                  calendar='foobar',
-                  local_tz=bogota,
-                  default_tz=bogota)
+    event = Event(
+        event_no_dst,
+        calendar='foobar',
+        locale={'local_timezone': bogota, 'default_timezone': bogota}
+    )
     assert event.raw.split('\r\n') == cal_no_dst
 
 
@@ -356,7 +359,9 @@ def test_dtend_equals_dtstart():
         END:VEVENT
         """)
 
-    event = Event(text, calendar='foobar', local_tz=berlin,
-                  default_tz=berlin)
+    event = Event(
+        text, calendar='foobar',
+        locale={'local_timezone': berlin, 'default_timezone': berlin}
+    )
 
     assert event.end - event.start == datetime.timedelta(days=1)

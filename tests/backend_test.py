@@ -6,10 +6,11 @@ from khal.khalendar import backend
 from khal.khalendar.exceptions import OutdatedDbVersionError
 
 berlin = pytz.timezone('Europe/Berlin')
+locale = {'local_timezone': berlin, 'default_timezone': berlin}
 
 
 def test_new_db_version():
-    dbi = backend.SQLiteDb('home', ':memory:', 'berlin', 'berlin')
+    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
     backend.DB_VERSION += 1
     with pytest.raises(OutdatedDbVersionError):
         dbi._check_table_version()
@@ -36,5 +37,5 @@ END:VCALENDAR
 
 
 def test_event_rrule_recurrence_id():
-    dbi = backend.SQLiteDb('home', ':memory:', 'berlin', 'berlin')
+    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
     assert dbi

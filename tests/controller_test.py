@@ -36,18 +36,16 @@ cal3 = 'private'
 
 example_cals = [cal1, cal2, cal3]
 
-KWARGS = {
-    'default_tz': pytz.timezone('Europe/Berlin'),
-    'local_tz': pytz.timezone('Europe/Berlin'),
-}
-
-dateformat = '%d.%m.%Y'
-longdateformat = '%d.%m.%Y %H:%M'
+locale = {'default_timezone': pytz.timezone('Europe/Berlin'),
+          'local_timezone': pytz.timezone('Europe/Berlin'),
+          'dateformat': '%d.%m.%Y',
+          'longdateformat': '%d.%m.%Y %H:%M',
+          }
 
 
 @pytest.fixture
 def cal_vdir(tmpdir):
-    cal = Calendar(cal1, ':memory:', str(tmpdir), **KWARGS)
+    cal = Calendar(cal1, ':memory:', str(tmpdir), locale=locale)
     vdir = FilesystemStorage(str(tmpdir), '.ics')
     return cal, vdir
 
@@ -59,16 +57,15 @@ def coll_vdirs(tmpdir):
     for name in example_cals:
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
-        coll.append(Calendar(name, ':memory:', path, **KWARGS))
+        coll.append(Calendar(name, ':memory:', path, locale=locale))
         vdirs[name] = FilesystemStorage(path, '.ics')
     return coll, vdirs
 
 
 class TestCalendarTest(object):
-
     def test_new_event(self, cal_vdir):
         cal, vdir = cal_vdir
-        event = cal.new_event(event_today, **KWARGS)
+        event = cal.new_event(event_today)
         cal.new(event)
         assert ['\x1b[1mToday:\x1b[0m', 'a meeting'] == \
-            get_agenda(cal, dateformat, longdateformat)
+            get_agenda(cal, locale)

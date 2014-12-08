@@ -39,18 +39,15 @@ cal2 = 'work'
 cal3 = 'private'
 
 example_cals = [cal1, cal2, cal3]
-
-KWARGS = {
-    'default_tz': pytz.timezone('Europe/Berlin'),
-    'local_tz': pytz.timezone('Europe/Berlin'),
-}
-
 berlin = pytz.timezone('Europe/Berlin')
+locale = {'default_timezone': berlin,
+          'local_timezone': berlin,
+          }
 
 
 @pytest.fixture
 def cal_vdir(tmpdir):
-    cal = Calendar(cal1, ':memory:', str(tmpdir), color='dark blue', **KWARGS)
+    cal = Calendar(cal1, ':memory:', str(tmpdir), color='dark blue', locale=locale)
     vdir = FilesystemStorage(str(tmpdir), '.ics')
     return cal, vdir
 
@@ -63,7 +60,7 @@ def coll_vdirs(tmpdir):
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
         coll.append(
-            Calendar(name, ':memory:', path, color='dark blue', **KWARGS))
+            Calendar(name, ':memory:', path, color='dark blue', locale=locale))
         vdirs[name] = FilesystemStorage(path, '.ics')
     return coll, vdirs
 
@@ -81,7 +78,7 @@ class TestCalendar(object):
 
     def test_new_event(self, cal_vdir):
         cal, vdir = cal_vdir
-        event = cal.new_event(event_today, **KWARGS)
+        event = cal.new_event(event_today)
         assert event.calendar == cal1
         cal.new(event)
         events = cal.get_allday_by_time_range(today)
@@ -101,7 +98,7 @@ class TestCalendar(object):
 
     def test_db_needs_update_after_insert(self, cal_vdir):
         cal, vdir = cal_vdir
-        event = cal.new_event(event_today, **KWARGS)
+        event = cal.new_event(event_today)
         cal.new(event)
         assert cal._db_needs_update() is False
 
@@ -109,9 +106,9 @@ class TestCalendar(object):
 class TestVdirsyncerCompat(object):
     def test_list(self, cal_vdir):
         cal, vdir = cal_vdir
-        event = Event(event_d, cal.name, **KWARGS)
+        event = Event(event_d, cal.name, locale=locale)
         cal.new(event)
-        event = Event(event_today, cal.name, **KWARGS)
+        event = Event(event_today, cal.name, locale=locale)
         cal.new(event)
         assert [href for (href, uid) in cal._dbtool.list()] == [
             'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU.ics',
@@ -176,9 +173,9 @@ class TestCollection(object):
 
     def test_default_calendar_not_readonly(self, tmpdir):
         coll = CalendarCollection()
-        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, **KWARGS))
-        coll.append(Calendar('home', ':memory:', str(tmpdir), **KWARGS))
-        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, **KWARGS))
+        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
+        coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale))
+        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
         assert coll.default_calendar_name == 'home'
 
     def test_empty(self, coll_vdirs):
@@ -191,7 +188,7 @@ class TestCollection(object):
     def test_insert(self, coll_vdirs):
         """insert a datetime event"""
         coll, vdirs = coll_vdirs
-        event = Event(event_dt, calendar='foo', **KWARGS)
+        event = Event(event_dt, calendar='foo', locale=locale)
         coll.new(event, cal1)
         events = coll.get_datetime_by_time_range(self.astart, self.aend)
         assert len(events) == 1
@@ -208,7 +205,7 @@ class TestCollection(object):
         """insert a date event"""
         coll, vdirs = coll_vdirs
 
-        event = Event(event_d, calendar='foo', **KWARGS)
+        event = Event(event_d, calendar='foo', locale=locale)
         coll.new(event, cal1)
         events = coll.get_allday_by_time_range(aday)
         assert len(events) == 1
@@ -223,7 +220,7 @@ class TestCollection(object):
         """insert a date event with no VALUE=DATE option"""
         coll, vdirs = coll_vdirs
 
-        event = Event(event_d_no_value, calendar='foo', **KWARGS)
+        event = Event(event_d_no_value, calendar='foo', locale=locale)
         coll.new(event, cal1)
         events = coll.get_allday_by_time_range(aday)
         assert len(events) == 1
@@ -235,7 +232,7 @@ class TestCollection(object):
 
     def test_change(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        event = Event(event_dt, calendar='foo', **KWARGS)
+        event = Event(event_dt, calendar='foo', locale=locale)
         coll.new(event, cal1)
         event = coll.get_datetime_by_time_range(self.astart, self.aend)[0]
         assert event.calendar == cal1
@@ -252,15 +249,15 @@ class TestCollection(object):
         event = coll.new_event(
             event.to_ical(),
             coll.default_calendar_name,
-            **KWARGS)
+        )
         assert event.allday is False
 
     def test_insert_calendar_readonly(self, tmpdir):
         coll = CalendarCollection()
-        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, **KWARGS))
-        coll.append(Calendar('home', ':memory:', str(tmpdir), **KWARGS))
-        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, **KWARGS))
-        event = Event(event_dt, calendar='home', **KWARGS)
+        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
+        coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale))
+        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
+        event = Event(event_dt, calendar='home', locale=locale)
         with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
             coll.new(event, cal1)
 
@@ -270,7 +267,7 @@ def cal_dbpath(tmpdir):
     name = 'testcal'
     vdirpath = str(tmpdir) + '/' + name
     dbpath = str(tmpdir) + '/subdir/' + 'khal.db'
-    cal = Calendar(name, dbpath, vdirpath, **KWARGS)
+    cal = Calendar(name, dbpath, vdirpath, locale=locale)
 
     return cal, dbpath
 
@@ -284,7 +281,7 @@ class TestDbCreation(object):
         dbpath = dbdir + 'khal.db'
 
         assert not os.path.isdir(dbdir)
-        Calendar(name, dbpath, vdirpath, **KWARGS)
+        Calendar(name, dbpath, vdirpath, locale)
         assert os.path.isdir(dbdir)
 
     def test_failed_create_db(self, tmpdir):
@@ -296,12 +293,12 @@ class TestDbCreation(object):
         os.chmod(str(tmpdir), 400)
 
         with pytest.raises(CouldNotCreateDbDir):
-            Calendar(name, dbpath, vdirpath, **KWARGS)
+            Calendar(name, dbpath, vdirpath, locale)
 
 
 def test_default_calendar(cal_vdir):
     cal, vdir = cal_vdir
-    event = cal.new_event(event_today, **KWARGS)
+    event = cal.new_event(event_today)
     vdir.upload(event)
     uid, etag = list(vdir.list())[0]
     assert uid == 'uid3@host1.com.ics'
@@ -324,7 +321,7 @@ def test_only_update_old_event(cal_vdir, monkeypatch):
     DTEND;VALUE=DATE:20140910
     SUMMARY:first meeting
     END:VEVENT
-    """), **KWARGS))
+    """)))
 
     href_two, etag_two = vdir.upload(cal.new_event(dedent("""
     BEGIN:VEVENT
@@ -333,13 +330,14 @@ def test_only_update_old_event(cal_vdir, monkeypatch):
     DTEND;VALUE=DATE:20140911
     SUMMARY:second meeting
     END:VEVENT
-    """), **KWARGS))
+    """)))
 
     cal.db_update()
     assert not cal._db_needs_update()
 
     old_update_vevent = cal._update_vevent
     updated_hrefs = []
+
     def _update_vevent(href):
         updated_hrefs.append(href)
         return old_update_vevent(href)
@@ -352,7 +350,7 @@ def test_only_update_old_event(cal_vdir, monkeypatch):
     DTEND;VALUE=DATE:20140912
     SUMMARY:third meeting
     END:VEVENT
-    """), **KWARGS))
+    """)))
 
     assert cal._db_needs_update()
     cal.db_update()
