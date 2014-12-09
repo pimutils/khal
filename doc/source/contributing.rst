@@ -1,10 +1,10 @@
 Feedback and Contributing to khal
 =================================
 
-The prefered way of interaction with *khal*'s developer is via github_. But if
-you do not feel comfortable using github, please don't hesitate to contact me
-via email (khal at lostpackets dot de) or via jabber/XMPP (geier at jabber dot
-ccc dot de).
+The preferred way of interaction with *khal*'s developers is via github_. But if
+you do not feel comfortable using github, please don't hesitate to contact the
+original developer via email (khal at lostpackets dot de) or via jabber/XMPP
+(geier at jabber dot ccc dot de).
 
 Feedback
 --------
@@ -21,20 +21,17 @@ https://github.com/geier/khal/issues?state=open
 
 If it isn't, always run the command again with the -v option
 and paste the output of that (of course you can edit out any private
-details like your username and resource).
+details).
 
 
 Hacking
 -------
 If you want to hack on khal and have some questions, please don't hesitate to
-contact me, I will gladly provide you with any information you need. If you want
-to implement some larger features, it's probably best to contact me first and
-see if me or somebody else is already working on it.
+contact us, we will gladly provide you with any information you need.
 
-Before submitting your first patch, please add yourself to *CONTRIBUTORS.txt*.
+Before submitting your first patch, please add yourself to *AUTHORS.txt*.
 
-
-You can submit patches either via github pull requests (the prefered method) or
+You can submit patches either via github pull requests (the preferred method) or
 via email (khal at lostpackets dot de).
 
 
