@@ -40,7 +40,7 @@ from khal.exceptions import FatalError
 try:
     from StringIO import StringIO
 except ImportError:
-    from io import StringIO
+    from io import BytesIO as StringIO
 
 
 days_option = click.option('--days', default=None, type=int,
@@ -138,7 +138,7 @@ def prepare_context(ctx, config, verbose):
     out = StringIO()
     conf.write(out)
     logger.debug('Using config:')
-    logger.debug(out.getvalue())
+    logger.debug(out.getvalue().decode('utf-8'))
 
     if conf is None:
         raise click.UsageError('Invalid config file, exiting.')
