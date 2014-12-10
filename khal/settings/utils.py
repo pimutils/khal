@@ -29,7 +29,7 @@ from tzlocal import get_localzone
 from validate import VdtValueError
 
 from ..log import logger
-from exceptions import InvalidSettingsError
+from .exceptions import InvalidSettingsError
 
 
 def is_timezone(tzstring):

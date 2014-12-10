@@ -176,7 +176,7 @@ class NewFromString(object):
 class Interactive(object):
 
     def __init__(self, collection, conf):
-        import ui
+        from . import ui
         pane = ui.ClassicView(collection,
                               conf,
                               title='select an event',
