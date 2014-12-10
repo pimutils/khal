@@ -5,6 +5,8 @@ python:
     - pypy
     - 3.3
     - 3.4
+before_install:
+  - sudo apt-get update && sudo apt-get --reinstall install -qq language-pack-de
 install: pip install tox
 script: tox -e $(echo py$TRAVIS_PYTHON_VERSION | tr -d . | sed -e 's/pypypy/pypy/')
 
