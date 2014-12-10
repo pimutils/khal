@@ -40,8 +40,10 @@ if sys.version_info[0] == 2:  # pragma: nocover
     bytes_type = str
     to_native = to_bytes
     iteritems = lambda d, *args, **kwargs: iter(d.iteritems(*args, **kwargs))
+    VERSION = 2
 else:  # pragma: nocover
     unicode_type = str
     bytes_type = bytes
     to_native = to_unicode
     iteritems = lambda d, *args, **kwargs: iter(d.items(*args, **kwargs))
+    VERSION = 3

@@ -25,6 +25,17 @@ import calendar
 import datetime
 
 from .terminal import bstring, rstring
+from .compat import VERSION
+
+
+def month_abbr(month_no):
+    """calendar.month_abbr[] are str (text) in python3 and str (bytes) in
+    python2 """
+    if VERSION == 2:
+        # TODO check if how they are really encoded
+        return calendar.month_abbr[month_no].decode('utf-8')
+    elif VERSION == 3:
+        return calendar.month_abbr[month_no]
 
 
 def getweeknumber(date):
@@ -96,7 +107,7 @@ def vertical_month(month=datetime.date.today().month,
             new_month = len([day for day in week if day.day == 1])
             strweek = str_week(week, today)
             if new_month:
-                m_name = bstring(calendar.month_abbr[week[6].month].ljust(4))
+                m_name = bstring(month_abbr(week[6].month).ljust(4))
             elif weeknumber == 'left':
                 m_name = bstring(' {:2} '.format(getweeknumber(week[0])))
             else:
