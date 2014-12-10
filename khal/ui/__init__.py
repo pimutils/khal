@@ -164,19 +164,16 @@ class DateCColumns(CColumns, Config):
     def _set_focus_position(self, position):
         """calls view.show_date before calling super()._set_focus_position"""
 
+        self.view.show_date(
+            self.contents[position][0].original_widget.date)
         super(DateCColumns, self)._set_focus_position(position)
 
-        # since first Column is month name, focus should only be 0 during
-        # construction
-        if not self.contents.focus == 0:
-            self.view.show_date(
-                self.contents[position][0].original_widget.date)
-
-    focus_position = property(CColumns._get_focus_position,
-                              _set_focus_position, doc="""
-index of child widget in focus. Raises IndexError if read when
-CColumns is empty, or when set to an invalid index.
-""")
+    focus_position = property(
+        CColumns._get_focus_position,
+        _set_focus_position,
+        doc=('Index of child widget in focus. Raises IndexError if read when '
+             'CColumns is empty, or when set to an invalid index.')
+    )
 
     def keypress(self, size, key):
         """only leave calendar area on pressing 'tab' or 'enter'"""
@@ -500,15 +497,15 @@ class EventColumn(urwid.WidgetWrap):
         self.date = None
         self.eventcount = 0
 
-    def update(self, date):
-        """create an EventList populated with Events for `date` and display it
-        """
-        self.date = date
         # TODO make this switch from pile to columns depending on terminal size
-        events = EventList(eventcolumn=self)
-        self.eventcount = events.update(date)
-        self.container = CPile([events])
-        self._w = self.container
+        self.events = EventList(eventcolumn=self)
+        self.container = CPile([self.events])
+        urwid.WidgetWrap.__init__(self, self.container)
+
+    def update(self, date):
+        """Show events for the specified date."""
+        self.date = date
+        self.eventcount = self.events.update(date)
 
     def view(self, event):
         """
