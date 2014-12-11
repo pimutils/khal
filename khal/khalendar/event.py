@@ -103,19 +103,6 @@ class Event(object):
         self.etag = etag
         self.href = href
 
-        if unicode_symbols:
-            self.recurstr = u' \N{Clockwise gapped circle arrow}'
-            self.rangestr = u'\N{Left right arrow} '
-            self.rangestopstr = u'\N{Rightwards arrow to bar} '
-            self.rangestartstr = u'\N{Rightwards arrow from bar} '
-            self.rightarrow = u'\N{Rightwards arrow}'
-        else:
-            self.recurstr = u' R'
-            self.rangestr = u' <->'
-            self.rangestopstr = u' ->|'
-            self.rangestartstr = u' |->'
-            self.rightarrow = u'->'
-
         if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
             self.allday = False
 
@@ -129,6 +116,25 @@ class Event(object):
                 self.vevent['DTEND'].dt = end
         self.local_tz = local_tz
         self.default_tz = default_tz
+
+    @property
+    def symbol_strings(self):
+        if self.unicode_symbols:
+            return dict(
+                recurring=u'\N{Clockwise gapped circle arrow}',
+                range=u'\N{Left right arrow}',
+                range_end=u'\N{Rightwards arrow to bar}',
+                range_start=u'\N{Rightwards arrow from bar}',
+                right_arrow=u'\N{Rightwards arrow}'
+            )
+        else:
+            return dict(
+                recurring=u'R',
+                range=u'<->',
+                range_end=u'->|',
+                range_start=u'|->',
+                right_arrow=u'->'
+            )
 
     @property
     def uid(self):
@@ -229,26 +235,28 @@ class Event(object):
         return compact
 
     def _compact_allday(self, day):
-        if 'RRULE' in self.vevent.keys():
-            recurstr = self.recurstr
+        if 'RRULE' in self.vevent:
+            recurstr = self.symbol_strings['recurring']
         else:
             recurstr = ''
+
         if day < self.start or day + datetime.timedelta(days=1) > self.end:
             raise ValueError(
                 'please supply a `day` this event is scheduled on')
         elif self.start < day and self.end > day + datetime.timedelta(days=1):
             # event starts before and goes on longer than `day`:
-            rangestr = self.rangestr
+            rangestr = self.symbol_strings['range']
         elif self.start < day:
             # event started before `day`
-            rangestr = self.rangestopstr
+            rangestr = self.symbol_strings['range_end']
         elif self.end > day + datetime.timedelta(days=1):
             # event goes on longer than `day`
-            rangestr = self.rangestartstr
+            rangestr = self.symbol_strings['range_start']
         elif self.start == self.end - datetime.timedelta(days=1) == day:
             # only on `day`
             rangestr = ''
-        return rangestr + self.summary + recurstr
+
+        return ' '.join(filter(bool, (rangestr, self.summary, recurstr)))
 
     def _compact_datetime(self, day, timeformat='%M:%H'):
         """compact description of this event
@@ -265,23 +273,26 @@ class Event(object):
         end = datetime.datetime.combine(day, datetime.time.max)
         local_start = self.local_tz.localize(start)
         local_end = self.local_tz.localize(end)
-        if 'RRULE' in self.vevent.keys():
-            recurstr = self.recurstr
+        if 'RRULE' in self.vevent:
+            recurstr = ' ' + self.symbol_strings['recurring']
         else:
             recurstr = ''
+
         tostr = '-'
         if self.start < local_start:
-            startstr = self.rightarrow + ' '
+            startstr = self.symbol_strings['right_arrow'] + ' '
             tostr = ''
         else:
             startstr = self.start.strftime(timeformat)
+
         if self.end > local_end:
-            endstr = self.rightarrow + ' '
+            endstr = self.symbol_strings['right_arrow'] + ' '
             tostr = ''
         else:
             endstr = self.end.strftime(timeformat)
 
-        return startstr + tostr + endstr + ': ' + self.summary + recurstr
+        return (startstr + tostr + endstr +
+                ': ' + self.summary + recurstr)
 
     def _create_calendar(self):
         """
