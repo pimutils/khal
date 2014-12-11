@@ -86,21 +86,26 @@ class Calendar(object):
         if self._db_needs_update():
             self.db_update()
 
-    def local_ctag(self):
-        return os.path.getmtime(self.path)
-
-    def get_allday_by_time_range(self, start, end=None, show_deleted=False):
-        return self._dbtool.get_allday_range(start, end, show_deleted)
-
-    def get_datetime_by_time_range(self, start, end, show_deleted=False):
-        return self._dbtool.get_time_range(start, end, show_deleted)
-
-    def get_event(self, href):
-        event = self._dbtool.get(href)
+    def _cover_event(self, event):
         event.color = self.color
         event.readonly = self._readonly
         event.unicode_symbols = self._unicode_symbols
         return event
+
+
+    def local_ctag(self):
+        return os.path.getmtime(self.path)
+
+    def get_allday_by_time_range(self, start, end=None, show_deleted=False):
+        return map(self._cover_event,
+                   self._dbtool.get_allday_range(start, end, show_deleted))
+
+    def get_datetime_by_time_range(self, start, end, show_deleted=False):
+        return map(self._cover_event,
+                   self._dbtool.get_time_range(start, end, show_deleted))
+
+    def get_event(self, href):
+        return self._cover_event(self._dbtool.get(href))
 
     def update(self, event):
         """update an event in the database
