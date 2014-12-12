@@ -16,8 +16,8 @@ not yet released
 * note to package mantainers: `requirements.txt` has been removed, dependencies
   are still listed in `setup.py`
 
-* new config_option: `[default] verbose_new`, if set to true, `khal new` will
-  print the newly added event
+* new config_option: `[default] print_new`, lets the user decide what should be
+  printed after adding a new event
 * new config option: `[default] show_all_days` lets users decide if they want to
   see days without any events in agenda and calendar view (thanks to Pierre
   David)
