@@ -9,7 +9,7 @@ berlin = pytz.timezone('Europe/Berlin')
 
 
 def test_new_db_version():
-    dbi = backend.SQLiteDb('home', ':memory:', 'berlin', 'berlin', 'blue')
+    dbi = backend.SQLiteDb('home', ':memory:', 'berlin', 'berlin')
     backend.DB_VERSION += 1
     with pytest.raises(OutdatedDbVersionError):
         dbi._check_table_version()
@@ -36,5 +36,5 @@ END:VCALENDAR
 
 
 def test_event_rrule_recurrence_id():
-    dbi = backend.SQLiteDb('home', ':memory:', 'berlin', 'berlin', 'blue')
+    dbi = backend.SQLiteDb('home', ':memory:', 'berlin', 'berlin')
     assert dbi
