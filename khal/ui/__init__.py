@@ -442,7 +442,6 @@ class EventList(urwid.WidgetWrap):
         self.update()
 
     def update(self, this_date=date.today()):
-
         start = datetime.combine(this_date, time.min)
         end = datetime.combine(this_date, time.max)
 
@@ -872,7 +871,6 @@ class ClassicView(Pane):
             account, uid = part.split('\n', 1)
             event = self.collection.get_event(uid, account)
             self.collection.delete(event)
-        pass
 
 
 def start_pane(pane, callback, header=''):
