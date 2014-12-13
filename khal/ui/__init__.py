@@ -828,6 +828,7 @@ class ClassicView(Pane):
 
     def __init__(self, collection, conf=None, title=u'',
                  description=u''):
+        self.init = True
         self.collection = collection
         self.deleted = []
         self.eventscolumn = EventColumn(conf=conf,
@@ -842,8 +843,15 @@ class ClassicView(Pane):
         columns = CColumns([(lwidth, weeks), events],
                            dividechars=4,
                            box_columns=[0, 1])
-        self.eventscolumn.update(date.today())  # starting with today's events
         Pane.__init__(self, columns, title=title, description=description)
+
+    def render(self, size, focus=False):
+        rval = super(Pane, self).render(size, focus)
+        if self.init:
+            # starting with today's events
+            self.eventscolumn.update(date.today())
+            self.init = False
+        return rval
 
     def get_keys(self):
         return [(['arrows'], 'navigate through the calendar'),
