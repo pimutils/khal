@@ -238,30 +238,30 @@ class Event(object):
                 else:
                     startstr = self.start.strftime(self.locale['longdateformat'])
                 endstr = end.strftime(self.locale['longdateformat'])
-                rangestr = startstr + ' - ' + endstr
+                rangestr = startstr + u' - ' + endstr
         else:
             # same day
             if self.start.utctimetuple()[:3] == self.end.utctimetuple()[:3]:
                 starttime = self.start.strftime(self.locale['timeformat'])
                 endtime = self.end.strftime(self.locale['timeformat'])
                 date = self.end.strftime(self.locale['longdateformat'])
-                rangestr = starttime + '-' + endtime + ' ' + date
+                rangestr = starttime + u'-' + endtime + u' ' + date
             else:
                 startstr = self.start.strftime(self.locale['longdatetimeformat'])
                 endstr = self.end.strftime(self.locale['longdatetimeformat'])
-                rangestr = startstr + ' - ' + endstr
+                rangestr = startstr + u' - ' + endstr
             if self.start.tzinfo.zone != self.locale['local_timezone'].zone:
                 #doesn't work yet
                 pass
 
-        location = '\nLocation: ' + self.location if \
-            self.location is not None else ''
-        description = '\nDescription: ' + self.description if \
-            self.description is not None else ''
-        repitition = '\nRepeat: ' + self.recurpattern if \
-            self.recurpattern is not None else ''
+        location = u'\nLocation: ' + self.location if \
+            self.location is not None else u''
+        description = u'\nDescription: ' + self.description if \
+            self.description is not None else u''
+        repitition = u'\nRepeat: ' + self.recurpattern if \
+            self.recurpattern is not None else u''
 
-        return '{}: {}{}{}{}'.format(
+        return u'{}: {}{}{}{}'.format(
             rangestr, self.summary, location, repitition, description)
 
     def compact(self, day, timeformat='%H:%M'):
