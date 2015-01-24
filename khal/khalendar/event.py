@@ -37,7 +37,7 @@ class Event(object):
 
     def __init__(self, ical, calendar, href=None, start=None, end=None,
                  color=None, readonly=False, unicode_symbols=True, etag=None,
-                 locale=None):
+                 locale=None, recuid=None):
         """
         :param ical: the icalendar VEVENT this event is based on
         :type ical: str or icalendar.cal.Event
@@ -70,6 +70,8 @@ class Event(object):
         :type unicode_symbols: bool
         :param etag: the event's etag, will not be modified
         :type etag: str
+        :param recuid: recurrence uid, mainly used for debugging
+        :type recuid: str
         """
         if isinstance(ical, unicode_type):
             self.vevent = icalendar.Event.from_ical(ical)
@@ -84,6 +86,7 @@ class Event(object):
         self.locale = locale
         self.allday = True
         self.color = color
+        self._recuid = recuid
 
         if href is None:
             uid = self.vevent['UID']

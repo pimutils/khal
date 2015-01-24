@@ -367,4 +367,5 @@ class SQLiteDb(object):
                      href=href,
                      calendar=self.calendar,
                      etag=etag,
+                     recuid=recuid,
                      )
