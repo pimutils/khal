@@ -220,7 +220,7 @@ class SQLiteDb(object):
         if not isinstance(vevent['DTSTART'].dt, datetime.datetime):
             all_day_event = True
 
-        dtstartend = aux.expand(vevent, self.default_tz, href)
+        dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
         for dtstart, dtend in dtstartend:
             if all_day_event:
                 dbstart = dtstart.strftime('%Y%m%d')
@@ -361,8 +361,7 @@ class SQLiteDb(object):
         result = self.sql_ex(sql_s, (recuid, ))
         href, etag, item = result[0]
         return Event(item,
-                     local_tz=self.local_tz,
-                     default_tz=self.default_tz,
+                     locale=self.locale,
                      start=start,
                      end=end,
                      href=href,
