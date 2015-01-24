@@ -367,5 +367,4 @@ class SQLiteDb(object):
                      href=href,
                      calendar=self.calendar,
                      etag=etag,
-                     color=self.color,
                      )

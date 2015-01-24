@@ -94,11 +94,12 @@ class Calendar(object):
         return os.path.getmtime(self.path)
 
     def get_allday_by_time_range(self, start, end=None):
-        return [self._cover_event(x) for x in
+        return [self._cover_event(event) for event in
                 self._dbtool.get_allday_range(start, end)]
 
     def get_datetime_by_time_range(self, start, end):
-        return self._dbtool.get_time_range(start, end)
+        return [self._cover_event(event) for event in
+                self._dbtool.get_time_range(start, end)]
 
     def get_event(self, href):
         return self._cover_event(self._dbtool.get(href))
