@@ -125,25 +125,30 @@ class SQLiteDb(object):
             ctag FLOAT
             )''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS events (
-                href TEXT,
-                recuid TEXT UNIQUE,
-                calendar TEXT,
+                href TEXT NOT NULL,
+                hrefrecuid TEXT NOT NULL,
+                calendar TEXT NOT NULL,
                 sequence INT,
                 etag TEXT,
                 type TEXT,
-                item TEXT
+                item TEXT,
+                primary key (hrefrecuid, calendar)
                 );''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS recs_loc (
-            dtstart INT,
-            dtend INT,
-            href TEXT,
-            recuid TEXT NOT NULL REFERENCES events( recuid )
+            dtstart INT NOT NULL,
+            dtend INT NOT NULL,
+            href TEXT NOT NULL REFERENCES events( href ),
+            hrefrecuid TEXT NOT NULL REFERENCES events( hrefrecuid ),
+            recuid TEXT NOT NULL,
+            primary key (href, recuid)
             );''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS recs_float (
-            dtstart INT,
-            dtend INT,
-            href TEXT,
-            recuid TEXT NOT NULL REFERENCES events( recuid )
+            dtstart INT NOT NULL,
+            dtend INT NOT NULL,
+            href TEXT NOT NULL REFERENCES events( href ),
+            hrefrecuid TEXT NOT NULL REFERENCES events( hrefrecuid ),
+            recuid TEXT NOT NULL,
+            primary key (href, recuid)
             );''')
         self.conn.commit()
 
@@ -205,20 +210,18 @@ class SQLiteDb(object):
             raise UpdateFailed('Could not find event in {}'.format(ical))
 
         for vevent in events:
+            # TODO fix this list if recurring events are not in the right order
             vevent = aux.sanitize(vevent)
             self._update_one(vevent, href, etag)
 
     def _update_one(self, vevent, href, etag):
         vtype = 'VEVENT'
 
-        recuid = self.calendar + '__' + href
-        if 'RECURRENCE-ID' in vevent:
-            recuid += str(aux.to_unix_time(vevent['RECURRENCE-ID'].dt))
-
-        all_day_event = False
         # testing on datetime.date won't work as datetime is a child of date
         if not isinstance(vevent['DTSTART'].dt, datetime.datetime):
             all_day_event = True
+        else:
+            all_day_event = False
 
         dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
         for dtstart, dtend in dtstartend:
@@ -226,6 +229,13 @@ class SQLiteDb(object):
                 dbstart = dtstart.strftime('%Y%m%d')
                 dbend = dtend.strftime('%Y%m%d')
                 table = 'recs_float'
+
+                if 'RECURRENCE-ID' in vevent:
+                    recuid = vevent['RECURRENCE-ID'].dt.strftime('%Y%m%d')
+                    hrefrecuid = href + recuid
+                else:
+                    recuid = dbstart
+                    hrefrecuid = href
             else:
                 # TODO: extract non-Olson TZs from params['TZID']
                 # perhaps better done in event/vevent or directly in icalendar
@@ -237,19 +247,28 @@ class SQLiteDb(object):
                 dbend = aux.to_unix_time(dtend)
                 table = 'recs_loc'
 
+                if 'RECURRENCE-ID' in vevent:
+                    recstart = vevent['RECURRENCE-ID'].dt
+                    if recstart.tzinfo is None:
+                        recstart = self.locale['default_timezone'].localize(recstart)
+                    recstart = str(aux.to_unix_time(recstart))
+                    recuid = recstart
+                    hrefrecuid = href + recuid
+                else:
+                    recuid = dbstart
+                    hrefrecuid = href
+
             sql_s = (
-                'INSERT INTO {} (dtstart, dtend, recuid)'
-                'VALUES (?, ?, ?);'.format(table))
-            stuple = (dbstart, dbend, recuid)
+                'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
+                'VALUES (?, ?, ?, ?, ?);'.format(table))
+            stuple = (dbstart, dbend, href, hrefrecuid, recuid)
             self.sql_ex(sql_s, stuple, commit=True)
 
         sql_s = ('INSERT INTO events '
-                 '(item, etag, href, recuid, type, calendar) '
+                 '(item, etag, href, type, calendar, hrefrecuid) '
                  'VALUES (?, ?, ?, ?, ?, ?);')
-
         stuple = (vevent.to_ical().decode('utf-8'),
-                  etag, href, recuid, vtype, self.calendar)
-
+                  etag, href, vtype, self.calendar, hrefrecuid)
         self.sql_ex(sql_s, stuple, commit=True)
         self.conn.commit()
 
@@ -289,11 +308,11 @@ class SQLiteDb(object):
         :param etag: only there for compatiblity with vdirsyncer's Storage,
                      we always delete
         """
-        sql_s = 'SELECT recuid FROM events WHERE href = ? AND calendar = ?;'
+        sql_s = 'SELECT hrefrecuid FROM events WHERE href = ? AND calendar = ?;'
         result = self.sql_ex(sql_s, (href, self.calendar))
         for recuid, in result:
             for table in ['recs_loc', 'recs_float']:
-                sql_s = 'DELETE FROM {0} WHERE recuid = ?;'.format(table)
+                sql_s = 'DELETE FROM {0} WHERE hrefrecuid = ?;'.format(table)
                 self.sql_ex(sql_s, (recuid, ))
         sql_s = 'DELETE FROM events WHERE href = ? AND calendar = ?;'
         self.sql_ex(sql_s, (href, self.calendar))
@@ -312,19 +331,19 @@ class SQLiteDb(object):
         """
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
-        sql_s = ('SELECT recs_loc.recuid, dtstart, dtend FROM '
-                 'recs_loc JOIN events ON recs_loc.recuid = events.recuid WHERE '
+        sql_s = ('SELECT recs_loc.hrefrecuid, dtstart, dtend FROM '
+                 'recs_loc JOIN events ON recs_loc.hrefrecuid = events.hrefrecuid WHERE '
                  '(dtstart >= ? AND dtstart <= ? OR '
                  'dtend >= ? AND dtend <= ? OR '
                  'dtstart <= ? AND dtend >= ?) AND calendar = ?;')
         stuple = (start, end, start, end, start, end, self.calendar)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
-        for recuid, start, end in result:
+        for hrefrecuid, start, end in result:
             start = pytz.UTC.localize(
                 datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
-            event = self.get(recuid, start=start, end=end)
+            event = self.get(hrefrecuid, start=start, end=end)
             event_list.append(event)
         return event_list
 
@@ -335,30 +354,30 @@ class SQLiteDb(object):
         if end is None:
             end = start + datetime.timedelta(days=1)
         strend = end.strftime('%Y%m%d')
-        sql_s = ('SELECT recs_float.recuid, dtstart, dtend FROM '
-                 'recs_float JOIN events ON recs_float.recuid = events.recuid WHERE '
+        sql_s = ('SELECT recs_float.hrefrecuid, dtstart, dtend FROM '
+                 'recs_float JOIN events ON recs_float.hrefrecuid = events.hrefrecuid WHERE '
                  '(dtstart >= ? AND dtstart < ? OR '
                  'dtend > ? AND dtend <= ? OR '
                  'dtstart <= ? AND dtend > ? ) AND calendar = ?;')
         stuple = (strstart, strend, strstart, strend, strstart, strend, self.calendar)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
-        for recuid, start, end in result:
+        for hrefrecuid, start, end in result:
             start = time.strptime(str(start), '%Y%m%d')
             end = time.strptime(str(end), '%Y%m%d')
             start = datetime.date(start.tm_year, start.tm_mon, start.tm_mday)
             end = datetime.date(end.tm_year, end.tm_mon, end.tm_mday)
-            event = self.get(recuid, start=start, end=end)
+            event = self.get(hrefrecuid, start=start, end=end)
             event_list.append(event)
         return event_list
 
-    def get(self, recuid, start=None, end=None):
-        """returns the Event matching recuid, if start and end are given, a
+    def get(self, hrefrecuid, start=None, end=None):
+        """returns the Event matching hrefrecuid, if start and end are given, a
         specific Event from a Recursion set is returned, otherwise the Event
         returned exactly as saved in the db
         """
-        sql_s = 'SELECT href, etag, item FROM events WHERE recuid = ?;'
-        result = self.sql_ex(sql_s, (recuid, ))
+        sql_s = 'SELECT href, etag, item FROM events WHERE hrefrecuid = ?;'
+        result = self.sql_ex(sql_s, (hrefrecuid, ))
         href, etag, item = result[0]
         return Event(item,
                      locale=self.locale,
@@ -367,5 +386,5 @@ class SQLiteDb(object):
                      href=href,
                      calendar=self.calendar,
                      etag=etag,
-                     recuid=recuid,
+                     recuid=hrefrecuid,
                      )

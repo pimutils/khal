@@ -30,7 +30,7 @@ END:VEVENT
 BEGIN:VEVENT
 UID:event_rrule_recurrence_id
 SUMMARY:Arbeit
-RECURRENCE-ID:20140707T073000Z
+RECURRENCE-ID:20140707T050000Z
 DTSTART;TZID=Europe/Berlin:20140707T090000
 DTEND;TZID=Europe/Berlin:20140707T140000
 END:VEVENT
@@ -46,7 +46,9 @@ def test_event_rrule_recurrence_id():
     dbi.update(event_rrule_recurrence_id, href='12345.ics', etag='abcd')
     assert dbi.list() == [('12345.ics', 'abcd')]
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
+    events.sort(key=lambda x: x.start)
     assert len(events) == 6
+
     assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
     assert events[1].start == berlin.localize(datetime(2014, 7, 7, 9, 0))
     assert events[2].start == berlin.localize(datetime(2014, 7, 14, 7, 0))
