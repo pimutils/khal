@@ -140,7 +140,7 @@ class SQLiteDb(object):
             raise OutdatedDbVersionError(
                 str(self.db_path) +
                 " is probably an invalid or outdated database.\n"
-                "You should consider to remove it and sync again.")
+                "You should consider removing it and running khal again.")
 
     def _create_default_tables(self):
         """creates version and account tables and inserts table version number
