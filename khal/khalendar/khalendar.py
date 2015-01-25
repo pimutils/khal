@@ -43,6 +43,13 @@ from .exceptions import UnsupportedFeatureError, ReadOnlyCalendarError, \
 logger = log.logger
 
 
+def create_directory(path):
+    if not os.path.isdir(path):
+        if os.path.exists(path):
+            raise RuntimeError('{} is not a directory.'.format(path))
+        os.makedirs(path, mode=0o750)
+
+
 class Calendar(object):
 
     def __init__(self, name, dbpath, path, readonly=False, color='',
@@ -69,6 +76,7 @@ class Calendar(object):
         self.color = color
         self.path = os.path.expanduser(path)
         self._dbtool = backend.SQLiteDb(self.name, dbpath, locale=self._locale)
+        create_directory(path)
         self._storage = FilesystemStorage(path, '.ics')
         self._readonly = readonly
         self._unicode_symbols = unicode_symbols
