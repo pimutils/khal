@@ -5,7 +5,7 @@ import pytz
 from datetime import datetime
 
 from khal.khalendar import backend
-from khal.khalendar.exceptions import OutdatedDbVersionError
+from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 
 berlin = pytz.timezone('Europe/Berlin')
 locale = {'local_timezone': berlin, 'default_timezone': berlin}
@@ -142,3 +142,29 @@ def test_event_delete():
     dbi.delete('12345.ics')
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
     assert len(events) == 0
+
+
+event_rrule_this_and_prior = """
+BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:event_rrule_recurrence_id
+SUMMARY:Arbeit
+RRULE:FREQ=WEEKLY;UNTIL=20140806T060000Z
+DTSTART;TZID=Europe/Berlin:20140630T070000
+DTEND;TZID=Europe/Berlin:20140707T120000
+END:VEVENT
+BEGIN:VEVENT
+UID:event_rrule_recurrence_id
+SUMMARY:Arbeit
+RECURRENCE-ID;RANGE=THISANDPRIOR:20140707T050000Z
+DTSTART;TZID=Europe/Berlin:20140707T090000
+DTEND;TZID=Europe/Berlin:20140707T140000
+END:VEVENT
+END:VCALENDAR
+"""
+
+
+def test_this_and_prior():
+    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    with pytest.raises(UpdateFailed):
+        dbi.update(event_rrule_this_and_prior, href='12345.ics', etag='abcd')

@@ -42,7 +42,8 @@ import xdg.BaseDirectory
 from .event import Event
 from . import aux
 from .. import log
-from .exceptions import CouldNotCreateDbDir, OutdatedDbVersionError
+from .exceptions import CouldNotCreateDbDir, OutdatedDbVersionError, \
+    UpdateFailed
 
 logger = log.logger
 
@@ -211,14 +212,22 @@ class SQLiteDb(object):
             if component.name == 'VEVENT':
                 vevent = aux.sanitize(component)
                 if RECURRENCE_ID in vevent:
+                    if vevent['RECURRENCE-ID'].params.get('RANGE') == 'THISANDPRIOR':
+                        raise UpdateFailed(
+                            'The parameter `THISANDPRIOR` is not (and will not'
+                            ' be supported by khal (as applications supporting '
+                            'the latest standard MUST NOT create those. '
+                            'Therefore event {} from calendar {} will not be '
+                            'shown in khal'.format(href, self.calendar))
                     events[str(vevent['UID'])][RECURRENCE_ID].append(vevent)
                 else:
                     events[str(vevent['UID'])]['MASTER'] = vevent
 
         # now insert everything into the db
         for uid in events:
-            self.delete(href)
-            self._update_one(events[uid]['MASTER'], href, etag)
+            if 'MASTER' in events[uid]:
+                self.delete(href)
+                self._update_one(events[uid]['MASTER'], href, etag)
             if RECURRENCE_ID in events[uid]:
                 for event in events[uid][RECURRENCE_ID]:
                     self._update_one(event, href, etag)
