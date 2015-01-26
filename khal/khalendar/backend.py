@@ -203,6 +203,9 @@ class SQLiteDb(object):
         if not isinstance(vevent, icalendar.cal.Event):
             ical = icalendar.Event.from_ical(vevent)
 
+        # we are building this data structure, so that we can insert the
+        # (sub) events in the right order, e.g. recurrence-id events after
+        # the corresponding rrule event
         events = defaultdict(lambda *args: defaultdict(list))
         for component in ical.walk():
             if component.name == 'VEVENT':
@@ -214,6 +217,7 @@ class SQLiteDb(object):
 
         # now insert everything into the db
         for uid in events:
+            self.delete(href)
             self._update_one(events[uid]['MASTER'], href, etag)
             if RECURRENCE_ID in events[uid]:
                 for event in events[uid][RECURRENCE_ID]:
@@ -275,7 +279,6 @@ class SQLiteDb(object):
         stuple = (vevent.to_ical().decode('utf-8'),
                   etag, href, self.calendar, hrefrecuid)
         self.sql_ex(sql_s, stuple, commit=True)
-        self.conn.commit()
 
     def get_ctag(self):
         stuple = (self.calendar, )
@@ -313,14 +316,11 @@ class SQLiteDb(object):
         :param etag: only there for compatiblity with vdirsyncer's Storage,
                      we always delete
         """
-        sql_s = 'SELECT hrefrecuid FROM events WHERE href = ? AND calendar = ?;'
-        result = self.sql_ex(sql_s, (href, self.calendar))
-        for recuid, in result:
-            for table in ['recs_loc', 'recs_float']:
-                sql_s = 'DELETE FROM {0} WHERE hrefrecuid = ?;'.format(table)
-                self.sql_ex(sql_s, (recuid, ))
-        sql_s = 'DELETE FROM events WHERE href = ? AND calendar = ?;'
-        self.sql_ex(sql_s, (href, self.calendar))
+        for table in ['recs_loc', 'recs_float']:
+            sql_s = 'DELETE FROM {0} WHERE href = ?;'.format(table)
+            self.sql_ex(sql_s, (href,))
+        sql_s = 'DELETE FROM events WHERE href = ?;'
+        self.sql_ex(sql_s, (href, ))
 
     def list(self):
         """
