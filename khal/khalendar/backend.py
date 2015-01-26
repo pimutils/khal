@@ -42,8 +42,7 @@ import xdg.BaseDirectory
 from .event import Event
 from . import aux
 from .. import log
-from .exceptions import CouldNotCreateDbDir, UpdateFailed, \
-    OutdatedDbVersionError
+from .exceptions import CouldNotCreateDbDir, OutdatedDbVersionError
 
 logger = log.logger
 
@@ -200,36 +199,25 @@ class SQLiteDb(object):
         """
         if href is None:
             raise ValueError('href may not be one')
-        events = []
+
         if not isinstance(vevent, icalendar.cal.Event):
             ical = icalendar.Event.from_ical(vevent)
-            for component in ical.walk():
-                if component.name == 'VEVENT':
-                    events.append(component)
 
-        if len(events) == 0:
-            logger.debug('Could not find event in {}'.format(ical))
-            raise UpdateFailed('Could not find event in {}'.format(ical))
-
-        event_d = defaultdict(lambda *args: defaultdict(list))
-        for vevent in events:
-            # TODO fix this list if recurring events are not in the right order
-            vevent = aux.sanitize(vevent)
-
-            if RECURRENCE_ID in vevent:
-                print('found')
-                event_d[str(vevent['UID'])][RECURRENCE_ID].append(vevent)
-            else:
-                event_d[str(vevent['UID'])]['MASTER'] = vevent
+        events = defaultdict(lambda *args: defaultdict(list))
+        for component in ical.walk():
+            if component.name == 'VEVENT':
+                vevent = aux.sanitize(component)
+                if RECURRENCE_ID in vevent:
+                    events[str(vevent['UID'])][RECURRENCE_ID].append(vevent)
+                else:
+                    events[str(vevent['UID'])]['MASTER'] = vevent
 
         # now insert everything into the db
-        for uid in event_d:
-            print('inserting MASTER: ' + uid)
-            self._update_one(event_d[uid]['MASTER'], href, etag)
-            if RECURRENCE_ID in event_d[uid]:
-                for event_part in event_d[uid][RECURRENCE_ID]:
-                    print('inserting recuid: ' + uid)
-                    self._update_one(event_part, href, etag)
+        for uid in events:
+            self._update_one(events[uid]['MASTER'], href, etag)
+            if RECURRENCE_ID in events[uid]:
+                for event in events[uid][RECURRENCE_ID]:
+                    self._update_one(event, href, etag)
 
     def _update_one(self, vevent, href, etag):
         """expand (if needed) and insert non-reccuring and original recurring
@@ -288,7 +276,6 @@ class SQLiteDb(object):
                   etag, href, self.calendar, hrefrecuid)
         self.sql_ex(sql_s, stuple, commit=True)
         self.conn.commit()
-
 
     def get_ctag(self):
         stuple = (self.calendar, )
