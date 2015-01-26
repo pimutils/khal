@@ -24,7 +24,7 @@ UID:event_rrule_recurrence_id
 SUMMARY:Arbeit
 RRULE:FREQ=WEEKLY;UNTIL=20140806T060000Z
 DTSTART;TZID=Europe/Berlin:20140630T070000
-DTEND;TZID=Europe/Berlin:20140707T120000
+DTEND;TZID=Europe/Berlin:20140630T120000
 END:VEVENT
 BEGIN:VEVENT
 UID:event_rrule_recurrence_id
@@ -43,7 +43,7 @@ UID:event_rrule_recurrence_id
 SUMMARY:Arbeit
 RRULE:FREQ=WEEKLY;UNTIL=20140806T060000Z
 DTSTART;TZID=Europe/Berlin:20140630T070000
-DTEND;TZID=Europe/Berlin:20140707T120000
+DTEND;TZID=Europe/Berlin:20140630T120000
 EXDATE;TZID=Europe/Berlin:20140714T070000
 END:VEVENT
 END:VCALENDAR
@@ -84,7 +84,7 @@ UID:event_rrule_recurrence_id
 SUMMARY:Arbeit
 RRULE:FREQ=WEEKLY;COUNT=6
 DTSTART;TZID=Europe/Berlin:20140630T070000
-DTEND;TZID=Europe/Berlin:20140707T120000
+DTEND;TZID=Europe/Berlin:20140630T120000
 END:VEVENT
 END:VCALENDAR
 """
@@ -151,7 +151,7 @@ UID:event_rrule_recurrence_id
 SUMMARY:Arbeit
 RRULE:FREQ=WEEKLY;UNTIL=20140806T060000Z
 DTSTART;TZID=Europe/Berlin:20140630T070000
-DTEND;TZID=Europe/Berlin:20140707T120000
+DTEND;TZID=Europe/Berlin:20140630T120000
 END:VEVENT
 BEGIN:VEVENT
 UID:event_rrule_recurrence_id
@@ -168,3 +168,39 @@ def test_this_and_prior():
     dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
     with pytest.raises(UpdateFailed):
         dbi.update(event_rrule_this_and_prior, href='12345.ics', etag='abcd')
+
+
+event_rrule_this_and_future = """
+BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:event_rrule_recurrence_id
+SUMMARY:Arbeit
+RRULE:FREQ=WEEKLY;UNTIL=20140806T060000Z
+DTSTART;TZID=Europe/Berlin:20140630T070000
+DTEND;TZID=Europe/Berlin:20140630T120000
+END:VEVENT
+BEGIN:VEVENT
+UID:event_rrule_recurrence_id
+SUMMARY:Arbeit
+RECURRENCE-ID;RANGE=THISANDFUTURE:20140707T050000Z
+DTSTART;TZID=Europe/Berlin:20140707T090000
+DTEND;TZID=Europe/Berlin:20140707T140000
+END:VEVENT
+END:VCALENDAR
+"""
+
+
+def test_event_rrule_this_and_future():
+    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi.update(event_rrule_this_and_future, href='12345.ics', etag='abcd')
+    assert dbi.list() == [('12345.ics', 'abcd')]
+    events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
+    events.sort(key=lambda x: x.start)
+    assert len(events) == 6
+
+    assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
+    assert events[1].start == berlin.localize(datetime(2014, 7, 7, 9, 0))
+    assert events[2].start == berlin.localize(datetime(2014, 7, 14, 9, 0))
+    assert events[3].start == berlin.localize(datetime(2014, 7, 21, 9, 0))
+    assert events[4].start == berlin.localize(datetime(2014, 7, 28, 9, 0))
+    assert events[5].start == berlin.localize(datetime(2014, 8, 4, 9, 0))

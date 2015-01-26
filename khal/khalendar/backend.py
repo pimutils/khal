@@ -50,6 +50,10 @@ logger = log.logger
 DB_VERSION = 3  # The current db layout version
 
 RECURRENCE_ID = 'RECURRENCE-ID'
+THISANDFUTURE = 'THISANDFUTURE'
+THISANDPRIOR = 'THISANDPRIOR'
+
+
 # TODO fix that event/vevent mess
 
 
@@ -212,27 +216,34 @@ class SQLiteDb(object):
             if component.name == 'VEVENT':
                 vevent = aux.sanitize(component)
                 if RECURRENCE_ID in vevent:
-                    if vevent['RECURRENCE-ID'].params.get('RANGE') == 'THISANDPRIOR':
+                    if vevent[RECURRENCE_ID].params.get('RANGE') == THISANDPRIOR:
                         raise UpdateFailed(
                             'The parameter `THISANDPRIOR` is not (and will not'
                             ' be supported by khal (as applications supporting '
                             'the latest standard MUST NOT create those. '
                             'Therefore event {} from calendar {} will not be '
                             'shown in khal'.format(href, self.calendar))
-                    events[str(vevent['UID'])][RECURRENCE_ID].append(vevent)
+                    elif vevent[RECURRENCE_ID].params.get('RANGE') == THISANDFUTURE:
+                        events[str(vevent['UID'])][THISANDFUTURE].append(vevent)
+                    else:
+                        events[str(vevent['UID'])][RECURRENCE_ID].append(vevent)
                 else:
                     events[str(vevent['UID'])]['MASTER'] = vevent
 
         # now insert everything into the db
         for uid in events:
-            if 'MASTER' in events[uid]:
-                self.delete(href)
-                self._update_one(events[uid]['MASTER'], href, etag)
+            self.delete(href)
+            self._update_one(events[uid]['MASTER'], href, etag)
+            if THISANDFUTURE in events[uid]:
+                # TODO sort these events
+                for event in events[uid][RECURRENCE_ID]:
+                    deltas = calc_shift_deltas(event, events[uid]['MASTER'])
+                    self._update_one(event, href, etag, thisandfuture=True, deltas=deltas)
             if RECURRENCE_ID in events[uid]:
                 for event in events[uid][RECURRENCE_ID]:
                     self._update_one(event, href, etag)
 
-    def _update_one(self, vevent, href, etag):
+    def _update_one(self, vevent, href, etag, thisandfuture=False, deltas=None):
         """expand (if needed) and insert non-reccuring and original recurring
         (those with an RRULE property"""
 
@@ -243,12 +254,13 @@ class SQLiteDb(object):
             all_day_event = False
 
         dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
+        if thisandfuture:
+            dtstartend = shift_future(dtstartend, deltas)
         for dtstart, dtend in dtstartend:
             if all_day_event:
                 dbstart = dtstart.strftime('%Y%m%d')
                 dbend = dtend.strftime('%Y%m%d')
                 table = 'recs_float'
-
                 if 'RECURRENCE-ID' in vevent:
                     recuid = vevent['RECURRENCE-ID'].dt.strftime('%Y%m%d')
                     hrefrecuid = href + recuid
@@ -277,11 +289,18 @@ class SQLiteDb(object):
                     recuid = dbstart
                     hrefrecuid = href
 
-            sql_s = (
-                'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
-                'VALUES (?, ?, ?, ?, ?);'.format(table))
-            stuple = (dbstart, dbend, href, hrefrecuid, recuid)
+            if thisandfuture:
+                sql_s = (
+                    'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
+                    'VALUES (?, ?, ?, ?, ?) WHERE recuid > (?);'.format(table))
+                stuple = (dbstart, dbend, href, hrefrecuid, recuid, recuid)
+            else:
+                sql_s = (
+                    'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
+                    'VALUES (?, ?, ?, ?, ?);'.format(table))
+                stuple = (dbstart, dbend, href, hrefrecuid, recuid)
             self.sql_ex(sql_s, stuple, commit=True)
+
         sql_s = ('INSERT INTO events '
                  '(item, etag, href, calendar, hrefrecuid) '
                  'VALUES (?, ?, ?, ?, ?);')
@@ -402,3 +421,17 @@ class SQLiteDb(object):
                      etag=etag,
                      recuid=hrefrecuid,
                      )
+
+
+def shift_future(dtstartend, deltas):
+    # TODO implement
+    return dtstartend
+
+
+def calc_shift_deltas(future, master):
+    # TODO implement
+    # TODO take care of the case where future and master are not of the same
+    # kind (naive vs. localized)
+    start_shift = master
+    assert False
+    return datetime.timedelta(hours=0), datetime.timedelta(hours=0)
