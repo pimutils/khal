@@ -1,6 +1,8 @@
 import datetime
 import locale
 
+import pytest
+
 from khal.calendar_display import vertical_month, getweeknumber, str_week
 
 
@@ -123,9 +125,12 @@ def test_vertical_month_unicode():
         locale.setlocale(locale.LC_ALL, 'de_DE.utf-8')
     except locale.Error as error:
         if str(error) == 'unsupported locale setting':
-            print("""To get this test to run, you need to add `de_DE.utf-8` to
-your locales. On Debian GNU/Linux 8 you do this by uncommenting `de_DE.utf-8
-in /etc/locale.gen and then run `locale-gen` (as root).""")
+            pytest.xfail(
+                'To get this test to run, you need to add `de_DE.utf-8` to '
+                'your locales. On Debian GNU/Linux 8 you do this by '
+                'uncommenting `de_DE.utf-8 in /etc/locale.gen and then run '
+                '`locale-gen` (as root).'
+            )
         else:
             raise
 
