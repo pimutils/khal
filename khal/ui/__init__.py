@@ -871,7 +871,6 @@ class ClassicView(Pane):
         for part in self.deleted:
             account, href, etag = part.split('\n', 2)
             self.collection.delete(href, etag, account)
-        pass
 
 
 def start_pane(pane, callback, header=''):
