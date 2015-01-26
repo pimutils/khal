@@ -166,7 +166,7 @@ def localize_strip_tz(dates, timezone):
 
 def to_unix_time(dtime):
     """convert a datetime object to unix time in UTC"""
-    if hasattr(dtime, 'tzinfo') and dtime.tzinfo is not None:
+    if getattr(dtime, 'tzinfo', None) is not None:
         dtime = dtime.astimezone(pytz.UTC)
     unix_time = calendar.timegm(dtime.timetuple())
     return unix_time

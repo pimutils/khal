@@ -166,7 +166,7 @@ class SQLiteDb(object):
                 WHERE calendar = ?;''', (self.calendar,))
         result = self.cursor.fetchone()
 
-        if(result[0] != 0):
+        if result[0] != 0:
             logger.debug("tables for calendar {0} exist".format(self.calendar))
         else:
             sql_s = 'INSERT INTO calendars (calendar, resource) VALUES (?, ?);'
@@ -248,10 +248,7 @@ class SQLiteDb(object):
         (those with an RRULE property"""
 
         # testing on datetime.date won't work as datetime is a child of date
-        if not isinstance(vevent['DTSTART'].dt, datetime.datetime):
-            all_day_event = True
-        else:
-            all_day_event = False
+        all_day_event = not isinstance(vevent['DTSTART'].dt, datetime.datetime)
 
         dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
         if thisandfuture:
