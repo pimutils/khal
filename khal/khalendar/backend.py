@@ -29,6 +29,7 @@ Database Layout
 
 from __future__ import print_function
 
+from collections import defaultdict
 import datetime
 from os import makedirs, path
 import sqlite3
@@ -48,6 +49,7 @@ logger = log.logger
 
 DB_VERSION = 3  # The current db layout version
 
+RECURRENCE_ID = 'RECURRENCE-ID'
 # TODO fix that event/vevent mess
 
 
@@ -209,13 +211,29 @@ class SQLiteDb(object):
             logger.debug('Could not find event in {}'.format(ical))
             raise UpdateFailed('Could not find event in {}'.format(ical))
 
+        event_d = defaultdict(lambda *args: defaultdict(list))
         for vevent in events:
             # TODO fix this list if recurring events are not in the right order
             vevent = aux.sanitize(vevent)
-            self._update_one(vevent, href, etag)
+
+            if RECURRENCE_ID in vevent:
+                print('found')
+                event_d[str(vevent['UID'])][RECURRENCE_ID].append(vevent)
+            else:
+                event_d[str(vevent['UID'])]['MASTER'] = vevent
+
+        # now insert everything into the db
+        for uid in event_d:
+            print('inserting MASTER: ' + uid)
+            self._update_one(event_d[uid]['MASTER'], href, etag)
+            if RECURRENCE_ID in event_d[uid]:
+                for event_part in event_d[uid][RECURRENCE_ID]:
+                    print('inserting recuid: ' + uid)
+                    self._update_one(event_part, href, etag)
 
     def _update_one(self, vevent, href, etag):
-        vtype = 'VEVENT'
+        """expand (if needed) and insert non-reccuring and original recurring
+        (those with an RRULE property"""
 
         # testing on datetime.date won't work as datetime is a child of date
         if not isinstance(vevent['DTSTART'].dt, datetime.datetime):
@@ -263,14 +281,14 @@ class SQLiteDb(object):
                 'VALUES (?, ?, ?, ?, ?);'.format(table))
             stuple = (dbstart, dbend, href, hrefrecuid, recuid)
             self.sql_ex(sql_s, stuple, commit=True)
-
         sql_s = ('INSERT INTO events '
-                 '(item, etag, href, type, calendar, hrefrecuid) '
-                 'VALUES (?, ?, ?, ?, ?, ?);')
+                 '(item, etag, href, calendar, hrefrecuid) '
+                 'VALUES (?, ?, ?, ?, ?);')
         stuple = (vevent.to_ical().decode('utf-8'),
-                  etag, href, vtype, self.calendar, hrefrecuid)
+                  etag, href, self.calendar, hrefrecuid)
         self.sql_ex(sql_s, stuple, commit=True)
         self.conn.commit()
+
 
     def get_ctag(self):
         stuple = (self.calendar, )
