@@ -110,10 +110,11 @@ class TestVdirsyncerCompat(object):
         cal.new(event)
         event = Event(event_today, cal.name, locale=locale)
         cal.new(event)
-        hrefs = sorted([href for (href, uid) in cal._dbtool.list()])
+        hrefs = sorted(href for href, uid in cal._dbtool.list())
         assert hrefs == [
             'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU.ics',
-            'uid3@host1.com.ics']
+            'uid3@host1.com.ics'
+        ]
         assert cal._dbtool.get('uid3@host1.com.ics').uid == 'uid3@host1.com'
 
 today = datetime.date.today()
