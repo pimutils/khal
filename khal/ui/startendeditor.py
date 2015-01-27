@@ -53,10 +53,7 @@ class StartEndEditor(urwid.WidgetWrap):
     """
 
     def __init__(self, start, end, conf):
-        self.allday = False
-        if not isinstance(start, datetime):
-            self.allday = True
-
+        self.allday = not isinstance(start, datetime)
         self.conf = conf
         self.startdt = start
         self.enddt = end

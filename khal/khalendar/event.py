@@ -84,7 +84,6 @@ class Event(object):
 
         assert locale is not None
         self.locale = locale
-        self.allday = True
         self.color = color
         self._recuid = recuid
 
@@ -100,8 +99,7 @@ class Event(object):
         self.etag = etag
         self.href = href
 
-        if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
-            self.allday = False
+        self.allday = not isinstance(self.vevent['dtstart'].dt, datetime.datetime)
 
         if start is not None:
             if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
@@ -255,7 +253,8 @@ class Event(object):
                 endstr = self.end.strftime(self.locale['longdatetimeformat'])
                 rangestr = startstr + u' - ' + endstr
             if self.start.tzinfo.zone != self.locale['local_timezone'].zone:
-                #doesn't work yet
+                # doesn't work yet
+                # TODO FIXME
                 pass
 
         location = u'\nLocation: ' + self.location if \
