@@ -2,7 +2,8 @@
 import pytest
 import pytz
 
-from datetime import datetime
+from datetime import datetime, timedelta
+import icalendar
 
 from khal.khalendar import backend
 from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
@@ -204,3 +205,34 @@ def test_event_rrule_this_and_future():
     assert events[3].start == berlin.localize(datetime(2014, 7, 21, 9, 0))
     assert events[4].start == berlin.localize(datetime(2014, 7, 28, 9, 0))
     assert events[5].start == berlin.localize(datetime(2014, 8, 4, 9, 0))
+
+master = """BEGIN:VEVENT
+UID:event_rrule_recurrence_id
+SUMMARY:Arbeit
+RRULE:FREQ=WEEKLY;UNTIL=20140806T060000Z
+DTSTART;TZID=Europe/Berlin:20140630T070000
+DTEND;TZID=Europe/Berlin:20140630T120000
+END:VEVENT"""
+
+recuid_this_future = icalendar.Event.from_ical("""BEGIN:VEVENT
+UID:event_rrule_recurrence_id
+SUMMARY:Arbeit
+RECURRENCE-ID;RANGE=THISANDFUTURE:20140707T050000Z
+DTSTART;TZID=Europe/Berlin:20140707T090000
+DTEND;TZID=Europe/Berlin:20140707T140000
+END:VEVENT""")
+
+recuid_this_future_duration = icalendar.Event.from_ical("""BEGIN:VEVENT
+UID:event_rrule_recurrence_id
+SUMMARY:Arbeit
+RECURRENCE-ID;RANGE=THISANDFUTURE:20140707T050000Z
+DTSTART;TZID=Europe/Berlin:20140707T090000
+DURATION:PT4H30M
+END:VEVENT""")
+
+
+def test_calc_shift_deltas():
+    assert (timedelta(hours=2), timedelta(hours=5)) == \
+        backend.calc_shift_deltas(recuid_this_future)
+    assert (timedelta(hours=2), timedelta(hours=4, minutes=30)) == \
+        backend.calc_shift_deltas(recuid_this_future_duration)

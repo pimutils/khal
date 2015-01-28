@@ -237,8 +237,9 @@ class SQLiteDb(object):
             if THISANDFUTURE in events[uid]:
                 # TODO sort these events
                 for event in events[uid][RECURRENCE_ID]:
-                    deltas = calc_shift_deltas(event, events[uid]['MASTER'])
-                    self._update_one(event, href, etag, thisandfuture=True, deltas=deltas)
+                    start_shift, duration = calc_shift_deltas(event, events[uid]['MASTER'])
+                    self._update_one(event, href, etag, thisandfuture=True,
+                                     start_shift=start_shift, duration=duration)
             if RECURRENCE_ID in events[uid]:
                 for event in events[uid][RECURRENCE_ID]:
                     self._update_one(event, href, etag)
@@ -425,10 +426,18 @@ def shift_future(dtstartend, deltas):
     return dtstartend
 
 
-def calc_shift_deltas(future, master):
-    # TODO implement
-    # TODO take care of the case where future and master are not of the same
-    # kind (naive vs. localized)
-    start_shift = master
-    assert False
-    return datetime.timedelta(hours=0), datetime.timedelta(hours=0)
+def calc_shift_deltas(event):
+    """calculate an events duration and by how much its start time has shifted
+    versus its recurrence-id time
+
+    :param event: an event with an RECURRENCE-ID property
+    :type event: icalendar.Event
+    :returns: time shift and duration
+    :rtype: (datetime.timedelta, datetime.timedelta)
+    """
+    start_shift = event['DTSTART'].dt - event['RECURRENCE-ID'].dt
+    try:
+        duration = event['DTEND'].dt - event['DTSTART'].dt
+    except KeyError:
+        duration = event['DURATION'].dt
+    return start_shift, duration
