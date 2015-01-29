@@ -262,7 +262,11 @@ class SQLiteDb(object):
         rid = vevent.get(RECURRENCE_ID)
         if rid is None:
             rrange = None
-            self.delete(href)  # XXX: why is this necessary?
+            # Need to delete the whole event in case we are updating a recurring
+            # event with an event which is either not recurring any more or has
+            # EXDATEs, as those would be left in the recursion tables.
+            # There are obviously better ways to achieve the same result.
+            self.delete(href)
         else:
             rrange = rid.params.get('RANGE')
 
