@@ -209,6 +209,8 @@ class SQLiteDb(object):
         else:
             ical = icalendar.Event.from_ical(vevent)
 
+        # insert the (sub) events in the right order, e.g. recurrence-id events
+        # after the corresponding rrule event
         def sort_key(vevent):
             uid = str(vevent['UID'])
             rid = vevent.get(RECURRENCE_ID)
