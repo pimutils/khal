@@ -263,7 +263,6 @@ class SQLiteDb(object):
         """expand (if needed) and insert non-reccuring and original recurring
         (those with an RRULE property"""
         # TODO FIXME this function is a steaming pile of shit
-        # TODO XXX make sure this works for all day events
 
         rid = vevent.get(RECURRENCE_ID)
         if rid is None:
