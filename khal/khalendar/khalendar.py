@@ -152,17 +152,19 @@ class Calendar(object):
         should be called after every change to the vdir
         """
         storage_hrefs = set()
-        for href, etag in self._storage.list():
-            storage_hrefs.add(href)
-            dbetag = self._dbtool.get_etag(href)
-            if etag != dbetag:
-                logger.debug('Updating {} because {} != {}'.format(href, etag, dbetag))
-                self._update_vevent(href)
-        db_hrefs = set(href for href, etag in self._dbtool.list())
-        for href in db_hrefs - storage_hrefs:
-            self._dbtool.delete(href)
+        with self._dbtool.at_once():
+            for href, etag in self._storage.list():
+                storage_hrefs.add(href)
+                dbetag = self._dbtool.get_etag(href)
+                if etag != dbetag:
+                    logger.debug('Updating {} because {} != {}'
+                                 .format(href, etag, dbetag))
+                    self._update_vevent(href)
+            db_hrefs = set(href for href, etag in self._dbtool.list())
+            for href in db_hrefs - storage_hrefs:
+                self._dbtool.delete(href)
 
-        self._dbtool.set_ctag(self.local_ctag())
+            self._dbtool.set_ctag(self.local_ctag())
 
     def _update_vevent(self, href):
         """should only be called during db_update, does not check for

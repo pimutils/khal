@@ -29,6 +29,7 @@ Database Layout
 
 from __future__ import print_function
 
+import contextlib
 import datetime
 from os import makedirs, path
 import sqlite3
@@ -87,6 +88,19 @@ class SQLiteDb(object):
         self._create_default_tables()
         self._check_table_version()
         self._check_calendar_exists()
+        self._at_once = False
+
+    @contextlib.contextmanager
+    def at_once(self):
+        self._at_once = True
+        try:
+            yield self
+        except:
+            raise
+        else:
+            self.conn.commit()
+        finally:
+            self._at_once = False
 
     def _create_dbdir(self):
         """create the dbdir if it doesn't exist"""
@@ -236,7 +250,8 @@ class SQLiteDb(object):
             for vevent in sorted(vevents, key=sort_key):
                 self._update_impl(vevent, href, etag)
         finally:
-            self.conn.commit()
+            if not self._at_once:
+                self.conn.commit()
 
     def _update_impl(self, vevent, href, etag):
         """expand (if needed) and insert non-reccuring and original recurring
