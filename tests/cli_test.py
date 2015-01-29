@@ -126,12 +126,15 @@ def test_default_command_nonempty(runner):
     assert result.output == 'No events\n'
 
 
-def test_no_vevent(runner, tmpdir):
+@pytest.mark.parametrize('contents', [
+    '',
+    u'BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\nEND:VCALENDAR\n'
+])
+def test_no_vevent(runner, tmpdir, contents):
     runner = runner(command='agenda', showalldays=False)
     broken_item = runner.calendars['one'].join('broken_item.ics')
-    broken_item.write(u"BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\n"
-                      u"END:VCALENDAR\n".encode('utf-8'), mode='wb')
+    broken_item.write(contents.encode('utf-8'), mode='wb')
 
     result = runner.invoke(main_khal)
     assert not result.exception
-    assert result.output == 'No events\n'
+    assert 'No events' in result.output

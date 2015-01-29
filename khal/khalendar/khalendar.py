@@ -174,16 +174,14 @@ class Calendar(object):
         try:
             self._dbtool.update(event.raw, href=href, etag=etag)
             return True
-        except UpdateFailed:
-            return False
-        except Exception as error:
-            if not isinstance(error, UnsupportedFeatureError):
-                logger.exception('')
-            logger.error(
-                "During `update_vevent` we failed to parse vcard {}/{} with "
-                "error\n\"{}\",\nthis means, that event is not available in "
-                "khal."
-                .format(self.name, href, error))
+        except Exception as e:
+            if not isinstance(e, (UpdateFailed, UnsupportedFeatureError)):
+                logger.exception('Unknown exception happened.')
+            logger.warning(
+                'Skipping {}/{}: {}\n'
+                'This event will not be available in khal.'
+                .format(self.name, href, str(e))
+            )
             return False
 
     def new_event(self, ical):
