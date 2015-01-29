@@ -151,7 +151,9 @@ class Calendar(object):
 
         should be called after every change to the vdir
         """
+        db_hrefs = set(href for href, etag in self._dbtool.list())
         storage_hrefs = set()
+
         with self._dbtool.at_once():
             for href, etag in self._storage.list():
                 storage_hrefs.add(href)
@@ -160,7 +162,6 @@ class Calendar(object):
                     logger.debug('Updating {} because {} != {}'
                                  .format(href, etag, dbetag))
                     self._update_vevent(href)
-            db_hrefs = set(href for href, etag in self._dbtool.list())
             for href in db_hrefs - storage_hrefs:
                 self._dbtool.delete(href)
 
