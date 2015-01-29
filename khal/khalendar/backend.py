@@ -289,13 +289,6 @@ class SQLiteDb(object):
             else:
                 start_shift = start_shift.days * 3600 * 24 + start_shift.seconds
                 duration = duration.days * 3600 * 24 + duration.seconds
-            recs_sql_s = (
-                'UPDATE {0} SET dtstart = dtstart + ?, dtend = dtstart + ?, hrefrecuid=? '
-                'WHERE recuid >= ?;'.format(recs_table))
-        else:
-            recs_sql_s = (
-                'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
-                'VALUES (?, ?, ?, ?, ?);'.format(recs_table))
 
         dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
         for dtstart, dtend in dtstartend:
@@ -330,9 +323,15 @@ class SQLiteDb(object):
                     hrefrecuid = href
 
             if thisandfuture:
+                recs_sql_s = (
+                    'UPDATE {0} SET dtstart = dtstart + ?, dtend = dtstart + ?, hrefrecuid=? '
+                    'WHERE recuid >= ?;'.format(recs_table))
                 stuple = (start_shift, start_shift + duration, hrefrecuid,
                           recuid)
             else:
+                recs_sql_s = (
+                    'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
+                    'VALUES (?, ?, ?, ?, ?);'.format(recs_table))
                 stuple = (dbstart, dbend, href, hrefrecuid, recuid)
             self.sql_ex(recs_sql_s, stuple, commit=False)
 
