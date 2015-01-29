@@ -201,8 +201,6 @@ class SQLiteDb(object):
                      set
         :type etag: str()
         """
-        # TODO FIXME this function is a steaming pile of shit
-        # as is `_update_one()`, both are in dire need of a refactoring session
         if href is None:
             raise ValueError('href may not be None')
 
@@ -231,29 +229,27 @@ class SQLiteDb(object):
                 return uid, 1
 
         vevents = (aux.sanitize(c) for c in ical.walk() if c.name == 'VEVENT')
-        vevents = sorted(vevents, key=sort_key)
+        for vevent in sorted(vevents, key=sort_key):
+            self._update_one(vevent, href, etag)
 
-        for vevent in vevents:
-            rid = vevent.get(RECURRENCE_ID)
-            if rid is None:
-                rrange = None
-                self.delete(href)  # XXX: why is this necessary?
-            else:
-                rrange = rid.params.get('RANGE')
-
-            if rrange == THISANDFUTURE:
-                start_shift, duration = calc_shift_deltas(vevent)
-                # TODO XXX make sure this works for all day events
-                self._update_one(vevent, href, etag, thisandfuture=True,
-                                 start_shift=start_shift.seconds,
-                                 duration=duration.seconds)
-            else:
-                self._update_one(vevent, href, etag)
-
-    def _update_one(self, vevent, href, etag, thisandfuture=False,
-                    start_shift=None, duration=None):
+    def _update_one(self, vevent, href, etag):
         """expand (if needed) and insert non-reccuring and original recurring
         (those with an RRULE property"""
+        # TODO FIXME this function is a steaming pile of shit
+        # TODO XXX make sure this works for all day events
+
+        rid = vevent.get(RECURRENCE_ID)
+        if rid is None:
+            rrange = None
+            self.delete(href)  # XXX: why is this necessary?
+        else:
+            rrange = rid.params.get('RANGE')
+
+        thisandfuture = (rrange == THISANDFUTURE)
+        if thisandfuture:
+            start_shift, duration = calc_shift_deltas(vevent)
+            start_shift = start_shift.seconds
+            duration = duration.seconds
 
         # testing on datetime.date won't work as datetime is a child of date
         all_day_event = not isinstance(vevent['DTSTART'].dt, datetime.datetime)
@@ -264,8 +260,8 @@ class SQLiteDb(object):
                 dbstart = dtstart.strftime('%Y%m%d')
                 dbend = dtend.strftime('%Y%m%d')
                 table = 'recs_float'
-                if 'RECURRENCE-ID' in vevent:
-                    recuid = vevent['RECURRENCE-ID'].dt.strftime('%Y%m%d')
+                if rid is not None:
+                    recuid = rid.dt.strftime('%Y%m%d')
                     hrefrecuid = href + recuid
                 else:
                     recuid = dbstart
@@ -281,8 +277,8 @@ class SQLiteDb(object):
                 dbend = aux.to_unix_time(dtend)
                 table = 'recs_loc'
 
-                if 'RECURRENCE-ID' in vevent:
-                    recstart = vevent['RECURRENCE-ID'].dt
+                if rid is not None:
+                    recstart = rid.dt
                     if recstart.tzinfo is None:
                         recstart = self.locale['default_timezone'].localize(recstart)
                     recstart = str(aux.to_unix_time(recstart))
