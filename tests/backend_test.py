@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import icalendar
 
 from khal.khalendar import backend
+from khal.compat import unicode_type
 from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 
 berlin = pytz.timezone('Europe/Berlin')
@@ -182,7 +183,7 @@ DTEND;TZID=Europe/Berlin:20140630T120000
 END:VEVENT
 BEGIN:VEVENT
 UID:event_rrule_recurrence_id
-SUMMARY:Arbeit
+SUMMARY:Arbeit (lang)
 RECURRENCE-ID;RANGE=THISANDFUTURE:20140707T050000Z
 DTSTART;TZID=Europe/Berlin:20140707T090000
 DTEND;TZID=Europe/Berlin:20140707T180000
@@ -205,6 +206,18 @@ def test_event_rrule_this_and_future():
     assert events[3].start == berlin.localize(datetime(2014, 7, 21, 9, 0))
     assert events[4].start == berlin.localize(datetime(2014, 7, 28, 9, 0))
     assert events[5].start == berlin.localize(datetime(2014, 8, 4, 9, 0))
+
+    assert events[0].end == berlin.localize(datetime(2014, 6, 30, 12, 0))
+    assert events[1].end == berlin.localize(datetime(2014, 7, 7, 18, 0))
+    assert events[2].end == berlin.localize(datetime(2014, 7, 14, 18, 0))
+    assert events[3].end == berlin.localize(datetime(2014, 7, 21, 18, 0))
+    assert events[4].end == berlin.localize(datetime(2014, 7, 28, 18, 0))
+    assert events[5].end == berlin.localize(datetime(2014, 8, 4, 18, 0))
+
+    assert unicode_type(events[0].vevent['SUMMARY']) == u'Arbeit'
+    for event in events[1:]:
+        assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
+
 
 master = """BEGIN:VEVENT
 UID:event_rrule_recurrence_id
