@@ -281,8 +281,12 @@ class SQLiteDb(object):
         thisandfuture = (rrange == THISANDFUTURE)
         if thisandfuture:
             start_shift, duration = calc_shift_deltas(vevent)
-            start_shift = start_shift.seconds
-            duration = duration.seconds
+            if all_day_event:
+                start_shift = start_shift.days
+                duration = duration.days
+            else:
+                start_shift = start_shift.days * 3600 * 24 + start_shift.seconds
+                duration = duration.days * 3600 * 24 + duration.seconds
             recs_sql_s = (
                 'UPDATE {0} SET dtstart = dtstart + ?, dtend = dtstart + ?, hrefrecuid=? '
                 'WHERE recuid >= ?;'.format(recs_table))
