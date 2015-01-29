@@ -29,7 +29,6 @@ Database Layout
 
 from __future__ import print_function
 
-from collections import defaultdict
 import datetime
 from os import makedirs, path
 import sqlite3
@@ -205,47 +204,51 @@ class SQLiteDb(object):
         # TODO FIXME this function is a steaming pile of shit
         # as is `_update_one()`, both are in dire need of a refactoring session
         if href is None:
-            raise ValueError('href may not be one')
+            raise ValueError('href may not be None')
 
-        if not isinstance(vevent, icalendar.cal.Event):
+        if isinstance(vevent, icalendar.cal.Event):
+            ical = vevent
+        else:
             ical = icalendar.Event.from_ical(vevent)
 
-        # we are building this data structure, so that we can insert the
-        # (sub) events in the right order, e.g. recurrence-id events after
-        # the corresponding rrule event
-        events = defaultdict(lambda *args: defaultdict(list))
-        for component in ical.walk():
-            if component.name == 'VEVENT':
-                vevent = aux.sanitize(component)
-                if RECURRENCE_ID in vevent:
-                    if vevent[RECURRENCE_ID].params.get('RANGE') == THISANDPRIOR:
-                        raise UpdateFailed(
-                            'The parameter `THISANDPRIOR` is not (and will not'
-                            ' be supported by khal (as applications supporting '
-                            'the latest standard MUST NOT create those. '
-                            'Therefore event {} from calendar {} will not be '
-                            'shown in khal'.format(href, self.calendar))
-                    elif vevent[RECURRENCE_ID].params.get('RANGE') == THISANDFUTURE:
-                        events[str(vevent['UID'])][THISANDFUTURE].append(vevent)
-                    else:
-                        events[str(vevent['UID'])][RECURRENCE_ID].append(vevent)
-                else:
-                    events[str(vevent['UID'])]['MASTER'] = vevent
+        def sort_key(vevent):
+            uid = str(vevent['UID'])
+            rid = vevent.get(RECURRENCE_ID)
+            if rid is None:
+                return uid, 0
+            rrange = rid.params.get('RANGE')
+            if rrange == THISANDPRIOR:
+                raise UpdateFailed(
+                    'The parameter `THISANDPRIOR` is not (and will not'
+                    ' be supported by khal (as applications supporting '
+                    'the latest standard MUST NOT create those. '
+                    'Therefore event {} from calendar {} will not be '
+                    'shown in khal'.format(href, self.calendar))
+            elif rrange == THISANDFUTURE:
+                # TODO XXX sort these events further
+                return uid, 2
+            else:
+                return uid, 1
 
-        # now insert everything into the db
-        for uid in events:
-            self.delete(href)
-            self._update_one(events[uid]['MASTER'], href, etag)
-            if RECURRENCE_ID in events[uid]:
-                for event in events[uid][RECURRENCE_ID]:
-                    self._update_one(event, href, etag)
-            if THISANDFUTURE in events[uid]:
-                # TODO XXX sort these events
-                for event in events[uid][THISANDFUTURE]:
-                    start_shift, duration = calc_shift_deltas(event)
-                    # TODO XXX make sure this works for all day events
-                    self._update_one(event, href, etag, thisandfuture=True,
-                                     start_shift=start_shift.seconds, duration=duration.seconds)
+        vevents = (aux.sanitize(c) for c in ical.walk() if c.name == 'VEVENT')
+        vevents = sorted(vevents, key=sort_key)
+
+        for vevent in vevents:
+            rid = vevent.get(RECURRENCE_ID)
+            if rid is None:
+                rrange = None
+                self.delete(href)  # XXX: why is this necessary?
+            else:
+                rrange = rid.params.get('RANGE')
+
+            if rrange == THISANDFUTURE:
+                start_shift, duration = calc_shift_deltas(vevent)
+                # TODO XXX make sure this works for all day events
+                self._update_one(vevent, href, etag, thisandfuture=True,
+                                 start_shift=start_shift.seconds,
+                                 duration=duration.seconds)
+            else:
+                self._update_one(vevent, href, etag)
 
     def _update_one(self, vevent, href, etag, thisandfuture=False,
                     start_shift=None, duration=None):
