@@ -202,6 +202,8 @@ class SQLiteDb(object):
                      set
         :type etag: str()
         """
+        # TODO FIXME this function is a steaming pile of shit
+        # as is `_update_one()`, both are in dire need of a refactoring session
         if href is None:
             raise ValueError('href may not be one')
 
@@ -234,17 +236,19 @@ class SQLiteDb(object):
         for uid in events:
             self.delete(href)
             self._update_one(events[uid]['MASTER'], href, etag)
-            if THISANDFUTURE in events[uid]:
-                # TODO sort these events
-                for event in events[uid][RECURRENCE_ID]:
-                    start_shift, duration = calc_shift_deltas(event, events[uid]['MASTER'])
-                    self._update_one(event, href, etag, thisandfuture=True,
-                                     start_shift=start_shift, duration=duration)
             if RECURRENCE_ID in events[uid]:
                 for event in events[uid][RECURRENCE_ID]:
                     self._update_one(event, href, etag)
+            if THISANDFUTURE in events[uid]:
+                # TODO XXX sort these events
+                for event in events[uid][THISANDFUTURE]:
+                    start_shift, duration = calc_shift_deltas(event)
+                    # TODO XXX make sure this works for all day events
+                    self._update_one(event, href, etag, thisandfuture=True,
+                                     start_shift=start_shift.seconds, duration=duration.seconds)
 
-    def _update_one(self, vevent, href, etag, thisandfuture=False, deltas=None):
+    def _update_one(self, vevent, href, etag, thisandfuture=False,
+                    start_shift=None, duration=None):
         """expand (if needed) and insert non-reccuring and original recurring
         (those with an RRULE property"""
 
@@ -252,8 +256,6 @@ class SQLiteDb(object):
         all_day_event = not isinstance(vevent['DTSTART'].dt, datetime.datetime)
 
         dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
-        if thisandfuture:
-            dtstartend = shift_future(dtstartend, deltas)
         for dtstart, dtend in dtstartend:
             if all_day_event:
                 dbstart = dtstart.strftime('%Y%m%d')
@@ -289,9 +291,9 @@ class SQLiteDb(object):
 
             if thisandfuture:
                 sql_s = (
-                    'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
-                    'VALUES (?, ?, ?, ?, ?) WHERE recuid > (?);'.format(table))
-                stuple = (dbstart, dbend, href, hrefrecuid, recuid, recuid)
+                    'UPDATE {0} SET dtstart = dtstart + ?, dtend = dtstart + ?, hrefrecuid=? '
+                    'WHERE recuid >= ?;'.format(table))
+                stuple = (start_shift, start_shift + duration, hrefrecuid, recuid)
             else:
                 sql_s = (
                     'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
@@ -419,11 +421,6 @@ class SQLiteDb(object):
                      etag=etag,
                      recuid=hrefrecuid,
                      )
-
-
-def shift_future(dtstartend, deltas):
-    # TODO implement
-    return dtstartend
 
 
 def calc_shift_deltas(event):
