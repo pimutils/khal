@@ -247,21 +247,31 @@ class SQLiteDb(object):
         else:
             rrange = rid.params.get('RANGE')
 
+        # testing on datetime.date won't work as datetime is a child of date
+        all_day_event = not isinstance(vevent['DTSTART'].dt, datetime.datetime)
+        if all_day_event:
+            recs_table = 'recs_float'
+        else:
+            recs_table = 'recs_loc'
+
         thisandfuture = (rrange == THISANDFUTURE)
         if thisandfuture:
             start_shift, duration = calc_shift_deltas(vevent)
             start_shift = start_shift.seconds
             duration = duration.seconds
-
-        # testing on datetime.date won't work as datetime is a child of date
-        all_day_event = not isinstance(vevent['DTSTART'].dt, datetime.datetime)
+            recs_sql_s = (
+                'UPDATE {0} SET dtstart = dtstart + ?, dtend = dtstart + ?, hrefrecuid=? '
+                'WHERE recuid >= ?;'.format(recs_table))
+        else:
+            recs_sql_s = (
+                'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
+                'VALUES (?, ?, ?, ?, ?);'.format(recs_table))
 
         dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
         for dtstart, dtend in dtstartend:
             if all_day_event:
                 dbstart = dtstart.strftime('%Y%m%d')
                 dbend = dtend.strftime('%Y%m%d')
-                table = 'recs_float'
                 if rid is not None:
                     recuid = rid.dt.strftime('%Y%m%d')
                     hrefrecuid = href + recuid
@@ -277,7 +287,6 @@ class SQLiteDb(object):
                     dtend = self.locale['default_timezone'].localize(dtend)
                 dbstart = aux.to_unix_time(dtstart)
                 dbend = aux.to_unix_time(dtend)
-                table = 'recs_loc'
 
                 if rid is not None:
                     recstart = rid.dt
@@ -291,16 +300,11 @@ class SQLiteDb(object):
                     hrefrecuid = href
 
             if thisandfuture:
-                sql_s = (
-                    'UPDATE {0} SET dtstart = dtstart + ?, dtend = dtstart + ?, hrefrecuid=? '
-                    'WHERE recuid >= ?;'.format(table))
-                stuple = (start_shift, start_shift + duration, hrefrecuid, recuid)
+                stuple = (start_shift, start_shift + duration, hrefrecuid,
+                          recuid)
             else:
-                sql_s = (
-                    'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
-                    'VALUES (?, ?, ?, ?, ?);'.format(table))
                 stuple = (dbstart, dbend, href, hrefrecuid, recuid)
-            self.sql_ex(sql_s, stuple, commit=True)
+            self.sql_ex(recs_sql_s, stuple, commit=True)
 
         sql_s = ('INSERT INTO events '
                  '(item, etag, href, calendar, hrefrecuid) '
