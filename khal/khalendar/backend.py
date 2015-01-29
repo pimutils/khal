@@ -263,6 +263,9 @@ class SQLiteDb(object):
         """expand (if needed) and insert non-reccuring and original recurring
         (those with an RRULE property"""
         # TODO FIXME this function is a steaming pile of shit
+        # TODO better naming for rid and recuid, naming is really ambiguous
+        # table columns might need a rename, too
+        # perhaps rid -> rec_uid, recuid -> rec_inst
 
         rid = vevent.get(RECURRENCE_ID)
         if rid is None:
