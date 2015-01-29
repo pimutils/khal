@@ -219,11 +219,12 @@ class SQLiteDb(object):
             rrange = rid.params.get('RANGE')
             if rrange == THISANDPRIOR:
                 raise UpdateFailed(
-                    'The parameter `THISANDPRIOR` is not (and will not'
-                    ' be supported by khal (as applications supporting '
-                    'the latest standard MUST NOT create those. '
-                    'Therefore event {} from calendar {} will not be '
-                    'shown in khal'.format(href, self.calendar))
+                    'The parameter `THISANDPRIOR` is not (and will not be) '
+                    'supported by khal (as applications supporting the latest '
+                    'standard MUST NOT create those. Therefore event {} from '
+                    'calendar {} will not be shown in khal'
+                    .format(href, self.calendar)
+                )
             elif rrange == THISANDFUTURE:
                 # TODO XXX sort these events further
                 return uid, 2
@@ -231,10 +232,13 @@ class SQLiteDb(object):
                 return uid, 1
 
         vevents = (aux.sanitize(c) for c in ical.walk() if c.name == 'VEVENT')
-        for vevent in sorted(vevents, key=sort_key):
-            self._update_one(vevent, href, etag)
+        try:
+            for vevent in sorted(vevents, key=sort_key):
+                self._update_impl(vevent, href, etag)
+        finally:
+            self.conn.commit()
 
-    def _update_one(self, vevent, href, etag):
+    def _update_impl(self, vevent, href, etag):
         """expand (if needed) and insert non-reccuring and original recurring
         (those with an RRULE property"""
         # TODO FIXME this function is a steaming pile of shit
@@ -304,14 +308,14 @@ class SQLiteDb(object):
                           recuid)
             else:
                 stuple = (dbstart, dbend, href, hrefrecuid, recuid)
-            self.sql_ex(recs_sql_s, stuple, commit=True)
+            self.sql_ex(recs_sql_s, stuple, commit=False)
 
         sql_s = ('INSERT INTO events '
                  '(item, etag, href, calendar, hrefrecuid) '
                  'VALUES (?, ?, ?, ?, ?);')
         stuple = (vevent.to_ical().decode('utf-8'),
                   etag, href, self.calendar, hrefrecuid)
-        self.sql_ex(sql_s, stuple, commit=True)
+        self.sql_ex(sql_s, stuple, commit=False)
 
     def get_ctag(self):
         stuple = (self.calendar, )
