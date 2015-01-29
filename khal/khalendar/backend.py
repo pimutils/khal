@@ -247,6 +247,12 @@ class SQLiteDb(object):
 
         vevents = (aux.sanitize(c) for c in ical.walk() if c.name == 'VEVENT')
         try:
+            # Need to delete the whole event in case we are updating a
+            # recurring event with an event which is either not recurring any
+            # more or has EXDATEs, as those would be left in the recursion
+            # tables. There are obviously better ways to achieve the same
+            # result.
+            self.delete(href)
             for vevent in sorted(vevents, key=sort_key):
                 self._update_impl(vevent, href, etag)
         finally:
@@ -262,11 +268,6 @@ class SQLiteDb(object):
         rid = vevent.get(RECURRENCE_ID)
         if rid is None:
             rrange = None
-            # Need to delete the whole event in case we are updating a recurring
-            # event with an event which is either not recurring any more or has
-            # EXDATEs, as those would be left in the recursion tables.
-            # There are obviously better ways to achieve the same result.
-            self.delete(href)
         else:
             rrange = rid.params.get('RANGE')
 
