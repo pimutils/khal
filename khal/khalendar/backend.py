@@ -83,12 +83,12 @@ class SQLiteDb(object):
         self.table_m = calendar + '_m'
         self.table_d = calendar + '_d'
         self.table_dt = calendar + '_dt'
+        self._at_once = False
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
         self._create_default_tables()
         self._check_table_version()
         self._check_calendar_exists()
-        self._at_once = False
 
     @contextlib.contextmanager
     def at_once(self):
@@ -135,7 +135,8 @@ class SQLiteDb(object):
     def _create_default_tables(self):
         """creates version and calendar tables and inserts table version number
         """
-        self.sql_ex('CREATE TABLE IF NOT EXISTS version (version INTEGER)')
+        self.cursor.execute('CREATE TABLE IF NOT EXISTS '
+                            'version (version INTEGER)')
         logger.debug("created version table")
 
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS calendars (
@@ -186,11 +187,11 @@ class SQLiteDb(object):
             stuple = (self.calendar, '')
             self.sql_ex(sql_s, stuple)
 
-    def sql_ex(self, statement, stuple='', commit=True):
+    def sql_ex(self, statement, stuple=''):
         """wrapper for sql statements, does a "fetchall" """
         self.cursor.execute(statement, stuple)
         result = self.cursor.fetchall()
-        if commit:
+        if not self._at_once:
             self.conn.commit()
         return result
 
@@ -246,18 +247,14 @@ class SQLiteDb(object):
                 return uid, 1
 
         vevents = (aux.sanitize(c) for c in ical.walk() if c.name == 'VEVENT')
-        try:
-            # Need to delete the whole event in case we are updating a
-            # recurring event with an event which is either not recurring any
-            # more or has EXDATEs, as those would be left in the recursion
-            # tables. There are obviously better ways to achieve the same
-            # result.
-            self.delete(href)
-            for vevent in sorted(vevents, key=sort_key):
-                self._update_impl(vevent, href, etag)
-        finally:
-            if not self._at_once:
-                self.conn.commit()
+        # Need to delete the whole event in case we are updating a
+        # recurring event with an event which is either not recurring any
+        # more or has EXDATEs, as those would be left in the recursion
+        # tables. There are obviously better ways to achieve the same
+        # result.
+        self.delete(href)
+        for vevent in sorted(vevents, key=sort_key):
+            self._update_impl(vevent, href, etag)
 
     def _update_impl(self, vevent, href, etag):
         """expand (if needed) and insert non-reccuring and original recurring
@@ -333,14 +330,14 @@ class SQLiteDb(object):
                     'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
                     'VALUES (?, ?, ?, ?, ?);'.format(recs_table))
                 stuple = (dbstart, dbend, href, hrefrecuid, recuid)
-            self.sql_ex(recs_sql_s, stuple, commit=False)
+            self.sql_ex(recs_sql_s, stuple)
 
         sql_s = ('INSERT INTO events '
                  '(item, etag, href, calendar, hrefrecuid) '
                  'VALUES (?, ?, ?, ?, ?);')
         stuple = (vevent.to_ical().decode('utf-8'),
                   etag, href, self.calendar, hrefrecuid)
-        self.sql_ex(sql_s, stuple, commit=False)
+        self.sql_ex(sql_s, stuple)
 
     def get_ctag(self):
         stuple = (self.calendar, )
