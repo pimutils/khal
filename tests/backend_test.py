@@ -277,7 +277,7 @@ def test_event_rrule_this_and_future_allday():
     dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
     dbi.update(event_rrule_this_and_future_allday, href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
-    events = dbi.get_allday_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
+    events = dbi.get_allday_range(date(2014, 4, 30), date(2014, 9, 26))
     events.sort(key=lambda x: x.start)
     assert len(events) == 6
 

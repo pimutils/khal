@@ -280,12 +280,8 @@ class SQLiteDb(object):
         thisandfuture = (rrange == THISANDFUTURE)
         if thisandfuture:
             start_shift, duration = calc_shift_deltas(vevent)
-            if all_day_event:
-                start_shift = start_shift.days
-                duration = duration.days
-            else:
-                start_shift = start_shift.days * 3600 * 24 + start_shift.seconds
-                duration = duration.days * 3600 * 24 + duration.seconds
+            start_shift = start_shift.days * 3600 * 24 + start_shift.seconds
+            duration = duration.days * 3600 * 24 + duration.seconds
 
         dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
         for dtstart, dtend in dtstartend:
