@@ -290,11 +290,11 @@ class SQLiteDb(object):
         dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
         for dtstart, dtend in dtstartend:
             if all_day_event:
-                dbstart = dtstart.strftime('%Y%m%d')
-                dbend = dtend.strftime('%Y%m%d')
+                dbstart = aux.to_unix_time(dtstart)
+                dbend = aux.to_unix_time(dtend)
                 if rid is not None:
-                    recuid = rid.dt.strftime('%Y%m%d')
-                    hrefrecuid = href + recuid
+                    recuid = aux.to_unix_time(rid.dt)
+                    hrefrecuid = href + str(recuid)
                 else:
                     recuid = dbstart
                     hrefrecuid = href
@@ -412,12 +412,16 @@ class SQLiteDb(object):
         return event_list
 
     def get_allday_range(self, start, end=None):
-        # TODO type check on start and end
-        # should be datetime.date not datetime.datetime
-        strstart = start.strftime('%Y%m%d')
+        """
+        :type start: datetime.date
+        :type end: datetime.date
+        """
+        assert isinstance(start, datetime.date) and not isinstance(start, datetime.datetime)
+        strstart = aux.to_unix_time(start)
         if end is None:
             end = start + datetime.timedelta(days=1)
-        strend = end.strftime('%Y%m%d')
+        assert isinstance(end, datetime.date) and not isinstance(end, datetime.datetime)
+        strend = aux.to_unix_time(end)
         sql_s = ('SELECT recs_float.hrefrecuid, dtstart, dtend FROM '
                  'recs_float JOIN events ON recs_float.hrefrecuid = events.hrefrecuid WHERE '
                  '(dtstart >= ? AND dtstart < ? OR '
@@ -427,10 +431,8 @@ class SQLiteDb(object):
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
         for hrefrecuid, start, end in result:
-            start = time.strptime(str(start), '%Y%m%d')
-            end = time.strptime(str(end), '%Y%m%d')
-            start = datetime.date(start.tm_year, start.tm_mon, start.tm_mday)
-            end = datetime.date(end.tm_year, end.tm_mon, end.tm_mday)
+            start = datetime.date.fromtimestamp(start)
+            end = datetime.date.fromtimestamp(end)
             event = self.get(hrefrecuid, start=start, end=end)
             event_list.append(event)
         return event_list
