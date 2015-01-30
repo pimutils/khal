@@ -241,8 +241,7 @@ class SQLiteDb(object):
                     .format(href, self.calendar)
                 )
             elif rrange == THISANDFUTURE:
-                # TODO XXX sort these events further
-                return uid, 2
+                return uid, aux.to_unix_time(rid.dt)
             else:
                 return uid, 1
 
@@ -317,10 +316,9 @@ class SQLiteDb(object):
 
             if thisandfuture:
                 recs_sql_s = (
-                    'UPDATE {0} SET dtstart = dtstart + ?, dtend = dtstart + ?, hrefrecuid=? '
+                    'UPDATE {0} SET dtstart = recuid + ?, dtend = recuid + ?, hrefrecuid=? '
                     'WHERE recuid >= ?;'.format(recs_table))
-                stuple = (start_shift, start_shift + duration, hrefrecuid,
-                          recuid)
+                stuple = (start_shift, start_shift + duration, hrefrecuid, recuid)
             else:
                 recs_sql_s = (
                     'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'

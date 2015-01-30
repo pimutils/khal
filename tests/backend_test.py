@@ -252,7 +252,7 @@ def test_event_rrule_this_and_future_multi_day_shift():
     for event in events[1:]:
         assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
 
-event_rrule_this_and_future_allday = """
+event_rrule_this_and_future_allday_temp = """
 BEGIN:VCALENDAR
 BEGIN:VEVENT
 UID:event_rrule_recurrence_id_allday
@@ -261,16 +261,17 @@ RRULE:FREQ=WEEKLY;UNTIL=20140806
 DTSTART;VALUE=DATE:20140630
 DTEND;VALUE=DATE:20140701
 END:VEVENT
-
 BEGIN:VEVENT
 UID:event_rrule_recurrence_id_allday
 SUMMARY:Arbeit (lang)
 RECURRENCE-ID;RANGE=THISANDFUTURE;VALUE=DATE:20140707
-DTSTART;VALUE=DATE:20140708
-DTEND;VALUE=DATE:20140709
+DTSTART;VALUE=DATE:{}
+DTEND;VALUE=DATE:{}
 END:VEVENT
 END:VCALENDAR
 """
+
+event_rrule_this_and_future_allday = event_rrule_this_and_future_allday_temp.format(20140708, 20140709)
 
 
 def test_event_rrule_this_and_future_allday():
@@ -298,6 +299,91 @@ def test_event_rrule_this_and_future_allday():
     assert unicode_type(events[0].vevent['SUMMARY']) == u'Arbeit'
     for event in events[1:]:
         assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
+
+
+def test_event_rrule_this_and_future_allday_prior():
+    event_rrule_this_and_future_allday_prior = \
+        event_rrule_this_and_future_allday_temp.format(20140705, 20140706)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi.update(event_rrule_this_and_future_allday_prior, href='rrule_this_and_future_allday.ics', etag='abcd')
+    assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
+    events = dbi.get_allday_range(date(2014, 4, 30), date(2014, 9, 26))
+    events.sort(key=lambda x: x.start)
+    assert len(events) == 6
+
+    assert events[0].start == date(2014, 6, 30)
+    assert events[1].start == date(2014, 7, 5)
+    assert events[2].start == date(2014, 7, 12)
+    assert events[3].start == date(2014, 7, 19)
+    assert events[4].start == date(2014, 7, 26)
+    assert events[5].start == date(2014, 8, 2)
+
+    assert events[0].end == date(2014, 7, 1)
+    assert events[1].end == date(2014, 7, 6)
+    assert events[2].end == date(2014, 7, 13)
+    assert events[3].end == date(2014, 7, 20)
+    assert events[4].end == date(2014, 7, 27)
+    assert events[5].end == date(2014, 8, 3)
+
+    assert unicode_type(events[0].vevent['SUMMARY']) == u'Arbeit'
+    for event in events[1:]:
+        assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
+
+
+event_rrule_multi_this_and_future_allday = """BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:event_multi_rrule_recurrence_id_allday
+SUMMARY:Arbeit
+RRULE:FREQ=WEEKLY;UNTIL=20140806
+DTSTART;VALUE=DATE:20140630
+DTEND;VALUE=DATE:20140701
+END:VEVENT
+BEGIN:VEVENT
+UID:event_multi_rrule_recurrence_id_allday
+SUMMARY:Arbeit (neu)
+RECURRENCE-ID;RANGE=THISANDFUTURE;VALUE=DATE:20140721
+DTSTART;VALUE=DATE:20140717
+DTEND;VALUE=DATE:20140718
+END:VEVENT
+BEGIN:VEVENT
+UID:event_multi_rrule_recurrence_id_allday
+SUMMARY:Arbeit (lang)
+RECURRENCE-ID;RANGE=THISANDFUTURE;VALUE=DATE:20140707
+DTSTART;VALUE=DATE:20140712
+DTEND;VALUE=DATE:20140714
+END:VEVENT
+END:VCALENDAR"""
+
+
+def test_event_rrule_multi_this_and_future_allday():
+    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi.update(event_rrule_multi_this_and_future_allday, href='event_rrule_multi_this_and_future_allday.ics', etag='abcd')
+    assert dbi.list() == [('event_rrule_multi_this_and_future_allday.ics', 'abcd')]
+    events = dbi.get_allday_range(start=date(2014, 4, 30), end=date(2014, 9, 26))
+    events.sort(key=lambda x: x.start)
+    for event in events:
+        print(event.start)
+    assert len(events) == 6
+
+    assert events[0].start == date(2014, 6, 30)
+    assert events[1].start == date(2014, 7, 12)
+    assert events[2].start == date(2014, 7, 17)
+    assert events[3].start == date(2014, 7, 19)
+    assert events[4].start == date(2014, 7, 24)
+    assert events[5].start == date(2014, 7, 31)
+
+    assert events[0].end == date(2014, 7, 1)
+    assert events[1].end == date(2014, 7, 14)
+    assert events[2].end == date(2014, 7, 18)
+    assert events[3].end == date(2014, 7, 21)
+    assert events[4].end == date(2014, 7, 25)
+    assert events[5].end == date(2014, 8, 1)
+
+    assert unicode_type(events[0].vevent['SUMMARY']) == u'Arbeit'
+    for event in [events[1], events[3]]:
+        assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
+    for event in events[2:3] + events[4:]:
+        assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (neu)'
 
 
 master = """BEGIN:VEVENT
