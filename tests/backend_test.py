@@ -416,3 +416,44 @@ def test_calc_shift_deltas():
         backend.calc_shift_deltas(recuid_this_future)
     assert (timedelta(hours=2), timedelta(hours=4, minutes=30)) == \
         backend.calc_shift_deltas(recuid_this_future_duration)
+
+event_a = """BEGIN:VEVENT
+UID:123
+SUMMARY:event a
+RRULE:FREQ=WEEKLY;UNTIL=20140806T060000Z
+DTSTART;TZID=Europe/Berlin:20140630T070000
+DTEND;TZID=Europe/Berlin:20140630T120000
+END:VEVENT"""
+
+event_b = """BEGIN:VEVENT
+UID:123
+SUMMARY:event b
+RRULE:FREQ=WEEKLY;UNTIL=20140806T060000Z
+DTSTART;TZID=Europe/Berlin:20140630T070000
+DTEND;TZID=Europe/Berlin:20140630T120000
+END:VEVENT"""
+
+
+def test_two_calendars_same_uid(tmpdir):
+    dbpath = str(tmpdir) + '/khal.db'
+    dba = backend.SQLiteDb('home', dbpath, locale=locale)
+    dbb = backend.SQLiteDb('work', dbpath, locale=locale)
+    assert dba.list() == []
+    assert dbb.list() == []
+    dba.update(event_a, href='12345.ics', etag='abcd')
+    assert dba.list() == [('12345.ics', 'abcd')]
+    assert dbb.list() == []
+    dbb.update(event_b, href='12345.ics', etag='abcd')
+    assert dba.list() == [('12345.ics', 'abcd')]
+    assert dbb.list() == [('12345.ics', 'abcd')]
+    events_a = dba.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
+    events_b = dbb.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
+    assert len(events_a) == 4
+    assert len(events_b) == 4
+    dba.delete('12345.ics')
+    events_a = dba.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
+    events_b = dbb.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
+    assert len(events_a) == 0
+    assert len(events_b) == 4
+    assert dba.list() == []
+    assert dbb.list() == [('12345.ics', 'abcd')]

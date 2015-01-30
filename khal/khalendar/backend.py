@@ -160,7 +160,8 @@ class SQLiteDb(object):
             href TEXT NOT NULL REFERENCES events( href ),
             hrefrecuid TEXT NOT NULL REFERENCES events( hrefrecuid ),
             recuid TEXT NOT NULL,
-            primary key (href, recuid)
+            calendar TEXT NOT NULL,
+            primary key (href, recuid, calendar)
             );''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS recs_float (
             dtstart INT NOT NULL,
@@ -168,7 +169,8 @@ class SQLiteDb(object):
             href TEXT NOT NULL REFERENCES events( href ),
             hrefrecuid TEXT NOT NULL REFERENCES events( hrefrecuid ),
             recuid TEXT NOT NULL,
-            primary key (href, recuid)
+            calendar TEXT NOT NULL,
+            primary key (href, recuid, calendar)
             );''')
         self.conn.commit()
 
@@ -321,9 +323,9 @@ class SQLiteDb(object):
                 stuple = (start_shift, start_shift + duration, hrefrecuid, recuid)
             else:
                 recs_sql_s = (
-                    'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid)'
-                    'VALUES (?, ?, ?, ?, ?);'.format(recs_table))
-                stuple = (dbstart, dbend, href, hrefrecuid, recuid)
+                    'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid, calendar)'
+                    'VALUES (?, ?, ?, ?, ?, ?);'.format(recs_table))
+                stuple = (dbstart, dbend, href, hrefrecuid, recuid, self.calendar)
             self.sql_ex(recs_sql_s, stuple)
 
         sql_s = ('INSERT INTO events '
@@ -370,10 +372,10 @@ class SQLiteDb(object):
                      we always delete
         """
         for table in ['recs_loc', 'recs_float']:
-            sql_s = 'DELETE FROM {0} WHERE href = ?;'.format(table)
-            self.sql_ex(sql_s, (href,))
-        sql_s = 'DELETE FROM events WHERE href = ?;'
-        self.sql_ex(sql_s, (href, ))
+            sql_s = 'DELETE FROM {0} WHERE href = ? AND calendar = ?;'.format(table)
+            self.sql_ex(sql_s, (href, self.calendar))
+        sql_s = 'DELETE FROM events WHERE href = ? AND calendar = ?;'
+        self.sql_ex(sql_s, (href, self.calendar))
 
     def list(self):
         """
@@ -390,10 +392,12 @@ class SQLiteDb(object):
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
         sql_s = ('SELECT recs_loc.hrefrecuid, dtstart, dtend FROM '
-                 'recs_loc JOIN events ON recs_loc.hrefrecuid = events.hrefrecuid WHERE '
+                 'recs_loc JOIN events ON '
+                 'recs_loc.hrefrecuid = events.hrefrecuid AND '
+                 'recs_loc.calendar = events.calendar WHERE '
                  '(dtstart >= ? AND dtstart <= ? OR '
                  'dtend >= ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend >= ?) AND calendar = ?;')
+                 'dtstart <= ? AND dtend >= ?) AND events.calendar = ?;')
         stuple = (start, end, start, end, start, end, self.calendar)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
@@ -417,10 +421,12 @@ class SQLiteDb(object):
         assert isinstance(end, datetime.date) and not isinstance(end, datetime.datetime)
         strend = aux.to_unix_time(end)
         sql_s = ('SELECT recs_float.hrefrecuid, dtstart, dtend FROM '
-                 'recs_float JOIN events ON recs_float.hrefrecuid = events.hrefrecuid WHERE '
+                 'recs_float JOIN events ON '
+                 'recs_float.hrefrecuid = events.hrefrecuid AND '
+                 'recs_float.calendar = events.calendar WHERE '
                  '(dtstart >= ? AND dtstart < ? OR '
                  'dtend > ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend > ? ) AND calendar = ?;')
+                 'dtstart <= ? AND dtend > ? ) AND events.calendar = ?;')
         stuple = (strstart, strend, strstart, strend, strstart, strend, self.calendar)
         result = self.sql_ex(sql_s, stuple)
         event_list = list()
