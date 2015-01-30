@@ -269,9 +269,9 @@ class SQLiteDb(object):
                 # TODO: extract strange (aka non Olson) TZs from params['TZID']
                 # perhaps better done in event/vevent
                 if dtstart.tzinfo is None:
-                    dtstart = self['locale']['default_timezone'].localize(dtstart)
+                    dtstart = self.locale['default_timezone'].localize(dtstart)
                 if dtend.tzinfo is None:
-                    dtend = self['locale']['default_timezone'].localize(dtend)
+                    dtend = self.locale['default_timezone'].localize(dtend)
 
                 dbstart = aux.to_unix_time(dtstart)
                 dbend = aux.to_unix_time(dtend)
