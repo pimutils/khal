@@ -283,8 +283,8 @@ class Event(object):
             else:
                 return self._compact_datetime(day, timeformat)
         except Exception as e:
-            raise RuntimeError('Something went wrong while displaying '
-                               '"{self.href}": {e}'.format(self, str(e)))
+            raise RuntimeError('Something went wrong while displaying "{}": {}'
+                               .format(self.href, str(e)))
 
     def _compact_allday(self, day):
         if 'RRULE' in self.vevent:
