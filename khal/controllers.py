@@ -24,6 +24,7 @@
 from click import echo
 
 import datetime
+import itertools
 import logging
 import sys
 import textwrap
@@ -96,23 +97,18 @@ def get_agenda(collection, locale, dates=[],
     daylist = construct_daynames(daylist, locale['longdateformat'])
 
     for day, dayname in daylist:
-        # TODO unify allday and datetime events
         start = datetime.datetime.combine(day, datetime.time.min)
         end = datetime.datetime.combine(day, datetime.time.max)
 
+        # TODO unify allday and datetime events
         all_day_events = collection.get_allday_by_time_range(day)
         events = collection.get_datetime_by_time_range(start, end)
         if len(events) == 0 and len(all_day_events) == 0 and not show_all_days:
             continue
 
         event_column.append(bstring(dayname))
-        for event in all_day_events:
-            desc = textwrap.wrap(event.compact(day), width)
-            event_column.extend([colored(d, event.color) for d in desc])
-
         events.sort(key=lambda e: e.start)
-
-        for event in events:
+        for event in itertools.chain(all_day_events, events)
             desc = textwrap.wrap(event.compact(day), width)
             event_column.extend([colored(d, event.color) for d in desc])
 

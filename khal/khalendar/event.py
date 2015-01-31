@@ -277,11 +277,14 @@ class Event(object):
         :return: compact description of Event
         :rtype: unicode()
         """
-        if self.allday:
-            compact = self._compact_allday(day)
-        else:
-            compact = self._compact_datetime(day, timeformat)
-        return compact
+        try:
+            if self.allday:
+                return self._compact_allday(day)
+            else:
+                return self._compact_datetime(day, timeformat)
+        except Exception as e:
+            raise RuntimeError('Something went wrong while displaying '
+                               '"{self.href}": {e}'.format(self, str(e)))
 
     def _compact_allday(self, day):
         if 'RRULE' in self.vevent:
