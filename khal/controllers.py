@@ -108,7 +108,7 @@ def get_agenda(collection, locale, dates=[],
 
         event_column.append(bstring(dayname))
         events.sort(key=lambda e: e.start)
-        for event in itertools.chain(all_day_events, events)
+        for event in itertools.chain(all_day_events, events):
             desc = textwrap.wrap(event.compact(day), width)
             event_column.extend([colored(d, event.color) for d in desc])
 
