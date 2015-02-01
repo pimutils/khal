@@ -129,20 +129,28 @@ def sanitize(vevent):
     """
     dtend = getattr(vevent.pop('DTEND', None), 'dt', None)
     dtstart = getattr(vevent.pop('DTSTART', None), 'dt', None)
-
-    if (dtend is None and 'DURATION' not in vevent) or \
-       (dtend is not None and dtend <= dtstart):
-        # Deal with events that have an invalid or missing DTEND, assuming the
-        # event just lasts one day.
-        if isinstance(dtstart, datetime):
-            dtstart = dtstart.date()
-        dtend = dtstart + timedelta(days=1)
+    dtstart, dtend = sanitize_timerange(
+        dtstart, dtend, duration=vevent.get('DURATION', None))
 
     assert dtstart is not None
     vevent.add('DTSTART', dtstart)
     if dtend is not None:
         vevent.add('DTEND', dtend)
     return vevent
+
+
+def sanitize_timerange(dtstart, dtend, duration=None):
+    '''Deal with events that have an invalid or missing DTEND, assuming the
+    event just lasts one day.'''
+    if dtend is None and duration is None:
+        if isinstance(dtstart, datetime):
+            dtstart = dtstart.date()
+        dtend = dtstart
+
+    if dtend <= dtstart:
+        dtend += timedelta(days=1)
+
+    return dtstart, dtend
 
 
 def localize_strip_tz(dates, timezone):
