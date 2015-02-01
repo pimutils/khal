@@ -134,9 +134,11 @@ def sanitize(vevent):
        (dtend is not None and dtend <= dtstart):
         # Deal with events that have an invalid or missing DTEND, assuming the
         # event just lasts one day.
+        if isinstance(dtstart, datetime):
+            dtstart = dtstart.date()
         dtend = dtstart + timedelta(days=1)
 
-    assert dtstart
+    assert dtstart is not None
     vevent.add('DTSTART', dtstart)
     if dtend is not None:
         vevent.add('DTEND', dtend)

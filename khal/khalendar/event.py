@@ -283,8 +283,8 @@ class Event(object):
             else:
                 return self._compact_datetime(day, timeformat)
         except Exception as e:
-            raise RuntimeError('Something went wrong while displaying "{}": {}'
-                               .format(self.href, str(e)))
+            raise type(e)('Something went wrong while displaying "{}": {}'
+                          .format(self.href, str(e)))
 
     def _compact_allday(self, day):
         if 'RRULE' in self.vevent:
@@ -293,8 +293,9 @@ class Event(object):
             recurstr = ''
 
         if day < self.start or day + datetime.timedelta(days=1) > self.end:
-            raise ValueError(
-                'please supply a `day` this event is scheduled on')
+            raise ValueError('Day out of range: {}'
+                             .format(dict(day=day, start=self.start,
+                                          end=self.end)))
         elif self.start < day and self.end > day + datetime.timedelta(days=1):
             # event starts before and goes on longer than `day`:
             rangestr = self.symbol_strings['range']
