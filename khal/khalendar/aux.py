@@ -127,16 +127,20 @@ def sanitize(vevent):
     :returns: clean vevent
     :rtype: icalendar.cal.event
     """
+    dtend = getattr(vevent.pop('DTEND', None), 'dt', None)
+    dtstart = getattr(vevent.pop('DTSTART', None), 'dt', None)
 
-    if 'DTEND' not in vevent and 'DURATION' not in vevent:
-        if isinstance(vevent['DTSTART'].dt, datetime):
-            vevent['DTSTART'].dt = vevent['DTSTART'].dt.date()
+    if (dtend is None and 'DURATION' not in vevent) or \
+       (dtend is not None and dtend <= dtstart):
+        # Deal with events that have an invalid or missing DTEND, assuming the
+        # event just lasts one day.
+        dtend = dtstart + timedelta(days=1)
 
-        vevent.add('DTEND', vevent['DTSTART'].dt + timedelta(days=1))
-
-        return vevent
-    else:
-        return vevent
+    assert dtstart
+    vevent.add('DTSTART', dtstart)
+    if dtend is not None:
+        vevent.add('DTEND', dtend)
+    return vevent
 
 
 def localize_strip_tz(dates, timezone):
