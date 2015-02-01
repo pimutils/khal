@@ -94,8 +94,8 @@ class Calendar(object):
         return os.path.getmtime(self.path)
 
     def get_allday_by_time_range(self, start, end=None, show_deleted=False):
-        return map(self._cover_event,
-                   self._dbtool.get_allday_range(start, end, show_deleted))
+        return [self._cover_event(x) for x in
+                self._dbtool.get_allday_range(start, end, show_deleted)]
 
     def get_datetime_by_time_range(self, start, end, show_deleted=False):
         return map(self._cover_event,
