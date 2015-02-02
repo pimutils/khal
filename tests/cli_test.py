@@ -102,12 +102,14 @@ def test_simple(runner):
     assert 'Tomorrow:' not in result.output
     assert not result.exception
 
+
 def test_showalldays(runner):
     runner = runner(command='agenda', showalldays=True)
 
     result = runner.invoke(main_khal)
     assert 'Tomorrow:' in result.output
     assert not result.exception
+
 
 def test_default_command_empty(runner):
     runner = runner(command='', showalldays=False)
