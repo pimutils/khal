@@ -9,16 +9,22 @@ may want to subscribe to `GitHub's tag feed
 
 0.4.0
 =====
-not yet released
+released on 2015-02-02
 
+dependency changes
+------------------
 * new dependency: click>3.2
 * removed dependency: docopt
 * note to package mantainers: `requirements.txt` has been removed, dependencies
   are still listed in `setup.py`
 
+note to users
+-------------
 * users will need to delete the local database, no data should be lost (and
   khal will inform the user about this)
 
+new and changed features
+------------------------
 * new config_option: `[default] print_new`, lets the user decide what should be
   printed after adding a new event
 * new config option: `[default] show_all_days` lets users decide if they want to
