@@ -129,10 +129,11 @@ def sanitize(vevent):
     """
     dtend = getattr(vevent.pop('DTEND', None), 'dt', None)
     dtstart = getattr(vevent.pop('DTSTART', None), 'dt', None)
+    if dtstart is None:
+        raise ValueError('Event has no start time (DTSTART).')
     dtstart, dtend = sanitize_timerange(
         dtstart, dtend, duration=vevent.get('DURATION', None))
 
-    assert dtstart is not None
     vevent.add('DTSTART', dtstart)
     if dtend is not None:
         vevent.add('DTEND', dtend)
@@ -145,10 +146,13 @@ def sanitize_timerange(dtstart, dtend, duration=None):
     if dtend is None and duration is None:
         if isinstance(dtstart, datetime):
             dtstart = dtstart.date()
-        dtend = dtstart
-
-    if dtend <= dtstart:
-        dtend += timedelta(days=1)
+        dtend = dtstart + timedelta(days=1)
+    elif dtend is not None:
+        if dtend < dtstart:
+            raise ValueError('The event\'s end time (DTEND) is older than '
+                             'the event\'s start time (DTSTART).')
+        elif dtend == dtstart:
+            dtend += timedelta(days=1)
 
     return dtstart, dtend
 
