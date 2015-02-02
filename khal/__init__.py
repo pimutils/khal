@@ -1,5 +1,5 @@
 # vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
-# Copyright (c) 2013-2014 Christian Geier et al.
+# Copyright (c) 2013-2015 Christian Geier et al.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -25,7 +25,7 @@ from khal import version
 __productname__ = 'khal'
 __version__ = version.__version__
 __author__ = 'Christian Geier'
-__copyright__ = 'Copyright 2013-2014 Christian Geier et al.'
+__copyright__ = 'Copyright (c) 2013-2015 Christian Geier et al.'
 __author_email__ = 'khal@lostpackets.de'
 __description__ = 'A CalDAV based calendar'
 __license__ = 'Expat/MIT, see COPYING'
