@@ -63,6 +63,13 @@ def _calendar_select_callback(ctx, option, calendars):
     selection = ctx.obj['calendar_selection'] = set()
 
     if mode == 'include_calendar':
+        for cal_name in calendars:
+            if cal_name not in ctx.obj['conf']['calendars']:
+                raise click.UsageError(
+                    'Unknown calendar {}, run `khal printcalendars` to get a '
+                    'list of all configured calendars.'.format(cal_name)
+                )
+
         selection.update(calendars)
     elif mode == 'exclude_calendar':
         selection.update(ctx.obj['conf']['calendars'].keys())

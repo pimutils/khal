@@ -126,6 +126,18 @@ def test_default_command_nonempty(runner):
     assert result.output == 'No events\n'
 
 
+def test_invalid_calendar(runner):
+    runner = runner(command='', showalldays=False)
+    result = runner.invoke(
+        main_khal, ['new'] + '-a one 18:00 myevent'.split())
+    assert not result.exception
+    result = runner.invoke(
+        main_khal, ['new'] + '-a two 18:00 myevent'.split())
+    assert result.exception
+    assert result.exit_code == 2
+    assert 'Unknown calendar ' in result.output
+
+
 @pytest.mark.parametrize('contents', [
     '',
     u'BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\nEND:VCALENDAR\n'
