@@ -15,11 +15,10 @@ Features
 - khal can read and write events/icalendars to vdir_
 - fast and easy way to add new events
 - ikhal (interactive khal) lets you browse and edit calendars and events
-- recurring events cannot be deleted (neither single instances nor the whole
-  event)
+- support for recurring events is not complete yet, they cannot be deleted or
+  edited and some recursion patterns are not understood
 - you cannot edit the timezones of events
-- khal should run on all major
-  operating systems [1]_ (has been tested on FreeBSD and Debian GNU/Linux)
+- khal should run on all major operating systems [1]_
 
 .. [1] except for Microsoft Windows
 
