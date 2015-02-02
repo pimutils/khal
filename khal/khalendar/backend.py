@@ -234,15 +234,7 @@ class SQLiteDb(object):
             if rid is None:
                 return uid, 0
             rrange = rid.params.get('RANGE')
-            if rrange == THISANDPRIOR:
-                raise UpdateFailed(
-                    'The parameter `THISANDPRIOR` is not (and will not be) '
-                    'supported by khal (as applications supporting the latest '
-                    'standard MUST NOT create those. Therefore event {} from '
-                    'calendar {} will not be shown in khal'
-                    .format(href, self.calendar)
-                )
-            elif rrange == THISANDFUTURE:
+            if rrange == THISANDFUTURE:
                 return uid, aux.to_unix_time(rid.dt)
             else:
                 return uid, 1
@@ -255,6 +247,7 @@ class SQLiteDb(object):
         # result.
         self.delete(href)
         for vevent in sorted(vevents, key=sort_key):
+            check_support(vevent, href, self.calendar)
             self._update_impl(vevent, href, etag)
 
     def _update_impl(self, vevent, href, etag):
@@ -454,6 +447,34 @@ class SQLiteDb(object):
                      etag=etag,
                      recuid=hrefrecuid,
                      )
+
+
+def check_support(vevent, href, calendar):
+    """test if all icalendar features used in this event are supported,
+    raise `UpdateFailed` otherwise.
+    :param vevent: event to test
+    :type vevent: icalendar.cal.Event
+    :param href: href of this event, only used for logging
+    :type href: str
+    """
+    rid = vevent.get(RECURRENCE_ID)
+    if rid is not None and rid.params.get('RANGE') == THISANDPRIOR:
+        raise UpdateFailed(
+            'The parameter `THISANDPRIOR` is not (and will not be) '
+            'supported by khal (as applications supporting the latest '
+            'standard MUST NOT create those. Therefore event {} from '
+            'calendar {} will not be shown in khal'
+            .format(href, calendar)
+        )
+    rdate = vevent.get('RDATE')
+    if rdate is not None and rdate.params.get('VALUE') == u'PERIOD':
+        raise UpdateFailed(
+            '`RDATE;VALUE=PERIOD` is currently not supported by khal. '
+            'Therefore event {} from calendar {} will not be shown in khal.\n'
+            'Please post exemplary events (please remove any private data) '
+            'to https://github.com/geier/khal/issues/152 .'
+            .format(href, calendar)
+        )
 
 
 def calc_shift_deltas(event):

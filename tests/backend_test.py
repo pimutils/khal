@@ -171,7 +171,6 @@ def test_this_and_prior():
     with pytest.raises(UpdateFailed):
         dbi.update(event_rrule_this_and_prior, href='12345.ics', etag='abcd')
 
-
 event_rrule_this_and_future_temp = """
 BEGIN:VCALENDAR
 BEGIN:VEVENT
@@ -457,3 +456,33 @@ def test_two_calendars_same_uid(tmpdir):
     assert len(events_b) == 4
     assert dba.list() == []
     assert dbb.list() == [('12345.ics', 'abcd')]
+
+event_rdate_period = """BEGIN:VEVENT
+SUMMARY:RDATE period
+DTSTART:19961230T020000Z
+DTEND:19961230T060000Z
+UID:rdate_period
+RDATE;VALUE=PERIOD:19970101T180000Z/19970102T070000Z,19970109T180000Z/PT5H30M
+END:VEVENT"""
+
+
+supported_events = [
+    event_a, event_b, event_rrule_this_and_future,
+    event_rrule_this_and_future_allday,
+    event_rrule_this_and_future_multi_day_shift
+]
+
+
+def test_check_support():
+    ical = icalendar.Calendar.from_ical(event_rrule_this_and_prior)
+    for cal_str in supported_events:
+        ical = icalendar.Calendar.from_ical(cal_str)
+        [backend.check_support(event, '', '') for event in ical.walk()]
+
+    ical = icalendar.Calendar.from_ical(event_rrule_this_and_prior)
+    with pytest.raises(UpdateFailed):
+        [backend.check_support(event, '', '') for event in ical.walk()]
+
+    ical = icalendar.Calendar.from_ical(event_rdate_period)
+    with pytest.raises(UpdateFailed):
+        [backend.check_support(event, '', '') for event in ical.walk()]
