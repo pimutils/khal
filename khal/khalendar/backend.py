@@ -143,6 +143,8 @@ class SQLiteDb(object):
             resource TEXT NOT NULL,
             ctag FLOAT
             )''')
+        # TODO on next db schema change, rename hrefrecuid -> href_rec_inst
+        # and recuid -> rec_inst
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS events (
                 href TEXT NOT NULL,
                 hrefrecuid TEXT NOT NULL,
@@ -230,12 +232,12 @@ class SQLiteDb(object):
         def sort_key(vevent):
             assert isinstance(vevent, icalendar.Event)  # REMOVE ME
             uid = str(vevent['UID'])
-            rid = vevent.get(RECURRENCE_ID)
-            if rid is None:
+            rec_id = vevent.get(RECURRENCE_ID)
+            if rec_id is None:
                 return uid, 0
-            rrange = rid.params.get('RANGE')
+            rrange = rec_id.params.get('RANGE')
             if rrange == THISANDFUTURE:
-                return uid, aux.to_unix_time(rid.dt)
+                return uid, aux.to_unix_time(rec_id.dt)
             else:
                 return uid, 1
 
@@ -254,16 +256,13 @@ class SQLiteDb(object):
         """expand (if needed) and insert non-reccuring and original recurring
         (those with an RRULE property"""
         # TODO FIXME this function is a steaming pile of shit
-        # TODO better naming for rid and recuid, naming is really ambiguous
-        # table columns might need a rename, too
-        # perhaps rid -> rec_uid, recuid -> rec_inst
 
         assert isinstance(vevent, icalendar.Event)  # REMOVE ME
-        rid = vevent.get(RECURRENCE_ID)
-        if rid is None:
+        rec_id = vevent.get(RECURRENCE_ID)
+        if rec_id is None:
             rrange = None
         else:
-            rrange = rid.params.get('RANGE')
+            rrange = rec_id.params.get('RANGE')
 
         # testing on datetime.date won't work as datetime is a child of date
         all_day_event = not isinstance(vevent['DTSTART'].dt, datetime.datetime)
@@ -283,12 +282,12 @@ class SQLiteDb(object):
             if all_day_event:
                 dbstart = aux.to_unix_time(dtstart)
                 dbend = aux.to_unix_time(dtend)
-                if rid is not None:
-                    recuid = aux.to_unix_time(rid.dt)
-                    hrefrecuid = href + str(recuid)
+                if rec_id is not None:
+                    rec_inst = aux.to_unix_time(rec_id.dt)
+                    href_rec_inst = href + str(rec_inst)
                 else:
-                    recuid = dbstart
-                    hrefrecuid = href
+                    rec_inst = dbstart
+                    href_rec_inst = href
             else:
                 # TODO: extract non-Olson TZs from params['TZID']
                 # perhaps better done in event/vevent or directly in icalendar
@@ -299,34 +298,34 @@ class SQLiteDb(object):
                 dbstart = aux.to_unix_time(dtstart)
                 dbend = aux.to_unix_time(dtend)
 
-                if rid is not None:
-                    recstart = rid.dt
+                if rec_id is not None:
+                    recstart = rec_id.dt
                     if recstart.tzinfo is None:
                         recstart = self.locale['default_timezone'].localize(recstart)
                     recstart = str(aux.to_unix_time(recstart))
-                    recuid = recstart
-                    hrefrecuid = href + recuid
+                    rec_inst = recstart
+                    href_rec_inst = href + rec_inst
                 else:
-                    recuid = dbstart
-                    hrefrecuid = href
+                    rec_inst = dbstart
+                    href_rec_inst = href
 
             if thisandfuture:
                 recs_sql_s = (
                     'UPDATE {0} SET dtstart = recuid + ?, dtend = recuid + ?, hrefrecuid=? '
                     'WHERE recuid >= ?;'.format(recs_table))
-                stuple = (start_shift, start_shift + duration, hrefrecuid, recuid)
+                stuple = (start_shift, start_shift + duration, href_rec_inst, rec_inst)
             else:
                 recs_sql_s = (
                     'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid, calendar)'
                     'VALUES (?, ?, ?, ?, ?, ?);'.format(recs_table))
-                stuple = (dbstart, dbend, href, hrefrecuid, recuid, self.calendar)
+                stuple = (dbstart, dbend, href, href_rec_inst, rec_inst, self.calendar)
             self.sql_ex(recs_sql_s, stuple)
 
         sql_s = ('INSERT INTO events '
                  '(item, etag, href, calendar, hrefrecuid) '
                  'VALUES (?, ?, ?, ?, ?);')
         stuple = (vevent.to_ical().decode('utf-8'),
-                  etag, href, self.calendar, hrefrecuid)
+                  etag, href, self.calendar, href_rec_inst)
         self.sql_ex(sql_s, stuple)
 
     def get_ctag(self):
@@ -394,11 +393,11 @@ class SQLiteDb(object):
                  'dtstart <= ? AND dtend >= ?) AND events.calendar = ?;')
         stuple = (start, end, start, end, start, end, self.calendar)
         result = self.sql_ex(sql_s, stuple)
-        for hrefrecuid, start, end in result:
+        for href_rec_inst, start, end in result:
             start = pytz.UTC.localize(
                 datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
-            event = self.get(hrefrecuid, start=start, end=end)
+            event = self.get(href_rec_inst, start=start, end=end)
             yield event
 
     def get_allday_range(self, start, end=None):
@@ -421,19 +420,19 @@ class SQLiteDb(object):
                  'dtstart <= ? AND dtend > ? ) AND events.calendar = ?;')
         stuple = (strstart, strend, strstart, strend, strstart, strend, self.calendar)
         result = self.sql_ex(sql_s, stuple)
-        for hrefrecuid, start, end in result:
+        for href_rec_inst, start, end in result:
             start = datetime.date.fromtimestamp(start)
             end = datetime.date.fromtimestamp(end)
-            event = self.get(hrefrecuid, start=start, end=end)
+            event = self.get(href_rec_inst, start=start, end=end)
             yield event
 
-    def get(self, hrefrecuid, start=None, end=None):
-        """returns the Event matching hrefrecuid, if start and end are given, a
+    def get(self, href_rec_inst, start=None, end=None):
+        """returns the Event matching href_rec_inst, if start and end are given, a
         specific Event from a Recursion set is returned, otherwise the Event
         returned exactly as saved in the db
         """
         sql_s = 'SELECT href, etag, item FROM events WHERE hrefrecuid = ?;'
-        result = self.sql_ex(sql_s, (hrefrecuid, ))
+        result = self.sql_ex(sql_s, (href_rec_inst, ))
         href, etag, item = result[0]
         return Event(item,
                      locale=self.locale,
@@ -442,7 +441,7 @@ class SQLiteDb(object):
                      href=href,
                      calendar=self.calendar,
                      etag=etag,
-                     recuid=hrefrecuid,
+                     recuid=href_rec_inst,
                      )
 
 
@@ -454,8 +453,8 @@ def check_support(vevent, href, calendar):
     :param href: href of this event, only used for logging
     :type href: str
     """
-    rid = vevent.get(RECURRENCE_ID)
-    if rid is not None and rid.params.get('RANGE') == THISANDPRIOR:
+    rec_id = vevent.get(RECURRENCE_ID)
+    if rec_id is not None and rec_id.params.get('RANGE') == THISANDPRIOR:
         raise UpdateFailed(
             'The parameter `THISANDPRIOR` is not (and will not be) '
             'supported by khal (as applications supporting the latest '
