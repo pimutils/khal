@@ -16,6 +16,9 @@ not yet released
 * note to package mantainers: `requirements.txt` has been removed, dependencies
   are still listed in `setup.py`
 
+* users will need to delete the local database, no data should be lost (and
+  khal will inform the user about this)
+
 * new config_option: `[default] print_new`, lets the user decide what should be
   printed after adding a new event
 * new config option: `[default] show_all_days` lets users decide if they want to
@@ -28,6 +31,13 @@ not yet released
 * FIX: vtimezones were not assembled properly, this lead to spurious offsets of
   events in some other calendar applications
 * change in behaviour: recurring events are now always expanded until 2037
+* major speedup in inserting events into the caching database, especially
+  noticeable when running khal for the first time or after an deleting the
+  database (Thanks to Markus Unterwaditzer)
+* better support for broken events, e.g. events ending before they start
+  (Thanks to Markus Unterwaditzer)
+* more recurrence rules are supported, khal will print warnings on unsupported
+  rules
 
 ikhal
 -----
