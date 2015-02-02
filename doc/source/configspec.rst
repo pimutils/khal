@@ -203,7 +203,6 @@ behaviours are set here.
 
     
     command to be executed if no command is given when executing khal
-    this is a rather important subcommand
 
       :type: option, allowed values are *calendar*, *agenda*, *interactive* and **
       :default: calendar
@@ -213,7 +212,8 @@ behaviours are set here.
 .. object:: print_new
 
     
-    after adding a new event, what should be printed
+    After adding a new event, what should be printed to standard out? The whole
+    event in text form, the path to where the event is now saved or nothing?
 
       :type: option, allowed values are *event*, *path* and *False*
       :default: False
@@ -223,7 +223,7 @@ behaviours are set here.
 .. object:: show_all_days
 
     
-    By default, khal displays only dates with event in "agenda' view.
+    By default, khal displays only dates with event in "agenda" view.
     Setting this to *True* will show all days in "agenda", even
     when there is no event
 
