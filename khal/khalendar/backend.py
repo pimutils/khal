@@ -22,11 +22,13 @@
 """
 The SQLite backend implementation.
 
-Database Layout
-===============
+note on naming:
+  * every variable name vevent should be of type icalendar.Event
+  * every variable named event should be of type khal.khalendar.Events
+  * variables named vevents/events (plural) should be iterables of their
+    respective types
 
 """
-
 from __future__ import print_function
 
 import contextlib
@@ -52,9 +54,6 @@ DB_VERSION = 3  # The current db layout version
 RECURRENCE_ID = 'RECURRENCE-ID'
 THISANDFUTURE = 'THISANDFUTURE'
 THISANDPRIOR = 'THISANDPRIOR'
-
-
-# TODO fix that event/vevent mess
 
 
 class SQLiteDb(object):
@@ -229,6 +228,7 @@ class SQLiteDb(object):
         # insert the (sub) events in the right order, e.g. recurrence-id events
         # after the corresponding rrule event
         def sort_key(vevent):
+            assert isinstance(vevent, icalendar.Event)  # REMOVE ME
             uid = str(vevent['UID'])
             rid = vevent.get(RECURRENCE_ID)
             if rid is None:
@@ -258,6 +258,7 @@ class SQLiteDb(object):
         # table columns might need a rename, too
         # perhaps rid -> rec_uid, recuid -> rec_inst
 
+        assert isinstance(vevent, icalendar.Event)  # REMOVE ME
         rid = vevent.get(RECURRENCE_ID)
         if rid is None:
             rrange = None
@@ -393,14 +394,12 @@ class SQLiteDb(object):
                  'dtstart <= ? AND dtend >= ?) AND events.calendar = ?;')
         stuple = (start, end, start, end, start, end, self.calendar)
         result = self.sql_ex(sql_s, stuple)
-        event_list = list()
         for hrefrecuid, start, end in result:
             start = pytz.UTC.localize(
                 datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
             event = self.get(hrefrecuid, start=start, end=end)
-            event_list.append(event)
-        return event_list
+            yield event
 
     def get_allday_range(self, start, end=None):
         """
@@ -422,13 +421,11 @@ class SQLiteDb(object):
                  'dtstart <= ? AND dtend > ? ) AND events.calendar = ?;')
         stuple = (strstart, strend, strstart, strend, strstart, strend, self.calendar)
         result = self.sql_ex(sql_s, stuple)
-        event_list = list()
         for hrefrecuid, start, end in result:
             start = datetime.date.fromtimestamp(start)
             end = datetime.date.fromtimestamp(end)
             event = self.get(hrefrecuid, start=start, end=end)
-            event_list.append(event)
-        return event_list
+            yield event
 
     def get(self, hrefrecuid, start=None, end=None):
         """returns the Event matching hrefrecuid, if start and end are given, a
@@ -477,7 +474,7 @@ def check_support(vevent, href, calendar):
         )
 
 
-def calc_shift_deltas(event):
+def calc_shift_deltas(vevent):
     """calculate an events duration and by how much its start time has shifted
     versus its recurrence-id time
 
@@ -486,9 +483,10 @@ def calc_shift_deltas(event):
     :returns: time shift and duration
     :rtype: (datetime.timedelta, datetime.timedelta)
     """
-    start_shift = event['DTSTART'].dt - event['RECURRENCE-ID'].dt
+    assert isinstance(vevent, icalendar.Event)  # REMOVE ME
+    start_shift = vevent['DTSTART'].dt - vevent['RECURRENCE-ID'].dt
     try:
-        duration = event['DTEND'].dt - event['DTSTART'].dt
+        duration = vevent['DTEND'].dt - vevent['DTSTART'].dt
     except KeyError:
-        duration = event['DURATION'].dt
+        duration = vevent['DURATION'].dt
     return start_shift, duration
