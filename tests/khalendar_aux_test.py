@@ -1,6 +1,7 @@
+import os
+
 import datetime
 import icalendar
-
 import pytest
 import pytz
 
@@ -224,6 +225,16 @@ def _get_vevent(event):
             return component
 
 
+def _get_vevent_file(event_path):
+    directory = '/'.join(__file__.split('/')[:-1]) + '/ics/'
+    ical = icalendar.Calendar.from_ical(
+        open(os.path.join(directory, event_path + '.ics'), 'rb').read()
+    )
+    for component in ical.walk():
+        if component.name == 'VEVENT':
+            return component
+
+
 class TestExpand(object):
     dtstartend_berlin = [
         (berlin.localize(datetime.datetime(2013, 3, 1, 14, 0, )),
@@ -415,17 +426,7 @@ class TestExpandNoRR(object):
     def test_expand_dtr_exdatez(self):
         """a recurring event with an EXDATE in Zulu time while DTSTART is
         localized"""
-        vevent = _get_vevent("""BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-UID:event_dtr_exdatez
-SUMMARY:event_dtr_exdatez
-RRULE:FREQ=WEEKLY;UNTIL=20140725T053000Z
-EXDATE:20140721T053000Z
-DTSTART;TZID=Europe/Berlin:20140630T073000
-DURATION:PT4H30M
-END:VEVENT
-END:VCALENDAR""")
+        vevent = _get_vevent_file('event_dtr_exdatez')
         dtstart = aux.expand(vevent, berlin)
         assert len(dtstart) == 3
 
@@ -688,3 +689,7 @@ class TestSenitize(object):
         vevent = aux.sanitize(vevent)
         assert vevent['DTSTART'].dt == datetime.date(2014, 8, 29)
         assert vevent['DTEND'].dt == datetime.date(2014, 8, 30)
+
+    def test_duration(self):
+        vevent = _get_vevent_file('event_dtr_exdatez')
+        vevent = aux.sanitize(vevent)
