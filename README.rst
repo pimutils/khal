@@ -8,10 +8,6 @@ compatibility is achieved by using vdir_/vdirsyncer_ as a backend, `allowing
 syncing of calendars with a variety of other programs on a host of different
 platforms`__.
 
-*khal* is currently in an early stage of development, has a limited feature set
-and is probably full of bugs. If you do try it out please report back any bugs
-you might encounter.
-
 .. image:: http://lostpackets.de/images/khal.png
 
 Features
