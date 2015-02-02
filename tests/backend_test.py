@@ -56,11 +56,11 @@ def test_event_rrule_recurrence_id():
     dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
     assert dbi.list() == list()
     events = dbi.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
-    assert events == list()
+    assert list(events) == list()
     dbi.update(event_rrule_recurrence_id, href='12345.ics', etag='abcd')
     assert dbi.list() == [('12345.ics', 'abcd')]
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
-    events.sort(key=lambda x: x.start)
+    events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
     assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
@@ -99,11 +99,11 @@ def test_event_rrule_recurrence_id_reverse():
     dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
     assert dbi.list() == list()
     events = dbi.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
-    assert events == list()
+    assert list(events) == list()
     dbi.update(event_rrule_recurrence_id_reverse, href='12345.ics', etag='abcd')
     assert dbi.list() == [('12345.ics', 'abcd')]
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
-    events.sort(key=lambda x: x.start)
+    events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
     assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
@@ -123,7 +123,7 @@ def test_event_rrule_recurrence_id_update_with_exclude():
     dbi.update(event_rrule_recurrence_id, href='12345.ics', etag='abcd')
     dbi.update(event_rrule_recurrence_id_update, href='12345.ics', etag='abcd')
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
-    events.sort(key=lambda x: x.start)
+    events = sorted(events, key=lambda x: x.start)
     assert len(events) == 5
     assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
     assert events[1].start == berlin.localize(datetime(2014, 7, 7, 7, 0))
@@ -136,14 +136,14 @@ def test_event_delete():
     dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
     assert dbi.list() == list()
     events = dbi.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
-    assert events == list()
+    assert list(events) == list()
     dbi.update(event_rrule_recurrence_id_reverse, href='12345.ics', etag='abcd')
     assert dbi.list() == [('12345.ics', 'abcd')]
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
-    assert len(events) == 6
+    assert len(list(events)) == 6
     dbi.delete('12345.ics')
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
-    assert len(events) == 0
+    assert len(list(events)) == 0
 
 
 event_rrule_this_and_prior = """
@@ -199,7 +199,7 @@ def test_event_rrule_this_and_future():
     dbi.update(event_rrule_this_and_future, href='12345.ics', etag='abcd')
     assert dbi.list() == [('12345.ics', 'abcd')]
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
-    events.sort(key=lambda x: x.start)
+    events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
     assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
@@ -230,7 +230,7 @@ def test_event_rrule_this_and_future_multi_day_shift():
     dbi.update(event_rrule_this_and_future_multi_day_shift, href='12345.ics', etag='abcd')
     assert dbi.list() == [('12345.ics', 'abcd')]
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
-    events.sort(key=lambda x: x.start)
+    events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
     assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
@@ -278,7 +278,7 @@ def test_event_rrule_this_and_future_allday():
     dbi.update(event_rrule_this_and_future_allday, href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
     events = dbi.get_allday_range(date(2014, 4, 30), date(2014, 9, 26))
-    events.sort(key=lambda x: x.start)
+    events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
     assert events[0].start == date(2014, 6, 30)
@@ -307,7 +307,7 @@ def test_event_rrule_this_and_future_allday_prior():
     dbi.update(event_rrule_this_and_future_allday_prior, href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
     events = dbi.get_allday_range(date(2014, 4, 30), date(2014, 9, 26))
-    events.sort(key=lambda x: x.start)
+    events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
     assert events[0].start == date(2014, 6, 30)
@@ -359,9 +359,7 @@ def test_event_rrule_multi_this_and_future_allday():
     dbi.update(event_rrule_multi_this_and_future_allday, href='event_rrule_multi_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('event_rrule_multi_this_and_future_allday.ics', 'abcd')]
     events = dbi.get_allday_range(start=date(2014, 4, 30), end=date(2014, 9, 26))
-    events.sort(key=lambda x: x.start)
-    for event in events:
-        print(event.start)
+    events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
     assert events[0].start == date(2014, 6, 30)
@@ -445,13 +443,13 @@ def test_two_calendars_same_uid(tmpdir):
     dbb.update(event_b, href='12345.ics', etag='abcd')
     assert dba.list() == [('12345.ics', 'abcd')]
     assert dbb.list() == [('12345.ics', 'abcd')]
-    events_a = dba.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
-    events_b = dbb.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
+    events_a = list(dba.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0)))
+    events_b = list(dbb.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0)))
     assert len(events_a) == 4
     assert len(events_b) == 4
     dba.delete('12345.ics')
-    events_a = dba.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
-    events_b = dbb.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
+    events_a = list(dba.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0)))
+    events_b = list(dbb.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0)))
     assert len(events_a) == 0
     assert len(events_b) == 4
     assert dba.list() == []
