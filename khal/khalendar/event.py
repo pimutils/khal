@@ -135,11 +135,8 @@ class Event(object):
 
     @property
     def ident(self):
+        """neeeded for vdirsyncer compat"""
         return self.vevent['UID']
-
-    # @uid.setter
-    # def uid(self, value):
-    #     self.vevent['UID'] = value
 
     @property
     def location(self):
