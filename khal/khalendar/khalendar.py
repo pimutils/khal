@@ -189,6 +189,10 @@ class Calendar(object):
         string"""
         return Event(ical=ical, calendar=self.name, locale=self._locale)
 
+    def search(self, search_string):
+        return [self._cover_event(event) for event in
+                self._dbtool.search(search_string)]
+
 
 class CalendarCollection(object):
 
@@ -263,3 +267,9 @@ class CalendarCollection(object):
     def db_update(self):
         for one in self.calendars:
             one.db_update()
+
+    def search(self, search_string):
+        events = list()
+        for one in self.calendars:
+            events.extend(one.search(search_string))
+        return events

@@ -444,6 +444,15 @@ class SQLiteDb(object):
                      recuid=href_rec_inst,
                      )
 
+    def search(self, search_string):
+        sql_s = ('SELECT hrefrecuid FROM events '
+                 'WHERE item LIKE (?)')
+        stuple = ('%' + search_string + '%',)
+        result = self.sql_ex(sql_s, stuple)
+        for href_rec_inst, in result:
+            event = self.get(href_rec_inst)
+            yield event
+
 
 def check_support(vevent, href, calendar):
     """test if all icalendar features used in this event are supported,

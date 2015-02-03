@@ -265,6 +265,18 @@ def _get_cli():
             dt_str = time.strftime(ctx.obj['conf']['locale'][strftime_format])
             click.echo('{}: {}'.format(strftime_format, dt_str))
 
+    @cli.command()
+    @calendar_selector
+    @click.argument('search_string')
+    @click.pass_context
+    def search(ctx, search_string):
+        '''Search for events matching SEARCH_STRING
+
+        For repetitive events only one event is currently shown.
+        '''
+        # TODO support for time ranges, location, description etc
+        controllers.Search(build_collection(ctx), ctx.obj['conf'], search_string)
+
     return cli, interactive_cli
 
 main_khal, main_ikhal = _get_cli()
