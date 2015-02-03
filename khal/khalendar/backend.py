@@ -446,8 +446,8 @@ class SQLiteDb(object):
 
     def search(self, search_string):
         sql_s = ('SELECT hrefrecuid FROM events '
-                 'WHERE item LIKE (?)')
-        stuple = ('%' + search_string + '%',)
+                 'WHERE item LIKE (?) and calendar = (?)')
+        stuple = ('%' + search_string + '%', self.calendar)
         result = self.sql_ex(sql_s, stuple)
         for href_rec_inst, in result:
             event = self.get(href_rec_inst)
