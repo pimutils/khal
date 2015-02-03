@@ -74,7 +74,7 @@ weeknumbers = weeknumbers(default='off')
 [default]
 
 # command to be executed if no command is given when executing khal
-default_command = option('calendar', 'agenda', 'interactive', '', default='calendar')
+default_command = option('calendar', 'agenda', 'interactive', 'printformats', 'printcalendars', '', default='calendar')
 
 # the calendar to use if no one is specified but only one can be used (e.g. if
 # adding a new event), this should be a valid calendar name.

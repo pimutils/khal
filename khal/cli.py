@@ -248,7 +248,23 @@ def _get_cli():
         '''List all calendars.'''
         click.echo('\n'.join(build_collection(ctx).names))
 
-    return cli, interactive_cli
+    @cli.command()
+    @click.pass_context
+    def printformats(ctx):
+        '''Print a date in all formats
 
+        Print the date 2013-12-11 10:09 in all configured date(time)
+        formats to check if these locale settings are configured to once
+        liking.'''
+        from datetime import datetime
+        time = datetime(2013, 12, 11, 10, 9)
+
+        for strftime_format in [
+                'longdatetimeformat', 'datetimeformat', 'longdateformat',
+                'dateformat', 'timeformat']:
+            dt_str = time.strftime(ctx.obj['conf']['locale'][strftime_format])
+            click.echo('{}: {}'.format(strftime_format, dt_str))
+
+    return cli, interactive_cli
 
 main_khal, main_ikhal = _get_cli()

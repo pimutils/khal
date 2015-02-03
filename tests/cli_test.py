@@ -152,3 +152,16 @@ def test_no_vevent(runner, tmpdir, contents):
     result = runner.invoke(main_khal)
     assert not result.exception
     assert 'No events' in result.output
+
+
+def test_printformats(runner):
+    runner = runner(command='printformats', showalldays=False)
+
+    result = runner.invoke(main_khal)
+    assert '\n'.join(['longdatetimeformat: 11.12.2013 10:09',
+                      'datetimeformat: 11.12. 10:09',
+                      'longdateformat: 11.12.2013',
+                      'dateformat: 11.12.',
+                      'timeformat: 10:09',
+                      '']) == result.output
+    assert not result.exception
