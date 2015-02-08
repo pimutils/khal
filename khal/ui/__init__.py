@@ -22,6 +22,7 @@
 
 import calendar
 from datetime import date, datetime, time, timedelta
+import signal
 
 import urwid
 
@@ -881,4 +882,5 @@ def start_pane(pane, callback, header=''):
     loop = urwid.MainLoop(frame, Window.PALETTE,
                           unhandled_input=frame.on_key_press,
                           pop_ups=True)
+    signal.signal(signal.SIGINT, lambda signum, f: frame.backtrack())
     loop.run()
