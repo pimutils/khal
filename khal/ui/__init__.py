@@ -420,7 +420,7 @@ class U_Event(urwid.Text, Config):
             str(self.event.href) + '\n' + str(self.event.etag)
 
     def set_title(self, mark=''):
-        if self.uid in self.eventcolumn.deleted:
+        if self.uid in self.eventcolumn.pane.deleted:
             mark = 'D'
         self.set_text(mark + ' ' + self.event.compact(self.this_date))
 
@@ -451,9 +451,7 @@ class EventList(urwid.WidgetWrap):
 
     """list of events"""
 
-    def __init__(self, conf=None, collection=None, eventcolumn=None):
-        self.conf = conf
-        self.collection = collection
+    def __init__(self, eventcolumn):
         self.eventcolumn = eventcolumn
         pile = urwid.Filler(CPile([]))
         urwid.WidgetWrap.__init__(self, pile)
@@ -464,24 +462,20 @@ class EventList(urwid.WidgetWrap):
         end = datetime.combine(this_date, time.max)
 
         date_text = urwid.Text(
-            this_date.strftime(self.conf['locale']['longdateformat']))
+            this_date.strftime(self.eventcolumn.pane.conf['locale']['longdateformat']))
         event_column = list()
-        all_day_events = self.collection.get_allday_by_time_range(this_date)
-        events = self.collection.get_datetime_by_time_range(start, end)
+        all_day_events = self.eventcolumn.pane.collection.get_allday_by_time_range(this_date)
+        events = self.eventcolumn.pane.collection.get_datetime_by_time_range(start, end)
 
         for event in all_day_events:
             event_column.append(
-                urwid.AttrMap(U_Event(event,
-                                      conf=self.conf,
-                                      this_date=this_date,
+                urwid.AttrMap(U_Event(event, this_date=this_date,
                                       eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
         events.sort(key=lambda e: e.start)
         for event in events:
             event_column.append(
-                urwid.AttrMap(U_Event(event,
-                                      conf=self.conf,
-                                      this_date=this_date,
+                urwid.AttrMap(U_Event(event, this_date=this_date,
                                       eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus')
@@ -499,10 +493,8 @@ class EventColumn(urwid.WidgetWrap):
 
     """contains the eventlist as well as the event viewer/editor"""
 
-    def __init__(self, conf, collection, deleted):
-        self.conf = conf
-        self.collection = collection
-        self.deleted = deleted
+    def __init__(self, pane):
+        self.pane = pane
         self.divider = urwid.Divider('-')
         self.editor = False
         self.date = None
@@ -513,8 +505,7 @@ class EventColumn(urwid.WidgetWrap):
         """
         self.date = date
         # TODO make this switch from pile to columns depending on terminal size
-        events = EventList(
-            conf=self.conf, collection=self.collection, eventcolumn=self)
+        events = EventList(eventcolumn=self)
         self.eventcount = events.update(date)
         self.container = CPile([events])
         self._w = self.container
@@ -530,7 +521,7 @@ class EventColumn(urwid.WidgetWrap):
         self.container.contents.append((self.divider,
                                         ('pack', None)))
         self.container.contents.append(
-            (EventDisplay(self.conf, event, collection=self.collection),
+            (EventDisplay(self.pane.conf, event, collection=self.pane.collection),
              self.container.options()))
 
     def edit(self, event):
@@ -541,15 +532,14 @@ class EventColumn(urwid.WidgetWrap):
         """
         self.destroy()
         self.editor = True
-        # self.container.contents.append((self.divider,
-        #                                 self.container.options()))
-        self.container.contents.append((self.divider,
-                                        ('pack', None)))
-        self.container.contents.append(
-            (EventEditor(self.conf, event, collection=self.collection,
-                         cancel=self.destroy),
-             self.container.options()))
-        self.container.set_focus(2)
+        editor = EventEditor(self.pane.conf, event,
+                             collection=self.pane.collection)
+
+        def teardown(data):
+            self.editor = False
+            self.update(self.date)
+            self.destroy()
+        self.pane.window.open(editor, callback=teardown)
 
     def destroy(self, _=None, refresh=False):
         """
@@ -570,7 +560,7 @@ class EventColumn(urwid.WidgetWrap):
         :type date: datetime.date
         """
         event = aux.new_event(dtstart=date,
-                              timezone=self.conf['locale']['default_timezone'])
+                              timezone=self.pane.conf['locale']['default_timezone'])
 
         # TODO proper default cal
         event = self.collection.new_event(
@@ -672,7 +662,7 @@ class EventEditor(EventViewer, Config):
     Widget for event Editing
     """
 
-    def __init__(self, conf, event, collection=None, cancel=None):
+    def __init__(self, conf, event, collection=None):
         """
         :type event: khal.event.Event
         :param cancel: to be executed on pressing the cancel button
@@ -680,7 +670,6 @@ class EventEditor(EventViewer, Config):
         """
         super(EventEditor, self).__init__(conf, collection)
         self.event = event
-        self.cancel = cancel
         try:
             self.description = event.vevent['DESCRIPTION']
         except KeyError:
@@ -725,6 +714,10 @@ class EventEditor(EventViewer, Config):
              ]))
 
         self._w = self.pile
+
+    @property
+    def title(self):  # Window title
+        return 'Edit: {}'.format(self.summary.get_edit_text())
 
     @classmethod
     def selectable(cls):
@@ -826,8 +819,7 @@ class EventEditor(EventViewer, Config):
             if self.changed:
                 return
             else:
-                self.cancel()
-                return
+                return key
         key = super(EventEditor, self).keypress(size, key)
         if key in ['left', 'up']:  # TODO XXX
             return
@@ -846,12 +838,13 @@ class ClassicView(Pane):
     def __init__(self, collection, conf=None, title=u'',
                  description=u''):
         self.init = True
+        # Will be set when opening the view inside a Window
+        self.window = None
+        self.conf = conf
         self.collection = collection
         self.deleted = []
-        self.eventscolumn = EventColumn(conf=conf,
-                                        collection=collection,
-                                        deleted=self.deleted)
         Config.keys = conf['keybindings']
+        self.eventscolumn = EventColumn(pane=self)
         weeks = calendar_walker(
             view=self, firstweekday=conf['locale']['firstweekday'],
             weeknumbers=conf['locale']['weeknumbers'],
@@ -899,5 +892,9 @@ def start_pane(pane, callback, header=''):
     loop = urwid.MainLoop(frame, Window.PALETTE,
                           unhandled_input=frame.on_key_press,
                           pop_ups=True)
-    signal.signal(signal.SIGINT, lambda signum, f: frame.backtrack())
+
+    def ctrl_c(signum, f):
+        raise urwid.ExitMainLoop()
+
+    signal.signal(signal.SIGINT, ctrl_c)
     loop.run()

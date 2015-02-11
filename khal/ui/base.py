@@ -175,15 +175,6 @@ class Window(urwid.Frame):
         self._track.append((pane, callback))
         self._update(pane)
 
-    def overlay(self, overlay_w, title):
-        """put overlay_w as an overlay over the currently active pane
-        """
-        overlay = Pane(urwid.Overlay(urwid.Filler(overlay_w),
-                                     self._get_current_pane(),
-                                     'center', 60,
-                                     'middle', 5), title)
-        self.open(overlay)
-
     def backtrack(self, data=None):
         """Unstack the displayed pane.
 
@@ -192,7 +183,7 @@ class Window(urwid.Frame):
         this callback is called with the given data (if any) before
         the previous pane gets redrawn.
         """
-        _, cb = self._track.pop()
+        old_pane, cb = self._track.pop()
         if cb:
             cb(data)
 
