@@ -160,7 +160,7 @@ def localize_strip_tz(dates, timezone):
     """converts a list of dates to timezone, than removes tz info"""
     outdates = []
     for one_date in dates:
-        if hasattr(one_date, 'tzinfo') and one_date.tzinfo is not None:
+        if getattr(one_date, 'tzinfo', None) is not None:
             one_date = one_date.astimezone(timezone)
             one_date = one_date.replace(tzinfo=None)
         outdates.append(one_date)
