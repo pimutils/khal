@@ -183,14 +183,3 @@ class Interactive(object):
                               description='do something')
         ui.start_pane(pane, pane.cleanup,
                       header=u'{0} v{1}'.format(__productname__, __version__))
-
-
-class Search(object):
-    def __init__(self, collection, conf, search_string, encoding='utf-8'):
-        events = collection.search(search_string)
-        event_column = list()
-        term_width, _ = get_terminal_size()
-        for event in events:
-            desc = textwrap.wrap(event.long(), term_width)
-            event_column.extend([colored(d, event.color) for d in desc])
-        echo('\n'.join(event_column).encode(encoding))

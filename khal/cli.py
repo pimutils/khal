@@ -22,6 +22,7 @@
 #
 import logging
 import sys
+import textwrap
 
 try:
     from setproctitle import setproctitle
@@ -36,6 +37,7 @@ from khal import __version__
 from khal.log import logger
 from khal.settings import get_config, InvalidSettingsError
 from khal.exceptions import FatalError
+from .terminal import colored, get_terminal_size
 
 try:
     from StringIO import StringIO
@@ -275,7 +277,14 @@ def _get_cli():
         For repetitive events only one event is currently shown.
         '''
         # TODO support for time ranges, location, description etc
-        controllers.Search(build_collection(ctx), ctx.obj['conf'], search_string)
+        collection = build_collection(ctx)
+        events = collection.search(search_string)
+        event_column = list()
+        term_width, _ = get_terminal_size()
+        for event in events:
+            desc = textwrap.wrap(event.long(), term_width)
+            event_column.extend([colored(d, event.color) for d in desc])
+        click.echo('\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding']))
 
     return cli, interactive_cli
 
