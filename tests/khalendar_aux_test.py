@@ -430,6 +430,22 @@ class TestExpandNoRR(object):
         dtstart = aux.expand(vevent, berlin)
         assert len(dtstart) == 3
 
+    def test_expand_rrule_exdate_z(self):
+        """event with not understood timezone for dtstart and zulu time form
+        exdate
+        """
+        vevent = _get_vevent_file('event_dtr_no_tz_exdatez')
+        dtstart = aux.expand(vevent, berlin)
+        assert len(dtstart) == 5
+        dtstarts = [start for start, end in dtstart]
+        assert dtstarts == [
+            berlin.localize(datetime.datetime(2012, 4, 3, 10, 0)),
+            berlin.localize(datetime.datetime(2012, 5, 3, 10, 0)),
+            berlin.localize(datetime.datetime(2012, 7, 3, 10, 0)),
+            berlin.localize(datetime.datetime(2012, 8, 3, 10, 0)),
+            berlin.localize(datetime.datetime(2012, 9, 3, 10, 0)),
+        ]
+
 
 vevent_until_notz = """BEGIN:VEVENT
 SUMMARY:until 20. Februar

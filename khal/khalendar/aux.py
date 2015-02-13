@@ -87,7 +87,7 @@ def expand(vevent, default_tz, href=''):
         else:
             rdates = vevent['RDATE']
         rdates = [leaf.dt for tree in rdates for leaf in tree.dts]
-        rdates = localize_strip_tz(rdates, events_tz)
+        rdates = localize_strip_tz(rdates, events_tz or default_tz)
         dtstartl += rdates
 
     # remove excluded dates
@@ -97,8 +97,7 @@ def expand(vevent, default_tz, href=''):
         else:
             exdates = vevent['EXDATE']
         exdates = [leaf.dt for tree in exdates for leaf in tree.dts]
-
-        exdates = localize_strip_tz(exdates, events_tz)
+        exdates = localize_strip_tz(exdates, events_tz or default_tz)
         dtstartl = [start for start in dtstartl if start not in exdates]
 
     if events_tz is not None:
