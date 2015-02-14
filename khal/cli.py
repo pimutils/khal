@@ -39,11 +39,6 @@ from khal.settings import get_config, InvalidSettingsError
 from khal.exceptions import FatalError
 from .terminal import colored, get_terminal_size
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import BytesIO as StringIO
-
 
 days_option = click.option('--days', default=None, type=int,
                            help='How many days to include.')
@@ -144,13 +139,27 @@ def prepare_context(ctx, config, verbose):
     except InvalidSettingsError:
         sys.exit(1)
 
-    out = StringIO()
-    conf.write(out)
     logger.debug('Using config:')
-    logger.debug(out.getvalue().decode('utf-8'))
+    logger.debug(stringify_conf(conf).decode('utf-8'))
 
     if conf is None:
         raise click.UsageError('Invalid config file, exiting.')
+
+
+def stringify_conf(conf):
+    # since we have only two levels of recursion, a recursive function isn't
+    # really worth it
+    out = list()
+    for key, value in conf.items():
+        out.append('[{}]'.format(key))
+        for subkey, subvalue in value.items():
+            if isinstance(subvalue, dict):
+                out.append('  [[{}]]'.format(subkey))
+                for subsubkey, subsubvalue in subvalue.items():
+                    out.append('    {}: {}'.format(subsubkey, subsubvalue))
+            else:
+                out.append('  {}: {}'.format(subkey, subvalue))
+    return '\n'.join(out)
 
 
 def _get_cli():

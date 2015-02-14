@@ -34,7 +34,6 @@ from ..log import logger
 from .utils import is_timezone, weeknumber_option, config_checks, \
     expand_path, expand_db_path
 
-DEFAULTSPATH = os.path.join(os.path.dirname(__file__), 'default.khal')
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
 
 
@@ -81,7 +80,6 @@ def get_config(config_path=None):
         config_path = _find_configuration_file()
 
     logger.debug('using the config file at {}'.format(config_path))
-    config = ConfigObj(DEFAULTSPATH, interpolation=False)
 
     try:
         user_config = ConfigObj(config_path,
@@ -106,7 +104,7 @@ def get_config(config_path=None):
     results = user_config.validate(validator, preserve_errors=True)
 
     abort = False
-    for section, subsection, error in flatten_errors(config, results):
+    for section, subsection, error in flatten_errors(user_config, results):
         abort = True
         if isinstance(error, Exception):
             logger.fatal(
@@ -124,8 +122,7 @@ def get_config(config_path=None):
     if abort or not results:
         raise InvalidSettingsError()
 
-    config.merge(user_config)
-    config_checks(config)
+    config_checks(user_config)
 
     extras = get_extra_values(user_config)
     for section, value in extras:
@@ -135,7 +132,7 @@ def get_config(config_path=None):
             section = sectionize(section)
             logger.warn('unknown key or subsection "{}" in '
                         'section "{}"'.format(value, section))
-    return config
+    return user_config
 
 
 def sectionize(sections, depth=1):
