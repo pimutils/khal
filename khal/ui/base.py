@@ -22,6 +22,8 @@
 
 
 import urwid
+import threading
+import time
 
 
 class CColumns(urwid.Columns):
@@ -208,8 +210,16 @@ class Window(urwid.Frame):
     def alert(self, msg):
         self.update_header(alert=msg)
 
+        def target():
+            time.sleep(5)
+            self.update_header()
+
+        t = threading.Thread(target=target)
+        t.daemon = True
+        t.start()
+
     def update_header(self, alert=None):
-        pane_title = getattr(self.get_body(), 'title', None)
+        pane_title = getattr(self._get_current_pane(), 'title', None)
         text = []
 
         for part in (pane_title, alert):
