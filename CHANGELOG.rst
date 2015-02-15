@@ -7,6 +7,15 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.5.0
+=====
+not yet released
+
+* fixed several bugs relating to events with unknown timezones but UNTIL, RDATE
+  or EXDATE properties that are in Zulu time (thanks to Michele Baldessari for
+  reporting those)
+
+
 0.4.0
 =====
 released on 2015-02-02

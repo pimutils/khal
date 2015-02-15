@@ -216,6 +216,7 @@ END:VCALENDAR
 """
 
 berlin = pytz.timezone('Europe/Berlin')
+new_york = pytz.timezone('America/New_York')
 
 
 def _get_vevent(event):
@@ -446,6 +447,23 @@ class TestExpandNoRR(object):
             berlin.localize(datetime.datetime(2012, 9, 3, 10, 0)),
         ]
 
+    def test_expand_rrule_notz_until_z(self):
+        """event with not understood timezone for dtstart and zulu time form
+        exdate
+        """
+        vevent = _get_vevent_file('event_dtr_notz_untilz')
+        dtstart = aux.expand(vevent, new_york)
+        assert len(dtstart) == 7
+        dtstarts = [start for start, end in dtstart]
+        assert dtstarts == [
+            new_york.localize(datetime.datetime(2012, 7, 26, 13, 0)),
+            new_york.localize(datetime.datetime(2012, 8, 9, 13, 0)),
+            new_york.localize(datetime.datetime(2012, 8, 23, 13, 0)),
+            new_york.localize(datetime.datetime(2012, 9, 6, 13, 0)),
+            new_york.localize(datetime.datetime(2012, 9, 20, 13, 0)),
+            new_york.localize(datetime.datetime(2012, 10, 4, 13, 0)),
+            new_york.localize(datetime.datetime(2012, 10, 18, 13, 0)),
+        ]
 
 vevent_until_notz = """BEGIN:VEVENT
 SUMMARY:until 20. Februar
