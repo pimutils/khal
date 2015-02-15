@@ -701,16 +701,14 @@ class EventEditor(EventViewer, Config):
                                 edit_text=self.description)
         self.location = Edit(caption=u'Location: ',
                              edit_text=self.location)
-        cancel = urwid.Button(u'Cancel', on_press=self.cancel)
         save = urwid.Button(u'Save', on_press=self.save)
-        buttons = CColumns([cancel, save])
 
         self.pile = urwid.ListBox(CSimpleFocusListWalker(
             [self.summary,
              accounts,
              self.startendeditor,
              self.recursioneditor, self.description,
-             self.location, urwid.Text(''), buttons
+             self.location, urwid.Text(''), save
              ]))
 
         self._w = self.pile
@@ -811,8 +809,6 @@ class EventEditor(EventViewer, Config):
                                                   self.accountchooser.account)
             else:
                 self.collection.update(self.event)
-
-        self.cancel(refresh=True)
 
     def keypress(self, size, key):
         if key in ['esc']:  # TODO XXX
