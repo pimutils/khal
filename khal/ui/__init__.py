@@ -742,19 +742,10 @@ class EventEditor(urwid.WidgetWrap, Config):
             return True
         return False
 
-    def update(self):
-        changed = False
-        if self.summary.get_edit_text() != self.event.vevent['SUMMARY']:
-            self.event.vevent['SUMMARY'] = self.summary.get_edit_text()
-            changed = True
-
-        for key, prop in [
-            ('DESCRIPTION', self.description),
-            ('LOCATION', self.location)
-        ]:
-            if prop.get_edit_text() != self.event.vevent.get(key, ''):
-                self.event.vevent[key] = prop.get_edit_text()
-                changed = True
+    def update_vevent(self):
+        self.event.vevent['SUMMARY'] = self.summary.get_edit_text()
+        self.event.vevent['DESCRIPTION'] = self.description.get_edit_text()
+        self.event.vevent['LOCATION'] = self.location.get_edit_text()
 
         if self.startendeditor.changed:
             # TODO look up why this is needed
@@ -775,11 +766,7 @@ class EventEditor(urwid.WidgetWrap, Config):
                             self.startendeditor.newstart)
                 self.event.vevent.add('DURATION', duration)
 
-            changed = True
-        if self.accountchooser.changed:
-            changed = True
-            # TODO self.newaccount = self.accountchooser.account ?
-        return changed
+        # TODO self.newaccount = self.accountchooser.account ?
 
     def save(self, button):
         """
@@ -788,16 +775,14 @@ class EventEditor(urwid.WidgetWrap, Config):
         """
         # need to call this to set date backgrounds to False
         changed = self.changed
-        self.update()
+        self.update_vevent()
         if 'alert' in [self.startendeditor.bgs.startdate,
                        self.startendeditor.bgs.starttime,
                        self.startendeditor.bgs.enddate,
                        self.startendeditor.bgs.endtime]:
             self.startendeditor.refresh(None, state=self.startendeditor.allday)
             self.pile.set_focus(1)  # the startendeditor
-            return
-
-        if changed is True:
+        elif changed is True:
             try:
                 self.event.vevent['SEQUENCE'] += 1
             except KeyError:
