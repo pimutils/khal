@@ -538,9 +538,8 @@ class EventColumn(urwid.WidgetWrap):
         new_pane = urwid.Columns([
             ('weight', 1.5, editor),
             ('weight', 1, current_day)
-        ], dividechars=4)
+        ], dividechars=4, focus_column=0)
         new_pane.title = editor.title
-        new_pane.set_focus(0)
 
         def teardown(data):
             self.editor = False
