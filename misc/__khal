@@ -36,11 +36,13 @@ case $state in
   subcommand)
     local -a subcommands
     subcommands=(
-      "calendar:show calendar"
       "agenda:show agenda"
+      "calendar:show calendar"
       "interactive:open the interactive calendar"
       "new:add a new event"
       "printcalendars:print all configured calendars"
+      "printformats:print a date in all formats"
+      "search:search for events"
     )
 
     _describe -t subcommands 'khal subcommands' subcommands && ret=0
