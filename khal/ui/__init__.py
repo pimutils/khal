@@ -534,11 +534,18 @@ class EventColumn(urwid.WidgetWrap):
         """
         self.editor = True
         editor = EventEditor(self.pane, event)
+        current_day = self.container.contents[0][0]
+        new_pane = urwid.Columns([
+            ('weight', 1.5, editor),
+            ('weight', 1, current_day)
+        ], dividechars=4)
+        new_pane.title = editor.title
+        new_pane.set_focus(0)
 
         def teardown(data):
             self.editor = False
             self.update(self.date)
-        self.pane.window.open(editor, callback=teardown)
+        self.pane.window.open(new_pane, callback=teardown)
 
     def destroy(self):
         """if an event is displayed, remove it"""
