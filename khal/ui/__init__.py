@@ -488,7 +488,7 @@ class EventList(urwid.WidgetWrap):
 
 class EventColumn(urwid.WidgetWrap):
 
-    """contains the eventlist as well as the event viewer/editor"""
+    """contains the eventlist as well as the event viewer"""
 
     def __init__(self, pane):
         self.pane = pane
@@ -545,7 +545,7 @@ class EventColumn(urwid.WidgetWrap):
             self.update(self.date)
         self.editor = False
         if (len(self.container.contents) > 2 and
-                isinstance(self.container.contents[2][0], EventViewer)):
+                isinstance(self.container.contents[2][0], EventDisplay)):
             self.container.contents.pop()
             self.container.contents.pop()
 
@@ -586,18 +586,7 @@ class RecursionEditor(urwid.WidgetWrap):
                                           self.columns.options()))
 
 
-class EventViewer(urwid.WidgetWrap):
-
-    """
-    Base Class for EventEditor and EventDisplay
-    """
-
-    def __init__(self):
-        pile = CPile([])
-        urwid.WidgetWrap.__init__(self, pile)
-
-
-class EventDisplay(EventViewer):
+class EventDisplay(urwid.WidgetWrap):
 
     """showing events
 
@@ -605,8 +594,6 @@ class EventDisplay(EventViewer):
     """
 
     def __init__(self, conf, event, collection=None):
-        super(EventDisplay, self).__init__()
-
         self.conf = conf
         self.collection = collection
 
@@ -651,7 +638,7 @@ class EventDisplay(EventViewer):
                 pass
 
         pile = CPile(lines)
-        self._w = urwid.Filler(pile, valign='top')
+        urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
 
 
 class EventEditor(urwid.WidgetWrap, Config):
