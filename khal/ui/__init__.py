@@ -532,8 +532,7 @@ class EventColumn(urwid.WidgetWrap):
         """
         self.destroy()
         self.editor = True
-        editor = EventEditor(self.pane.conf, event,
-                             collection=self.pane.collection)
+        editor = EventEditor(self.pane, event)
 
         def teardown(data):
             self.editor = False
@@ -596,9 +595,7 @@ class EventViewer(urwid.WidgetWrap):
     Base Class for EventEditor and EventDisplay
     """
 
-    def __init__(self, conf, collection):
-        self.conf = conf
-        self.collection = collection
+    def __init__(self):
         pile = CPile([])
         urwid.WidgetWrap.__init__(self, pile)
 
@@ -611,7 +608,11 @@ class EventDisplay(EventViewer):
     """
 
     def __init__(self, conf, event, collection=None):
-        super(EventDisplay, self).__init__(conf, collection)
+        super(EventDisplay, self).__init__()
+
+        self.conf = conf
+        self.collection = collection
+
         lines = []
         lines.append(urwid.Text(event.vevent['SUMMARY']))
 
@@ -656,20 +657,23 @@ class EventDisplay(EventViewer):
         self._w = urwid.Filler(pile, valign='top')
 
 
-class EventEditor(EventViewer, Config):
+class EventEditor(urwid.WidgetWrap, Config):
 
     """
     Widget for event Editing
     """
 
-    def __init__(self, conf, event, collection=None):
+    def __init__(self, pane, event):
         """
         :type event: khal.event.Event
-        :param cancel: to be executed on pressing the cancel button
-        :type cancel: function/method
         """
-        super(EventEditor, self).__init__(conf, collection)
+
+        self.pane = pane
         self.event = event
+
+        self.collection = pane.collection
+        self.conf = pane.conf
+
         try:
             self.description = event.vevent['DESCRIPTION']
         except KeyError:
@@ -711,7 +715,7 @@ class EventEditor(EventViewer, Config):
              self.location, urwid.Text(''), save
              ]))
 
-        self._w = self.pile
+        urwid.WidgetWrap.__init__(self, self.pile)
 
     @property
     def title(self):  # Window title
