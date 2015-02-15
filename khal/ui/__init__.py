@@ -782,7 +782,9 @@ class EventEditor(urwid.WidgetWrap, Config):
                        self.startendeditor.bgs.endtime]:
             self.startendeditor.refresh(None, state=self.startendeditor.allday)
             self.pile.set_focus(1)  # the startendeditor
-        elif changed is True:
+            return
+
+        if changed is True:
             try:
                 self.event.vevent['SEQUENCE'] += 1
             except KeyError:
@@ -798,6 +800,8 @@ class EventEditor(urwid.WidgetWrap, Config):
                                                   self.accountchooser.account)
             else:
                 self.collection.update(self.event)
+
+        self.pane.window.backtrack()
 
     def keypress(self, size, key):
         if key in ['esc']:  # TODO XXX
