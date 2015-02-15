@@ -530,6 +530,10 @@ class EventColumn(urwid.WidgetWrap):
         :param event: event to edit
         :type event: khal.event.Event
         """
+        if event.readonly:
+            self.pane.window.alert(('light red', 'Event is read-only.'))
+            return
+
         if self.editor:
             self.pane.window.backtrack()
 

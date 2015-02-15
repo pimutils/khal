@@ -152,16 +152,15 @@ class Window(urwid.Frame):
                ('white', 'white', ''),
                ]
 
-    def __init__(self, header='', footer=''):
+    def __init__(self, footer=''):
         self._track = []
-        self._title = header
-        self._footer = footer
 
-        header = urwid.AttrWrap(urwid.Text(self._title), 'header')
-        footer = urwid.AttrWrap(urwid.Text(self._footer), 'footer')
+        header = urwid.AttrWrap(urwid.Text(''), 'header')
+        footer = urwid.AttrWrap(urwid.Text(footer), 'footer')
         urwid.Frame.__init__(self, urwid.Text(''),
                              header=header,
                              footer=footer)
+        self.update_header()
         self._original_w = None
 
     def open(self, pane, callback=None):
@@ -200,12 +199,22 @@ class Window(urwid.Frame):
             self.open(HelpPane(self._get_current_pane()))
 
     def _update(self, pane):
-        title = pane.title
-        if self._title:
-            title += ' | '
-            title += self._title
-        self.header.w.set_text(title)
         self.set_body(pane)
+        self.update_header()
 
     def _get_current_pane(self):
         return self._track[-1][0] if self._track else None
+
+    def alert(self, msg):
+        self.update_header(alert=msg)
+
+    def update_header(self, alert=None):
+        pane_title = getattr(self.get_body(), 'title', None)
+        text = []
+
+        for part in (pane_title, alert):
+            if part:
+                text.append(part)
+                text.append(('black', ' | '))
+
+        self.header.w.set_text(text[:-1] or '')
