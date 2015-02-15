@@ -31,6 +31,10 @@ def write_section(specsection, secname, key, comment):
     print()
     if fun_name in ['expand_db_path', 'expand_path']:
         fun_name = 'string'
+    elif fun_name in ['force_list']:
+        fun_name = 'list'
+        if isinstance(default, list):
+            default = ', '.join(default)
 
     print('      :type: {}'.format(fun_name))
     if fun_args != []:

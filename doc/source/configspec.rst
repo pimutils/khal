@@ -180,8 +180,85 @@ The most important options in the the **[locale]** section are probably (long-)t
       :type: integer, allowed values are between 0 and 6
       :default: 0
 
+The [keybindings] section
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+keybinds for `ikhal` are set here. You can bind more than one key
+(combination) to a command by supplying a comma-seperated list of keys.
+
+.. _keybindings-right:
+
+.. object:: right
+
+    
+    move the cursor right (in the calendar browser)
+
+      :type: list
+      :default: right, l
+
+.. _keybindings-view:
+
+.. object:: view
+
+    
+    show detailed or edit (if details are already show) the currently selected event
+
+      :type: list
+      :default: enter
+
+.. _keybindings-up:
+
+.. object:: up
+
+    
+    move the cursor up (in the calendar browser)
+
+      :type: list
+      :default: up, k
+
+.. _keybindings-down:
+
+.. object:: down
+
+    
+    move the cursor down (in the calendar browser)
+
+      :type: list
+      :default: down, j
+
+.. _keybindings-new:
+
+.. object:: new
+
+    
+    create a new event on the selected date
+
+      :type: list
+      :default: n
+
+.. _keybindings-left:
+
+.. object:: left
+
+    
+    move the cursor left (in the calendar browser)
+
+      :type: list
+      :default: left, h
+
+.. _keybindings-delete:
+
+.. object:: delete
+
+    
+    delete the currently selected event
+
+      :type: list
+      :default: d
+
 The [default] section
 ~~~~~~~~~~~~~~~~~~~~~
+
 
 The default section begins with a **[default]** tag. Some default values and
 behaviours are set here.
@@ -204,7 +281,7 @@ behaviours are set here.
     
     command to be executed if no command is given when executing khal
 
-      :type: option, allowed values are *calendar*, *agenda*, *interactive* and **
+      :type: option, allowed values are *calendar*, *agenda*, *interactive*, *printformats*, *printcalendars* and **
       :default: calendar
 
 .. _default-print_new:

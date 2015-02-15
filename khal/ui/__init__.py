@@ -147,9 +147,10 @@ class DateCColumns(CColumns):
     calls 'view.show_date' on every focus change (see below for details)
     """
 
-    def __init__(self, widget_list, view=None, today=None, **kwargs):
+    def __init__(self, widget_list, view=None, today=None, keys=None, **kwargs):
         self.view = view
         self.today = today
+        self.keys = keys
         # we need the next two attributes to for attribute resetting when a
         # cell regains focus after having lost it the the events column before
         self._old_attr_map = False
@@ -177,9 +178,18 @@ CColumns is empty, or when set to an invalid index.
     def keypress(self, size, key):
         """only leave calendar area on pressing 'tab' or 'enter'"""
 
+        if key in self.keys['left']:
+            key = 'left'
+        elif key in self.keys['up']:
+            key = 'up'
+        elif key in self.keys['right']:
+            key = 'right'
+        elif key in self.keys['down']:
+            key = 'down'
+
         old_pos = self.focus_position
         key = super(DateCColumns, self).keypress(size, key)
-        if key in ['tab', 'enter']:
+        if key in self.keys['view']:
             self._old_attr_map = self.contents[self.focus_position][0].get_attr_map()
             self._old_pos = old_pos
             self.contents[self.focus_position][0].set_attr_map({None: 'today_focus'})
@@ -198,7 +208,7 @@ CColumns is empty, or when set to an invalid index.
             return key
 
 
-def calendar_walker(view, firstweekday=0, weeknumbers=False):
+def calendar_walker(view, firstweekday=0, keys=None, weeknumbers=False):
     """creates a `Frame` filled with a `CalendarWalker`"""
     calendar.setfirstweekday(firstweekday)
     dnames = calendar.weekheader(2).split(' ')
@@ -208,7 +218,7 @@ def calendar_walker(view, firstweekday=0, weeknumbers=False):
         [(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in dnames],
         dividechars=1)
 
-    weeks = CalendarWalker(view, firstweekday, weeknumbers)
+    weeks = CalendarWalker(view, firstweekday, weeknumbers, keys=keys)
     box = CListBox(weeks)
     frame = urwid.Frame(box, header=dnames)
     return frame
@@ -242,9 +252,10 @@ class CListBox(urwid.ListBox):
 
 class CalendarWalker(urwid.SimpleFocusListWalker):
 
-    def __init__(self, view, firstweekday=0, weeknumbers=False):
+    def __init__(self, view, firstweekday=0, weeknumbers=False, keys=None):
         self.firstweekday = firstweekday
         self.weeknumbers = weeknumbers
+        self.keys = keys
         self.view = view
         weeks, focus_item = self._construct_month()
         self.today = focus_item  # the item number which contains today
@@ -326,7 +337,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             this_week.append((2, urwid.Text('{:2}'.format(getweeknumber(week[0])))))
 
         week = DateCColumns(this_week, view=self.view, dividechars=1,
-                            today=today)
+                            today=today, keys=self.keys)
         return week, bool(today)
 
     def _construct_month(self,
@@ -419,14 +430,14 @@ class U_Event(urwid.Text):
         self.set_title()
 
     def keypress(self, _, key):
-        if key == 'enter' and self.view is False:
+        if key in self.keys['view'] and self.view is False:
             self.view = True
             self.eventcolumn.view(self.event)
-        elif (key == 'enter' and self.view is True) or key == 'e':
+        elif (key in self.keys['view'] and self.view is True) or key == 'e':
             self.eventcolumn.edit(self.event)
-        elif key == 'd':
+        elif key in self.keys['delete']:
             self.toggle_delete()
-        elif key in ['left', 'up', 'down'] and self.view:
+        elif key in ['left', 'up', 'down'] and self.view:  # TODO XXX
             self.eventcolumn.destroy()
         return key
 
@@ -837,7 +848,8 @@ class ClassicView(Pane):
                                         deleted=self.deleted)
         weeks = calendar_walker(
             view=self, firstweekday=conf['locale']['firstweekday'],
-            weeknumbers=conf['locale']['weeknumbers']
+            weeknumbers=conf['locale']['weeknumbers'],
+            keys=conf['keybindings']
         )
         events = self.eventscolumn
         lwidth = 29 if conf['locale']['weeknumbers'] else 25
