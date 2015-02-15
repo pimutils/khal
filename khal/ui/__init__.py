@@ -496,6 +496,7 @@ class EventColumn(urwid.WidgetWrap):
         self.editor = False
         self.date = None
         self.eventcount = 0
+        self.current_event = None
 
         # TODO make this switch from pile to columns depending on terminal size
         self.events = EventList(eventcolumn=self)
@@ -506,6 +507,8 @@ class EventColumn(urwid.WidgetWrap):
         """Show events for the specified date."""
         self.date = date
         self.eventcount = self.events.update(date)
+        if self.current_event is not None:
+            self.view(self.current_event)
 
     def view(self, event):
         """
@@ -520,6 +523,7 @@ class EventColumn(urwid.WidgetWrap):
         self.container.contents.append(
             (EventDisplay(self.pane.conf, event, collection=self.pane.collection),
              self.container.options()))
+        self.current_event = event
 
     def edit(self, event):
         """create an EventEditor and display it
