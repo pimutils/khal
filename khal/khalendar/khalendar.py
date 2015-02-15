@@ -115,10 +115,8 @@ class Calendar(object):
         if event.etag is None:
             self.new(event)
         else:
-            self._storage.update(event.href, event, event.etag)
-            self._dbtool.update(event.vevent.to_ical(),
-                                event.href,
-                                etag=event.etag)
+            etag = self._storage.update(event.href, event, event.etag)
+            self._dbtool.update(event.vevent.to_ical(), event.href, etag=etag)
 
     def new(self, event):
         """save a new event to the database
