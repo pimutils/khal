@@ -793,16 +793,9 @@ class EventEditor(urwid.WidgetWrap, Config):
         self.pane.window.backtrack()
 
     def keypress(self, size, key):
-        if key in ['esc']:  # TODO XXX
-            if self.changed:
-                return
-            else:
-                return key
-        key = super(EventEditor, self).keypress(size, key)
-        if key in ['left', 'up']:  # TODO XXX
+        if key in ['esc'] and self.changed:  # TODO XXX
             return
-        else:
-            return key
+        return super(EventEditor, self).keypress(size, key)
 
 
 class ClassicView(Pane):
