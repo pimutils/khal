@@ -527,23 +527,16 @@ class EventColumn(urwid.WidgetWrap):
         :param event: event to edit
         :type event: khal.event.Event
         """
-        self.destroy()
         self.editor = True
         editor = EventEditor(self.pane, event)
 
         def teardown(data):
             self.editor = False
             self.update(self.date)
-            self.destroy()
         self.pane.window.open(editor, callback=teardown)
 
-    def destroy(self, _=None, refresh=False):
-        """
-        if an EventViewer or EventEditor is displayed, remove it
-        """
-        if refresh and self.date is not None:
-            self.update(self.date)
-        self.editor = False
+    def destroy(self):
+        """if an event is displayed, remove it"""
         if (len(self.container.contents) > 2 and
                 isinstance(self.container.contents[2][0], EventDisplay)):
             self.container.contents.pop()
