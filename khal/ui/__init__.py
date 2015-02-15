@@ -38,6 +38,10 @@ class DateConversionError(Exception):
     pass
 
 
+class Config(object):
+    keys = None
+
+
 class AccountList(urwid.WidgetWrap):
 
     """used as the popup in the AccountChooser popup"""
@@ -110,7 +114,7 @@ class AccountChooser(urwid.PopUpLauncher):
                              lambda button: self.open_pop_up())
 
 
-class Date(urwid.Text):
+class Date(urwid.Text, Config):
 
     """used in the main calendar for dates (a number)"""
 
@@ -129,14 +133,14 @@ class Date(urwid.Text):
         return True
 
     def keypress(self, _, key):
-        if key in ['n']:
+        if key in self.keys['new']:  # TODO XXX
             self.view.new_event(self.date)
             return 'tab'  # TODO return next
         else:
             return key
 
 
-class DateCColumns(CColumns):
+class DateCColumns(CColumns, Config):
 
     """container for one week worth of dates
     which are horizontally aligned
@@ -177,9 +181,18 @@ CColumns is empty, or when set to an invalid index.
     def keypress(self, size, key):
         """only leave calendar area on pressing 'tab' or 'enter'"""
 
+        if key in self.keys['left']:
+            key = 'left'
+        elif key in self.keys['up']:
+            key = 'up'
+        elif key in self.keys['right']:
+            key = 'right'
+        elif key in self.keys['down']:
+            key = 'down'
+
         old_pos = self.focus_position
         key = super(DateCColumns, self).keypress(size, key)
-        if key in ['tab', 'enter']:
+        if key in self.keys['view']:
             self._old_attr_map = self.contents[self.focus_position][0].get_attr_map()
             self._old_pos = old_pos
             self.contents[self.focus_position][0].set_attr_map({None: 'today_focus'})
@@ -214,13 +227,16 @@ def calendar_walker(view, firstweekday=0, weeknumbers=False):
     return frame
 
 
-class CListBox(urwid.ListBox):
+class CListBox(urwid.ListBox, Config):
     """our custom version of ListBox for containing CalendarWalker
 
     it should containe a `CalendarWalker` which it autoextends on rendering,
     if needed
     """
     init = True
+
+    def __init__(self, elements):
+        super(CListBox, self).__init__(elements)
 
     def render(self, size, focus=False):
         if self.init:
@@ -232,7 +248,7 @@ class CListBox(urwid.ListBox):
         return super(CListBox, self).render(size, focus)
 
     def keypress(self, size, key):
-        if key in ['t']:
+        if key in self.keys['today']:
             self.body.set_focus(self.body.today)
             week = self.body[self.body.today]
             week.set_focus(week.today)
@@ -240,7 +256,7 @@ class CListBox(urwid.ListBox):
         return super(CListBox, self).keypress(size, key)
 
 
-class CalendarWalker(urwid.SimpleFocusListWalker):
+class CalendarWalker(urwid.SimpleFocusListWalker, Config):
 
     def __init__(self, view, firstweekday=0, weeknumbers=False):
         self.firstweekday = firstweekday
@@ -376,7 +392,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             return weeks, focus_item
 
 
-class U_Event(urwid.Text):
+class U_Event(urwid.Text, Config):
 
     def __init__(self, event, this_date=None, conf=None,
                  eventcolumn=None):
@@ -419,14 +435,14 @@ class U_Event(urwid.Text):
         self.set_title()
 
     def keypress(self, _, key):
-        if key == 'enter' and self.view is False:
+        if key in self.keys['view'] and self.view is False:
             self.view = True
             self.eventcolumn.view(self.event)
-        elif (key == 'enter' and self.view is True) or key == 'e':
+        elif (key in self.keys['view'] and self.view is True) or key in self.keys['view']:
             self.eventcolumn.edit(self.event)
-        elif key == 'd':
+        elif key in self.keys['delete']:
             self.toggle_delete()
-        elif key in ['left', 'up', 'down'] and self.view:
+        elif key in ['left', 'up', 'down'] and self.view:  # TODO XXX
             self.eventcolumn.destroy()
         return key
 
@@ -650,7 +666,7 @@ class EventDisplay(EventViewer):
         self._w = urwid.Filler(pile, valign='top')
 
 
-class EventEditor(EventViewer):
+class EventEditor(EventViewer, Config):
 
     """
     Widget for event Editing
@@ -806,14 +822,14 @@ class EventEditor(EventViewer):
         self.cancel(refresh=True)
 
     def keypress(self, size, key):
-        if key in ['esc']:
+        if key in ['esc']:  # TODO XXX
             if self.changed:
                 return
             else:
                 self.cancel()
                 return
         key = super(EventEditor, self).keypress(size, key)
-        if key in ['left', 'up']:
+        if key in ['left', 'up']:  # TODO XXX
             return
         else:
             return key
@@ -835,9 +851,10 @@ class ClassicView(Pane):
         self.eventscolumn = EventColumn(conf=conf,
                                         collection=collection,
                                         deleted=self.deleted)
+        Config.keys = conf['keybindings']
         weeks = calendar_walker(
             view=self, firstweekday=conf['locale']['firstweekday'],
-            weeknumbers=conf['locale']['weeknumbers']
+            weeknumbers=conf['locale']['weeknumbers'],
         )
         events = self.eventscolumn
         lwidth = 29 if conf['locale']['weeknumbers'] else 25

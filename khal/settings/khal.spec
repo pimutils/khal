@@ -69,6 +69,34 @@ longdatetimeformat = string(default='%d.%m.%Y %H:%M')
 # iso weeknumbers, they only work properly if `firstweekday` is set to 0
 weeknumbers = weeknumbers(default='off')
 
+# keybindings for `ikhal` are set here. You can bind more than one key
+# (combination) to a command by supplying a comma-seperated list of keys.
+[keybindings]
+
+# move the cursor up (in the calendar browser)
+up = force_list(default=list('up', 'k'))
+
+# move the cursor down (in the calendar browser)
+down = force_list(default=list('down', 'j'))
+
+# move the cursor right (in the calendar browser)
+right = force_list(default=list('right', 'l'))
+
+# move the cursor left (in the calendar browser)
+left = force_list(default=list('left', 'h'))
+
+# create a new event on the selected date
+new = force_list(default=list('n'))
+
+# delete the currently selected event
+delete = force_list(default=list('d'))
+
+# show detailed or edit (if details are already show) the currently selected event
+view = force_list(default=list('enter', 'tab'))
+
+# focus the calendar browser on today
+today = force_list(default=list('t'))
+
 # The default section begins with a **[default]** tag. Some default values and
 # behaviours are set here.
 [default]

@@ -15,7 +15,7 @@ PATH = __file__.rsplit('/', 1)[0] + '/configs/'
 class TestSettings(object):
     def test_simple_config(self):
         config = get_config(PATH + 'simple.conf')
-        assert config == {
+        comp_config = {
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False, 'color': ''},
                 'work': {'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False, 'color': ''},
@@ -41,6 +41,8 @@ class TestSettings(object):
                 'print_new': 'False',
             }
         }
+        for key in comp_config:
+            assert config[key] == comp_config[key]
 
     def test_nocalendars(self):
         with pytest.raises(InvalidSettingsError):
@@ -48,7 +50,7 @@ class TestSettings(object):
 
     def test_small(self):
         config = get_config(PATH + 'small.conf')
-        assert config == {
+        comp_config = {
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'), 'color': 'dark green', 'readonly': False},
                 'work': {'path': os.path.expanduser('~/.calendars/work/'), 'readonly': True, 'color': ''}},
@@ -73,6 +75,8 @@ class TestSettings(object):
                 'show_all_days': False,
             }
         }
+        for key in comp_config:
+            assert config[key] == comp_config[key]
 
     def test_old_config(self, tmpdir):
         old_config = """
