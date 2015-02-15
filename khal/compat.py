@@ -36,14 +36,18 @@ def to_bytes(string, *args, **kwargs):
 
 
 if sys.version_info[0] == 2:  # pragma: nocover
+    VERSION = 2
     unicode_type = unicode
     bytes_type = str
     to_native = to_bytes
-    iteritems = lambda d, *args, **kwargs: iter(d.iteritems(*args, **kwargs))
-    VERSION = 2
+
+    def iteritems(d, *args, **kwargs):
+        return iter(d.iteritems(*args, **kwargs))
 else:  # pragma: nocover
+    VERSION = 3
     unicode_type = str
     bytes_type = bytes
     to_native = to_unicode
-    iteritems = lambda d, *args, **kwargs: iter(d.items(*args, **kwargs))
-    VERSION = 3
+
+    def iteritems(d, *args, **kwargs):
+        return iter(d.items(*args, **kwargs))

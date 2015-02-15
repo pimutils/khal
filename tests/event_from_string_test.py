@@ -27,6 +27,7 @@ kwargs_de = {
     'default_timezone': pytz.timezone('Europe/Berlin'),
 }
 
+
 def _create_testcases(*cases):
     return [(userinput, to_bytes('\r\n'.join(output) + '\r\n', 'utf-8'))
             for userinput, output in cases]

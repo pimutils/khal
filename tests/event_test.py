@@ -1,4 +1,5 @@
- # vim: set fileencoding=utf-8 :
+# vim: set fileencoding=utf-8 :
+
 import datetime
 import textwrap
 

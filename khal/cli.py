@@ -27,7 +27,8 @@ import textwrap
 try:
     from setproctitle import setproctitle
 except ImportError:
-    setproctitle = lambda x: None
+    def setproctitle(x):
+        pass
 
 import click
 
@@ -45,7 +46,10 @@ days_option = click.option('--days', default=None, type=int,
 events_option = click.option('--events', default=None, type=int,
                              help='How many events to include.')
 dates_arg = click.argument('dates', nargs=-1)
-time_args = lambda f: dates_arg(events_option(days_option(f)))
+
+
+def time_args(f):
+    return dates_arg(events_option(days_option(f)))
 
 
 def _calendar_select_callback(ctx, option, calendars):

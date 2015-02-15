@@ -19,7 +19,12 @@ def test_delete_last_word():
 
         (u'Füü Bär.(Füü)', u'Füü Bär.', 3),
         (u'Füü Bär1', u'', 2),
-        (u'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam volest.', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore ', 10)
+        (u'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, '
+         'sed diam nonumy eirmod tempor invidunt ut labore et dolore '
+         'magna aliquyam erat, sed diam volest.',
+         'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, '
+         'sed diam nonumy eirmod tempor invidunt ut labore ',
+         10)
     ]
 
     for org, short, number in tests:

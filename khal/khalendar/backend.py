@@ -316,7 +316,8 @@ class SQLiteDb(object):
                 stuple = (start_shift, start_shift + duration, href_rec_inst, rec_inst)
             else:
                 recs_sql_s = (
-                    'INSERT OR REPLACE INTO {0} (dtstart, dtend, href, hrefrecuid, recuid, calendar)'
+                    'INSERT OR REPLACE INTO {0} '
+                    '(dtstart, dtend, href, hrefrecuid, recuid, calendar)'
                     'VALUES (?, ?, ?, ?, ?, ?);'.format(recs_table))
                 stuple = (dbstart, dbend, href, href_rec_inst, rec_inst, self.calendar)
             self.sql_ex(recs_sql_s, stuple)
