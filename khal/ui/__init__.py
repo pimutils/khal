@@ -23,6 +23,7 @@
 import calendar
 from datetime import date, datetime, time, timedelta
 import signal
+import sys
 
 import urwid
 
@@ -867,4 +868,14 @@ def start_pane(pane, callback, header=''):
         raise urwid.ExitMainLoop()
 
     signal.signal(signal.SIGINT, ctrl_c)
-    loop.run()
+    try:
+        loop.run()
+    except Exception:
+        import traceback
+        tb = traceback.format_exc()
+        try:  # Try to leave terminal in usable state
+            loop.stop()
+        except Exception:
+            pass
+        print(tb)
+        sys.exit(1)
