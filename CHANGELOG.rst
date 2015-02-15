@@ -14,6 +14,7 @@ not yet released
 * fixed several bugs relating to events with unknown timezones but UNTIL, RDATE
   or EXDATE properties that are in Zulu time (thanks to Michele Baldessari for
   reporting those)
+* new command `search` allows to search for events
 
 
 0.4.0
