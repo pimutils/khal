@@ -686,26 +686,31 @@ class EventEditor(urwid.WidgetWrap, Config):
         except KeyError:
             rrule = None
         self.recursioneditor = RecursionEditor(rrule)
-        self.summary = Edit(
-            edit_text=event.vevent['SUMMARY'])
+        self.summary = Edit(edit_text=event.vevent['SUMMARY'])
+
+        divider = urwid.Divider(' ')
+
         # TODO warning message if len(self.collection.writable_names) == 0
         self.accountchooser = AccountChooser(self.event.calendar,
                                              self.collection.writable_names)
-        accounts = CColumns([(9, urwid.Text(u'Calendar: ')),
-                             self.accountchooser])
         self.description = Edit(caption=u'Description: ',
                                 edit_text=self.description)
         self.location = Edit(caption=u'Location: ',
                              edit_text=self.location)
-        save = urwid.Button(u'Save', on_press=self.save)
-
-        self.pile = urwid.ListBox(CSimpleFocusListWalker(
-            [self.summary,
-             accounts,
-             self.startendeditor,
-             self.recursioneditor, self.description,
-             self.location, urwid.Text(''), save
-             ]))
+        self.pile = urwid.ListBox(CSimpleFocusListWalker([
+            urwid.Columns([
+                self.summary,
+                self.accountchooser
+            ], dividechars=2),
+            divider,
+            self.description,
+            self.location,
+            divider,
+            self.startendeditor,
+            self.recursioneditor,
+            divider,
+            urwid.Button(u'Save', on_press=self.save)
+        ]))
 
         urwid.WidgetWrap.__init__(self, self.pile)
 
