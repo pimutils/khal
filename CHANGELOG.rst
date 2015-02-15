@@ -15,6 +15,8 @@ not yet released
   or EXDATE properties that are in Zulu time (thanks to Michele Baldessari for
   reporting those)
 * new command `search` allows to search for events
+* user changeable keybindings in ikhal, with hjkl as default alternatives for
+  arrows in calendar browser, see documentation for more details
 
 
 0.4.0
