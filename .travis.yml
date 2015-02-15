@@ -17,3 +17,8 @@ install: pip install tox
 
 script:
     - ./.travis.run.sh
+
+matrix:
+    exclude:
+        - python: pypy
+          env: BUILD=style
