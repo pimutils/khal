@@ -270,12 +270,14 @@ END:VEVENT
 END:VCALENDAR
 """
 
-event_rrule_this_and_future_allday = event_rrule_this_and_future_allday_temp.format(20140708, 20140709)
+event_rrule_this_and_future_allday = \
+    event_rrule_this_and_future_allday_temp.format(20140708, 20140709)
 
 
 def test_event_rrule_this_and_future_allday():
     dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
-    dbi.update(event_rrule_this_and_future_allday, href='rrule_this_and_future_allday.ics', etag='abcd')
+    dbi.update(event_rrule_this_and_future_allday,
+               href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
     events = dbi.get_allday_range(date(2014, 4, 30), date(2014, 9, 26))
     events = sorted(events, key=lambda x: x.start)
@@ -304,7 +306,8 @@ def test_event_rrule_this_and_future_allday_prior():
     event_rrule_this_and_future_allday_prior = \
         event_rrule_this_and_future_allday_temp.format(20140705, 20140706)
     dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
-    dbi.update(event_rrule_this_and_future_allday_prior, href='rrule_this_and_future_allday.ics', etag='abcd')
+    dbi.update(event_rrule_this_and_future_allday_prior,
+               href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
     events = dbi.get_allday_range(date(2014, 4, 30), date(2014, 9, 26))
     events = sorted(events, key=lambda x: x.start)
@@ -356,7 +359,8 @@ END:VCALENDAR"""
 
 def test_event_rrule_multi_this_and_future_allday():
     dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
-    dbi.update(event_rrule_multi_this_and_future_allday, href='event_rrule_multi_this_and_future_allday.ics', etag='abcd')
+    dbi.update(event_rrule_multi_this_and_future_allday,
+               href='event_rrule_multi_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('event_rrule_multi_this_and_future_allday.ics', 'abcd')]
     events = dbi.get_allday_range(start=date(2014, 4, 30), end=date(2014, 9, 26))
     events = sorted(events, key=lambda x: x.start)
