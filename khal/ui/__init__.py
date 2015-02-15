@@ -532,6 +532,10 @@ class EventColumn(urwid.WidgetWrap):
         :param event: event to edit
         :type event: khal.event.Event
         """
+        if self.editor:
+            self.pane.window.backtrack()
+
+        assert not self.editor
         self.editor = True
         editor = EventEditor(self.pane, event)
         current_day = self.container.contents[0][0]
