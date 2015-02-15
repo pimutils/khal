@@ -39,10 +39,6 @@ class DateConversionError(Exception):
     pass
 
 
-class Config(object):
-    keys = None
-
-
 class AccountList(urwid.WidgetWrap):
 
     """used as the popup in the AccountChooser popup"""
@@ -115,13 +111,13 @@ class AccountChooser(urwid.PopUpLauncher):
                              lambda button: self.open_pop_up())
 
 
-class Date(urwid.Text, Config):
+class Date(urwid.Text):
 
     """used in the main calendar for dates (a number)"""
 
-    def __init__(self, date, view):
+    def __init__(self, date, pane):
         self.date = date
-        self.view = view
+        self.pane = pane
         if date.today == date:
             urwid.AttrMap(super(Date, self).__init__(str(date.day).rjust(2)),
                           None,
@@ -134,14 +130,14 @@ class Date(urwid.Text, Config):
         return True
 
     def keypress(self, _, key):
-        if key in self.keys['new']:  # TODO XXX
-            self.view.new_event(self.date)
+        if key in self.pane.conf['keybindings']['new']:  # TODO XXX
+            self.pane.new_event(self.date)
             return 'tab'  # TODO return next
         else:
             return key
 
 
-class DateCColumns(CColumns, Config):
+class DateCColumns(CColumns):
 
     """container for one week worth of dates
     which are horizontally aligned
@@ -149,11 +145,12 @@ class DateCColumns(CColumns, Config):
     TODO: rename, awful name
 
     focus can only move away by pressing 'TAB',
-    calls 'view.show_date' on every focus change (see below for details)
+    calls 'pane.show_date' on every focus change (see below for details)
     """
 
-    def __init__(self, widget_list, view=None, today=None, **kwargs):
-        self.view = view
+    def __init__(self, widget_list, pane=None, today=None, **kwargs):
+        self.pane = pane
+        self.keys = pane.conf['keybindings']
         self.today = today
         # we need the next two attributes to for attribute resetting when a
         # cell regains focus after having lost it the the events column before
@@ -163,9 +160,9 @@ class DateCColumns(CColumns, Config):
                                            **kwargs)
 
     def _set_focus_position(self, position):
-        """calls view.show_date before calling super()._set_focus_position"""
+        """calls pane.show_date before calling super()._set_focus_position"""
 
-        self.view.show_date(
+        self.pane.show_date(
             self.contents[position][0].original_widget.date)
         super(DateCColumns, self)._set_focus_position(position)
 
@@ -179,13 +176,13 @@ class DateCColumns(CColumns, Config):
     def keypress(self, size, key):
         """only leave calendar area on pressing 'tab' or 'enter'"""
 
-        if key in self.keys['left']:
+        if key in self.pane.conf['keybindings']['left']:
             key = 'left'
-        elif key in self.keys['up']:
+        elif key in self.pane.conf['keybindings']['up']:
             key = 'up'
-        elif key in self.keys['right']:
+        elif key in self.pane.conf['keybindings']['right']:
             key = 'right'
-        elif key in self.keys['down']:
+        elif key in self.pane.conf['keybindings']['down']:
             key = 'down'
 
         old_pos = self.focus_position
@@ -209,7 +206,7 @@ class DateCColumns(CColumns, Config):
             return key
 
 
-def calendar_walker(view, firstweekday=0, weeknumbers=False):
+def calendar_walker(pane, firstweekday=0, weeknumbers=False):
     """creates a `Frame` filled with a `CalendarWalker`"""
     calendar.setfirstweekday(firstweekday)
     dnames = calendar.weekheader(2).split(' ')
@@ -219,13 +216,13 @@ def calendar_walker(view, firstweekday=0, weeknumbers=False):
         [(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in dnames],
         dividechars=1)
 
-    weeks = CalendarWalker(view, firstweekday, weeknumbers)
+    weeks = CalendarWalker(pane, firstweekday, weeknumbers)
     box = CListBox(weeks)
     frame = urwid.Frame(box, header=dnames)
     return frame
 
 
-class CListBox(urwid.ListBox, Config):
+class CListBox(urwid.ListBox):
     """our custom version of ListBox for containing CalendarWalker
 
     it should containe a `CalendarWalker` which it autoextends on rendering,
@@ -233,8 +230,9 @@ class CListBox(urwid.ListBox, Config):
     """
     init = True
 
-    def __init__(self, elements):
-        super(CListBox, self).__init__(elements)
+    def __init__(self, walker):
+        self.keys = walker.pane.conf['keybindings']
+        super(CListBox, self).__init__(walker)
 
     def render(self, size, focus=False):
         if self.init:
@@ -254,12 +252,12 @@ class CListBox(urwid.ListBox, Config):
         return super(CListBox, self).keypress(size, key)
 
 
-class CalendarWalker(urwid.SimpleFocusListWalker, Config):
+class CalendarWalker(urwid.SimpleFocusListWalker):
 
-    def __init__(self, view, firstweekday=0, weeknumbers=False):
+    def __init__(self, pane, firstweekday=0, weeknumbers=False):
         self.firstweekday = firstweekday
         self.weeknumbers = weeknumbers
-        self.view = view
+        self.pane = pane
         weeks, focus_item = self._construct_month()
         self.today = focus_item  # the item number which contains today
         urwid.SimpleFocusListWalker.__init__(self, weeks)
@@ -330,16 +328,16 @@ class CalendarWalker(urwid.SimpleFocusListWalker, Config):
         today = None
         for number, day in enumerate(week):
             if day == date.today():
-                this_week.append((2, urwid.AttrMap(Date(day, self.view),
+                this_week.append((2, urwid.AttrMap(Date(day, self.pane),
                                                    'today', 'today_focus')))
                 today = number + 1
             else:
-                this_week.append((2, urwid.AttrMap(Date(day, self.view),
+                this_week.append((2, urwid.AttrMap(Date(day, self.pane),
                                                    None, 'reveal focus')))
         if self.weeknumbers == 'right':
             this_week.append((2, urwid.Text('{:2}'.format(getweeknumber(week[0])))))
 
-        week = DateCColumns(this_week, view=self.view, dividechars=1,
+        week = DateCColumns(this_week, pane=self.pane, dividechars=1,
                             today=today)
         return week, bool(today)
 
@@ -390,10 +388,9 @@ class CalendarWalker(urwid.SimpleFocusListWalker, Config):
             return weeks, focus_item
 
 
-class U_Event(urwid.Text, Config):
+class U_Event(urwid.Text):
 
-    def __init__(self, event, this_date=None, conf=None,
-                 eventcolumn=None):
+    def __init__(self, event, this_date=None, eventcolumn=None):
         """
         representation of an event in EventList
 
@@ -402,9 +399,9 @@ class U_Event(urwid.Text, Config):
         """
         self.event = event
         self.this_date = this_date
-        self.conf = conf
         self.eventcolumn = eventcolumn
-        self.view = False
+        self.conf = eventcolumn.pane.conf
+        self.is_viewed = False
         super(U_Event, self).__init__(self.event.compact(self.this_date))
         self.set_title()
 
@@ -433,14 +430,15 @@ class U_Event(urwid.Text, Config):
         self.set_title()
 
     def keypress(self, _, key):
-        if key in self.keys['view'] and self.view is False:
-            self.view = True
+        binds = self.conf['keybindings']
+        if key in binds['view'] and not self.is_viewed:
+            self.is_viewed = True
             self.eventcolumn.view(self.event)
-        elif (key in self.keys['view'] and self.view is True) or key in self.keys['view']:
+        elif key in binds['view'] and self.is_viewed:
             self.eventcolumn.edit(self.event)
-        elif key in self.keys['delete']:
+        elif key in binds['delete']:
             self.toggle_delete()
-        elif key in ['left', 'up', 'down'] and self.view:  # TODO XXX
+        elif key in ['left', 'up', 'down'] and self.is_viewed:  # TODO XXX
             self.eventcolumn.destroy()
         return key
 
@@ -650,7 +648,7 @@ class EventDisplay(urwid.WidgetWrap):
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
 
 
-class EventEditor(urwid.WidgetWrap, Config):
+class EventEditor(urwid.WidgetWrap):
 
     """
     Widget for event Editing
@@ -828,10 +826,9 @@ class ClassicView(Pane):
         self.conf = conf
         self.collection = collection
         self.deleted = []
-        Config.keys = conf['keybindings']
         self.eventscolumn = EventColumn(pane=self)
         weeks = calendar_walker(
-            view=self, firstweekday=conf['locale']['firstweekday'],
+            pane=self, firstweekday=conf['locale']['firstweekday'],
             weeknumbers=conf['locale']['weeknumbers'],
         )
         events = self.eventscolumn
