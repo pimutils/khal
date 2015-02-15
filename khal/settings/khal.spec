@@ -94,6 +94,8 @@ delete = force_list(default=list('d'))
 # show detailed or edit (if details are already show) the currently selected event
 view = force_list(default=list('enter', 'tab'))
 
+# focus the calendar browser on today
+today = force_list(default=list('t'))
 
 # The default section begins with a **[default]** tag. Some default values and
 # behaviours are set here.

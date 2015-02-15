@@ -129,7 +129,7 @@ class Date(urwid.Text):
         return True
 
     def keypress(self, _, key):
-        if key in ['n']:
+        if key in ['n']:  # TODO XXX
             self.view.new_event(self.date)
             return 'tab'  # TODO return next
         else:
@@ -219,7 +219,7 @@ def calendar_walker(view, firstweekday=0, keys=None, weeknumbers=False):
         dividechars=1)
 
     weeks = CalendarWalker(view, firstweekday, weeknumbers, keys=keys)
-    box = CListBox(weeks)
+    box = CListBox(weeks, keys=keys)
     frame = urwid.Frame(box, header=dnames)
     return frame
 
@@ -232,6 +232,10 @@ class CListBox(urwid.ListBox):
     """
     init = True
 
+    def __init__(self, elements, keys=None):
+        self.keys = keys
+        super(CListBox, self).__init__(elements)
+
     def render(self, size, focus=False):
         if self.init:
             while 'bottom' in self.ends_visible(size):
@@ -242,7 +246,7 @@ class CListBox(urwid.ListBox):
         return super(CListBox, self).render(size, focus)
 
     def keypress(self, size, key):
-        if key in ['t']:
+        if key in self.keys['today']:
             self.body.set_focus(self.body.today)
             week = self.body[self.body.today]
             week.set_focus(week.today)
@@ -433,7 +437,7 @@ class U_Event(urwid.Text):
         if key in self.keys['view'] and self.view is False:
             self.view = True
             self.eventcolumn.view(self.event)
-        elif (key in self.keys['view'] and self.view is True) or key == 'e':
+        elif (key in self.keys['view'] and self.view is True) or key in self.keys['view']:
             self.eventcolumn.edit(self.event)
         elif key in self.keys['delete']:
             self.toggle_delete()
@@ -817,14 +821,14 @@ class EventEditor(EventViewer):
         self.cancel(refresh=True)
 
     def keypress(self, size, key):
-        if key in ['esc']:
+        if key in ['esc']:  # TODO XXX
             if self.changed:
                 return
             else:
                 self.cancel()
                 return
         key = super(EventEditor, self).keypress(size, key)
-        if key in ['left', 'up']:
+        if key in ['left', 'up']:  # TODO XXX
             return
         else:
             return key
