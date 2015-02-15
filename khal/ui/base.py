@@ -200,7 +200,11 @@ class Window(urwid.Frame):
             self.open(HelpPane(self._get_current_pane()))
 
     def _update(self, pane):
-        self.header.w.set_text(u'%s | %s' % (self._title, pane.title))
+        title = pane.title
+        if self._title:
+            title += ' | '
+            title += self._title
+        self.header.w.set_text(title)
         self.set_body(pane)
 
     def _get_current_pane(self):

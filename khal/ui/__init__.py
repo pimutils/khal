@@ -544,6 +544,7 @@ class EventColumn(urwid.WidgetWrap):
             ('weight', 1, current_day)
         ], dividechars=4, focus_column=0)
         new_pane.title = editor.title
+        new_pane.get_keys = editor.get_keys
 
         def teardown(data):
             self.editor = False
@@ -718,6 +719,11 @@ class EventEditor(urwid.WidgetWrap, Config):
     def title(self):  # Window title
         return 'Edit: {}'.format(self.summary.get_edit_text())
 
+    def get_keys(self):
+        return [(['arrows'], 'navigate through properties'),
+                (['enter'], 'edit property'),
+                (['esc'], 'abort')]
+
     @classmethod
     def selectable(cls):
         return True
@@ -863,10 +869,9 @@ class ClassicView(Pane):
             self.collection.delete(href, etag, account)
 
 
-def start_pane(pane, callback, header=''):
+def start_pane(pane, callback, program_info=''):
     """Open the user interface with the given initial pane."""
-    frame = Window(header=header,
-                   footer='arrows: navigate, enter: select, q: quit, ?: help')
+    frame = Window(footer=program_info + ' | q: quit, ?: help')
     frame.open(pane, callback)
     loop = urwid.MainLoop(frame, Window.PALETTE,
                           unhandled_input=frame.on_key_press,
