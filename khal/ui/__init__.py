@@ -632,12 +632,11 @@ class EventEditor(urwid.WidgetWrap):
 
         # TODO warning message if len(self.collection.writable_names) == 0
 
-        def decorate_choice(name):
-            c = self.collection._calnames[name]
-            return (c.color or '', name)
+        def decorate_choice(c):
+            return (c.color or '', c.name)
 
-        self.accountchooser = Choice(
-            [c.name for c in self.collection.calendars if not c.readonly],
+        self.calendar_chooser = Choice(
+            [c for c in self.collection.calendars if not c.readonly],
             self.event.calendar,
             decorate_choice
         )
@@ -648,7 +647,7 @@ class EventEditor(urwid.WidgetWrap):
         self.pile = urwid.ListBox(CSimpleFocusListWalker([
             urwid.Columns([
                 self.summary,
-                self.accountchooser
+                self.calendar_chooser
             ], dividechars=2),
             divider,
             self.description,
@@ -688,7 +687,7 @@ class EventEditor(urwid.WidgetWrap):
                 self.event.vevent.get('LOCATION', ''):
             return True
 
-        if self.startendeditor.changed or self.accountchooser.changed:
+        if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
         return False
 
@@ -716,7 +715,7 @@ class EventEditor(urwid.WidgetWrap):
                             self.startendeditor.newstart)
                 self.event.vevent.add('DURATION', duration)
 
-        # TODO self.newaccount = self.accountchooser.account ?
+        # TODO self.newaccount = self.calendar_chooser.active ?
 
     def save(self, button):
         """
@@ -743,11 +742,11 @@ class EventEditor(urwid.WidgetWrap):
             self.event.allday = self.startendeditor.allday
             if self.event.etag is None:  # has not been saved before
                 # TODO look for better way to detect this
-                self.event.calendar = self.accountchooser.account
+                self.event.calendar = self.calendar_chooser.active
                 self.collection.new(self.event)
-            elif self.accountchooser.changed:
+            elif self.calendar_chooser.changed:
                 self.collection.change_collection(self.event,
-                                                  self.accountchooser.account)
+                                                  self.calendar_chooser.active)
             else:
                 self.collection.update(self.event)
 
