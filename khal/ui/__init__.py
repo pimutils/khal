@@ -328,9 +328,12 @@ class U_Event(urwid.Text):
         self.this_date = this_date
         self.eventcolumn = eventcolumn
         self.conf = eventcolumn.pane.conf
-        self.is_viewed = False
         super(U_Event, self).__init__(self.event.compact(self.this_date))
         self.set_title()
+
+    @property
+    def is_viewed(self):
+        return self.event is self.eventcolumn.current_event
 
     @classmethod
     def selectable(cls):
@@ -360,15 +363,15 @@ class U_Event(urwid.Text):
 
     def keypress(self, _, key):
         binds = self.conf['keybindings']
-        if key in binds['view'] and not self.is_viewed:
-            self.is_viewed = True
-            self.eventcolumn.view(self.event)
-        elif key in binds['view'] and self.is_viewed:
-            self.eventcolumn.edit(self.event)
+        if key in binds['view']:
+            if self.is_viewed:
+                self.eventcolumn.edit(self.event)
+            else:
+                self.eventcolumn.current_event = self.event
         elif key in binds['delete']:
             self.toggle_delete()
-        elif key in ['left', 'up', 'down'] and self.is_viewed:  # TODO XXX
-            self.eventcolumn.destroy()
+        elif key in ['left', 'up', 'down']:  # TODO XXX
+            self.eventcolumn.current_event = None
         return key
 
 
@@ -422,29 +425,25 @@ class EventColumn(urwid.WidgetWrap):
         self.pane = pane
         self.divider = urwid.Divider('-')
         self.editor = False
-        self.date = None
         self.eventcount = 0
-        self.current_event = None
+        self._current_date = None
 
         # TODO make this switch from pile to columns depending on terminal size
         self.events = EventList(eventcolumn=self)
         self.container = CPile([self.events])
         urwid.WidgetWrap.__init__(self, self.container)
 
-    def update(self, date):
-        """Show events for the specified date."""
-        self.date = date
-        self.eventcount = self.events.update(date)
-        self.view(self.current_event)
+    @property
+    def current_event(self):
+        l = len(self.container.contents)
+        assert l > 0
+        if l > 2:
+            return self.container.contents[-1][0].event
 
-    def view(self, event):
-        """
-        show an event's details
-
-        :param event: event to view
-        :type event: khal.event.Event
-        """
-        self.destroy()
+    @current_event.setter
+    def current_event(self, event):
+        while len(self.container.contents) > 1:
+            self.container.contents.pop()
         if not event:
             return
         self.container.contents.append((self.divider,
@@ -452,7 +451,16 @@ class EventColumn(urwid.WidgetWrap):
         self.container.contents.append(
             (EventDisplay(self.pane.conf, event, collection=self.pane.collection),
              self.container.options()))
-        self.current_event = event
+
+    @property
+    def current_date(self):
+        return self._current_date
+
+    @current_date.setter
+    def current_date(self, date):
+        self._current_date = date
+        self.eventcount = self.events.update(date)
+        self.current_event = self.current_event
 
     def edit(self, event):
         """create an EventEditor and display it
@@ -482,14 +490,8 @@ class EventColumn(urwid.WidgetWrap):
 
         def teardown(data):
             self.editor = False
-            self.update(self.date)
+            self.current_date = self.current_date
         self.pane.window.open(new_pane, callback=teardown)
-
-    def destroy(self):
-        """if an event is displayed, remove it"""
-        while len(self.container.contents) > 1:
-            self.container.contents.pop()
-        self.current_event = None
 
     def new(self, date):
         """create a new event on date
@@ -538,6 +540,7 @@ class EventDisplay(urwid.WidgetWrap):
     def __init__(self, conf, event, collection=None):
         self.conf = conf
         self.collection = collection
+        self.event = event
         divider = urwid.Divider(' ')
 
         lines = []
@@ -799,7 +802,7 @@ class ClassicView(Pane):
         rval = super(Pane, self).render(size, focus)
         if self.init:
             # starting with today's events
-            self.eventscolumn.update(date.today())
+            self.eventscolumn.current_date = date.today()
             self.init = False
         return rval
 
@@ -813,7 +816,7 @@ class ClassicView(Pane):
                 ]
 
     def show_date(self, date):
-        self.eventscolumn.update(date)
+        self.eventscolumn.current_date = date
 
     def new_event(self, date):
         self.eventscolumn.new(date)
