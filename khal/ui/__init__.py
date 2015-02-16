@@ -104,13 +104,13 @@ class DateCColumns(CColumns):
     def keypress(self, size, key):
         """only leave calendar area on pressing 'tab' or 'enter'"""
 
-        if key in self.pane.conf['keybindings']['left']:
+        if key in self.keys['left']:
             key = 'left'
-        elif key in self.pane.conf['keybindings']['up']:
+        elif key in self.keys['up']:
             key = 'up'
-        elif key in self.pane.conf['keybindings']['right']:
+        elif key in self.keys['right']:
             key = 'right'
-        elif key in self.pane.conf['keybindings']['down']:
+        elif key in self.keys['down']:
             key = 'down'
 
         old_pos = self.focus_position
@@ -363,6 +363,7 @@ class U_Event(urwid.Text):
 
     def keypress(self, _, key):
         binds = self.conf['keybindings']
+
         if key in binds['view']:
             if self.is_viewed:
                 self.eventcolumn.edit(self.event)
@@ -370,7 +371,7 @@ class U_Event(urwid.Text):
                 self.eventcolumn.current_event = self.event
         elif key in binds['delete']:
             self.toggle_delete()
-        elif key in ['left', 'up', 'down']:  # TODO XXX
+        elif key in binds['left'] + binds['up'] + binds['down']:
             self.eventcolumn.current_event = None
         return key
 
