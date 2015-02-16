@@ -558,10 +558,9 @@ class EventColumn(urwid.WidgetWrap):
 
     def destroy(self):
         """if an event is displayed, remove it"""
-        if (len(self.container.contents) > 2 and
-                isinstance(self.container.contents[2][0], EventDisplay)):
+        while len(self.container.contents) > 1:
             self.container.contents.pop()
-            self.container.contents.pop()
+        self.current_event = None
 
     def new(self, date):
         """create a new event on date
