@@ -190,7 +190,6 @@ class DateCColumns(CColumns):
         if key in self.keys['view']:
             self._old_attr_map = self.contents[self.focus_position][0].get_attr_map()
             self._old_pos = old_pos
-            self.contents[self.focus_position][0].set_attr_map({None: 'today focus'})
             return 'right'
         elif self._old_attr_map:
             self.contents[self._old_pos][0].set_attr_map(self._old_attr_map)
