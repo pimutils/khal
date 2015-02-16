@@ -435,8 +435,7 @@ class EventColumn(urwid.WidgetWrap):
         """Show events for the specified date."""
         self.date = date
         self.eventcount = self.events.update(date)
-        if self.current_event is not None:
-            self.view(self.current_event)
+        self.view(self.current_event)
 
     def view(self, event):
         """
@@ -446,6 +445,8 @@ class EventColumn(urwid.WidgetWrap):
         :type event: khal.event.Event
         """
         self.destroy()
+        if not event:
+            return
         self.container.contents.append((self.divider,
                                         ('pack', None)))
         self.container.contents.append(
