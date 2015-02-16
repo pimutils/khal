@@ -126,8 +126,8 @@ class Window(urwid.Frame):
                ('button', 'black', 'dark cyan'),
                ('button focused', 'white', 'light blue', 'bold'),
                ('reveal focus', 'black', 'dark cyan', 'standout'),
-               ('today_focus', 'white', 'black', 'standout'),
-               ('today', 'black', 'white', 'dark cyan'),
+               ('today focus', 'white', 'dark cyan', 'standout'),
+               ('today', 'black', 'light gray', 'dark cyan'),
                ('edit', 'white', 'dark blue'),
                ('alert', 'white', 'dark red'),
 
