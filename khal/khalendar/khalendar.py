@@ -84,6 +84,10 @@ class Calendar(object):
         if self._db_needs_update():
             self.db_update()
 
+    @property
+    def readonly(self):
+        return self._readonly
+
     def _cover_event(self, event):
         event.color = self.color
         event.readonly = self._readonly
@@ -205,11 +209,6 @@ class CalendarCollection(object):
     @property
     def names(self):
         return self._calnames.keys()
-
-    @property
-    def writable_names(self):
-        return [cal for cal in self._calnames
-                if not self._calnames[cal]._readonly]
 
     @property
     def default_calendar_name(self):

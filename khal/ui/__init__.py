@@ -30,85 +30,13 @@ import urwid
 from .. import aux
 from ..calendar_display import getweeknumber
 
-from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker
+from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker, Choice
 from .widgets import CEdit as Edit
 from .startendeditor import StartEndEditor
 
 
 class DateConversionError(Exception):
     pass
-
-
-class AccountList(urwid.WidgetWrap):
-
-    """used as the popup in the AccountChooser popup"""
-    signals = ['close']
-
-    def __init__(self, accounts, account_chooser):
-        self.account_chooser = account_chooser
-        acc_list = []
-        for one in accounts:
-            button = urwid.Button(one, on_press=self.set_account,
-                                  user_data=one)
-
-            acc_list.append(button)
-        pile = CPile(acc_list)
-        fill = urwid.Filler(pile)
-        self.__super.__init__(urwid.AttrMap(fill, 'popupbg'))
-
-    def set_account(self, button, account):
-        self.account_chooser.account = account
-        self._emit("close")
-
-
-class AccountChooser(urwid.PopUpLauncher):
-
-    """show current account and lets user choose another account
-
-    does NOT handle the actual moving of an event to another account"""
-
-    def __init__(self, active_account, accounts):
-        if accounts == list():
-            accounts = active_account = ['no writable calendars']
-
-        self.active_account = active_account
-        self.original_account = active_account
-        self.accounts = accounts
-        self.button = urwid.Button(active_account)
-        self.__super.__init__(self.button)
-        urwid.connect_signal(self.button, 'click',
-                             lambda button: self.open_pop_up())
-
-    def create_pop_up(self):
-        pop_up = AccountList(self.accounts, self)
-        urwid.connect_signal(pop_up, 'close',
-                             lambda button: self.close_pop_up())
-        return pop_up
-
-    def get_pop_up_parameters(self):
-        return {'left': 0,
-                'top': 1,
-                'overlay_width': 32,
-                'overlay_height': len(self.accounts)}
-
-    @property
-    def changed(self):
-        if self.active_account == self.original_account:
-            return False
-        else:
-            return True
-
-    @property
-    def account(self):
-        return self.active_account
-
-    @account.setter
-    def account(self, account):
-        self.active_account = account
-        self.button = urwid.Button(self.active_account)
-        self.__super.__init__(self.button)
-        urwid.connect_signal(self.button, 'click',
-                             lambda button: self.open_pop_up())
 
 
 class Date(urwid.Text):
@@ -703,8 +631,16 @@ class EventEditor(urwid.WidgetWrap):
         divider = urwid.Divider(' ')
 
         # TODO warning message if len(self.collection.writable_names) == 0
-        self.accountchooser = AccountChooser(self.event.calendar,
-                                             self.collection.writable_names)
+
+        def decorate_choice(name):
+            c = self.collection._calnames[name]
+            return (c.color or '', name)
+
+        self.accountchooser = Choice(
+            [c.name for c in self.collection.calendars if not c.readonly],
+            self.event.calendar,
+            decorate_choice
+        )
         self.description = Edit(caption=u'Description: ',
                                 edit_text=self.description)
         self.location = Edit(caption=u'Location: ',
