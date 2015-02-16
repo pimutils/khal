@@ -165,6 +165,10 @@ class Window(urwid.Frame):
         self.update_header()
         self._original_w = None
 
+        self._alert_daemon = AlertDaemon(self.update_header)
+        self._alert_daemon.start()
+        self.alert = self._alert_daemon.alert
+
     def open(self, pane, callback=None):
         """Open a new pane.
 
@@ -207,17 +211,6 @@ class Window(urwid.Frame):
     def _get_current_pane(self):
         return self._track[-1][0] if self._track else None
 
-    def alert(self, msg):
-        self.update_header(alert=msg)
-
-        def target():
-            time.sleep(5)
-            self.update_header()
-
-        t = threading.Thread(target=target)
-        t.daemon = True
-        t.start()
-
     def update_header(self, alert=None):
         pane_title = getattr(self._get_current_pane(), 'title', None)
         text = []
@@ -228,3 +221,33 @@ class Window(urwid.Frame):
                 text.append(('black', ' | '))
 
         self.header.w.set_text(text[:-1] or '')
+
+
+class AlertDaemon(threading.Thread):
+    def __init__(self, set_msg_func):
+        threading.Thread.__init__(self)
+        self._set_msg_func = set_msg_func
+        self.daemon = True
+        self._start_countdown = threading.Event()
+
+    def alert(self, msg):
+        self._set_msg_func(msg)
+        self._start_countdown.set()
+
+    def run(self):
+        # This is a daemon thread. Since the global namespace is going to
+        # vanish on interpreter shutdown, redefine everything from the global
+        # namespace here.
+        _sleep = time.sleep
+        _exception = Exception
+        _event = self._start_countdown
+        _set_msg = self._set_msg_func
+
+        while True:
+            _event.wait()
+            _sleep(3)
+            try:
+                _set_msg(None)
+            except _exception:
+                pass
+            _event.clear()
