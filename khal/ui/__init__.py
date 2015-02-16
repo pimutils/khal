@@ -637,7 +637,7 @@ class EventEditor(urwid.WidgetWrap):
 
         self.calendar_chooser = Choice(
             [c for c in self.collection.calendars if not c.readonly],
-            self.event.calendar,
+            self.collection._calnames[self.event.calendar],
             decorate_choice
         )
         self.description = Edit(caption=u'Description: ',
