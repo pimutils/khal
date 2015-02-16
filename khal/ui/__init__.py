@@ -671,6 +671,8 @@ class EventEditor(urwid.WidgetWrap):
         self.collection = pane.collection
         self.conf = pane.conf
 
+        self._abort_confirmed = False
+
         try:
             self.description = event.vevent['DESCRIPTION']
         except KeyError:
@@ -808,10 +810,16 @@ class EventEditor(urwid.WidgetWrap):
             else:
                 self.collection.update(self.event)
 
+        self._abort_confirmed = False
         self.pane.window.backtrack()
 
     def keypress(self, size, key):
-        if key in ['esc'] and self.changed:  # TODO XXX
+        if key in ['esc'] and self.changed and not self._abort_confirmed:
+            # TODO Use user-defined keybindings
+            self.pane.window.alert(
+                ('light red',
+                 'Unsaved changes! Hit ESC again to discard.'))
+            self._abort_confirmed = True
             return
         return super(EventEditor, self).keypress(size, key)
 
