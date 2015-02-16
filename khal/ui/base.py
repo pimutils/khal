@@ -22,6 +22,8 @@
 
 
 import urwid
+import threading
+import time
 
 
 class CColumns(urwid.Columns):
@@ -124,8 +126,8 @@ class Window(urwid.Frame):
                ('button', 'black', 'dark cyan'),
                ('button focused', 'white', 'light blue', 'bold'),
                ('reveal focus', 'black', 'dark cyan', 'standout'),
-               ('today_focus', 'white', 'black', 'standout'),
-               ('today', 'black', 'white', 'dark cyan'),
+               ('today focus', 'white', 'dark cyan', 'standout'),
+               ('today', 'black', 'light gray', 'dark cyan'),
                ('edit', 'white', 'dark blue'),
                ('alert', 'white', 'dark red'),
 
@@ -152,17 +154,20 @@ class Window(urwid.Frame):
                ('white', 'white', ''),
                ]
 
-    def __init__(self, header='', footer=''):
+    def __init__(self, footer=''):
         self._track = []
-        self._title = header
-        self._footer = footer
 
-        header = urwid.AttrWrap(urwid.Text(self._title), 'header')
-        footer = urwid.AttrWrap(urwid.Text(self._footer), 'footer')
+        header = urwid.AttrWrap(urwid.Text(''), 'header')
+        footer = urwid.AttrWrap(urwid.Text(footer), 'footer')
         urwid.Frame.__init__(self, urwid.Text(''),
                              header=header,
                              footer=footer)
+        self.update_header()
         self._original_w = None
+
+        self._alert_daemon = AlertDaemon(self.update_header)
+        self._alert_daemon.start()
+        self.alert = self._alert_daemon.alert
 
     def open(self, pane, callback=None):
         """Open a new pane.
@@ -175,15 +180,6 @@ class Window(urwid.Frame):
         self._track.append((pane, callback))
         self._update(pane)
 
-    def overlay(self, overlay_w, title):
-        """put overlay_w as an overlay over the currently active pane
-        """
-        overlay = Pane(urwid.Overlay(urwid.Filler(overlay_w),
-                                     self._get_current_pane(),
-                                     'center', 60,
-                                     'middle', 5), title)
-        self.open(overlay)
-
     def backtrack(self, data=None):
         """Unstack the displayed pane.
 
@@ -192,7 +188,7 @@ class Window(urwid.Frame):
         this callback is called with the given data (if any) before
         the previous pane gets redrawn.
         """
-        _, cb = self._track.pop()
+        old_pane, cb = self._track.pop()
         if cb:
             cb(data)
 
@@ -209,8 +205,105 @@ class Window(urwid.Frame):
             self.open(HelpPane(self._get_current_pane()))
 
     def _update(self, pane):
-        self.header.w.set_text(u'%s | %s' % (self._title, pane.title))
         self.set_body(pane)
+        self.update_header()
 
     def _get_current_pane(self):
         return self._track[-1][0] if self._track else None
+
+    def update_header(self, alert=None):
+        pane_title = getattr(self._get_current_pane(), 'title', None)
+        text = []
+
+        for part in (pane_title, alert):
+            if part:
+                text.append(part)
+                text.append(('black', ' | '))
+
+        self.header.w.set_text(text[:-1] or '')
+
+
+class AlertDaemon(threading.Thread):
+    def __init__(self, set_msg_func):
+        threading.Thread.__init__(self)
+        self._set_msg_func = set_msg_func
+        self.daemon = True
+        self._start_countdown = threading.Event()
+
+    def alert(self, msg):
+        self._set_msg_func(msg)
+        self._start_countdown.set()
+
+    def run(self):
+        # This is a daemon thread. Since the global namespace is going to
+        # vanish on interpreter shutdown, redefine everything from the global
+        # namespace here.
+        _sleep = time.sleep
+        _exception = Exception
+        _event = self._start_countdown
+        _set_msg = self._set_msg_func
+
+        while True:
+            _event.wait()
+            _sleep(3)
+            try:
+                _set_msg(None)
+            except _exception:
+                pass
+            _event.clear()
+
+
+class Choice(urwid.PopUpLauncher):
+    def __init__(self, choices, active, decorate_func=None):
+        self.choices = choices
+        self._decorate = decorate_func or (lambda x: x)
+        self.active = self._original = active
+
+    def create_pop_up(self):
+        pop_up = ChoiceList(self)
+        urwid.connect_signal(pop_up, 'close',
+                             lambda button: self.close_pop_up())
+        return pop_up
+
+    def get_pop_up_parameters(self):
+        return {'left': 0,
+                'top': 1,
+                'overlay_width': 32,
+                'overlay_height': len(self.choices)}
+
+    @property
+    def changed(self):
+        return self._active != self._original
+
+    @property
+    def active(self):
+        return self._active
+
+    @active.setter
+    def active(self, val):
+        self._active = val
+        self.button = urwid.Button(self._decorate(self._active))
+        urwid.PopUpLauncher.__init__(self, self.button)
+        urwid.connect_signal(self.button, 'click',
+                             lambda button: self.open_pop_up())
+
+
+class ChoiceList(urwid.WidgetWrap):
+    signals = ['close']
+
+    def __init__(self, parent):
+        self.parent = parent
+        buttons = []
+        for c in parent.choices:
+            buttons.append(
+                urwid.Button(parent._decorate(c),
+                             on_press=self.set_choice, user_data=c)
+            )
+
+        pile = CPile(buttons)
+        fill = urwid.Filler(pile)
+        urwid.WidgetWrap.__init__(self, urwid.AttrMap(fill, 'popupbg'))
+
+    def set_choice(self, button, account):
+        self.parent.active = account
+        self._emit("close")

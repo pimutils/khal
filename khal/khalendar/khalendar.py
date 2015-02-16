@@ -84,6 +84,10 @@ class Calendar(object):
         if self._db_needs_update():
             self.db_update()
 
+    @property
+    def readonly(self):
+        return self._readonly
+
     def _cover_event(self, event):
         event.color = self.color
         event.readonly = self._readonly
@@ -199,6 +203,10 @@ class CalendarCollection(object):
         self._default_calendar_name = None
 
     @property
+    def writable_names(self):
+        return [c.name for c in self.calendars if not c.readonly]
+
+    @property
     def calendars(self):
         return self._calnames.values()
 
@@ -207,18 +215,12 @@ class CalendarCollection(object):
         return self._calnames.keys()
 
     @property
-    def writable_names(self):
-        return [cal for cal in self._calnames
-                if not self._calnames[cal]._readonly]
-
-    @property
     def default_calendar_name(self):
         if self._default_calendar_name in self.names:
             return self._default_calendar_name
-        elif len(self.writable_names) > 0:
-            return self.writable_names[0]
         else:
-            return self._calnames.values()[0].name
+            names = self.writable_names or self.names
+            return names[0]
 
     def append(self, calendar):
         self._calnames[calendar.name] = calendar

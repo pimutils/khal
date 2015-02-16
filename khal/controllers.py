@@ -181,5 +181,7 @@ class Interactive(object):
                               conf,
                               title='select an event',
                               description='do something')
-        ui.start_pane(pane, pane.cleanup,
-                      header=u'{0} v{1}'.format(__productname__, __version__))
+        ui.start_pane(
+            pane, pane.cleanup,
+            program_info=u'{0} v{1}'.format(__productname__, __version__)
+        )
