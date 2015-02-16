@@ -609,20 +609,32 @@ class EventDisplay(urwid.WidgetWrap):
     def __init__(self, conf, event, collection=None):
         self.conf = conf
         self.collection = collection
+        divider = urwid.Divider(' ')
 
         lines = []
-        lines.append(urwid.Text(event.vevent['SUMMARY']))
+        lines.append(urwid.Columns([
+            urwid.Text(event.vevent['SUMMARY']),
+            urwid.Text(u'Calendar: ' + event.calendar)
+        ], dividechars=2))
+
+        lines.append(divider)
+
+        # description and location
+        for key, desc in [('DESCRIPTION', 'Description'), ('LOCATION', 'Location')]:
+            try:
+                lines.append(urwid.Text(
+                    desc + ': ' + str(event.vevent[key].encode('utf-8'))))
+            except KeyError:
+                pass
+
+        if lines[-1] != divider:
+            lines.append(divider)
 
         # start and end time/date
         if event.allday:
             startstr = event.start.strftime(self.conf['locale']['dateformat'])
             end = event.end - timedelta(days=1)
-            if event.start == end:
-                lines.append(urwid.Text('On: ' + startstr))
-            else:
-                endstr = end.strftime(self.conf['locale']['dateformat'])
-                lines.append(
-                    urwid.Text('From: ' + startstr + ' to: ' + endstr))
+            endstr = end.strftime(self.conf['locale']['dateformat'])
 
         else:
             startstr = event.start.strftime(
@@ -636,19 +648,12 @@ class EventDisplay(urwid.WidgetWrap):
                     '{} {}'.format(self.conf['locale']['dateformat'],
                                    self.conf['locale']['timeformat'])
                 )
-                lines.append(urwid.Text('From: {} To: {}'
-                                        .format(startstr, endstr)))
 
-        # resource
-        lines.append(urwid.Text('Calendar: ' + event.calendar))
-
-        # description and location
-        for key, desc in [('DESCRIPTION', 'Desc'), ('LOCATION', 'Loc')]:
-            try:
-                lines.append(urwid.Text(
-                    desc + ': ' + str(event.vevent[key].encode('utf-8'))))
-            except KeyError:
-                pass
+        if startstr == endstr:
+            lines.append(urwid.Text('On: ' + startstr))
+        else:
+            lines.append(urwid.Text(u'From: ' + startstr))
+            lines.append(urwid.Text(u'To: ' + endstr))
 
         pile = CPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
