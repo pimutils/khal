@@ -288,7 +288,6 @@ class Choice(urwid.PopUpLauncher):
                              lambda button: self.open_pop_up())
 
 
-
 class ChoiceList(urwid.WidgetWrap):
     signals = ['close']
 
