@@ -857,7 +857,7 @@ class ClassicView(Pane):
                 (['t'], 're-focus on today'),
                 (['enter'], 'select a date/event, show/edit event'),
                 (['d'], 'delete event under cursor'),
-                (['q'], 'quit'),
+                (['q', 'esc'], 'previous pane/quit'),
                 ]
 
     def show_date(self, date):
