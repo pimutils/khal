@@ -742,11 +742,13 @@ class EventEditor(urwid.WidgetWrap):
             self.event.allday = self.startendeditor.allday
             if self.event.etag is None:  # has not been saved before
                 # TODO look for better way to detect this
-                self.event.calendar = self.calendar_chooser.active
+                self.event.calendar = self.calendar_chooser.active.name
                 self.collection.new(self.event)
             elif self.calendar_chooser.changed:
-                self.collection.change_collection(self.event,
-                                                  self.calendar_chooser.active)
+                self.collection.change_collection(
+                    self.event,
+                    self.calendar_chooser.active.name
+                )
             else:
                 self.collection.update(self.event)
 
