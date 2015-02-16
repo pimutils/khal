@@ -721,7 +721,7 @@ class EventEditor(urwid.WidgetWrap):
 
     @property
     def title(self):  # Window title
-        return 'Edit: {}'.format(self.summary.get_edit_text())
+        return u'Edit: {}'.format(self.summary.get_edit_text())
 
     def get_keys(self):
         return [(['arrows'], 'navigate through properties'),
