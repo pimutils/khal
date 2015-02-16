@@ -863,8 +863,9 @@ class ClassicView(Pane):
     def get_keys(self):
         return [(['arrows'], 'navigate through the calendar'),
                 (['t'], 're-focus on today'),
-                (['enter'], 'select a date/event, show/edit event'),
-                (['d'], 'delete event under cursor'),
+                (['enter', 'tab'], 'select a date/event, show/edit event'),
+                (['n'], 'create event on selected day'),
+                (['d'], 'delete selected event'),
                 (['q', 'esc'], 'previous pane/quit'),
                 ]
 
