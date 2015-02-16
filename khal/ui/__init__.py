@@ -420,8 +420,10 @@ class U_Event(urwid.Text):
         self.set_text(mark + ' ' + self.event.compact(self.this_date))
 
     def toggle_delete(self):
-        if self.event.readonly is True:
-            self.set_title('RO')
+        if self.event.readonly:
+            self.eventcolumn.pane.window.alert(
+                ('light red',
+                 'Calendar {} is read-only.'.format(self.event.calendar)))
             return
         if self.uid in self.eventcolumn.deleted:
             self.eventcolumn.deleted.remove(self.uid)
@@ -531,7 +533,9 @@ class EventColumn(urwid.WidgetWrap):
         :type event: khal.event.Event
         """
         if event.readonly:
-            self.pane.window.alert(('light red', 'Event is read-only.'))
+            self.pane.window.alert(
+                ('light red',
+                 'Calendar {} is read-only.'.format(event.calendar)))
             return
 
         if self.editor:
