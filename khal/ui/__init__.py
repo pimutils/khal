@@ -355,10 +355,10 @@ class U_Event(urwid.Text):
                 ('light red',
                  'Calendar {} is read-only.'.format(self.event.calendar)))
             return
-        if self.uid in self.eventcolumn.deleted:
-            self.eventcolumn.deleted.remove(self.uid)
+        if self.uid in self.eventcolumn.pane.deleted:
+            self.eventcolumn.pane.deleted.remove(self.uid)
         else:
-            self.eventcolumn.deleted.append(self.uid)
+            self.eventcolumn.pane.deleted.append(self.uid)
         self.set_title()
 
     def keypress(self, _, key):
