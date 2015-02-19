@@ -152,9 +152,9 @@ def calendar_walker(pane, firstweekday=0, weeknumbers=False):
 class CListBox(urwid.ListBox):
     """our custom version of ListBox for containing CalendarWalker
 
-    it should containe a `CalendarWalker` which it autoextends on rendering,
-    if needed
-    """
+    it should contain a `CalendarWalker` instance which it autoextends on
+    rendering, if needed """
+
     init = True
 
     def __init__(self, walker):
