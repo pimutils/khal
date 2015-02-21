@@ -91,6 +91,7 @@ class SQLiteDb(object):
 
     @contextlib.contextmanager
     def at_once(self):
+        assert not self._at_once
         self._at_once = True
         try:
             yield self
