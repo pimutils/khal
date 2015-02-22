@@ -2,7 +2,6 @@ import os
 
 import datetime
 import icalendar
-import pytest
 import pytz
 
 from khal.khalendar import aux
@@ -479,7 +478,7 @@ SUMMARY:until 20. Februar
 DTSTART:20140203T070000
 DTEND:20140203T090000
 UID:until_notz
-RRULE:FREQ=DAILY;UNTIL=20140220;WKST=SU
+RRULE:FREQ=DAILY;UNTIL=20140220T070000;WKST=SU
 END:VEVENT
 """
 
@@ -566,7 +565,6 @@ END:VEVENT
 class TestSpecial(object):
     """collection of strange test cases that don't fit anywhere else really"""
 
-    @pytest.mark.xfail(reason='This needs to be debugged ASAP')
     def test_count(self):
         vevent = _get_vevent(vevent_count)
         dtstart = aux.expand(vevent, berlin)
