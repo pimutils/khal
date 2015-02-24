@@ -81,6 +81,21 @@ class U_Event(urwid.Text):
         self.set_text(mark + ' ' + self.event.relative_to(self.this_date))
 
     def toggle_delete(self):
+        # TODO unify, either directly delete *normal* events as well
+        # or stage recurring deletion as well
+        def delete_this(_):
+            self.eventcolumn.pane.window.backtrack()
+
+        def delete_future(_):
+            self.eventcolumn.pane.window.backtrack()
+
+        def delete_all(_):
+            if self.uid in self.eventcolumn.pane.delete.remove(self.uid):
+                self.eventcolumn.pane.deleted.remove(self.uid)
+            else:
+                self.eventcolumn.pane.deleted.append(self.uid)
+            self.eventcolumn.pane.window.backtrack()
+
         if self.event.readonly:
             self.eventcolumn.pane.window.alert(
                 ('light red',
@@ -89,7 +104,19 @@ class U_Event(urwid.Text):
         if self.uid in self.eventcolumn.pane.deleted:
             self.eventcolumn.pane.deleted.remove(self.uid)
         else:
-            self.eventcolumn.pane.deleted.append(self.uid)
+            if self.event.recurring:
+                overlay = urwid.Overlay(
+                    DeleteDialog(
+                        delete_this,
+                        delete_future,
+                        delete_all,
+                        self.eventcolumn.pane.window.backtrack,
+                    ),
+                    self.eventcolumn.pane,
+                    'center', ('relative', 70), ('relative', 70), None)
+                self.eventcolumn.pane.window.open(overlay)
+            else:
+                self.eventcolumn.pane.deleted.append(self.uid)
         self.set_title()
 
     def duplicate(self):
@@ -543,6 +570,23 @@ class EventEditor(urwid.WidgetWrap):
         if key in self.pane.conf['keybindings']['save']:
             self.save(None)
         return super(EventEditor, self).keypress(size, key)
+
+
+class DeleteDialog(urwid.WidgetWrap):
+    def __init__(self, this_func, future_func, all_func, abort_func):
+        lines = []
+        lines.append(urwid.Text(u'You are trying to delete a recursive event.'))
+        lines.append(urwid.Text(u'What do you want to delete?'))
+        lines.append(urwid.Text(u''))
+        buttons = urwid.Columns(
+            [urwid.Button(u'This instance', on_press=this_func),
+             urwid.Button(u'All future instances', on_press=future_func),
+             urwid.Button(u'All instances (past and future)', on_press=all_func),
+             urwid.Button(u'Nothing, Abort', on_press=abort_func),
+             ])
+        lines.append(buttons)
+        content = urwid.Pile(lines)
+        urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
 
 
 class ClassicView(Pane):
