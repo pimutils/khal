@@ -114,14 +114,14 @@ class Calendar(object):
         param event: the event that should be updated
         type event: event.Event
         """
+        assert event.etag
+        if self._readonly:
+            raise ReadOnlyCalendarError()
+
         with self._dbtool.at_once():
-            if self._readonly:
-                raise ReadOnlyCalendarError()
-            if event.etag is None:
-                self.new(event)
-            else:
-                etag = self._storage.update(event.href, event, event.etag)
-                self._dbtool.update(event.vevent.to_ical(), event.href, etag=etag)
+            event.etag = self._storage.update(event.href, event, event.etag)
+            self._dbtool.update(event.vevent.to_ical(), event.href, event.etag)
+            self._dbtool.set_ctag(self.local_ctag())
 
     def new(self, event):
         """save a new event to the database
@@ -129,9 +129,11 @@ class Calendar(object):
         param event: the event that should be updated
         type event: event.Event
         """
+        assert not event.etag
+        if self._readonly:
+            raise ReadOnlyCalendarError()
+
         with self._dbtool.at_once():
-            if self._readonly:
-                raise ReadOnlyCalendarError()
             event.href, event.etag = self._storage.upload(event)
             self._dbtool.update(event.to_ical(), event.href, event.etag)
             self._dbtool.set_ctag(self.local_ctag())
@@ -256,6 +258,7 @@ class CalendarCollection(object):
 
     def change_collection(self, event, new_collection):
         href, etag, calendar = event.href, event.etag, event.calendar
+        event.etag = None
         self._calnames[new_collection].new(event)
         self._calnames[calendar].delete(href, etag)
 
