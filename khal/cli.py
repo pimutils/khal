@@ -297,7 +297,8 @@ def _get_cli():
         for event in events:
             desc = textwrap.wrap(event.long(), term_width)
             event_column.extend([colored(d, event.color) for d in desc])
-        click.echo('\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding']))
+        click.echo('\n'.join(event_column).encode(
+            ctx.obj['conf']['locale']['encoding']))
 
     return cli, interactive_cli
 
