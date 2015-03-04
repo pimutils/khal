@@ -305,11 +305,14 @@ def _get_cli():
     @click.pass_context
     def at(ctx, datetime=None):
         '''show all events scheduled for DATETIME
+
+        if now DATETIME is given (or the string `now`) all events scheduled
+        for this moment are shown
         '''
         collection = build_collection(ctx)
         locale = ctx.obj['conf']['locale']
         dtime = list(datetime)
-        if dtime is None or dtime == []:
+        if dtime == [] or dtime == ['now']:
             import datetime
             dtime = datetime.datetime.now()
         else:
