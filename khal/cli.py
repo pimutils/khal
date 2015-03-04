@@ -31,10 +31,9 @@ except ImportError:
         pass
 
 import click
+import pytz
 
-from khal import controllers
-from khal import khalendar
-from khal import __version__
+from khal import aux, controllers, khalendar, __version__
 from khal.log import logger
 from khal.settings import get_config, InvalidSettingsError
 from khal.exceptions import FatalError
@@ -299,6 +298,34 @@ def _get_cli():
             event_column.extend([colored(d, event.color) for d in desc])
         click.echo('\n'.join(event_column).encode(
             ctx.obj['conf']['locale']['encoding']))
+
+    @cli.command()
+    @calendar_selector
+    @click.argument('datetime', required=False, nargs=-1)
+    @click.pass_context
+    def at(ctx, datetime=None):
+        '''show all events scheduled for DATETIME
+        '''
+        collection = build_collection(ctx)
+        locale = ctx.obj['conf']['locale']
+        dtime = list(datetime)
+        if dtime is None or dtime == []:
+            import datetime
+            dtime = datetime.datetime.now()
+        else:
+            try:
+                dtime = aux.timefstr(dtime, locale['timeformat'])
+            except ValueError:
+                dtime = aux.datetimefstr(dtime, locale['datetimeformat'], locale['longdatetimeformat'])
+        dtime = locale['local_timezone'].localize(dtime)
+        dtime = dtime.astimezone(pytz.UTC)
+        events = collection.get_events_at(dtime)
+        event_column = list()
+        term_width, _ = get_terminal_size()
+        for event in events:
+            desc = textwrap.wrap(event.long(), term_width)
+            event_column.extend([colored(d, event.color) for d in desc])
+        click.echo('\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding']))
 
     return cli, interactive_cli
 

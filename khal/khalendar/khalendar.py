@@ -29,6 +29,7 @@ for caching (see backend if you're interested).
 If you want to see how the sausage is made:
     Welcome to the sausage factory!
 """
+import datetime
 import os
 import os.path
 
@@ -104,6 +105,12 @@ class Calendar(object):
     def get_datetime_by_time_range(self, start, end):
         return [self._cover_event(event) for event in
                 self._dbtool.get_time_range(start, end)]
+
+    def get_events_at(self, dtime=datetime.datetime.now()):
+        events = list()
+        events.extend(self._dbtool.get_allday_at(dtime))
+        events.extend(self._dbtool.get_datetime_at(dtime))
+        return [self._cover_event(event) for event in events]
 
     def get_event(self, href):
         return self._cover_event(self._dbtool.get(href))
@@ -239,6 +246,14 @@ class CalendarCollection(object):
         events = list()
         for one in self.calendars:
             events.extend(one.get_datetime_by_time_range(start, end))
+        return events
+
+    def get_events_at(self, dtime=datetime.datetime.now()):
+        if dtime is None:
+            dtime = datetime.datetime.now()
+        events = list()
+        for one in self.calendars:
+            events.extend(one.get_events_at(dtime))
         return events
 
     def update(self, event):

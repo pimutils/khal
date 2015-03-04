@@ -411,11 +411,14 @@ class SQLiteDb(object):
         :type start: datetime.date
         :type end: datetime.date
         """
-        assert isinstance(start, datetime.date) and not isinstance(start, datetime.datetime)
-        strstart = aux.to_unix_time(start)
+        if isinstance(start, datetime.datetime):
+            start = start.date()
         if end is None:
             end = start + datetime.timedelta(days=1)
-        assert isinstance(end, datetime.date) and not isinstance(end, datetime.datetime)
+        elif isinstance(end, datetime.datetime):
+            end = end.date()
+
+        strstart = aux.to_unix_time(start)
         strend = aux.to_unix_time(end)
         sql_s = ('SELECT recs_float.hrefrecuid, dtstart, dtend FROM '
                  'recs_float JOIN events ON '
@@ -425,6 +428,45 @@ class SQLiteDb(object):
                  'dtend > ? AND dtend <= ? OR '
                  'dtstart <= ? AND dtend > ? ) AND events.calendar = ?;')
         stuple = (strstart, strend, strstart, strend, strstart, strend, self.calendar)
+        result = self.sql_ex(sql_s, stuple)
+        for href_rec_inst, start, end in result:
+            start = datetime.date.fromtimestamp(start)
+            end = datetime.date.fromtimestamp(end)
+            event = self.get(href_rec_inst, start=start, end=end)
+            yield event
+
+    def get_datetime_at(self, dtime):
+        dtime = aux.to_unix_time(dtime)
+        sql_s = ('SELECT recs_loc.hrefrecuid, dtstart, dtend FROM '
+                 'recs_loc JOIN events ON '
+                 'recs_loc.hrefrecuid = events.hrefrecuid AND '
+                 'recs_loc.calendar = events.calendar WHERE '
+                 '(dtstart <= ? AND dtend >= ? ) '
+                 'AND events.calendar = ?;')
+        stuple = (dtime, dtime, self.calendar)
+        result = self.sql_ex(sql_s, stuple)
+        for href_rec_inst, start, end in result:
+            start = pytz.UTC.localize(
+                datetime.datetime.utcfromtimestamp(start))
+            end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
+            event = self.get(href_rec_inst, start=start, end=end)
+            yield event
+
+    def get_allday_at(self, dtime):
+        """
+        :type start: datetime.date
+        :type end: datetime.date
+        """
+        if isinstance(dtime, datetime.datetime):
+            dtime = dtime.date()
+        dtime = aux.to_unix_time(dtime)
+        sql_s = ('SELECT recs_float.hrefrecuid, dtstart, dtend FROM '
+                 'recs_float JOIN events ON '
+                 'recs_float.hrefrecuid = events.hrefrecuid AND '
+                 'recs_float.calendar = events.calendar WHERE '
+                 '(dtstart <= ? AND dtend >= ? )'
+                 'AND events.calendar = ?;')
+        stuple = (dtime, dtime, self.calendar)
         result = self.sql_ex(sql_s, stuple)
         for href_rec_inst, start, end in result:
             start = datetime.date.fromtimestamp(start)
