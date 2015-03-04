@@ -1,11 +1,12 @@
 Usage
 =====
 
-Khal offers a set of commands, namely :command:`calendar`, :command:`agenda`,
-:command:`new`, :command:`printcalendars`, and :command:`interactive`. See
-below for a description of what each of these commands does. Calling
-:program:`khal` without any command will invoke the default command, which can
-be specified in the config file.
+Khal offers a set of commands, most importantly :command:`agenda`,
+:command:`calendar`, :command:`interactive`, :command:`new`,
+:command:`printcalendars`, :command:`printformats`, and :command:`search`. See
+below for a description of what every command does. Calling :program:`khal`
+without any command will invoke the default command, which can be specified in
+the config file.
 
 
 Options
@@ -172,3 +173,23 @@ printcalendars
 **************
 
 prints a list of all configured calendars.
+
+printformats
+************
+
+prints a fixed date (*2013-12-11 10:09*) in all configured date(time) formats.
+This is supposed to help check if those formats are configured as intended.
+
+search
+******
+
+search for events matching a search string and print them. Currently recurring events are only
+print once. No advanced search features are currently supported.
+
+The command
+
+::
+
+    khal search party
+    
+prints all events matching `party`

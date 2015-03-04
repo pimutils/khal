@@ -186,7 +186,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 The [keybindings] section
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-keybinds for `ikhal` are set here. You can bind more than one key
+keybindings for `ikhal` are set here. You can bind more than one key
 (combination) to a command by supplying a comma-seperated list of keys.
 
 .. _keybindings-right:
@@ -207,7 +207,7 @@ keybinds for `ikhal` are set here. You can bind more than one key
     show detailed or edit (if details are already show) the currently selected event
 
       :type: list
-      :default: enter
+      :default: enter, tab
 
 .. _keybindings-up:
 
@@ -249,6 +249,16 @@ keybinds for `ikhal` are set here. You can bind more than one key
       :type: list
       :default: left, h
 
+.. _keybindings-today:
+
+.. object:: today
+
+    
+    focus the calendar browser on today
+
+      :type: list
+      :default: t
+
 .. _keybindings-delete:
 
 .. object:: delete
@@ -261,7 +271,6 @@ keybinds for `ikhal` are set here. You can bind more than one key
 
 The [default] section
 ~~~~~~~~~~~~~~~~~~~~~
-
 
 The default section begins with a **[default]** tag. Some default values and
 behaviours are set here.
