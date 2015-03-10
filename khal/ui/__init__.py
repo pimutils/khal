@@ -424,7 +424,7 @@ class EventColumn(urwid.WidgetWrap):
 
     def __init__(self, pane):
         self.pane = pane
-        self.divider = urwid.Divider('-')
+        self.divider = urwid.Divider('─')
         self.editor = False
         self.eventcount = 0
         self._current_date = None
