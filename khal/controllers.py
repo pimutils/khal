@@ -83,8 +83,12 @@ def get_agenda(collection, locale, dates=[],
         dates = [datetime.date.today()]
     else:
         try:
-            dates = [aux.datefstr(date, locale['dateformat'], locale['longdateformat'])
-                     for date in dates]
+            dates = [
+                aux.datefstr(date, locale['dateformat'],
+                             locale['longdateformat'])
+                if not isinstance(date, datetime.date) else date
+                for date in dates
+            ]
         except aux.InvalidDate as error:
             logging.fatal(error)
             sys.exit(1)

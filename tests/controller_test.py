@@ -1,5 +1,6 @@
 import datetime
 import os
+from textwrap import dedent
 
 import pytest
 import pytz
@@ -69,3 +70,22 @@ class TestCalendarTest(object):
         cal.new(event)
         assert ['\x1b[1mToday:\x1b[0m', 'a meeting'] == \
             get_agenda(cal, locale)
+
+    def test_empty_recurrence(self, cal_vdir):
+        cal, vdir = cal_vdir
+        cal.new(cal.new_event(dedent(
+            u'BEGIN:VEVENT\r\n'
+            u'UID:no_recurrences\r\n'
+            u'SUMMARY:No recurrences\r\n'
+            u'RRULE:FREQ=DAILY;COUNT=2;INTERVAL=1\r\n'
+            u'EXDATE:20110908T130000\r\n'
+            u'EXDATE:20110909T130000\r\n'
+            u'DTSTART:20110908T130000\r\n'
+            u'DTEND:20110908T170000\r\n'
+            u'END:VEVENT\r\n'
+        )))
+        assert 'no events' in '\n'.join(get_agenda(
+            cal, locale,
+            dates=[datetime.date(2011, 9, 8),
+                   datetime.date(2011, 9, 9)]
+        )).lower()

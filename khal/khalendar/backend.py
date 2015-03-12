@@ -323,12 +323,16 @@ class SQLiteDb(object):
                 stuple = (dbstart, dbend, href, href_rec_inst, rec_inst, self.calendar)
             self.sql_ex(recs_sql_s, stuple)
 
-        sql_s = ('INSERT INTO events '
-                 '(item, etag, href, calendar, hrefrecuid) '
-                 'VALUES (?, ?, ?, ?, ?);')
-        stuple = (vevent.to_ical().decode('utf-8'),
-                  etag, href, self.calendar, href_rec_inst)
-        self.sql_ex(sql_s, stuple)
+        if dtstartend:
+            # Does this event even have dates? Technically it is possible for
+            # events to be empty/non-existent by deleting all their recurrences
+            # through EXDATE.
+            sql_s = ('INSERT INTO events '
+                     '(item, etag, href, calendar, hrefrecuid) '
+                     'VALUES (?, ?, ?, ?, ?);')
+            stuple = (vevent.to_ical().decode('utf-8'),
+                      etag, href, self.calendar, href_rec_inst)
+            self.sql_ex(sql_s, stuple)
 
     def get_ctag(self):
         stuple = (self.calendar, )
