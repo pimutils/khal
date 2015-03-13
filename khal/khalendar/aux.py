@@ -69,7 +69,8 @@ def expand(vevent, default_tz, href=''):
             rrule._until = datetime(2037, 12, 31)
 
         if getattr(rrule._until, 'tzinfo', False):
-            rrule._until = rrule._until.astimezone(events_tz or default_tz)
+            if events_tz:
+                rrule._until = rrule._until.astimezone(events_tz or default_tz)
             rrule._until = rrule._until.replace(tzinfo=None)
 
         logger.debug('calculating recurrence dates for {0}, '
