@@ -121,6 +121,11 @@ default_calendar = string(default=None)
 # when there is no event
 show_all_days = boolean(default=False)
 
+# By default, khal show events for today and tomorrow.
+# Setting this to a different value will show events of that amount of days by
+# defaut.
+days = integer(default=2)
+
 # After adding a new event, what should be printed to standard out? The whole
 # event in text form, the path to where the event is now saved or nothing?
 print_new = option('event', 'path', 'False', default=False)
