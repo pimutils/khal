@@ -284,8 +284,8 @@ def test_dt_two_tz():
     assert '\r\n'.join(cal_dt_two_tz[:3]) in event.raw
     assert '\r\n'.join(cal_dt_two_tz[5:11]) in event.raw  # cet
     assert '\r\n'.join(cal_dt_two_tz[11:18]) in event.raw  # cest
-    assert '\r\n'.join(cal_dt_two_tz[21:27]) in event.raw  # est
-    assert '\r\n'.join(cal_dt_two_tz[27:34]) in event.raw  # edt
+    assert '\r\n'.join(cal_dt_two_tz[21:28]) in event.raw  # est
+    assert '\r\n'.join(cal_dt_two_tz[28:35]) in event.raw  # edt
     assert '\r\n'.join(cal_dt_two_tz[35:]) in event.raw  # edt
 
     # local (Berlin) time!
