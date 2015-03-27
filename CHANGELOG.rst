@@ -17,6 +17,7 @@ not yet released
 * new command `search` allows to search for events
 * user changeable keybindings in ikhal, with hjkl as default alternatives for
   arrows in calendar browser, see documentation for more details
+* new command `at` shows all events scheduled for a specific datetime
 
 
 0.4.0
