@@ -106,3 +106,6 @@ def config_checks(config):
     if not config['locale']['local_timezone']:
         config['locale']['local_timezone'] = is_timezone(
             config['locale']['local_timezone'])
+    for calendar in config['calendars']:
+        if config['calendars'][calendar]['type'] == 'birthdays':
+            config['calendars'][calendar]['readonly'] = True

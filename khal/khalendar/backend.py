@@ -37,6 +37,7 @@ from os import makedirs, path
 import sqlite3
 import time
 
+from dateutil import parser
 import icalendar
 import pytz
 import xdg.BaseDirectory
@@ -241,17 +242,17 @@ class SQLiteDb(object):
                 return uid, aux.to_unix_time(rec_id.dt)
             else:
                 return uid, 1
-
         vevents = (aux.sanitize(c) for c in ical.walk() if c.name == 'VEVENT')
         # Need to delete the whole event in case we are updating a
         # recurring event with an event which is either not recurring any
         # more or has EXDATEs, as those would be left in the recursion
         # tables. There are obviously better ways to achieve the same
         # result.
-        self.delete(href)
-        for vevent in sorted(vevents, key=sort_key):
-            check_support(vevent, href, self.calendar)
-            self._update_impl(vevent, href, etag)
+        if not vevents == list():
+            self.delete(href)
+            for vevent in sorted(vevents, key=sort_key):
+                check_support(vevent, href, self.calendar)
+                self._update_impl(vevent, href, etag)
 
     def _update_impl(self, vevent, href, etag):
         """expand (if needed) and insert non-reccuring and original recurring
@@ -526,6 +527,27 @@ def check_support(vevent, href, calendar):
             'to https://github.com/geier/khal/issues/152 .'
             .format(href, calendar)
         )
+
+
+class SQLiteDb_Birthdays(SQLiteDb):
+    def update(self, vevent, href, etag=''):
+        if href is None:
+            raise ValueError('href may not be None')
+        ical = icalendar.Event.from_ical(vevent)
+        vcard = ical.walk()[0]
+        # TODO deal with dates without a year, e.g.  --0412
+        if 'BDAY' in vcard.keys():
+            bday = parser.parse(vcard['BDAY']).date()
+            name = vcard['FN']
+            event = icalendar.Event()
+            event.add('dtstart', bday)
+            event.add('dtend', bday + datetime.timedelta(days=1))
+            event.add('summary', u'{}\'s birthday'.format(name))
+            event.add('rrule', {'freq': 'YEARLY'})
+            event.add('uid', href)
+        else:
+            return
+        self._update_impl(event, href, etag)
 
 
 def calc_shift_deltas(vevent):

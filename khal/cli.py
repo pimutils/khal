@@ -117,7 +117,8 @@ def build_collection(ctx):
                     readonly=cal['readonly'],
                     color=cal['color'],
                     unicode_symbols=conf['locale']['unicode_symbols'],
-                    locale=conf['locale']
+                    locale=conf['locale'],
+                    ctype=cal['type'],
                 ))
     except FatalError as error:
         logger.fatal(error)

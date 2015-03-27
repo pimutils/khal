@@ -54,7 +54,7 @@ def create_directory(path):
 class Calendar(object):
 
     def __init__(self, name, dbpath, path, readonly=False, color='',
-                 unicode_symbols=True, locale=None):
+                 unicode_symbols=True, locale=None, ctype='calendar'):
         """
         :param name: the name of the calendar
         :type name: str
@@ -76,9 +76,16 @@ class Calendar(object):
         self.name = name
         self.color = color
         self.path = os.path.expanduser(path)
-        self._dbtool = backend.SQLiteDb(self.name, dbpath, locale=self._locale)
         create_directory(path)
-        self._storage = FilesystemStorage(path, '.ics')
+        if ctype == 'calendar':
+            self._dbtool = backend.SQLiteDb(
+                self.name, dbpath, locale=self._locale)
+            file_ext = '.ics'
+        elif ctype == 'birthdays':
+            self._dbtool = backend.SQLiteDb_Birthdays(
+                self.name, dbpath, locale=self._locale)
+            file_ext = '.vcf'
+        self._storage = FilesystemStorage(path, file_ext)
         self._readonly = readonly
         self._unicode_symbols = unicode_symbols
 
