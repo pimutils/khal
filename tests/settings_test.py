@@ -18,9 +18,9 @@ class TestSettings(object):
         comp_config = {
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'),
-                         'readonly': False, 'color': ''},
+                         'readonly': False, 'color': '', 'type': 'calendar'},
                 'work': {'path': os.path.expanduser('~/.calendars/work/'),
-                         'readonly': False, 'color': ''},
+                         'readonly': False, 'color': '', 'type': 'calendar'},
             },
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
@@ -55,9 +55,11 @@ class TestSettings(object):
         comp_config = {
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'),
-                         'color': 'dark green', 'readonly': False},
+                         'color': 'dark green', 'readonly': False,
+                         'type': 'calendar'},
                 'work': {'path': os.path.expanduser('~/.calendars/work/'),
-                         'readonly': True, 'color': ''}},
+                         'readonly': True, 'color': '',
+                         'type': 'calendar'}},
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
                 'local_timezone': get_localzone(),
