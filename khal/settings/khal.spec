@@ -45,8 +45,11 @@ default_timezone = timezone(default=None)
 # If no timezone is set, the timezone your computer is set to will be used.
 local_timezone = timezone(default=None)
 
-# khal will display and understand all times in this format, use the standard
-# format as understood by strftime, see https://strftime.net or :command:`man strftime`
+# khal will display and understand all times in this format.
+
+# The formatting string is interpreted as defined by Python's `strftime
+# <https://docs.python.org/2/library/time.html#time.strftime>`_, which is
+# similar to the format specified in ``man strftime``.
 timeformat = string(default='%H:%M')
 
 # khal will display and understand all dates in this format, see :ref:`timeformat <locale-timeformat>` for the format
