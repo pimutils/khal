@@ -98,6 +98,14 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat,
     return dtstart
 
 
+def guessdatetimefstr(dtime_list, timeformat, datetimeformat, longdatetimeformat):
+        try:
+            dtime = timefstr(dtime_list, timeformat)
+        except ValueError:
+            dtime = datetimefstr(dtime_list, datetimeformat, longdatetimeformat)
+        return dtime
+
+
 def datefstr(datestr, dateformat, longdateformat):
     """
     converts a date as a string to datetime.date

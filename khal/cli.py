@@ -307,19 +307,30 @@ def _get_cli():
         '''show all events scheduled for DATETIME
 
         if now DATETIME is given (or the string `now`) all events scheduled
-        for this moment are shown
+        for this moment are shown, if only a time is given, the date is assumed
+        to be today
         '''
         collection = build_collection(ctx)
         locale = ctx.obj['conf']['locale']
-        dtime = list(datetime)
-        if dtime == [] or dtime == ['now']:
+        dtime_list = list(datetime)
+        if dtime_list == [] or dtime_list == ['now']:
             import datetime
             dtime = datetime.datetime.now()
         else:
             try:
-                dtime = aux.timefstr(dtime, locale['timeformat'])
+                dtime = aux.guessdatetimefstr(dtime_list,
+                                              locale['timeformat'],
+                                              locale['datetimeformat'],
+                                              locale['longdatetimeformat'])
             except ValueError:
-                dtime = aux.datetimefstr(dtime, locale['datetimeformat'], locale['longdatetimeformat'])
+                logger.fatal(
+                    '{} is not a valid datetime (matches neither {} nor {} nor'
+                    ' {})'.format(
+                        ' '.join(dtime_list),
+                        locale['timeformat'],
+                        locale['datetimeformat'],
+                        locale['longdatetimeformat']))
+                sys.exit(1)
         dtime = locale['local_timezone'].localize(dtime)
         dtime = dtime.astimezone(pytz.UTC)
         events = collection.get_events_at(dtime)
