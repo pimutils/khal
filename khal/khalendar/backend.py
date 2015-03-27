@@ -290,8 +290,6 @@ class SQLiteDb(object):
                     rec_inst = dbstart
                     href_rec_inst = href
             else:
-                # TODO: extract non-Olson TZs from params['TZID']
-                # perhaps better done in event/vevent or directly in icalendar
                 if dtstart.tzinfo is None:
                     dtstart = self.locale['default_timezone'].localize(dtstart)
                 if dtend.tzinfo is None:
