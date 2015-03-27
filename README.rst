@@ -26,7 +26,6 @@ Features
 
 Feedback
 --------
-
 Please do provide feedback if *khal* works for you or even more importantly if
 it doesn't. The preferred way to get in contact (especially if something isn't
 working) is via github, otherwise you can reach the original author via
@@ -46,6 +45,26 @@ For khal's documentation have a look at the website_ or readthedocs_.
 
 .. _website: https://lostpackets.de/khal/
 .. _readthedocs: http://khal.readthedocs.org/
+
+
+Contributing
+------------
+You want to contribute to *khal*? Awesome!
+
+The most appreciated way of contributing is by supplying code or documentation,
+reporting bugs, creating packages for your favorite operating system, writing
+blog posts etc. If don't have the time or the means to contribute in any of the
+above mentioned ways, donations are appreciated, too.
+
+.. image:: https://img.shields.io/gratipay/geier.svg
+   :alt: gratipay button
+   :target: https://gratipay.com/geier/
+
+.. image:: https://api.flattr.com/button/flattr-badge-large.png
+   :alt: flattr button
+   :target: http://flattr.com/thing/2475065/geierkhal-on-GitHub/
+
+
 
 License
 -------
