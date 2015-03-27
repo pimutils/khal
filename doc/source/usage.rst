@@ -66,6 +66,15 @@ be given in the format specified in khal's config file as *dateformat* or
 
         Specify how many days' (following each DATE) events should be shown.
 
+at
+**
+shows all events scheduled for a given datetime. ``khal at`` should be supplied
+with a date and time, a time (the date is then assumed to be today) or the
+string *now*. ``at`` defaults to *now*.
+
+::
+
+        khal at [-a CALENDAR ... | -d CALENDAR ...] [DATETIME | now]
 
 calendar
 ********
