@@ -248,11 +248,10 @@ class SQLiteDb(object):
         # more or has EXDATEs, as those would be left in the recursion
         # tables. There are obviously better ways to achieve the same
         # result.
-        if not vevents == list():
-            self.delete(href)
-            for vevent in sorted(vevents, key=sort_key):
-                check_support(vevent, href, self.calendar)
-                self._update_impl(vevent, href, etag)
+        self.delete(href)
+        for vevent in sorted(vevents, key=sort_key):
+            check_support(vevent, href, self.calendar)
+            self._update_impl(vevent, href, etag)
 
     def _update_impl(self, vevent, href, etag):
         """expand (if needed) and insert non-reccuring and original recurring
@@ -537,7 +536,8 @@ class SQLiteDb_Birthdays(SQLiteDb):
         vcard = ical.walk()[0]
         # TODO deal with dates without a year, e.g.  --0412
         if 'BDAY' in vcard.keys():
-            bday = parser.parse(vcard['BDAY']).date()
+            bday = vcard['BDAY']
+            bday = parser.parse(bday).date()
             name = vcard['FN']
             event = icalendar.Event()
             event.add('dtstart', bday)

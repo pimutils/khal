@@ -38,8 +38,8 @@ from vdirsyncer.storage import FilesystemStorage
 from . import backend
 from .event import Event
 from .. import log
-from .exceptions import UnsupportedFeatureError, ReadOnlyCalendarError, \
-    UpdateFailed
+from .exceptions import CouldNotCreateDbDir, UnsupportedFeatureError, \
+    ReadOnlyCalendarError, UpdateFailed
 
 logger = log.logger
 
@@ -48,7 +48,11 @@ def create_directory(path):
     if not os.path.isdir(path):
         if os.path.exists(path):
             raise RuntimeError('{} is not a directory.'.format(path))
-        os.makedirs(path, mode=0o750)
+        try:
+            os.makedirs(path, mode=0o750)
+        except OSError as error:
+            logger.fatal('failed to create {0}: {1}'.format(path, error))
+            raise CouldNotCreateDbDir()
 
 
 class Calendar(object):
@@ -85,6 +89,8 @@ class Calendar(object):
             self._dbtool = backend.SQLiteDb_Birthdays(
                 self.name, dbpath, locale=self._locale)
             file_ext = '.vcf'
+        else:
+            raise ValueError('ctype must be either `calendar` or `birthdays`')
         self._storage = FilesystemStorage(path, file_ext)
         self._readonly = readonly
         self._unicode_symbols = unicode_symbols
