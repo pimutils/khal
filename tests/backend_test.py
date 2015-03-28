@@ -488,3 +488,54 @@ def test_check_support():
     ical = icalendar.Calendar.from_ical(event_rdate_period)
     with pytest.raises(UpdateFailed):
         [backend.check_support(event, '', '') for event in ical.walk()]
+
+
+card = """BEGIN:VCARD
+VERSION:3.0
+FN:Unix
+BDAY:19710311
+END:VCARD
+"""
+
+card_no_year = """BEGIN:VCARD
+VERSION:3.0
+FN:Unix
+BDAY:--0311
+END:VCARD
+"""
+
+card_does_not_parse = """BEGIN:VCARD
+VERSION:3.0
+FN:Unix
+BDAY:x
+END:VCARD
+"""
+
+
+def test_birthdays(tmpdir):
+    dbpath = str(tmpdir) + '/khal.db'
+    db = backend.SQLiteDb_Birthdays('home', dbpath, locale=locale)
+    assert list(db.get_allday_range(date(1971, 03, 11))) == list()
+    db.update(card, 'unix.vcf')
+    events = list(db.get_allday_range(date(1971, 03, 11)))
+    assert len(events) == 1
+    assert unicode_type(events[0].vevent['SUMMARY']) == u'Unix\'s birthday'
+
+
+def test_birthdays_no_year(tmpdir):
+    dbpath = str(tmpdir) + '/khal.db'
+    db = backend.SQLiteDb_Birthdays('home', dbpath, locale=locale)
+    assert list(db.get_allday_range(date(1971, 03, 11))) == list()
+    db.update(card_no_year, 'unix.vcf')
+    events = list(db.get_allday_range(date(1971, 03, 11)))
+    assert len(events) == 1
+    assert unicode_type(events[0].vevent['SUMMARY']) == u'Unix\'s birthday'
+
+
+def test_birthday_does_not_parse(tmpdir):
+    dbpath = str(tmpdir) + '/khal.db'
+    db = backend.SQLiteDb_Birthdays('home', dbpath, locale=locale)
+    assert list(db.get_allday_range(date(1971, 03, 11))) == list()
+    db.update(card_does_not_parse, 'unix.vcf')
+    events = list(db.get_allday_range(date(1971, 03, 11)))
+    assert len(events) == 0

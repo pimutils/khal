@@ -537,7 +537,14 @@ class SQLiteDb_Birthdays(SQLiteDb):
         # TODO deal with dates without a year, e.g.  --0412
         if 'BDAY' in vcard.keys():
             bday = vcard['BDAY']
-            bday = parser.parse(bday).date()
+            try:
+                if bday[0:2] == u'--' and bday[3] != u'-':
+                    bday = '1900' + bday[2:]
+                bday = parser.parse(bday).date()
+            except ValueError:
+                logger.info('cannot parse BIRTHDAY in {} in collection '
+                            '{}'.format(href, self.calendar))
+                return
             name = vcard['FN']
             event = icalendar.Event()
             event.add('dtstart', bday)
@@ -545,9 +552,7 @@ class SQLiteDb_Birthdays(SQLiteDb):
             event.add('summary', u'{}\'s birthday'.format(name))
             event.add('rrule', {'freq': 'YEARLY'})
             event.add('uid', href)
-        else:
-            return
-        self._update_impl(event, href, etag)
+            self._update_impl(event, href, etag)
 
 
 def calc_shift_deltas(vevent):
