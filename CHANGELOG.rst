@@ -18,6 +18,8 @@ not yet released
 * user changeable keybindings in ikhal, with hjkl as default alternatives for
   arrows in calendar browser, see documentation for more details
 * new command `at` shows all events scheduled for a specific datetime
+* support for reading birthdays from vcard collections (set calendar/collection
+  `type` to *birthdays*)
 
 
 0.4.0
