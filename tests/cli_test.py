@@ -71,7 +71,7 @@ def test_direct_modification(runner):
 
     from .event_test import cal_dt
     event = runner.calendars['one'].join('test.ics')
-    event.write('\n'.join(cal_dt))
+    event.write(cal_dt)
     result = runner.invoke(main_khal, ['agenda', '09.04.2014'])
     assert not result.exception
     assert result.output == u'09.04.2014\n09:30-10:30: An Event\n'

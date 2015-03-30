@@ -5,8 +5,36 @@ import textwrap
 
 import pytest
 import pytz
+import icalendar.cal
 
 from khal.khalendar.event import Event
+
+
+def normalize_component(x):
+    x = icalendar.cal.Component.from_ical(x)
+
+    def inner(c):
+        contentlines = icalendar.cal.Contentlines()
+        for name, value in c.property_items(sorted=True, recursive=False):
+            contentlines.append(c.content_line(name, value, sorted=True))
+        contentlines.append('')
+
+        return (c.name, contentlines.to_ical(),
+                frozenset(inner(sub) for sub in c.subcomponents))
+
+    return inner(x)
+
+
+def test_normalize_component():
+    assert normalize_component(textwrap.dedent("""
+    BEGIN:VEVENT
+    DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140409T093000
+    END:VEVENT
+    """)) != normalize_component(textwrap.dedent("""
+    BEGIN:VEVENT
+    DTSTART;TZID=Oyrope/Berlin;VALUE=DATE-TIME:20140409T093000
+    END:VEVENT
+    """))
 
 berlin = pytz.timezone('Europe/Berlin')
 # the lucky people in Bogota don't know the pain that is DST
@@ -41,6 +69,7 @@ PRODID:-//CALENDARSERVER.ORG//NONSGML Version 1//EN
 BEGIN:VTIMEZONE
 TZID:Europe/Berlin
 BEGIN:STANDARD
+RDATE:20151025T020000
 DTSTART;VALUE=DATE-TIME:20141026T020000
 TZNAME:CET
 TZOFFSETFROM:+0200
@@ -62,7 +91,7 @@ DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
 UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
 END:VEVENT
 END:VCALENDAR
-""".split('\n')
+""".strip()
 
 cal_dt_cet = [b'BEGIN:STANDARD',
               b'DTSTART;VALUE=DATE-TIME:20141026T020000',
@@ -99,6 +128,7 @@ DTSTART;VALUE=DATE-TIME:20141026T020000
 TZNAME:CET
 TZOFFSETFROM:+0200
 TZOFFSETTO:+0100
+RDATE:20151025T020000
 END:STANDARD
 BEGIN:DAYLIGHT
 DTSTART;VALUE=DATE-TIME:20140330T030000
@@ -133,7 +163,7 @@ DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
 UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
 END:VEVENT
 END:VCALENDAR
-""".split('\n')
+""".strip()
 
 event_no_dst = """
 BEGIN:VEVENT
@@ -260,12 +290,9 @@ event_kwargs = {'calendar': 'foobar', 'locale': locale}
 
 def test_raw_dt():
     event = Event(event_dt, **event_kwargs)
-    # timezone components might be ordered differently on different runs
-    assert cal_dt[:3] == event.raw.split('\r\n')[:3]
-    assert cal_dt[18:] == event.raw.split('\r\n')[18:]
-    assert '\r\n'.join(cal_dt_cet) in event.raw
-    assert '\r\n'.join(cal_dt_cest) in event.raw
+    assert normalize_component(event.raw) == normalize_component(cal_dt)
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
+
     event = Event(event_dt, unicode_symbols=False, **event_kwargs)
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-10:30: An Event'
     assert event.long() == u'09:30-10:30 09.04.2014: An Event'
@@ -281,12 +308,7 @@ def test_raw_d():
 
 def test_dt_two_tz():
     event = Event(event_dt_two_tz, **event_kwargs)
-    assert '\r\n'.join(cal_dt_two_tz[:3]) in event.raw
-    assert '\r\n'.join(cal_dt_two_tz[5:11]) in event.raw  # cet
-    assert '\r\n'.join(cal_dt_two_tz[11:18]) in event.raw  # cest
-    assert '\r\n'.join(cal_dt_two_tz[21:28]) in event.raw  # est
-    assert '\r\n'.join(cal_dt_two_tz[28:35]) in event.raw  # edt
-    assert '\r\n'.join(cal_dt_two_tz[35:]) in event.raw  # edt
+    assert normalize_component(cal_dt_two_tz) == normalize_component(event.raw)
 
     # local (Berlin) time!
     assert event.compact(datetime.date(2014, 4, 9)) == u'09:30-16:30: An Event'
