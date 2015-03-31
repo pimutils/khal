@@ -103,6 +103,19 @@ def test_simple(runner):
     assert not result.exception
 
 
+def test_simple_color(runner):
+    runner = runner(command='agenda', showalldays=False)
+
+    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    result = runner.invoke(main_khal, ['new'] +
+                           '{} 18:00 myevent'.format(now).split())
+    assert result.output == ''
+    assert not result.exception
+
+    result = runner.invoke(main_khal, color=True)
+    assert not result.exception
+    assert '\x1b[34m' in result.output
+
 def test_showalldays(runner):
     runner = runner(command='agenda', showalldays=True)
 
