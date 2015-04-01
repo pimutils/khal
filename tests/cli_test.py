@@ -116,6 +116,7 @@ def test_simple_color(runner):
     assert not result.exception
     assert '\x1b[34m' in result.output
 
+
 def test_showalldays(runner):
     runner = runner(command='agenda', showalldays=True)
 
