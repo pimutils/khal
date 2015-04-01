@@ -107,7 +107,7 @@ def test_simple(runner):
 
 
 def test_simple_color(runner):
-    runner = runner(command='agenda', showalldays=False)
+    runner = runner(command='agenda', showalldays=False, days=2)
 
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, ['new'] +
