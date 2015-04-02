@@ -7,3 +7,4 @@ Patrice Peterson - runiq [at] archlinux [dot] us
 Eric Scheibler - email [at] eric-scheibler [dot] de - http://eric-scheibler.de
 Pierre David - pdagog [at] gmail [dot] com
 Markus Unterwaditzer - markus [at] unterwaditzer [dot] net - https://unterwaditzer.net
+Hugo Osvaldo Barrera - hugo@barrera.io - https://hugo.barrera.io

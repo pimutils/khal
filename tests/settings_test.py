@@ -41,6 +41,7 @@ class TestSettings(object):
                 'default_calendar': 'home',
                 'show_all_days': False,
                 'print_new': 'False',
+                'days': 2,
             }
         }
         for key in comp_config:
@@ -79,6 +80,7 @@ class TestSettings(object):
                 'default_command': 'calendar',
                 'print_new': 'False',
                 'show_all_days': False,
+                'days': 2,
             }
         }
         for key in comp_config:

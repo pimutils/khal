@@ -199,7 +199,7 @@ def _get_cli():
             locale=ctx.obj['conf']['locale'],
             weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
             show_all_days=ctx.obj['conf']['default']['show_all_days'],
-            days=days,
+            days=days or ctx.obj['conf']['default']['days'],
             events=events
         )
 
@@ -216,7 +216,7 @@ def _get_cli():
             encoding=ctx.obj['conf']['locale']['encoding'],
             show_all_days=ctx.obj['conf']['default']['show_all_days'],
             locale=ctx.obj['conf']['locale'],
-            days=days,
+            days=days or ctx.obj['conf']['default']['days'],
             events=events,
         )
 
