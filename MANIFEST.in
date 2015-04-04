@@ -1,11 +1,8 @@
 include khal.conf.sample
 include README.rst
 include CONTRIBUTING.txt
-include CONTRIBUTORS.txt
+include AUTHORS.txt
 include COPYING
-include CHANGELOG.txt
+include CHANGELOG.rst
 include misc/__khal
-include misc/khal.1
 include khal/settings/khal.spec
-include khal/settings/default.khal
-include version.py
