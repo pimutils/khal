@@ -3,11 +3,6 @@
 
 from setuptools import setup
 
-from version import write_version, VERSION
-
-write_version()
-
-
 requirements = [
     'click>=3.2',
     'icalendar',
@@ -15,6 +10,7 @@ requirements = [
     'pyxdg',
     'pytz',
     'vdirsyncer',
+    'pkginfo',
     'python-dateutil',
     'configobj',
     'tzlocal>=1.0',
@@ -26,7 +22,6 @@ extra_requirements = {
 
 setup(
     name='khal',
-    version=VERSION,
     description='A CalDAV based calendar',
     long_description=open('README.rst').read(),
     author='Christian Geier',
@@ -46,6 +41,8 @@ setup(
     },
     install_requires=requirements,
     extras_require=extra_requirements,
+    setup_requires=['setuptools_scm'],
+    use_scm_version={'write_to': 'khal/version.py'},
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",

@@ -6,4 +6,3 @@ include COPYING
 include CHANGELOG.rst
 include misc/__khal
 include khal/settings/khal.spec
-include version.py

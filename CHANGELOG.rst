@@ -11,8 +11,10 @@ may want to subscribe to `GitHub's tag feed
 =====
 not released yet
 
-* khal should accept relative dates on the command line (today, tomorrow and
-weekday names)
+* new dependencies for setup: setuptools_scm
+* khal now needs to be installed for building the documentation
+* khal should accept relative dates on the command line (today, tomorrow and 
+  weekday names)
 
 0.5.0
 =====

@@ -4,6 +4,7 @@ khal/version.py
 khal.egg-info/
 build/
 dist/
+.eggs/*
 *.db
 .tox
 .coverage
