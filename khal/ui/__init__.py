@@ -464,6 +464,9 @@ class EventColumn(urwid.WidgetWrap):
         self.eventcount = self.events.update(date)
         self.current_event = self.current_event
 
+    def set_current_date(self, date):
+        self.current_date = date
+
     def edit(self, event):
         """create an EventEditor and display it
 
@@ -626,7 +629,8 @@ class EventEditor(urwid.WidgetWrap):
         else:
             end = event.end
 
-        self.startendeditor = StartEndEditor(event.start, end, self.conf)
+        self.startendeditor = StartEndEditor(
+            event.start, end, self.conf, self.pane.eventscolumn.set_current_date)
         try:
             rrule = self.event.vevent['RRULE']
         except KeyError:

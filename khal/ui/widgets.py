@@ -57,8 +57,9 @@ class CEdit(urwid.Edit):
 
 class DateTimeWidget(CEdit):
 
-    def __init__(self, dateformat, **kwargs):
+    def __init__(self, dateformat, on_date_change=lambda x: None, **kwargs):
         self.dateformat = dateformat
+        self.on_date_change = on_date_change
         super(DateTimeWidget, self).__init__(wrap='any', **kwargs)
 
     def keypress(self, size, key):
@@ -67,6 +68,13 @@ class DateTimeWidget(CEdit):
         elif key == 'ctrl a':
             self.increase()
         else:
+            if key in ['up', 'down', 'right', 'left', 'tab']:
+                try:
+                    date = self._get_dt()
+                except ValueError:
+                    pass
+                else:
+                    self.on_date_change(date)
             return super(DateTimeWidget, self).keypress(size, key)
 
     def _get_dt(self):
@@ -76,6 +84,7 @@ class DateTimeWidget(CEdit):
     def increase(self):
         try:
             date = self._get_dt() + self.timedelta
+            self.on_date_change(date)
             self.set_edit_text(date.strftime(self.dateformat))
         except ValueError:
             pass
@@ -83,6 +92,7 @@ class DateTimeWidget(CEdit):
     def decrease(self):
         try:
             date = self._get_dt() - self.timedelta
+            self.on_date_change(date)
             self.set_edit_text(date.strftime(self.dateformat))
         except ValueError:
             pass

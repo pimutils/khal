@@ -52,11 +52,12 @@ class StartEndEditor(urwid.WidgetWrap):
     pop up on strings not matching timeformat # TODO
     """
 
-    def __init__(self, start, end, conf):
+    def __init__(self, start, end, conf, on_date_change=lambda x: None):
         self.allday = not isinstance(start, datetime)
         self.conf = conf
         self.startdt = start
         self.enddt = end
+        self.on_date_change = on_date_change
         self.dts = StartEnd(
             startdate=start.strftime(self.conf['locale']['longdateformat']),
             starttime=start.strftime(self.conf['locale']['timeformat']),
@@ -87,7 +88,8 @@ class StartEndEditor(urwid.WidgetWrap):
 
         edit = DateWidget(
             self.conf['locale']['longdateformat'],
-            caption=('', 'From: '), edit_text=self.dts.startdate)
+            caption=('', 'From: '), edit_text=self.dts.startdate,
+            on_date_change=self.on_date_change)
         edit = urwid.AttrMap(edit, self.bgs.startdate, 'editcp', )
         edit = urwid.Padding(
             edit, align='left', width=datewidth, left=0, right=1)
