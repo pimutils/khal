@@ -33,7 +33,7 @@ import datetime
 import os
 import os.path
 
-from vdirsyncer.storage import FilesystemStorage
+from vdirsyncer.storage.filesystem import FilesystemStorage
 
 from . import backend
 from .event import Event
