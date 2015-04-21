@@ -43,8 +43,6 @@ or the latest development version by executing::
 
      pip install git+git://github.com/geier/khal.git
 
-While this should take care of installing all required dependencies, installing
-*lxml* may fail. In that case have a look under :ref:`requirements`.
 This should also take care of installing all required dependencies.
 
 
@@ -54,13 +52,11 @@ Requirements
 ------------
 
 *khal* is written in python and, at the moment, only runs in python 2.7.
-Make sure you have ``sqlite3`` (normally available by default), icalendar_, urwid
-(>0.9), ``pyxdg``, vdirsyncer_ installed.
 
 If you are installing python via *pip* or from source, be aware that since
 *khal* indirectly depends on lxml_ you need to either install it via your
-system's package manager or have python's and libxml2's headers development
-packages installed.
+system's package manager or have python's and libxml2's headers (development
+packages) installed.
 
 .. _icalendar: https://github.com/collective/icalendar
 .. _vdirsyncer: https://github.com/untitaker/vdirsyncer
