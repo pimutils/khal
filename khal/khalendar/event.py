@@ -283,8 +283,10 @@ class Event(object):
             else:
                 return self._compact_datetime(day, timeformat)
         except Exception as e:
-            raise type(e)('Something went wrong while displaying "{}": {}'
-                          .format(self.href, str(e)))
+            newarg = ('Something went wrong while displaying "{}"'
+                      .format(self.href),)
+            e.args = newarg + e.args
+            raise
 
     def _compact_allday(self, day):
         if self.recur:
