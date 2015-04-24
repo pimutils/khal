@@ -110,4 +110,4 @@ class TimeWidget(DateTimeWidget):
 
     def _get_current_dtype(self):
         date_str = self.get_edit_text()
-        return datetime.strptime(date_str, self.timeformat)
+        return datetime.strptime(date_str, self.dateformat)
