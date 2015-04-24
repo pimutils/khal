@@ -22,7 +22,7 @@
 
 """this module will the event model, hopefully soon in a cleaned up version"""
 
-import datetime
+from datetime import date, datetime, time, timedelta
 
 import icalendar
 
@@ -99,10 +99,10 @@ class Event(object):
         self.etag = etag
         self.href = href
 
-        self.allday = not isinstance(self.vevent['dtstart'].dt, datetime.datetime)
+        self.allday = not isinstance(self.vevent['dtstart'].dt, datetime)
 
         if start is not None:
-            if isinstance(self.vevent['dtstart'].dt, datetime.datetime):
+            if isinstance(self.vevent['dtstart'].dt, datetime):
                 start = start.astimezone(locale['local_timezone'])
                 end = end.astimezone(locale['local_timezone'])
             self.vevent['DTSTART'].dt = start
@@ -174,7 +174,7 @@ class Event(object):
                                'assume this is meant to be single-day event '
                                'on {}'.format(self.href, self.summary,
                                               self.start))
-                end += datetime.timedelta(days=1)
+                end += timedelta(days=1)
             return end
 
         if end.tzinfo is None:
@@ -228,7 +228,7 @@ class Event(object):
         :returns: event description
         """
         if self.allday:
-            end = self.end - datetime.timedelta(days=1)
+            end = self.end - timedelta(days=1)
             if self.start == end:
                 rangestr = self.start.strftime(self.locale['longdateformat'])
             else:
@@ -294,20 +294,20 @@ class Event(object):
         else:
             recurstr = ''
 
-        if day < self.start or day + datetime.timedelta(days=1) > self.end:
+        if day < self.start or day + timedelta(days=1) > self.end:
             raise ValueError('Day out of range: {}'
                              .format(dict(day=day, start=self.start,
                                           end=self.end)))
-        elif self.start < day and self.end > day + datetime.timedelta(days=1):
+        elif self.start < day and self.end > day + timedelta(days=1):
             # event starts before and goes on longer than `day`:
             rangestr = self.symbol_strings['range']
         elif self.start < day:
             # event started before `day`
             rangestr = self.symbol_strings['range_end']
-        elif self.end > day + datetime.timedelta(days=1):
+        elif self.end > day + timedelta(days=1):
             # event goes on longer than `day`
             rangestr = self.symbol_strings['range_start']
-        elif self.start == self.end - datetime.timedelta(days=1) == day:
+        elif self.start == self.end - timedelta(days=1) == day:
             # only on `day`
             rangestr = ''
 
@@ -324,8 +324,8 @@ class Event(object):
         if day < self.start.date() or day > self.end.date():
             raise ValueError(
                 'please supply a `day` this event is scheduled on')
-        start = datetime.datetime.combine(day, datetime.time.min)
-        end = datetime.datetime.combine(day, datetime.time.max)
+        start = datetime.combine(day, time.min)
+        end = datetime.combine(day, time.max)
         local_start = self.locale['local_timezone'].localize(start)
         local_end = self.locale['local_timezone'].localize(end)
         if self.recur:
@@ -395,8 +395,8 @@ def create_timezone(tz, first_date=None, last_date=None):
 
     # TODO last_date = None, recurring to infinity
 
-    first_date = datetime.datetime.today() if not first_date else to_naive_utc(first_date)
-    last_date = datetime.datetime.today() if not last_date else to_naive_utc(last_date)
+    first_date = datetime.today() if not first_date else to_naive_utc(first_date)
+    last_date = datetime.today() if not last_date else to_naive_utc(last_date)
     timezone = icalendar.Timezone()
     timezone.add('TZID', tz)
 
