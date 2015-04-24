@@ -268,15 +268,19 @@ class Event(object):
         """
         returns a short description of the event
 
-        :param day: print information in regards to this day, if the event
-                    starts and ends on this day, the start and end time will be
-                    given (only the description for all day events), otherwise
-                    arrows will indicate if the events started before `day`
-                    and/or lasts longer.
+        print information in regards to this day, if the event starts and ends
+        on this day, the start and end time will be given (only the description
+        for all day events), otherwise arrows will indicate if the events
+        started before `day` and/or lasts longer.
+
+        :param day: the date the description is relative to
         :type day: datetime.date
         :return: compact description of Event
         :rtype: unicode()
         """
+        if isinstance(day, datetime) or not isinstance(day, date):
+            raise ValueError('`this_date` is of type `{}`, sould be '
+                             '`datetime.date`'.format(type(day)))
         try:
             if self.allday:
                 return self._compact_allday(day)
