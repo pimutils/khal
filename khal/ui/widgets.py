@@ -20,8 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import datetime
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 import re
 
 import urwid
@@ -70,37 +69,45 @@ class DateTimeWidget(CEdit):
         else:
             if key in ['up', 'down', 'right', 'left', 'tab']:
                 try:
-                    new_date = self._get_dt().date()
+                    new_date = self._get_current_dtype()
                 except ValueError:
                     pass
                 else:
                     self.on_date_change(new_date)
             return super(DateTimeWidget, self).keypress(size, key)
 
-    def _get_dt(self):
-        date = self.get_edit_text()
-        return datetime.datetime.strptime(date, self.dateformat)
 
     def increase(self):
-        try:
-            new_date = (self._get_dt() + self.timedelta).date()
-            self.on_date_change(new_date)
-            self.set_edit_text(date.strftime(self.dateformat))
-        except ValueError:
-            pass
+        """call to increase the datefield by self.timedelta"""
+        self._crease(self.dtype.__add__)
 
     def decrease(self):
+        """call to decrease the datefield by self.timedelta"""
+        self._crease(self.dtype.__sub__)
+
+    def _crease(self, fun):
+        """common implementation for `self.increase` and `self.decrease`"""
         try:
-            new_date = (self._get_dt() - self.timedelta).date()
+            new_date = fun(self._get_current_dtype(), self.timedelta)
             self.on_date_change(new_date)
-            self.set_edit_text(date.strftime(self.dateformat))
+            self.set_edit_text(new_date.strftime(self.dateformat))
         except ValueError:
             pass
 
 
 class DateWidget(DateTimeWidget):
+    dtype = date
     timedelta = timedelta(days=1)
+
+    def _get_current_dtype(self):
+        date_str = self.get_edit_text()
+        return datetime.strptime(date_str, self.dateformat).date()
 
 
 class TimeWidget(DateTimeWidget):
+    dtype = datetime
     timedelta = timedelta(minutes=15)
+
+    def _get_current_dtype(self):
+        date_str = self.get_edit_text()
+        return datetime.strptime(date_str, self.timeformat)
