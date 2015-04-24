@@ -266,7 +266,7 @@ def _get_cli():
     @cli.command()
     @click.pass_context
     def printformats(ctx):
-        '''Print a date in all formats
+        '''Print a date in all formats.
 
         Print the date 2013-12-11 10:09 in all configured date(time)
         formats to check if these locale settings are configured to once
@@ -285,7 +285,7 @@ def _get_cli():
     @click.argument('search_string')
     @click.pass_context
     def search(ctx, search_string):
-        '''Search for events matching SEARCH_STRING
+        '''Search for events matching SEARCH_STRING.
 
         For repetitive events only one event is currently shown.
         '''
@@ -305,9 +305,9 @@ def _get_cli():
     @click.argument('datetime', required=False, nargs=-1)
     @click.pass_context
     def at(ctx, datetime=None):
-        '''show all events scheduled for DATETIME
+        '''Show all events scheduled for DATETIME.
 
-        if now DATETIME is given (or the string `now`) all events scheduled
+        if DATETIME is given (or the string `now`) all events scheduled
         for this moment are shown, if only a time is given, the date is assumed
         to be today
         '''
