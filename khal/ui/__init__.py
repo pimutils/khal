@@ -325,6 +325,9 @@ class U_Event(urwid.Text):
         :param event: the encapsulated event
         :type event: khal.event.Event
         """
+        if isinstance(this_date, datetime) or not isinstance(this_date, date):
+            raise ValueError('`this_date` is of type `{}`, sould be '
+                             '`datetime.date`'.format(type(this_date)))
         self.event = event
         self.this_date = this_date
         self.eventcolumn = eventcolumn

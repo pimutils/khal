@@ -70,11 +70,11 @@ class DateTimeWidget(CEdit):
         else:
             if key in ['up', 'down', 'right', 'left', 'tab']:
                 try:
-                    date = self._get_dt()
+                    new_date = self._get_dt().date()
                 except ValueError:
                     pass
                 else:
-                    self.on_date_change(date)
+                    self.on_date_change(new_date)
             return super(DateTimeWidget, self).keypress(size, key)
 
     def _get_dt(self):
@@ -83,16 +83,16 @@ class DateTimeWidget(CEdit):
 
     def increase(self):
         try:
-            date = self._get_dt() + self.timedelta
-            self.on_date_change(date)
+            new_date = (self._get_dt() + self.timedelta).date()
+            self.on_date_change(new_date)
             self.set_edit_text(date.strftime(self.dateformat))
         except ValueError:
             pass
 
     def decrease(self):
         try:
-            date = self._get_dt() - self.timedelta
-            self.on_date_change(date)
+            new_date = (self._get_dt() - self.timedelta).date()
+            self.on_date_change(new_date)
             self.set_edit_text(date.strftime(self.dateformat))
         except ValueError:
             pass
