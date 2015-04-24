@@ -264,7 +264,7 @@ class Event(object):
         return u'{}: {}{}{}{}'.format(
             rangestr, self.summary, location, repitition, description)
 
-    def compact(self, day, timeformat='%H:%M'):
+    def compact(self, day):
         """
         returns a short description of the event
 
@@ -279,25 +279,26 @@ class Event(object):
         :rtype: unicode()
         """
         if isinstance(day, datetime) or not isinstance(day, date):
-            raise ValueError('`this_date` is of type `{}`, sould be '
+            raise ValueError('`this_date` is of type `{}`, should be '
                              '`datetime.date`'.format(type(day)))
+        if self.recur:
+            recurstr = ' ' + self.symbol_strings['recurring']
+        else:
+            recurstr = ''
+
         try:
             if self.allday:
-                return self._compact_allday(day)
+                rstring = self._compact_allday(day)
             else:
-                return self._compact_datetime(day, timeformat)
+                rstring = self._compact_datetime(day)
         except Exception as e:
             newarg = ('Something went wrong while displaying "{}"'
                       .format(self.href),)
             e.args = newarg + e.args
             raise
+        return rstring + recurstr
 
     def _compact_allday(self, day):
-        if self.recur:
-            recurstr = self.symbol_strings['recurring']
-        else:
-            recurstr = ''
-
         if day < self.start or day + timedelta(days=1) > self.end:
             raise ValueError('Day out of range: {}'
                              .format(dict(day=day, start=self.start,
@@ -315,9 +316,9 @@ class Event(object):
             # only on `day`
             rangestr = ''
 
-        return ' '.join(filter(bool, (rangestr, self.summary, recurstr)))
+        return ' '.join(filter(bool, (rangestr, self.summary)))
 
-    def _compact_datetime(self, day, timeformat='%M:%H'):
+    def _compact_datetime(self, day):
         """compact description of this event
 
         see compact() for description of `day`
@@ -332,26 +333,21 @@ class Event(object):
         end = datetime.combine(day, time.max)
         local_start = self.locale['local_timezone'].localize(start)
         local_end = self.locale['local_timezone'].localize(end)
-        if self.recur:
-            recurstr = ' ' + self.symbol_strings['recurring']
-        else:
-            recurstr = ''
 
         tostr = '-'
         if self.start < local_start:
             startstr = self.symbol_strings['right_arrow'] + ' '
             tostr = ''
         else:
-            startstr = self.start.strftime(timeformat)
+            startstr = self.start.strftime(self.locale['timeformat'])
 
         if self.end > local_end:
             endstr = self.symbol_strings['right_arrow'] + ' '
             tostr = ''
         else:
-            endstr = self.end.strftime(timeformat)
+            endstr = self.end.strftime(self.locale['timeformat'])
 
-        return (startstr + tostr + endstr +
-                ': ' + self.summary + recurstr)
+        return (startstr + tostr + endstr + ': ' + self.summary)
 
     def _create_calendar(self):
         """
