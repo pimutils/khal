@@ -76,7 +76,6 @@ class DateTimeWidget(CEdit):
                     self.on_date_change(new_date)
             return super(DateTimeWidget, self).keypress(size, key)
 
-
     def increase(self):
         """call to increase the datefield by self.timedelta"""
         self._crease(self.dtype.__add__)
