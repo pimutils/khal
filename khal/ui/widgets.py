@@ -69,7 +69,7 @@ class DateTimeWidget(CEdit):
         else:
             if key in ['up', 'down', 'right', 'left', 'tab']:
                 try:
-                    new_date = self._get_current_dtype()
+                    new_date = self._get_current_value()
                 except ValueError:
                     pass
                 else:
@@ -87,7 +87,7 @@ class DateTimeWidget(CEdit):
     def _crease(self, fun):
         """common implementation for `self.increase` and `self.decrease`"""
         try:
-            new_date = fun(self._get_current_dtype(), self.timedelta)
+            new_date = fun(self._get_current_value(), self.timedelta)
             self.on_date_change(new_date)
             self.set_edit_text(new_date.strftime(self.dateformat))
         except ValueError:
@@ -98,7 +98,7 @@ class DateWidget(DateTimeWidget):
     dtype = date
     timedelta = timedelta(days=1)
 
-    def _get_current_dtype(self):
+    def _get_current_value(self):
         date_str = self.get_edit_text()
         return datetime.strptime(date_str, self.dateformat).date()
 
@@ -107,6 +107,6 @@ class TimeWidget(DateTimeWidget):
     dtype = datetime
     timedelta = timedelta(minutes=15)
 
-    def _get_current_dtype(self):
+    def _get_current_value(self):
         date_str = self.get_edit_text()
         return datetime.strptime(date_str, self.dateformat)
