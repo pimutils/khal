@@ -284,6 +284,12 @@ class SQLiteDb(object):
             duration = duration.days * 3600 * 24 + duration.seconds
 
         dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
+        if not dtstartend:
+            # Does this event even have dates? Technically it is possible for
+            # events to be empty/non-existent by deleting all their recurrences
+            # through EXDATE.
+            return
+
         for dtstart, dtend in dtstartend:
             if all_day_event:
                 dbstart = aux.to_unix_time(dtstart)
@@ -325,17 +331,14 @@ class SQLiteDb(object):
                     'VALUES (?, ?, ?, ?, ?, ?);'.format(recs_table))
                 stuple = (dbstart, dbend, href, href_rec_inst, rec_inst, self.calendar)
             self.sql_ex(recs_sql_s, stuple)
+            # end of loop
 
-        if dtstartend:
-            # Does this event even have dates? Technically it is possible for
-            # events to be empty/non-existent by deleting all their recurrences
-            # through EXDATE.
-            sql_s = ('INSERT INTO events '
-                     '(item, etag, href, calendar, hrefrecuid) '
-                     'VALUES (?, ?, ?, ?, ?);')
-            stuple = (vevent.to_ical().decode('utf-8'),
-                      etag, href, self.calendar, href_rec_inst)
-            self.sql_ex(sql_s, stuple)
+        sql_s = ('INSERT INTO events '
+                 '(item, etag, href, calendar, hrefrecuid) '
+                 'VALUES (?, ?, ?, ?, ?);')
+        stuple = (vevent.to_ical().decode('utf-8'),
+                  etag, href, self.calendar, href_rec_inst)
+        self.sql_ex(sql_s, stuple)
 
     def get_ctag(self):
         stuple = (self.calendar, )
