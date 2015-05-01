@@ -559,8 +559,16 @@ class EventDisplay(urwid.WidgetWrap):
 
         lines.append(divider)
 
+        # show organizer
+        try:
+            organizer = str(event.vevent['ORGANIZER'].encode('utf-8')).split(':')
+            lines.append(urwid.Text(
+                'Organizer: ' + organizer[len(organizer) - 1]))
+        except KeyError:
+            pass
+
         # description and location
-        for key, desc in [('DESCRIPTION', 'Description'), ('LOCATION', 'Location')]:
+        for key, desc in [('LOCATION', 'Location'), ('DESCRIPTION', 'Description')]:
             try:
                 lines.append(urwid.Text(
                     desc + ': ' + str(event.vevent[key].encode('utf-8'))))
