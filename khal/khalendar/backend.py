@@ -432,8 +432,8 @@ class SQLiteDb(object):
         stuple = (strstart, strend, strstart, strend, strstart, strend, self.calendar)
         result = self.sql_ex(sql_s, stuple)
         for href_rec_inst, start, end in result:
-            start = datetime.date.fromtimestamp(start)
-            end = datetime.date.fromtimestamp(end)
+            start = datetime.datetime.utcfromtimestamp(start).date()
+            end = datetime.datetime.utcfromtimestamp(end).date()
             event = self.get(href_rec_inst, start=start, end=end)
             yield event
 
@@ -473,8 +473,8 @@ class SQLiteDb(object):
         stuple = (dtime, dtime, self.calendar)
         result = self.sql_ex(sql_s, stuple)
         for href_rec_inst, start, end in result:
-            start = datetime.date.fromtimestamp(start)
-            end = datetime.date.fromtimestamp(end)
+            start = datetime.datetime.utcfromtimestamp(start).date()
+            end = datetime.datetime.utcfromtimestamp(end).date()
             event = self.get(href_rec_inst, start=start, end=end)
             yield event
 
