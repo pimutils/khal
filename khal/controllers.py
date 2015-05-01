@@ -57,7 +57,7 @@ def construct_daynames(daylist, longdateformat):
             yield (date, date.strftime(longdateformat))
 
 
-def get_agenda(collection, locale, dates=[],
+def get_agenda(collection, locale, dates=None,
                days=None, events=None, width=45, show_all_days=False):
     """returns a list of events scheduled for all days in daylist
 
@@ -79,13 +79,12 @@ def get_agenda(collection, locale, dates=[],
     if days is None:
         days = 2
 
-    if len(dates) == 0:
+    if dates is None or len(dates) == 0:
         dates = [datetime.date.today()]
     else:
         try:
             dates = [
-                aux.datefstr(date, locale['dateformat'],
-                             locale['longdateformat'])
+                aux.datefstr(date, locale['dateformat'], locale['longdateformat'])
                 if not isinstance(date, datetime.date) else date
                 for date in dates
             ]
