@@ -347,9 +347,10 @@ class Event(object):
         else:
             endstr = self.end.strftime(self.locale['timeformat'])
 
-        return (startstr + tostr + endstr + ': ' + self.summary)
+        return startstr + tostr + endstr + ': ' + self.summary
 
-    def _create_calendar(self):
+    @staticmethod
+    def _create_calendar():
         """
         create the calendar
 
