@@ -381,7 +381,11 @@ class U_Event(urwid.Text):
         elif key in binds['left'] + binds['up'] + binds['down']:
             if not self.conf['view']['event_view_always_visible']:
                 self.eventcolumn.current_event = None
-        return key
+
+        if key in ['esc'] and self.eventcolumn.current_event:
+            self.eventcolumn.current_event = None
+        else:
+            return key
 
 
 class EventList(urwid.WidgetWrap):
