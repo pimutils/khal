@@ -274,13 +274,27 @@ event_rrule_this_and_future_allday = \
     event_rrule_this_and_future_allday_temp.format(20140708, 20140709)
 
 
+def get_allday_range(dbi, start, end):
+    """get all events between start and end (inclusive)
+
+    :type start: datetime.date
+    :type end: datetime.date
+    """
+    events = list()
+    this_date = start
+    while this_date < end:
+        events.extend(dbi.get_allday_range(this_date))
+        this_date += timedelta(days=1)
+    events = sorted(events, key=lambda x: x.start)
+    return events
+
+
 def test_event_rrule_this_and_future_allday():
     dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
     dbi.update(event_rrule_this_and_future_allday,
                href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
-    events = dbi.get_allday_range(date(2014, 4, 30), date(2014, 9, 26))
-    events = sorted(events, key=lambda x: x.start)
+    events = get_allday_range(dbi, date(2014, 4, 30), date(2014, 9, 26))
     assert len(events) == 6
 
     assert events[0].start == date(2014, 6, 30)
@@ -309,8 +323,8 @@ def test_event_rrule_this_and_future_allday_prior():
     dbi.update(event_rrule_this_and_future_allday_prior,
                href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
-    events = dbi.get_allday_range(date(2014, 4, 30), date(2014, 9, 26))
-    events = sorted(events, key=lambda x: x.start)
+    events = get_allday_range(dbi, date(2014, 4, 30), date(2014, 9, 26))
+
     assert len(events) == 6
 
     assert events[0].start == date(2014, 6, 30)
@@ -362,28 +376,32 @@ def test_event_rrule_multi_this_and_future_allday():
     dbi.update(event_rrule_multi_this_and_future_allday,
                href='event_rrule_multi_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('event_rrule_multi_this_and_future_allday.ics', 'abcd')]
-    events = dbi.get_allday_range(start=date(2014, 4, 30), end=date(2014, 9, 26))
-    events = sorted(events, key=lambda x: x.start)
-    assert len(events) == 6
+    events = get_allday_range(dbi, start=date(2014, 4, 30), end=date(2014, 9, 26))
+    # we are getting two events twice, because they last for two days
+    assert len(events) == 8
 
     assert events[0].start == date(2014, 6, 30)
     assert events[1].start == date(2014, 7, 12)
-    assert events[2].start == date(2014, 7, 17)
-    assert events[3].start == date(2014, 7, 19)
-    assert events[4].start == date(2014, 7, 24)
-    assert events[5].start == date(2014, 7, 31)
+    assert events[2].start == date(2014, 7, 12)
+    assert events[3].start == date(2014, 7, 17)
+    assert events[4].start == date(2014, 7, 19)
+    assert events[5].start == date(2014, 7, 19)
+    assert events[6].start == date(2014, 7, 24)
+    assert events[7].start == date(2014, 7, 31)
 
     assert events[0].end == date(2014, 7, 1)
     assert events[1].end == date(2014, 7, 14)
-    assert events[2].end == date(2014, 7, 18)
-    assert events[3].end == date(2014, 7, 21)
-    assert events[4].end == date(2014, 7, 25)
-    assert events[5].end == date(2014, 8, 1)
+    assert events[2].end == date(2014, 7, 14)
+    assert events[3].end == date(2014, 7, 18)
+    assert events[4].end == date(2014, 7, 21)
+    assert events[5].end == date(2014, 7, 21)
+    assert events[6].end == date(2014, 7, 25)
+    assert events[7].end == date(2014, 8, 1)
 
     assert unicode_type(events[0].vevent['SUMMARY']) == u'Arbeit'
-    for event in [events[1], events[3]]:
+    for event in events[1:3] + events[4:6]:
         assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
-    for event in events[2:3] + events[4:]:
+    for event in events[3:4] + events[6:]:
         assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (neu)'
 
 

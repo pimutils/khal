@@ -404,20 +404,15 @@ class SQLiteDb(object):
             event = self.get(href_rec_inst, start=start, end=end)
             yield event
 
-    def get_allday_range(self, start, end=None):
+    def get_allday_range(self, start):
         """
+        get all allday events scheduled for day `start`
+
         :type start: datetime.date
         :type end: datetime.date
         """
-        if isinstance(start, datetime.datetime):
-            start = start.date()
-        if end is None:
-            end = start + datetime.timedelta(days=1)
-        elif isinstance(end, datetime.datetime):
-            end = end.date()
-
         strstart = aux.to_unix_time(start)
-        strend = aux.to_unix_time(end)
+        strend = aux.to_unix_time(start + datetime.timedelta(days=1))
         sql_s = ('SELECT recs_float.hrefrecuid, dtstart, dtend FROM '
                  'recs_float JOIN events ON '
                  'recs_float.hrefrecuid = events.hrefrecuid AND '
@@ -434,6 +429,7 @@ class SQLiteDb(object):
             yield event
 
     def get_datetime_at(self, dtime):
+        """return datetime events which are scheduled at `dtime`"""
         dtime = aux.to_unix_time(dtime)
         sql_s = ('SELECT recs_loc.hrefrecuid, dtstart, dtend FROM '
                  'recs_loc JOIN events ON '

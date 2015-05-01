@@ -111,9 +111,9 @@ class Calendar(object):
     def local_ctag(self):
         return os.path.getmtime(self.path)
 
-    def get_allday_by_time_range(self, start, end=None):
+    def get_allday_by_time_range(self, start):
         return [self._cover_event(event) for event in
-                self._dbtool.get_allday_range(start, end)]
+                self._dbtool.get_allday_range(start)]
 
     def get_datetime_by_time_range(self, start, end):
         return [self._cover_event(event) for event in
@@ -249,10 +249,10 @@ class CalendarCollection(object):
     def append(self, calendar):
         self._calnames[calendar.name] = calendar
 
-    def get_allday_by_time_range(self, start, end=None):
+    def get_allday_by_time_range(self, start):
         events = list()
         for one in self.calendars:
-            events.extend(one.get_allday_by_time_range(start, end))
+            events.extend(one.get_allday_by_time_range(start))
         return events
 
     def get_datetime_by_time_range(self, start, end):
