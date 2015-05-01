@@ -379,7 +379,8 @@ class U_Event(urwid.Text):
         elif key in binds['delete']:
             self.toggle_delete()
         elif key in binds['left'] + binds['up'] + binds['down']:
-            self.eventcolumn.current_event = None
+            if not self.conf['view']['event_view_always_visible']:
+                self.eventcolumn.current_event = None
         return key
 
 
@@ -435,6 +436,7 @@ class EventColumn(urwid.WidgetWrap):
         self.editor = False
         self.eventcount = 0
         self._current_date = None
+        self.event_width = int(self.pane.conf['view']['event_view_weighting'])
 
         # TODO make this switch from pile to columns depending on terminal size
         self.events = EventList(eventcolumn=self)
@@ -458,7 +460,7 @@ class EventColumn(urwid.WidgetWrap):
                                         ('pack', None)))
         self.container.contents.append(
             (EventDisplay(self.pane.conf, event, collection=self.pane.collection),
-             self.container.options()))
+             ('weight', self.event_width)))
 
     @property
     def current_date(self):

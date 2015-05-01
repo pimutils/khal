@@ -129,3 +129,13 @@ days = integer(default=2)
 # After adding a new event, what should be printed to standard out? The whole
 # event in text form, the path to where the event is now saved or nothing?
 print_new = option('event', 'path', 'False', default=False)
+
+# The view section contains config options that effect the visual appearance
+# when using khal
+[view]
+
+# This is the weighting that is applied to the event view window
+event_view_weighting = integer(default=1)
+
+# Set to true to always show the event view window when looking at the even list
+event_view_always_visible = boolean(default=False)
