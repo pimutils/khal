@@ -120,6 +120,7 @@ class Calendar(object):
                 self._dbtool.get_time_range(start, end)]
 
     def get_events_at(self, dtime=datetime.datetime.now()):
+        """return events which are scheduled at `dtime`"""
         events = list()
         events.extend(self._dbtool.get_allday_at(dtime))
         events.extend(self._dbtool.get_datetime_at(dtime))

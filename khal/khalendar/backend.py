@@ -254,8 +254,13 @@ class SQLiteDb(object):
             self._update_impl(vevent, href, etag)
 
     def _update_impl(self, vevent, href, etag):
-        """expand (if needed) and insert non-reccuring and original recurring
-        (those with an RRULE property"""
+        """insert `vevent` into the database
+
+        expand `vevent`'s reccurence rules (if needed) and insert all instance
+        in the respective tables
+        than insert non-reccuring and original recurring (those with an RRULE
+        property) events into table `events`
+        """
         # TODO FIXME this function is a steaming pile of shit
 
         assert isinstance(vevent, icalendar.Event)  # REMOVE ME
@@ -364,9 +369,10 @@ class SQLiteDb(object):
     def delete(self, href, etag=None):
         """
         removes the event from the db,
-        returns nothing
+
         :param etag: only there for compatiblity with vdirsyncer's Storage,
                      we always delete
+        :returns: None
         """
         for table in ['recs_loc', 'recs_float']:
             sql_s = 'DELETE FROM {0} WHERE href = ? AND calendar = ?;'.format(table)
@@ -447,7 +453,8 @@ class SQLiteDb(object):
             yield event
 
     def get_allday_at(self, dtime):
-        """
+        """return allday events which are scheduled at `dtime`
+
         :type start: datetime.date
         :type end: datetime.date
         """
@@ -469,9 +476,10 @@ class SQLiteDb(object):
             yield event
 
     def get(self, href_rec_inst, start=None, end=None):
-        """returns the Event matching href_rec_inst, if start and end are given, a
-        specific Event from a Recursion set is returned, otherwise the Event
-        returned exactly as saved in the db
+        """returns the Event matching href_rec_inst
+
+        if start and end are given, a specific Event from a Recursion set is
+        returned, otherwise the Event returned exactly as saved in the db
         """
         sql_s = 'SELECT href, etag, item FROM events WHERE hrefrecuid = ?;'
         result = self.sql_ex(sql_s, (href_rec_inst, ))
@@ -487,6 +495,7 @@ class SQLiteDb(object):
                      )
 
     def search(self, search_string):
+        """search for events matching `search_string`"""
         sql_s = ('SELECT hrefrecuid FROM events '
                  'WHERE item LIKE (?) and calendar = (?)')
         stuple = ('%' + search_string + '%', self.calendar)

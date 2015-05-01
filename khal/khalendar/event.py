@@ -243,8 +243,8 @@ class Event(object):
             if self.start.utctimetuple()[:3] == self.end.utctimetuple()[:3]:
                 starttime = self.start.strftime(self.locale['timeformat'])
                 endtime = self.end.strftime(self.locale['timeformat'])
-                date = self.end.strftime(self.locale['longdateformat'])
-                rangestr = starttime + u'-' + endtime + u' ' + date
+                datestr = self.end.strftime(self.locale['longdateformat'])
+                rangestr = starttime + u'-' + endtime + u' ' + datestr
             else:
                 startstr = self.start.strftime(self.locale['longdatetimeformat'])
                 endstr = self.end.strftime(self.locale['longdatetimeformat'])
