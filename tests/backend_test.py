@@ -533,9 +533,9 @@ END:VCARD
 def test_birthdays(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
     db = backend.SQLiteDb_Birthdays('home', dbpath, locale=locale)
-    assert list(db.get_allday_range(date(1971, 03, 11))) == list()
+    assert list(db.get_allday_range(date(1971, 3, 11))) == list()
     db.update(card, 'unix.vcf')
-    events = list(db.get_allday_range(date(1971, 03, 11)))
+    events = list(db.get_allday_range(date(1971, 3, 11)))
     assert len(events) == 1
     assert unicode_type(events[0].vevent['SUMMARY']) == u'Unix\'s birthday'
 
@@ -543,9 +543,9 @@ def test_birthdays(tmpdir):
 def test_birthdays_no_year(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
     db = backend.SQLiteDb_Birthdays('home', dbpath, locale=locale)
-    assert list(db.get_allday_range(date(1971, 03, 11))) == list()
+    assert list(db.get_allday_range(date(1971, 3, 11))) == list()
     db.update(card_no_year, 'unix.vcf')
-    events = list(db.get_allday_range(date(1971, 03, 11)))
+    events = list(db.get_allday_range(date(1971, 3, 11)))
     assert len(events) == 1
     assert unicode_type(events[0].vevent['SUMMARY']) == u'Unix\'s birthday'
 
@@ -553,7 +553,7 @@ def test_birthdays_no_year(tmpdir):
 def test_birthday_does_not_parse(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
     db = backend.SQLiteDb_Birthdays('home', dbpath, locale=locale)
-    assert list(db.get_allday_range(date(1971, 03, 11))) == list()
+    assert list(db.get_allday_range(date(1971, 3, 11))) == list()
     db.update(card_does_not_parse, 'unix.vcf')
-    events = list(db.get_allday_range(date(1971, 03, 11)))
+    events = list(db.get_allday_range(date(1971, 3, 11)))
     assert len(events) == 0
