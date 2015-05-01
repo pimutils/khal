@@ -14,6 +14,10 @@ not yet released
 * fixed several bugs relating to events with unknown timezones but UNTIL, RDATE
   or EXDATE properties that are in Zulu time (thanks to Michele Baldessari for
   reporting those)
+* bugfix: on systems with a local time of UTC-X dealing with allday events lead
+  to crashes
+* bugfix: british summer time is recognized as daylight saving time (Bradley
+  Jones)
 * new command `search` allows to search for events
 * user changeable keybindings in ikhal, with hjkl as default alternatives for
   arrows in calendar browser, see documentation for more details
@@ -21,6 +25,9 @@ not yet released
 * support for reading birthdays from vcard collections (set calendar/collection
   `type` to *birthdays*)
 
+ikhal
+-----
+* show events organizers (Bradley Jones)
 
 0.4.0
 =====
