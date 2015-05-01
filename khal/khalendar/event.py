@@ -299,7 +299,7 @@ class Event(object):
         return rstring + recurstr
 
     def _compact_allday(self, day):
-        if day < self.start or day + timedelta(days=1) > self.end:
+        if self.start > day or self.end < day + timedelta(days=1):
             raise ValueError('Day out of range: {}'
                              .format(dict(day=day, start=self.start,
                                           end=self.end)))
