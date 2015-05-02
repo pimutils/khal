@@ -25,7 +25,7 @@ import re
 
 import urwid
 
-from ..compat import unicode_type
+from ..compat import to_unicode
 
 
 def delete_last_word(text, number=1):
@@ -48,7 +48,7 @@ class CEdit(urwid.Edit):
 
     def _delete_word(self):
         """delete word before cursor"""
-        text = unicode_type(self.get_edit_text())
+        text = to_unicode(self.get_edit_text(), 'utf-8')
         f_text = delete_last_word(text[:self.edit_pos])
         self.set_edit_text(f_text + text[self.edit_pos:])
         self.set_edit_pos(len(f_text))
