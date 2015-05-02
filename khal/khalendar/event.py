@@ -28,7 +28,7 @@ from datetime import date, datetime, time, timedelta
 
 import icalendar
 
-from ..compat import unicode_type, bytes_type, iteritems
+from ..compat import unicode_type, bytes_type, iteritems, to_unicode
 from .aux import to_naive_utc
 from ..log import logger
 
@@ -260,7 +260,7 @@ class Event(object):
             self.location is not None else ''
         description = '\nDescription: ' + self.description if \
             self.description is not None else ''
-        repitition = '\nRepeat: ' + self.recurpattern if \
+        repitition = '\nRepeat: ' + to_unicode(self.recurpattern) if \
             self.recurpattern is not None else ''
 
         return '{}: {}{}{}{}'.format(

@@ -37,6 +37,7 @@ from khal import aux, controllers, khalendar, __version__
 from khal.log import logger
 from khal.settings import get_config, InvalidSettingsError
 from khal.exceptions import FatalError
+from .compat import to_unicode
 from .terminal import colored, get_terminal_size
 
 
@@ -144,7 +145,7 @@ def prepare_context(ctx, config, verbose):
         sys.exit(1)
 
     logger.debug('Using config:')
-    logger.debug(stringify_conf(conf).decode('utf-8'))
+    logger.debug(to_unicode(stringify_conf(conf), 'utf-8'))
 
     if conf is None:
         raise click.UsageError('Invalid config file, exiting.')
