@@ -20,6 +20,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from __future__ import unicode_literals
+
 import calendar
 from datetime import date, datetime, time, timedelta
 import signal
@@ -554,7 +556,7 @@ class EventDisplay(urwid.WidgetWrap):
         lines = []
         lines.append(urwid.Columns([
             urwid.Text(event.vevent['SUMMARY']),
-            urwid.Text(u'Calendar: ' + event.calendar)
+            urwid.Text('Calendar: ' + event.calendar)
         ], dividechars=2))
 
         lines.append(divider)
@@ -600,8 +602,8 @@ class EventDisplay(urwid.WidgetWrap):
         if startstr == endstr:
             lines.append(urwid.Text('On: ' + startstr))
         else:
-            lines.append(urwid.Text(u'From: ' + startstr))
-            lines.append(urwid.Text(u'To: ' + endstr))
+            lines.append(urwid.Text('From: ' + startstr))
+            lines.append(urwid.Text('To: ' + endstr))
 
         pile = CPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
@@ -629,11 +631,11 @@ class EventEditor(urwid.WidgetWrap):
         try:
             self.description = event.vevent['DESCRIPTION']
         except KeyError:
-            self.description = u''
+            self.description = ''
         try:
             self.location = event.vevent['LOCATION']
         except KeyError:
-            self.location = u''
+            self.location = ''
 
         if event.allday:
             end = event.end - timedelta(days=1)
@@ -661,9 +663,9 @@ class EventEditor(urwid.WidgetWrap):
             self.collection._calnames[self.event.calendar],
             decorate_choice
         )
-        self.description = Edit(caption=u'Description: ',
+        self.description = Edit(caption='Description: ',
                                 edit_text=self.description)
-        self.location = Edit(caption=u'Location: ',
+        self.location = Edit(caption='Location: ',
                              edit_text=self.location)
         self.pile = urwid.ListBox(CSimpleFocusListWalker([
             urwid.Columns([
@@ -677,14 +679,14 @@ class EventEditor(urwid.WidgetWrap):
             self.startendeditor,
             self.recursioneditor,
             divider,
-            urwid.Button(u'Save', on_press=self.save)
+            urwid.Button('Save', on_press=self.save)
         ]))
 
         urwid.WidgetWrap.__init__(self, self.pile)
 
     @property
     def title(self):  # Window title
-        return u'Edit: {}'.format(self.summary.get_edit_text())
+        return 'Edit: {}'.format(self.summary.get_edit_text())
 
     def get_keys(self):
         return [(['arrows'], 'navigate through properties'),
@@ -795,8 +797,8 @@ class ClassicView(Pane):
     on the right
     """
 
-    def __init__(self, collection, conf=None, title=u'',
-                 description=u''):
+    def __init__(self, collection, conf=None, title='',
+                 description=''):
         self.init = True
         # Will be set when opening the view inside a Window
         self.window = None

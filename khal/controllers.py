@@ -21,6 +21,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+from __future__ import unicode_literals
+
 from click import echo
 
 import datetime
@@ -50,9 +52,9 @@ def construct_daynames(daylist, longdateformat):
     """
     for date in daylist:
         if date == datetime.date.today():
-            yield (date, u'Today:')
+            yield (date, 'Today:')
         elif date == datetime.date.today() + datetime.timedelta(days=1):
-            yield (date, u'Tomorrow:')
+            yield (date, 'Tomorrow:')
         else:
             yield (date, date.strftime(longdateformat))
 
@@ -186,5 +188,5 @@ class Interactive(object):
                               description='do something')
         ui.start_pane(
             pane, pane.cleanup,
-            program_info=u'{0} v{1}'.format(__productname__, __version__)
+            program_info='{0} v{1}'.format(__productname__, __version__)
         )
