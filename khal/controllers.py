@@ -137,6 +137,8 @@ class Calendar(object):
             firstweekday=firstweekday, weeknumber=weeknumber)
 
         rows = merge_columns(calendar_column, event_column)
+        # XXX: Generate this as a unicode in the first place, rather than
+        # casting it.
         echo('\n'.join(rows).encode(encoding))
 
 
@@ -147,6 +149,8 @@ class Agenda(object):
         term_width, _ = get_terminal_size()
         event_column = get_agenda(collection, dates=date, width=term_width,
                                   show_all_days=show_all_days, **kwargs)
+        # XXX: Generate this as a unicode in the first place, rather than
+        # casting it.
         echo(to_unicode('\n'.join(event_column), encoding))
 
 
