@@ -32,6 +32,7 @@ import sys
 import textwrap
 
 from khal import aux, calendar_display
+from khal.compat import to_unicode
 from khal.khalendar.exceptions import ReadOnlyCalendarError
 from khal.exceptions import FatalError
 from khal.khalendar.event import Event
@@ -146,7 +147,7 @@ class Agenda(object):
         term_width, _ = get_terminal_size()
         event_column = get_agenda(collection, dates=date, width=term_width,
                                   show_all_days=show_all_days, **kwargs)
-        echo('\n'.join(event_column).encode(encoding))
+        echo(to_unicode('\n'.join(event_column), encoding))
 
 
 class NewFromString(object):
