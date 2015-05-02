@@ -30,6 +30,7 @@ import sys
 import urwid
 
 from .. import aux
+from ..compat import to_unicode
 from ..calendar_display import getweeknumber
 
 from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker, Choice
@@ -563,7 +564,7 @@ class EventDisplay(urwid.WidgetWrap):
 
         # show organizer
         try:
-            organizer = str(event.vevent['ORGANIZER'].encode('utf-8')).split(':')
+            organizer = to_unicode(event.vevent['ORGANIZER'], 'utf-8').split(':')
             lines.append(urwid.Text(
                 'Organizer: ' + organizer[len(organizer) - 1]))
         except KeyError:
@@ -573,7 +574,7 @@ class EventDisplay(urwid.WidgetWrap):
         for key, desc in [('LOCATION', 'Location'), ('DESCRIPTION', 'Description')]:
             try:
                 lines.append(urwid.Text(
-                    desc + ': ' + str(event.vevent[key].encode('utf-8'))))
+                    desc + ': ' + to_unicode(event.vevent[key], 'utf-8')))
             except KeyError:
                 pass
 
