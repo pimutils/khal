@@ -23,9 +23,9 @@
 """all functions related to terminal display are collected here"""
 
 try:
-    from itertools import izip_longest
+    from itertools import izip_longest as zip_longest
 except ImportError:
-    from itertools import zip_longest as izip_longest
+    from itertools import zip_longest
 
 try:
     # python 3.3+
@@ -68,23 +68,6 @@ COLORS = {
 }
 
 
-def rstring(string):
-    """returns string as reverse color string (ANSI escape codes)
-
-    >>> rstring('test')
-    '\\x1b[7mtest\\x1b[0m'
-    """
-    return RTEXT + string + NTEXT
-
-
-def bstring(string):
-    """returns string as bold string (ANSI escape codes)
-    >>> bstring('test')
-    '\\x1b[1mtest\\x1b[0m'
-    """
-    return BTEXT + string + NTEXT
-
-
 def colored(string, colorstring):
     try:
         color = COLORS[colorstring]
@@ -107,6 +90,6 @@ def merge_columns(lcolumn, rcolumn, width=25):
     if missing > 0:
         lcolumn = lcolumn + missing * [width * ' ']
 
-    rows = ['    '.join(one) for one in izip_longest(
+    rows = ['    '.join(one) for one in zip_longest(
         lcolumn, rcolumn, fillvalue='')]
     return rows

@@ -29,7 +29,7 @@ note on naming:
     respective types
 
 """
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import contextlib
 import datetime
@@ -526,7 +526,7 @@ def check_support(vevent, href, calendar):
             .format(href, calendar)
         )
     rdate = vevent.get('RDATE')
-    if rdate is not None and rdate.params.get('VALUE') == u'PERIOD':
+    if rdate is not None and rdate.params.get('VALUE') == 'PERIOD':
         raise UpdateFailed(
             '`RDATE;VALUE=PERIOD` is currently not supported by khal. '
             'Therefore event {} from calendar {} will not be shown in khal.\n'
@@ -546,7 +546,7 @@ class SQLiteDb_Birthdays(SQLiteDb):
         if 'BDAY' in vcard.keys():
             bday = vcard['BDAY']
             try:
-                if bday[0:2] == u'--' and bday[3] != u'-':
+                if bday[0:2] == '--' and bday[3] != '-':
                     bday = '1900' + bday[2:]
                 bday = parser.parse(bday).date()
             except ValueError:
@@ -557,7 +557,7 @@ class SQLiteDb_Birthdays(SQLiteDb):
             event = icalendar.Event()
             event.add('dtstart', bday)
             event.add('dtend', bday + datetime.timedelta(days=1))
-            event.add('summary', u'{}\'s birthday'.format(name))
+            event.add('summary', '{}\'s birthday'.format(name))
             event.add('rrule', {'freq': 'YEARLY'})
             event.add('uid', href)
             self._update_impl(event, href, etag)

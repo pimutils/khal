@@ -8,6 +8,7 @@ from datetime import timedelta
 import pytest
 from click.testing import CliRunner
 
+from khal.compat import to_bytes
 from khal.cli import main_khal
 
 
@@ -77,7 +78,7 @@ def test_direct_modification(runner):
     event.write(cal_dt)
     result = runner.invoke(main_khal, ['agenda', '09.04.2014'])
     assert not result.exception
-    assert result.output == u'09.04.2014\n09:30-10:30: An Event\n'
+    assert result.output == '09.04.2014\n09:30-10:30: An Event\n'
 
     os.remove(str(event))
     result = runner.invoke(main_khal, ['agenda'])
@@ -186,7 +187,7 @@ def test_invalid_calendar(runner):
 def test_no_vevent(runner, tmpdir, contents):
     runner = runner(command='agenda', showalldays=False, days=2)
     broken_item = runner.calendars['one'].join('broken_item.ics')
-    broken_item.write(contents.encode('utf-8'), mode='wb')
+    broken_item.write(to_bytes(contents, 'utf-8'), mode='wb')
 
     result = runner.invoke(main_khal)
     assert not result.exception

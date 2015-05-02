@@ -21,7 +21,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from click import echo
+from __future__ import unicode_literals
+
+from click import echo, style
 
 import datetime
 import itertools
@@ -30,12 +32,13 @@ import sys
 import textwrap
 
 from khal import aux, calendar_display
+from khal.compat import to_unicode
 from khal.khalendar.exceptions import ReadOnlyCalendarError
 from khal.exceptions import FatalError
 from khal.khalendar.event import Event
 from khal import __version__, __productname__
 from khal.log import logger
-from .terminal import bstring, colored, get_terminal_size, merge_columns
+from .terminal import colored, get_terminal_size, merge_columns
 
 
 def construct_daynames(daylist, longdateformat):
@@ -50,9 +53,9 @@ def construct_daynames(daylist, longdateformat):
     """
     for date in daylist:
         if date == datetime.date.today():
-            yield (date, u'Today:')
+            yield (date, 'Today:')
         elif date == datetime.date.today() + datetime.timedelta(days=1):
-            yield (date, u'Tomorrow:')
+            yield (date, 'Tomorrow:')
         else:
             yield (date, date.strftime(longdateformat))
 
@@ -109,14 +112,14 @@ def get_agenda(collection, locale, dates=None,
         if len(events) == 0 and len(all_day_events) == 0 and not show_all_days:
             continue
 
-        event_column.append(bstring(dayname))
+        event_column.append(style(dayname, bold=True))
         events.sort(key=lambda e: e.start)
         for event in itertools.chain(all_day_events, events):
             desc = textwrap.wrap(event.compact(day), width)
             event_column.extend([colored(d, event.color) for d in desc])
 
     if event_column == []:
-        event_column = [bstring('No events')]
+        event_column = [style('No events', bold=True)]
     return event_column
 
 
@@ -134,6 +137,8 @@ class Calendar(object):
             firstweekday=firstweekday, weeknumber=weeknumber)
 
         rows = merge_columns(calendar_column, event_column)
+        # XXX: Generate this as a unicode in the first place, rather than
+        # casting it.
         echo('\n'.join(rows).encode(encoding))
 
 
@@ -144,7 +149,9 @@ class Agenda(object):
         term_width, _ = get_terminal_size()
         event_column = get_agenda(collection, dates=date, width=term_width,
                                   show_all_days=show_all_days, **kwargs)
-        echo('\n'.join(event_column).encode(encoding))
+        # XXX: Generate this as a unicode in the first place, rather than
+        # casting it.
+        echo(to_unicode('\n'.join(event_column), encoding))
 
 
 class NewFromString(object):
@@ -170,10 +177,10 @@ class NewFromString(object):
                          'read-only'.format(collection.default_calendar_name))
             sys.exit(1)
         if conf['default']['print_new'] == 'event':
-            print(event.long())
+            echo(event.long())
         elif conf['default']['print_new'] == 'path':
             path = collection._calnames[event.calendar].path + event.href
-            print(path.encode(conf['locale']['encoding']))
+            echo(path.encode(conf['locale']['encoding']))
 
 
 class Interactive(object):
@@ -186,5 +193,5 @@ class Interactive(object):
                               description='do something')
         ui.start_pane(
             pane, pane.cleanup,
-            program_info=u'{0} v{1}'.format(__productname__, __version__)
+            program_info='{0} v{1}'.format(__productname__, __version__)
         )

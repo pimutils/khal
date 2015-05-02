@@ -2,17 +2,7 @@
 # vim: set ts=4 sw=4 expandtab sts=4:
 
 
-from khal.terminal import merge_columns, colored, bstring, rstring
-
-
-def test_rstring():
-    assert rstring('test') == '\x1b[7mtest\x1b[0m'
-    assert rstring(u'täst') == u'\x1b[7mtäst\x1b[0m'
-
-
-def test_bstring():
-    assert bstring('test') == '\x1b[1mtest\x1b[0m'
-    assert bstring(u'täst') == u'\x1b[1mtäst\x1b[0m'
+from khal.terminal import merge_columns, colored
 
 
 def test_colored():

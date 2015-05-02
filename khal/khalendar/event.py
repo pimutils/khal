@@ -22,11 +22,13 @@
 
 """this module will the event model, hopefully soon in a cleaned up version"""
 
+from __future__ import unicode_literals
+
 from datetime import date, datetime, time, timedelta
 
 import icalendar
 
-from ..compat import unicode_type, bytes_type, iteritems
+from ..compat import unicode_type, bytes_type, iteritems, to_unicode
 from .aux import to_naive_utc
 from ..log import logger
 
@@ -114,19 +116,19 @@ class Event(object):
     def symbol_strings(self):
         if self.unicode_symbols:
             return dict(
-                recurring=u'\N{Clockwise gapped circle arrow}',
-                range=u'\N{Left right arrow}',
-                range_end=u'\N{Rightwards arrow to bar}',
-                range_start=u'\N{Rightwards arrow from bar}',
-                right_arrow=u'\N{Rightwards arrow}'
+                recurring='\N{Clockwise gapped circle arrow}',
+                range='\N{Left right arrow}',
+                range_end='\N{Rightwards arrow to bar}',
+                range_start='\N{Rightwards arrow from bar}',
+                right_arrow='\N{Rightwards arrow}'
             )
         else:
             return dict(
-                recurring=u'R',
-                range=u'<->',
-                range_end=u'->|',
-                range_start=u'|->',
-                right_arrow=u'->'
+                recurring='R',
+                range='<->',
+                range_end='->|',
+                range_start='|->',
+                right_arrow='->'
             )
 
     @property
@@ -237,31 +239,31 @@ class Event(object):
                 else:
                     startstr = self.start.strftime(self.locale['longdateformat'])
                 endstr = end.strftime(self.locale['longdateformat'])
-                rangestr = startstr + u' - ' + endstr
+                rangestr = startstr + ' - ' + endstr
         else:
             # same day
             if self.start.utctimetuple()[:3] == self.end.utctimetuple()[:3]:
                 starttime = self.start.strftime(self.locale['timeformat'])
                 endtime = self.end.strftime(self.locale['timeformat'])
                 datestr = self.end.strftime(self.locale['longdateformat'])
-                rangestr = starttime + u'-' + endtime + u' ' + datestr
+                rangestr = starttime + '-' + endtime + ' ' + datestr
             else:
                 startstr = self.start.strftime(self.locale['longdatetimeformat'])
                 endstr = self.end.strftime(self.locale['longdatetimeformat'])
-                rangestr = startstr + u' - ' + endstr
+                rangestr = startstr + ' - ' + endstr
             if self.start.tzinfo.zone != self.locale['local_timezone'].zone:
                 # doesn't work yet
                 # TODO FIXME
                 pass
 
-        location = u'\nLocation: ' + self.location if \
-            self.location is not None else u''
-        description = u'\nDescription: ' + self.description if \
-            self.description is not None else u''
-        repitition = u'\nRepeat: ' + self.recurpattern if \
-            self.recurpattern is not None else u''
+        location = '\nLocation: ' + self.location if \
+            self.location is not None else ''
+        description = '\nDescription: ' + self.description if \
+            self.description is not None else ''
+        repitition = '\nRepeat: ' + to_unicode(self.recurpattern) if \
+            self.recurpattern is not None else ''
 
-        return u'{}: {}{}{}{}'.format(
+        return '{}: {}{}{}{}'.format(
             rangestr, self.summary, location, repitition, description)
 
     def compact(self, day):

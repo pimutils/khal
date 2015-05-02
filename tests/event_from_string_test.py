@@ -1,6 +1,5 @@
 # vim: set fileencoding=utf-8:
 from datetime import date, datetime, timedelta
-import random
 
 import pytz
 
@@ -31,6 +30,15 @@ kwargs_de = {
 def _create_testcases(*cases):
     return [(userinput, to_bytes('\r\n'.join(output) + '\r\n', 'utf-8'))
             for userinput, output in cases]
+
+
+def _replace_uid(event):
+    """
+    Replace an event's UID with E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA.
+    """
+    event.pop('uid')
+    event.add('uid', 'E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA')
+    return event
 
 
 test_set_format_de = _create_testcases(
@@ -125,11 +133,11 @@ test_set_format_de = _create_testcases(
 
 def test_construct_event_format_de():
     for data_list, vevent in test_set_format_de:
-        random.seed(1)
         event = construct_event(data_list.split(),
                                 _now=_now,
-                                **kwargs_de).to_ical()
-        assert event == vevent
+                                **kwargs_de)
+
+        assert _replace_uid(event).to_ical() == vevent
 
 
 test_set_format_us = _create_testcases(
@@ -162,11 +170,10 @@ def test_construct_event_format_us():
         'default_timezone': pytz.timezone('America/New_York'),
     }
     for data_list, vevent in test_set_format_us:
-        random.seed(1)
         event = construct_event(data_list.split(),
                                 _now=_now,
-                                **kwargs).to_ical()
-        assert event == vevent
+                                **kwargs)
+        assert _replace_uid(event).to_ical() == vevent
 
 
 test_set_format_de_complexer = _create_testcases(
@@ -202,11 +209,10 @@ test_set_format_de_complexer = _create_testcases(
 
 def test_construct_event_format_de_complexer():
     for data_list, vevent in test_set_format_de_complexer:
-        random.seed(1)
         event = construct_event(data_list.split(),
                                 _now=_now,
-                                **kwargs_de).to_ical()
-        assert event == vevent
+                                **kwargs_de)
+        assert _replace_uid(event).to_ical() == vevent
 
 
 test_set_description = _create_testcases(
@@ -245,11 +251,10 @@ test_set_description = _create_testcases(
 
 def test_description():
     for data_list, vevent in test_set_description:
-        random.seed(1)
         event = construct_event(data_list.split(),
                                 _now=_now,
-                                **kwargs_de).to_ical()
-        assert event == vevent
+                                **kwargs_de)
+        assert _replace_uid(event).to_ical() == vevent
 
 test_set_repeat = _create_testcases(
     # now events where the start date has to be inferred, too
@@ -268,13 +273,12 @@ test_set_repeat = _create_testcases(
 
 def test_repeat():
     for data_list, vevent in test_set_repeat:
-        random.seed(1)
         event = construct_event(data_list.split(),
                                 description='please describe the event',
                                 repeat='daily',
                                 _now=_now,
-                                **kwargs_de).to_ical()
-        assert event == vevent
+                                **kwargs_de)
+        assert _replace_uid(event).to_ical() == vevent
 
 
 test_set_description_and_location = _create_testcases(
@@ -294,10 +298,9 @@ test_set_description_and_location = _create_testcases(
 
 def test_description_and_location():
     for data_list, vevent in test_set_description_and_location:
-        random.seed(1)
         event = construct_event(data_list.split(),
                                 description='please describe the event',
                                 _now=_now,
                                 location='in the office',
-                                **kwargs_de).to_ical()
-        assert event == vevent
+                                **kwargs_de)
+        assert _replace_uid(event).to_ical() == vevent
