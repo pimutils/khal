@@ -23,7 +23,7 @@
 
 from __future__ import unicode_literals
 
-from click import echo
+from click import echo, style
 
 import datetime
 import itertools
@@ -37,7 +37,7 @@ from khal.exceptions import FatalError
 from khal.khalendar.event import Event
 from khal import __version__, __productname__
 from khal.log import logger
-from .terminal import bstring, colored, get_terminal_size, merge_columns
+from .terminal import colored, get_terminal_size, merge_columns
 
 
 def construct_daynames(daylist, longdateformat):
@@ -111,14 +111,14 @@ def get_agenda(collection, locale, dates=None,
         if len(events) == 0 and len(all_day_events) == 0 and not show_all_days:
             continue
 
-        event_column.append(bstring(dayname))
+        event_column.append(style(dayname, bold=True))
         events.sort(key=lambda e: e.start)
         for event in itertools.chain(all_day_events, events):
             desc = textwrap.wrap(event.compact(day), width)
             event_column.extend([colored(d, event.color) for d in desc])
 
     if event_column == []:
-        event_column = [bstring('No events')]
+        event_column = [style('No events', bold=True)]
     return event_column
 
 
@@ -172,10 +172,10 @@ class NewFromString(object):
                          'read-only'.format(collection.default_calendar_name))
             sys.exit(1)
         if conf['default']['print_new'] == 'event':
-            print(event.long())
+            echo(event.long())
         elif conf['default']['print_new'] == 'path':
             path = collection._calnames[event.calendar].path + event.href
-            print(path.encode(conf['locale']['encoding']))
+            echo(path.encode(conf['locale']['encoding']))
 
 
 class Interactive(object):

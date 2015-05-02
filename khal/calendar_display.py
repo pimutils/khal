@@ -24,7 +24,8 @@ from __future__ import print_function
 import calendar
 import datetime
 
-from .terminal import bstring, rstring
+from click import style
+
 from .compat import VERSION
 
 
@@ -63,7 +64,7 @@ def str_week(week, today):
     strweek = ''
     for day in week:
         if day == today:
-            day = rstring(str(day.day).rjust(2))
+            day = style(str(day.day).rjust(2), reverse=True)
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '
@@ -101,19 +102,23 @@ def vertical_month(month=datetime.date.today().month,
     w_number = '    ' if weeknumber == 'right' else ''
     calendar.setfirstweekday(firstweekday)
     _calendar = calendar.Calendar(firstweekday)
-    khal.append(bstring('    ' + calendar.weekheader(2) + ' ' + w_number))
+    khal.append(
+        style('    ' + calendar.weekheader(2) + ' ' + w_number, bold=True)
+    )
     for _ in range(count):
         for week in _calendar.monthdatescalendar(year, month):
             new_month = len([day for day in week if day.day == 1])
             strweek = str_week(week, today)
             if new_month:
-                m_name = bstring(month_abbr(week[6].month).ljust(4))
+                m_name = style(month_abbr(week[6].month).ljust(4), bold=True)
             elif weeknumber == 'left':
-                m_name = bstring(' {:2} '.format(getweeknumber(week[0])))
+                m_name = \
+                    style(' {:2} '.format(getweeknumber(week[0])), bold=True)
             else:
                 m_name = '    '
             if weeknumber == 'right':
-                w_number = bstring(' {}'.format(getweeknumber(week[0])))
+                w_number = \
+                    style(' {}'.format(getweeknumber(week[0])), bold=True)
             else:
                 w_number = ''
 

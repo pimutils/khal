@@ -68,23 +68,6 @@ COLORS = {
 }
 
 
-def rstring(string):
-    """returns string as reverse color string (ANSI escape codes)
-
-    >>> rstring('test')
-    '\\x1b[7mtest\\x1b[0m'
-    """
-    return RTEXT + string + NTEXT
-
-
-def bstring(string):
-    """returns string as bold string (ANSI escape codes)
-    >>> bstring('test')
-    '\\x1b[1mtest\\x1b[0m'
-    """
-    return BTEXT + string + NTEXT
-
-
 def colored(string, colorstring):
     try:
         color = COLORS[colorstring]
