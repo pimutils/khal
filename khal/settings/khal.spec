@@ -137,5 +137,5 @@ print_new = option('event', 'path', 'False', default=False)
 # This is the weighting that is applied to the event view window
 event_view_weighting = integer(default=1)
 
-# Set to true to always show the event view window when looking at the even list
+# Set to true to always show the event view window when looking at the event list
 event_view_always_visible = boolean(default=False)
