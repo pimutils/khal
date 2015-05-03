@@ -381,6 +381,13 @@ class U_Event(urwid.Text):
         elif key in binds['left'] + binds['up'] + binds['down']:
             if not self.conf['view']['event_view_always_visible']:
                 self.eventcolumn.current_event = None
+            else:
+                events = self.eventcolumn.events.events
+                focused = self.eventcolumn.events.list_walker.focus
+                if key in binds['down'] and focused < len(events) - 1:
+                    self.eventcolumn.current_event = events[focused + 1]
+                if key in binds['up'] and focused > 0:
+                    self.eventcolumn.current_event = events[focused - 1]
 
         if key in ['esc'] and self.eventcolumn.current_event:
             self.eventcolumn.current_event = None
@@ -394,6 +401,8 @@ class EventList(urwid.WidgetWrap):
 
     def __init__(self, eventcolumn):
         self.eventcolumn = eventcolumn
+        self.events = None
+        self.list_walker = None
         pile = urwid.Filler(CPile([]))
         urwid.WidgetWrap.__init__(self, pile)
         self.update()
@@ -424,9 +433,11 @@ class EventList(urwid.WidgetWrap):
         event_count = len(event_list)
         if not event_list:
             event_list = [urwid.Text('no scheduled events')]
-        pile = urwid.ListBox(CSimpleFocusListWalker(event_list))
+        self.list_walker = CSimpleFocusListWalker(event_list)
+        pile = urwid.ListBox(self.list_walker)
         pile = urwid.Frame(pile, header=date_text)
         self._w = pile
+        self.events = all_day_events + events
         return event_count
 
 
@@ -475,6 +486,13 @@ class EventColumn(urwid.WidgetWrap):
         self._current_date = date
         self.eventcount = self.events.update(date)
         self.current_event = self.current_event
+
+        # Show first event if show event view is true
+        if self.pane.conf['view']['event_view_always_visible']:
+            if len(self.events.events) > 0:
+                self.current_event = self.events.events[0]
+            else:
+                self.current_event = None
 
     def set_current_date(self, date):
         self.current_date = date
