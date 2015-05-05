@@ -229,9 +229,11 @@ def _get_cli():
                   help=('The location of the new event.'))
     @click.option('--repeat', '-r',
                   help=('Repeat event: daily, weekly, monthly or yearly.'))
+    @click.option('--until', '-u',
+                  help=('Stop an event repeating on this date.'))
     @click.argument('description', nargs=-1, required=True)
     @click.pass_context
-    def new(ctx, description, location, repeat):
+    def new(ctx, description, location, repeat, until):
         '''Create a new event.'''
         controllers.NewFromString(
             build_collection(ctx),
@@ -239,6 +241,7 @@ def _get_cli():
             list(description),
             location=location,
             repeat=repeat,
+            until=until.split(' '),
         )
 
     @cli.command()

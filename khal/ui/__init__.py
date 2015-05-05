@@ -552,17 +552,30 @@ class RecursionEditor(urwid.WidgetWrap):
 
     def __init__(self, rrule):
         # TODO: actually implement the Recursion Editor
-        self.recursive = False if rrule is None else True
-        self.checkRecursion = urwid.CheckBox('repeat', state=self.recursive,
-                                             on_state_change=self.toggle)
-        self.columns = CColumns([self.checkRecursion])
+        self.rrule = rrule
+        recursive = self.rrule['freq'][0].lower() if self.rrule else "none"
+        self.recursion_choice = Choice(["none", "weekly", "monthly", "yearly"], recursive)
+        self.columns = CColumns([self.recursion_choice])
         urwid.WidgetWrap.__init__(self, self.columns)
 
-    def toggle(self, checkbox, state):
-        if len(self.columns.contents) < 2:
-            text = 'Editing repitition rules is not supported yet'
-            self.columns.contents.append((urwid.Text(text),
-                                          self.columns.options()))
+    @property
+    def changed(self):
+        if self.recursion_choice.changed:
+            return True
+        return False
+
+    @property
+    def active(self):
+        recursive = self.recursion_choice.active
+        if recursive != "none":
+            self.rrule["freq"] = [recursive]
+            return self.rrule
+        return None
+
+    @active.setter
+    def active(self, val):
+        self.recursion_choice.active = val
+
 
 
 class EventDisplay(urwid.WidgetWrap):
@@ -673,6 +686,7 @@ class EventEditor(urwid.WidgetWrap):
             rrule = self.event.vevent['RRULE']
         except KeyError:
             rrule = None
+        #self.recursioneditor = urwid.Text(repr(rrule))
         self.recursioneditor = RecursionEditor(rrule)
         self.summary = Edit(edit_text=event.vevent['SUMMARY'])
 
@@ -737,6 +751,9 @@ class EventEditor(urwid.WidgetWrap):
 
         if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
+
+        if self.recursioneditor.changed:
+            return True
         return False
 
     def update_vevent(self):
@@ -762,7 +779,11 @@ class EventEditor(urwid.WidgetWrap):
                 duration = (end -
                             self.startendeditor.newstart)
                 self.event.vevent.add('DURATION', duration)
-
+        if self.recursioneditor.changed:
+            rrule = self.recursioneditor.active
+            self.event.vevent.pop("RRULE")
+            if rrule and rrule["freq"][0] != "none":
+                self.event.vevent.add("RRULE", rrule)
         # TODO self.newaccount = self.calendar_chooser.active ?
 
     def save(self, button):

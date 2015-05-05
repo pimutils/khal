@@ -72,6 +72,9 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat,
     :returns: a datetime
     :rtype: datetime.datetime
     """
+    print("longdatetimeformat:", longdatetimeformat)
+    print("datetimeformat:", datetimeformat)
+    print(date_list)
     try:
         # including year
         parts = longdatetimeformat.count(' ') + 1
@@ -79,8 +82,11 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat,
         dtstart = datetime.strptime(dtstring, longdatetimeformat)
     except ValueError:
         # without year
+        print("using datetimeformat")
         parts = datetimeformat.count(' ') + 1
+        print(parts)
         dtstring = ' '.join(date_list[0:parts])
+        print(dtstring)
         dtstart = datetime.strptime(dtstring, datetimeformat)
         if dtstart.timetuple()[0] == 1900:
             if inferyear is None:
@@ -143,7 +149,7 @@ def generate_random_uid():
 def construct_event(date_list, timeformat, dateformat, longdateformat,
                     datetimeformat, longdatetimeformat, default_timezone,
                     defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
-                    description=None, location=None, repeat=None,
+                    description=None, location=None, repeat=None, until = None,
                     _now=datetime.now, **kwargs):
     """takes a list of strings and constructs a vevent from it
 
@@ -270,9 +276,29 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
         event.add('description', description)
     if location:
         event.add('location', location)
-    if repeat:
+    if repeat and repeat != "none":
         if repeat in ["daily", "weekly", "monthly", "yearly"]:
-            event.add('rrule', {'freq': repeat})
+            rrule_settings = {'freq': repeat}
+            if until :
+                try:
+                    # first two elements are a date and a time
+                    until_date = datetimefstr(until, datetimeformat, longdatetimeformat)
+                except ValueError:
+                    try:
+                        # first element is a time
+                        until_date = timefstr(until, timeformat)
+                    except ValueError:
+                        try:
+                            # first element is a date (and since second isn't a time this
+                            # is an all-day-event
+                            until_date = datetimefstr(until, dateformat, longdateformat)
+                        except ValueError:
+                            logger.fatal("Cannot parse until date: '{}'\nPlease have a look at "
+                                            "the documentation.".format(until))
+                            raise FatalError()
+                rrule_settings['until'] = until_date
+
+            event.add('rrule', rrule_settings)
         else:
             logger.fatal("Invalid value for the repeat option. \
                     Possible values are: daily, weekly, monthly or yearly")
