@@ -210,7 +210,7 @@ def _get_cli():
     @click.pass_context
     def agenda(ctx, days, events, dates):
         '''Print agenda.'''
-        controllers.Agenda(
+        controllers.agenda(
             build_collection(ctx),
             date=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
@@ -235,7 +235,7 @@ def _get_cli():
     @click.pass_context
     def new(ctx, description, location, repeat, until):
         '''Create a new event.'''
-        controllers.NewFromString(
+        controllers.new_from_string(
             build_collection(ctx),
             ctx.obj['conf'],
             list(description),

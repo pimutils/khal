@@ -123,76 +123,69 @@ def get_agenda(collection, locale, dates=None,
     return event_column
 
 
-class Calendar(object):
+def calendar(collection, date=[], firstweekday=0, encoding='utf-8',
+             weeknumber=False, show_all_days=False, **kwargs):
+    term_width, _ = get_terminal_size()
+    lwidth = 25
+    rwidth = term_width - lwidth - 4
+    event_column = get_agenda(
+        collection, dates=date, width=rwidth, show_all_days=show_all_days,
+        **kwargs)
+    calendar_column = calendar_display.vertical_month(
+        firstweekday=firstweekday, weeknumber=weeknumber)
 
-    def __init__(self, collection, date=[], firstweekday=0, encoding='utf-8',
-                 weeknumber=False, show_all_days=False, **kwargs):
-        term_width, _ = get_terminal_size()
-        lwidth = 25
-        rwidth = term_width - lwidth - 4
-        event_column = get_agenda(
-            collection, dates=date, width=rwidth, show_all_days=show_all_days,
-            **kwargs)
-        calendar_column = calendar_display.vertical_month(
-            firstweekday=firstweekday, weeknumber=weeknumber)
-
-        rows = merge_columns(calendar_column, event_column)
-        # XXX: Generate this as a unicode in the first place, rather than
-        # casting it.
-        echo('\n'.join(rows).encode(encoding))
+    rows = merge_columns(calendar_column, event_column)
+    # XXX: Generate this as a unicode in the first place, rather than
+    # casting it.
+    echo('\n'.join(rows).encode(encoding))
 
 
-class Agenda(object):
-
-    def __init__(self, collection, date=None, firstweekday=0, encoding='utf-8',
-                 show_all_days=False, **kwargs):
-        term_width, _ = get_terminal_size()
-        event_column = get_agenda(collection, dates=date, width=term_width,
-                                  show_all_days=show_all_days, **kwargs)
-        # XXX: Generate this as a unicode in the first place, rather than
-        # casting it.
-        echo(to_unicode('\n'.join(event_column), encoding))
+def agenda(collection, date=None, firstweekday=0, encoding='utf-8',
+           show_all_days=False, **kwargs):
+    term_width, _ = get_terminal_size()
+    event_column = get_agenda(collection, dates=date, width=term_width,
+                              show_all_days=show_all_days, **kwargs)
+    # XXX: Generate this as a unicode in the first place, rather than
+    # casting it.
+    echo(to_unicode('\n'.join(event_column), encoding))
 
 
-class NewFromString(object):
+def new_from_string(collection, conf, date_list, location=None, repeat=None,
+                    until=None):
+    try:
+        event = aux.construct_event(
+            date_list,
+            location=location,
+            repeat=repeat,
+            until=until,
+            **conf['locale'])
+    except FatalError:
+        sys.exit(1)
+    event = Event(event,
+                  collection.default_calendar_name,
+                  locale=conf['locale'],
+                  )
 
-    def __init__(self, collection, conf, date_list, location=None, repeat=None, until=None):
-        try:
-            event = aux.construct_event(
-                date_list,
-                location=location,
-                repeat=repeat,
-                until=until,
-                **conf['locale'])
-        except FatalError:
-            sys.exit(1)
-        event = Event(event,
-                      collection.default_calendar_name,
-                      locale=conf['locale'],
-                      )
-
-        try:
-            collection.new(event)
-        except ReadOnlyCalendarError:
-            logger.fatal('ERROR: Cannot modify calendar "{}" as it is '
-                         'read-only'.format(collection.default_calendar_name))
-            sys.exit(1)
-        if conf['default']['print_new'] == 'event':
-            echo(event.long())
-        elif conf['default']['print_new'] == 'path':
-            path = collection._calnames[event.calendar].path + event.href
-            echo(path.encode(conf['locale']['encoding']))
+    try:
+        collection.new(event)
+    except ReadOnlyCalendarError:
+        logger.fatal('ERROR: Cannot modify calendar "{}" as it is '
+                     'read-only'.format(collection.default_calendar_name))
+        sys.exit(1)
+    if conf['default']['print_new'] == 'event':
+        echo(event.long())
+    elif conf['default']['print_new'] == 'path':
+        path = collection._calnames[event.calendar].path + event.href
+        echo(path.encode(conf['locale']['encoding']))
 
 
-class Interactive(object):
-
-    def __init__(self, collection, conf):
-        from . import ui
-        pane = ui.ClassicView(collection,
-                              conf,
-                              title='select an event',
-                              description='do something')
-        ui.start_pane(
-            pane, pane.cleanup,
-            program_info='{0} v{1}'.format(__productname__, __version__)
-        )
+def interactive(collection, conf):
+    from . import ui
+    pane = ui.ClassicView(collection,
+                          conf,
+                          title='select an event',
+                          description='do something')
+    ui.start_pane(
+        pane, pane.cleanup,
+        program_info='{0} v{1}'.format(__productname__, __version__)
+    )
