@@ -25,21 +25,19 @@
 khalendar.Calendar and CalendarCollection should be a nice, abstract interface
 to a calendar (collection). Calendar operates on vdirs but uses an sqlite db
 for caching (see backend if you're interested).
-
-If you want to see how the sausage is made:
-    Welcome to the sausage factory!
 """
 import datetime
 import os
 import os.path
 
 from vdirsyncer.storage.filesystem import FilesystemStorage
+from vdirsyncer.exceptions import AlreadyExistingError
 
 from . import backend
 from .event import Event
 from .. import log
 from .exceptions import CouldNotCreateDbDir, UnsupportedFeatureError, \
-    ReadOnlyCalendarError, UpdateFailed
+    ReadOnlyCalendarError, UpdateFailed, DuplicateUid
 
 logger = log.logger
 
@@ -130,7 +128,7 @@ class Calendar(object):
         return self._cover_event(self._dbtool.get(href))
 
     def update(self, event):
-        """update an event in the database
+        """update an event in vdir storage and in the database
 
         param event: the event that should be updated
         type event: event.Event
@@ -145,18 +143,23 @@ class Calendar(object):
             self._dbtool.set_ctag(self.local_ctag())
 
     def new(self, event):
-        """save a new event to the database
+        """save a new event to the vdir and the database
 
         param event: the event that should be updated
         type event: event.Event
         """
-        assert not event.etag
+        if hasattr(event, 'etag'):
+            assert not event.etag
         if self._readonly:
             raise ReadOnlyCalendarError()
 
         with self._dbtool.at_once():
-            event.href, event.etag = self._storage.upload(event)
-            self._dbtool.update(event.to_ical(), event.href, event.etag)
+
+            try:
+                href, etag = self._storage.upload(event)
+            except AlreadyExistingError:
+                raise DuplicateUid()
+            self._dbtool.update(event.raw, href, etag)
             self._dbtool.set_ctag(self.local_ctag())
 
     def delete(self, href, etag):
@@ -195,8 +198,8 @@ class Calendar(object):
             self._dbtool.set_ctag(self.local_ctag())
 
     def _update_vevent(self, href):
-        """should only be called during db_update, does not check for
-        readonly"""
+        """should only be called during db_update, only updates the db,
+        does not check for readonly"""
         event, etag = self._storage.get(href)
         try:
             self._dbtool.update(event.raw, href=href, etag=etag)
@@ -248,6 +251,7 @@ class CalendarCollection(object):
             return names[0]
 
     def append(self, calendar):
+        """append a new khalendar to this collection"""
         self._calnames[calendar.name] = calendar
 
     def get_allday_by_time_range(self, start):

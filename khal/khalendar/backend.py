@@ -57,6 +57,21 @@ THISANDFUTURE = 'THISANDFUTURE'
 THISANDPRIOR = 'THISANDPRIOR'
 
 
+def sort_key(vevent):
+    # insert the (sub) events in the right order, e.g. recurrence-id events
+    # after the corresponding rrule event
+    assert isinstance(vevent, icalendar.Event)  # REMOVE ME
+    uid = str(vevent['UID'])
+    rec_id = vevent.get(RECURRENCE_ID)
+    if rec_id is None:
+        return uid, 0
+    rrange = rec_id.params.get('RANGE')
+    if rrange == THISANDFUTURE:
+        return uid, aux.to_unix_time(rec_id.dt)
+    else:
+        return uid, 1
+
+
 class SQLiteDb(object):
     """
     This class should provide a caching database for a calendar, keeping raw
@@ -223,25 +238,13 @@ class SQLiteDb(object):
         """
         if href is None:
             raise ValueError('href may not be None')
+        ical = icalendar.Event.from_ical(vevent)
 
         if isinstance(vevent, icalendar.cal.Event):
             ical = vevent
         else:
             ical = icalendar.Event.from_ical(vevent)
 
-        # insert the (sub) events in the right order, e.g. recurrence-id events
-        # after the corresponding rrule event
-        def sort_key(vevent):
-            assert isinstance(vevent, icalendar.Event)  # REMOVE ME
-            uid = vevent['UID']
-            rec_id = vevent.get(RECURRENCE_ID)
-            if rec_id is None:
-                return uid, 0
-            rrange = rec_id.params.get('RANGE')
-            if rrange == THISANDFUTURE:
-                return uid, aux.to_unix_time(rec_id.dt)
-            else:
-                return uid, 1
         vevents = (aux.sanitize(c) for c in ical.walk() if c.name == 'VEVENT')
         # Need to delete the whole event in case we are updating a
         # recurring event with an event which is either not recurring any

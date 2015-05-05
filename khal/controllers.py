@@ -23,7 +23,11 @@
 
 from __future__ import unicode_literals
 
-from click import echo, style
+import icalendar
+from click import confirm, echo, style
+from vdirsyncer.utils.vobject import Item
+
+from collections import defaultdict
 
 import datetime
 import itertools
@@ -33,9 +37,10 @@ import textwrap
 
 from khal import aux, calendar_display
 from khal.compat import to_unicode
-from khal.khalendar.exceptions import ReadOnlyCalendarError
+from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
 from khal.exceptions import FatalError
 from khal.khalendar.event import Event
+from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
 from khal.log import logger
 from .terminal import colored, get_terminal_size, merge_columns
@@ -191,3 +196,39 @@ def interactive(collection, conf):
         pane, pane.cleanup,
         program_info='{0} v{1}'.format(__productname__, __version__)
     )
+
+
+def import_ics(collection, conf, ics):
+    cal = icalendar.Calendar.from_ical(ics)
+    events = [item for item in cal.walk() if item.name == 'VEVENT']
+    events_grouped = defaultdict(list)
+    for event in events:
+        events_grouped[event['UID']].append(event)
+
+    vevents = list()
+    for uid in events_grouped:
+        vevents.append(sorted(events_grouped[uid], key=sort_key))
+    for vevent in vevents:
+        for sub_event in vevent:
+            event = Event(sub_event, calendar=collection.default_calendar_name,
+                          locale=conf['locale'])
+            echo(event.long())
+        if confirm('Do you want to import this event into `{}`?'
+                   ''.format(collection.default_calendar_name)):
+            ics = ics_from_list(vevent)
+            try:
+                collection.new(Item(ics.to_ical().decode('utf-8')),
+                               collection=collection.default_calendar_name)
+            except DuplicateUid:
+                ics = ics_from_list(vevent, new_uid=True)
+                collection.update(Item(ics.to_ical().decode('utf-8')),
+                                  collection=collection.default_calendar_name)
+
+
+def ics_from_list(vevent):
+    calendar = icalendar.Calendar()
+    calendar.add('version', '2.0')
+    calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
+    for sub_event in vevent:
+        calendar.add_component(sub_event)
+    return calendar

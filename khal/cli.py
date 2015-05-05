@@ -244,6 +244,21 @@ def _get_cli():
             until=until.split(' ') if until is not None else None,
         )
 
+    @cli.command('import')
+    @click.option('--include-calendar', '-a', help=('The calendar to use.'),
+                  expose_value=False, callback=_calendar_select_callback,
+                  metavar='CAL')
+    @click.argument('ics', type=click.File('rb'))
+    @click.pass_context
+    def import_ics(ctx, ics):
+        '''Import events from file or stdin.'''
+        ics_str = ics.read()
+        controllers.import_ics(
+            build_collection(ctx),
+            ctx.obj['conf'],
+            ics=ics_str,
+        )
+
     @cli.command()
     @calendar_selector
     @click.pass_context

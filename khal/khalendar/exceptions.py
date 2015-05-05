@@ -59,3 +59,9 @@ class UnsupportedRecursion(Error):
 
     """raised if the RRULE is not understood by dateutil.rrule"""
     pass
+
+
+class DuplicateUid(Error):
+
+    """an event with this UID already exists"""
+    pass
