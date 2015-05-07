@@ -72,9 +72,6 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat,
     :returns: a datetime
     :rtype: datetime.datetime
     """
-    print("longdatetimeformat:", longdatetimeformat)
-    print("datetimeformat:", datetimeformat)
-    print(date_list)
     try:
         # including year
         parts = longdatetimeformat.count(' ') + 1
@@ -82,11 +79,8 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat,
         dtstart = datetime.strptime(dtstring, longdatetimeformat)
     except ValueError:
         # without year
-        print("using datetimeformat")
         parts = datetimeformat.count(' ') + 1
-        print(parts)
         dtstring = ' '.join(date_list[0:parts])
-        print(dtstring)
         dtstart = datetime.strptime(dtstring, datetimeformat)
         if dtstart.timetuple()[0] == 1900:
             if inferyear is None:

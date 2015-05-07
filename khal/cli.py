@@ -241,7 +241,7 @@ def _get_cli():
             list(description),
             location=location,
             repeat=repeat,
-            until=until.split(' '),
+            until=until.split(' ') if until is not None else None,
         )
 
     @cli.command()
