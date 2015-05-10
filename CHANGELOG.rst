@@ -18,15 +18,21 @@ not yet released
   to crashes
 * bugfix: british summer time is recognized as daylight saving time (Bradley
   Jones)
+
 * new command `search` allows to search for events
 * user changeable keybindings in ikhal, with hjkl as default alternatives for
   arrows in calendar browser, see documentation for more details
 * new command `at` shows all events scheduled for a specific datetime
 * support for reading birthdays from vcard collections (set calendar/collection
   `type` to *birthdays*)
+* `new` now supports the `--until`/`-u` flag to specify until when recurring
+  events should run (Micah Nordland)
+* python 3 (>= 3.3) support (Hugo Osvaldo Barrera)
 
 ikhal
 -----
+* minimal support for reccurring events in ikhal's editor (Micah Nordland)
+* configurable view size in ikhal (Bradley Jones)
 * show events organizers (Bradley Jones)
 
 0.4.0
