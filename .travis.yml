@@ -7,9 +7,8 @@ env:
 python:
     - 2.7
     - pypy
-    #- 3.3
-    #- 3.4
-    #
+    - 3.4
+
 before_install:
   - sudo apt-get update && sudo apt-get --reinstall install -qq language-pack-de
 
