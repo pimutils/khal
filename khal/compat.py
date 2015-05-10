@@ -37,7 +37,7 @@ def to_bytes(string, *args, **kwargs):
 
 if sys.version_info[0] == 2:  # pragma: nocover
     VERSION = 2
-    unicode_type = unicode
+    unicode_type = unicode  # NOQA
     bytes_type = str
     to_native = to_bytes
 
