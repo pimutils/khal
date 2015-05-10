@@ -408,6 +408,8 @@ class EventList(urwid.WidgetWrap):
         self.update()
 
     def update(self, this_date=date.today()):
+        if this_date is None:   # this_date might be None
+            return
         start = datetime.combine(this_date, time.min)
         end = datetime.combine(this_date, time.max)
 
@@ -791,14 +793,23 @@ class EventEditor(urwid.WidgetWrap):
         """
         # need to call this to set date backgrounds to False
         changed = self.changed
-        self.update_vevent()
         if 'alert' in [self.startendeditor.bgs.startdate,
                        self.startendeditor.bgs.starttime,
                        self.startendeditor.bgs.enddate,
                        self.startendeditor.bgs.endtime]:
-            self.startendeditor.refresh(None, state=self.startendeditor.allday)
-            self.pile.set_focus(1)  # the startendeditor
+            # toggle also updates the background, therefore we toggle the state
+            # to the current state, thus only updating the background colors
+            # finally we set the focus to the element containing the
+            # StartEndEditor
+            self.startendeditor.toggle(None, state=self.startendeditor.allday)
+            for num, element in enumerate(self.pile.body):
+                if isinstance(element, StartEndEditor):
+                    self.pile.set_focus(num)
+                    self.startendeditor.toggle(None, state=self.startendeditor.allday)
+                    break
             return
+        else:
+            self.update_vevent()
 
         if changed is True:
             try:
