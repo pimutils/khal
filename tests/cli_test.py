@@ -212,6 +212,7 @@ def test_repeating(runner):
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
-        main_khal, ['new'] + '{} 18:00 myevent -r weekly -u {}'.format(now, end_date.strftime('%d.%m.%Y')).split())
+        main_khal, ['new'] + '{} 18:00 myevent -r weekly -u {}'.format(
+            now, end_date.strftime('%d.%m.%Y')).split())
     assert result.output == ''
     assert not result.exception

@@ -685,7 +685,6 @@ class EventEditor(urwid.WidgetWrap):
             rrule = self.event.vevent['RRULE']
         except KeyError:
             rrule = None
-        #self.recursioneditor = urwid.Text(repr(rrule))
         self.recursioneditor = RecursionEditor(rrule)
         self.summary = Edit(edit_text=event.vevent['SUMMARY'])
 
