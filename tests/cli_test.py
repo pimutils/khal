@@ -206,6 +206,7 @@ def test_printformats(runner):
                       '']) == result.output
     assert not result.exception
 
+
 def test_repeating(runner):
     runner = runner(command='agenda', showalldays=False, days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')

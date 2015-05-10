@@ -577,7 +577,6 @@ class RecursionEditor(urwid.WidgetWrap):
         self.recursion_choice.active = val
 
 
-
 class EventDisplay(urwid.WidgetWrap):
 
     """showing events

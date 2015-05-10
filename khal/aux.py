@@ -143,7 +143,7 @@ def generate_random_uid():
 def construct_event(date_list, timeformat, dateformat, longdateformat,
                     datetimeformat, longdatetimeformat, default_timezone,
                     defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
-                    description=None, location=None, repeat=None, until = None,
+                    description=None, location=None, repeat=None, until=None,
                     _now=datetime.now, **kwargs):
     """takes a list of strings and constructs a vevent from it
 
@@ -273,7 +273,7 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     if repeat and repeat != "none":
         if repeat in ["daily", "weekly", "monthly", "yearly"]:
             rrule_settings = {'freq': repeat}
-            if until :
+            if until:
                 try:
                     # first two elements are a date and a time
                     until_date = datetimefstr(until, datetimeformat, longdatetimeformat)
@@ -288,7 +288,7 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
                             until_date = datetimefstr(until, dateformat, longdateformat)
                         except ValueError:
                             logger.fatal("Cannot parse until date: '{}'\nPlease have a look at "
-                                            "the documentation.".format(until))
+                                         "the documentation.".format(until))
                             raise FatalError()
                 rrule_settings['until'] = until_date
 
