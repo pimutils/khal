@@ -38,6 +38,9 @@ from .widgets import CEdit as Edit
 from .startendeditor import StartEndEditor
 
 
+NOREPEAT = 'No'
+
+
 class DateConversionError(Exception):
     pass
 
@@ -555,9 +558,10 @@ class RecursionEditor(urwid.WidgetWrap):
     def __init__(self, rrule):
         # TODO: actually implement the Recursion Editor
         self.rrule = rrule
-        recursive = self.rrule['freq'][0].lower() if self.rrule else "none"
-        self.recursion_choice = Choice(["none", "weekly", "monthly", "yearly"], recursive)
-        self.columns = CColumns([self.recursion_choice])
+        recursive = self.rrule['freq'][0].lower() if self.rrule else NOREPEAT
+        self.recursion_choice = Choice(
+            [NOREPEAT, "weekly", "monthly", "yearly"], recursive)
+        self.columns = CColumns([(10, urwid.Text('Repeat: ')), (11, self.recursion_choice)])
         urwid.WidgetWrap.__init__(self, self.columns)
 
     @property
@@ -569,7 +573,7 @@ class RecursionEditor(urwid.WidgetWrap):
     @property
     def active(self):
         recursive = self.recursion_choice.active
-        if recursive != "none":
+        if recursive != NOREPEAT:
             self.rrule["freq"] = [recursive]
             return self.rrule
         return None
@@ -782,7 +786,7 @@ class EventEditor(urwid.WidgetWrap):
         if self.recursioneditor.changed:
             rrule = self.recursioneditor.active
             self.event.vevent.pop("RRULE")
-            if rrule and rrule["freq"][0] != "none":
+            if rrule and rrule["freq"][0] != NOREPEAT:
                 self.event.vevent.add("RRULE", rrule)
         # TODO self.newaccount = self.calendar_chooser.active ?
 
