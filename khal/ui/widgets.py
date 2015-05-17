@@ -28,6 +28,10 @@ import urwid
 from ..compat import to_unicode
 
 
+class DateConversionError(Exception):
+    pass
+
+
 def delete_last_word(text, number=1):
     """delete last `number` of words from text"""
     words = re.findall(r"[\w]+|[^\w\s]", text, re.UNICODE)
@@ -64,17 +68,24 @@ class DateTimeWidget(CEdit):
     def keypress(self, size, key):
         if key == 'ctrl x':
             self.decrease()
+            return None
         elif key == 'ctrl a':
             self.increase()
-        else:
-            if key in ['up', 'down', 'right', 'left', 'tab']:
-                try:
-                    new_date = self._get_current_value()
-                except ValueError:
-                    pass
-                else:
-                    self.on_date_change(new_date)
-            return super(DateTimeWidget, self).keypress(size, key)
+            return None
+
+        if (
+                key in ['up', 'down'] or
+                (key in ['right', 'tab'] and self.edit_pos >= len(self.edit_text)) or
+                (key in ['left'] and self.edit_pos == 0)):
+            # when leaving the current Widget we check if currently
+            # entered value is valid and if so pass the new value
+            try:
+                new_date = self._get_current_value()
+            except DateConversionError:
+                pass
+            else:
+                self.on_date_change(new_date)
+        return super(DateTimeWidget, self).keypress(size, key)
 
     def increase(self):
         """call to increase the datefield by self.timedelta"""
@@ -90,7 +101,7 @@ class DateTimeWidget(CEdit):
             new_date = fun(self._get_current_value(), self.timedelta)
             self.on_date_change(new_date)
             self.set_edit_text(new_date.strftime(self.dateformat))
-        except ValueError:
+        except DateConversionError:
             pass
 
 
@@ -99,8 +110,12 @@ class DateWidget(DateTimeWidget):
     timedelta = timedelta(days=1)
 
     def _get_current_value(self):
-        date_str = self.get_edit_text()
-        return datetime.strptime(date_str, self.dateformat).date()
+        try:
+            new_date = datetime.strptime(self.get_edit_text(), self.dateformat).date()
+        except ValueError:
+            raise DateConversionError
+        else:
+            return new_date
 
 
 class TimeWidget(DateTimeWidget):
@@ -108,5 +123,9 @@ class TimeWidget(DateTimeWidget):
     timedelta = timedelta(minutes=15)
 
     def _get_current_value(self):
-        date_str = self.get_edit_text()
-        return datetime.strptime(date_str, self.dateformat)
+        try:
+            new_datetime = datetime.strptime(self.get_edit_text(), self.dateformat)
+        except ValueError:
+            raise DateConversionError
+        else:
+            return new_datetime
