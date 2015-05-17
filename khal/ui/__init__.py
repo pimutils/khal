@@ -22,7 +22,6 @@
 
 from __future__ import unicode_literals
 
-import calendar
 from datetime import date, datetime, time, timedelta
 import signal
 import sys
@@ -31,11 +30,10 @@ import urwid
 
 from .. import aux
 from ..compat import to_unicode
-from ..calendar_display import getweeknumber
-
 from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker, Choice
 from .widgets import ExtendedEdit as Edit
 from .startendeditor import StartEndEditor
+from .calendarwidget import CalendarWidget
 
 
 NOREPEAT = 'No'
@@ -43,283 +41,6 @@ NOREPEAT = 'No'
 
 class DateConversionError(Exception):
     pass
-
-
-class Date(urwid.Text):
-
-    """used in the main calendar for dates (a number)"""
-
-    def __init__(self, date, pane):
-        self.date = date
-        self.pane = pane
-        if date.today == date:
-            urwid.AttrMap(super(Date, self).__init__(str(date.day).rjust(2)),
-                          None,
-                          'reveal focus')
-        else:
-            super(Date, self).__init__(str(date.day).rjust(2))
-
-    @classmethod
-    def selectable(cls):
-        return True
-
-    def keypress(self, _, key):
-        if key in self.pane.conf['keybindings']['new']:  # TODO XXX
-            self.pane.new_event(self.date)
-            return 'tab'  # TODO return next
-        else:
-            return key
-
-
-class DateCColumns(CColumns):
-
-    """container for one week worth of dates
-    which are horizontally aligned
-
-    TODO: rename, awful name
-
-    focus can only move away by pressing 'TAB',
-    calls 'pane.show_date' on every focus change (see below for details)
-    """
-
-    def __init__(self, widget_list, pane=None, today=None, **kwargs):
-        self.pane = pane
-        self.keys = pane.conf['keybindings']
-        self.today = today
-        # we need the next two attributes to for attribute resetting when a
-        # cell regains focus after having lost it the the events column before
-        self._old_attr_map = False
-        self._old_pos = 0
-        super(DateCColumns, self).__init__(widget_list, focus_column=today,
-                                           **kwargs)
-
-    def _set_focus_position(self, position):
-        """calls pane.show_date before calling super()._set_focus_position"""
-
-        self.pane.show_date(
-            self.contents[position][0].original_widget.date)
-        super(DateCColumns, self)._set_focus_position(position)
-
-    focus_position = property(
-        CColumns._get_focus_position,
-        _set_focus_position,
-        doc=('Index of child widget in focus. Raises IndexError if read when '
-             'CColumns is empty, or when set to an invalid index.')
-    )
-
-    def keypress(self, size, key):
-        """only leave calendar area on pressing 'tab' or 'enter'"""
-
-        if key in self.keys['left']:
-            key = 'left'
-        elif key in self.keys['up']:
-            key = 'up'
-        elif key in self.keys['right']:
-            key = 'right'
-        elif key in self.keys['down']:
-            key = 'down'
-
-        old_pos = self.focus_position
-        key = super(DateCColumns, self).keypress(size, key)
-        if key in self.keys['view']:
-            self._old_attr_map = self.contents[self.focus_position][0].get_attr_map()
-            self._old_pos = old_pos
-            self.contents[self.focus_position][0].set_attr_map({None: 'today focus'})
-            return 'right'
-        elif self._old_attr_map:
-            self.contents[self._old_pos][0].set_attr_map(self._old_attr_map)
-            self._old_attr_map = False
-
-        if old_pos == 7 and key == 'right':
-            self.focus_position = 1
-            return 'down'
-        elif old_pos == 1 and key == 'left':
-            self.focus_position = 7
-            return 'up'
-        elif key not in ['right']:
-            return key
-
-
-def calendar_walker(pane, firstweekday=0, weeknumbers=False):
-    """creates a `Frame` filled with a `CalendarWalker`"""
-    calendar.setfirstweekday(firstweekday)
-    dnames = calendar.weekheader(2).split(' ')
-    if weeknumbers == 'right':
-        dnames.append('#w')
-    dnames = CColumns(
-        [(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in dnames],
-        dividechars=1)
-
-    weeks = CalendarWalker(pane, firstweekday, weeknumbers)
-    box = CListBox(weeks)
-    frame = urwid.Frame(box, header=dnames)
-    return frame
-
-
-class CListBox(urwid.ListBox):
-    """our custom version of ListBox for containing CalendarWalker
-
-    it should contain a `CalendarWalker` instance which it autoextends on
-    rendering, if needed """
-
-    init = True
-
-    def __init__(self, walker):
-        self.keys = walker.pane.conf['keybindings']
-        super(CListBox, self).__init__(walker)
-
-    def render(self, size, focus=False):
-        if self.init:
-            while 'bottom' in self.ends_visible(size):
-                self.body._autoextend()
-            self.set_focus_valign('middle')
-            self.init = False
-
-        return super(CListBox, self).render(size, focus)
-
-    def keypress(self, size, key):
-        if key in self.keys['today']:
-            self.body.set_focus(self.body.today)
-            week = self.body[self.body.today]
-            week.set_focus(week.today)
-            self.set_focus_valign(('relative', 10))
-        return super(CListBox, self).keypress(size, key)
-
-
-class CalendarWalker(urwid.SimpleFocusListWalker):
-
-    def __init__(self, pane, firstweekday=0, weeknumbers=False):
-        self.firstweekday = firstweekday
-        self.weeknumbers = weeknumbers
-        self.pane = pane
-        weeks, focus_item = self._construct_month()
-        self.today = focus_item  # the item number which contains today
-        urwid.SimpleFocusListWalker.__init__(self, weeks)
-        self.set_focus(focus_item)
-
-    def set_focus(self, position):
-        if position == 0:
-            position = self._autoprepend()
-            self.today += position
-        elif position + 1 == len(self):
-            self._autoextend()
-        return urwid.SimpleFocusListWalker.set_focus(self, position)
-
-    def _autoextend(self):
-        """appends the next month"""
-        date_last_month = self[-1][1].date  # a date from the last month
-        last_month = date_last_month.month
-        last_year = date_last_month.year
-        month = last_month % 12 + 1
-        year = last_year if not last_month == 12 else last_year + 1
-        weeks, _ = self._construct_month(year, month, clean_first_row=True)
-        self.extend(weeks)
-
-    def _autoprepend(self):
-        """prepends the previous month
-
-        :returns: number of weeks prepended
-        :rtype: int
-        """
-        try:
-            date_first_month = self[0][-1].date  # a date from the first month
-        except AttributeError:
-            # rightmost column is weeknumber
-            date_first_month = self[0][-2].date
-        first_month = date_first_month.month
-        first_year = date_first_month.year
-        if first_month == 1:
-            month = 12
-            year = first_year - 1
-        else:
-            month = first_month - 1
-            year = first_year
-        weeks, _ = self._construct_month(year, month, clean_last_row=True)
-        weeks.reverse()
-        for one in weeks:
-            self.insert(0, one)
-        return len(weeks)
-
-    def _construct_week(self, week):
-        """
-        constructs a CColumns week from a week of datetime.date objects. Also
-        prepends the month name if the first day of the month is included in
-        that week.
-
-        :param week: list of datetime.date objects
-        :returns: the week as an CColumns object and True or False depending on
-                  if today is in this week
-        :rtype: tuple(urwid.CColumns, bool)
-        """
-        if 1 in [day.day for day in week]:
-            month_name = calendar.month_abbr[week[-1].month].ljust(4)
-        elif self.weeknumbers == 'left':
-            month_name = ' {:2} '.format(getweeknumber(week[0]))
-        else:
-            month_name = '    '
-
-        this_week = [(4, urwid.Text(month_name))]
-        today = None
-        for number, day in enumerate(week):
-            if day == date.today():
-                this_week.append((2, urwid.AttrMap(Date(day, self.pane),
-                                                   'today', 'today focus')))
-                today = number + 1
-            else:
-                this_week.append((2, urwid.AttrMap(Date(day, self.pane),
-                                                   None, 'reveal focus')))
-        if self.weeknumbers == 'right':
-            this_week.append((2, urwid.Text('{:2}'.format(getweeknumber(week[0])))))
-
-        week = DateCColumns(this_week, pane=self.pane, dividechars=1,
-                            today=today)
-        return week, bool(today)
-
-    def _construct_month(self,
-                         year=date.today().year,
-                         month=date.today().month,
-                         clean_first_row=False,
-                         clean_last_row=False):
-        """construct one month of DateCColumns
-
-        :param year: the year this month is set in
-        :type year: int
-        :param month: the number of the month to be constructed
-        :type month: int (1-12)
-        :param clean_first_row: makes sure that the first element returned is
-                                completely in `month` and not partly in the one
-                                before (which might lead to that line occurring
-                                twice
-        :type clean_first_row: bool
-        :param clean_last_row: makes sure that the last element returned is
-                               completely in `month` and not partly in the one
-                               after (which might lead to that line occurring
-                               twice
-        :type clean_last_row: bool
-        :returns: list of DateCColumns and the number of the list element which
-                  contains today (or None if it isn't in there)
-        :rtype: tuple(list(dateCColumns, int or None))
-        """
-
-        plain_weeks = calendar.Calendar(
-            self.firstweekday).monthdatescalendar(year, month)
-        weeks = list()
-        focus_item = None
-        for number, week in enumerate(plain_weeks):
-            week, contains_today = self._construct_week(week)
-            if contains_today:
-                focus_item = number
-            weeks.append(week)
-        if clean_first_row and \
-           weeks[0][1].date.month != weeks[0][7].date.month:
-            if focus_item is not None:
-                focus_item = focus_item - 1
-            return weeks[1:], focus_item
-        elif clean_last_row and \
-                weeks[-1][1].date.month != weeks[-1][7].date.month:
-            return weeks[:-1], focus_item
-        else:
-            return weeks, focus_item
 
 
 class U_Event(urwid.Text):
@@ -865,13 +586,16 @@ class ClassicView(Pane):
         self.collection = collection
         self.deleted = []
         self.eventscolumn = EventColumn(pane=self)
-        weeks = calendar_walker(
-            pane=self, firstweekday=conf['locale']['firstweekday'],
+        calendar = CalendarWidget(
+            on_date_change=self.show_date,
+            keybindings=self.conf['keybindings'],
+            on_press={'n': self.new_event},
+            firstweekday=conf['locale']['firstweekday'],
             weeknumbers=conf['locale']['weeknumbers'],
         )
         events = self.eventscolumn
         lwidth = 29 if conf['locale']['weeknumbers'] else 25
-        columns = CColumns([(lwidth, weeks), events],
+        columns = CColumns([(lwidth, calendar), events],
                            dividechars=4,
                            box_columns=[0, 1])
         Pane.__init__(self, columns, title=title, description=description)
