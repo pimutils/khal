@@ -44,9 +44,8 @@ class StartEnd(object):
 
 
 class StartEndEditor(urwid.WidgetWrap):
-
     """
-    editing start and nd times of the event
+    Wigdet for editing start and end times (of an event)
 
     we cannot change timezones ATM  # TODO
     pop up on strings not matching timeformat # TODO

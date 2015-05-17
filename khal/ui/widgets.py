@@ -43,12 +43,16 @@ def delete_last_word(text, number=1):
     return text
 
 
-class CEdit(urwid.Edit):
+class ExtendedEdit(urwid.Edit):
+    """Extended Edit Widget
+
+    at the moment we only support ctrl-w for deleting the word before the cursor
+    """
     def keypress(self, size, key):
         if key == 'ctrl w':
             self._delete_word()
         else:
-            return super(CEdit, self).keypress(size, key)
+            return super(ExtendedEdit, self).keypress(size, key)
 
     def _delete_word(self):
         """delete word before cursor"""
@@ -58,7 +62,7 @@ class CEdit(urwid.Edit):
         self.set_edit_pos(len(f_text))
 
 
-class DateTimeWidget(CEdit):
+class DateTimeWidget(ExtendedEdit):
 
     def __init__(self, dateformat, on_date_change=lambda x: None, **kwargs):
         self.dateformat = dateformat

@@ -34,7 +34,7 @@ from ..compat import to_unicode
 from ..calendar_display import getweeknumber
 
 from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker, Choice
-from .widgets import CEdit as Edit
+from .widgets import ExtendedEdit as Edit
 from .startendeditor import StartEndEditor
 
 
