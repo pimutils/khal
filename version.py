@@ -44,4 +44,3 @@ __version__ = '{0}'
         os.path.dirname(__file__), 'khal', 'version.py')
     with open(filename, 'w') as versionfile:
         versionfile.write(template.format(VERSION))
-        print("wrote khal/version.py with version={0}".format(VERSION))
