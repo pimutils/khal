@@ -88,6 +88,9 @@ class DateCColumns(urwid.Columns):
         super(DateCColumns, self).__init__(widget_list, focus_column=today,
                                            **kwargs)
 
+    def __repr__(self):
+        return '<DateCColumns from {} to {}>'.format(self[1].date, self[7].date)
+
     def _set_focus_position(self, position):
         """calls on_date_change before calling super()._set_focus_position"""
 
