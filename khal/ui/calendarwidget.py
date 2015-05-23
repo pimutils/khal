@@ -23,7 +23,7 @@
 from __future__ import unicode_literals
 
 import calendar
-from datetime import date, timedelta
+from datetime import date
 
 import urwid
 
@@ -196,22 +196,23 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
     @property
     def focus_date(self):
+        """return the date the focus is currently set to
+
+        :rtype: datetime.date
+        """
         return self[self.focus].focus.original_widget.date
 
     def set_focus_date(self, a_day):
-        # calculate how many weeks are between the mondays of the weeks
-        # containing `a_day` and the currently selected date
-        weekstart1 = a_day - timedelta(days=a_day.weekday())
-        weekstart2 = self.focus_date - timedelta(days=self.focus_date.weekday())
-        week_diff = int((weekstart1 - weekstart2).days / 7)
+        """set the focus to `a_day`
 
-        # FIXME ugly fix for weekstarts other than Monday XXX doesn't even work
-        # (we are not more than one week off...)
-        old_focus = self.focus
-        for offset in [week_diff, week_diff - 1, week_diff + 1]:
+        :type: a_day: datetime.date
+        """
+        week_diff = int((self.focus_date - a_day).days / 7)
+        new_focus = self.focus - week_diff
+        for offset in [0, -1, 1]:  # we might be off by a week
+            self.set_focus(new_focus + offset)
             try:
-                self.set_focus(old_focus + offset)
-                self[old_focus + offset].set_focus_date(a_day)
+                self[new_focus + offset].set_focus_date(a_day)
             except ValueError:
                 pass
             else:

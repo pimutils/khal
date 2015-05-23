@@ -1,8 +1,6 @@
 # coding:utf-8
 from datetime import date, timedelta
 
-import pytest
-
 from khal.ui.calendarwidget import CalendarWidget
 
 on_press = {}
@@ -28,7 +26,6 @@ def test_set_focus_date():
         assert frame.focus_date == day
 
 
-@pytest.mark.xfail
 def test_set_focus_date_weekstart_6():
     today = date.today()
     for diff in range(-20, 20, 1):
