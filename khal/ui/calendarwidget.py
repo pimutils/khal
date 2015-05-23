@@ -279,12 +279,12 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         today = None
         for number, day in enumerate(week):
             if day == date.today():
-                this_week.append((2, urwid.AttrMap(Date(
-                    day, self.on_date_change, self.on_press, self.keybindings), 'today', 'today focus')))
+                new_date = Date(day, self.on_date_change, self.on_press, self.keybindings)
+                this_week.append((2, urwid.AttrMap(new_date, 'today', 'today focus')))
                 today = number + 1
             else:
-                this_week.append((2, urwid.AttrMap(
-                    Date(day, self.on_date_change, self.on_press, self.keybindings), None, 'reveal focus')))
+                new_date = Date(day, self.on_date_change, self.on_press, self.keybindings)
+                this_week.append((2, urwid.AttrMap(new_date, None, 'reveal focus')))
         if self.weeknumbers == 'right':
             this_week.append((2, urwid.Text('{:2}'.format(getweeknumber(week[0])))))
 
@@ -378,7 +378,8 @@ class CalendarWidget(urwid.WidgetWrap):
         dnames = urwid.Columns(
             [(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in dnames],
             dividechars=1)
-        self.walker = CalendarWalker(on_date_change, on_press, default_keybindings, firstweekday, weeknumbers)
+        self.walker = CalendarWalker(
+            on_date_change, on_press, default_keybindings, firstweekday, weeknumbers)
         box = CListBox(self.walker)
         frame = urwid.Frame(box, header=dnames)
         urwid.WidgetWrap.__init__(self, frame)
