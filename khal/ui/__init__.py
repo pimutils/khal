@@ -94,6 +94,14 @@ class U_Event(urwid.Text):
 
     def keypress(self, _, key):
         binds = self.conf['keybindings']
+        if key in binds['left']:
+            key = 'left'
+        elif key in binds['up']:
+            key = 'up'
+        elif key in binds['right']:
+            key = 'right'
+        elif key in binds['down']:
+            key = 'down'
 
         if key in binds['view']:
             if self.is_viewed:
@@ -102,15 +110,15 @@ class U_Event(urwid.Text):
                 self.eventcolumn.current_event = self.event
         elif key in binds['delete']:
             self.toggle_delete()
-        elif key in binds['left'] + binds['up'] + binds['down']:
+        elif key in ['left', 'up', 'down']:
             if not self.conf['view']['event_view_always_visible']:
                 self.eventcolumn.current_event = None
             else:
                 events = self.eventcolumn.events.events
                 focused = self.eventcolumn.events.list_walker.focus
-                if key in binds['down'] and focused < len(events) - 1:
+                if key == 'down' and focused < len(events) - 1:
                     self.eventcolumn.current_event = events[focused + 1]
-                if key in binds['up'] and focused > 0:
+                if key == 'up' and focused > 0:
                     self.eventcolumn.current_event = events[focused - 1]
 
         if key in ['esc'] and self.eventcolumn.current_event:
