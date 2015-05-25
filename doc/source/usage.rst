@@ -6,7 +6,7 @@ Khal offers a set of commands, most importantly :command:`agenda`,
 :command:`printcalendars`, :command:`printformats`, and :command:`search`. See
 below for a description of what every command does. Calling :program:`khal`
 without any command will invoke the default command, which can be specified in
-the config file.
+the configuration file.
 
 
 Options
@@ -121,7 +121,7 @@ allows for quick adding of new events. ``khal new`` should understand the follow
 
 ::
 
-    khal new [-a CALENDAR] startdatetime [enddatetime] summary [description]
+    khal new [-a CALENDAR] [OPTIONS] startdatetime [enddatetime] summary [description]
 
 where start- and enddatetime are either datetimes or times in the formats defined
 in the config file. If no calendar is given via :option:`-a`, the default
@@ -153,11 +153,20 @@ Start- and enddatetime can be one of the following:
 **description** is a string started by `::` (which will be removed) and will be
 used as the new event's *description*, i.d., the body of the event.
 
-At the moment default length is either 1 hour or 1 day (should be configurable soon,
-too).
+The default length is either 1 hour or 1 day, depending on the type of event.
 
-Some examples:
+Options
+"""""""
+* **-l, --location=LOCATION** specify where this event will be held.
 
+* **-r, --repeat=RRULE** specify if and how this event should be recurring.
+  Valid values for *RRULE* are `daily`, `weekly`, `monthly`
+  and `yearly`
+
+* **-u, --until=UNTIL** specify until when a recurring event should run
+
+Examples
+""""""""
 ::
 
     khal new 18:00 Awesome Event
@@ -174,26 +183,26 @@ additional description
 
 ::
 
-    khal new -a work 26.07. Great Event
+    khal new -a work 26.07. Great Event -r weekly
 
-adds a new all day event on 26th of July to the calendar *work*.
+adds a new all day event on 26th of July to the calendar *work* which recurs
+every week.
 
 printcalendars
 **************
-
 prints a list of all configured calendars.
+
 
 printformats
 ************
-
 prints a fixed date (*2013-12-11 10:09*) in all configured date(time) formats.
 This is supposed to help check if those formats are configured as intended.
 
 search
 ******
-
-search for events matching a search string and print them. Currently recurring events are only
-print once. No advanced search features are currently supported.
+search for events matching a search string and print them. Currently recurring
+events are only printed once. No advanced search features are currently
+supported.
 
 The command
 
@@ -201,4 +210,4 @@ The command
 
     khal search party
     
-prints all events matching `party`
+prints all events matching `party`.

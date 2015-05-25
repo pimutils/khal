@@ -52,7 +52,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'khal'
-copyright = u'2014, Christan Geier et al.'
+copyright = u'2014-2015, Christan Geier et al.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -108,12 +108,16 @@ todo_include_todos = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'github_user': 'geier',
+    'github_repo': 'khal',
+    'travis_button': 'true',
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -153,7 +157,15 @@ html_static_path = ['ystatic']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',
+        'searchbox.html',
+        'donate.html',
+    ]
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.

@@ -15,9 +15,9 @@ Features
   example CalDAV_ servers.
 - fast and easy way to add new events
 - ikhal (interactive khal) lets you browse and edit calendars and events
-- support for recurring events is not complete yet, they cannot be deleted or
-  edited and some recursion patterns are not understood
+- only rudimentary support for creating and editing recursion rules
 - you cannot edit the timezones of events
+- works with python 2.7 and 3.4+
 - khal should run on all major operating systems [1]_
 
 .. [1] except for Microsoft Windows

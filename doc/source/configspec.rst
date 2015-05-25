@@ -42,6 +42,18 @@ Here is a small example:
       :type: boolean
       :default: False
 
+.. _calendars-type:
+
+.. object:: type
+
+    
+    Set the type of this collection, the default is ``calendar``.
+    If set to ``birthdays`` khal will expect a VCARD collection and extract
+    birthdays from those VCARDS. ``birthdays`` also implies ``readonly=True``.
+
+      :type: option, allowed values are *calendar* and *birthdays*
+      :default: calendar
+
 The [sqlite] section
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -307,6 +319,18 @@ behaviours are set here.
       :type: option, allowed values are *event*, *path* and *False*
       :default: False
 
+.. _default-days:
+
+.. object:: days
+
+    
+    By default, khal show events for today and tomorrow.
+    Setting this to a different value will show events of that amount of days by
+    defaut.
+
+      :type: integer
+      :default: 2
+
 .. _default-show_all_days:
 
 .. object:: show_all_days
@@ -315,6 +339,32 @@ behaviours are set here.
     By default, khal displays only dates with event in "agenda" view.
     Setting this to *True* will show all days in "agenda", even
     when there is no event
+
+      :type: boolean
+      :default: False
+
+The [view] section
+~~~~~~~~~~~~~~~~~~
+
+The view section contains config options that effect the visual appearance
+when using khal
+
+.. _view-event_view_weighting:
+
+.. object:: event_view_weighting
+
+    
+    This is the weighting that is applied to the event view window
+
+      :type: integer
+      :default: 1
+
+.. _view-event_view_always_visible:
+
+.. object:: event_view_always_visible
+
+    
+    Set to true to always show the event view window when looking at the event list
 
       :type: boolean
       :default: False
