@@ -42,6 +42,7 @@ Table of Contents
    standards
    timezones
    contributing
+   developer
    changelog
    faq
    license
