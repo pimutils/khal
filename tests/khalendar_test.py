@@ -5,7 +5,7 @@ from textwrap import dedent
 import pytest
 import pytz
 
-from vdirsyncer.storage import FilesystemStorage
+from vdirsyncer.storage.filesystem import FilesystemStorage
 from vdirsyncer.storage.base import Item
 
 from khal import aux
