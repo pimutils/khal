@@ -609,7 +609,7 @@ class ClassicView(Pane):
         Pane.__init__(self, columns, title=title, description=description)
 
     def render(self, size, focus=False):
-        rval = super(Pane, self).render(size, focus)
+        rval = super(ClassicView, self).render(size, focus)
         if self.init:
             # starting with today's events
             self.eventscolumn.current_date = date.today()
