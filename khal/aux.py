@@ -99,11 +99,11 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat,
 
 
 def guessdatetimefstr(dtime_list, timeformat, datetimeformat, longdatetimeformat):
-        try:
-            dtime = timefstr(dtime_list, timeformat)
-        except ValueError:
-            dtime = datetimefstr(dtime_list, datetimeformat, longdatetimeformat)
-        return dtime
+    try:
+        dtime = timefstr(dtime_list, timeformat)
+    except ValueError:
+        dtime = datetimefstr(dtime_list, datetimeformat, longdatetimeformat)
+    return dtime
 
 
 def datefstr(datestr, dateformat, longdateformat):
