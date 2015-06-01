@@ -9,15 +9,16 @@ may want to subscribe to `GitHub's tag feed
 
 0.5.0
 =====
-not yet released
+released on 2015-06-01
 
 * fixed several bugs relating to events with unknown timezones but UNTIL, RDATE
   or EXDATE properties that are in Zulu time (thanks to Michele Baldessari for
   reporting those)
 * bugfix: on systems with a local time of UTC-X dealing with allday events lead
   to crashes
-* bugfix: british summer time is recognized as daylight saving time (Bradley
+* bugfix: British summer time is recognized as daylight saving time (Bradley
   Jones)
+* compatibility with vdirsyncer 0.5
 
 * new command `search` allows to search for events
 * user changeable keybindings in ikhal, with hjkl as default alternatives for
@@ -25,6 +26,8 @@ not yet released
 * new command `at` shows all events scheduled for a specific datetime
 * support for reading birthdays from vcard collections (set calendar/collection
   `type` to *birthdays*)
+* new command `printformats` prints a fixed date in all configured date-time
+  settings
 * `new` now supports the `--until`/`-u` flag to specify until when recurring
   events should run (Micah Nordland)
 * python 3 (>= 3.3) support (Hugo Osvaldo Barrera)
@@ -34,6 +37,7 @@ ikhal
 * minimal support for reccurring events in ikhal's editor (Micah Nordland)
 * configurable view size in ikhal (Bradley Jones)
 * show events organizers (Bradley Jones)
+* major reorganisation of ikhal layout (Markus Unterwaditzer)
 
 0.4.0
 =====
