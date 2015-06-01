@@ -7,10 +7,10 @@ import subprocess
 import warnings
 
 MAJOR = 0
-MINOR = 5
+MINOR = 6
 PATCH = 0
 
-RELEASE = True
+RELEASE = False
 
 VERSION = "{0}.{1}.{2}".format(MAJOR, MINOR, PATCH)
 
