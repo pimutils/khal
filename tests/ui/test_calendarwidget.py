@@ -7,9 +7,9 @@ on_press = {}
 
 keybindings = {
     'today': ['T'],
-    'left': ['left', 'h'],
+    'left': ['left', 'h', 'backspace'],
     'up': ['up', 'k'],
-    'right': ['right', 'l'],
+    'right': ['right', 'l', ' '],
     'down': ['down', 'j'],
 }
 

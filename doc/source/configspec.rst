@@ -209,7 +209,7 @@ keybindings for `ikhal` are set here. You can bind more than one key
     move the cursor right (in the calendar browser)
 
       :type: list
-      :default: right, l
+      :default: right, l, space
 
 .. _keybindings-view:
 
@@ -259,7 +259,7 @@ keybindings for `ikhal` are set here. You can bind more than one key
     move the cursor left (in the calendar browser)
 
       :type: list
-      :default: left, h
+      :default: left, h, backspace
 
 .. _keybindings-today:
 

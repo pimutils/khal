@@ -88,10 +88,10 @@ up = force_list(default=list('up', 'k'))
 down = force_list(default=list('down', 'j'))
 
 # move the cursor right (in the calendar browser)
-right = force_list(default=list('right', 'l'))
+right = force_list(default=list('right', 'l', ' '))
 
 # move the cursor left (in the calendar browser)
-left = force_list(default=list('left', 'h'))
+left = force_list(default=list('left', 'h', 'backspace'))
 
 # create a new event on the selected date
 new = force_list(default=list('n'))
