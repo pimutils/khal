@@ -248,15 +248,27 @@ def _get_cli():
     @click.option('--include-calendar', '-a', help=('The calendar to use.'),
                   expose_value=False, callback=_calendar_select_callback,
                   metavar='CAL')
+    @click.option('--batch', help=('do not ask for confirmation.'),
+                  is_flag=True)
+    @click.option('--random_uid', '-r', help=('Select a random uid.'),
+                  is_flag=True)
     @click.argument('ics', type=click.File('rb'))
     @click.pass_context
-    def import_ics(ctx, ics):
-        '''Import events from file or stdin.'''
+    def import_ics(ctx, ics, batch, random_uid):
+        '''Import events from an .ics file.
+
+        If an event with the same UID is already present in the (implicitly)
+        selected calendar import will update (i.e. overwrite) that old event
+        with the imported one. If this behaviour is not desired, that the
+        `--random-uid` flag.
+        '''
         ics_str = ics.read()
         controllers.import_ics(
             build_collection(ctx),
             ctx.obj['conf'],
             ics=ics_str,
+            batch=batch,
+            random_uid=random_uid
         )
 
     @cli.command()

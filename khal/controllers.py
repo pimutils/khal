@@ -198,7 +198,11 @@ def interactive(collection, conf):
     )
 
 
-def import_ics(collection, conf, ics):
+def import_ics(collection, conf, ics, batch=False, random_uid=False):
+    """
+    :param batch: setting this to True will insert without asking for approval
+    :type batch: bool
+    """
     cal = icalendar.Calendar.from_ical(ics)
     events = [item for item in cal.walk() if item.name == 'VEVENT']
     events_grouped = defaultdict(list)
@@ -213,22 +217,25 @@ def import_ics(collection, conf, ics):
             event = Event(sub_event, calendar=collection.default_calendar_name,
                           locale=conf['locale'])
             echo(event.long())
-        if confirm('Do you want to import this event into `{}`?'
-                   ''.format(collection.default_calendar_name)):
-            ics = ics_from_list(vevent)
+        if batch or confirm('Do you want to import this event into `{}`?'
+                            ''.format(collection.default_calendar_name)):
+            ics = ics_from_list(vevent, random_uid)
             try:
                 collection.new(Item(ics.to_ical().decode('utf-8')),
                                collection=collection.default_calendar_name)
             except DuplicateUid:
-                ics = ics_from_list(vevent, new_uid=True)
                 collection.update(Item(ics.to_ical().decode('utf-8')),
                                   collection=collection.default_calendar_name)
 
 
-def ics_from_list(vevent):
+def ics_from_list(vevent, random_uid=False):
     calendar = icalendar.Calendar()
     calendar.add('version', '2.0')
     calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
+    if random_uid:
+        new_uid = icalendar.vText(aux.generate_random_uid())
     for sub_event in vevent:
+        if random_uid:
+            sub_event['uid'] = new_uid
         calendar.add_component(sub_event)
     return calendar
