@@ -29,13 +29,12 @@ from datetime import date, datetime, timedelta
 from datetime import time as dtime
 import random
 import string
-import time
 
 import icalendar
 import pytz
 
 from khal.log import logger
-from khal.exceptions import FatalError
+from khal.exceptions import FatalError, InvalidDate
 
 
 def timefstr(dtime_list, timeformat):
@@ -50,8 +49,8 @@ def timefstr(dtime_list, timeformat):
     """
     if len(dtime_list) == 0:
         raise ValueError()
-    time_start = time.strptime(dtime_list[0], timeformat)
-    time_start = dtime(*time_start[3:5])
+    time_start = datetime.strptime(dtime_list[0], timeformat)
+    time_start = dtime(*time_start.timetuple()[3:5])
     day_start = date.today()
     dtstart = datetime.combine(day_start, time_start)
     dtime_list.pop(0)
@@ -360,5 +359,19 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
     return event
 
 
-class InvalidDate(Exception):
-    pass
+def ics_from_list(vevent, random_uid=False):
+    """convert an iterable of icalendar.Event to an icalendar.Calendar
+
+    :param random_uid: asign the same random UID to all events
+    :type random_uid: bool
+    """
+    calendar = icalendar.Calendar()
+    calendar.add('version', '2.0')
+    calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
+    if random_uid:
+        new_uid = icalendar.vText(generate_random_uid())
+    for sub_event in vevent:
+        if random_uid:
+            sub_event['uid'] = new_uid
+        calendar.add_component(sub_event)
+    return calendar
