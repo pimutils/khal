@@ -9,7 +9,7 @@ from khal.khalendar import backend
 from khal.compat import unicode_type
 from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 
-from aux import _get_text
+from .aux import _get_text
 
 berlin = pytz.timezone('Europe/Berlin')
 locale = {'local_timezone': berlin, 'default_timezone': berlin}

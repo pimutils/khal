@@ -12,7 +12,7 @@ from vdirsyncer.storage.base import Item
 from khal.khalendar import Calendar, CalendarCollection
 from khal.controllers import get_agenda, import_ics
 
-from aux import _get_text
+from .aux import _get_text
 
 
 today = datetime.date.today()

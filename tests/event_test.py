@@ -5,11 +5,10 @@ import textwrap
 
 import pytest
 import pytz
-import icalendar.cal
 
 from khal.khalendar.event import Event
 
-from aux import normalize_component
+from .aux import normalize_component
 
 
 def test_normalize_component():

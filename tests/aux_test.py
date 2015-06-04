@@ -1,4 +1,5 @@
 # vim: set fileencoding=utf-8:
+"""testing functions from the khal.aux"""
 from datetime import date, datetime, time, timedelta
 
 import icalendar
@@ -8,11 +9,12 @@ from khal.aux import construct_event, guessdatetimefstr
 from khal import aux
 from khal.compat import to_bytes
 
-from aux import _get_all_vevents_file, _get_text, \
+from .aux import _get_all_vevents_file, _get_text, \
     normalize_component
 
 
 def _now():
+    """mock datetime.datetime.now"""
     return datetime(2014, 2, 16, 12, 0, 0, 0)
 
 
@@ -347,4 +349,3 @@ class TestIcsFromList(object):
             uids.add(event['UID'])
         assert len(uids) == 1
         assert event['UID'] != icalendar.vText('event_rrule_recurrence_id')
->>>>>>> fixed import
