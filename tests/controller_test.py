@@ -114,4 +114,5 @@ class TestImport(object):
         for ev in events:
             print(ev.start)
         assert len(events) == 5
-        assert BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) not in [ev.start for ev in events]
+        assert BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) not in \
+            [ev.start for ev in events]
