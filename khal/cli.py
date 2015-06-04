@@ -192,7 +192,7 @@ def _get_cli():
     @click.pass_context
     def calendar(ctx, days, events, dates):
         '''Print calendar with agenda.'''
-        controllers.Calendar(
+        controllers.calendar(
             build_collection(ctx),
             date=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
@@ -249,7 +249,7 @@ def _get_cli():
     @click.pass_context
     def interactive(ctx):
         '''Interactive UI. Also launchable via `ikhal`.'''
-        controllers.Interactive(build_collection(ctx), ctx.obj['conf'])
+        controllers.interactive(build_collection(ctx), ctx.obj['conf'])
 
     @click.command()
     @calendar_selector
@@ -258,7 +258,7 @@ def _get_cli():
     def interactive_cli(ctx, config, verbose):
         '''Interactive UI. Also launchable via `khal interactive`.'''
         prepare_context(ctx, config, verbose)
-        controllers.Interactive(build_collection(ctx), ctx.obj['conf'])
+        controllers.interactive(build_collection(ctx), ctx.obj['conf'])
 
     @cli.command()
     @calendar_selector
