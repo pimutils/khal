@@ -16,14 +16,11 @@ VERSION = "{0}.{1}.{2}".format(MAJOR, MINOR, PATCH)
 
 if not RELEASE:
     try:
-        try:
-            pipe = subprocess.Popen(
-                ["git", "describe", "--always", "--dirty", "--tags"],
-                stdout=subprocess.PIPE)
-        except EnvironmentError:
-            warnings.warn("WARNING: git not installed or failed to run")
+        pipe = subprocess.Popen(
+            ["git", "describe", "--always", "--dirty", "--tags"],
+            stdout=subprocess.PIPE)
 
-        revision = pipe.communicate()[0].strip().lstrip('v')
+        revision = pipe.communicate()[0].decode().strip().lstrip('v')
         if pipe.returncode != 0:
             warnings.warn("WARNING: couldn't get git revision")
 
@@ -31,6 +28,8 @@ if not RELEASE:
             revision = revision.lstrip(string.digits + '.')
             VERSION += '.dev' + revision
     except:
+        import traceback
+        traceback.print_exc()
         VERSION += '.dev'
         warnings.warn("WARNING: git not installed or failed to run")
 
