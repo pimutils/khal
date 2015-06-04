@@ -127,7 +127,7 @@ class Calendar(object):
     def get_event(self, href):
         return self._cover_event(self._dbtool.get(href))
 
-    def update(self, event):
+    def update(self, event, force=False):
         """update an event in vdir storage and in the database
 
         param event: the event that should be updated
@@ -141,6 +141,26 @@ class Calendar(object):
             event.etag = self._storage.update(event.href, event, event.etag)
             self._dbtool.update(event.vevent.to_ical(), event.href, event.etag)
             self._dbtool.set_ctag(self.local_ctag())
+
+    def force_update(self, event):
+        def check(self, item):
+            """check if this an event with this item's uid already exists"""
+            href = self._deterministic_href(item)
+            if not self.has(href):
+                return None, None
+            else:
+                return href, self.get(href)[1]
+
+        if self._readonly:
+            raise ReadOnlyCalendarError()
+        with self._dbtool.at_once():
+            href, etag = check(self._storage, event)
+            if href is None:
+                self.new(event)
+            else:
+                etag = self._storage.update(href, event, etag)
+                self._dbtool.update(event.raw, href, etag)
+                self._dbtool.set_ctag(self.local_ctag())
 
     def new(self, event):
         """save a new event to the vdir and the database
@@ -276,6 +296,12 @@ class CalendarCollection(object):
 
     def update(self, event):
         self._calnames[event.calendar].update(event)
+
+    def force_update(self, event, collection=None):
+        if collection:
+            self._calnames[collection].force_update(event)
+        else:
+            self._calnames[event.calendar].force_update(event)
 
     def new(self, event, collection=None):
         if collection:
