@@ -64,4 +64,4 @@ class UnsupportedRecursion(Error):
 class DuplicateUid(Error):
 
     """an event with this UID already exists"""
-    pass
+    existing_href = None

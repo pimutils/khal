@@ -143,6 +143,9 @@ class Calendar(object):
             self._dbtool.set_ctag(self.local_ctag())
 
     def force_update(self, event):
+        # FIXME after the next vdirsyncer release, that check function is
+        # not needed than
+        # AlreadyExistingError now knows the conflicting events uid
         def check(self, item):
             """check if this an event with this item's uid already exists"""
             href = self._deterministic_href(item)
@@ -177,8 +180,9 @@ class Calendar(object):
 
             try:
                 href, etag = self._storage.upload(event)
-            except AlreadyExistingError:
-                raise DuplicateUid()
+            except AlreadyExistingError as Error:
+                href = getattr(Error, 'existing_href', None)
+                raise DuplicateUid(href)
             self._dbtool.update(event.raw, href, etag)
             self._dbtool.set_ctag(self.local_ctag())
 
