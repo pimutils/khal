@@ -267,7 +267,7 @@ test_set_repeat = _create_testcases(
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'DESCRIPTION:please describe the event',
-      'RRULE:FREQ=DAILY',
+      'RRULE:FREQ=DAILY;UNTIL=20150605T000000',
       'END:VEVENT']))
 
 
@@ -276,6 +276,7 @@ def test_repeat():
         event = construct_event(data_list.split(),
                                 description='please describe the event',
                                 repeat='daily',
+                                until=['05.06.2015'],
                                 _now=_now,
                                 **kwargs_de)
         assert _replace_uid(event).to_ical() == vevent

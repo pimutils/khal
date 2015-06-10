@@ -56,8 +56,7 @@ def timefstr(date_list, timeformat):
     return dtstart
 
 
-def datetimefstr(date_list, datetimeformat, longdatetimeformat,
-                 inferyear=None):
+def datetimefstr(date_list, dtformat, inferyear=None):
     """
     converts a datetime (as one or several string elements of a list) to
     a datetimeobject
@@ -72,27 +71,21 @@ def datetimefstr(date_list, datetimeformat, longdatetimeformat,
     :returns: a datetime
     :rtype: datetime.datetime
     """
-    try:
-        # including year
-        parts = longdatetimeformat.count(' ') + 1
-        dtstring = ' '.join(date_list[0:parts])
-        dtstart = datetime.strptime(dtstring, longdatetimeformat)
-    except ValueError:
-        # without year
-        parts = datetimeformat.count(' ') + 1
-        dtstring = ' '.join(date_list[0:parts])
-        dtstart = datetime.strptime(dtstring, datetimeformat)
-        if dtstart.timetuple()[0] == 1900:
-            if inferyear is None:
-                dtstart = datetime(date.today().timetuple()[0],
-                                   *dtstart.timetuple()[1:5])
-            else:
-                dtstart = datetime(inferyear,
-                                   *dtstart.timetuple()[1:5])
-        # if start date lies in the past use next year
-        # if dtstart < datetime.today():
-        #     dtstart = datetime(dtstart.timetuple()[0] + 1,
-        #                        *dtstart.timetuple()[1:6])
+    parts = dtformat.count(' ') + 1
+    dtstring = ' '.join(date_list[0:parts])
+    dtstart = datetime.strptime(dtstring, dtformat)
+    # TODO check if 1900 was in the input
+    if dtstart.timetuple()[0] == 1900:
+        if inferyear is None:
+            dtstart = datetime(date.today().timetuple()[0],
+                               *dtstart.timetuple()[1:5])
+        else:
+            dtstart = datetime(inferyear,
+                               *dtstart.timetuple()[1:5])
+    # if start date lies in the past use next year
+    # if dtstart < datetime.today():
+    #     dtstart = datetime(dtstart.timetuple()[0] + 1,
+    #                        *dtstart.timetuple()[1:6])
     for _ in range(parts):
         date_list.pop(0)
     return dtstart
@@ -184,37 +177,35 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     """
     today = datetime.today()
 
-    all_day = False
-
     # looking for start datetime
-    try:
-        # first two elements are a date and a time
-        dtstart = datetimefstr(date_list, datetimeformat, longdatetimeformat)
-    except ValueError:
+    dtstart = None
+    for fun, dtformat, all_day in [
+            (datetimefstr, datetimeformat, False),
+            (datetimefstr, longdatetimeformat, False),
+            (timefstr, timeformat, False),
+            (datetimefstr, dateformat, True),
+            (datetimefstr, longdateformat, True),
+    ]:
         try:
-            # first element is a time
-            dtstart = timefstr(date_list, timeformat)
+            dtstart = fun(date_list, dtformat)
+            break
         except ValueError:
-            try:
-                # first element is a date (and since second isn't a time this
-                # is an all-day-event
-                dtstart = datetimefstr(date_list, dateformat, longdateformat)
-                all_day = True
-            except ValueError:
-                logger.fatal("Cannot parse: '{}'\nPlease have a look at "
-                             "the documentation.".format(' '.join(date_list)))
-                raise FatalError()
+            pass
+    if dtstart is None:
+        logger.fatal("Cannot parse: '{}'\nPlease have a look at "
+                     "the documentation.".format(' '.join(date_list)))
+        raise FatalError()
 
     # now looking for the end
     if all_day:
-        try:
-            # second element must be a date, too
-            dtend = datetimefstr(date_list, dateformat, longdateformat)
-            dtend = dtend + timedelta(days=1)
-        except ValueError:
-            # if it isn't we expect it to be the summary and use defaultdatelen
-            # as event length
-            dtend = dtstart + timedelta(days=defaultdatelen)
+        for fun, dtformat in [(datetimefstr, dateformat),
+                              (datetimefstr, longdateformat),
+                              (lambda x, y: dtstart + timedelta(days=defaultdatelen - 1), None)]:
+            try:
+                dtend = fun(date_list, dtformat) + timedelta(days=1)
+                break
+            except ValueError:
+                pass
         # test if dtend's year is this year, but dtstart's year is not
         if dtend.year == today.year and dtstart.year != today.year:
             dtend = datetime(dtstart.year, *dtend.timetuple()[1:6])
@@ -223,18 +214,21 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
             dtend = datetime(dtend.year + 1, *dtend.timetuple()[1:6])
 
     else:
-        try:
-            # next element datetime
-            dtend = datetimefstr(date_list, datetimeformat, longdatetimeformat,
-                                 dtstart.year)
-        except ValueError:
+        # next element datetime
+        def timefstr_day(date_list, timeformat, day):
+            date = timefstr(date_list, timeformat)
+            date = datetime(*(day.timetuple()[:3] + date.timetuple()[3:5]))
+            return date
+        for fun, dtformat, arg in [
+                (datetimefstr, datetimeformat, dtstart.year),
+                (datetimefstr, longdatetimeformat, dtstart.year),
+                (timefstr_day, timeformat, dtstart),
+                (lambda x, y, z: dtstart + timedelta(minutes=defaulttimelen), None, None)]:
             try:
-                # next element time only
-                dtend = timefstr(date_list, timeformat)
-                dtend = datetime(
-                    *(dtstart.timetuple()[:3] + dtend.timetuple()[3:5]))
+                dtend = fun(date_list, dtformat, arg)
+                break
             except ValueError:
-                dtend = dtstart + timedelta(minutes=defaulttimelen)
+                pass
 
     if dtend < dtstart:
         dtend = datetime(*dtstart.timetuple()[0:3] +
@@ -274,22 +268,23 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
         if repeat in ["daily", "weekly", "monthly", "yearly"]:
             rrule_settings = {'freq': repeat}
             if until:
-                try:
-                    # first two elements are a date and a time
-                    until_date = datetimefstr(until, datetimeformat, longdatetimeformat)
-                except ValueError:
+                until_date = None
+                for fun, dformat in [(datetimefstr, datetimeformat),
+                                     (datetimefstr, longdatetimeformat),
+                                     (timefstr, timeformat),
+                                     (datetimefstr, dateformat),
+                                     (datetimefstr, longdateformat)]:
                     try:
-                        # first element is a time
-                        until_date = timefstr(until, timeformat)
+                        until_date = fun(until, dformat)
+                        break
                     except ValueError:
-                        try:
-                            # first element is a date (and since second isn't a time this
-                            # is an all-day-event
-                            until_date = datetimefstr(until, dateformat, longdateformat)
-                        except ValueError:
-                            logger.fatal("Cannot parse until date: '{}'\nPlease have a look at "
-                                         "the documentation.".format(until))
-                            raise FatalError()
+                        pass
+                if until_date is None:
+
+                    assert False
+                    logger.fatal("Cannot parse until date: '{}'\nPlease have a look at "
+                                 "the documentation.".format(until))
+                    raise FatalError()
                 rrule_settings['until'] = until_date
 
             event.add('rrule', rrule_settings)
