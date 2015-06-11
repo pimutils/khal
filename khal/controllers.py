@@ -86,7 +86,7 @@ def get_agenda(collection, locale, dates=None,
     else:
         try:
             dates = [
-                aux.datefstr(date, locale['dateformat'], locale['longdateformat'])
+                aux.guessdatetimefstr([date], locale)[0].date()
                 if not isinstance(date, datetime.date) else date
                 for date in dates
             ]

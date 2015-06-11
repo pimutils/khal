@@ -75,6 +75,7 @@ def datetimefstr(date_list, dtformat, inferyear=None):
 
 
 def guessdatetimefstr(dtime_list, locale, default_day=datetime.today()):
+    # TODO rename in guessdatetimefstrLIST or something saner alltogether
     def timefstr_day(date_list, timeformat):
         date = timefstr(date_list, timeformat)
         date = datetime(*(default_day.timetuple()[:3] + date.timetuple()[3:5]))
@@ -99,31 +100,6 @@ def guessdatetimefstr(dtime_list, locale, default_day=datetime.today()):
         except ValueError:
             pass
     raise ValueError()
-
-
-def datefstr(datestr, dateformat, longdateformat):
-    """
-    converts a date as a string to datetime.date
-
-    if no year is given, the current year is used
-
-    :returns: a date
-    :rtype: datetime.date
-    """
-    try:
-        # including year
-        dtstart = datetime.strptime(datestr, longdateformat)
-    except ValueError:
-        # without year
-        try:
-            dtstart = datetime.strptime(datestr, dateformat)
-            if dtstart.timetuple()[0] == 1900:
-                dtstart = datetime(date.today().timetuple()[0],
-                                   *dtstart.timetuple()[1:5])
-        except ValueError:
-            raise InvalidDate(
-                '"{}" does not look like a valid date'.format(datestr))
-    return dtstart.date()
 
 
 def generate_random_uid():
