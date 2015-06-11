@@ -212,10 +212,14 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         """
         week_diff = int((self.focus_date - a_day).days / 7)
         new_focus = self.focus - week_diff
+        if new_focus <= 0:
+            self.set_focus(new_focus)
+            week_diff = int((self.focus_date - a_day).days / 7)
+            new_focus = self.focus - week_diff
         for offset in [0, -1, 1]:  # we might be off by a week
             self.set_focus(new_focus + offset)
             try:
-                self[new_focus + offset].set_focus_date(a_day)
+                self[self.focus].set_focus_date(a_day)
             except ValueError:
                 pass
             else:
