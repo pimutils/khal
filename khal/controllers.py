@@ -76,7 +76,6 @@ def get_agenda(collection, locale, dates=None,
     :rtype: list(str)
 
     """
-    assert not (days is not None and events is not None)
     event_column = list()
 
     if days is None:
