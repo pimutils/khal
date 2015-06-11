@@ -61,12 +61,7 @@ def datetimefstr(date_list, dtformat, inferyear=None):
     converts a datetime (as one or several string elements of a list) to
     a datetimeobject
 
-    if no year is given, the current year is used
-
     removes "used" elements of list
-
-    :param intferyear: year to which should be used if datetimeformat is used
-    :type inferyear: int
 
     :returns: a datetime
     :rtype: datetime.datetime
@@ -74,29 +69,36 @@ def datetimefstr(date_list, dtformat, inferyear=None):
     parts = dtformat.count(' ') + 1
     dtstring = ' '.join(date_list[0:parts])
     dtstart = datetime.strptime(dtstring, dtformat)
-    # TODO check if 1900 was in the input
-    if dtstart.timetuple()[0] == 1900:
-        if inferyear is None:
-            dtstart = datetime(date.today().timetuple()[0],
-                               *dtstart.timetuple()[1:5])
-        else:
-            dtstart = datetime(inferyear,
-                               *dtstart.timetuple()[1:5])
-    # if start date lies in the past use next year
-    # if dtstart < datetime.today():
-    #     dtstart = datetime(dtstart.timetuple()[0] + 1,
-    #                        *dtstart.timetuple()[1:6])
     for _ in range(parts):
         date_list.pop(0)
     return dtstart
 
 
-def guessdatetimefstr(dtime_list, timeformat, datetimeformat, longdatetimeformat):
-    try:
-        dtime = timefstr(dtime_list, timeformat)
-    except ValueError:
-        dtime = datetimefstr(dtime_list, datetimeformat, longdatetimeformat)
-    return dtime
+def guessdatetimefstr(dtime_list, locale, default_day=datetime.today()):
+    def timefstr_day(date_list, timeformat):
+        date = timefstr(date_list, timeformat)
+        date = datetime(*(default_day.timetuple()[:3] + date.timetuple()[3:5]))
+        return date
+
+    def datefstr_year(date_list, dateformat):
+        date = datetimefstr(date_list, dateformat)
+        date = datetime(*(default_day.timetuple()[:1] + date.timetuple()[1:5]))
+        return date
+
+    dtstart = None
+    for fun, dtformat, all_day in [
+            (datefstr_year, locale['datetimeformat'], False),
+            (datetimefstr, locale['longdatetimeformat'], False),
+            (timefstr_day, locale['timeformat'], False),
+            (datefstr_year, locale['dateformat'], True),
+            (datetimefstr, locale['longdateformat'], True),
+    ]:
+        try:
+            dtstart = fun(dtime_list, dtformat)
+            return dtstart, all_day
+        except ValueError:
+            pass
+    raise ValueError()
 
 
 def datefstr(datestr, dateformat, longdateformat):
@@ -176,59 +178,36 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
 
     """
     today = datetime.today()
+    locale = {'timeformat': timeformat,
+              'datetimeformat': datetimeformat,
+              'longdatetimeformat': longdatetimeformat,
+              'dateformat': dateformat,
+              'longdateformat': longdateformat,
+              }
 
-    # looking for start datetime
-    dtstart = None
-    for fun, dtformat, all_day in [
-            (datetimefstr, datetimeformat, False),
-            (datetimefstr, longdatetimeformat, False),
-            (timefstr, timeformat, False),
-            (datetimefstr, dateformat, True),
-            (datetimefstr, longdateformat, True),
-    ]:
-        try:
-            dtstart = fun(date_list, dtformat)
-            break
-        except ValueError:
-            pass
-    if dtstart is None:
+    try:
+        dtstart, all_day = guessdatetimefstr(date_list, locale)
+    except ValueError:
         logger.fatal("Cannot parse: '{}'\nPlease have a look at "
                      "the documentation.".format(' '.join(date_list)))
         raise FatalError()
 
-    # now looking for the end
+    try:
+        dtend, _ = guessdatetimefstr(date_list, locale, dtstart)
+    except ValueError:
+        if all_day:
+            dtend = dtstart + timedelta(days=defaultdatelen - 1)
+        else:
+            dtend = dtstart + timedelta(minutes=defaulttimelen)
+
     if all_day:
-        for fun, dtformat in [(datetimefstr, dateformat),
-                              (datetimefstr, longdateformat),
-                              (lambda x, y: dtstart + timedelta(days=defaultdatelen - 1), None)]:
-            try:
-                dtend = fun(date_list, dtformat) + timedelta(days=1)
-                break
-            except ValueError:
-                pass
+        dtend += timedelta(days=1)
         # test if dtend's year is this year, but dtstart's year is not
         if dtend.year == today.year and dtstart.year != today.year:
             dtend = datetime(dtstart.year, *dtend.timetuple()[1:6])
 
         if dtend < dtstart:
             dtend = datetime(dtend.year + 1, *dtend.timetuple()[1:6])
-
-    else:
-        # next element datetime
-        def timefstr_day(date_list, timeformat, day):
-            date = timefstr(date_list, timeformat)
-            date = datetime(*(day.timetuple()[:3] + date.timetuple()[3:5]))
-            return date
-        for fun, dtformat, arg in [
-                (datetimefstr, datetimeformat, dtstart.year),
-                (datetimefstr, longdatetimeformat, dtstart.year),
-                (timefstr_day, timeformat, dtstart),
-                (lambda x, y, z: dtstart + timedelta(minutes=defaulttimelen), None, None)]:
-            try:
-                dtend = fun(date_list, dtformat, arg)
-                break
-            except ValueError:
-                pass
 
     if dtend < dtstart:
         dtend = datetime(*dtstart.timetuple()[0:3] +
