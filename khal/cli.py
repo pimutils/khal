@@ -325,7 +325,7 @@ def _get_cli():
             dtime = datetime.datetime.now()
         else:
             try:
-                dtime = aux.guessdatetimefstr(dtime_list, locale)
+                dtime, _ = aux.guessdatetimefstr(dtime_list, locale)
             except ValueError:
                 logger.fatal(
                     '{} is not a valid datetime (matches neither {} nor {} nor'
