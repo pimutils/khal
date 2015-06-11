@@ -280,8 +280,6 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
                     except ValueError:
                         pass
                 if until_date is None:
-
-                    assert False
                     logger.fatal("Cannot parse until date: '{}'\nPlease have a look at "
                                  "the documentation.".format(until))
                     raise FatalError()
