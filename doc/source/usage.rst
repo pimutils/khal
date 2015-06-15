@@ -45,9 +45,17 @@ Several options are common to almost all of :program:`khal`'s commands
         Specifiy a calendar which will be disregarded for this run, can be used
         several times.
 
+
+dates
+-----
+Almost everywhere khal accepts dates, khal should recognize relative date names
+like *today*, *tomorrow* and the names of the days of the week (also in
+three letters abbreviated form). Week day names get interpreted as the date of
+the next occurrence of a day with that name. The name of the current day gets
+interpreted as that date *next* week (i.e. seven days from now).
+
 Commands
 --------
-
 
 agenda
 ******
@@ -173,6 +181,12 @@ Examples
 
 adds a new event starting today at 18:00 with summary 'awesome event' (lasting
 for the default time of one hour) to the default calendar
+
+::
+
+    khal new tomorrow 16:30 Coffee Break
+
+adds a new event tomorrow at 16:30
 
 ::
 

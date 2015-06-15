@@ -38,7 +38,7 @@ from khal.log import logger
 from khal.exceptions import FatalError
 
 
-def timefstr(date_list, timeformat):
+def timefstr(dtime_list, timeformat):
     """
     converts a time (as a string) to a datetimeobject
 
@@ -48,15 +48,17 @@ def timefstr(date_list, timeformat):
 
     :returns: datetimeobject
     """
-    time_start = time.strptime(date_list[0], timeformat)
+    if len(dtime_list) == 0:
+        raise ValueError()
+    time_start = time.strptime(dtime_list[0], timeformat)
     time_start = dtime(*time_start[3:5])
     day_start = date.today()
     dtstart = datetime.combine(day_start, time_start)
-    date_list.pop(0)
+    dtime_list.pop(0)
     return dtstart
 
 
-def datetimefstr(date_list, dtformat, inferyear=None):
+def datetimefstr(dtime_list, dtformat, inferyear=None):
     """
     converts a datetime (as one or several string elements of a list) to
     a datetimeobject
@@ -67,22 +69,82 @@ def datetimefstr(date_list, dtformat, inferyear=None):
     :rtype: datetime.datetime
     """
     parts = dtformat.count(' ') + 1
-    dtstring = ' '.join(date_list[0:parts])
+    dtstring = ' '.join(dtime_list[0:parts])
     dtstart = datetime.strptime(dtstring, dtformat)
     for _ in range(parts):
-        date_list.pop(0)
+        dtime_list.pop(0)
     return dtstart
 
 
+def weekdaypstr(dayname):
+    """converts an (abbreviated) dayname to a number (mon=0, sun=6)
+
+    :param dayname: name of abbreviation of the day
+    :type dayname: str
+    :return: number of the day in a week
+    :rtype: int
+    """
+
+    if dayname in ['monday', 'mon']:
+        return 0
+    if dayname in ['tuesday', 'tue']:
+        return 1
+    if dayname in ['wednesday', 'wed']:
+        return 2
+    if dayname in ['thursday', 'thu']:
+        return 3
+    if dayname in ['friday', 'fri']:
+        return 4
+    if dayname in ['saturday', 'sat']:
+        return 5
+    if dayname in ['sunday', 'sun']:
+        return 6
+    raise ValueError('invalid weekday name `%s`' % dayname)
+
+
+def calc_day(dayname):
+    today = datetime.today()
+    dayname = dayname.lower()
+    if dayname == 'today':
+        return today
+    if dayname == 'tomorrow':
+        return today + timedelta(days=1)
+
+    wday = weekdaypstr(dayname)
+    days = (wday - today.weekday()) % 7
+    days = 7 if days == 0 else days
+    day = today + timedelta(days=days)
+    return day
+
+
+def datefstr_weekday(dtime_list, _):
+    if len(dtime_list) == 0:
+        raise ValueError()
+    day = calc_day(dtime_list[0])
+    dtime_list.pop(0)
+    return day
+
+
+def datetimefstr_weekday(dtime_list, timeformat):
+    if len(dtime_list) == 0:
+        raise ValueError()
+    day = calc_day(dtime_list[0])
+    time = timefstr(dtime_list[1:], timeformat)
+    dtime_list.pop(0)
+    dtime_list.pop(0)  # we need to pop twice as timefstr gets a copy
+    dtime = datetime.combine(day, time.time())
+    return dtime
+
+
 def guessdatetimefstr(dtime_list, locale, default_day=datetime.today()):
-    # TODO rename in guessdatetimefstrLIST or something saner alltogether
-    def timefstr_day(date_list, timeformat):
-        date = timefstr(date_list, timeformat)
+    # TODO rename in guessdatetimefstrLIST or something saner altogether
+    def timefstr_day(dtime_list, timeformat):
+        date = timefstr(dtime_list, timeformat)
         date = datetime(*(default_day.timetuple()[:3] + date.timetuple()[3:5]))
         return date
 
-    def datefstr_year(date_list, dateformat):
-        date = datetimefstr(date_list, dateformat)
+    def datefstr_year(dtime_list, dateformat):
+        date = datetimefstr(dtime_list, dateformat)
         date = datetime(*(default_day.timetuple()[:1] + date.timetuple()[1:5]))
         return date
 
@@ -91,8 +153,11 @@ def guessdatetimefstr(dtime_list, locale, default_day=datetime.today()):
             (datefstr_year, locale['datetimeformat'], False),
             (datetimefstr, locale['longdatetimeformat'], False),
             (timefstr_day, locale['timeformat'], False),
+            (datetimefstr_weekday, locale['timeformat'], False),
             (datefstr_year, locale['dateformat'], True),
             (datetimefstr, locale['longdateformat'], True),
+            (datefstr_weekday, None, True),
+
     ]:
         try:
             dtstart = fun(dtime_list, dtformat)
@@ -111,7 +176,7 @@ def generate_random_uid():
     return ''.join([random.choice(choice) for _ in range(36)])
 
 
-def construct_event(date_list, timeformat, dateformat, longdateformat,
+def construct_event(dtime_list, timeformat, dateformat, longdateformat,
                     datetimeformat, longdatetimeformat, default_timezone,
                     defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
                     description=None, location=None, repeat=None, until=None,
@@ -162,14 +227,14 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
               }
 
     try:
-        dtstart, all_day = guessdatetimefstr(date_list, locale)
+        dtstart, all_day = guessdatetimefstr(dtime_list, locale)
     except ValueError:
         logger.fatal("Cannot parse: '{}'\nPlease have a look at "
-                     "the documentation.".format(' '.join(date_list)))
+                     "the documentation.".format(' '.join(dtime_list)))
         raise FatalError()
 
     try:
-        dtend, _ = guessdatetimefstr(date_list, locale, dtstart)
+        dtend, _ = guessdatetimefstr(dtime_list, locale, dtstart)
     except ValueError:
         if all_day:
             dtend = dtstart + timedelta(days=defaultdatelen - 1)
@@ -197,15 +262,15 @@ def construct_event(date_list, timeformat, dateformat, longdateformat,
     else:
         try:
             # next element is a valid Olson db timezone string
-            dtstart = pytz.timezone(date_list[0]).localize(dtstart)
-            dtend = pytz.timezone(date_list[0]).localize(dtend)
-            date_list.pop(0)
+            dtstart = pytz.timezone(dtime_list[0]).localize(dtstart)
+            dtend = pytz.timezone(dtime_list[0]).localize(dtend)
+            dtime_list.pop(0)
         except (pytz.UnknownTimeZoneError, UnicodeDecodeError):
             dtstart = default_timezone.localize(dtstart)
             dtend = default_timezone.localize(dtend)
 
     event = icalendar.Event()
-    text = to_unicode(' '.join(date_list), encoding)
+    text = to_unicode(' '.join(dtime_list), encoding)
     if not description or not location:
         summary = text.split(' :: ', 1)[0]
         try:

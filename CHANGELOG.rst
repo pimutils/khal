@@ -7,6 +7,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.6.0
+=====
+not released yet
+
+* khal should accept relative dates on the command line (today, tomorrow and
+weekday names)
+
 0.5.0
 =====
 released on 2015-06-01
