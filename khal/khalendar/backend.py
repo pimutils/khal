@@ -233,7 +233,7 @@ class SQLiteDb(object):
         # after the corresponding rrule event
         def sort_key(vevent):
             assert isinstance(vevent, icalendar.Event)  # REMOVE ME
-            uid = str(vevent['UID'])
+            uid = vevent['UID']
             rec_id = vevent.get(RECURRENCE_ID)
             if rec_id is None:
                 return uid, 0
