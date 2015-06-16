@@ -1,9 +1,9 @@
 # vim: set fileencoding=utf-8:
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 
 import pytz
 
-from khal.aux import construct_event
+from khal.aux import construct_event, guessdatetimefstr
 from khal.compat import to_bytes
 
 
@@ -39,6 +39,20 @@ def _replace_uid(event):
     event.pop('uid')
     event.add('uid', 'E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA')
     return event
+
+
+class TestGuessDatetimefstr(object):
+    tomorrow16 = datetime.combine(tomorrow, time(16, 0))
+    def test_today(self):
+        today13 = datetime.combine(date.today(), time(13, 0))
+        assert (today13, False) == guessdatetimefstr(['today', '13:00'], kwargs_de)
+        assert today == guessdatetimefstr(['today'], kwargs_de)[0].date()
+
+    def test_tomorrow(self):
+        assert (self.tomorrow16, False) == guessdatetimefstr('tomorrow 16:00 16:00'.split(), kwargs_de)
+
+    def test_time_tomorrow(self):
+        assert (self.tomorrow16, False) == guessdatetimefstr('16:00'.split(), kwargs_de, tomorrow)
 
 
 test_set_format_de = _create_testcases(
