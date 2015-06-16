@@ -43,16 +43,19 @@ def _replace_uid(event):
 
 class TestGuessDatetimefstr(object):
     tomorrow16 = datetime.combine(tomorrow, time(16, 0))
+
     def test_today(self):
         today13 = datetime.combine(date.today(), time(13, 0))
         assert (today13, False) == guessdatetimefstr(['today', '13:00'], kwargs_de)
         assert today == guessdatetimefstr(['today'], kwargs_de)[0].date()
 
     def test_tomorrow(self):
-        assert (self.tomorrow16, False) == guessdatetimefstr('tomorrow 16:00 16:00'.split(), kwargs_de)
+        assert (self.tomorrow16, False) == \
+            guessdatetimefstr('tomorrow 16:00 16:00'.split(), kwargs_de)
 
     def test_time_tomorrow(self):
-        assert (self.tomorrow16, False) == guessdatetimefstr('16:00'.split(), kwargs_de, tomorrow)
+        assert (self.tomorrow16, False) == \
+            guessdatetimefstr('16:00'.split(), kwargs_de, tomorrow)
 
 
 test_set_format_de = _create_testcases(
