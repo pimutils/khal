@@ -14,7 +14,7 @@ before_install:
 
 install: 
         pip install tox
-        pipi install freezegun
+        pip install freezegun
 
 script:
     - ./.travis.run.sh
