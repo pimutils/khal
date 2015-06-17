@@ -34,6 +34,7 @@ def write_section(specsection, secname, key, comment):
     elif fun_name in ['force_list']:
         fun_name = 'list'
         if isinstance(default, list):
+            default = ['space' if one == ' ' else one for one in default]
             default = ', '.join(default)
 
     print('      :type: {}'.format(fun_name))
