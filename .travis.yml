@@ -12,7 +12,7 @@ python:
 before_install:
   - sudo apt-get update && sudo apt-get --reinstall install -qq language-pack-de
 
-install: pip install tox
+install: pip install tox freezegun
 
 script:
     - ./.travis.run.sh

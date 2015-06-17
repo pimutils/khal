@@ -122,8 +122,11 @@ def get_agenda(collection, locale, dates=None,
     return event_column
 
 
-def calendar(collection, date=[], firstweekday=0, encoding='utf-8',
+def calendar(collection, date=None, firstweekday=0, encoding='utf-8',
              weeknumber=False, show_all_days=False, **kwargs):
+    if date is None:
+        date = [datetime.datetime.today()]
+
     term_width, _ = get_terminal_size()
     lwidth = 25
     rwidth = term_width - lwidth - 4

@@ -63,7 +63,7 @@ def coll_vdirs(tmpdir):
     return coll, vdirs
 
 
-class TestCalendarTest(object):
+class TestGetAgenda(object):
     def test_new_event(self, cal_vdir):
         cal, vdir = cal_vdir
         event = cal.new_event(event_today)
