@@ -201,6 +201,16 @@ The [keybindings] section
 keybindings for `ikhal` are set here. You can bind more than one key
 (combination) to a command by supplying a comma-seperated list of keys.
 
+.. _keybindings-save:
+
+.. object:: save
+
+    
+    save the currently edited event and leave the event editor
+
+      :type: list
+      :default: meta enter
+
 .. _keybindings-right:
 
 .. object:: right

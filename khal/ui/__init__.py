@@ -574,6 +574,10 @@ class EventEditor(urwid.WidgetWrap):
                  'Unsaved changes! Hit ESC again to discard.'))
             self._abort_confirmed = True
             return
+        if key in self.pane.conf['keybindings']['save']:
+            self.save(None)
+
+
         return super(EventEditor, self).keypress(size, key)
 
 

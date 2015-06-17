@@ -105,6 +105,9 @@ view = force_list(default=list('enter', 'tab'))
 # focus the calendar browser on today
 today = force_list(default=list('t'))
 
+# save the currently edited event and leave the event editor
+save = force_list(default=list('meta enter'))
+
 # The default section begins with a **[default]** tag. Some default values and
 # behaviours are set here.
 [default]
