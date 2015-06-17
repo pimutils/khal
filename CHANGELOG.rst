@@ -15,6 +15,9 @@ not released yet
 * khal now needs to be installed for building the documentation
 * khal should accept relative dates on the command line (today, tomorrow and 
   weekday names)
+* keybinding for saving an event from ikhal's event editor (default is `meta +
+  center`)
+
 
 0.5.0
 =====
