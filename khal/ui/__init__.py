@@ -576,8 +576,6 @@ class EventEditor(urwid.WidgetWrap):
             return
         if key in self.pane.conf['keybindings']['save']:
             self.save(None)
-
-
         return super(EventEditor, self).keypress(size, key)
 
 
