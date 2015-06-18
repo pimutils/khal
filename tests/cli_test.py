@@ -247,3 +247,5 @@ def test_repeating(runner):
             now, end_date.strftime('%d.%m.%Y')).split())
     assert result.output == ''
     assert not result.exception
+
+freezer.stop()

@@ -1,4 +1,9 @@
 # vim: set fileencoding=utf-8 :
+#
+
+from freezegun import freeze_time
+freezer = freeze_time("2015-05-14")
+freezer.start()
 
 import datetime
 import textwrap
@@ -399,3 +404,5 @@ def test_dtend_equals_dtstart():
 
     event = Event(text, calendar='foobar', locale=locale)
     assert event.end - event.start == datetime.timedelta(days=1)
+
+freezer.stop()
