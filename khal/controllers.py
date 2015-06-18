@@ -122,8 +122,8 @@ def get_agenda(collection, locale, dates=None,
     return event_column
 
 
-def calendar(collection, date=None, firstweekday=0, encoding='utf-8',
-             weeknumber=False, show_all_days=False, **kwargs):
+def calendar(collection, date=None, firstweekday=0, weeknumber=False,
+             show_all_days=False, **kwargs):
     if date is None:
         date = [datetime.datetime.today()]
 
@@ -139,17 +139,17 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8',
     rows = merge_columns(calendar_column, event_column)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
-    echo('\n'.join(rows).encode(encoding))
+    echo('\n'.join(rows))
 
 
-def agenda(collection, date=None, firstweekday=0, encoding='utf-8',
-           show_all_days=False, **kwargs):
+def agenda(collection, date=None, firstweekday=0, show_all_days=False,
+           **kwargs):
     term_width, _ = get_terminal_size()
     event_column = get_agenda(collection, dates=date, width=term_width,
                               show_all_days=show_all_days, **kwargs)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
-    echo(to_unicode('\n'.join(event_column), encoding))
+    echo('\n'.join(event_column))
 
 
 def new_from_string(collection, conf, date_list, location=None, repeat=None,
@@ -178,7 +178,7 @@ def new_from_string(collection, conf, date_list, location=None, repeat=None,
         echo(event.long())
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
-        echo(path.encode(conf['locale']['encoding']))
+        echo(path)
 
 
 def interactive(collection, conf):
