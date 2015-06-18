@@ -1,4 +1,8 @@
 # vim: set fileencoding=utf-8:
+#
+from freezegun import freeze_time
+freezer = freeze_time("2012-01-14")
+freezer.start()
 from datetime import date, datetime, time, timedelta
 
 import pytz

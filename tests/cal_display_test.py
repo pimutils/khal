@@ -1,3 +1,7 @@
+from freezegun import freeze_time
+freezer = freeze_time("2012-01-14")
+freezer.start()
+
 import datetime
 import locale
 
