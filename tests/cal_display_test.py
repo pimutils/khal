@@ -138,3 +138,5 @@ def test_vertical_month_unicode():
                               today=datetime.date(2011, 12, 12))
     assert vert_str == example_de
     u'\n'.join(vert_str)  # issue 142
+    # otherwise this will be set for the rest of the session on travis
+    locale.setlocale(locale.LC_ALL, 'C')
