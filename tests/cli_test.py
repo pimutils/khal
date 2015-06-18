@@ -1,6 +1,10 @@
 # coding: utf-8
 # vim: set ts=4 sw=4 expandtab sts=4:
 
+from freezegun import freeze_time
+freezer = freeze_time("2012-01-14")
+freezer.start()
+
 import os
 import datetime
 from datetime import timedelta
@@ -8,7 +12,6 @@ from datetime import timedelta
 import pytest
 from click.testing import CliRunner
 
-from freezegun import freeze_time
 
 from khal.compat import to_bytes
 from khal.cli import main_khal
@@ -153,30 +156,28 @@ def test_showalldays(runner):
     assert not result.exception
 
 
-@freeze_time("2012-01-14")
-@pytest.mark.xfail
 def test_calendar(runner):
     runner = runner(command='calendar', showalldays=False, days=0)
     result = runner.invoke(main_khal)
     assert not result.exception
     assert result.exit_code == 0
     output = '\n'.join([
-        "    Mo Tu We Th Fr Sa Su     No events",
-        "Jun  1  2  3  4  5  6  7     ",
-        "     8  9 10 11 12 13 14     ",
-        "    15 16 17 18 19 20 21     ",
-        "    22 23 24 25 26 27 28     ",
-        "Jul 29 30  1  2  3  4  5     ",
-        "     6  7  8  9 10 11 12     ",
-        "    13 14 15 16 17 18 19     ",
-        "    20 21 22 23 24 25 26     ",
-        "Aug 27 28 29 30 31  1  2     ",
-        "     3  4  5  6  7  8  9     ",
-        "    10 11 12 13 14 15 16     ",
-        "    17 18 19 20 21 22 23     ",
-        "    24 25 26 27 28 29 30     ",
-        "Sep 31  1  2  3  4  5  6     ",
-        "",
+        '    Mo Tu We Th Fr Sa Su     No events',
+        'Jan 26 27 28 29 30 31  1     ',
+        '     2  3  4  5  6  7  8     ',
+        '     9 10 11 12 13 14 15     ',
+        '    16 17 18 19 20 21 22     ',
+        '    23 24 25 26 27 28 29     ',
+        'Feb 30 31  1  2  3  4  5     ',
+        '     6  7  8  9 10 11 12     ',
+        '    13 14 15 16 17 18 19     ',
+        '    20 21 22 23 24 25 26     ',
+        'Mar 27 28 29  1  2  3  4     ',
+        '     5  6  7  8  9 10 11     ',
+        '    12 13 14 15 16 17 18     ',
+        '    19 20 21 22 23 24 25     ',
+        'Apr 26 27 28 29 30 31  1     ',
+        ''
     ])
     assert result.output == output
 
