@@ -154,7 +154,7 @@ def test_showalldays(runner):
 
 
 @freeze_time("2012-01-14")
-@pytest.xfail
+@pytest.mark.xfail
 def test_calendar(runner):
     runner = runner(command='calendar', showalldays=False, days=0)
     result = runner.invoke(main_khal)
