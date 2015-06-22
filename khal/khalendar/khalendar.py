@@ -127,7 +127,7 @@ class Calendar(object):
     def get_event(self, href):
         return self._cover_event(self._dbtool.get(href))
 
-    def update(self, event, force=False):
+    def update(self, event):
         """update an event in vdir storage and in the database
 
         param event: the event that should be updated
