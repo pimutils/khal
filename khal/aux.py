@@ -34,7 +34,7 @@ import icalendar
 import pytz
 
 from khal.log import logger
-from khal.exceptions import FatalError, InvalidDate
+from khal.exceptions import FatalError
 
 
 def timefstr(dtime_list, timeformat):
