@@ -1,6 +1,7 @@
 # vim: set fileencoding=utf-8:
 """testing functions from the khal.aux"""
 from datetime import date, datetime, time, timedelta
+import textwrap
 
 import icalendar
 import pytz
@@ -46,6 +47,19 @@ def _replace_uid(event):
     event.pop('uid')
     event.add('uid', 'E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA')
     return event
+
+
+def test_normalize_component():
+    assert normalize_component(textwrap.dedent("""
+    BEGIN:VEVENT
+    DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140409T093000
+    END:VEVENT
+    """)) != normalize_component(textwrap.dedent("""
+    BEGIN:VEVENT
+    DTSTART;TZID=Oyrope/Berlin;VALUE=DATE-TIME:20140409T093000
+    END:VEVENT
+    """))
+
 
 
 class TestGuessDatetimefstr(object):

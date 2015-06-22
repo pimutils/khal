@@ -400,7 +400,7 @@ class SQLiteDb(object):
         """
         start = time.mktime(start.timetuple())
         end = time.mktime(end.timetuple())
-        sql_s = ('SELECT recs_loc.hrefrecuid, dtstart, dtend FROM '
+        sql_s = ('SELECT recs_loc.hrefrecuid, dtstart, dtend, recuid FROM '
                  'recs_loc JOIN events ON '
                  'recs_loc.hrefrecuid = events.hrefrecuid AND '
                  'recs_loc.calendar = events.calendar WHERE '
@@ -409,11 +409,11 @@ class SQLiteDb(object):
                  'dtstart <= ? AND dtend >= ?) AND events.calendar = ?;')
         stuple = (start, end, start, end, start, end, self.calendar)
         result = self.sql_ex(sql_s, stuple)
-        for href_rec_inst, start, end in result:
+        for href_rec_inst, start, end, rec_inst in result:
             start = pytz.UTC.localize(
                 datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
-            event = self.get(href_rec_inst, start=start, end=end)
+            event = self.get(href_rec_inst, start=start, end=end, rec_inst=rec_inst)
             yield event
 
     def get_allday_range(self, start):
@@ -425,7 +425,7 @@ class SQLiteDb(object):
         """
         strstart = aux.to_unix_time(start)
         strend = aux.to_unix_time(start + datetime.timedelta(days=1))
-        sql_s = ('SELECT recs_float.hrefrecuid, dtstart, dtend FROM '
+        sql_s = ('SELECT recs_float.hrefrecuid, dtstart, dtend, recuid FROM '
                  'recs_float JOIN events ON '
                  'recs_float.hrefrecuid = events.hrefrecuid AND '
                  'recs_float.calendar = events.calendar WHERE '
@@ -434,16 +434,16 @@ class SQLiteDb(object):
                  'dtstart <= ? AND dtend > ? ) AND events.calendar = ?;')
         stuple = (strstart, strend, strstart, strend, strstart, strend, self.calendar)
         result = self.sql_ex(sql_s, stuple)
-        for href_rec_inst, start, end in result:
+        for href_rec_inst, start, end, rec_inst in result:
             start = datetime.datetime.utcfromtimestamp(start).date()
             end = datetime.datetime.utcfromtimestamp(end).date()
-            event = self.get(href_rec_inst, start=start, end=end)
+            event = self.get(href_rec_inst, start=start, end=end, rec_inst=rec_inst)
             yield event
 
     def get_datetime_at(self, dtime):
         """return datetime events which are scheduled at `dtime`"""
         dtime = aux.to_unix_time(dtime)
-        sql_s = ('SELECT recs_loc.hrefrecuid, dtstart, dtend FROM '
+        sql_s = ('SELECT recs_loc.hrefrecuid, dtstart, dtend, recuid FROM '
                  'recs_loc JOIN events ON '
                  'recs_loc.hrefrecuid = events.hrefrecuid AND '
                  'recs_loc.calendar = events.calendar WHERE '
@@ -451,11 +451,11 @@ class SQLiteDb(object):
                  'AND events.calendar = ?;')
         stuple = (dtime, dtime, self.calendar)
         result = self.sql_ex(sql_s, stuple)
-        for href_rec_inst, start, end in result:
+        for href_rec_inst, start, end, rec_inst in result:
             start = pytz.UTC.localize(
                 datetime.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(end))
-            event = self.get(href_rec_inst, start=start, end=end)
+            event = self.get(href_rec_inst, start=start, end=end, rec_inst=rec_inst)
             yield event
 
     def get_allday_at(self, dtime):
@@ -467,7 +467,7 @@ class SQLiteDb(object):
         if isinstance(dtime, datetime.datetime):
             dtime = dtime.date()
         dtime = aux.to_unix_time(dtime)
-        sql_s = ('SELECT recs_float.hrefrecuid, dtstart, dtend FROM '
+        sql_s = ('SELECT recs_float.hrefrecuid, dtstart, dtend, recuid FROM '
                  'recs_float JOIN events ON '
                  'recs_float.hrefrecuid = events.hrefrecuid AND '
                  'recs_float.calendar = events.calendar WHERE '
@@ -475,13 +475,13 @@ class SQLiteDb(object):
                  'AND events.calendar = ?;')
         stuple = (dtime, dtime, self.calendar)
         result = self.sql_ex(sql_s, stuple)
-        for href_rec_inst, start, end in result:
+        for href_rec_inst, start, end, rec_inst in result:
             start = datetime.datetime.utcfromtimestamp(start).date()
             end = datetime.datetime.utcfromtimestamp(end).date()
-            event = self.get(href_rec_inst, start=start, end=end)
+            event = self.get(href_rec_inst, start=start, end=end, rec_inst=rec_inst)
             yield event
 
-    def get(self, href_rec_inst, start=None, end=None):
+    def get(self, href_rec_inst, start=None, end=None, rec_inst=None):
         """returns the Event matching href_rec_inst
 
         if start and end are given, a specific Event from a Recursion set is
@@ -490,14 +490,12 @@ class SQLiteDb(object):
         sql_s = 'SELECT href, etag, item FROM events WHERE hrefrecuid = ?;'
         result = self.sql_ex(sql_s, (href_rec_inst, ))
         href, etag, item = result[0]
-        return Event(item,
+        return Event.fromString(item,
                      locale=self.locale,
-                     start=start,
-                     end=end,
                      href=href,
                      calendar=self.calendar,
                      etag=etag,
-                     recuid=href_rec_inst,
+                     rec_inst=rec_inst,
                      )
 
     def search(self, search_string):

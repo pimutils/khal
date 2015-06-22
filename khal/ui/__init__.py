@@ -59,7 +59,7 @@ class U_Event(urwid.Text):
         self.this_date = this_date
         self.eventcolumn = eventcolumn
         self.conf = eventcolumn.pane.conf
-        super(U_Event, self).__init__(self.event.compact(self.this_date))
+        super(U_Event, self).__init__(self.event.relative_to(self.this_date))
         self.set_title()
 
     @property
@@ -78,7 +78,7 @@ class U_Event(urwid.Text):
     def set_title(self, mark=''):
         if self.uid in self.eventcolumn.pane.deleted:
             mark = 'D'
-        self.set_text(mark + ' ' + self.event.compact(self.this_date))
+        self.set_text(mark + ' ' + self.event.relative_to(self.this_date))
 
     def toggle_delete(self):
         if self.event.readonly:

@@ -20,7 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""this module will the event model, hopefully soon in a cleaned up version"""
+"""this module cointains the event model, hopefully soon in a cleaned up version"""
 
 from __future__ import unicode_literals
 
@@ -34,6 +34,358 @@ from ..log import logger
 
 
 class Event(object):
+    """base Event class
+
+    important distinction for AllDayEvents:
+        all end times are as presented to a user, i.e. an event scheduled for
+        only one day will have the same start and end date (even though the
+        icalendar standard would have the end date be one day later)
+    """
+    def __init__(self, vevent, href, etag, locale, rec_inst, calendar, mutable=True):
+        if self.__class__.__name__ == 'Event':
+            raise ValueError('do not initialize this class directly')
+        self._vevent = vevent
+        self._locale = locale
+        self._mutable = mutable
+        self._rec_inst = rec_inst
+        self.href = href
+        self.etag = etag
+        self.allday = False
+        self.calendar = calendar
+
+    @classmethod
+    def _get_type(cls, start, end):
+        if hasattr(start, 'tzinfo') ^ hasattr(end, 'tzinfo'):
+            raise ValueError('DTSTART and DTEND should be of the same type (localized or floating)')
+        # TODO deal with events which have tzinfo, but is set to None
+        if isinstance(start, datetime) != isinstance(end, datetime):
+            raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
+
+        if hasattr(start, 'tzinfo'):
+            cls = LocalizedEvent
+        elif isinstance(start, datetime):
+            cls = FloatingEvent
+        elif isinstance(start, date):
+            cls = AllDayEvent
+        return cls
+
+    @classmethod
+    def fromString(cls, event_str, href, etag, locale, calendar=None,
+                   mutable=True, rec_inst=None):
+        calendar_collection = icalendar.Calendar.from_ical(event_str)
+        events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
+        if len(events) > 1:
+            # TODO deal with all repeating events
+            raise NotImplementedError()
+        else:
+            vevent = events[0]
+
+        start = vevent['DTSTART'].dt
+        try:
+            end = vevent['DTEND'].dt
+        except KeyError:
+            end = start
+        cls = cls._get_type(start, end)
+        return cls(vevent, href=href, etag=etag, locale=locale, rec_inst=rec_inst,
+                   calendar=calendar, mutable=mutable)
+
+    def update_start_end(self, start, end):
+        """update start and end time of this event
+
+        beware, this methods performs some open heart surgerly
+        """
+        self.__class__ = self._get_type(start, end)
+
+        # TODO look up why this is needed
+        # self.event.vevent.dt = newstart would not work
+        # (timezone was missing after to_ical() )
+        self._vevent.pop('DTSTART')
+        self._vevent.add('DTSTART', start)
+        if not isinstance(end, datetime):
+            end = end + timedelta(days=1)
+        try:
+            self._vevent.pop('DTEND')
+            self._vevent.add('DTEND', end)
+        except KeyError:
+            self._vevent.pop('DURATION')
+            duration = (end - start)
+            self._vevent.add('DURATION', duration)
+
+    @property
+    def recurring(self):
+        return 'RRULE' in self._vevent or 'RECURRENCE-ID' in self._vevent or \
+            'RDATE' in self._vevent
+
+    @property
+    def recurpattern(self):
+        if 'RRULE' in self._vevent:
+            return self._vevent['RRULE'].to_ical()
+        else:
+            return None
+
+    @property
+    def symbol_strings(self):
+        if self._locale['unicode_symbols']:
+            return dict(
+                recurring='\N{Clockwise gapped circle arrow}',
+                range='\N{Left right arrow}',
+                range_end='\N{Rightwards arrow to bar}',
+                range_start='\N{Rightwards arrow from bar}',
+                right_arrow='\N{Rightwards arrow}'
+            )
+        else:
+            return dict(
+                recurring='R',
+                range='<->',
+                range_end='->|',
+                range_start='|->',
+                right_arrow='->'
+            )
+
+    @property
+    def start_local(self):
+        return self.start
+
+    @property
+    def end_local(self):
+        return self.end
+
+    @property
+    def start(self):
+        return self._vevent['DTSTART'].dt
+
+    @property
+    def end(self):
+        try:
+            end = self._vevent['DTEND'].dt
+        except KeyError:
+            duration = self._vevent['DURATION']
+            end = self.start + duration.dt
+        return end
+
+    @property
+    def uid(self):
+        return self._vevent['UID']
+
+    @staticmethod
+    def _create_calendar():
+        """
+        create the calendar
+
+        :returns: calendar
+        :rtype: icalendar.Calendar()
+        """
+        calendar = icalendar.Calendar()
+        calendar.add('version', '2.0')
+        calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
+        return calendar
+
+    @property
+    def raw(self):
+        """needed for vdirsyncer comat
+
+        return text
+        """
+        calendar = self._create_calendar()
+        if hasattr(self._vevent['DTSTART'].dt, 'tzinfo'):
+            tzs = [self.start.tzinfo]
+            if (
+                'DTEND' in self._vevent and
+                hasattr(self._vevent['DTEND'].dt, 'tzinfo') and
+                (self._vevent['DTSTART'].dt.tzinfo !=
+                 self._vevent['DTEND'].dt.tzinfo)
+            ):
+                tzs.append(self._vevent['DTEND'].dt.tzinfo)
+
+            for tzinfo in tzs:
+                timezone = create_timezone(tzinfo, self.start)
+                calendar.add_component(timezone)
+
+        calendar.add_component(self._vevent)
+        return calendar.to_ical().decode('utf-8')
+
+    @property
+    def ident(self):
+        """neeeded for vdirsyncer compat"""
+        return self._vevent['UID']
+
+    @property
+    def summary(self):
+        return self._vevent.get('SUMMARY', None)
+
+    @property
+    def location(self):
+        return self._vevent.get('LOCATION', None)
+
+    @property
+    def description(self):
+        return self._vevent.get('DESCRIPTION', None)
+
+    @property
+    def _recur_str(self):
+        if self.recurring:
+            recurstr = self.symbol_strings['recurring']
+        else:
+            recurstr = ''
+        return recurstr
+
+    def relative_to(self, day):
+        """
+        returns a short description of the event, with start and end
+        relative to `day`
+
+        print information in regards to this day, if the event starts and ends
+        on this day, the start and end time will be given (only the description
+        for all day events), otherwise arrows will indicate if the events
+        started before `day` and/or lasts longer.
+
+        :param day: the date the description is relative to
+        :type day: datetime.date
+        :return: compact description of Event
+        :rtype: unicode()
+        """
+        if isinstance(day, datetime) or not isinstance(day, date):
+            raise ValueError('`this_date` is of type `{}`, should be '
+                             '`datetime.date`'.format(type(day)))
+        if day < self.start.date() or day > self.end.date():
+            raise ValueError(
+                'please supply a `day` this event is scheduled on')
+
+        day_start = self._locale['local_timezone'].localize(datetime.combine(day, time.min))
+        day_end = self._locale['local_timezone'].localize(datetime.combine(day, time.max))
+
+        tostr = '-'
+        if self.start_local < day_start:
+            startstr = self.symbol_strings['right_arrow'] + ' '
+            tostr = ''
+        else:
+            startstr = self.start_local.strftime(self._locale['timeformat'])
+
+        if self.end_local > day_end:
+            endstr = self.symbol_strings['right_arrow'] + ' '
+            tostr = ''
+        else:
+            endstr = self.end_local.strftime(self._locale['timeformat'])
+
+        return ' '.join(filter(bool, [startstr + tostr + endstr + ':', self.summary, self._recur_str]))
+
+    @property
+    def event_description(self):   # XXX rename me
+        """complete description of this event in text form
+
+        :rtype: str
+        :returns: event description
+        """
+
+        location = '\nLocation: ' + self.location if \
+            self.location is not None else ''
+        description = '\nDescription: ' + self.description if \
+            self.description is not None else ''
+        repitition = '\nRepeat: ' + to_unicode(self.recurpattern) if \
+            self.recurpattern is not None else ''
+
+        return '{}: {}{}{}{}'.format(
+            self._rangestr, self.summary, location, repitition, description)
+
+
+class LocalizedEvent(Event):
+    """
+    see parent
+    """
+    @property
+    def start_local(self):
+        """
+        see parent
+        """
+        if self.start.tzinfo is None:
+            start = self._locale['default_timezone'].localize(self.start)
+        else:
+            start = self.start
+        return start.astimezone(self._locale['local_timezone'])
+
+    @property
+    def end_local(self):
+        """
+        see parent
+        """
+        if self.end.tzinfo is None:
+            end = self._locale['default_timezone'].localize(self.end)
+        else:
+            end = self.end
+        return end.astimezone(self._locale['local_timezone'])
+
+    @property
+    def _rangestr(self):
+        # same day
+        if self.start_local.utctimetuple()[:3] == self.end_local.utctimetuple()[:3]:
+            starttime = self.start_local.strftime(self._locale['timeformat'])
+            endtime = self.end_local.strftime(self._locale['timeformat'])
+            datestr = self.end_local.strftime(self._locale['longdateformat'])
+            rangestr = starttime + '-' + endtime + ' ' + datestr
+        else:
+            startstr = self.start_local.strftime(self._locale['longdatetimeformat'])
+            endstr = self.end_local.strftime(self._locale['longdatetimeformat'])
+            rangestr = startstr + ' - ' + endstr
+        return rangestr
+
+
+class FloatingEvent(Event):
+    """
+    """
+    allday = False
+
+
+class AllDayEvent(Event):
+    allday = True
+
+    @property
+    def end(self):
+        end = super(AllDayEvent, self).end
+        if end == self.start:
+            # https://github.com/geier/khal/issues/129
+            logger.warning('{} ("{}"): The event\'s end date property '
+                           'contains the same value as the start date, '
+                           'which is invalid as per RFC 2445. Khal will '
+                           'assume this is meant to be single-day event '
+                           'on {}'.format(self.href, self.summary,
+                                          self.start))
+            end += timedelta(days=1)
+        return end - timedelta(days=1)
+
+    def relative_to(self, day):
+        if self.start > day or self.end < day:
+            raise ValueError('Day out of range: {}'
+                             .format(dict(day=day, start=self.start,
+                                          end=self.end)))
+        elif self.start < day and self.end > day:
+            # event starts before and goes on longer than `day`:
+            rangestr = self.symbol_strings['range']
+        elif self.start < day:
+            # event started before `day`
+            rangestr = self.symbol_strings['range_end']
+        elif self.end > day:
+            # event goes on longer than `day`
+            rangestr = self.symbol_strings['range_start']
+        elif self.start == self.end == day:
+            # only on `day`
+            rangestr = ''
+        return ' '.join(filter(bool, (rangestr, self.summary, self._recur_str)))
+
+    @property
+    def _rangestr(self):
+        if self.start_local == self.end_local:
+            rangestr = self.start_local.strftime(self._locale['longdateformat'])
+        else:
+            if self.start_local.year == self.end_local.year:
+                startstr = self.start_local.strftime(self._locale['dateformat'])
+            else:
+                startstr = self.start_local.strftime(self._locale['longdateformat'])
+            endstr = self.end_local.strftime(self._locale['longdateformat'])
+            rangestr = startstr + ' - ' + endstr
+        return rangestr
+
+
+class EventOld(object):
 
     """the base event class"""
 
@@ -191,14 +543,14 @@ class Event(object):
     @property
     def recurpattern(self):
         if 'RRULE' in self.vevent:
-            return self.vevent['RRULE'].to_ical()
+            return self._vevent['RRULE'].to_ical()
         else:
             return None
 
     @property
     def recur(self):
-        return 'RRULE' in self.vevent or 'RECURRENCE-ID' in self.vevent or \
-            'RDATE' in self.vevent
+        return 'RRULE' in self._vevent or 'RECURRENCE-ID' in self._vevent or \
+            'RDATE' in self._vevent
 
     @property
     def raw(self):
@@ -223,102 +575,7 @@ class Event(object):
         calendar.add_component(self.vevent)
         return calendar.to_ical()
 
-    def long(self):
-        """complete description of this event in text form
 
-        :rtype: str
-        :returns: event description
-        """
-        if self.allday:
-            end = self.end - timedelta(days=1)
-            if self.start == end:
-                rangestr = self.start.strftime(self.locale['longdateformat'])
-            else:
-                if self.start.year == self.end.year:
-                    startstr = self.start.strftime(self.locale['dateformat'])
-                else:
-                    startstr = self.start.strftime(self.locale['longdateformat'])
-                endstr = end.strftime(self.locale['longdateformat'])
-                rangestr = startstr + ' - ' + endstr
-        else:
-            # same day
-            if self.start.utctimetuple()[:3] == self.end.utctimetuple()[:3]:
-                starttime = self.start.strftime(self.locale['timeformat'])
-                endtime = self.end.strftime(self.locale['timeformat'])
-                datestr = self.end.strftime(self.locale['longdateformat'])
-                rangestr = starttime + '-' + endtime + ' ' + datestr
-            else:
-                startstr = self.start.strftime(self.locale['longdatetimeformat'])
-                endstr = self.end.strftime(self.locale['longdatetimeformat'])
-                rangestr = startstr + ' - ' + endstr
-            if self.start.tzinfo.zone != self.locale['local_timezone'].zone:
-                # doesn't work yet
-                # TODO FIXME
-                pass
-
-        location = '\nLocation: ' + self.location if \
-            self.location is not None else ''
-        description = '\nDescription: ' + self.description if \
-            self.description is not None else ''
-        repitition = '\nRepeat: ' + to_unicode(self.recurpattern) if \
-            self.recurpattern is not None else ''
-
-        return '{}: {}{}{}{}'.format(
-            rangestr, self.summary, location, repitition, description)
-
-    def compact(self, day):
-        """
-        returns a short description of the event
-
-        print information in regards to this day, if the event starts and ends
-        on this day, the start and end time will be given (only the description
-        for all day events), otherwise arrows will indicate if the events
-        started before `day` and/or lasts longer.
-
-        :param day: the date the description is relative to
-        :type day: datetime.date
-        :return: compact description of Event
-        :rtype: unicode()
-        """
-        if isinstance(day, datetime) or not isinstance(day, date):
-            raise ValueError('`this_date` is of type `{}`, should be '
-                             '`datetime.date`'.format(type(day)))
-        if self.recur:
-            recurstr = ' ' + self.symbol_strings['recurring']
-        else:
-            recurstr = ''
-
-        try:
-            if self.allday:
-                rstring = self._compact_allday(day)
-            else:
-                rstring = self._compact_datetime(day)
-        except Exception as e:
-            newarg = ('Something went wrong while displaying "{}"'
-                      .format(self.href),)
-            e.args = newarg + e.args
-            raise
-        return rstring + recurstr
-
-    def _compact_allday(self, day):
-        if self.start > day or self.end < day + timedelta(days=1):
-            raise ValueError('Day out of range: {}'
-                             .format(dict(day=day, start=self.start,
-                                          end=self.end)))
-        elif self.start < day and self.end > day + timedelta(days=1):
-            # event starts before and goes on longer than `day`:
-            rangestr = self.symbol_strings['range']
-        elif self.start < day:
-            # event started before `day`
-            rangestr = self.symbol_strings['range_end']
-        elif self.end > day + timedelta(days=1):
-            # event goes on longer than `day`
-            rangestr = self.symbol_strings['range_start']
-        elif self.start == self.end - timedelta(days=1) == day:
-            # only on `day`
-            rangestr = ''
-
-        return ' '.join(filter(bool, (rangestr, self.summary)))
 
     def _compact_datetime(self, day):
         """compact description of this event
