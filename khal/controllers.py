@@ -23,7 +23,11 @@
 
 from __future__ import unicode_literals
 
-from click import echo, style
+import icalendar
+from click import confirm, echo, style
+from vdirsyncer.utils.vobject import Item
+
+from collections import defaultdict
 
 import datetime
 import itertools
@@ -33,9 +37,10 @@ import textwrap
 
 from khal import aux, calendar_display
 from khal.compat import to_unicode
-from khal.khalendar.exceptions import ReadOnlyCalendarError
-from khal.exceptions import FatalError
+from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
+from khal.exceptions import InvalidDate, FatalError
 from khal.khalendar.event import Event
+from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
 from khal.log import logger
 from .terminal import colored, get_terminal_size, merge_columns
@@ -90,7 +95,7 @@ def get_agenda(collection, locale, dates=None,
                 if not isinstance(date, datetime.date) else date
                 for date in dates
             ]
-        except aux.InvalidDate as error:
+        except InvalidDate as error:
             logging.fatal(error)
             sys.exit(1)
 
@@ -154,6 +159,7 @@ def agenda(collection, date=None, firstweekday=0, encoding='utf-8',
 
 def new_from_string(collection, conf, date_list, location=None, repeat=None,
                     until=None):
+    """construct a new event from a string and add it"""
     try:
         event = aux.construct_event(
             date_list,
@@ -163,10 +169,7 @@ def new_from_string(collection, conf, date_list, location=None, repeat=None,
             **conf['locale'])
     except FatalError:
         sys.exit(1)
-    event = Event(event,
-                  collection.default_calendar_name,
-                  locale=conf['locale'],
-                  )
+    event = Event(event, collection.default_calendar_name, locale=conf['locale'])
 
     try:
         collection.new(event)
@@ -182,6 +185,7 @@ def new_from_string(collection, conf, date_list, location=None, repeat=None,
 
 
 def interactive(collection, conf):
+    """start the interactive user interface"""
     from . import ui
     pane = ui.ClassicView(collection,
                           conf,
@@ -191,3 +195,41 @@ def interactive(collection, conf):
         pane, pane.cleanup,
         program_info='{0} v{1}'.format(__productname__, __version__)
     )
+
+
+def import_ics(collection, conf, ics, batch=False, random_uid=False):
+    """
+    :param batch: setting this to True will insert without asking for approval,
+                  even when an event with the same uid already exists
+    :type batch: bool
+    """
+    cal = icalendar.Calendar.from_ical(ics)
+    events = [item for item in cal.walk() if item.name == 'VEVENT']
+    events_grouped = defaultdict(list)
+    for event in events:
+        events_grouped[event['UID']].append(event)
+
+    vevents = list()
+    for uid in events_grouped:
+        vevents.append(sorted(events_grouped[uid], key=sort_key))
+    for vevent in vevents:
+        for sub_event in vevent:
+            event = Event(sub_event, calendar=collection.default_calendar_name,
+                          locale=conf['locale'])
+            if not batch:
+                echo(event.long())
+        if batch or confirm("Do you want to import this event into `{}`?"
+                            "".format(collection.default_calendar_name)):
+            ics = aux.ics_from_list(vevent, random_uid)
+            try:
+                collection.new(
+                    Item(ics.to_ical().decode('utf-8')),
+                    collection=collection.default_calendar_name)
+            except DuplicateUid:
+                if batch or confirm("An event with the same UID already exists. "
+                                    "Do you want to update it?"):
+                    collection.force_update(
+                        Item(ics.to_ical().decode('utf-8')),
+                        collection=collection.default_calendar_name)
+                else:
+                    logger.warn("Not importing event with UID `{}`".format(event.uid))

@@ -37,3 +37,7 @@ class UnsupportedFeatureError(Error):
 
     """something Failed but we know why"""
     pass
+
+
+class InvalidDate(Error):
+    pass

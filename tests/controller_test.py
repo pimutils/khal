@@ -10,7 +10,9 @@ from vdirsyncer.storage.base import Item
 
 
 from khal.khalendar import Calendar, CalendarCollection
-from khal.controllers import get_agenda
+from khal.controllers import get_agenda, import_ics
+
+from .aux import _get_text
 
 
 today = datetime.date.today()
@@ -37,9 +39,12 @@ cal3 = 'private'
 
 example_cals = [cal1, cal2, cal3]
 
-locale = {'default_timezone': pytz.timezone('Europe/Berlin'),
-          'local_timezone': pytz.timezone('Europe/Berlin'),
+BERLIN = pytz.timezone('Europe/Berlin')
+
+locale = {'default_timezone': BERLIN,
+          'local_timezone': BERLIN,
           'dateformat': '%d.%m.%Y',
+          'timeformat': '%H:%M',
           'longdateformat': '%d.%m.%Y %H:%M',
           }
 
@@ -89,3 +94,25 @@ class TestGetAgenda(object):
             dates=[datetime.date(2011, 9, 8),
                    datetime.date(2011, 9, 9)]
         )).lower()
+
+
+class TestImport(object):
+    def test_import(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        import_ics(coll, {'locale': locale}, _get_text('event_rrule_recuid'),
+                   batch=True)
+        start_date = datetime.datetime(2014, 4, 30)
+        end_date = datetime.datetime(2014, 9, 26)
+        events = coll.get_datetime_by_time_range(start_date, end_date)
+        assert len(events) == 6
+        assert events[-1].start == BERLIN.localize(datetime.datetime(2014, 7, 7, 9, 0))
+        assert BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) in [ev.start for ev in events]
+
+        import_ics(coll, {'locale': locale}, _get_text('event_rrule_recuid_update'),
+                   batch=True)
+        events = coll.get_datetime_by_time_range(start_date, end_date)
+        for ev in events:
+            print(ev.start)
+        assert len(events) == 5
+        assert BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) not in \
+            [ev.start for ev in events]

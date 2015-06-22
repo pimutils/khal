@@ -5,24 +5,10 @@ import textwrap
 
 import pytest
 import pytz
-import icalendar.cal
 
 from khal.khalendar.event import Event
 
-
-def normalize_component(x):
-    x = icalendar.cal.Component.from_ical(x)
-
-    def inner(c):
-        contentlines = icalendar.cal.Contentlines()
-        for name, value in c.property_items(sorted=True, recursive=False):
-            contentlines.append(c.content_line(name, value, sorted=True))
-        contentlines.append('')
-
-        return (c.name, contentlines.to_ical(),
-                frozenset(inner(sub) for sub in c.subcomponents))
-
-    return inner(x)
+from .aux import normalize_component
 
 
 def test_normalize_component():

@@ -244,6 +244,35 @@ def _get_cli():
             until=until.split(' ') if until is not None else None,
         )
 
+    @cli.command('import')
+    @click.option('--include-calendar', '-a', help=('The calendar to use.'),
+                  expose_value=False, callback=_calendar_select_callback,
+                  metavar='CAL')
+    @click.option('--batch', help=('do not ask for any confirmation.'),
+                  is_flag=True)
+    @click.option('--random_uid', '-r', help=('Select a random uid.'),
+                  is_flag=True)
+    @click.argument('ics', type=click.File('rb'))
+    @click.pass_context
+    def import_ics(ctx, ics, batch, random_uid):
+        '''Import events from an .ics file.
+
+        If an event with the same UID is already present in the (implicitly)
+        selected calendar import will ask before updating (i.e. overwriting)
+        that old event with the imported one, unless --batch is given, than it
+        will always update. If this behaviour is not desired, use the
+        `--random-uid` flag to generate a new, random UID.
+
+        '''
+        ics_str = ics.read()
+        controllers.import_ics(
+            build_collection(ctx),
+            ctx.obj['conf'],
+            ics=ics_str,
+            batch=batch,
+            random_uid=random_uid
+        )
+
     @cli.command()
     @calendar_selector
     @click.pass_context

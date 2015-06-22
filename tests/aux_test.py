@@ -1,13 +1,20 @@
 # vim: set fileencoding=utf-8:
+"""testing functions from the khal.aux"""
 from datetime import date, datetime, time, timedelta
 
+import icalendar
 import pytz
 
 from khal.aux import construct_event, guessdatetimefstr
+from khal import aux
 from khal.compat import to_bytes
+
+from .aux import _get_all_vevents_file, _get_text, \
+    normalize_component
 
 
 def _now():
+    """mock datetime.datetime.now"""
     return datetime(2014, 2, 16, 12, 0, 0, 0)
 
 
@@ -322,3 +329,23 @@ def test_description_and_location():
                                 location='in the office',
                                 **kwargs_de)
         assert _replace_uid(event).to_ical() == vevent
+
+
+class TestIcsFromList(object):
+
+    def test_ics_from_list(self):
+        vevents = _get_all_vevents_file('event_rrule_recuid')
+        cal = aux.ics_from_list(list(vevents))
+        assert normalize_component(cal.to_ical()) == \
+            normalize_component(_get_text('event_rrule_recuid'))
+
+    def test_ics_from_list_random_uid(self):
+        vevents = _get_all_vevents_file('event_rrule_recuid')
+        cal = aux.ics_from_list(list(vevents), random_uid=True)
+        normalize_component(cal.to_ical())
+        vevents = [item for item in cal.walk() if item.name == 'VEVENT']
+        uids = set()
+        for event in vevents:
+            uids.add(event['UID'])
+        assert len(uids) == 1
+        assert event['UID'] != icalendar.vText('event_rrule_recurrence_id')
