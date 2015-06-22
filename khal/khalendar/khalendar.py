@@ -148,7 +148,11 @@ class Calendar(object):
         # AlreadyExistingError now knows the conflicting events uid
         def check(self, item):
             """check if this an event with this item's uid already exists"""
-            href = self._deterministic_href(item)
+            try:
+                # FIXME remove on next vdirsyncer release
+                href = self._deterministic_href(item)
+            except AttributeError:
+                href = self._get_href(item.uid)
             if not self.has(href):
                 return None, None
             else:
