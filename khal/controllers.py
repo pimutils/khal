@@ -200,7 +200,8 @@ def interactive(collection, conf):
 
 def import_ics(collection, conf, ics, batch=False, random_uid=False):
     """
-    :param batch: setting this to True will insert without asking for approval
+    :param batch: setting this to True will insert without asking for approval,
+                  even when an event with the same uid already exists
     :type batch: bool
     """
     cal = icalendar.Calendar.from_ical(ics)
@@ -218,14 +219,18 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False):
                           locale=conf['locale'])
             if not batch:
                 echo(event.long())
-        if batch or confirm('Do you want to import this event into `{}`?'
-                            ''.format(collection.default_calendar_name)):
+        if batch or confirm("Do you want to import this event into `{}`?"
+                            "".format(collection.default_calendar_name)):
             ics = aux.ics_from_list(vevent, random_uid)
             try:
                 collection.new(
                     Item(ics.to_ical().decode('utf-8')),
                     collection=collection.default_calendar_name)
             except DuplicateUid:
-                collection.force_update(
-                    Item(ics.to_ical().decode('utf-8')),
-                    collection=collection.default_calendar_name)
+                if batch or confirm("An event with the same UID already exists. "
+                                    "Do you want to update it?"):
+                    collection.force_update(
+                        Item(ics.to_ical().decode('utf-8')),
+                        collection=collection.default_calendar_name)
+                else:
+                    logger.warn("Not importing event with UID `{}`".format(event.uid))
