@@ -159,6 +159,7 @@ def agenda(collection, date=None, firstweekday=0, encoding='utf-8',
 
 def new_from_string(collection, conf, date_list, location=None, repeat=None,
                     until=None):
+    """construct a new event from a string and add it"""
     try:
         event = aux.construct_event(
             date_list,
@@ -168,10 +169,7 @@ def new_from_string(collection, conf, date_list, location=None, repeat=None,
             **conf['locale'])
     except FatalError:
         sys.exit(1)
-    event = Event(event,
-                  collection.default_calendar_name,
-                  locale=conf['locale'],
-                  )
+    event = Event(event, collection.default_calendar_name, locale=conf['locale'])
 
     try:
         collection.new(event)
@@ -187,6 +185,7 @@ def new_from_string(collection, conf, date_list, location=None, repeat=None,
 
 
 def interactive(collection, conf):
+    """start the interactive user interface"""
     from . import ui
     pane = ui.ClassicView(collection,
                           conf,
