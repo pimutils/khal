@@ -38,7 +38,7 @@ import textwrap
 from khal import aux, calendar_display
 from khal.compat import to_unicode
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
-from khal.exceptions import FatalError
+from khal.exceptions import InvalidDate, FatalError
 from khal.khalendar.event import Event
 from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
@@ -95,7 +95,7 @@ def get_agenda(collection, locale, dates=None,
                 if not isinstance(date, datetime.date) else date
                 for date in dates
             ]
-        except aux.InvalidDate as error:
+        except InvalidDate as error:
             logging.fatal(error)
             sys.exit(1)
 
