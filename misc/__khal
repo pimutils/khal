@@ -10,6 +10,9 @@ _calendars() {
   compadd "$a" ${(kv)=accounts}
 }
 
+_ics_files() {
+  _files -g "*.ics"
+}
 
 local ret=1 state
 
@@ -39,6 +42,7 @@ case $state in
       "agenda:show agenda"
       "calendar:show calendar"
       "interactive:open the interactive calendar"
+      "import:import an ics file into a calendar"
       "new:add a new event"
       "printcalendars:print all configured calendars"
       "printformats:print a date in all formats"
@@ -61,7 +65,12 @@ case $state in
           "-b=[do not use this calendar]:calendars:_calendars"
         )
       ;;
-
+    import)
+        args+=(
+          "-a=[use this calendar]:calendars:_calendars"
+          "*:file:_ics_files"
+        )
+      ;;
     esac
 
     _arguments $args && ret=0
