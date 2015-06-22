@@ -57,7 +57,7 @@ def timefstr(dtime_list, timeformat):
     return dtstart
 
 
-def datetimefstr(dtime_list, dtformat, inferyear=None):
+def datetimefstr(dtime_list, dtformat):
     """
     converts a datetime (as one or several string elements of a list) to
     a datetimeobject
@@ -102,6 +102,13 @@ def weekdaypstr(dayname):
 
 
 def calc_day(dayname):
+    """converts a relative date's description to a datetime object
+
+    :param dayname: relative day name (like 'today' or 'monday')
+    :type dayname: str
+    :returns: date
+    :rtype: datetime.datetime
+    """
     today = datetime.today()
     dayname = dayname.lower()
     if dayname == 'today':
@@ -117,6 +124,15 @@ def calc_day(dayname):
 
 
 def datefstr_weekday(dtime_list, _):
+    """interprets first element of a list as a relative date and removes that
+    element
+
+    :param dtime_list: event descrpition in list form
+    :type dtime_list: list
+    :returns: date
+    :rtype: datetime.datetime
+
+    """
     if len(dtime_list) == 0:
         raise ValueError()
     day = calc_day(dtime_list[0])
@@ -136,16 +152,22 @@ def datetimefstr_weekday(dtime_list, timeformat):
 
 
 def guessdatetimefstr(dtime_list, locale, default_day=datetime.today()):
+    """
+    :type dtime_list: list
+    :type locale: dict
+    :type default_day: datetime.datetime
+    :rtype: datetime.datetime
+    """
     # TODO rename in guessdatetimefstrLIST or something saner altogether
     def timefstr_day(dtime_list, timeformat):
-        date = timefstr(dtime_list, timeformat)
-        date = datetime(*(default_day.timetuple()[:3] + date.timetuple()[3:5]))
-        return date
+        a_date = timefstr(dtime_list, timeformat)
+        a_date = datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
+        return a_date
 
     def datefstr_year(dtime_list, dateformat):
-        date = datetimefstr(dtime_list, dateformat)
-        date = datetime(*(default_day.timetuple()[:1] + date.timetuple()[1:5]))
-        return date
+        a_date = datetimefstr(dtime_list, dateformat)
+        a_date = datetime(*(default_day.timetuple()[:1] + a_date.timetuple()[1:5]))
+        return a_date
 
     dtstart = None
     for fun, dtformat, all_day in [
@@ -175,8 +197,7 @@ def generate_random_uid():
     return ''.join([random.choice(choice) for _ in range(36)])
 
 
-def construct_event(dtime_list, timeformat, dateformat, longdateformat,
-                    datetimeformat, longdatetimeformat, default_timezone,
+def construct_event(dtime_list, locale,
                     defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
                     description=None, location=None, repeat=None, until=None,
                     _now=datetime.now, **kwargs):
@@ -218,13 +239,6 @@ def construct_event(dtime_list, timeformat, dateformat, longdateformat,
 
     """
     today = datetime.today()
-    locale = {'timeformat': timeformat,
-              'datetimeformat': datetimeformat,
-              'longdatetimeformat': longdatetimeformat,
-              'dateformat': dateformat,
-              'longdateformat': longdateformat,
-              }
-
     try:
         dtstart, all_day = guessdatetimefstr(dtime_list, locale)
     except ValueError:
@@ -265,8 +279,8 @@ def construct_event(dtime_list, timeformat, dateformat, longdateformat,
             dtend = pytz.timezone(dtime_list[0]).localize(dtend)
             dtime_list.pop(0)
         except (pytz.UnknownTimeZoneError, UnicodeDecodeError):
-            dtstart = default_timezone.localize(dtstart)
-            dtend = default_timezone.localize(dtend)
+            dtstart = locale['default_timezone'].localize(dtstart)
+            dtend = locale['default_timezone'].localize(dtend)
 
     event = icalendar.Event()
     text = to_unicode(' '.join(dtime_list), encoding)
@@ -288,19 +302,19 @@ def construct_event(dtime_list, timeformat, dateformat, longdateformat,
             rrule_settings = {'freq': repeat}
             if until:
                 until_date = None
-                for fun, dformat in [(datetimefstr, datetimeformat),
-                                     (datetimefstr, longdatetimeformat),
-                                     (timefstr, timeformat),
-                                     (datetimefstr, dateformat),
-                                     (datetimefstr, longdateformat)]:
+                for fun, dformat in [(datetimefstr, locale['datetimeformat']),
+                                     (datetimefstr, locale['longdatetimeformat']),
+                                     (timefstr, locale['timeformat']),
+                                     (datetimefstr, locale['dateformat']),
+                                     (datetimefstr, locale['longdateformat'])]:
                     try:
                         until_date = fun(until, dformat)
                         break
                     except ValueError:
                         pass
                 if until_date is None:
-                    logger.fatal("Cannot parse until date: '{}'\nPlease have a look at "
-                                 "the documentation.".format(until))
+                    logger.fatal("Cannot parse until date: '{}'\nPlease have a look "
+                                 "at the documentation.".format(until))
                     raise FatalError()
                 rrule_settings['until'] = until_date
 

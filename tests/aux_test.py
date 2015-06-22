@@ -24,7 +24,7 @@ today_s = '{0:02}{1:02}{2:02}'.format(*today.timetuple()[0:3])
 tomorrow_s = '{0:02}{1:02}{2:02}'.format(*tomorrow.timetuple()[0:3])
 this_year_s = str(today.year)
 
-kwargs_de = {
+locale_de = {
     'timeformat': '%H:%M',
     'dateformat': '%d.%m.',
     'longdateformat': '%d.%m.%Y',
@@ -53,16 +53,16 @@ class TestGuessDatetimefstr(object):
 
     def test_today(self):
         today13 = datetime.combine(date.today(), time(13, 0))
-        assert (today13, False) == guessdatetimefstr(['today', '13:00'], kwargs_de)
-        assert today == guessdatetimefstr(['today'], kwargs_de)[0].date()
+        assert (today13, False) == guessdatetimefstr(['today', '13:00'], locale_de)
+        assert today == guessdatetimefstr(['today'], locale_de)[0].date()
 
     def test_tomorrow(self):
         assert (self.tomorrow16, False) == \
-            guessdatetimefstr('tomorrow 16:00 16:00'.split(), kwargs_de)
+            guessdatetimefstr('tomorrow 16:00 16:00'.split(), locale=locale_de)
 
     def test_time_tomorrow(self):
         assert (self.tomorrow16, False) == \
-            guessdatetimefstr('16:00'.split(), kwargs_de, tomorrow)
+            guessdatetimefstr('16:00'.split(), locale=locale_de, default_day=tomorrow)
 
 
 test_set_format_de = _create_testcases(
@@ -159,7 +159,7 @@ def test_construct_event_format_de():
     for data_list, vevent in test_set_format_de:
         event = construct_event(data_list.split(),
                                 _now=_now,
-                                **kwargs_de)
+                                locale=locale_de)
 
         assert _replace_uid(event).to_ical() == vevent
 
@@ -185,7 +185,7 @@ test_set_format_us = _create_testcases(
 
 
 def test_construct_event_format_us():
-    kwargs = {
+    locale_us = {
         'timeformat': '%H:%M',
         'dateformat': '%m/%d',
         'longdateformat': '%m/%d/%Y',
@@ -196,7 +196,7 @@ def test_construct_event_format_us():
     for data_list, vevent in test_set_format_us:
         event = construct_event(data_list.split(),
                                 _now=_now,
-                                **kwargs)
+                                locale=locale_us)
         assert _replace_uid(event).to_ical() == vevent
 
 
@@ -235,7 +235,7 @@ def test_construct_event_format_de_complexer():
     for data_list, vevent in test_set_format_de_complexer:
         event = construct_event(data_list.split(),
                                 _now=_now,
-                                **kwargs_de)
+                                locale=locale_de)
         assert _replace_uid(event).to_ical() == vevent
 
 
@@ -275,9 +275,7 @@ test_set_description = _create_testcases(
 
 def test_description():
     for data_list, vevent in test_set_description:
-        event = construct_event(data_list.split(),
-                                _now=_now,
-                                **kwargs_de)
+        event = construct_event(data_list.split(), _now=_now, locale=locale_de)
         assert _replace_uid(event).to_ical() == vevent
 
 test_set_repeat = _create_testcases(
@@ -302,7 +300,7 @@ def test_repeat():
                                 repeat='daily',
                                 until=['05.06.2015'],
                                 _now=_now,
-                                **kwargs_de)
+                                locale=locale_de)
         assert _replace_uid(event).to_ical() == vevent
 
 
@@ -327,7 +325,7 @@ def test_description_and_location():
                                 description='please describe the event',
                                 _now=_now,
                                 location='in the office',
-                                **kwargs_de)
+                                locale=locale_de)
         assert _replace_uid(event).to_ical() == vevent
 
 

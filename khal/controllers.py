@@ -166,7 +166,7 @@ def new_from_string(collection, conf, date_list, location=None, repeat=None,
             location=location,
             repeat=repeat,
             until=until,
-            **conf['locale'])
+            locale=conf['locale'])
     except FatalError:
         sys.exit(1)
     event = Event(event, collection.default_calendar_name, locale=conf['locale'])
