@@ -1,5 +1,5 @@
-Installing khal
-===============
+Installing
+==========
 
 If khal is packaged for your OS/distribution, using your system's
 standard package manager is probably the easiest way to install khal:
@@ -7,7 +7,7 @@ standard package manager is probably the easiest way to install khal:
 - pkgsrc_
 - Fedora:
   - Fedora 22 and later::
-  
+
       sudo dnf install -y khal
 
 - Personal repos for openSUSE:
