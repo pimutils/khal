@@ -227,7 +227,7 @@ def import_event(vevent, collection, locale, batch, random_uid):
             echo(event.long())
 
     # get the calendar to insert into
-    if batch:
+    if batch or len(collection.writable_names) == 1:
         calendar_name = collection.default_calendar_name
     else:
         choice = list()
