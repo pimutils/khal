@@ -198,8 +198,10 @@ The most important options in the the **[locale]** section are probably (long-)t
 The [keybindings] section
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-keybindings for `ikhal` are set here. You can bind more than one key
+keybindings for :command:`ikhal` are set here. You can bind more than one key
 (combination) to a command by supplying a comma-seperated list of keys.
+For binding key combinations just add concatenate them (with a space in
+between), e.g. **ctrl n**.
 
 .. _keybindings-save:
 
@@ -226,7 +228,7 @@ keybindings for `ikhal` are set here. You can bind more than one key
 .. object:: view
 
     
-    show detailed or edit (if details are already show) the currently selected event
+    show details or edit (if details are already shown) the currently selected event
 
       :type: list
       :default: enter, tab
