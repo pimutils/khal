@@ -27,21 +27,33 @@ from __future__ import unicode_literals
 from datetime import date, datetime, time, timedelta
 
 import icalendar
+import pytz
 
 from ..compat import unicode_type, bytes_type, iteritems, to_unicode
-from .aux import to_naive_utc
+from .aux import to_naive_utc, to_unix_time
 from ..log import logger
 
 
 class Event(object):
-    """base Event class
+    """base Event class for representing a *recurring instance* of an Event
+
+    (in case of non-recurring events this distinction is irrelevant)
+    We keep a copy of the start and end time around, because for recurring
+    events it might be costly to expand the recursion rules
 
     important distinction for AllDayEvents:
         all end times are as presented to a user, i.e. an event scheduled for
         only one day will have the same start and end date (even though the
         icalendar standard would have the end date be one day later)
     """
-    def __init__(self, vevent, href, etag, locale, rec_inst, calendar, mutable=True):
+    def __init__(self, vevent, href, etag, locale, rec_inst, calendar,
+                 mutable=True, start=None, end=None):
+        """
+        :param start: start datetime of this event instance in unix time
+        :type start: float
+        :param end: end datetime of this event instance in unix time
+        :type end: float
+        """
         if self.__class__.__name__ == 'Event':
             raise ValueError('do not initialize this class directly')
         self._vevent = vevent
@@ -53,11 +65,20 @@ class Event(object):
         self.allday = False
         self.calendar = calendar
 
+        if start is None:
+            self._start = self._vevent['DTSTART'].dt
+        else:
+            self._start = self._unix_to_native(start)
+        if end is None:
+            try:
+                self._end = self._vevent['DTEND'].dt
+            except KeyError:
+                self._end = self._start + self._vevent['DURATION'].dt
+        else:
+            self._end = self._unix_to_native(end)
+
     @classmethod
     def _get_type(cls, start, end):
-        if hasattr(start, 'tzinfo') ^ hasattr(end, 'tzinfo'):
-            raise ValueError('DTSTART and DTEND should be of the same type (localized or floating)')
-        # TODO deal with events which have tzinfo, but is set to None
         if isinstance(start, datetime) != isinstance(end, datetime):
             raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
 
@@ -71,26 +92,31 @@ class Event(object):
 
     @classmethod
     def fromString(cls, event_str, href, etag, locale, calendar=None,
-                   mutable=True, rec_inst=None):
+                   mutable=True, rec_inst=None, start=None, end=None):
         calendar_collection = icalendar.Calendar.from_ical(event_str)
         events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
-        if len(events) > 1:
-            # TODO deal with all repeating events
-            raise NotImplementedError()
-        else:
-            vevent = events[0]
+        vevents = dict()
+        for event in events:
+            if 'RECURRENCE-ID' in event:
+                utc_time = to_unix_time(event['RECURRENCE-ID'].dt)
+                vevents[utc_time] = event
+            else:
+                vevent = event
 
-        start = vevent['DTSTART'].dt
+        _start = vevent['DTSTART'].dt
         try:
-            end = vevent['DTEND'].dt
+            _end = vevent['DTEND'].dt
         except KeyError:
-            end = start
-        cls = cls._get_type(start, end)
+            _end = _start
+        cls = cls._get_type(_start, _end)
         return cls(vevent, href=href, etag=etag, locale=locale, rec_inst=rec_inst,
-                   calendar=calendar, mutable=mutable)
+                   calendar=calendar, mutable=mutable, start=start, end=end)
 
     def update_start_end(self, start, end):
         """update start and end time of this event
+
+        calling this an a recurring event will lead to the proto instance
+        be set to the new start and end times
 
         beware, this methods performs some open heart surgerly
         """
@@ -101,8 +127,10 @@ class Event(object):
         # (timezone was missing after to_ical() )
         self._vevent.pop('DTSTART')
         self._vevent.add('DTSTART', start)
+        self._start = start
         if not isinstance(end, datetime):
             end = end + timedelta(days=1)
+        self._end = end
         try:
             self._vevent.pop('DTEND')
             self._vevent.add('DTEND', end)
@@ -152,16 +180,18 @@ class Event(object):
 
     @property
     def start(self):
-        return self._vevent['DTSTART'].dt
+        return self._start
 
     @property
     def end(self):
+        return self._end
+
+    @property
+    def duration(self):
         try:
-            end = self._vevent['DTEND'].dt
+            return self._vevent['DURATION']
         except KeyError:
-            duration = self._vevent['DURATION']
-            end = self.start + duration.dt
-        return end
+            return self.start - self.end
 
     @property
     def uid(self):
@@ -292,6 +322,15 @@ class LocalizedEvent(Event):
     """
     see parent
     """
+
+    def _get_timezone(self, recurinst):
+        """get the timezone that is saved with this recursion instance"""
+        return self._vevent['dtstart'].dt.tzinfo or self._locale['default_timezone']
+
+    def _unix_to_native(self, time):
+        tz = self._get_timezone(time)
+        return pytz.UTC.localize(datetime.utcfromtimestamp(time)).astimezone(tz)
+
     @property
     def start_local(self):
         """
@@ -334,9 +373,15 @@ class FloatingEvent(Event):
     """
     allday = False
 
+    def _unix_to_native(self, time):
+        return datetime.utcfromtimestamp(time)
+
 
 class AllDayEvent(Event):
     allday = True
+
+    def _unix_to_native(self, time):
+        return datetime.utcfromtimestamp(time).date()
 
     @property
     def end(self):

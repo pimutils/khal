@@ -491,12 +491,14 @@ class SQLiteDb(object):
         result = self.sql_ex(sql_s, (href_rec_inst, ))
         href, etag, item = result[0]
         return Event.fromString(item,
-                     locale=self.locale,
-                     href=href,
-                     calendar=self.calendar,
-                     etag=etag,
-                     rec_inst=rec_inst,
-                     )
+                                locale=self.locale,
+                                href=href,
+                                calendar=self.calendar,
+                                etag=etag,
+                                rec_inst=rec_inst,
+                                start=start,
+                                end=end,
+                                )
 
     def search(self, search_string):
         """search for events matching `search_string`"""
