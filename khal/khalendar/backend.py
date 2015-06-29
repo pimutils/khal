@@ -325,8 +325,8 @@ class SQLiteDb(object):
             if thisandfuture:
                 recs_sql_s = (
                     'UPDATE {0} SET dtstart = recuid + ?, dtend = recuid + ?, hrefrecuid=? '
-                    'WHERE recuid >= ?;'.format(recs_table))
-                stuple = (start_shift, start_shift + duration, href_rec_inst, rec_inst)
+                    'WHERE recuid >= ? AND href == ?;'.format(recs_table))
+                stuple = (start_shift, start_shift + duration, href_rec_inst, rec_inst, href)
             else:
                 recs_sql_s = (
                     'INSERT OR REPLACE INTO {0} '
