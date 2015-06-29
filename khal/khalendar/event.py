@@ -27,9 +27,8 @@ from __future__ import unicode_literals
 from datetime import date, datetime, time, timedelta
 
 import icalendar
-import pytz
 
-from ..compat import unicode_type, bytes_type, iteritems, to_unicode
+from ..compat import iteritems, to_unicode
 from .aux import to_naive_utc, to_unix_time
 from ..log import logger
 
@@ -46,43 +45,53 @@ class Event(object):
         only one day will have the same start and end date (even though the
         icalendar standard would have the end date be one day later)
     """
-    def __init__(self, vevent, href, etag, locale, rec_inst, calendar,
-                 mutable=True, start=None, end=None):
+    def __init__(self, vevent, vevents_coll, href, etag, locale,
+                 calendar, mutable=True, start=None, end=None, ref=None):
         """
-        :param start: start datetime of this event instance in unix time
-        :type start: float
+        :param start: start datetime of this event instance
+        :type start: datetime.date
         :param end: end datetime of this event instance in unix time
-        :type end: float
+        :type end: datetime.date
         """
         if self.__class__.__name__ == 'Event':
             raise ValueError('do not initialize this class directly')
         self._vevent = vevent
+        self._vevents_coll = vevents_coll
         self._locale = locale
         self._mutable = mutable
-        self._rec_inst = rec_inst
         self.href = href
         self.etag = etag
         self.allday = False
         self.calendar = calendar
+        self.ref = ref
 
         if start is None:
             self._start = self._vevent['DTSTART'].dt
         else:
-            self._start = self._unix_to_native(start)
+            self._start = start
         if end is None:
             try:
                 self._end = self._vevent['DTEND'].dt
             except KeyError:
                 self._end = self._start + self._vevent['DURATION'].dt
         else:
-            self._end = self._unix_to_native(end)
+            self._end = end
 
     @classmethod
-    def _get_type(cls, start, end):
-        if isinstance(start, datetime) != isinstance(end, datetime):
-            raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
+    def _get_type_from_vDDD(cls, start):
+        """
+        :type start: icalendar.prop.vDDDTypes
+        :type start: icalendar.prop.vDDDTypes
+        """
+        if not isinstance(start.dt, datetime):
+            return AllDayEvent
+        if 'TZID' in start.params and isinstance(start.dt, datetime):
+            return LocalizedEvent
+        return FloatingEvent
 
-        if hasattr(start, 'tzinfo'):
+    @classmethod
+    def _get_type_from_date(cls, start):
+        if hasattr(start, 'tzinfo') and start.tzinfo is not None:
             cls = LocalizedEvent
         elif isinstance(start, datetime):
             cls = FloatingEvent
@@ -92,25 +101,31 @@ class Event(object):
 
     @classmethod
     def fromString(cls, event_str, href, etag, locale, calendar=None,
-                   mutable=True, rec_inst=None, start=None, end=None):
+                   mutable=True, start=None, end=None, ref=None):
         calendar_collection = icalendar.Calendar.from_ical(event_str)
         events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
-        vevents = dict()
+
+        vevents_coll = dict()
         for event in events:
             if 'RECURRENCE-ID' in event:
-                utc_time = to_unix_time(event['RECURRENCE-ID'].dt)
-                vevents[utc_time] = event
+                ident = str(to_unix_time(event['RECURRENCE-ID'].dt))
+                vevents_coll[ident] = event
             else:
-                vevent = event
+                vevents_coll['PROTO'] = event
+        if ref is None:
+            ref = 'PROTO'
+        vevent = vevents_coll[ref]
 
-        _start = vevent['DTSTART'].dt
         try:
-            _end = vevent['DTEND'].dt
+            if type(vevent['DTSTART'].dt) != type(vevent['DTEND'].dt):
+                raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
         except KeyError:
-            _end = _start
-        cls = cls._get_type(_start, _end)
-        return cls(vevent, href=href, etag=etag, locale=locale, rec_inst=rec_inst,
-                   calendar=calendar, mutable=mutable, start=start, end=end)
+            pass
+
+        instcls = cls._get_type_from_vDDD(vevent['DTSTART'])
+        return instcls(
+            vevent, vevents_coll, href=href, etag=etag, locale=locale,
+            calendar=calendar, mutable=mutable, start=start, end=end, ref=ref)
 
     def update_start_end(self, start, end):
         """update start and end time of this event
@@ -120,7 +135,9 @@ class Event(object):
 
         beware, this methods performs some open heart surgerly
         """
-        self.__class__ = self._get_type(start, end)
+        if type(start) != type(end):
+            raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
+        self.__class__ = self._get_type_from_date(start)
 
         # TODO look up why this is needed
         # self.event.vevent.dt = newstart would not work
@@ -318,7 +335,23 @@ class Event(object):
             self._rangestr, self.summary, location, repitition, description)
 
 
-class LocalizedEvent(Event):
+class DatetimeEvent(Event):
+    @property
+    def _rangestr(self):
+        # same day
+        if self.start_local.utctimetuple()[:3] == self.end_local.utctimetuple()[:3]:
+            starttime = self.start_local.strftime(self._locale['timeformat'])
+            endtime = self.end_local.strftime(self._locale['timeformat'])
+            datestr = self.end_local.strftime(self._locale['longdateformat'])
+            rangestr = starttime + '-' + endtime + ' ' + datestr
+        else:
+            startstr = self.start_local.strftime(self._locale['longdatetimeformat'])
+            endstr = self.end_local.strftime(self._locale['longdatetimeformat'])
+            rangestr = startstr + ' - ' + endstr
+        return rangestr
+
+
+class LocalizedEvent(DatetimeEvent):
     """
     see parent
     """
@@ -327,9 +360,10 @@ class LocalizedEvent(Event):
         """get the timezone that is saved with this recursion instance"""
         return self._vevent['dtstart'].dt.tzinfo or self._locale['default_timezone']
 
-    def _unix_to_native(self, time):
-        tz = self._get_timezone(time)
-        return pytz.UTC.localize(datetime.utcfromtimestamp(time)).astimezone(tz)
+    @property
+    def start(self):
+        tz = getattr(self._vevent['DTSTART'].dt, 'tzinfo', self._locale['default_timezone'])
+        return self._start.astimezone(tz)
 
     @property
     def start_local(self):
@@ -353,35 +387,23 @@ class LocalizedEvent(Event):
             end = self.end
         return end.astimezone(self._locale['local_timezone'])
 
-    @property
-    def _rangestr(self):
-        # same day
-        if self.start_local.utctimetuple()[:3] == self.end_local.utctimetuple()[:3]:
-            starttime = self.start_local.strftime(self._locale['timeformat'])
-            endtime = self.end_local.strftime(self._locale['timeformat'])
-            datestr = self.end_local.strftime(self._locale['longdateformat'])
-            rangestr = starttime + '-' + endtime + ' ' + datestr
-        else:
-            startstr = self.start_local.strftime(self._locale['longdatetimeformat'])
-            endstr = self.end_local.strftime(self._locale['longdatetimeformat'])
-            rangestr = startstr + ' - ' + endstr
-        return rangestr
 
-
-class FloatingEvent(Event):
+class FloatingEvent(DatetimeEvent):
     """
     """
     allday = False
 
-    def _unix_to_native(self, time):
-        return datetime.utcfromtimestamp(time)
+    @property
+    def start_local(self):
+        return self._locale['local_timezone'].localize(self.start)
+
+    @property
+    def end_local(self):
+        return self._locale['local_timezone'].localize(self.end)
 
 
 class AllDayEvent(Event):
     allday = True
-
-    def _unix_to_native(self, time):
-        return datetime.utcfromtimestamp(time).date()
 
     @property
     def end(self):

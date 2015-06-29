@@ -9,7 +9,6 @@ import pytz
 from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent, \
     FloatingEvent
 
-from khal.khalendar.aux import to_unix_time
 
 from .aux import normalize_component, _get_text
 
@@ -34,14 +33,14 @@ EVENT_KWARGS = {'href': None, 'etag': None,
 
 def test_no_initialization():
     with pytest.raises(ValueError):
-        Event('', '', '', '', '', '')
+        Event('', '', '', '', '', '', '')
 
 
 
 def test_raw_dt():
     event_dt = _get_text('event_dt_simple')
-    start = to_unix_time(BERLIN.localize(datetime(2014, 4, 9, 9, 30)))
-    end = to_unix_time(BERLIN.localize(datetime(2014, 4, 9, 10, 30)))
+    start = BERLIN.localize(datetime(2014, 4, 9, 9, 30))
+    end = BERLIN.localize(datetime(2014, 4, 9, 10, 30))
     event = Event.fromString(event_dt, start=start, end=end, **EVENT_KWARGS)
     assert normalize_component(event.raw) == normalize_component(_get_text('event_dt_simple_inkl_vtimezone'))
     assert event.relative_to(date(2014, 4, 9)) == u'09:30-10:30: An Event'
@@ -125,12 +124,6 @@ def test_event_dt_rr():
     assert event.relative_to(date(2014, 4, 9)) == desc
     assert event.event_description == u'09:30-10:30 09.04.2014: An Event\nRepeat: FREQ=DAILY;COUNT=10'
 
-    start = to_unix_time(BERLIN.localize(datetime(2014, 4, 10, 9, 30)))
-    end = to_unix_time(BERLIN.localize(datetime(2014, 4, 10, 10, 30)))
-    event = Event.fromString(event_dt_rr, start=start, end=end, **EVENT_KWARGS)
-    desc = u'09:30-10:30: An Event ⟳'
-    assert event.relative_to(date(2014, 4, 10)) == desc
-    assert event.event_description == u'09:30-10:30 10.04.2014: An Event\nRepeat: FREQ=DAILY;COUNT=10'
 
 def test_event_d_rr():
     event_d_rr = _get_text('event_d_rr')
@@ -140,9 +133,9 @@ def test_event_d_rr():
     assert event.relative_to(date(2014, 4, 9)) == desc
     assert event.event_description == u'09.04.2014: Another Event\nRepeat: FREQ=DAILY;COUNT=10'
 
-    start = to_unix_time(datetime(2014, 4, 10))
-    end = to_unix_time(datetime(2014, 4, 11))
-    event = Event.fromString(event_d_rr, rec_inst=1410307200, start=start, end=end, **EVENT_KWARGS)
+    start = date(2014, 4, 10)
+    end = date(2014, 4, 11)
+    event = Event.fromString(event_d_rr, start=start, end=end, **EVENT_KWARGS)
     assert event.recurring is True
     desc = u'Another Event ⟳'
     assert event.relative_to(date(2014, 4, 10)) == desc
