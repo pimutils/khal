@@ -108,6 +108,12 @@ def test_event_rr():
     assert event.relative_to(date(2014, 4, 9)) == desc
     assert event.event_description == u'09.04.2014: Another Event\nRepeat: FREQ=DAILY;COUNT=10'
 
+    event = Event.fromString(event_d_rr, rec_inst=1410307200, **EVENT_KWARGS)
+    assert event.recurring is True
+    desc = u'Another Event ⟳'
+    assert event.relative_to(date(2014, 4, 10)) == desc
+    assert event.event_description == u'10.04.2014: Another Event\nRepeat: FREQ=DAILY;COUNT=10'
+
 
 def test_event_rd():
     event_dt_rd = _get_text('event_dt_rd')
@@ -160,3 +166,12 @@ def test_dtend_equals_dtstart():
                              calendar='foobar', locale=LOCALE, href=None,
                              etag=None)
     assert event.end == event.start
+
+
+def test_multi_uid():
+    """test for support for events with consist of several sub events with
+    the same uid"""
+
+
+    event = Event.fromString(_get_text('mult_uids_and_recuid_no_order'),
+                             **EVENT_KWARGS)
