@@ -460,7 +460,6 @@ def test_update_one_should_not_affect_others(tmpdir):
     assert len(list(events)) == 1
 
 
-
 event_rdate_period = """BEGIN:VEVENT
 SUMMARY:RDATE period
 DTSTART:19961230T020000Z
