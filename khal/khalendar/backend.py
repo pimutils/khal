@@ -250,7 +250,7 @@ class SQLiteDb(object):
         self.delete(href)
         for vevent in sorted(vevents, key=sort_key):
             check_support(vevent, href, self.calendar)
-            self._update_impl(vevent, vevent_str, href, etag)
+            self._update_impl(vevent, href)
 
         sql_s = ('INSERT INTO events '
                  '(item, etag, href, calendar) '
@@ -258,7 +258,7 @@ class SQLiteDb(object):
         stuple = (vevent_str, etag, href, self.calendar)
         self.sql_ex(sql_s, stuple)
 
-    def _update_impl(self, vevent, vevent_str, href, etag):
+    def _update_impl(self, vevent, href):
         """insert `vevent` into the database
 
         expand `vevent`'s reccurence rules (if needed) and insert all instance
@@ -556,7 +556,7 @@ class SQLiteDb_Birthdays(SQLiteDb):
             event.add('rrule', {'freq': 'YEARLY'})
             event.add('uid', href)
             event_str = event.to_ical().decode('utf-8')
-            self._update_impl(event, event_str, href, etag)
+            self._update_impl(event, href)
             sql_s = ('INSERT INTO events '
                      '(item, etag, href, calendar) '
                      'VALUES (?, ?, ?, ?);')

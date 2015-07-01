@@ -356,10 +356,6 @@ class LocalizedEvent(DatetimeEvent):
     see parent
     """
 
-    def _get_timezone(self, recurinst):
-        """get the timezone that is saved with this recursion instance"""
-        return self._vevent['dtstart'].dt.tzinfo or self._locale['default_timezone']
-
     @property
     def start(self):
         tz = getattr(self._vevent['DTSTART'].dt, 'tzinfo', self._locale['default_timezone'])
