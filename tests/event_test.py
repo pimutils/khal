@@ -198,7 +198,7 @@ def test_dtend_equals_dtstart():
 def test_multi_uid():
     """test for support for events with consist of several sub events with
     the same uid"""
-
-
-    event = Event.fromString(_get_text('mult_uids_and_recuid_no_order'),
-                             **EVENT_KWARGS)
+    orig_event_str = _get_text('event_rrule_recuid')
+    event = Event.fromString(orig_event_str, **EVENT_KWARGS)
+    for line in orig_event_str.split('\n'):
+        assert line in event.raw.split('\r\n')

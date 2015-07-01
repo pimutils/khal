@@ -234,21 +234,21 @@ class Event(object):
         return text
         """
         calendar = self._create_calendar()
-        if hasattr(self._vevent['DTSTART'].dt, 'tzinfo'):
-            tzs = [self.start.tzinfo]
-            if (
-                'DTEND' in self._vevent and
-                hasattr(self._vevent['DTEND'].dt, 'tzinfo') and
-                (self._vevent['DTSTART'].dt.tzinfo !=
-                 self._vevent['DTEND'].dt.tzinfo)
-            ):
-                tzs.append(self._vevent['DTEND'].dt.tzinfo)
+        tzs = list()
+        for vevent in self._vevents_coll.values():
+            if hasattr(vevent['DTSTART'].dt, 'tzinfo') and vevent['DTSTART'].dt.tzinfo is not None:
+                tzs.append(vevent['DTSTART'].dt.tzinfo)
+            if 'DTEND' in vevent and hasattr(vevent['DTEND'].dt, 'tzinfo') and \
+                    vevent['DTEND'].dt.tzinfo is not None and \
+                    vevent['DTEND'].dt.tzinfo not in tzs:
+                tzs.append(vevent['DTEND'].dt.tzinfo)
 
-            for tzinfo in tzs:
-                timezone = create_timezone(tzinfo, self.start)
-                calendar.add_component(timezone)
+        for tzinfo in tzs:
+            timezone = create_timezone(tzinfo, self.start)
+            calendar.add_component(timezone)
 
-        calendar.add_component(self._vevent)
+        for vevent in self._vevents_coll.values():
+            calendar.add_component(vevent)
         return calendar.to_ical().decode('utf-8')
 
     @property
