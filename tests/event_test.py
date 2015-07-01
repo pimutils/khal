@@ -1,14 +1,11 @@
 # vim: set fileencoding=utf-8 :
 
-from datetime import datetime, date, timedelta
-import textwrap
+from datetime import datetime, date
 
 import pytest
 import pytz
 
-from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent, \
-    FloatingEvent
-
+from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent
 
 from .aux import normalize_component, _get_text
 
@@ -36,13 +33,13 @@ def test_no_initialization():
         Event('', '', '', '', '', '', '')
 
 
-
 def test_raw_dt():
     event_dt = _get_text('event_dt_simple')
     start = BERLIN.localize(datetime(2014, 4, 9, 9, 30))
     end = BERLIN.localize(datetime(2014, 4, 9, 10, 30))
     event = Event.fromString(event_dt, start=start, end=end, **EVENT_KWARGS)
-    assert normalize_component(event.raw) == normalize_component(_get_text('event_dt_simple_inkl_vtimezone'))
+    assert normalize_component(event.raw) == \
+        normalize_component(_get_text('event_dt_simple_inkl_vtimezone'))
     assert event.relative_to(date(2014, 4, 9)) == u'09:30-10:30: An Event'
 
     event = Event.fromString(event_dt, **EVENT_KWARGS)
@@ -79,8 +76,6 @@ def test_transform_event():
 def test_update_event_d():
     event_d = _get_text('event_d')
     event = Event.fromString(event_d, **EVENT_KWARGS)
-    start = BERLIN.localize(datetime(2014, 4, 9, 9, 30))
-    end = BERLIN.localize(datetime(2014, 4, 9, 10, 30))
     event.update_start_end(date(2014, 4, 20), date(2014, 4, 22))
     assert event.event_description == u'20.04. - 22.04.2014: An Event'
     assert 'DTSTART;VALUE=DATE:20140420' in event.raw.split('\r\n')
@@ -122,7 +117,8 @@ def test_event_dt_rr():
     assert event.recurring is True
     desc = u'09:30-10:30: An Event ⟳'
     assert event.relative_to(date(2014, 4, 9)) == desc
-    assert event.event_description == u'09:30-10:30 09.04.2014: An Event\nRepeat: FREQ=DAILY;COUNT=10'
+    assert event.event_description == \
+        u'09:30-10:30 09.04.2014: An Event\nRepeat: FREQ=DAILY;COUNT=10'
 
 
 def test_event_d_rr():

@@ -61,7 +61,6 @@ def test_normalize_component():
     """))
 
 
-
 class TestGuessDatetimefstr(object):
     tomorrow16 = datetime.combine(tomorrow, time(16, 0))
 

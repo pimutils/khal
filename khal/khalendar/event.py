@@ -314,7 +314,8 @@ class Event(object):
         else:
             endstr = self.end_local.strftime(self._locale['timeformat'])
 
-        return ' '.join(filter(bool, [startstr + tostr + endstr + ':', self.summary, self._recur_str]))
+        comps = [startstr + tostr + endstr + ':', self.summary, self._recur_str]
+        return ' '.join(filter(bool, comps))
 
     @property
     def event_description(self):   # XXX rename me

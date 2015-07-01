@@ -32,7 +32,7 @@ note on naming:
 from __future__ import print_function, unicode_literals
 
 import contextlib
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from os import makedirs, path
 import sqlite3
 import time
@@ -335,7 +335,6 @@ class SQLiteDb(object):
                 stuple = (dbstart, dbend, href, ref, rec_inst, self.calendar)
             self.sql_ex(recs_sql_s, stuple)
             # end of loop
-
 
     def get_ctag(self):
         stuple = (self.calendar, )
