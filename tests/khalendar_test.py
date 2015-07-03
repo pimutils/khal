@@ -106,9 +106,11 @@ class TestCalendar(object):
 class TestVdirsyncerCompat(object):
     def test_list(self, cal_vdir):
         cal, vdir = cal_vdir
-        event = Event(event_d, cal.name, locale=locale)
+        event = Event.fromString(event_d, calendar=cal.name, locale=locale,
+                                 href=None, etag=None)
         cal.new(event)
-        event = Event(event_today, cal.name, locale=locale)
+        event = Event.fromString(event_today, calendar=cal.name, locale=locale,
+                                 href=None, etag=None)
         cal.new(event)
         hrefs = sorted(href for href, uid in cal._dbtool.list())
         assert hrefs == [
@@ -190,7 +192,8 @@ class TestCollection(object):
     def test_insert(self, coll_vdirs):
         """insert a datetime event"""
         coll, vdirs = coll_vdirs
-        event = Event(event_dt, calendar='foo', locale=locale)
+        event = Event.fromString(event_dt, href=None, etag=None,
+                                 calendar='foo', locale=locale)
         coll.new(event, cal1)
         events = coll.get_datetime_by_time_range(self.astart, self.aend)
         assert len(events) == 1
@@ -207,7 +210,8 @@ class TestCollection(object):
         """insert a date event"""
         coll, vdirs = coll_vdirs
 
-        event = Event(event_d, calendar='foo', locale=locale)
+        event = Event.fromString(event_d, etag=None, href=None,
+                                 calendar='foo', locale=locale)
         coll.new(event, cal1)
         events = coll.get_allday_by_time_range(aday)
         assert len(events) == 1
@@ -222,7 +226,8 @@ class TestCollection(object):
         """insert a date event with no VALUE=DATE option"""
         coll, vdirs = coll_vdirs
 
-        event = Event(event_d_no_value, calendar='foo', locale=locale)
+        event = Event.fromString(event_d_no_value, href=None, etag=None,
+                                 calendar='foo', locale=locale)
         coll.new(event, cal1)
         events = coll.get_allday_by_time_range(aday)
         assert len(events) == 1
@@ -234,7 +239,8 @@ class TestCollection(object):
 
     def test_change(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        event = Event(event_dt, calendar='foo', locale=locale)
+        event = Event.fromString(event_dt, href=None, etag=None,
+                                 calendar='foo', locale=locale)
         coll.new(event, cal1)
         event = coll.get_datetime_by_time_range(self.astart, self.aend)[0]
         assert event.calendar == cal1
@@ -259,7 +265,9 @@ class TestCollection(object):
         coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
         coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale))
         coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
-        event = Event(event_dt, calendar='home', locale=locale)
+        event = Event.fromString(event_dt, etag=None, href=None,
+                                 calendar='home', locale=locale)
+
         with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
             coll.new(event, cal1)
 

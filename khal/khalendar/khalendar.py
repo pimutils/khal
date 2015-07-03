@@ -245,7 +245,8 @@ class Calendar(object):
     def new_event(self, ical):
         """creates and returns (but does not insert) new event from ical
         string"""
-        return Event(ical=ical, calendar=self.name, locale=self._locale)
+        return Event.fromString(
+            ical, href=None, etag=None, locale=self._locale, calendar=self.name)
 
     def search(self, search_string):
         return [self._cover_event(event) for event in
