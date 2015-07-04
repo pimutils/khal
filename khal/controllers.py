@@ -157,7 +157,7 @@ def agenda(collection, date=None, encoding='utf-8',
     echo(to_unicode('\n'.join(event_column), encoding))
 
 
-def new_from_string(collection, conf, date_list, location=None, repeat=None,
+def new_from_string(collection, calendar_name, conf, date_list, location=None, repeat=None,
                     until=None):
     """construct a new event from a string and add it"""
     try:
@@ -169,13 +169,13 @@ def new_from_string(collection, conf, date_list, location=None, repeat=None,
             locale=conf['locale'])
     except FatalError:
         sys.exit(1)
-    event = Event(event, collection.default_calendar_name, locale=conf['locale'])
+    event = Event(event, calendar_name, locale=conf['locale'])
 
     try:
         collection.new(event)
     except ReadOnlyCalendarError:
         logger.fatal('ERROR: Cannot modify calendar "{}" as it is '
-                     'read-only'.format(collection.default_calendar_name))
+                     'read-only'.format(calendar_name))
         sys.exit(1)
     if conf['default']['print_new'] == 'event':
         echo(event.long())

@@ -62,6 +62,7 @@ def coll_vdirs(tmpdir):
         coll.append(
             Calendar(name, ':memory:', path, color='dark blue', locale=locale))
         vdirs[name] = FilesystemStorage(path, '.ics')
+    coll.default_calendar_name = cal1
     return coll, vdirs
 
 
@@ -167,24 +168,21 @@ class TestCollection(object):
     bstart = datetime.datetime.combine(bday, datetime.time.min)
     bend = datetime.datetime.combine(bday, datetime.time.max)
 
-    def test_default_calendar(self, coll_vdirs):
-        coll, vdir = coll_vdirs
-        # we don't care about order here
-        assert sorted(coll.names) == sorted(['foobar', 'work', 'private'])
-        assert coll.default_calendar_name in ['foobar', 'work', 'private']
-
-    def test_default_calendar_not_readonly(self, tmpdir):
+    def test_default_calendar(self, tmpdir):
         coll = CalendarCollection()
         coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
         coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale))
         coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
+        assert coll.default_calendar_name is None
+        with pytest.raises(ValueError):
+            coll.default_calendar_name = 'work'
+        assert coll.default_calendar_name is None
+        with pytest.raises(ValueError):
+            coll.default_calendar_name = 'unknownstuff'
+        assert coll.default_calendar_name is None
+        coll.default_calendar_name = 'home'
         assert coll.default_calendar_name == 'home'
 
-    def test_default_calendar_only_readonly(self, tmpdir):
-        coll = CalendarCollection()
-        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
-        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
-        assert coll.default_calendar_name in ['foobar', 'work']
 
     def test_empty(self, coll_vdirs):
         coll, vdirs = coll_vdirs
