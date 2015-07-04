@@ -46,7 +46,8 @@ class Event(object):
         icalendar standard would have the end date be one day later)
     """
     allday = False
-    def __init__(self, vevent, vevents_coll, ref=None, **kwargs):
+
+    def __init__(self, vevents, ref=None, **kwargs):
         """
         :param start: start datetime of this event instance
         :type start: datetime.date
@@ -55,8 +56,7 @@ class Event(object):
         """
         if self.__class__.__name__ == 'Event':
             raise ValueError('do not initialize this class directly')
-        self._vevent = vevent
-        self._vevents_coll = vevents_coll
+        self._vevents = vevents
         self._locale = kwargs.pop('locale', None)
         self._mutable = kwargs.pop('mutable', None)
         self.href = kwargs.pop('href', None)
@@ -68,14 +68,14 @@ class Event(object):
         end = kwargs.pop('end', None)
 
         if start is None:
-            self._start = self._vevent['DTSTART'].dt
+            self._start = self._vevents[self.ref]['DTSTART'].dt
         else:
             self._start = start
         if end is None:
             try:
-                self._end = self._vevent['DTEND'].dt
+                self._end = self._vevents[self.ref]['DTEND'].dt
             except KeyError:
-                self._end = self._start + self._vevent['DURATION'].dt
+                self._end = self._start + self._vevents[self.ref]['DURATION'].dt
         else:
             self._end = end
         if kwargs:
@@ -104,34 +104,33 @@ class Event(object):
         return cls
 
     @classmethod
-    def fromVEvents(cls, events, ref=None, **kwargs):
+    def fromVEvents(cls, events_list, ref=None, **kwargs):
         """
         :type events: list
         """
-        assert isinstance(events, list)
+        assert isinstance(events_list, list)
 
-        vevents_coll = dict()
-        if len(events) == 1:
-            vevents_coll['PROTO'] = events[0]
+        vevents = dict()
+        if len(events_list) == 1:
+            vevents['PROTO'] = events_list[0]  # TODO set mutable = False
         else:
-            for event in events:
+            for event in events_list:
                 if 'RECURRENCE-ID' in event:
                     ident = str(to_unix_time(event['RECURRENCE-ID'].dt))
-                    vevents_coll[ident] = event
+                    vevents[ident] = event
                 else:
-                    vevents_coll['PROTO'] = event
+                    vevents['PROTO'] = event
         if ref is None:
             ref = 'PROTO'
-        vevent = vevents_coll[ref]
 
         try:
-            if type(vevent['DTSTART'].dt) != type(vevent['DTEND'].dt):
+            if type(vevents[ref]['DTSTART'].dt) != type(vevents[ref]['DTEND'].dt):
                 raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
         except KeyError:
             pass
 
-        instcls = cls._get_type_from_vDDD(vevent['DTSTART'])
-        return instcls(vevent, vevents_coll, ref=ref, **kwargs)
+        instcls = cls._get_type_from_vDDD(vevents[ref]['DTSTART'])
+        return instcls(vevents, ref=ref, **kwargs)
 
     @classmethod
     def fromString(cls, event_str, ref=None, **kwargs):
@@ -154,29 +153,30 @@ class Event(object):
         # TODO look up why this is needed
         # self.event.vevent.dt = newstart would not work
         # (timezone was missing after to_ical() )
-        self._vevent.pop('DTSTART')
-        self._vevent.add('DTSTART', start)
+        self._vevents[self.ref].pop('DTSTART')
+        self._vevents[self.ref].add('DTSTART', start)
         self._start = start
         if not isinstance(end, datetime):
             end = end + timedelta(days=1)
         self._end = end
         try:
-            self._vevent.pop('DTEND')
-            self._vevent.add('DTEND', end)
+            self._vevents[self.ref].pop('DTEND')
+            self._vevents[self.ref].add('DTEND', end)
         except KeyError:
-            self._vevent.pop('DURATION')
+            self._vevents[self.ref].pop('DURATION')
             duration = (end - start)
-            self._vevent.add('DURATION', duration)
+            self._vevents[self.ref].add('DURATION', duration)
 
     @property
     def recurring(self):
-        return 'RRULE' in self._vevent or 'RECURRENCE-ID' in self._vevent or \
-            'RDATE' in self._vevent
+        return 'RRULE' in self._vevents[self.ref] or \
+            'RECURRENCE-ID' in self._vevents[self.ref] or \
+            'RDATE' in self._vevents[self.ref]
 
     @property
     def recurpattern(self):
-        if 'RRULE' in self._vevent:
-            return self._vevent['RRULE'].to_ical()
+        if 'RRULE' in self._vevents[self.ref]:
+            return self._vevents[self.ref]['RRULE'].to_ical()
         else:
             return ''
 
@@ -218,18 +218,18 @@ class Event(object):
     @property
     def duration(self):
         try:
-            return self._vevent['DURATION']
+            return self._vevents[self.ref]['DURATION']
         except KeyError:
             return self.start - self.end
 
     @property
     def uid(self):
-        return self._vevent['UID']
+        return self._vevents[self.ref]['UID']
 
     @property
     def organizer(self):
         try:
-            return to_unicode(self._vevent['ORGANIZER'], 'utf-8').split(':')[-1]
+            return to_unicode(self._vevents[self.ref]['ORGANIZER'], 'utf-8').split(':')[-1]
         except KeyError:
             return ''
 
@@ -254,7 +254,7 @@ class Event(object):
         """
         calendar = self._create_calendar()
         tzs = list()
-        for vevent in self._vevents_coll.values():
+        for vevent in self._vevents.values():
             if hasattr(vevent['DTSTART'].dt, 'tzinfo') and vevent['DTSTART'].dt.tzinfo is not None:
                 tzs.append(vevent['DTSTART'].dt.tzinfo)
             if 'DTEND' in vevent and hasattr(vevent['DTEND'].dt, 'tzinfo') and \
@@ -266,26 +266,26 @@ class Event(object):
             timezone = create_timezone(tzinfo, self.start)
             calendar.add_component(timezone)
 
-        for vevent in self._vevents_coll.values():
+        for vevent in self._vevents.values():
             calendar.add_component(vevent)
         return calendar.to_ical().decode('utf-8')
 
     @property
     def ident(self):
         """neeeded for vdirsyncer compat"""
-        return self._vevent['UID']
+        return self._vevents[self.ref]['UID']
 
     @property
     def summary(self):
-        return self._vevent.get('SUMMARY', '')
+        return self._vevents[self.ref].get('SUMMARY', '')
 
     @property
     def location(self):
-        return self._vevent.get('LOCATION', '')
+        return self._vevents[self.ref].get('LOCATION', '')
 
     @property
     def description(self):
-        return self._vevent.get('DESCRIPTION', '')
+        return self._vevents[self.ref].get('DESCRIPTION', '')
 
     @property
     def _recur_str(self):
@@ -344,12 +344,11 @@ class Event(object):
         :returns: event description
         """
 
-        location = '\nLocation: ' + self.location if \
-            self.location is not None else ''
+        location = '\nLocation: ' + self.location if self.location != '' else ''
         description = '\nDescription: ' + self.description if \
-            self.description is not None else ''
+            self.description != '' else ''
         repitition = '\nRepeat: ' + to_unicode(self.recurpattern) if \
-            self.recurpattern is not None else ''
+            self.recurpattern != '' else ''
 
         return '{}: {}{}{}{}'.format(
             self._rangestr, self.summary, location, repitition, description)
@@ -378,7 +377,8 @@ class LocalizedEvent(DatetimeEvent):
 
     @property
     def start(self):
-        tz = getattr(self._vevent['DTSTART'].dt, 'tzinfo', self._locale['default_timezone'])
+        tz = getattr(self._vevents[self.ref]['DTSTART'].dt, 'tzinfo',
+                     self._locale['default_timezone'])
         return self._start.astimezone(tz)
 
     @property
