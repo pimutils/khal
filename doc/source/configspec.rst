@@ -304,8 +304,10 @@ behaviours are set here.
 .. object:: default_calendar
 
     
-    the calendar to use if no one is specified but only one can be used (e.g. if
-    adding a new event), this should be a valid calendar name.
+    The calendar to use if no one is specified but only one can be used (e.g. if
+    adding a new event), this should be a valid calendar name. If this is not
+    configured an arbitrary calendar is used as the default calendar (the
+    arbitrary choice may not be the same at each run).
 
       :type: string
       :default: None

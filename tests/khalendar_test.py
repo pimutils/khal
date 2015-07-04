@@ -184,7 +184,7 @@ class TestCollection(object):
         coll = CalendarCollection()
         coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
         coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
-        assert coll.default_calendar_name == 'foobar'
+        assert coll.default_calendar_name in ['foobar', 'work']
 
     def test_empty(self, coll_vdirs):
         coll, vdirs = coll_vdirs
