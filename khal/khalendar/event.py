@@ -45,6 +45,7 @@ class Event(object):
         only one day will have the same start and end date (even though the
         icalendar standard would have the end date be one day later)
     """
+    allday = False
     def __init__(self, vevent, vevents_coll, ref=None, **kwargs):
         """
         :param start: start datetime of this event instance
@@ -61,7 +62,6 @@ class Event(object):
         self.href = kwargs.pop('href', None)
         self.etag = kwargs.pop('etag', None)
         self.calendar = kwargs.pop('calendar', None)
-        self.allday = False
         self.ref = ref
 
         start = kwargs.pop('start', None)
@@ -178,7 +178,7 @@ class Event(object):
         if 'RRULE' in self._vevent:
             return self._vevent['RRULE'].to_ical()
         else:
-            return None
+            return ''
 
     @property
     def symbol_strings(self):
@@ -226,6 +226,13 @@ class Event(object):
     def uid(self):
         return self._vevent['UID']
 
+    @property
+    def organizer(self):
+        try:
+            return to_unicode(self._vevent['ORGANIZER'], 'utf-8').split(':')[-1]
+        except KeyError:
+            return ''
+
     @staticmethod
     def _create_calendar():
         """
@@ -270,15 +277,15 @@ class Event(object):
 
     @property
     def summary(self):
-        return self._vevent.get('SUMMARY', None)
+        return self._vevent.get('SUMMARY', '')
 
     @property
     def location(self):
-        return self._vevent.get('LOCATION', None)
+        return self._vevent.get('LOCATION', '')
 
     @property
     def description(self):
-        return self._vevent.get('DESCRIPTION', None)
+        return self._vevent.get('DESCRIPTION', '')
 
     @property
     def _recur_str(self):
