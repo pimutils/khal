@@ -45,8 +45,7 @@ class Event(object):
         only one day will have the same start and end date (even though the
         icalendar standard would have the end date be one day later)
     """
-    def __init__(self, vevent, vevents_coll, href, etag, locale,
-                 calendar, mutable=True, start=None, end=None, ref=None):
+    def __init__(self, vevent, vevents_coll, ref=None, **kwargs):
         """
         :param start: start datetime of this event instance
         :type start: datetime.date
@@ -57,13 +56,16 @@ class Event(object):
             raise ValueError('do not initialize this class directly')
         self._vevent = vevent
         self._vevents_coll = vevents_coll
-        self._locale = locale
-        self._mutable = mutable
-        self.href = href
-        self.etag = etag
+        self._locale = kwargs.pop('locale', None)
+        self._mutable = kwargs.pop('mutable', None)
+        self.href = kwargs.pop('href', None)
+        self.etag = kwargs.pop('etag', None)
+        self.calendar = kwargs.pop('calendar', None)
         self.allday = False
-        self.calendar = calendar
         self.ref = ref
+
+        start = kwargs.pop('start', None)
+        end = kwargs.pop('end', None)
 
         if start is None:
             self._start = self._vevent['DTSTART'].dt
@@ -76,6 +78,8 @@ class Event(object):
                 self._end = self._start + self._vevent['DURATION'].dt
         else:
             self._end = end
+        if kwargs:
+            raise TypeError('%s are invalid keyword arguments to this function' % kwargs.keys())
 
     @classmethod
     def _get_type_from_vDDD(cls, start):
@@ -100,18 +104,22 @@ class Event(object):
         return cls
 
     @classmethod
-    def fromString(cls, event_str, href, etag, locale, calendar=None,
-                   mutable=True, start=None, end=None, ref=None):
-        calendar_collection = icalendar.Calendar.from_ical(event_str)
-        events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
+    def fromVEvents(cls, events, ref=None, **kwargs):
+        """
+        :type events: list
+        """
+        assert isinstance(events, list)
 
         vevents_coll = dict()
-        for event in events:
-            if 'RECURRENCE-ID' in event:
-                ident = str(to_unix_time(event['RECURRENCE-ID'].dt))
-                vevents_coll[ident] = event
-            else:
-                vevents_coll['PROTO'] = event
+        if len(events) == 1:
+            vevents_coll['PROTO'] = events[0]
+        else:
+            for event in events:
+                if 'RECURRENCE-ID' in event:
+                    ident = str(to_unix_time(event['RECURRENCE-ID'].dt))
+                    vevents_coll[ident] = event
+                else:
+                    vevents_coll['PROTO'] = event
         if ref is None:
             ref = 'PROTO'
         vevent = vevents_coll[ref]
@@ -123,9 +131,13 @@ class Event(object):
             pass
 
         instcls = cls._get_type_from_vDDD(vevent['DTSTART'])
-        return instcls(
-            vevent, vevents_coll, href=href, etag=etag, locale=locale,
-            calendar=calendar, mutable=mutable, start=start, end=end, ref=ref)
+        return instcls(vevent, vevents_coll, ref=ref, **kwargs)
+
+    @classmethod
+    def fromString(cls, event_str, ref=None, **kwargs):
+        calendar_collection = icalendar.Calendar.from_ical(event_str)
+        events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
+        return cls.fromVEvents(events, ref, **kwargs)
 
     def update_start_end(self, start, end):
         """update start and end time of this event

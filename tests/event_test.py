@@ -24,13 +24,12 @@ LOCALE = {
     'longdatetimeformat': '%d.%m.%Y %H:%M',
     'unicode_symbols': True,
 }
-EVENT_KWARGS = {'href': None, 'etag': None,
-                'calendar': 'foobar', 'locale': LOCALE}
+EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE}
 
 
 def test_no_initialization():
     with pytest.raises(ValueError):
-        Event('', '', '', '', '', '', '')
+        Event('', '')
 
 
 def test_raw_dt():
@@ -178,16 +177,14 @@ def test_event_no_dst():
     BOGOTA_LOCALE['default_timezone'] = BOGOTA
     event_no_dst = _get_text('event_no_dst')
     cal_no_dst = _get_text('cal_no_dst')
-    event = Event.fromString(event_no_dst, calendar='foobar', locale=BOGOTA_LOCALE,
-                             href=None, etag=None)
+    event = Event.fromString(event_no_dst, calendar='foobar', locale=BOGOTA_LOCALE)
     assert normalize_component(event.raw) == normalize_component(cal_no_dst)
     assert event.event_description == u'09:30-10:30 09.04.2014: An Event'
 
 
 def test_dtend_equals_dtstart():
     event = Event.fromString(_get_text('event_d_same_start_end'),
-                             calendar='foobar', locale=LOCALE, href=None,
-                             etag=None)
+                             calendar='foobar', locale=LOCALE)
     assert event.end == event.start
 
 

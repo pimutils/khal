@@ -169,7 +169,8 @@ def new_from_string(collection, conf, date_list, location=None, repeat=None,
             locale=conf['locale'])
     except FatalError:
         sys.exit(1)
-    event = Event(event, collection.default_calendar_name, locale=conf['locale'])
+    event = Event.fromVEvents(
+        [event], calendar=collection.default_calendar_name, locale=conf['locale'])
 
     try:
         collection.new(event)
@@ -214,8 +215,8 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False):
         vevents.append(sorted(events_grouped[uid], key=sort_key))
     for vevent in vevents:
         for sub_event in vevent:
-            event = Event(sub_event, calendar=collection.default_calendar_name,
-                          locale=conf['locale'])
+            event = Event.fromVEvents(
+                [sub_event], calendar=collection.default_calendar_name, locale=conf['locale'])
             if not batch:
                 echo(event.long())
         if batch or confirm("Do you want to import this event into `{}`?"
