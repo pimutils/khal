@@ -150,22 +150,18 @@ class Event(object):
             raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
         self.__class__ = self._get_type_from_date(start)
 
-        # TODO look up why this is needed
-        # self.event.vevent.dt = newstart would not work
-        # (timezone was missing after to_ical() )
         self._vevents[self.ref].pop('DTSTART')
         self._vevents[self.ref].add('DTSTART', start)
         self._start = start
         if not isinstance(end, datetime):
             end = end + timedelta(days=1)
         self._end = end
-        try:
+        if 'DTEND' in self._vevents[self.ref]:
             self._vevents[self.ref].pop('DTEND')
             self._vevents[self.ref].add('DTEND', end)
-        except KeyError:
+        else:
             self._vevents[self.ref].pop('DURATION')
-            duration = (end - start)
-            self._vevents[self.ref].add('DURATION', duration)
+            self._vevents[self.ref].add('DURATION', end - start)
 
     @property
     def recurring(self):
@@ -218,9 +214,9 @@ class Event(object):
     @property
     def duration(self):
         try:
-            return self._vevents[self.ref]['DURATION']
+            return self._vevents[self.ref]['DURATION'].dt
         except KeyError:
-            return self.start - self.end
+            return self.end - self.start
 
     @property
     def uid(self):
@@ -279,13 +275,22 @@ class Event(object):
     def summary(self):
         return self._vevents[self.ref].get('SUMMARY', '')
 
+    def update_summary(self, summary):
+        self._vevents[self.ref]['SUMMARY'] = summary
+
     @property
     def location(self):
         return self._vevents[self.ref].get('LOCATION', '')
 
+    def update_location(self, location):
+        self._vevents[self.ref]['LOCATION'] = location
+
     @property
     def description(self):
         return self._vevents[self.ref].get('DESCRIPTION', '')
+
+    def update_description(self, description):
+        self._vevents[self.ref]['DESCRIPTION'] = description
 
     @property
     def _recur_str(self):

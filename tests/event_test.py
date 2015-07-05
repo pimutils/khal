@@ -1,6 +1,6 @@
 # vim: set fileencoding=utf-8 :
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 import pytest
 import pytz
@@ -32,6 +32,11 @@ def test_no_initialization():
         Event('', '')
 
 
+def test_invalid_keyword_argument():
+    with pytest.raises(TypeError):
+        Event.fromString(_get_text('event_dt_simple'), keyword='foo')
+
+
 def test_raw_dt():
     event_dt = _get_text('event_dt_simple')
     start = BERLIN.localize(datetime(2014, 4, 9, 9, 30))
@@ -45,6 +50,9 @@ def test_raw_dt():
     assert event.relative_to(date(2014, 4, 9)) == u'09:30-10:30: An Event'
     assert event.event_description == u'09:30-10:30 09.04.2014: An Event'
     assert event.recurring is False
+    assert event.duration == timedelta(hours=1)
+    assert event.uid == 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
+    assert event.ident == 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
 
 
 def test_raw_d():
@@ -79,6 +87,19 @@ def test_update_event_d():
     assert event.event_description == u'20.04. - 22.04.2014: An Event'
     assert 'DTSTART;VALUE=DATE:20140420' in event.raw.split('\r\n')
     assert 'DTEND;VALUE=DATE:20140423' in event.raw.split('\r\n')
+
+
+def test_update_event_duration():
+    event_dur = _get_text('event_dt_duration')
+    event = Event.fromString(event_dur, **EVENT_KWARGS)
+    assert event.start == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
+    assert event.end == BERLIN.localize(datetime(2014, 4, 9, 10, 30))
+    assert event.duration == timedelta(hours=1)
+    event.update_start_end(BERLIN.localize(datetime(2014, 4, 9, 8, 0)),
+                           BERLIN.localize(datetime(2014, 4, 9, 12, 0)))
+    assert event.start == BERLIN.localize(datetime(2014, 4, 9, 8, 0))
+    assert event.end == BERLIN.localize(datetime(2014, 4, 9, 12, 0))
+    assert event.duration == timedelta(hours=4)
 
 
 def test_dt_two_tz():
