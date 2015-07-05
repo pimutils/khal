@@ -224,10 +224,15 @@ class Event(object):
 
     @property
     def organizer(self):
-        try:
-            return to_unicode(self._vevents[self.ref]['ORGANIZER'], 'utf-8').split(':')[-1]
-        except KeyError:
+        if 'ORGANIZER' not in self._vevents[self.ref]:
             return ''
+        organizer = self._vevents[self.ref]['ORGANIZER']
+        cn = organizer.params.get('CN', '')
+        email = organizer.split(':')[-1]
+        if cn:
+            return '{} ({})'.format(cn, email)
+        else:
+            return email
 
     @staticmethod
     def _create_calendar():

@@ -53,6 +53,17 @@ def test_raw_dt():
     assert event.duration == timedelta(hours=1)
     assert event.uid == 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
     assert event.ident == 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
+    assert event.organizer == ''
+
+
+def test_update_simple():
+    event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    event_updated = Event.fromString(_get_text('event_dt_simple_updated'), **EVENT_KWARGS)
+    event.update_summary('A not so simple Event')
+    event.update_description('Everything has changed')
+    event.update_location('anywhere')
+    assert normalize_component(event.raw) == normalize_component(event_updated.raw)
+
 
 
 def test_raw_d():
@@ -61,6 +72,12 @@ def test_raw_d():
     assert event.raw.split('\r\n') == _get_text('cal_d').split('\n')
     assert event.relative_to(date(2014, 4, 9)) == u'An Event'
     assert event.event_description == u'09.04.2014: An Event'
+
+
+def test_event_organizer():
+    event = _get_text('event_dt_duration')
+    event = Event.fromString(event, **EVENT_KWARGS)
+    assert event.organizer == 'Frank Nord (frank@nord.tld)'
 
 
 def test_transform_event():
@@ -87,7 +104,6 @@ def test_update_event_d():
     assert event.event_description == u'20.04. - 22.04.2014: An Event'
     assert 'DTSTART;VALUE=DATE:20140420' in event.raw.split('\r\n')
     assert 'DTEND;VALUE=DATE:20140423' in event.raw.split('\r\n')
-
 
 def test_update_event_duration():
     event_dur = _get_text('event_dt_duration')
