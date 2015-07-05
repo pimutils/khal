@@ -139,7 +139,7 @@ class Calendar(object):
 
         with self._dbtool.at_once():
             event.etag = self._storage.update(event.href, event, event.etag)
-            self._dbtool.update(event.vevent.to_ical(), event.href, event.etag)
+            self._dbtool.update(event.raw, event.href, event.etag)
             self._dbtool.set_ctag(self.local_ctag())
 
     def force_update(self, event):

@@ -15,6 +15,8 @@ from khal.khalendar.event import Event
 from khal.khalendar.backend import CouldNotCreateDbDir
 import khal.khalendar.exceptions
 
+from aux import _get_text
+
 
 today = datetime.date.today()
 yesterday = today - datetime.timedelta(days=1)
@@ -125,39 +127,9 @@ aday = datetime.date(2014, 4, 9)
 bday = datetime.date(2014, 4, 10)
 
 
-event_allday_template = u"""BEGIN:VEVENT
-SEQUENCE:0
-UID:uid3@host1.com
-DTSTART;VALUE=DATE:{}
-DTEND;VALUE=DATE:{}
-SUMMARY:a meeting
-DESCRIPTION:short description
-LOCATION:LDB Lobby
-END:VEVENT"""
-
-
-event_dt = """BEGIN:VEVENT
-SUMMARY:An Event
-DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140409T093000
-DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140409T103000
-DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
-UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
-END:VEVENT"""
-
-event_d = """BEGIN:VEVENT
-SUMMARY:Another Event
-DTSTART;VALUE=DATE:20140409
-DTEND;VALUE=DATE:20140410
-DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
-UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
-END:VEVENT"""
-
-event_d_no_value = """BEGIN:VEVENT
-SUMMARY:Another Event
-DTSTART:20140409
-DTEND:20140410
-UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
-END:VEVENT"""
+event_dt = _get_text('event_dt_simple')
+event_d = _get_text('event_d')
+event_d_no_value = _get_text('event_d_no_value')
 
 
 class TestCollection(object):
@@ -233,6 +205,7 @@ class TestCollection(object):
         assert coll.get_datetime_by_time_range(self.bstart, self.bend) == []
 
     def test_change(self, coll_vdirs):
+        """moving an event from one calendar to another"""
         coll, vdirs = coll_vdirs
         event = Event.fromString(event_dt, calendar='foo', locale=locale)
         coll.new(event, cal1)
@@ -243,6 +216,23 @@ class TestCollection(object):
         events = coll.get_datetime_by_time_range(self.astart, self.aend)
         assert len(events) == 1
         assert events[0].calendar == cal2
+
+    def test_update_event(self, coll_vdirs):
+        """updating one event"""
+        coll, vdirs = coll_vdirs
+        event = Event.fromString(
+            _get_text('event_dt_simple'), calendar=cal1, locale=locale)
+        coll.new(event, cal1)
+        events = coll.get_datetime_by_time_range(self.astart, self.aend)
+        event = events[0]
+        event.update_summary('really simple event')
+        event.update_start_end(bday, bday)
+        coll.update(event)
+        events = coll.get_datetime_by_time_range(self.astart, self.aend)
+        assert len(events) == 0
+        events = coll.get_allday_by_time_range(self.bstart)
+        assert len(events) == 1
+        assert events[0].summary == 'really simple event'
 
     def test_newevent(self, coll_vdirs):
         coll, vdirs = coll_vdirs
