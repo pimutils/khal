@@ -58,7 +58,7 @@ class Event(object):
             raise ValueError('do not initialize this class directly')
         self._vevents = vevents
         self._locale = kwargs.pop('locale', None)
-        self._mutable = kwargs.pop('mutable', None)
+        self.readonly = kwargs.pop('readonly', None)
         self.href = kwargs.pop('href', None)
         self.etag = kwargs.pop('etag', None)
         self.calendar = kwargs.pop('calendar', None)
