@@ -396,7 +396,7 @@ class EventEditor(urwid.WidgetWrap):
         self.location = event.location
 
         self.startendeditor = StartEndEditor(
-            event.start, event.end, self.conf, self.pane.eventscolumn.set_current_date)
+            event.start_local, event.end_local, self.conf, self.pane.eventscolumn.set_current_date)
         try:
             rrule = self.event.recurpattern
         except KeyError:
@@ -470,7 +470,8 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_location(self.location.get_edit_text())
 
         if self.startendeditor.changed:
-            self.event.update_start_end(start, end)
+            self.event.update_start_end(self.startendeditor.newstart,
+                                        self.startendeditor.newend)
         if self.recursioneditor.changed:
             rrule = self.recursioneditor.active
             self.event.update_rrule(rrule)
