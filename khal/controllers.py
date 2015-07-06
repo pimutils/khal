@@ -179,7 +179,7 @@ def new_from_string(collection, conf, date_list, location=None, repeat=None,
                      'read-only'.format(collection.default_calendar_name))
         sys.exit(1)
     if conf['default']['print_new'] == 'event':
-        echo(event.long())
+        echo(event.event_description)
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
         echo(path.encode(conf['locale']['encoding']))
@@ -218,7 +218,7 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False):
             event = Event.fromVEvents(
                 [sub_event], calendar=collection.default_calendar_name, locale=conf['locale'])
             if not batch:
-                echo(event.long())
+                echo(event.event_description)
         if batch or confirm("Do you want to import this event into `{}`?"
                             "".format(collection.default_calendar_name)):
             ics = aux.ics_from_list(vevent, random_uid)
