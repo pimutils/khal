@@ -65,13 +65,20 @@ def test_update_simple():
     assert normalize_component(event.raw) == normalize_component(event_updated.raw)
 
 
-
 def test_raw_d():
     event_d = _get_text('event_d')
     event = Event.fromString(event_d, **EVENT_KWARGS)
     assert event.raw.split('\r\n') == _get_text('cal_d').split('\n')
     assert event.relative_to(date(2014, 4, 9)) == u'An Event'
     assert event.event_description == u'09.04.2014: An Event'
+
+
+def test_update_sequence():
+    event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    event.increment_sequence()
+    assert event._vevents['PROTO']['SEQUENCE'] == 0
+    event.increment_sequence()
+    assert event._vevents['PROTO']['SEQUENCE'] == 1
 
 
 def test_event_organizer():
@@ -104,6 +111,7 @@ def test_update_event_d():
     assert event.event_description == u'20.04. - 22.04.2014: An Event'
     assert 'DTSTART;VALUE=DATE:20140420' in event.raw.split('\r\n')
     assert 'DTEND;VALUE=DATE:20140423' in event.raw.split('\r\n')
+
 
 def test_update_event_duration():
     event_dur = _get_text('event_dt_duration')

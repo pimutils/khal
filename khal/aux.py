@@ -370,6 +370,7 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
     event.add('dtstamp', _now())
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
+    event.add('sequence', 0)
     return event
 
 

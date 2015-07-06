@@ -176,6 +176,18 @@ class Event(object):
         else:
             return ''
 
+    def update_rrule(self, rrule):
+        raise NotImplementedError()
+
+    def increment_sequence(self):
+        """update the SEQUENCE number, call before saving this event"""
+        # TODO we might want to do this automatically in raw() everytime
+        # the event has changed, this will f*ck up the tests though
+        try:
+            self._vevents[self.ref]['SEQUENCE'] += 1
+        except KeyError:
+            self._vevents[self.ref]['SEQUENCE'] = 0
+
     @property
     def symbol_strings(self):
         if self._locale['unicode_symbols']:

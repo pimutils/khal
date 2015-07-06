@@ -513,6 +513,7 @@ class EventEditor(urwid.WidgetWrap):
 
         if changed is True:
             self.event.allday = self.startendeditor.allday
+            self.event.increment_sequence()
             if self.event.etag is None:  # has not been saved before
                 self.event.calendar = self.calendar_chooser.active.name
                 self.collection.new(self.event)
