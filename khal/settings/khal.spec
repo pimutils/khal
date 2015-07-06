@@ -77,8 +77,10 @@ longdatetimeformat = string(default='%d.%m.%Y %H:%M')
 # iso weeknumbers, they only work properly if `firstweekday` is set to 0
 weeknumbers = weeknumbers(default='off')
 
-# keybindings for `ikhal` are set here. You can bind more than one key
+# keybindings for :command:`ikhal` are set here. You can bind more than one key
 # (combination) to a command by supplying a comma-seperated list of keys.
+# For binding key combinations just add concatenate them (with a space in
+# between), e.g. **ctrl n**.
 [keybindings]
 
 # move the cursor up (in the calendar browser)
@@ -99,7 +101,7 @@ new = force_list(default=list('n'))
 # delete the currently selected event
 delete = force_list(default=list('d'))
 
-# show detailed or edit (if details are already show) the currently selected event
+# show details or edit (if details are already shown) the currently selected event
 view = force_list(default=list('enter', 'tab'))
 
 # focus the calendar browser on today
@@ -115,8 +117,10 @@ save = force_list(default=list('meta enter'))
 # command to be executed if no command is given when executing khal
 default_command = option('calendar', 'agenda', 'interactive', 'printformats', 'printcalendars', '', default='calendar')
 
-# the calendar to use if no one is specified but only one can be used (e.g. if
-# adding a new event), this should be a valid calendar name.
+# The calendar to use if no one is specified but only one can be used (e.g. if
+# adding a new event), this should be a valid calendar name. If this is not
+# configured an arbitrary calendar is used as the default calendar (the
+# arbitrary choice may not be the same at each run).
 default_calendar = string(default=None)
 
 # By default, khal displays only dates with event in "agenda" view.

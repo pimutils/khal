@@ -99,6 +99,22 @@ containing the first given date. If today is included, it is highlighted.
 Have a look at ``khal agenda`` for a descrption of the options.
 
 
+import
+******
+lets the user import ``.ics`` files with the following syntax:
+
+::
+
+        khal import [-a CALENDAR] [--batch] [--random-uid|-r] ICSFILE
+
+If an event with the same UID is already present in the (implicitly)
+selected calendar ``khal import`` will ask before updating (i.e. overwriting)
+that old event with the imported one, unless --batch is given, than it will
+always update. If this behaviour is not desired, use the `--random-uid` flag to
+generate a new, random UID.  If no calendar is specified (and not `--batch`),
+you will be asked to choose a calendar. You can either enter the number printed
+behind each calendar's name or any unique prefix of a calendar's name.
+
 
 interactive
 ***********
@@ -223,5 +239,5 @@ The command
 ::
 
     khal search party
-    
+
 prints all events matching `party`.

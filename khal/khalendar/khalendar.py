@@ -275,7 +275,9 @@ class CalendarCollection(object):
         if self._default_calendar_name in self.names:
             return self._default_calendar_name
         else:
-            names = self.writable_names or self.names
+            # we need that list becaus in python3 dict keys are set-like and
+            # don't support indexing
+            names = self.writable_names or list(self.names)
             return names[0]
 
     def append(self, calendar):

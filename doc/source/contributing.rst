@@ -1,5 +1,5 @@
-Feedback and Contributing to khal
-=================================
+Feedback and Contributing
+=========================
 
 The preferred way of interaction with *khal*'s developers is via github_. But if
 you do not feel comfortable using github, please don't hesitate to contact the

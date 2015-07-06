@@ -262,6 +262,9 @@ def _get_cli():
         that old event with the imported one, unless --batch is given, than it
         will always update. If this behaviour is not desired, use the
         `--random-uid` flag to generate a new, random UID.
+        If no calendar is specified (and not `--batch`), you will be asked
+        to choose a calendar. You can either enter the number printed behind
+        each calendar's name or any unique prefix of a calendar's name.
 
         '''
         ics_str = ics.read()

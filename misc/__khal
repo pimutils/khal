@@ -69,6 +69,7 @@ case $state in
         args+=(
           "-a=[use this calendar]:calendars:_calendars"
           "*:file:_ics_files"
+          --batch"[do not ask for any confirmation]"
         )
       ;;
     esac

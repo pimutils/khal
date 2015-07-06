@@ -152,6 +152,12 @@ class TestCollection(object):
         coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
         assert coll.default_calendar_name == 'home'
 
+    def test_default_calendar_only_readonly(self, tmpdir):
+        coll = CalendarCollection()
+        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
+        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
+        assert coll.default_calendar_name in ['foobar', 'work']
+
     def test_empty(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         start = datetime.datetime.combine(today, datetime.time.min)

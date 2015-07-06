@@ -1,12 +1,12 @@
-Notes on Standard Compliance
-============================
+Standard Compliance
+===================
 
 *khal* tries to follow standards and RFCs (most importantly :rfc:`5545`
 *iCalendar*) where ever possible. Known intentional and unintentional deviations
 are listed below.
 
-Recurrent events with RDATE;VALUE=PERIOD
-----------------------------------------
+RDATE;VALUE=PERIOD
+------------------
 
 `RDATE` s with `PERIOD` values are currently not supported, as icalendar_ does
 does not support it yet. Please submit any real world examples of events with
@@ -15,8 +15,8 @@ any in your calendars).
 
 .. _icalendar: https://github.com/collective/icalendar/
 
-Recurrent events with RANGE=THISANDPRIOR
-----------------------------------------
+RANGE=THISANDPRIOR
+------------------
 
 Recurrent events with the `RANGE=THISANDPRIOR` are and will not be [1]_
 supported by khal, as applications supporting the latest standard_ MUST NOT

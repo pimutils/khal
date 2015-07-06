@@ -11,6 +11,14 @@ may want to subscribe to `GitHub's tag feed
 =====
 not released yet
 
+* BUGFIX Recurrent events with a THISANDFUTURE parameter could affect other
+  events. This could lead to events not being found by the normal lookup
+  functionality when they should and being found when they shouldn't. As the
+  second case should result in an error that nobody reported yet, I hope nobody
+  got bitten by this.
+
+
+
 * new dependency for running the tests: freezegun
 * new dependency for setup: setuptools_scm
 * khal now needs to be installed for building the documentation

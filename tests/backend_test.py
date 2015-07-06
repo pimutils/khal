@@ -448,6 +448,19 @@ def test_two_calendars_same_uid(tmpdir):
     assert dba.list() == []
     assert dbb.list() == [('12345.ics', 'abcd')]
 
+
+def test_update_one_should_not_affect_others(tmpdir):
+    """test if an THISANDFUTURE param effects other events as well"""
+    dbpath = str(tmpdir) + '/khal.db'
+    db = backend.SQLiteDb('home', dbpath, locale=locale)
+    db.update(_get_text('event_d_15'), href='first')
+    events = db.get_allday_range(start=date(2015, 4, 9))
+    assert len(list(events)) == 1
+    db.update(event_rrule_multi_this_and_future_allday, href='second')
+    events = db.get_allday_range(start=date(2015, 4, 9))
+    assert len(list(events)) == 1
+
+
 event_rdate_period = """BEGIN:VEVENT
 SUMMARY:RDATE period
 DTSTART:19961230T020000Z
