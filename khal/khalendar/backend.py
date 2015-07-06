@@ -100,9 +100,6 @@ class SQLiteDb(object):
         self.calendar = calendar
         self._create_dbdir()
         self.locale = locale
-        self.table_m = calendar + '_m'
-        self.table_d = calendar + '_d'
-        self.table_dt = calendar + '_dt'
         self._at_once = False
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
