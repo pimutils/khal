@@ -13,6 +13,7 @@ from khal.cli import main_khal
 
 from aux import _get_text
 
+
 class CustomCliRunner(CliRunner):
     def __init__(self, config, db=None, calendars=None, **kwargs):
         self.config = config

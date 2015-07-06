@@ -22,14 +22,13 @@
 
 from __future__ import unicode_literals
 
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time
 import signal
 import sys
 
 import urwid
 
 from .. import aux
-from ..compat import to_unicode
 from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker, Choice
 from .widgets import ExtendedEdit as Edit
 from .startendeditor import StartEndEditor
@@ -335,12 +334,7 @@ class EventDisplay(urwid.WidgetWrap):
 
         # show organizer
         if event.organizer is not None:
-            lines.append(urwid.Text( 'Organizer: ' + event.organizer))
-
-            # FIXME
-            #organizer = to_unicode(event.vevent['ORGANIZER'], 'utf-8').split(':')
-            #lines.append(urwid.Text(
-            #    'Organizer: ' + organizer[len(organizer) - 1]))
+            lines.append(urwid.Text('Organizer: ' + event.organizer))
 
         # description and location
         for key, desc in [('location', 'Location'), ('description', 'Description')]:
