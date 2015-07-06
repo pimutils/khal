@@ -209,18 +209,23 @@ class Event(object):
 
     @property
     def start_local(self):
+        """self.start() localized to local timezone"""
         return self.start
 
     @property
     def end_local(self):
+        """self.end() localized to local timezone"""
         return self.end
 
     @property
     def start(self):
+        """this should return the start date(time) as saved in the event"""
         return self._start
 
     @property
     def end(self):
+        """this should return the end date(time) as saved in the event or
+        implicitly defined by start and duration"""
         return self._end
 
     @property
@@ -396,34 +401,33 @@ class LocalizedEvent(DatetimeEvent):
     """
     see parent
     """
-
     @property
     def start(self):
-        tz = getattr(self._vevents[self.ref]['DTSTART'].dt, 'tzinfo',
-                     self._locale['default_timezone'])
-        return self._start.astimezone(tz)
+        """in case DTSTART has no tzinfo (or it is set to None) we assume
+        it was meant to be set in the default_timezone"""
+        if getattr(self._start, 'tzinfo', None) is not None:
+            return self._start
+        return self._locale['default_timezone'].localize(self._start)
+
+    @property
+    def end(self):
+        if getattr(self._end, 'tzinfo', None) is not None:
+            return self._end
+        return self._locale['default_timezone'].localize(self._end)
 
     @property
     def start_local(self):
         """
         see parent
         """
-        if self.start.tzinfo is None:
-            start = self._locale['default_timezone'].localize(self.start)
-        else:
-            start = self.start
-        return start.astimezone(self._locale['local_timezone'])
+        return self.start.astimezone(self._locale['local_timezone'])
 
     @property
     def end_local(self):
         """
         see parent
         """
-        if self.end.tzinfo is None:
-            end = self._locale['default_timezone'].localize(self.end)
-        else:
-            end = self.end
-        return end.astimezone(self._locale['local_timezone'])
+        return self.end.astimezone(self._locale['local_timezone'])
 
 
 class FloatingEvent(DatetimeEvent):

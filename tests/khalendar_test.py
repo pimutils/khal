@@ -164,7 +164,7 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         event = Event.fromString(event_dt, calendar='foo', locale=locale)
         coll.new(event, cal1)
-        events = coll.get_datetime_by_time_range(self.astart, self.aend)
+        events = coll.get_datetime_by_time_range(aday, bday)
         assert len(events) == 1
         assert events[0].color == 'dark blue'
         assert events[0].calendar == cal1

@@ -5,7 +5,7 @@ from datetime import datetime, date, timedelta
 import pytest
 import pytz
 
-from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent
+from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent, FloatingEvent
 
 from .aux import normalize_component, _get_text
 
@@ -24,6 +24,11 @@ LOCALE = {
     'longdatetimeformat': '%d.%m.%Y %H:%M',
     'unicode_symbols': True,
 }
+BOGOTA_LOCALE = LOCALE.copy()
+BOGOTA_LOCALE['local_timezone'] = BOGOTA
+BOGOTA_LOCALE['default_timezone'] = BOGOTA
+MIXED_LOCALE = LOCALE.copy()
+MIXED_LOCALE['local_timezone'] = BOGOTA
 EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE}
 
 
@@ -148,11 +153,28 @@ def test_event_dt_duration():
 
 
 def test_event_dt_no_tz():
-    """start and end time of no timezone"""
+    """start and end time have no timezone, i.e. a floating event"""
     event_dt_no_tz = _get_text('event_dt_no_tz')
     event = Event.fromString(event_dt_no_tz, **EVENT_KWARGS)
+    assert isinstance(event, FloatingEvent)
     assert event.relative_to(date(2014, 4, 9)) == u'09:30-10:30: An Event'
     assert event.event_description == u'09:30-10:30 09.04.2014: An Event'
+
+
+def test_event_dt_tz_missing():
+    """localized event DTSTART;TZID=foo, but VTIMEZONE components missing"""
+    event_str = _get_text('event_dt_local_missing_tz')
+    event = Event.fromString(event_str, **EVENT_KWARGS)
+    assert event.start == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
+    assert event.end == BERLIN.localize(datetime(2014, 4, 9, 10, 30))
+    assert event.start_local == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
+    assert event.end_local == BERLIN.localize(datetime(2014, 4, 9, 10, 30))
+
+    event = Event.fromString(event_str, calendar='foobar', locale=MIXED_LOCALE)
+    assert event.start == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
+    assert event.end == BERLIN.localize(datetime(2014, 4, 9, 10, 30))
+    assert event.start_local == BOGOTA.localize(datetime(2014, 4, 9, 2, 30))
+    assert event.end_local == BOGOTA.localize(datetime(2014, 4, 9, 3, 30))
 
 
 def test_event_dt_rr():
@@ -217,9 +239,6 @@ def test_event_dt_long():
 
 def test_event_no_dst():
     """test the creation of a corect VTIMEZONE for timezones with no dst"""
-    BOGOTA_LOCALE = LOCALE.copy()
-    BOGOTA_LOCALE['local_timezone'] = BOGOTA
-    BOGOTA_LOCALE['default_timezone'] = BOGOTA
     event_no_dst = _get_text('event_no_dst')
     cal_no_dst = _get_text('cal_no_dst')
     event = Event.fromString(event_no_dst, calendar='foobar', locale=BOGOTA_LOCALE)
