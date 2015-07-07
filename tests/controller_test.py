@@ -65,6 +65,7 @@ def coll_vdirs(tmpdir):
         os.makedirs(path, mode=0o770)
         coll.append(Calendar(name, ':memory:', path, locale=locale))
         vdirs[name] = FilesystemStorage(path, '.ics')
+    coll.default_calendar_name = cal1
     return coll, vdirs
 
 
