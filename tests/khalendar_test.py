@@ -183,7 +183,6 @@ class TestCollection(object):
         coll.default_calendar_name = 'home'
         assert coll.default_calendar_name == 'home'
 
-
     def test_empty(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         start = datetime.datetime.combine(today, datetime.time.min)
