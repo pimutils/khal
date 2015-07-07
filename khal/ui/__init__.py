@@ -436,7 +436,7 @@ class EventEditor(urwid.WidgetWrap):
             decorate_choice
         )
         self.description = Edit(caption='Description: ',
-                                edit_text=self.description)
+                                edit_text=self.description, multiline=True)
         self.location = Edit(caption='Location: ',
                              edit_text=self.location)
         self.pile = urwid.ListBox(CSimpleFocusListWalker([
@@ -445,8 +445,8 @@ class EventEditor(urwid.WidgetWrap):
                 self.calendar_chooser
             ], dividechars=2),
             divider,
-            self.description,
             self.location,
+            self.description,
             divider,
             self.startendeditor,
             self.recursioneditor,
