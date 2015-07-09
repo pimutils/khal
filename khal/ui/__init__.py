@@ -326,12 +326,7 @@ class EventDisplay(urwid.WidgetWrap):
         divider = urwid.Divider(' ')
 
         lines = []
-        lines.append(urwid.Columns([
-            urwid.Text(event.vevent['SUMMARY']),
-            urwid.Text('Calendar: ' + event.calendar)
-        ], dividechars=2))
-
-        lines.append(divider)
+        lines.append(urwid.Text('Title: ' + event.vevent['SUMMARY']))
 
         # show organizer
         try:
@@ -341,16 +336,11 @@ class EventDisplay(urwid.WidgetWrap):
         except KeyError:
             pass
 
-        # description and location
-        for key, desc in [('LOCATION', 'Location'), ('DESCRIPTION', 'Description')]:
-            try:
-                lines.append(urwid.Text(
-                    desc + ': ' + to_unicode(event.vevent[key], 'utf-8')))
-            except KeyError:
-                pass
-
-        if lines[-1] != divider:
-            lines.append(divider)
+        try:
+            lines.append(urwid.Text(
+                'Location: ' + to_unicode(event.vevent['LOCATION'], 'utf-8')))
+        except KeyError:
+            pass
 
         # start and end time/date
         if event.allday:
@@ -372,10 +362,18 @@ class EventDisplay(urwid.WidgetWrap):
                 )
 
         if startstr == endstr:
-            lines.append(urwid.Text('On: ' + startstr))
+            lines.append(urwid.Text('Date: ' + startstr))
         else:
-            lines.append(urwid.Text('From: ' + startstr))
-            lines.append(urwid.Text('To: ' + endstr))
+            lines.append(urwid.Text('Date: ' + startstr + ' - ' + endstr))
+
+        lines.append(urwid.Text('Calendar: ' + event.calendar))
+
+        lines.append(divider)
+
+        try:
+            lines.append(urwid.Text(to_unicode(event.vevent['DESCRIPTION'], 'utf-8')))
+        except KeyError:
+            pass
 
         pile = CPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
