@@ -55,17 +55,17 @@ def delete_till_end_of_line(text):
     return text[text.find("\n"):]
 
 def goto_beginning_of_line(text):
-    """delete till beginning of line"""
     if text.rfind("\n") == -1:
         return 0;
     return text.rfind("\n") + 1
 
+def goto_end_of_line(text):
+    if text.find("\n") == -1:
+        return len(text)
+    return text.find("\n")
+
 
 class ExtendedEdit(urwid.Edit):
-    """Extended Edit Widget
-
-    at the moment we only support ctrl-w for deleting the word before the cursor
-    """
     def keypress(self, size, key):
         if key == 'ctrl w':
             self._delete_word()
@@ -75,6 +75,8 @@ class ExtendedEdit(urwid.Edit):
             self._delete_till_end_of_line()
         elif key == 'ctrl a':
             self._goto_beginning_of_line()
+        elif key == 'ctrl e':
+            self._goto_end_of_line()
         else:
             return super(ExtendedEdit, self).keypress(size, key)
 
@@ -101,6 +103,10 @@ class ExtendedEdit(urwid.Edit):
     def _goto_beginning_of_line(self):
         text = to_unicode(self.get_edit_text(), 'utf-8')
         self.set_edit_pos(goto_beginning_of_line(text[:self.edit_pos]))
+
+    def _goto_end_of_line(self):
+        text = to_unicode(self.get_edit_text(), 'utf-8')
+        self.set_edit_pos(goto_end_of_line(text[self.edit_pos:]) + self.edit_pos)
 
 class DateTimeWidget(ExtendedEdit):
 
