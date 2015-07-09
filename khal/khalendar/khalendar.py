@@ -343,7 +343,7 @@ class CalendarCollection(object):
 
     def new_event(self, ical, collection):
         """returns a new event"""
-        return self._calnames[collection].new_event(ical)
+        return self._calnames[collection or self.writable_names[0]].new_event(ical)
 
     def _db_needs_update(self):
         any([one._db_needs_update() for one in self.calendars])
