@@ -360,7 +360,7 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
     if dtend is None:
         dtend = dtstart + timedelta(minutes=60)
     if summary is None:
-        summary = 'New Event'
+        summary = ''
     if timezone is not None:
         dtstart = timezone.localize(dtstart)
         dtend = timezone.localize(dtend)
