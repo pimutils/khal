@@ -42,6 +42,11 @@ def delete_last_word(text, number=1):
         text = text[:len(text) - len(words[-one])]
     return text
 
+def delete_till_beginning_of_line(text):
+    """delete till beginning of line"""
+    if text.rfind("\n") == -1:
+        return ''
+    return text[0:text.rfind("\n") + 1]
 
 class ExtendedEdit(urwid.Edit):
     """Extended Edit Widget
@@ -51,6 +56,8 @@ class ExtendedEdit(urwid.Edit):
     def keypress(self, size, key):
         if key == 'ctrl w':
             self._delete_word()
+        elif key == 'ctrl u':
+            self._delete_line()
         else:
             return super(ExtendedEdit, self).keypress(size, key)
 
@@ -61,6 +68,12 @@ class ExtendedEdit(urwid.Edit):
         self.set_edit_text(f_text + text[self.edit_pos:])
         self.set_edit_pos(len(f_text))
 
+    def _delete_line(self):
+        """delete till start of line before cursor"""
+        text = to_unicode(self.get_edit_text(), 'utf-8')
+        f_text = delete_till_beginning_of_line(text[:self.edit_pos])
+        self.set_edit_text(f_text + text[self.edit_pos:])
+        self.set_edit_pos(len(f_text))
 
 class DateTimeWidget(ExtendedEdit):
 
