@@ -42,11 +42,13 @@ def delete_last_word(text, number=1):
         text = text[:len(text) - len(words[-one])]
     return text
 
+
 def delete_till_beginning_of_line(text):
     """delete till beginning of line"""
     if text.rfind("\n") == -1:
         return ''
     return text[0:text.rfind("\n") + 1]
+
 
 def delete_till_end_of_line(text):
     """delete till beginning of line"""
@@ -54,10 +56,12 @@ def delete_till_end_of_line(text):
         return ''
     return text[text.find("\n"):]
 
+
 def goto_beginning_of_line(text):
     if text.rfind("\n") == -1:
-        return 0;
+        return 0
     return text.rfind("\n") + 1
+
 
 def goto_end_of_line(text):
     if text.find("\n") == -1:
@@ -107,6 +111,7 @@ class ExtendedEdit(urwid.Edit):
     def _goto_end_of_line(self):
         text = to_unicode(self.get_edit_text(), 'utf-8')
         self.set_edit_pos(goto_end_of_line(text[self.edit_pos:]) + self.edit_pos)
+
 
 class DateTimeWidget(ExtendedEdit):
 
