@@ -131,7 +131,7 @@ class StartEndEditor(urwid.WidgetWrap):
                 [(datewidth, self.widgets.enddate),
                  (timewidth, self.widgets.endtime)],
                 dividechars=1)
-        ], focus_item=2)
+        ], focus_item=1)
         urwid.WidgetWrap.__init__(self, columns)
 
     @property
