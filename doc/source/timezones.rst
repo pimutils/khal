@@ -1,36 +1,43 @@
 Timezones
 =========
 Getting localized time right, seems to be the most difficult part about
-calendaring (and messing it up ends in missing the one imported meeting of the
+calendaring (and messing it up ends in missing the one important meeting of the
 week). So I'll briefly describe here, how khal tries to handle timezone
 information, which information it can handle and which it can't.
 
-All datetimes are saved to the local database as UTC Time. Datetimes that are
-already UTC Time, e.g. ``19980119T070000Z`` are saved as such. Datetimes in
-local time and with a time zone reference that khal can understand (Olson
-database) are converted to UTC and than saved, e.g.
-``TZID=America/New_York:19980119T020000``.  Floating times, e.g.
-``19980118T230000`` (datetimes which are neither UTC nor have a timezone
-specified) are treated as if the *default timezone* (specified in khal's
-config file, or you computer's time zone is used) was specified. Datetimes
-with a specified timezone that khal does not understand are treated as if they
-were floating time.
+In general, there are two different type of events. *Localized events* (with
+*localized* start and end datetimes) which have timezone information attached to
+their start and end datetimes, and *floating* events (with *floating* start and end
+datetimes), which have no timezone information attached (all-day events, events that
+last for complete days are floating as well). Localized events are always
+observed at the same UTC_ (no matter what time zone the observer is in), but
+different local times. On the other hand, floating events are always observed at
+the same local time, which might be different in UTC.
 
-khal expects you want *all* start and end dates displayed in *local time*
-(which can be configured in the config file, otherwise your computer's
-timezone is usued).
+In khal all localized datetimes are saved to the local database as UTC.
+Datetimes that are already UTC, e.g. ``19980119T070000Z``, are saved as such,
+others are converted to UTC (but don't worry, the timezone information does not
+get lost). Floating events get saved in floating time, independently of the
+localized events.
 
-``VTIMEZONE`` components of calendars are understood, but *only* if they are
-placed before the VEVENTS that use them (which every sensible calendar program
-seems to do). Valid OlsonDB values (which most calendar applications use),
-e.g. America/New_York are understood even if no ``VTIMEZONE`` component is
-present.
+If you want to look up which events take place at a specified datetime, khal
+always expects that you want to know what events take place at that *local*
+datetime. Therefore, the datetime you asked for gets converted to UTC, the
+appropriate *localized* events get selected and presented with their start and
+end datetimes *converted* to *your local datetime*. For floating events no
+conversion is necessary.
 
-To summarize: as long as you are always in the same timezone and your calendar
-is, too, khal probably shows the right start and end times. Otherwise: Good
-Luck!
+Khal (i.e. icalendar_) can understand all timezone identifiers as used in the
+`Olson DB`_ and custom timezone definitions, if those VTIMEZONE components are
+placed before the VEVENTS that make use of them (as most calendar programs seem
+to do). In case a unknown (or unsupported) timezone is found, khal will assume
+you want that event to be placed in the *default timezone* (which can be
+configured in the configuration file as well).
 
-Seriously: be careful when changing timezones and do check if khal shows the
-correct times anyway (and please report back if it doesn't). As a safe measure
-you might want to delete khal's database file after changing any timezone
-setting, so that floating time
+khal expects you *always* want *all* start and end datetimes displayed in
+*local time* (which can be set in the configuration file as well, otherwise
+your computer's timezone is used).
+
+.. _Olson DB: https://en.wikipedia.org/wiki/Tz_database
+.. _UTC: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
+.. _icalendar: https://github.com/collective/icalendar
