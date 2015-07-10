@@ -16,16 +16,24 @@ not released yet
   functionality when they should and being found when they shouldn't. As the
   second case should result in an error that nobody reported yet, I hope nobody
   got bitten by this.
-
-
-
 * new dependency for running the tests: freezegun
 * new dependency for setup: setuptools_scm
 * khal now needs to be installed for building the documentation
+
+* ikhal's should now support ctrl-e, ctrl-a, ctrl-k and ctrl-u in editable text
+  fields (Thomas Glanzmann)
+* ikhal: space and backspace are new (additional) default keybindings for right
+  and left (Pierre David)
+* when editing descriptions you can now insert new lines (Thomas Glanzmann)
+* khal should not choose an arbitrary default calendar anymore (Markus
+  Unterwaditzer)
+* the zsh completion file has been updated (Hugo Osvaldo Barrera)
+* new command `import` lets users import .ics files (Christian Geier)
+
 * khal should accept relative dates on the command line (today, tomorrow and 
-  weekday names)
+  weekday names) (Christian Geier)
 * keybinding for saving an event from ikhal's event editor (default is `meta +
-  center`)
+  center`) (Christian Geier)
 
 
 0.5.0
