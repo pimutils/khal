@@ -14,6 +14,15 @@ keybindings = {
 }
 
 
+def test_initial_focus_today():
+    today = date.today()
+    frame = CalendarWidget(on_date_change=lambda _: None,
+                           keybindings=keybindings,
+                           on_press=on_press,
+                           weeknumbers='right')
+    assert frame.focus_date == today
+
+
 def test_set_focus_date():
     today = date.today()
     for diff in range(-10, 10, 1):

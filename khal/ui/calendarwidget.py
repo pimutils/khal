@@ -210,10 +210,16 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
         :type: a_day: datetime.date
         """
+        # rough estimate of difference in lines, i.e. full weeks, we might be
+        # off by as much as one week though
         week_diff = int((self.focus_date - a_day).days / 7)
         new_focus = self.focus - week_diff
-        if new_focus <= 0:
-            self.set_focus(new_focus)
+        # in case new_focus is 1 we will later try set the focus to 0 which
+        # will lead to an autoprepend which will f*ck up our estimation,
+        # therefore better autoprepending anyway, even if it might not be
+        # necessary
+        if new_focus <= 1:
+            self.set_focus(new_focus - 1)
             week_diff = int((self.focus_date - a_day).days / 7)
             new_focus = self.focus - week_diff
         for offset in [0, -1, 1]:  # we might be off by a week
