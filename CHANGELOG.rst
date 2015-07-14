@@ -9,7 +9,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.6.0
 =====
-not released yet
+2015-07-15
 
 * BUGFIX Recurrent events with a THISANDFUTURE parameter could affect other
   events. This could lead to events not being found by the normal lookup
@@ -17,7 +17,7 @@ not released yet
   second case should result in an error that nobody reported yet, I hope nobody
   got bitten by this.
 * new dependency for running the tests: freezegun
-* new dependency for setup: setuptools_scm
+* new dependency for setup from scm: setuptools_scm
 * khal now needs to be installed for building the documentation
 
 * ikhal's should now support ctrl-e, ctrl-a, ctrl-k and ctrl-u in editable text
@@ -29,11 +29,10 @@ not released yet
   Unterwaditzer)
 * the zsh completion file has been updated (Hugo Osvaldo Barrera)
 * new command `import` lets users import .ics files (Christian Geier)
-
 * khal should accept relative dates on the command line (today, tomorrow and 
   weekday names) (Christian Geier)
 * keybinding for saving an event from ikhal's event editor (default is `meta +
-  center`) (Christian Geier)
+  enter`) (Christian Geier)
 
 
 0.5.0
