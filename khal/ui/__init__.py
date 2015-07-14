@@ -366,9 +366,7 @@ class EventDisplay(urwid.WidgetWrap):
             lines.append(urwid.Text('Date: ' + startstr))
         else:
             lines.append(urwid.Text('Date: ' + startstr + ' - ' + endstr))
-
         lines.append(divider)
-
 
         pile = CPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
@@ -477,8 +475,8 @@ class EventEditor(urwid.WidgetWrap):
             rrule = self.recursioneditor.active
             self.event.update_rrule(rrule)
 
-            #self.event.vevent.pop("RRULE")
-            #if rrule and rrule["freq"][0] != NOREPEAT:
+            # self.event.vevent.pop("RRULE")
+            # if rrule and rrule["freq"][0] != NOREPEAT:
             #    self.event.vevent.add("RRULE", rrule)
         # TODO self.newaccount = self.calendar_chooser.active ?
 
