@@ -333,13 +333,13 @@ class EventDisplay(urwid.WidgetWrap):
         lines.append(divider)
 
         # show organizer
-        if event.organizer is not None:
+        if event.organizer != '':
             lines.append(urwid.Text('Organizer: ' + event.organizer))
 
         # description and location
         for key, desc in [('location', 'Location'), ('description', 'Description')]:
             value = getattr(event, key)
-            if value is not None:
+            if value != '':
                 lines.append(urwid.Text(desc + ': ' + getattr(event, key)))
 
         if lines[-1] != divider:
