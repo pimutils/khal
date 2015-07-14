@@ -326,7 +326,7 @@ class EventDisplay(urwid.WidgetWrap):
 
         lines = []
         lines.append(urwid.Columns([
-            urwid.Text(event.summary),
+            urwid.Text('Title: ' + event.summary),
             urwid.Text('Calendar: ' + event.calendar)
         ], dividechars=2))
 
@@ -346,7 +346,6 @@ class EventDisplay(urwid.WidgetWrap):
             lines.append(divider)
 
         # start and end time/date
-
         if event.allday:
             startstr = event.start_local.strftime(self.conf['locale']['dateformat'])
             endstr = event.end_local.strftime(self.conf['locale']['dateformat'])
@@ -364,10 +363,12 @@ class EventDisplay(urwid.WidgetWrap):
                 )
 
         if startstr == endstr:
-            lines.append(urwid.Text('On: ' + startstr))
+            lines.append(urwid.Text('Date: ' + startstr))
         else:
-            lines.append(urwid.Text('From: ' + startstr))
-            lines.append(urwid.Text('To: ' + endstr))
+            lines.append(urwid.Text('Date: ' + startstr + ' - ' + endstr))
+
+        lines.append(divider)
+
 
         pile = CPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
@@ -417,7 +418,7 @@ class EventEditor(urwid.WidgetWrap):
             decorate_choice
         )
         self.description = Edit(caption='Description: ',
-                                edit_text=self.description)
+                                edit_text=self.description, multiline=True)
         self.location = Edit(caption='Location: ',
                              edit_text=self.location)
         self.pile = urwid.ListBox(CSimpleFocusListWalker([
@@ -426,8 +427,8 @@ class EventEditor(urwid.WidgetWrap):
                 self.calendar_chooser
             ], dividechars=2),
             divider,
-            self.description,
             self.location,
+            self.description,
             divider,
             self.startendeditor,
             self.recursioneditor,

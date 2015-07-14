@@ -43,14 +43,44 @@ def delete_last_word(text, number=1):
     return text
 
 
-class ExtendedEdit(urwid.Edit):
-    """Extended Edit Widget
+def delete_till_beginning_of_line(text):
+    """delete till beginning of line"""
+    if text.rfind("\n") == -1:
+        return ''
+    return text[0:text.rfind("\n") + 1]
 
-    at the moment we only support ctrl-w for deleting the word before the cursor
-    """
+
+def delete_till_end_of_line(text):
+    """delete till beginning of line"""
+    if text.find("\n") == -1:
+        return ''
+    return text[text.find("\n"):]
+
+
+def goto_beginning_of_line(text):
+    if text.rfind("\n") == -1:
+        return 0
+    return text.rfind("\n") + 1
+
+
+def goto_end_of_line(text):
+    if text.find("\n") == -1:
+        return len(text)
+    return text.find("\n")
+
+
+class ExtendedEdit(urwid.Edit):
     def keypress(self, size, key):
         if key == 'ctrl w':
             self._delete_word()
+        elif key == 'ctrl u':
+            self._delete_till_beginning_of_line()
+        elif key == 'ctrl k':
+            self._delete_till_end_of_line()
+        elif key == 'ctrl a':
+            self._goto_beginning_of_line()
+        elif key == 'ctrl e':
+            self._goto_end_of_line()
         else:
             return super(ExtendedEdit, self).keypress(size, key)
 
@@ -60,6 +90,27 @@ class ExtendedEdit(urwid.Edit):
         f_text = delete_last_word(text[:self.edit_pos])
         self.set_edit_text(f_text + text[self.edit_pos:])
         self.set_edit_pos(len(f_text))
+
+    def _delete_till_beginning_of_line(self):
+        """delete till start of line before cursor"""
+        text = to_unicode(self.get_edit_text(), 'utf-8')
+        f_text = delete_till_beginning_of_line(text[:self.edit_pos])
+        self.set_edit_text(f_text + text[self.edit_pos:])
+        self.set_edit_pos(len(f_text))
+
+    def _delete_till_end_of_line(self):
+        """delete till end of line before cursor"""
+        text = to_unicode(self.get_edit_text(), 'utf-8')
+        f_text = delete_till_end_of_line(text[self.edit_pos:])
+        self.set_edit_text(text[:self.edit_pos] + f_text)
+
+    def _goto_beginning_of_line(self):
+        text = to_unicode(self.get_edit_text(), 'utf-8')
+        self.set_edit_pos(goto_beginning_of_line(text[:self.edit_pos]))
+
+    def _goto_end_of_line(self):
+        text = to_unicode(self.get_edit_text(), 'utf-8')
+        self.set_edit_pos(goto_end_of_line(text[self.edit_pos:]) + self.edit_pos)
 
 
 class DateTimeWidget(ExtendedEdit):

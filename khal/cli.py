@@ -52,7 +52,7 @@ def time_args(f):
     return dates_arg(events_option(days_option(f)))
 
 
-def _calendar_select_callback(ctx, option, calendars):
+def _multi_calendar_select_callback(ctx, option, calendars):
     if not calendars:
         return
     if 'calendar_selection' in ctx.obj:
@@ -66,7 +66,7 @@ def _calendar_select_callback(ctx, option, calendars):
     if mode == 'include_calendar':
         for cal_name in calendars:
             if cal_name not in ctx.obj['conf']['calendars']:
-                raise click.UsageError(
+                raise click.BadParameter(
                     'Unknown calendar {}, run `khal printcalendars` to get a '
                     'list of all configured calendars.'.format(cal_name)
                 )
@@ -80,17 +80,40 @@ def _calendar_select_callback(ctx, option, calendars):
         raise ValueError(mode)
 
 
-def calendar_selector(f):
+def multi_calendar_option(f):
     a = click.option('--include-calendar', '-a', multiple=True, metavar='CAL',
-                     expose_value=False, callback=_calendar_select_callback,
+                     expose_value=False,
+                     callback=_multi_calendar_select_callback,
                      help=('Include the given calendar. Can be specified '
                            'multiple times.'))
     d = click.option('--exclude-calendar', '-d', multiple=True, metavar='CAL',
-                     expose_value=False, callback=_calendar_select_callback,
+                     expose_value=False,
+                     callback=_multi_calendar_select_callback,
                      help=('Exclude the given calendar. Can be specified '
                            'multiple times.'))
 
     return d(a(f))
+
+
+def _calendar_select_callback(ctx, option, calendar):
+    calendar = calendar or ctx.obj['conf']['default']['default_calendar']
+    if not calendar:
+        raise click.BadParameter(
+            'No default calendar is configured, '
+            'please provide one explicitly.'
+        )
+    if calendar not in ctx.obj['conf']['calendars']:
+        raise click.BadParameter(
+            'Unknown calendar {}, run `khal printcalendars` to get a '
+            'list of all configured calendars.'.format(calendar)
+        )
+
+    return calendar
+
+
+def calendar_option(f):
+    return click.option('--calendar', '-a', metavar='CAL',
+                        callback=_calendar_select_callback)(f)
 
 
 def global_options(f):
@@ -188,7 +211,7 @@ def _get_cli():
 
     @cli.command()
     @time_args
-    @calendar_selector
+    @multi_calendar_option
     @click.pass_context
     def calendar(ctx, days, events, dates):
         '''Print calendar with agenda.'''
@@ -206,7 +229,7 @@ def _get_cli():
 
     @cli.command()
     @time_args
-    @calendar_selector
+    @multi_calendar_option
     @click.pass_context
     def agenda(ctx, days, events, dates):
         '''Print agenda.'''
@@ -222,9 +245,7 @@ def _get_cli():
         )
 
     @cli.command()
-    @click.option('--include-calendar', '-a', help=('The calendar to use.'),
-                  expose_value=False, callback=_calendar_select_callback,
-                  metavar='CAL')
+    @calendar_option
     @click.option('--location', '-l',
                   help=('The location of the new event.'))
     @click.option('--repeat', '-r',
@@ -233,10 +254,11 @@ def _get_cli():
                   help=('Stop an event repeating on this date.'))
     @click.argument('description', nargs=-1, required=True)
     @click.pass_context
-    def new(ctx, description, location, repeat, until):
+    def new(ctx, calendar, description, location, repeat, until):
         '''Create a new event.'''
         controllers.new_from_string(
             build_collection(ctx),
+            calendar,
             ctx.obj['conf'],
             list(description),
             location=location,
@@ -277,14 +299,14 @@ def _get_cli():
         )
 
     @cli.command()
-    @calendar_selector
+    @multi_calendar_option
     @click.pass_context
     def interactive(ctx):
         '''Interactive UI. Also launchable via `ikhal`.'''
         controllers.interactive(build_collection(ctx), ctx.obj['conf'])
 
     @click.command()
-    @calendar_selector
+    @multi_calendar_option
     @global_options
     @click.pass_context
     def interactive_cli(ctx, config, verbose):
@@ -293,7 +315,7 @@ def _get_cli():
         controllers.interactive(build_collection(ctx), ctx.obj['conf'])
 
     @cli.command()
-    @calendar_selector
+    @multi_calendar_option
     @click.pass_context
     def printcalendars(ctx):
         '''List all calendars.'''
@@ -317,7 +339,7 @@ def _get_cli():
             click.echo('{}: {}'.format(strftime_format, dt_str))
 
     @cli.command()
-    @calendar_selector
+    @multi_calendar_option
     @click.argument('search_string')
     @click.pass_context
     def search(ctx, search_string):
@@ -339,7 +361,7 @@ def _get_cli():
         )
 
     @cli.command()
-    @calendar_selector
+    @multi_calendar_option
     @click.argument('datetime', required=False, nargs=-1)
     @click.pass_context
     def at(ctx, datetime=None):

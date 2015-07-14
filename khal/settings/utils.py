@@ -83,7 +83,7 @@ def test_default_calendar(config):
     value
     """
     if config['default']['default_calendar'] is None:
-        config['default']['default_calendar'] = config['calendars'].keys()[0]
+        pass
     elif config['default']['default_calendar'] not in config['calendars']:
         logger.fatal(
             "in section [default] {} is not valid for 'default_calendar', "

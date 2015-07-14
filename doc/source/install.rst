@@ -51,7 +51,8 @@ This should also take care of installing all required dependencies.
 Requirements
 ------------
 
-*khal* is written in python and, at the moment, only runs in python 2.7.
+*khal* is written in python and can run on Python 2.7 and 3.3+. It requires a
+Python with ``sqlite3`` support enabled (which is usually the case).
 
 If you are installing python via *pip* or from source, be aware that since
 *khal* indirectly depends on lxml_ you need to either install it via your

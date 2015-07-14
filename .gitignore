@@ -5,6 +5,7 @@ khal.egg-info/
 build/
 dist/
 .eggs/*
+*.egg
 *.db
 .tox
 .coverage

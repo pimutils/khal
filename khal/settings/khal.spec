@@ -117,10 +117,8 @@ save = force_list(default=list('meta enter'))
 # command to be executed if no command is given when executing khal
 default_command = option('calendar', 'agenda', 'interactive', 'printformats', 'printcalendars', '', default='calendar')
 
-# The calendar to use if no one is specified but only one can be used (e.g. if
-# adding a new event), this should be a valid calendar name. If this is not
-# configured an arbitrary calendar is used as the default calendar (the
-# arbitrary choice may not be the same at each run).
+# The calendar to use if none is specified for some operation (e.g. if adding a
+# new event). If this is not set, such operations requre an explicit value.
 default_calendar = string(default=None)
 
 # By default, khal displays only dates with event in "agenda" view.

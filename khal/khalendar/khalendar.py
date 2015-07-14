@@ -272,13 +272,23 @@ class CalendarCollection(object):
 
     @property
     def default_calendar_name(self):
-        if self._default_calendar_name in self.names:
-            return self._default_calendar_name
+        return self._default_calendar_name
+
+    @default_calendar_name.setter
+    def default_calendar_name(self, default):
+        if default is None:
+            self._default_calendar_name = default
+        elif default not in self.names:
+            raise ValueError('Unknown calendar: {}'
+                             .format(default))
+
+        readonly = self._calnames[default].readonly
+
+        if not readonly:
+            self._default_calendar_name = default
         else:
-            # we need that list becaus in python3 dict keys are set-like and
-            # don't support indexing
-            names = self.writable_names or list(self.names)
-            return names[0]
+            raise ValueError('Default calendar is read-only: {}'
+                             .format(default))
 
     def append(self, calendar):
         """append a new khalendar to this collection"""
@@ -333,7 +343,7 @@ class CalendarCollection(object):
 
     def new_event(self, ical, collection):
         """returns a new event"""
-        return self._calnames[collection].new_event(ical)
+        return self._calnames[collection or self.writable_names[0]].new_event(ical)
 
     def _db_needs_update(self):
         any([one._db_needs_update() for one in self.calendars])
