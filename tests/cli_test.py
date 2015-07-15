@@ -11,7 +11,7 @@ from click.testing import CliRunner
 from khal.compat import to_bytes
 from khal.cli import main_khal
 
-from aux import _get_text
+from .aux import _get_text
 
 
 class CustomCliRunner(CliRunner):
