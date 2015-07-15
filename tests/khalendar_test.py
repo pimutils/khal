@@ -15,7 +15,7 @@ from khal.khalendar.event import Event
 from khal.khalendar.backend import CouldNotCreateDbDir
 import khal.khalendar.exceptions
 
-from aux import _get_text
+from .aux import _get_text
 
 
 today = datetime.date.today()
