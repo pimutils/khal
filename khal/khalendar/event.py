@@ -138,6 +138,9 @@ class Event(object):
         events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
         return cls.fromVEvents(events, ref, **kwargs)
 
+    def __lt__(self, other):
+        return self.start_local <= other.start_local
+
     def update_start_end(self, start, end):
         """update start and end time of this event
 
