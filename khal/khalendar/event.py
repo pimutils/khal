@@ -116,7 +116,15 @@ class Event(object):
         else:
             for event in events_list:
                 if 'RECURRENCE-ID' in event:
-                    ident = str(to_unix_time(event['RECURRENCE-ID'].dt))
+                    # TODO extract to function
+                    if (hasattr(event['RECURRENCE-ID'].dt, 'tzinfo') and
+                            event['RECURRENCE-ID'].dt.tzinfo is None and
+                            'TZID' in event['RECURRENCE-ID'].params):
+                        default_timezone = kwargs['locale']['default_timezone']
+                        recur_id = default_timezone.localize(event['RECURRENCE-ID'].dt)
+                        ident = str(to_unix_time(recur_id))
+                    else:
+                        ident = str(to_unix_time(event['RECURRENCE-ID'].dt))
                     vevents[ident] = event
                 else:
                     vevents['PROTO'] = event
@@ -175,7 +183,7 @@ class Event(object):
     @property
     def recurpattern(self):
         if 'RRULE' in self._vevents[self.ref]:
-            return self._vevents[self.ref]['RRULE'].to_ical()
+            return self._vevents[self.ref]['RRULE'].to_ical().decode('utf-8')
         else:
             return ''
 

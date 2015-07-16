@@ -313,12 +313,7 @@ class SQLiteDb(object):
                 dbend = aux.to_unix_time(dtend)
 
                 if rec_id is not None:
-                    recstart = rec_id.dt
-                    if recstart.tzinfo is None:
-                        recstart = self.locale['default_timezone'].localize(recstart)
-                    recstart = str(aux.to_unix_time(recstart))
-                    rec_inst = recstart
-                    ref = rec_inst
+                    ref = rec_inst = str(aux.to_unix_time(rec_id.dt))
                 else:
                     rec_inst = dbstart
                     ref = PROTO

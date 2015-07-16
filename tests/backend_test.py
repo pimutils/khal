@@ -41,7 +41,6 @@ def test_event_rrule_recurrence_id():
     assert events[5].start == BERLIN.localize(datetime(2014, 8, 4, 7, 0))
 
 
-@pytest.mark.xfail
 def test_event_rrule_recurrence_id_invalid_tzid():
     dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE)
     dbi.update(_get_text('event_rrule_recuid_invalid_tzid'), href='12345.ics', etag='abcd')
