@@ -23,6 +23,7 @@
 from datetime import date, datetime, timedelta
 import re
 
+import sys
 import urwid
 
 from ..compat import to_unicode
@@ -111,6 +112,19 @@ class ExtendedEdit(urwid.Edit):
     def _goto_end_of_line(self):
         text = to_unicode(self.get_edit_text(), 'utf-8')
         self.set_edit_pos(goto_end_of_line(text[self.edit_pos:]) + self.edit_pos)
+
+    def _normalize_to_caption(self, text):
+        """
+        Return text converted to the same type as self.caption
+        (bytes or unicode)
+        """
+        tu = isinstance(text, unicode)
+        cu = isinstance(self._caption, unicode)
+        if tu == cu:
+            return text
+        if tu:
+            return text.encode('ascii')  # follow python2's implicit conversion
+        return text.decode(sys.stdin.encoding)
 
 
 class DateTimeWidget(ExtendedEdit):
