@@ -285,6 +285,7 @@ class RecursionEditor(urwid.WidgetWrap):
 
     def __init__(self, rrule):
         # TODO: actually implement the Recursion Editor
+
         self.rrule = rrule
         recursive = self.rrule['freq'][0].lower() if self.rrule else NOREPEAT
         self.recursion_choice = Choice(

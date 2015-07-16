@@ -187,7 +187,16 @@ class Event(object):
         else:
             return ''
 
+    @property
+    def recurobject(self):
+        if 'RRULE' in self._vevents[self.ref]:
+            return self._vevents[self.ref]['RRULE']
+        else:
+            return None
+
     def update_rrule(self, rrule):
+        self._vevents['PROTO'].pop('RRULE')
+        self._vevent['PROTO'].add('RRULE', rrule)
         raise NotImplementedError()
 
     def increment_sequence(self):

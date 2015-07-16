@@ -5,6 +5,8 @@ from datetime import datetime, date, timedelta
 import pytest
 import pytz
 
+from icalendar import vRecur
+
 from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent, FloatingEvent
 
 from .aux import normalize_component, _get_text
@@ -269,3 +271,10 @@ def test_multi_uid():
     event = Event.fromString(orig_event_str, **EVENT_KWARGS)
     for line in orig_event_str.split('\n'):
         assert line in event.raw.split('\r\n')
+
+
+def test_recur():
+    event = Event.fromString(_get_text('event_dt_rr'), **EVENT_KWARGS)
+    assert event.recurring is True
+    assert event.recurpattern == 'FREQ=DAILY;COUNT=10'
+    assert event.recurobject == vRecur({'COUNT': [10], 'FREQ': ['DAILY']})
