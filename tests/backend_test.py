@@ -40,7 +40,22 @@ def test_event_rrule_recurrence_id():
     assert events[4].start == BERLIN.localize(datetime(2014, 7, 28, 7, 0))
     assert events[5].start == BERLIN.localize(datetime(2014, 8, 4, 7, 0))
 
-    assert dbi
+
+@pytest.mark.xfail
+def test_event_rrule_recurrence_id_invalid_tzid():
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE)
+    dbi.update(_get_text('event_rrule_recuid_invalid_tzid'), href='12345.ics', etag='abcd')
+    events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
+    events = sorted(events)
+    assert len(events) == 6
+
+    assert events[0].start == BERLIN.localize(datetime(2014, 6, 30, 7, 0))
+    assert events[1].start == BERLIN.localize(datetime(2014, 7, 7, 9, 0))
+    assert events[2].start == BERLIN.localize(datetime(2014, 7, 14, 7, 0))
+    assert events[3].start == BERLIN.localize(datetime(2014, 7, 21, 7, 0))
+    assert events[4].start == BERLIN.localize(datetime(2014, 7, 28, 7, 0))
+    assert events[5].start == BERLIN.localize(datetime(2014, 8, 4, 7, 0))
+
 
 event_rrule_recurrence_id_reverse = """
 BEGIN:VCALENDAR

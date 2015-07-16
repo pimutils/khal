@@ -128,24 +128,22 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     :returns: clean vevent
     :rtype: icalendar.cal.event
     """
+    # TODO do this for everything where a TZID can appear (RDATE, EXDATE,
+    # RRULE:UNTIL)
+    for prop in ['DTSTART', 'DTEND', 'DUE', 'RECURRENCE-ID']:
+        if (prop in vevent and
+                hasattr(vevent[prop], 'dt') and
+                hasattr(vevent[prop].dt, 'tzinfo') and
+                vevent[prop].dt.tzinfo is None and
+                'TZID' in vevent[prop].params):
+            value = default_timezone.localize(vevent.pop(prop).dt)
+            vevent.add(prop, value)
+            logger.warn('{} has invalid or incomprehensible timezone '
+                        'information in {} in {}'.format(prop, href, calendar))
     vdtstart = vevent.pop('DTSTART', None)
     vdtend = vevent.pop('DTEND', None)
     dtstart = getattr(vdtstart, 'dt', None)
     dtend = getattr(vdtend, 'dt', None)
-    if (vdtstart is not None and
-            hasattr(vdtstart, 'dt') and
-            hasattr(vdtstart.dt, 'tzinfo') and
-            vdtstart.dt.tzinfo is None and
-            'TZID' in vdtstart.params):
-        dtstart = default_timezone.localize(dtstart)
-        logger.warn('end has invalid or incomprehensible timezone information in {} in {}'.format(href, calendar))
-    if (vdtend is not None and
-            hasattr(vdtend, 'dt') and
-            hasattr(vdtend.dt, 'tzinfo') and
-            vdtend.dt.tzinfo is None and
-            'TZID' in vdtend.params):
-        dtend = default_timezone.localize(dtend)
-        logger.warn('start has invalid or incomprehensible timezone information in {} in {}'.format(href, calendar))
 
     if dtstart is None:
         raise ValueError('Event has no start time (DTSTART).')

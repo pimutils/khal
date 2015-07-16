@@ -6,6 +6,9 @@ import pytz
 
 from khal.khalendar import aux
 
+
+# FIXME this file is in urgent need of a clean up
+
 # datetime
 event_dt = """BEGIN:VCALENDAR
 CALSCALE:GREGORIAN
