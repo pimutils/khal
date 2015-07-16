@@ -225,7 +225,7 @@ def import_event(vevent, collection, locale, batch, random_uid):
         if not batch:
             event = Event.fromVEvents(
                 [sub_event], calendar=collection.default_calendar_name, locale=locale)
-            echo(event.long())
+            echo(event.event_description)
 
     # get the calendar to insert into
     if batch or len(collection.writable_names) == 1:
