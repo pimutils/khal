@@ -435,6 +435,7 @@ class TestExpandNoRR(object):
         exdate
         """
         vevent = _get_vevent_file('event_dtr_no_tz_exdatez')
+        vevent = aux.sanitize(vevent, berlin, '', '')
         dtstart = aux.expand(vevent, berlin)
         assert len(dtstart) == 5
         dtstarts = [start for start, end in dtstart]
@@ -451,6 +452,7 @@ class TestExpandNoRR(object):
         exdate
         """
         vevent = _get_vevent_file('event_dtr_notz_untilz')
+        vevent = aux.sanitize(vevent, new_york, '', '')
         dtstart = aux.expand(vevent, new_york)
         assert len(dtstart) == 7
         dtstarts = [start for start, end in dtstart]
@@ -708,20 +710,20 @@ END:VCALENDAR
 """
 
 
-class TestSenitize(object):
+class TestSanitize(object):
 
     def test_noend_date(self):
         vevent = _get_vevent(noend_date)
-        vevent = aux.sanitize(vevent)
+        vevent = aux.sanitize(vevent, berlin, '', '')
         assert vevent['DTSTART'].dt == datetime.date(2014, 8, 29)
         assert vevent['DTEND'].dt == datetime.date(2014, 8, 30)
 
     def test_noend_datetime(self):
         vevent = _get_vevent(noend_datetime)
-        vevent = aux.sanitize(vevent)
+        vevent = aux.sanitize(vevent, berlin, '', '')
         assert vevent['DTSTART'].dt == datetime.date(2014, 8, 29)
         assert vevent['DTEND'].dt == datetime.date(2014, 8, 30)
 
     def test_duration(self):
         vevent = _get_vevent_file('event_dtr_exdatez')
-        vevent = aux.sanitize(vevent)
+        vevent = aux.sanitize(vevent, berlin, '', '')

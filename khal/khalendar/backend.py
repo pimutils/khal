@@ -242,7 +242,8 @@ class SQLiteDb(object):
             raise ValueError('href may not be None')
         ical = icalendar.Event.from_ical(vevent_str)
 
-        vevents = (aux.sanitize(c) for c in ical.walk() if c.name == 'VEVENT')
+        vevents = (aux.sanitize(c, self.locale['default_timezone'], href, self.calendar) for
+                   c in ical.walk() if c.name == 'VEVENT')
         # Need to delete the whole event in case we are updating a
         # recurring event with an event which is either not recurring any
         # more or has EXDATEs, as those would be left in the recursion
@@ -290,7 +291,7 @@ class SQLiteDb(object):
             start_shift = start_shift.days * 3600 * 24 + start_shift.seconds
             duration = duration.days * 3600 * 24 + duration.seconds
 
-        dtstartend = aux.expand(vevent, self.locale['default_timezone'], href)
+        dtstartend = aux.expand(vevent, href)
         if not dtstartend:
             # Does this event even have dates? Technically it is possible for
             # events to be empty/non-existent by deleting all their recurrences
@@ -308,10 +309,6 @@ class SQLiteDb(object):
                     rec_inst = dbstart
                     ref = PROTO
             else:
-                if dtstart.tzinfo is None:
-                    dtstart = self.locale['default_timezone'].localize(dtstart)
-                if dtend.tzinfo is None:
-                    dtend = self.locale['default_timezone'].localize(dtend)
                 dbstart = aux.to_unix_time(dtstart)
                 dbend = aux.to_unix_time(dtend)
 
