@@ -170,7 +170,7 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None, r
     except FatalError:
         sys.exit(1)
     event = Event.fromVEvents(
-        [event], calendar=collection.default_calendar_name, locale=conf['locale'])
+        [event], calendar=calendar_name, locale=conf['locale'])
 
     try:
         collection.new(event)
