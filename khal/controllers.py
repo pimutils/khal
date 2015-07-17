@@ -105,10 +105,11 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
         daylist.sort()
 
     daylist = construct_daynames(daylist, locale['longdateformat'])
+    localize = locale['local_timezone'].localize
 
     for day, dayname in daylist:
-        start = datetime.datetime.combine(day, datetime.time.min)
-        end = datetime.datetime.combine(day, datetime.time.max)
+        start = localize(datetime.datetime.combine(day, datetime.time.min))
+        end = localize(datetime.datetime.combine(day, datetime.time.max))
 
         # TODO unify allday and datetime events
         all_day_events = collection.get_allday_by_time_range(day)

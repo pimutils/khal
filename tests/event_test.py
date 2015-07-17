@@ -238,14 +238,10 @@ def test_event_d_long():
 def test_event_dt_long():
     event_dt_long = _get_text('event_dt_long')
     event = Event.fromString(event_dt_long, **EVENT_KWARGS)
-    with pytest.raises(ValueError):
-        event.relative_to(date(2014, 4, 8))
     assert event.relative_to(date(2014, 4, 9)) == u'09:30→ : An Event'
     # FIXME ugly! replace with one arrow
     assert event.relative_to(date(2014, 4, 10)) == u'→ → : An Event'
     assert event.relative_to(date(2014, 4, 12)) == u'→ 10:30: An Event'
-    with pytest.raises(ValueError):
-        event.relative_to(date(2014, 4, 13))
     assert event.event_description == u'09.04.2014 09:30 - 12.04.2014 10:30: An Event'
 
 

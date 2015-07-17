@@ -141,8 +141,9 @@ class EventList(urwid.WidgetWrap):
     def update(self, this_date=date.today()):
         if this_date is None:   # this_date might be None
             return
-        start = datetime.combine(this_date, time.min)
-        end = datetime.combine(this_date, time.max)
+        local_tz = self.eventcolumn.pane.conf['locale']['local_timezone']
+        start = local_tz.localize(datetime.combine(this_date, time.min))
+        end = local_tz.localize(datetime.combine(this_date, time.max))
 
         date_text = urwid.Text(
             this_date.strftime(self.eventcolumn.pane.conf['locale']['longdateformat']))

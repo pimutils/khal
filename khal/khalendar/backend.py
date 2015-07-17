@@ -35,7 +35,6 @@ import contextlib
 from datetime import datetime, timedelta
 from os import makedirs, path
 import sqlite3
-import time
 
 from dateutil import parser
 import icalendar
@@ -388,8 +387,12 @@ class SQLiteDb(object):
         :type end: datetime.datetime
         """
         # XXX rename get_localized_range()
-        start = time.mktime(start.timetuple())
-        end = time.mktime(end.timetuple())
+        if start.tzinfo is None:
+            start = self.locale['local_timezone'].localize(start)
+        if end.tzinfo is None:
+            end = self.locale['local_timezone'].localize(end)
+        start = aux.to_unix_time(start)
+        end = aux.to_unix_time(end)
         sql_s = ('SELECT recs_loc.href, dtstart, dtend, ref, dtype FROM '
                  'recs_loc JOIN events ON '
                  'recs_loc.href = events.href AND '

@@ -356,9 +356,6 @@ class Event(object):
         if isinstance(day, datetime) or not isinstance(day, date):
             raise ValueError('`this_date` is of type `{}`, should be '
                              '`datetime.date`'.format(type(day)))
-        if day < self.start.date() or day > self.end.date():
-            raise ValueError(
-                'please supply a `day` this event is scheduled on')
 
         day_start = self._locale['local_timezone'].localize(datetime.combine(day, time.min))
         day_end = self._locale['local_timezone'].localize(datetime.combine(day, time.max))

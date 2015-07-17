@@ -42,9 +42,13 @@ cal3 = 'private'
 
 example_cals = [cal1, cal2, cal3]
 berlin = pytz.timezone('Europe/Berlin')
+SAMOA = pytz.timezone('Pacific/Samoa')
 locale = {'default_timezone': berlin,
           'local_timezone': berlin,
           }
+LOCALE_SAMOA = {'default_timezone': SAMOA,
+                'local_timezone': SAMOA,
+                }
 
 
 @pytest.fixture
@@ -164,7 +168,9 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         event = Event.fromString(event_dt, calendar='foo', locale=locale)
         coll.new(event, cal1)
-        events = coll.get_datetime_by_time_range(aday, bday)
+        start = datetime.combine(aday, time.min)
+        end = datetime.combine(bday, time.max)
+        events = coll.get_datetime_by_time_range(start, end)
         assert len(events) == 1
         assert events[0].color == 'dark blue'
         assert events[0].calendar == cal1
