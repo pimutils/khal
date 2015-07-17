@@ -397,11 +397,7 @@ class EventEditor(urwid.WidgetWrap):
 
         self.startendeditor = StartEndEditor(
             event.start_local, event.end_local, self.conf, self.pane.eventscolumn.set_current_date)
-        try:
-            rrule = self.event.recurpattern
-        except KeyError:
-            rrule = None
-        self.recursioneditor = RecursionEditor(rrule)
+        self.recursioneditor = RecursionEditor(self.event.recurobject)
         self.summary = Edit(edit_text=event.summary)
 
         divider = urwid.Divider(' ')

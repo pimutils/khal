@@ -192,12 +192,11 @@ class Event(object):
         if 'RRULE' in self._vevents[self.ref]:
             return self._vevents[self.ref]['RRULE']
         else:
-            return None
+            return icalendar.vRecur()
 
     def update_rrule(self, rrule):
         self._vevents['PROTO'].pop('RRULE')
-        self._vevent['PROTO'].add('RRULE', rrule)
-        raise NotImplementedError()
+        self._vevents['PROTO'].add('RRULE', rrule)
 
     def increment_sequence(self):
         """update the SEQUENCE number, call before saving this event"""
