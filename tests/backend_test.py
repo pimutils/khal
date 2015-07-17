@@ -11,19 +11,24 @@ from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 
 from .aux import _get_text
 
-berlin = pytz.timezone('Europe/Berlin')
-locale = {'local_timezone': berlin, 'default_timezone': berlin}
+BERLIN = pytz.timezone('Europe/Berlin')
+LONDON = pytz.timezone('Europe/London')
+SAMOA = pytz.timezone('Pacific/Samoa')
+SYDNEY = pytz.timezone('Australia/Sydney')
+LOCALE_BERLIN = {'local_timezone': BERLIN, 'default_timezone': BERLIN}
+LOCALE_SAMOA = {'local_timezone': SAMOA, 'default_timezone': SAMOA}
+LOCALE_SYDNEY = {'local_timezone': SYDNEY, 'default_timezone': SYDNEY}
 
 
 def test_new_db_version():
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     backend.DB_VERSION += 1
     with pytest.raises(OutdatedDbVersionError):
         dbi._check_table_version()
 
 
 def test_event_rrule_recurrence_id():
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     assert dbi.list() == list()
     events = dbi.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
     assert list(events) == list()
@@ -33,14 +38,62 @@ def test_event_rrule_recurrence_id():
     events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
-    assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
-    assert events[1].start == berlin.localize(datetime(2014, 7, 7, 9, 0))
-    assert events[2].start == berlin.localize(datetime(2014, 7, 14, 7, 0))
-    assert events[3].start == berlin.localize(datetime(2014, 7, 21, 7, 0))
-    assert events[4].start == berlin.localize(datetime(2014, 7, 28, 7, 0))
-    assert events[5].start == berlin.localize(datetime(2014, 8, 4, 7, 0))
+    assert events[0].start == BERLIN.localize(datetime(2014, 6, 30, 7, 0))
+    assert events[1].start == BERLIN.localize(datetime(2014, 7, 7, 9, 0))
+    assert events[2].start == BERLIN.localize(datetime(2014, 7, 14, 7, 0))
+    assert events[3].start == BERLIN.localize(datetime(2014, 7, 21, 7, 0))
+    assert events[4].start == BERLIN.localize(datetime(2014, 7, 28, 7, 0))
+    assert events[5].start == BERLIN.localize(datetime(2014, 8, 4, 7, 0))
 
-    assert dbi
+
+def test_event_different_timezones():
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
+    dbi.update(_get_text('event_dt_london'), href='12345.ics', etag='abcd')
+
+    events = dbi.get_time_range(datetime(2014, 4, 9, 0, 0), datetime(2014, 4, 9, 23, 59))
+    events = list(events)
+    assert len(events) == 1
+    event = events[0]
+    assert event.start_local == LONDON.localize(datetime(2014, 4, 9, 14))
+    assert event.end_local == LONDON.localize(datetime(2014, 4, 9, 19))
+
+    # no event scheduled on the next day
+    events = dbi.get_time_range(datetime(2014, 4, 10, 0, 0), datetime(2014, 4, 10, 23, 59))
+    events = list(events)
+    assert len(events) == 0
+
+    # now setting the local_timezone to Sydney
+    dbi.locale = LOCALE_SYDNEY
+    events = dbi.get_time_range(datetime(2014, 4, 9, 0, 0), datetime(2014, 4, 9, 23, 59))
+    events = list(events)
+    assert len(events) == 1
+    event = events[0]
+    assert event.start_local == SYDNEY.localize(datetime(2014, 4, 9, 23))
+    assert event.end_local == SYDNEY.localize(datetime(2014, 4, 10, 4))
+
+    # the event now spans the midnight, therefor it should also show up on the
+    # next day
+    events = dbi.get_time_range(datetime(2014, 4, 10, 0, 0), datetime(2014, 4, 10, 23, 59))
+    events = list(events)
+    assert len(events) == 1
+    assert event.start_local == SYDNEY.localize(datetime(2014, 4, 9, 23))
+    assert event.end_local == SYDNEY.localize(datetime(2014, 4, 10, 4))
+
+
+def test_event_rrule_recurrence_id_invalid_tzid():
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
+    dbi.update(_get_text('event_rrule_recuid_invalid_tzid'), href='12345.ics', etag='abcd')
+    events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
+    events = sorted(events)
+    assert len(events) == 6
+
+    assert events[0].start == BERLIN.localize(datetime(2014, 6, 30, 7, 0))
+    assert events[1].start == BERLIN.localize(datetime(2014, 7, 7, 9, 0))
+    assert events[2].start == BERLIN.localize(datetime(2014, 7, 14, 7, 0))
+    assert events[3].start == BERLIN.localize(datetime(2014, 7, 21, 7, 0))
+    assert events[4].start == BERLIN.localize(datetime(2014, 7, 28, 7, 0))
+    assert events[5].start == BERLIN.localize(datetime(2014, 8, 4, 7, 0))
+
 
 event_rrule_recurrence_id_reverse = """
 BEGIN:VCALENDAR
@@ -66,7 +119,7 @@ def test_event_rrule_recurrence_id_reverse():
     """as icalendar elements can be saved in arbitrary order, we also have to
     deal with `reverse` ordered icalendar files
     """
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     assert dbi.list() == list()
     events = dbi.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
     assert list(events) == list()
@@ -76,12 +129,12 @@ def test_event_rrule_recurrence_id_reverse():
     events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
-    assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
-    assert events[1].start == berlin.localize(datetime(2014, 7, 7, 9, 0))
-    assert events[2].start == berlin.localize(datetime(2014, 7, 14, 7, 0))
-    assert events[3].start == berlin.localize(datetime(2014, 7, 21, 7, 0))
-    assert events[4].start == berlin.localize(datetime(2014, 7, 28, 7, 0))
-    assert events[5].start == berlin.localize(datetime(2014, 8, 4, 7, 0))
+    assert events[0].start == BERLIN.localize(datetime(2014, 6, 30, 7, 0))
+    assert events[1].start == BERLIN.localize(datetime(2014, 7, 7, 9, 0))
+    assert events[2].start == BERLIN.localize(datetime(2014, 7, 14, 7, 0))
+    assert events[3].start == BERLIN.localize(datetime(2014, 7, 21, 7, 0))
+    assert events[4].start == BERLIN.localize(datetime(2014, 7, 28, 7, 0))
+    assert events[5].start == BERLIN.localize(datetime(2014, 8, 4, 7, 0))
 
 
 def test_event_rrule_recurrence_id_update_with_exclude():
@@ -89,21 +142,31 @@ def test_event_rrule_recurrence_id_update_with_exclude():
     test if updates work as they should. The updated event has the extra
     RECURRENCE-ID event removed and one recurrence date excluded via EXDATE
     """
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     dbi.update(_get_text('event_rrule_recuid'), href='12345.ics', etag='abcd')
     dbi.update(_get_text('event_rrule_recuid_update'), href='12345.ics', etag='abcd')
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
     events = sorted(events, key=lambda x: x.start)
     assert len(events) == 5
-    assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
-    assert events[1].start == berlin.localize(datetime(2014, 7, 7, 7, 0))
-    assert events[2].start == berlin.localize(datetime(2014, 7, 21, 7, 0))
-    assert events[3].start == berlin.localize(datetime(2014, 7, 28, 7, 0))
-    assert events[4].start == berlin.localize(datetime(2014, 8, 4, 7, 0))
+    assert events[0].start == BERLIN.localize(datetime(2014, 6, 30, 7, 0))
+    assert events[1].start == BERLIN.localize(datetime(2014, 7, 7, 7, 0))
+    assert events[2].start == BERLIN.localize(datetime(2014, 7, 21, 7, 0))
+    assert events[3].start == BERLIN.localize(datetime(2014, 7, 28, 7, 0))
+    assert events[4].start == BERLIN.localize(datetime(2014, 8, 4, 7, 0))
+
+
+def test_no_valid_timezone():
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
+    dbi.update(_get_text('event_dt_local_missing_tz'), href='12345.ics', etag='abcd')
+    events = dbi.get_time_range(datetime(2014, 4, 9, 0, 0), datetime(2014, 4, 10, 0, 0))
+    events = sorted(list(events))
+    assert len(events) == 1
+    event = events[0]
+    assert event.start == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
 
 
 def test_event_delete():
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     assert dbi.list() == list()
     events = dbi.get_time_range(datetime(2014, 6, 30, 0, 0), datetime(2014, 7, 26, 0, 0))
     assert list(events) == list()
@@ -137,7 +200,7 @@ END:VCALENDAR
 
 
 def test_this_and_prior():
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     with pytest.raises(UpdateFailed):
         dbi.update(event_rrule_this_and_prior, href='12345.ics', etag='abcd')
 
@@ -165,30 +228,31 @@ event_rrule_this_and_future = \
 
 
 def test_event_rrule_this_and_future():
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     dbi.update(event_rrule_this_and_future, href='12345.ics', etag='abcd')
     assert dbi.list() == [('12345.ics', 'abcd')]
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
     events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
-    assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
-    assert events[1].start == berlin.localize(datetime(2014, 7, 7, 9, 0))
-    assert events[2].start == berlin.localize(datetime(2014, 7, 14, 9, 0))
-    assert events[3].start == berlin.localize(datetime(2014, 7, 21, 9, 0))
-    assert events[4].start == berlin.localize(datetime(2014, 7, 28, 9, 0))
-    assert events[5].start == berlin.localize(datetime(2014, 8, 4, 9, 0))
+    assert events[0].start == BERLIN.localize(datetime(2014, 6, 30, 7, 0))
+    assert events[1].start == BERLIN.localize(datetime(2014, 7, 7, 9, 0))
+    assert events[2].start == BERLIN.localize(datetime(2014, 7, 14, 9, 0))
+    assert events[3].start == BERLIN.localize(datetime(2014, 7, 21, 9, 0))
+    assert events[4].start == BERLIN.localize(datetime(2014, 7, 28, 9, 0))
+    assert events[5].start == BERLIN.localize(datetime(2014, 8, 4, 9, 0))
 
-    assert events[0].end == berlin.localize(datetime(2014, 6, 30, 12, 0))
-    assert events[1].end == berlin.localize(datetime(2014, 7, 7, 18, 0))
-    assert events[2].end == berlin.localize(datetime(2014, 7, 14, 18, 0))
-    assert events[3].end == berlin.localize(datetime(2014, 7, 21, 18, 0))
-    assert events[4].end == berlin.localize(datetime(2014, 7, 28, 18, 0))
-    assert events[5].end == berlin.localize(datetime(2014, 8, 4, 18, 0))
+    assert events[0].end == BERLIN.localize(datetime(2014, 6, 30, 12, 0))
+    assert events[1].end == BERLIN.localize(datetime(2014, 7, 7, 18, 0))
+    assert events[2].end == BERLIN.localize(datetime(2014, 7, 14, 18, 0))
+    assert events[3].end == BERLIN.localize(datetime(2014, 7, 21, 18, 0))
+    assert events[4].end == BERLIN.localize(datetime(2014, 7, 28, 18, 0))
+    assert events[5].end == BERLIN.localize(datetime(2014, 8, 4, 18, 0))
 
-    assert unicode_type(events[0].vevent['SUMMARY']) == u'Arbeit'
-    for event in events[1:]:
-        assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
+    assert unicode_type(events[0].summary) == u'Arbeit'
+    for num, event in enumerate(events[1:]):
+        event.raw
+        assert unicode_type(event.summary) == u'Arbeit (lang)'
 
 
 event_rrule_this_and_future_multi_day_shift = \
@@ -196,30 +260,30 @@ event_rrule_this_and_future_multi_day_shift = \
 
 
 def test_event_rrule_this_and_future_multi_day_shift():
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     dbi.update(event_rrule_this_and_future_multi_day_shift, href='12345.ics', etag='abcd')
     assert dbi.list() == [('12345.ics', 'abcd')]
     events = dbi.get_time_range(datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 26, 0, 0))
     events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
-    assert events[0].start == berlin.localize(datetime(2014, 6, 30, 7, 0))
-    assert events[1].start == berlin.localize(datetime(2014, 7, 8, 9, 0))
-    assert events[2].start == berlin.localize(datetime(2014, 7, 15, 9, 0))
-    assert events[3].start == berlin.localize(datetime(2014, 7, 22, 9, 0))
-    assert events[4].start == berlin.localize(datetime(2014, 7, 29, 9, 0))
-    assert events[5].start == berlin.localize(datetime(2014, 8, 5, 9, 0))
+    assert events[0].start == BERLIN.localize(datetime(2014, 6, 30, 7, 0))
+    assert events[1].start == BERLIN.localize(datetime(2014, 7, 8, 9, 0))
+    assert events[2].start == BERLIN.localize(datetime(2014, 7, 15, 9, 0))
+    assert events[3].start == BERLIN.localize(datetime(2014, 7, 22, 9, 0))
+    assert events[4].start == BERLIN.localize(datetime(2014, 7, 29, 9, 0))
+    assert events[5].start == BERLIN.localize(datetime(2014, 8, 5, 9, 0))
 
-    assert events[0].end == berlin.localize(datetime(2014, 6, 30, 12, 0))
-    assert events[1].end == berlin.localize(datetime(2014, 7, 9, 15, 0))
-    assert events[2].end == berlin.localize(datetime(2014, 7, 16, 15, 0))
-    assert events[3].end == berlin.localize(datetime(2014, 7, 23, 15, 0))
-    assert events[4].end == berlin.localize(datetime(2014, 7, 30, 15, 0))
-    assert events[5].end == berlin.localize(datetime(2014, 8, 6, 15, 0))
+    assert events[0].end == BERLIN.localize(datetime(2014, 6, 30, 12, 0))
+    assert events[1].end == BERLIN.localize(datetime(2014, 7, 9, 15, 0))
+    assert events[2].end == BERLIN.localize(datetime(2014, 7, 16, 15, 0))
+    assert events[3].end == BERLIN.localize(datetime(2014, 7, 23, 15, 0))
+    assert events[4].end == BERLIN.localize(datetime(2014, 7, 30, 15, 0))
+    assert events[5].end == BERLIN.localize(datetime(2014, 8, 6, 15, 0))
 
-    assert unicode_type(events[0].vevent['SUMMARY']) == u'Arbeit'
+    assert unicode_type(events[0].summary) == u'Arbeit'
     for event in events[1:]:
-        assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
+        assert unicode_type(event.summary) == u'Arbeit (lang)'
 
 event_rrule_this_and_future_allday_temp = """
 BEGIN:VCALENDAR
@@ -260,7 +324,7 @@ def get_allday_range(dbi, start, end):
 
 
 def test_event_rrule_this_and_future_allday():
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     dbi.update(event_rrule_this_and_future_allday,
                href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
@@ -274,22 +338,22 @@ def test_event_rrule_this_and_future_allday():
     assert events[4].start == date(2014, 7, 29)
     assert events[5].start == date(2014, 8, 5)
 
-    assert events[0].end == date(2014, 7, 1)
-    assert events[1].end == date(2014, 7, 9)
-    assert events[2].end == date(2014, 7, 16)
-    assert events[3].end == date(2014, 7, 23)
-    assert events[4].end == date(2014, 7, 30)
-    assert events[5].end == date(2014, 8, 6)
+    assert events[0].end == date(2014, 6, 30)
+    assert events[1].end == date(2014, 7, 8)
+    assert events[2].end == date(2014, 7, 15)
+    assert events[3].end == date(2014, 7, 22)
+    assert events[4].end == date(2014, 7, 29)
+    assert events[5].end == date(2014, 8, 5)
 
-    assert unicode_type(events[0].vevent['SUMMARY']) == u'Arbeit'
+    assert unicode_type(events[0].summary) == u'Arbeit'
     for event in events[1:]:
-        assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
+        assert unicode_type(event.summary) == u'Arbeit (lang)'
 
 
 def test_event_rrule_this_and_future_allday_prior():
     event_rrule_this_and_future_allday_prior = \
         event_rrule_this_and_future_allday_temp.format(20140705, 20140706)
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     dbi.update(event_rrule_this_and_future_allday_prior,
                href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
@@ -304,16 +368,16 @@ def test_event_rrule_this_and_future_allday_prior():
     assert events[4].start == date(2014, 7, 26)
     assert events[5].start == date(2014, 8, 2)
 
-    assert events[0].end == date(2014, 7, 1)
-    assert events[1].end == date(2014, 7, 6)
-    assert events[2].end == date(2014, 7, 13)
-    assert events[3].end == date(2014, 7, 20)
-    assert events[4].end == date(2014, 7, 27)
-    assert events[5].end == date(2014, 8, 3)
+    assert events[0].end == date(2014, 6, 30)
+    assert events[1].end == date(2014, 7, 5)
+    assert events[2].end == date(2014, 7, 12)
+    assert events[3].end == date(2014, 7, 19)
+    assert events[4].end == date(2014, 7, 26)
+    assert events[5].end == date(2014, 8, 2)
 
-    assert unicode_type(events[0].vevent['SUMMARY']) == u'Arbeit'
+    assert unicode_type(events[0].summary) == u'Arbeit'
     for event in events[1:]:
-        assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
+        assert unicode_type(event.summary) == u'Arbeit (lang)'
 
 
 event_rrule_multi_this_and_future_allday = """BEGIN:VCALENDAR
@@ -342,7 +406,7 @@ END:VCALENDAR"""
 
 
 def test_event_rrule_multi_this_and_future_allday():
-    dbi = backend.SQLiteDb('home', ':memory:', locale=locale)
+    dbi = backend.SQLiteDb('home', ':memory:', locale=LOCALE_BERLIN)
     dbi.update(event_rrule_multi_this_and_future_allday,
                href='event_rrule_multi_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('event_rrule_multi_this_and_future_allday.ics', 'abcd')]
@@ -359,20 +423,20 @@ def test_event_rrule_multi_this_and_future_allday():
     assert events[6].start == date(2014, 7, 24)
     assert events[7].start == date(2014, 7, 31)
 
-    assert events[0].end == date(2014, 7, 1)
-    assert events[1].end == date(2014, 7, 14)
-    assert events[2].end == date(2014, 7, 14)
-    assert events[3].end == date(2014, 7, 18)
-    assert events[4].end == date(2014, 7, 21)
-    assert events[5].end == date(2014, 7, 21)
-    assert events[6].end == date(2014, 7, 25)
-    assert events[7].end == date(2014, 8, 1)
+    assert events[0].end == date(2014, 6, 30)
+    assert events[1].end == date(2014, 7, 13)
+    assert events[2].end == date(2014, 7, 13)
+    assert events[3].end == date(2014, 7, 17)
+    assert events[4].end == date(2014, 7, 20)
+    assert events[5].end == date(2014, 7, 20)
+    assert events[6].end == date(2014, 7, 24)
+    assert events[7].end == date(2014, 7, 31)
 
-    assert unicode_type(events[0].vevent['SUMMARY']) == u'Arbeit'
+    assert unicode_type(events[0].summary) == u'Arbeit'
     for event in events[1:3] + events[4:6]:
-        assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (lang)'
+        assert unicode_type(event.summary) == u'Arbeit (lang)'
     for event in events[3:4] + events[6:]:
-        assert unicode_type(event.vevent['SUMMARY']) == u'Arbeit (neu)'
+        assert unicode_type(event.summary) == u'Arbeit (neu)'
 
 
 master = """BEGIN:VEVENT
@@ -425,8 +489,8 @@ END:VEVENT"""
 
 def test_two_calendars_same_uid(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
-    dba = backend.SQLiteDb('home', dbpath, locale=locale)
-    dbb = backend.SQLiteDb('work', dbpath, locale=locale)
+    dba = backend.SQLiteDb('home', dbpath, locale=LOCALE_BERLIN)
+    dbb = backend.SQLiteDb('work', dbpath, locale=LOCALE_BERLIN)
     assert dba.list() == []
     assert dbb.list() == []
     dba.update(event_a, href='12345.ics', etag='abcd')
@@ -451,8 +515,8 @@ def test_two_calendars_same_uid(tmpdir):
 def test_update_one_should_not_affect_others(tmpdir):
     """test if an THISANDFUTURE param effects other events as well"""
     dbpath = str(tmpdir) + '/khal.db'
-    db = backend.SQLiteDb('home', dbpath, locale=locale)
-    db.update(_get_text('event_d'), href='first')
+    db = backend.SQLiteDb('home', dbpath, locale=LOCALE_BERLIN)
+    db.update(_get_text('event_d_15'), href='first')
     events = db.get_allday_range(start=date(2015, 4, 9))
     assert len(list(events)) == 1
     db.update(event_rrule_multi_this_and_future_allday, href='second')
@@ -515,27 +579,27 @@ END:VCARD
 
 def test_birthdays(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
-    db = backend.SQLiteDb_Birthdays('home', dbpath, locale=locale)
+    db = backend.SQLiteDb_Birthdays('home', dbpath, locale=LOCALE_BERLIN)
     assert list(db.get_allday_range(date(1971, 3, 11))) == list()
     db.update(card, 'unix.vcf')
     events = list(db.get_allday_range(date(1971, 3, 11)))
     assert len(events) == 1
-    assert unicode_type(events[0].vevent['SUMMARY']) == u'Unix\'s birthday'
+    assert events[0].summary == u'Unix\'s birthday'
 
 
 def test_birthdays_no_year(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
-    db = backend.SQLiteDb_Birthdays('home', dbpath, locale=locale)
+    db = backend.SQLiteDb_Birthdays('home', dbpath, locale=LOCALE_BERLIN)
     assert list(db.get_allday_range(date(1971, 3, 11))) == list()
     db.update(card_no_year, 'unix.vcf')
     events = list(db.get_allday_range(date(1971, 3, 11)))
     assert len(events) == 1
-    assert unicode_type(events[0].vevent['SUMMARY']) == u'Unix\'s birthday'
+    assert events[0].summary == u'Unix\'s birthday'
 
 
 def test_birthday_does_not_parse(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
-    db = backend.SQLiteDb_Birthdays('home', dbpath, locale=locale)
+    db = backend.SQLiteDb_Birthdays('home', dbpath, locale=LOCALE_BERLIN)
     assert list(db.get_allday_range(date(1971, 3, 11))) == list()
     db.update(card_does_not_parse, 'unix.vcf')
     events = list(db.get_allday_range(date(1971, 3, 11)))

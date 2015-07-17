@@ -139,7 +139,7 @@ class Calendar(object):
 
         with self._dbtool.at_once():
             event.etag = self._storage.update(event.href, event, event.etag)
-            self._dbtool.update(event.vevent.to_ical(), event.href, event.etag)
+            self._dbtool.update(event.raw, event.href, event.etag)
             self._dbtool.set_ctag(self.local_ctag())
 
     def force_update(self, event):
@@ -245,7 +245,7 @@ class Calendar(object):
     def new_event(self, ical):
         """creates and returns (but does not insert) new event from ical
         string"""
-        return Event(ical=ical, calendar=self.name, locale=self._locale)
+        return Event.fromString(ical, locale=self._locale, calendar=self.name)
 
     def search(self, search_string):
         return [self._cover_event(event) for event in

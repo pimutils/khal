@@ -7,6 +7,14 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.7.0
+=====
+not released yet
+
+* most of the internal representation of events was rewritten, the current
+  benefit is that floating events are properly represented now, hopefully more
+  is to come
+
 0.6.0
 =====
 2015-07-15

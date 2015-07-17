@@ -11,6 +11,8 @@ from click.testing import CliRunner
 from khal.compat import to_bytes
 from khal.cli import main_khal
 
+from .aux import _get_text
+
 
 class CustomCliRunner(CliRunner):
     def __init__(self, config, db=None, calendars=None, **kwargs):
@@ -73,7 +75,7 @@ def test_direct_modification(runner):
     assert not result.exception
     assert result.output == 'No events\n'
 
-    from .event_test import cal_dt
+    cal_dt = _get_text('event_dt_simple')
     event = runner.calendars['one'].join('test.ics')
     event.write(cal_dt)
     result = runner.invoke(main_khal, ['agenda', '09.04.2014'])

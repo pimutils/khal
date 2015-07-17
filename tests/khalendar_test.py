@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, date, timedelta, time
 import os
 from textwrap import dedent
 
@@ -15,10 +15,12 @@ from khal.khalendar.event import Event
 from khal.khalendar.backend import CouldNotCreateDbDir
 import khal.khalendar.exceptions
 
+from .aux import _get_text
 
-today = datetime.date.today()
-yesterday = today - datetime.timedelta(days=1)
-tomorrow = today + datetime.timedelta(days=1)
+
+today = date.today()
+yesterday = today - timedelta(days=1)
+tomorrow = today + timedelta(days=1)
 
 event_allday_template = u"""BEGIN:VEVENT
 SEQUENCE:0
@@ -40,9 +42,13 @@ cal3 = 'private'
 
 example_cals = [cal1, cal2, cal3]
 berlin = pytz.timezone('Europe/Berlin')
+SAMOA = pytz.timezone('Pacific/Samoa')
 locale = {'default_timezone': berlin,
           'local_timezone': berlin,
           }
+LOCALE_SAMOA = {'default_timezone': SAMOA,
+                'local_timezone': SAMOA,
+                }
 
 
 @pytest.fixture
@@ -107,9 +113,9 @@ class TestCalendar(object):
 class TestVdirsyncerCompat(object):
     def test_list(self, cal_vdir):
         cal, vdir = cal_vdir
-        event = Event(event_d, cal.name, locale=locale)
+        event = Event.fromString(event_d, calendar=cal.name, locale=locale)
         cal.new(event)
-        event = Event(event_today, cal.name, locale=locale)
+        event = Event.fromString(event_today, calendar=cal.name, locale=locale)
         cal.new(event)
         hrefs = sorted(href for href, uid in cal._dbtool.list())
         assert hrefs == [
@@ -118,55 +124,21 @@ class TestVdirsyncerCompat(object):
         ]
         assert cal._dbtool.get('uid3@host1.com.ics').uid == 'uid3@host1.com'
 
-today = datetime.date.today()
-yesterday = today - datetime.timedelta(days=1)
-tomorrow = today + datetime.timedelta(days=1)
-
-aday = datetime.date(2014, 4, 9)
-bday = datetime.date(2014, 4, 10)
+aday = date(2014, 4, 9)
+bday = date(2014, 4, 10)
 
 
-event_allday_template = u"""BEGIN:VEVENT
-SEQUENCE:0
-UID:uid3@host1.com
-DTSTART;VALUE=DATE:{}
-DTEND;VALUE=DATE:{}
-SUMMARY:a meeting
-DESCRIPTION:short description
-LOCATION:LDB Lobby
-END:VEVENT"""
-
-
-event_dt = """BEGIN:VEVENT
-SUMMARY:An Event
-DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140409T093000
-DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140409T103000
-DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
-UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
-END:VEVENT"""
-
-event_d = """BEGIN:VEVENT
-SUMMARY:Another Event
-DTSTART;VALUE=DATE:20140409
-DTEND;VALUE=DATE:20140410
-DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
-UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
-END:VEVENT"""
-
-event_d_no_value = """BEGIN:VEVENT
-SUMMARY:Another Event
-DTSTART:20140409
-DTEND:20140410
-UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
-END:VEVENT"""
+event_dt = _get_text('event_dt_simple')
+event_d = _get_text('event_d')
+event_d_no_value = _get_text('event_d_no_value')
 
 
 class TestCollection(object):
 
-    astart = datetime.datetime.combine(aday, datetime.time.min)
-    aend = datetime.datetime.combine(aday, datetime.time.max)
-    bstart = datetime.datetime.combine(bday, datetime.time.min)
-    bend = datetime.datetime.combine(bday, datetime.time.max)
+    astart = datetime.combine(aday, time.min)
+    aend = datetime.combine(aday, time.max)
+    bstart = datetime.combine(bday, time.min)
+    bend = datetime.combine(bday, time.max)
 
     def test_default_calendar(self, tmpdir):
         coll = CalendarCollection()
@@ -182,20 +154,23 @@ class TestCollection(object):
         assert coll.default_calendar_name is None
         coll.default_calendar_name = 'home'
         assert coll.default_calendar_name == 'home'
+        assert coll.writable_names == ['home']
 
     def test_empty(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        start = datetime.datetime.combine(today, datetime.time.min)
-        end = datetime.datetime.combine(today, datetime.time.max)
+        start = datetime.combine(today, time.min)
+        end = datetime.combine(today, time.max)
         assert coll.get_allday_by_time_range(today) == list()
         assert coll.get_datetime_by_time_range(start, end) == list()
 
     def test_insert(self, coll_vdirs):
         """insert a datetime event"""
         coll, vdirs = coll_vdirs
-        event = Event(event_dt, calendar='foo', locale=locale)
+        event = Event.fromString(event_dt, calendar='foo', locale=locale)
         coll.new(event, cal1)
-        events = coll.get_datetime_by_time_range(self.astart, self.aend)
+        start = datetime.combine(aday, time.min)
+        end = datetime.combine(bday, time.max)
+        events = coll.get_datetime_by_time_range(start, end)
         assert len(events) == 1
         assert events[0].color == 'dark blue'
         assert events[0].calendar == cal1
@@ -210,7 +185,7 @@ class TestCollection(object):
         """insert a date event"""
         coll, vdirs = coll_vdirs
 
-        event = Event(event_d, calendar='foo', locale=locale)
+        event = Event.fromString(event_d, calendar='foo', locale=locale)
         coll.new(event, cal1)
         events = coll.get_allday_by_time_range(aday)
         assert len(events) == 1
@@ -225,7 +200,7 @@ class TestCollection(object):
         """insert a date event with no VALUE=DATE option"""
         coll, vdirs = coll_vdirs
 
-        event = Event(event_d_no_value, calendar='foo', locale=locale)
+        event = Event.fromString(event_d_no_value, calendar='foo', locale=locale)
         coll.new(event, cal1)
         events = coll.get_allday_by_time_range(aday)
         assert len(events) == 1
@@ -236,8 +211,9 @@ class TestCollection(object):
         assert coll.get_datetime_by_time_range(self.bstart, self.bend) == []
 
     def test_change(self, coll_vdirs):
+        """moving an event from one calendar to another"""
         coll, vdirs = coll_vdirs
-        event = Event(event_dt, calendar='foo', locale=locale)
+        event = Event.fromString(event_dt, calendar='foo', locale=locale)
         coll.new(event, cal1)
         event = coll.get_datetime_by_time_range(self.astart, self.aend)[0]
         assert event.calendar == cal1
@@ -246,6 +222,23 @@ class TestCollection(object):
         events = coll.get_datetime_by_time_range(self.astart, self.aend)
         assert len(events) == 1
         assert events[0].calendar == cal2
+
+    def test_update_event(self, coll_vdirs):
+        """updating one event"""
+        coll, vdirs = coll_vdirs
+        event = Event.fromString(
+            _get_text('event_dt_simple'), calendar=cal1, locale=locale)
+        coll.new(event, cal1)
+        events = coll.get_datetime_by_time_range(self.astart, self.aend)
+        event = events[0]
+        event.update_summary('really simple event')
+        event.update_start_end(bday, bday)
+        coll.update(event)
+        events = coll.get_datetime_by_time_range(self.astart, self.aend)
+        assert len(events) == 0
+        events = coll.get_allday_by_time_range(self.bstart)
+        assert len(events) == 1
+        assert events[0].summary == 'really simple event'
 
     def test_newevent(self, coll_vdirs):
         coll, vdirs = coll_vdirs
@@ -257,14 +250,37 @@ class TestCollection(object):
         )
         assert event.allday is False
 
-    def test_insert_calendar_readonly(self, tmpdir):
+    def test_modify_readonly_calendar(self, tmpdir):
         coll = CalendarCollection()
         coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
         coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale))
         coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
-        event = Event(event_dt, calendar='home', locale=locale)
+        event = Event.fromString(event_dt, calendar='home', locale=locale)
+
         with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
             coll.new(event, cal1)
+        with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
+            # params don't really matter here
+            coll.delete('href', 'eteg', cal1)
+
+    def test_search(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        assert len(coll.search('Event')) == 0
+        event = Event.fromString(
+            _get_text('event_dt_simple'), calendar=cal1, locale=locale)
+        coll.new(event, cal1)
+        assert len(coll.search('Event')) == 1
+
+    def test_get_events_at(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        a_time = berlin.localize(datetime(2014, 4, 9, 10))
+        b_time = berlin.localize(datetime(2014, 4, 9, 11))
+        assert len(coll.get_events_at(a_time)) == 0
+        event = Event.fromString(
+            _get_text('event_dt_simple'), calendar=cal1, locale=locale)
+        coll.new(event, cal1)
+        assert len(coll.get_events_at(a_time)) == 1
+        assert len(coll.get_events_at(b_time)) == 0
 
 
 @pytest.fixture
