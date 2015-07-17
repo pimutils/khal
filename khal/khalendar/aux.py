@@ -131,11 +131,7 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     # TODO do this for everything where a TZID can appear (RDATE, EXDATE,
     # RRULE:UNTIL)
     for prop in ['DTSTART', 'DTEND', 'DUE', 'RECURRENCE-ID']:
-        if (prop in vevent and
-                hasattr(vevent[prop], 'dt') and
-                hasattr(vevent[prop].dt, 'tzinfo') and
-                vevent[prop].dt.tzinfo is None and
-                'TZID' in vevent[prop].params):
+        if prop in vevent and invalid_timezone(vevent[prop]):
             value = default_timezone.localize(vevent.pop(prop).dt)
             vevent.add(prop, value)
             logger.warn('{} has invalid or incomprehensible timezone '
@@ -202,3 +198,11 @@ def to_naive_utc(dtime):
     dtime_utc = dtime.astimezone(pytz.UTC)
     dtime_naive = dtime_utc.replace(tzinfo=None)
     return dtime_naive
+
+
+def invalid_timezone(prop):
+    """check if a icalendar property has a timezone attached we don't understand"""
+    if hasattr(prop.dt, 'tzinfo') and prop.dt.tzinfo is None and 'TZID' in prop.params:
+        return True
+    else:
+        return False
