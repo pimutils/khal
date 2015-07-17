@@ -431,7 +431,12 @@ class SQLiteDb(object):
             yield event
 
     def get_datetime_at(self, dtime):
-        """return datetime events which are scheduled at `dtime`"""
+        """return datetime events which are scheduled at `dtime`
+
+        :param dtime: if dtime is not localized it is treated as if it were
+             in UTC
+        :type dtime: datetime.datetime
+        """
         dtime = aux.to_unix_time(dtime)
         sql_s = ('SELECT recs_loc.href, dtstart, dtend, ref, dtype FROM '
                  'recs_loc JOIN events ON '
