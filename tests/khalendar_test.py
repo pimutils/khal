@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, date, timedelta, time
 import os
 from textwrap import dedent
 
@@ -18,9 +18,9 @@ import khal.khalendar.exceptions
 from .aux import _get_text
 
 
-today = datetime.date.today()
-yesterday = today - datetime.timedelta(days=1)
-tomorrow = today + datetime.timedelta(days=1)
+today = date.today()
+yesterday = today - timedelta(days=1)
+tomorrow = today + timedelta(days=1)
 
 event_allday_template = u"""BEGIN:VEVENT
 SEQUENCE:0
@@ -120,12 +120,8 @@ class TestVdirsyncerCompat(object):
         ]
         assert cal._dbtool.get('uid3@host1.com.ics').uid == 'uid3@host1.com'
 
-today = datetime.date.today()
-yesterday = today - datetime.timedelta(days=1)
-tomorrow = today + datetime.timedelta(days=1)
-
-aday = datetime.date(2014, 4, 9)
-bday = datetime.date(2014, 4, 10)
+aday = date(2014, 4, 9)
+bday = date(2014, 4, 10)
 
 
 event_dt = _get_text('event_dt_simple')
@@ -135,10 +131,10 @@ event_d_no_value = _get_text('event_d_no_value')
 
 class TestCollection(object):
 
-    astart = datetime.datetime.combine(aday, datetime.time.min)
-    aend = datetime.datetime.combine(aday, datetime.time.max)
-    bstart = datetime.datetime.combine(bday, datetime.time.min)
-    bend = datetime.datetime.combine(bday, datetime.time.max)
+    astart = datetime.combine(aday, time.min)
+    aend = datetime.combine(aday, time.max)
+    bstart = datetime.combine(bday, time.min)
+    bend = datetime.combine(bday, time.max)
 
     def test_default_calendar(self, tmpdir):
         coll = CalendarCollection()
@@ -154,11 +150,12 @@ class TestCollection(object):
         assert coll.default_calendar_name is None
         coll.default_calendar_name = 'home'
         assert coll.default_calendar_name == 'home'
+        assert coll.writable_names == ['home']
 
     def test_empty(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        start = datetime.datetime.combine(today, datetime.time.min)
-        end = datetime.datetime.combine(today, datetime.time.max)
+        start = datetime.combine(today, time.min)
+        end = datetime.combine(today, time.max)
         assert coll.get_allday_by_time_range(today) == list()
         assert coll.get_datetime_by_time_range(start, end) == list()
 
@@ -247,7 +244,7 @@ class TestCollection(object):
         )
         assert event.allday is False
 
-    def test_insert_calendar_readonly(self, tmpdir):
+    def test_modify_readonly_calendar(self, tmpdir):
         coll = CalendarCollection()
         coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
         coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale))
@@ -256,6 +253,28 @@ class TestCollection(object):
 
         with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
             coll.new(event, cal1)
+        with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
+            # params don't really matter here
+            coll.delete('href', 'eteg', cal1)
+
+    def test_search(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        assert len(coll.search('Event')) == 0
+        event = Event.fromString(
+            _get_text('event_dt_simple'), calendar=cal1, locale=locale)
+        coll.new(event, cal1)
+        assert len(coll.search('Event')) == 1
+
+    def test_get_events_at(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        a_time = berlin.localize(datetime(2014, 4, 9, 10))
+        b_time = berlin.localize(datetime(2014, 4, 9, 11))
+        assert len(coll.get_events_at(a_time)) == 0
+        event = Event.fromString(
+            _get_text('event_dt_simple'), calendar=cal1, locale=locale)
+        coll.new(event, cal1)
+        assert len(coll.get_events_at(a_time)) == 1
+        assert len(coll.get_events_at(b_time)) == 0
 
 
 @pytest.fixture
