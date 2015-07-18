@@ -56,8 +56,8 @@ Python with ``sqlite3`` support enabled (which is usually the case).
 
 If you are installing python via *pip* or from source, be aware that since
 *khal* indirectly depends on lxml_ you need to either install it via your
-system's package manager or have python's and libxml2's headers (development
-packages) installed.
+system's package manager or have python's libxml2's and libxslt1's headers
+(included in a separate "development package" on some distributions) installed.
 
 .. _icalendar: https://github.com/collective/icalendar
 .. _vdirsyncer: https://github.com/untitaker/vdirsyncer
