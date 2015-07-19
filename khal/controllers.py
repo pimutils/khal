@@ -31,14 +31,13 @@ from collections import defaultdict
 
 import datetime
 import itertools
-import logging
 import sys
 import textwrap
 
 from khal import aux, calendar_display
 from khal.compat import to_unicode
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
-from khal.exceptions import InvalidDate, FatalError
+from khal.exceptions import FatalError
 from khal.khalendar.event import Event
 from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
@@ -46,86 +45,74 @@ from khal.log import logger
 from .terminal import colored, get_terminal_size, merge_columns
 
 
-def construct_daynames(daylist, longdateformat):
-    """returns a list of tuples of datetime objects and datenames
+def construct_dayname(date, longdateformat):
+    """Returns the date's name to use for the UI
 
-    :param daylist: list of dates
-    :type daylist: list(datetime.date)
+    :param date:
+    :type date: datetime.date
     :param longdateformat: format in which to print dates
     :param str
     :returns: list of names and dates
     :rtype: list((str, datetime.date))
     """
-    for date in daylist:
-        if date == datetime.date.today():
-            yield (date, 'Today:')
-        elif date == datetime.date.today() + datetime.timedelta(days=1):
-            yield (date, 'Tomorrow:')
-        else:
-            yield (date, date.strftime(longdateformat))
+
+    if date == datetime.date.today():
+        return 'Today:'
+    elif date == datetime.date.today() + datetime.timedelta(days=1):
+        return 'Tomorrow:'
+    else:
+        return date.strftime(longdateformat)
 
 
-def get_agenda(collection, locale, dates=None, firstweekday=0,
-               days=None, events=None, width=45, show_all_days=False):
+def get_agenda(collection, locale, dates=None, firstweekday=0, width=45,
+               days=None, events=None, show_all_days=False):
     """returns a list of events scheduled for all days in daylist
 
     included are header "rows"
     :param collection:
     :type collection: khalendar.CalendarCollection
-    :param dates: a list of all dates for which the events should be return,
-                    including what should be printed as a header
-    :type collection: list(str)
     :param show_all_days: True if all days must be shown, event without event
     :type show_all_days: Boolean
     :returns: a list to be printed as the agenda for the given days
     :rtype: list(str)
+    :param events: How many events should be shown. Default infinite.
+    :param days: How many days should be shown. Default infinite.
+    :param dates: Which dates should be shown. Default all in the future.
 
     """
-    event_column = list()
-
-    if days is None:
-        days = 2
-
-    if dates is None or len(dates) == 0:
-        dates = [datetime.date.today()]
+    today = datetime.date.today()
+    if not dates:
+        dates = (today + datetime.timedelta(days=x) for x in itertools.count())
     else:
-        try:
-            dates = [
-                aux.guessdatetimefstr([date], locale)[0].date()
-                if not isinstance(date, datetime.date) else date
-                for date in dates
-            ]
-        except InvalidDate as error:
-            logging.fatal(error)
-            sys.exit(1)
+        dates = [aux.guessdatetimefstr([date], locale)[0].date()
+                 if not isinstance(date, datetime.date) else date
+                 for date in dates]
+    if days:
+        dates = itertools.islice(dates, days)
+    if not events:
+        events = float('inf')
 
-    if days is not None:
-        daylist = [date + datetime.timedelta(days=one)
-                   for one in range(days) for date in dates]
-        daylist.sort()
-
-    daylist = construct_daynames(daylist, locale['longdateformat'])
-    localize = locale['local_timezone'].localize
-
-    for day, dayname in daylist:
-        start = localize(datetime.datetime.combine(day, datetime.time.min))
-        end = localize(datetime.datetime.combine(day, datetime.time.max))
+    for date in dates:
+        start = datetime.datetime.combine(date, datetime.time.min)
+        end = datetime.datetime.combine(date, datetime.time.max)
 
         # TODO unify allday and datetime events
-        all_day_events = collection.get_allday_by_time_range(day)
-        events = collection.get_datetime_by_time_range(start, end)
-        if len(events) == 0 and len(all_day_events) == 0 and not show_all_days:
+        all_day_events = collection.get_allday_by_time_range(date)
+        date_events = collection.get_datetime_by_time_range(start, end)
+        if not date_events and not all_day_events and not show_all_days:
             continue
 
-        event_column.append(style(dayname, bold=True))
-        events.sort(key=lambda e: e.start)
-        for event in itertools.chain(all_day_events, events):
-            desc = textwrap.wrap(event.relative_to(day), width)
-            event_column.extend([colored(d, event.color) for d in desc])
+        yield style(construct_dayname(date, locale['longdateformat']), bold=True)
 
-    if event_column == []:
-        event_column = [style('No events', bold=True)]
-    return event_column
+        date_events.sort(key=lambda e: e.start)
+        for event in itertools.chain(all_day_events, date_events):
+            desc = textwrap.wrap(event.relative_to(date), width)
+
+            for d in desc:
+                yield colored(d, event.color)
+                events -= 1
+                if events == 0:
+                    return
 
 
 def calendar(collection, date=None, firstweekday=0, encoding='utf-8',
@@ -148,14 +135,15 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8',
     echo('\n'.join(rows).encode(encoding))
 
 
-def agenda(collection, date=None, encoding='utf-8',
+def agenda(collection, encoding='utf-8',
            show_all_days=False, **kwargs):
     term_width, _ = get_terminal_size()
-    event_column = get_agenda(collection, dates=date, width=term_width,
+    event_column = get_agenda(collection, width=term_width,
                               show_all_days=show_all_days, **kwargs)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
-    echo(to_unicode('\n'.join(event_column), encoding))
+    for piece in event_column:
+        echo(to_unicode(piece, encoding))
 
 
 def new_from_string(collection, calendar_name, conf, date_list, location=None, repeat=None,

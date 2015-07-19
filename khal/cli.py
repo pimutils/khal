@@ -235,7 +235,7 @@ def _get_cli():
         '''Print agenda.'''
         controllers.agenda(
             build_collection(ctx),
-            date=dates,
+            dates=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
             encoding=ctx.obj['conf']['locale']['encoding'],
             show_all_days=ctx.obj['conf']['default']['show_all_days'],
