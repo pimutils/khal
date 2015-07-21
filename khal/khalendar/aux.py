@@ -50,6 +50,7 @@ def expand(vevent, href=''):
         vevent['DTSTART'].dt = vevent['DTSTART'].dt.replace(tzinfo=None)
 
     if 'RRULE' in vevent:
+        vevent = sanitize_rrule(vevent)
         rrulestr = to_unicode(vevent['RRULE'].to_ical())
         rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=vevent['DTSTART'].dt)
 
@@ -141,6 +142,7 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     dtstart = getattr(vdtstart, 'dt', None)
     dtend = getattr(vdtend, 'dt', None)
 
+    # event with missing DTSTART
     if dtstart is None:
         raise ValueError('Event has no start time (DTSTART).')
     dtstart, dtend = sanitize_timerange(
@@ -167,6 +169,17 @@ def sanitize_timerange(dtstart, dtend, duration=None):
             dtend += timedelta(days=1)
 
     return dtstart, dtend
+
+
+def sanitize_rrule(vevent):
+    """fix problems with RRULE:UNTIL"""
+    if 'rrule' in vevent and 'UNTIL' in vevent['rrule']:
+        until = vevent['rrule']['UNTIL'][0]
+        dtstart = vevent['dtstart'].dt
+        # DTSTART is date, UNTIL is datetime
+        if not isinstance(dtstart, datetime) and isinstance(until, datetime):
+            vevent['rrule']['until'] = until.date()
+    return vevent
 
 
 def localize_strip_tz(dates, timezone):

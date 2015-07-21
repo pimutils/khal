@@ -637,10 +637,29 @@ class TestSpecial(object):
         dtstart = aux.expand(vevent, berlin)
         assert len(dtstart) == 7
         assert dtstart[0][0] == berlin.localize(
-            datetime.datetime(2014, 7, 2, 19, 0))
+            datetime(2014, 7, 2, 19, 0))
         assert dtstart[-1][0] == berlin.localize(
-            datetime.datetime(2014, 7, 11, 19, 0))
+            datetime(2014, 7, 11, 19, 0))
 
+    def test_event_dt_rrule_invalid_until(self):
+        """DTSTART and RRULE:UNTIL should be of the same type, but might not
+        be"""
+        vevent = _get_vevent(_get_text('event_dt_rrule_invalid_until'))
+        dtstart = aux.expand(vevent, berlin)
+        assert dtstart == [(date(2007, 12, 1), date(2007, 12, 2)),
+                           (date(2008, 1, 1), date(2008, 1, 2)),
+                           (date(2008, 2, 1), date(2008, 2, 2))]
+
+    def test_event_dt_rrule_invalid_until2(self):
+        """same as above, but now dtstart is of type date and until is datetime
+        """
+        vevent = _get_vevent(_get_text('event_dt_rrule_invalid_until2'))
+        dtstart = aux.expand(vevent, berlin)
+        assert len(dtstart) == 35
+        assert dtstart[0] == (berlin.localize(datetime(2014, 4, 9, 9, 30)),
+                              berlin.localize(datetime(2014, 4, 9, 10, 30)))
+        assert dtstart[-1] == (berlin.localize(datetime(2014, 12, 3, 9, 30)),
+                               berlin.localize(datetime(2014, 12, 3, 10, 30)))
 
 simple_rdate = """BEGIN:VEVENT
 SUMMARY:Simple Rdate
