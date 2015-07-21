@@ -6,7 +6,7 @@ import pytz
 
 from khal.khalendar import aux
 
-from aux import _get_text
+from .aux import _get_text
 
 # FIXME this file is in urgent need of a clean up
 
