@@ -12,7 +12,7 @@ from .exceptions import UnsupportedRecursion
 logger = log.logger
 
 
-def expand(vevent, default_tz, href=''):
+def expand(vevent, href=''):
     """
     Constructs a list of start and end dates for all recurring instances of the
     event defined in vevent.
@@ -24,9 +24,6 @@ def expand(vevent, default_tz, href=''):
 
     :param vevent: vevent to be expanded
     :type vevent: icalendar.cal.Event
-    :param default_tz: the default timezone used when we (icalendar)
-                       don't understand the embedded timezone
-    :type default_tz: pytz.timezone
     :param href: the href of the vevent, used for more informative logging and
                  nothing else
     :type href: str
@@ -41,12 +38,6 @@ def expand(vevent, default_tz, href=''):
 
     # dateutil.rrule converts everything to datetime
     allday = not isinstance(vevent['DTSTART'].dt, datetime)
-
-    # icalendar did not understand the defined timezone
-    if (not allday and 'TZID' in vevent['DTSTART'].params and
-            vevent['DTSTART'].dt.tzinfo is None):
-        vevent['DTSTART'].dt = default_tz.localize(vevent['DTSTART'].dt)
-
     if 'RRULE' not in vevent.keys() and 'RDATE' not in vevent.keys():
         return [(vevent['DTSTART'].dt, vevent['DTSTART'].dt + duration)]
 
@@ -59,6 +50,7 @@ def expand(vevent, default_tz, href=''):
         vevent['DTSTART'].dt = vevent['DTSTART'].dt.replace(tzinfo=None)
 
     if 'RRULE' in vevent:
+        vevent = sanitize_rrule(vevent)
         rrulestr = to_unicode(vevent['RRULE'].to_ical())
         rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=vevent['DTSTART'].dt)
 
@@ -70,7 +62,7 @@ def expand(vevent, default_tz, href=''):
             rrule._until = datetime(2037, 12, 31)
 
         if getattr(rrule._until, 'tzinfo', False):
-            rrule._until = rrule._until.astimezone(events_tz or default_tz)
+            rrule._until = rrule._until.astimezone(events_tz)
             rrule._until = rrule._until.replace(tzinfo=None)
 
         logger.debug('calculating recurrence dates for {0}, '
@@ -88,7 +80,7 @@ def expand(vevent, default_tz, href=''):
         else:
             rdates = vevent['RDATE']
         rdates = [leaf.dt for tree in rdates for leaf in tree.dts]
-        rdates = localize_strip_tz(rdates, events_tz or default_tz)
+        rdates = localize_strip_tz(rdates, events_tz)
         dtstartl += rdates
 
     # remove excluded dates
@@ -98,7 +90,7 @@ def expand(vevent, default_tz, href=''):
         else:
             exdates = vevent['EXDATE']
         exdates = [leaf.dt for tree in exdates for leaf in tree.dts]
-        exdates = localize_strip_tz(exdates, events_tz or default_tz)
+        exdates = localize_strip_tz(exdates, events_tz)
         dtstartl = [start for start in dtstartl if start not in exdates]
 
     if events_tz is not None:
@@ -115,7 +107,7 @@ def expand(vevent, default_tz, href=''):
     return dtstartend
 
 
-def sanitize(vevent):
+def sanitize(vevent, default_timezone, href='', calendar=''):
     """
     clean up vevents we do not understand
 
@@ -124,11 +116,33 @@ def sanitize(vevent):
 
     :param vevent: the vevent that needs to be cleaned
     :type vevent: icalendar.cal.event
+    :param default_timezone: timezone to apply to stard and/or end dates which
+         were supposed to be localized but which timezone was not understood
+         by icalendar
+    :type timezone: pytz.timezone
+    :param href: used for for logging to inform user which .ics files are
+        problematic
+    :type href: str
+    :param calendar: used for for logging to inform user which .ics files are
+        problematic
+    :type calendar: str
     :returns: clean vevent
     :rtype: icalendar.cal.event
     """
-    dtend = getattr(vevent.pop('DTEND', None), 'dt', None)
-    dtstart = getattr(vevent.pop('DTSTART', None), 'dt', None)
+    # TODO do this for everything where a TZID can appear (RDATE, EXDATE,
+    # RRULE:UNTIL)
+    for prop in ['DTSTART', 'DTEND', 'DUE', 'RECURRENCE-ID']:
+        if prop in vevent and invalid_timezone(vevent[prop]):
+            value = default_timezone.localize(vevent.pop(prop).dt)
+            vevent.add(prop, value)
+            logger.warn('{} has invalid or incomprehensible timezone '
+                        'information in {} in {}'.format(prop, href, calendar))
+    vdtstart = vevent.pop('DTSTART', None)
+    vdtend = vevent.pop('DTEND', None)
+    dtstart = getattr(vdtstart, 'dt', None)
+    dtend = getattr(vdtend, 'dt', None)
+
+    # event with missing DTSTART
     if dtstart is None:
         raise ValueError('Event has no start time (DTSTART).')
     dtstart, dtend = sanitize_timerange(
@@ -155,6 +169,17 @@ def sanitize_timerange(dtstart, dtend, duration=None):
             dtend += timedelta(days=1)
 
     return dtstart, dtend
+
+
+def sanitize_rrule(vevent):
+    """fix problems with RRULE:UNTIL"""
+    if 'rrule' in vevent and 'UNTIL' in vevent['rrule']:
+        until = vevent['rrule']['UNTIL'][0]
+        dtstart = vevent['dtstart'].dt
+        # DTSTART is date, UNTIL is datetime
+        if not isinstance(dtstart, datetime) and isinstance(until, datetime):
+            vevent['rrule']['until'] = until.date()
+    return vevent
 
 
 def localize_strip_tz(dates, timezone):
@@ -186,3 +211,11 @@ def to_naive_utc(dtime):
     dtime_utc = dtime.astimezone(pytz.UTC)
     dtime_naive = dtime_utc.replace(tzinfo=None)
     return dtime_naive
+
+
+def invalid_timezone(prop):
+    """check if a icalendar property has a timezone attached we don't understand"""
+    if hasattr(prop.dt, 'tzinfo') and prop.dt.tzinfo is None and 'TZID' in prop.params:
+        return True
+    else:
+        return False

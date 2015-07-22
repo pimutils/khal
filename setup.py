@@ -41,7 +41,7 @@ setup(
     },
     install_requires=requirements,
     extras_require=extra_requirements,
-    setup_requires=['setuptools_scm'],
+    setup_requires=['setuptools_scm'],  # not needed when using packages from PyPI
     use_scm_version={'write_to': 'khal/version.py'},
     classifiers=[
         "Development Status :: 4 - Beta",

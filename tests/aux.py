@@ -22,7 +22,7 @@ def _get_text(event_name):
     if directory == '/ics/':
         directory == './ics/'
 
-    return open(os.path.join(directory, event_name + '.ics'), 'rb').read()
+    return open(os.path.join(directory, event_name + '.ics'), 'rb').read().decode('utf-8')
 
 
 def _get_vevent_file(event_path):

@@ -22,14 +22,13 @@
 
 from __future__ import unicode_literals
 
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time
 import signal
 import sys
 
 import urwid
 
 from .. import aux
-from ..compat import to_unicode
 from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker, Choice
 from .widgets import ExtendedEdit as Edit
 from .startendeditor import StartEndEditor
@@ -59,7 +58,7 @@ class U_Event(urwid.Text):
         self.this_date = this_date
         self.eventcolumn = eventcolumn
         self.conf = eventcolumn.pane.conf
-        super(U_Event, self).__init__(self.event.compact(self.this_date))
+        super(U_Event, self).__init__(self.event.relative_to(self.this_date))
         self.set_title()
 
     @property
@@ -78,7 +77,7 @@ class U_Event(urwid.Text):
     def set_title(self, mark=''):
         if self.uid in self.eventcolumn.pane.deleted:
             mark = 'D'
-        self.set_text(mark + ' ' + self.event.compact(self.this_date))
+        self.set_text(mark + ' ' + self.event.relative_to(self.this_date))
 
     def toggle_delete(self):
         if self.event.readonly:
@@ -142,8 +141,9 @@ class EventList(urwid.WidgetWrap):
     def update(self, this_date=date.today()):
         if this_date is None:   # this_date might be None
             return
-        start = datetime.combine(this_date, time.min)
-        end = datetime.combine(this_date, time.max)
+        local_tz = self.eventcolumn.pane.conf['locale']['local_timezone']
+        start = local_tz.localize(datetime.combine(this_date, time.min))
+        end = local_tz.localize(datetime.combine(this_date, time.max))
 
         date_text = urwid.Text(
             this_date.strftime(self.eventcolumn.pane.conf['locale']['longdateformat']))
@@ -286,6 +286,7 @@ class RecursionEditor(urwid.WidgetWrap):
 
     def __init__(self, rrule):
         # TODO: actually implement the Recursion Editor
+
         self.rrule = rrule
         recursive = self.rrule['freq'][0].lower() if self.rrule else NOREPEAT
         self.recursion_choice = Choice(
@@ -326,37 +327,39 @@ class EventDisplay(urwid.WidgetWrap):
         divider = urwid.Divider(' ')
 
         lines = []
-        lines.append(urwid.Text('Title: ' + event.vevent['SUMMARY']))
+        lines.append(urwid.Columns([
+            urwid.Text('Title: ' + event.summary),
+            urwid.Text('Calendar: ' + event.calendar)
+        ], dividechars=2))
+
+        lines.append(divider)
 
         # show organizer
-        try:
-            organizer = to_unicode(event.vevent['ORGANIZER'], 'utf-8').split(':')
-            lines.append(urwid.Text(
-                'Organizer: ' + organizer[len(organizer) - 1]))
-        except KeyError:
-            pass
+        if event.organizer != '':
+            lines.append(urwid.Text('Organizer: ' + event.organizer))
 
-        try:
-            lines.append(urwid.Text(
-                'Location: ' + to_unicode(event.vevent['LOCATION'], 'utf-8')))
-        except KeyError:
-            pass
+        # description and location
+        for key, desc in [('location', 'Location'), ('description', 'Description')]:
+            value = getattr(event, key)
+            if value != '':
+                lines.append(urwid.Text(desc + ': ' + getattr(event, key)))
+
+        if lines[-1] != divider:
+            lines.append(divider)
 
         # start and end time/date
         if event.allday:
-            startstr = event.start.strftime(self.conf['locale']['dateformat'])
-            end = event.end - timedelta(days=1)
-            endstr = end.strftime(self.conf['locale']['dateformat'])
-
+            startstr = event.start_local.strftime(self.conf['locale']['dateformat'])
+            endstr = event.end_local.strftime(self.conf['locale']['dateformat'])
         else:
-            startstr = event.start.strftime(
+            startstr = event.start_local.strftime(
                 '{} {}'.format(self.conf['locale']['dateformat'],
                                self.conf['locale']['timeformat'])
             )
-            if event.start.date == event.end.date:
-                endstr = event.end.strftime(self.conf['locale']['timeformat'])
+            if event.start_local.date == event.end_local.date:
+                endstr = event.end_local.strftime(self.conf['locale']['timeformat'])
             else:
-                endstr = event.end.strftime(
+                endstr = event.end_local.strftime(
                     '{} {}'.format(self.conf['locale']['dateformat'],
                                    self.conf['locale']['timeformat'])
                 )
@@ -365,15 +368,7 @@ class EventDisplay(urwid.WidgetWrap):
             lines.append(urwid.Text('Date: ' + startstr))
         else:
             lines.append(urwid.Text('Date: ' + startstr + ' - ' + endstr))
-
-        lines.append(urwid.Text('Calendar: ' + event.calendar))
-
         lines.append(divider)
-
-        try:
-            lines.append(urwid.Text(to_unicode(event.vevent['DESCRIPTION'], 'utf-8')))
-        except KeyError:
-            pass
 
         pile = CPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
@@ -398,28 +393,13 @@ class EventEditor(urwid.WidgetWrap):
 
         self._abort_confirmed = False
 
-        try:
-            self.description = event.vevent['DESCRIPTION']
-        except KeyError:
-            self.description = ''
-        try:
-            self.location = event.vevent['LOCATION']
-        except KeyError:
-            self.location = ''
-
-        if event.allday:
-            end = event.end - timedelta(days=1)
-        else:
-            end = event.end
+        self.description = event.description
+        self.location = event.location
 
         self.startendeditor = StartEndEditor(
-            event.start, end, self.conf, self.pane.eventscolumn.set_current_date)
-        try:
-            rrule = self.event.vevent['RRULE']
-        except KeyError:
-            rrule = None
-        self.recursioneditor = RecursionEditor(rrule)
-        self.summary = Edit(edit_text=event.vevent['SUMMARY'])
+            event.start_local, event.end_local, self.conf, self.pane.eventscolumn.set_current_date)
+        self.recursioneditor = RecursionEditor(self.event.recurobject)
+        self.summary = Edit(caption='Title: ', edit_text=event.summary)
 
         divider = urwid.Divider(' ')
 
@@ -469,52 +449,33 @@ class EventEditor(urwid.WidgetWrap):
 
     @property
     def changed(self):
-        if self.summary.get_edit_text() != self.event.vevent['SUMMARY']:
+        if self.summary.get_edit_text() != self.event.summary:
             return True
-
-        if self.description.get_edit_text() != \
-                self.event.vevent.get('DESCRIPTION', ''):
+        if self.description.get_edit_text() != self.event.description:
             return True
-
-        if self.location.get_edit_text() != \
-                self.event.vevent.get('LOCATION', ''):
+        if self.location.get_edit_text() != self.event.location:
             return True
-
         if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
-
         if self.recursioneditor.changed:
             return True
         return False
 
     def update_vevent(self):
-        self.event.vevent['SUMMARY'] = self.summary.get_edit_text()
-        self.event.vevent['DESCRIPTION'] = self.description.get_edit_text()
-        self.event.vevent['LOCATION'] = self.location.get_edit_text()
+        self.event.update_summary(self.summary.get_edit_text())
+        self.event.update_description(self.description.get_edit_text())
+        self.event.update_location(self.location.get_edit_text())
 
         if self.startendeditor.changed:
-            # TODO look up why this is needed
-            # self.event.vevent.dt = newstart would not work
-            # (timezone was missing after to_ical() )
-            self.event.vevent.pop('DTSTART')
-            self.event.vevent.add('DTSTART', self.startendeditor.newstart)
-            if self.startendeditor.allday:
-                end = self.startendeditor.newend + timedelta(days=1)
-            else:
-                end = self.startendeditor.newend
-            try:
-                self.event.vevent.pop('DTEND')
-                self.event.vevent.add('DTEND', end)
-            except KeyError:
-                self.event.vevent.pop('DURATION')
-                duration = (end -
-                            self.startendeditor.newstart)
-                self.event.vevent.add('DURATION', duration)
+            self.event.update_start_end(self.startendeditor.newstart,
+                                        self.startendeditor.newend)
         if self.recursioneditor.changed:
             rrule = self.recursioneditor.active
-            self.event.vevent.pop("RRULE")
-            if rrule and rrule["freq"][0] != NOREPEAT:
-                self.event.vevent.add("RRULE", rrule)
+            self.event.update_rrule(rrule)
+
+            # self.event.vevent.pop("RRULE")
+            # if rrule and rrule["freq"][0] != NOREPEAT:
+            #    self.event.vevent.add("RRULE", rrule)
         # TODO self.newaccount = self.calendar_chooser.active ?
 
     def save(self, button):
@@ -543,14 +504,9 @@ class EventEditor(urwid.WidgetWrap):
             self.update_vevent()
 
         if changed is True:
-            try:
-                self.event.vevent['SEQUENCE'] += 1
-            except KeyError:
-                self.event.vevent['SEQUENCE'] = 0
-
             self.event.allday = self.startendeditor.allday
+            self.event.increment_sequence()
             if self.event.etag is None:  # has not been saved before
-                # TODO look for better way to detect this
                 self.event.calendar = self.calendar_chooser.active.name
                 self.collection.new(self.event)
             elif self.calendar_chooser.changed:

@@ -106,7 +106,8 @@ class TestImport(object):
         end_date = datetime.datetime(2014, 9, 26)
         events = coll.get_datetime_by_time_range(start_date, end_date)
         assert len(events) == 6
-        assert events[-1].start == BERLIN.localize(datetime.datetime(2014, 7, 7, 9, 0))
+        events = sorted(events)
+        assert events[1].start_local == BERLIN.localize(datetime.datetime(2014, 7, 7, 9, 0))
         assert BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) in [ev.start for ev in events]
 
         import_ics(coll, {'locale': locale}, _get_text('event_rrule_recuid_update'),
@@ -116,4 +117,4 @@ class TestImport(object):
             print(ev.start)
         assert len(events) == 5
         assert BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) not in \
-            [ev.start for ev in events]
+            [ev.start_local for ev in events]

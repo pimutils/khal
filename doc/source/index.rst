@@ -40,7 +40,6 @@ Table of Contents
    configure
    usage
    standards
-   timezones
    contributing
    developer
    changelog

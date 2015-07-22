@@ -353,7 +353,7 @@ def _get_cli():
         event_column = list()
         term_width, _ = get_terminal_size()
         for event in events:
-            desc = textwrap.wrap(event.long(), term_width)
+            desc = textwrap.wrap(event.event_description, term_width)
             event_column.extend([colored(d, event.color) for d in desc])
         click.echo(to_unicode(
             '\n'.join(event_column),
@@ -395,7 +395,7 @@ def _get_cli():
         event_column = list()
         term_width, _ = get_terminal_size()
         for event in events:
-            desc = textwrap.wrap(event.long(), term_width)
+            desc = textwrap.wrap(event.event_description, term_width)
             event_column.extend([colored(d, event.color) for d in desc])
         click.echo(to_unicode(
             '\n'.join(event_column),

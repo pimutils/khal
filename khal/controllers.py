@@ -105,10 +105,11 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
         daylist.sort()
 
     daylist = construct_daynames(daylist, locale['longdateformat'])
+    localize = locale['local_timezone'].localize
 
     for day, dayname in daylist:
-        start = datetime.datetime.combine(day, datetime.time.min)
-        end = datetime.datetime.combine(day, datetime.time.max)
+        start = localize(datetime.datetime.combine(day, datetime.time.min))
+        end = localize(datetime.datetime.combine(day, datetime.time.max))
 
         # TODO unify allday and datetime events
         all_day_events = collection.get_allday_by_time_range(day)
@@ -119,7 +120,7 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
         event_column.append(style(dayname, bold=True))
         events.sort(key=lambda e: e.start)
         for event in itertools.chain(all_day_events, events):
-            desc = textwrap.wrap(event.compact(day), width)
+            desc = textwrap.wrap(event.relative_to(day), width)
             event_column.extend([colored(d, event.color) for d in desc])
 
     if event_column == []:
@@ -169,7 +170,8 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None, r
             locale=conf['locale'])
     except FatalError:
         sys.exit(1)
-    event = Event(event, calendar_name, locale=conf['locale'])
+    event = Event.fromVEvents(
+        [event], calendar=calendar_name, locale=conf['locale'])
 
     try:
         collection.new(event)
@@ -178,7 +180,7 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None, r
                      'read-only'.format(calendar_name))
         sys.exit(1)
     if conf['default']['print_new'] == 'event':
-        echo(event.long())
+        echo(event.event_description)
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
         echo(path.encode(conf['locale']['encoding']))
@@ -221,10 +223,10 @@ def import_event(vevent, collection, locale, batch, random_uid):
 
     # print all sub-events
     for sub_event in vevent:
-        event = Event(sub_event, calendar=collection.default_calendar_name,
-                      locale=locale)
         if not batch:
-            echo(event.long())
+            event = Event.fromVEvents(
+                [sub_event], calendar=collection.default_calendar_name, locale=locale)
+            echo(event.event_description)
 
     # get the calendar to insert into
     if batch or len(collection.writable_names) == 1:
