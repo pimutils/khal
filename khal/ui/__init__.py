@@ -327,25 +327,14 @@ class EventDisplay(urwid.WidgetWrap):
         divider = urwid.Divider(' ')
 
         lines = []
-        lines.append(urwid.Columns([
-            urwid.Text('Title: ' + event.summary),
-            urwid.Text('Calendar: ' + event.calendar)
-        ], dividechars=2))
-
-        lines.append(divider)
+        lines.append(urwid.Text('Title: ' + event.summary))
 
         # show organizer
         if event.organizer != '':
             lines.append(urwid.Text('Organizer: ' + event.organizer))
 
-        # description and location
-        for key, desc in [('location', 'Location'), ('description', 'Description')]:
-            value = getattr(event, key)
-            if value != '':
-                lines.append(urwid.Text(desc + ': ' + getattr(event, key)))
-
-        if lines[-1] != divider:
-            lines.append(divider)
+        if event.location != '':
+            lines.append(urwid.Text('Location: ' + event.location))
 
         # start and end time/date
         if event.allday:
@@ -368,7 +357,12 @@ class EventDisplay(urwid.WidgetWrap):
             lines.append(urwid.Text('Date: ' + startstr))
         else:
             lines.append(urwid.Text('Date: ' + startstr + ' - ' + endstr))
+
+        lines.append(urwid.Text('Calendar: ' + event.calendar))
         lines.append(divider)
+
+        if event.description != '':
+            lines.append(urwid.Text(event.description))
 
         pile = CPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
