@@ -205,8 +205,7 @@ class EventColumn(urwid.WidgetWrap):
             self.container.contents.pop()
         if not event:
             return
-        self.container.contents.append((self.divider,
-                                        ('pack', None)))
+        self.container.contents.append((self.divider, ('pack', None)))
         self.container.contents.append(
             (EventDisplay(self.pane.conf, event, collection=self.pane.collection),
              ('weight', self.event_width)))
@@ -251,9 +250,9 @@ class EventColumn(urwid.WidgetWrap):
         editor = EventEditor(self.pane, event)
         current_day = self.container.contents[0][0]
         new_pane = urwid.Columns([
-            ('weight', 1.5, editor),
-            ('weight', 1, current_day)
-        ], dividechars=4, focus_column=0)
+            ('weight', 1.5, urwid.LineBox(editor)),
+            ('weight', 1, urwid.LineBox(current_day))
+        ], dividechars=0, focus_column=0)
         new_pane.title = editor.title
         new_pane.get_keys = editor.get_keys
 
@@ -391,7 +390,8 @@ class EventEditor(urwid.WidgetWrap):
         self.location = event.location
 
         self.startendeditor = StartEndEditor(
-            event.start_local, event.end_local, self.conf, self.pane.eventscolumn.set_current_date)
+            event.start_local, event.end_local, self.conf,
+            self.pane.eventscolumn.original_widget.set_current_date)
         self.recursioneditor = RecursionEditor(self.event.recurobject)
         self.summary = Edit(caption='Title: ', edit_text=event.summary)
 
@@ -543,7 +543,7 @@ class ClassicView(Pane):
         self.conf = conf
         self.collection = collection
         self.deleted = []
-        self.eventscolumn = EventColumn(pane=self)
+        self.eventscolumn = urwid.LineBox(EventColumn(pane=self))
         calendar = CalendarWidget(
             on_date_change=self.show_date,
             keybindings=self.conf['keybindings'],
@@ -551,10 +551,10 @@ class ClassicView(Pane):
             firstweekday=conf['locale']['firstweekday'],
             weeknumbers=conf['locale']['weeknumbers'],
         )
-        events = self.eventscolumn
-        lwidth = 29 if conf['locale']['weeknumbers'] else 25
-        columns = CColumns([(lwidth, calendar), events],
-                           dividechars=4,
+        self.calendar = urwid.LineBox(calendar)
+        lwidth = 31 if conf['locale']['weeknumbers'] == 'right' else 28
+        columns = CColumns([(lwidth, self.calendar), self.eventscolumn],
+                           dividechars=0,
                            box_columns=[0, 1])
         Pane.__init__(self, columns, title=title, description=description)
 
@@ -576,10 +576,10 @@ class ClassicView(Pane):
                 ]
 
     def show_date(self, date):
-        self.eventscolumn.current_date = date
+        self.eventscolumn.original_widget.current_date = date
 
     def new_event(self, date):
-        self.eventscolumn.new(date)
+        self.eventscolumn.original_widget.new(date)
 
     def cleanup(self, data):
         for part in self.deleted:

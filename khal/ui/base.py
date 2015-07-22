@@ -128,6 +128,8 @@ class Window(urwid.Frame):
                ('reveal focus', 'black', 'dark cyan', 'standout'),
                ('today focus', 'white', 'dark cyan', 'standout'),
                ('today', 'black', 'light gray', 'dark cyan'),
+               ('dayname', 'light gray', 'white'),
+               ('monthname', 'light gray', 'white'),
                ('edit', 'white', 'dark blue'),
                ('alert', 'white', 'dark red'),
 
