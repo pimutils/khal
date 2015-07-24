@@ -29,6 +29,7 @@ import sys
 import urwid
 
 from .. import aux
+from . import colors
 from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker, Choice
 from .widgets import ExtendedEdit as Edit
 from .startendeditor import StartEndEditor
@@ -591,7 +592,7 @@ def start_pane(pane, callback, program_info=''):
     """Open the user interface with the given initial pane."""
     frame = Window(footer=program_info + ' | q: quit, ?: help')
     frame.open(pane, callback)
-    loop = urwid.MainLoop(frame, Window.PALETTE,
+    loop = urwid.MainLoop(frame, getattr(colors, pane.conf['default']['theme']),
                           unhandled_input=frame.on_key_press,
                           pop_ups=True)
 
