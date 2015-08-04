@@ -89,7 +89,7 @@ class Event(object):
         """
         if not isinstance(start.dt, datetime):
             return AllDayEvent
-        if 'TZID' in start.params and isinstance(start.dt, datetime):
+        if 'TZID' in start.params or start.dt.tzinfo is not None:
             return LocalizedEvent
         return FloatingEvent
 

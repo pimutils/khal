@@ -274,3 +274,11 @@ def test_recur():
     assert event.recurring is True
     assert event.recurpattern == 'FREQ=DAILY;COUNT=10'
     assert event.recurobject == vRecur({'COUNT': [10], 'FREQ': ['DAILY']})
+
+
+def test_type_inference():
+    event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    assert type(event) == LocalizedEvent
+    event = Event.fromString(_get_text('event_dt_simple_zulu'), **EVENT_KWARGS)
+    assert type(event) == LocalizedEvent
+
