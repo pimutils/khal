@@ -281,4 +281,3 @@ def test_type_inference():
     assert type(event) == LocalizedEvent
     event = Event.fromString(_get_text('event_dt_simple_zulu'), **EVENT_KWARGS)
     assert type(event) == LocalizedEvent
-
