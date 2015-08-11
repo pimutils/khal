@@ -118,11 +118,10 @@ class TestVdirsyncerCompat(object):
         event = Event.fromString(event_today, calendar=cal.name, locale=locale)
         cal.new(event)
         hrefs = sorted(href for href, uid in cal._dbtool.list())
-        assert hrefs == [
-            'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU.ics',
-            'uid3@host1.com.ics'
-        ]
-        assert cal._dbtool.get('uid3@host1.com.ics').uid == 'uid3@host1.com'
+        assert set(str(cal._dbtool.get(href).uid) for href in hrefs) == set((
+            'uid3@host1.com',
+            'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU',
+        ))
 
 aday = date(2014, 4, 9)
 bday = date(2014, 4, 10)
@@ -321,12 +320,11 @@ def test_default_calendar(cal_vdir):
     cal, vdir = cal_vdir
     event = cal.new_event(event_today)
     vdir.upload(event)
-    uid, etag = list(vdir.list())[0]
-    assert uid == 'uid3@host1.com.ics'
+    href, etag = list(vdir.list())[0]
     assert len(cal.get_allday_by_time_range(today)) == 0
     cal.db_update()
     assert len(cal.get_allday_by_time_range(today)) == 1
-    vdir.delete(uid, etag)
+    vdir.delete(href, etag)
     assert len(cal.get_allday_by_time_range(today)) == 1
     cal.db_update()
     assert len(cal.get_allday_by_time_range(today)) == 0
