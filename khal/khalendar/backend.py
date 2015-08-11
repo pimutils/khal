@@ -279,7 +279,8 @@ class SQLiteDb(object):
             dtype = DATE
         else:
             dtype = DATETIME
-        if 'TZID' in vevent['DTSTART'].params and dtype == DATETIME:
+        if ('TZID' in vevent['DTSTART'].params and dtype == DATETIME) or \
+                getattr(vevent['DTSTART'].dt, 'tzinfo', None):
             recs_table = 'recs_loc'
         else:
             recs_table = 'recs_float'

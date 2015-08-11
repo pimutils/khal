@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 import icalendar
 
 from khal.khalendar import backend
+from khal.khalendar.event import LocalizedEvent
 from khal.compat import unicode_type
 from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 
@@ -522,6 +523,19 @@ def test_update_one_should_not_affect_others(tmpdir):
     db.update(event_rrule_multi_this_and_future_allday, href='second')
     events = db.get_allday_range(start=date(2015, 4, 9))
     assert len(list(events)) == 1
+
+
+def test_zuluv_events(tmpdir):
+    """test if events in Zulu time are correctly recognized as locaized events"""
+    dbpath = str(tmpdir) + '/khal.db'
+    db = backend.SQLiteDb('home', dbpath, locale=LOCALE_BERLIN)
+    db.update(_get_text('event_dt_simple_zulu'), href='event_zulu')
+    events = db.get_time_range(datetime(2014, 4, 9, 0, 0), datetime(2014, 4, 10, 0, 0))
+    events = list(events)
+    assert len(events) == 1
+    event = events[0]
+    assert type(event) == LocalizedEvent
+    assert event.start_local == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
 
 
 event_rdate_period = """BEGIN:VEVENT
