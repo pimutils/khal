@@ -535,7 +535,7 @@ def test_zuluv_events(tmpdir):
     assert len(events) == 1
     event = events[0]
     assert type(event) == LocalizedEvent
-    assert event.start_local == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
+    assert event.start_local == BERLIN.localize(datetime(2014, 4, 9, 11, 30))
 
 
 event_rdate_period = """BEGIN:VEVENT
