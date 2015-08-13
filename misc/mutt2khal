@@ -1,0 +1,48 @@
+#!/usr/bin/awk -f
+# mutt2khal is designed to be used in conjunction with vcalendar-filter (https://github.com/datamuc/mutt-filters/blob/master/vcalendar-filter)
+# and was inspired by the work of Jason Ryan (https://bitbucket.org/jasonwryan/shiv/src/tip/Scripts/mutt2khal)
+# example muttrc: macro attach A "<pipe-message>vcalendar-filter | mutt2khal<enter>"
+
+
+/^Summary/ {
+  sub(/^Summary[ ]*:[ ]*/, "")
+  summ = $0
+  next
+}
+
+/^Location/ {
+  sub(/^Location[ ]*:[ ]*/,"")
+  loc = sprintf("-l \"%s\"", $0)
+  next
+}
+
+/^Desc/ {
+  sub(/^Description[ ]*:[ ]*/, "")
+  desc = ":: " $0
+  next
+}
+
+/^Dtstart/ {
+  split($3, a, "-")
+  t_st = $4
+  d_st = sprintf("%s.%s.%s", a[3], a[2], a[1])
+  next
+}
+
+/^Dtend/ {
+  split($3, a, "-")
+  t_end = $4
+  d_end = sprintf("%s.%s.%s", a[3], a[2], a[1])
+  next
+}
+
+END {
+  print "khal new", loc, d_st, t_st, d_end, t_end, summ, desc | "sh"
+}
+
+## IMPORTANT ##
+
+# the d_st and d_end variables assume the default datetimeformat variable of
+#%d.%m.%Y, if another format is in use, the sprintf variables must be changed
+#accordingly. For example, if the datetimeforma is set to %m.%d.%Y, use:
+#sprintf("%s.%s.%s", a[2], a[3], a[1])
