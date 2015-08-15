@@ -330,7 +330,7 @@ def _get_cli():
         formats to check if these locale settings are configured to once
         liking.'''
         from datetime import datetime
-        time = datetime(2013, 12, 11, 10, 9)
+        time = datetime(2013, 12, 21, 10, 9)
 
         for strftime_format in [
                 'longdatetimeformat', 'datetimeformat', 'longdateformat',
