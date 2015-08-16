@@ -327,7 +327,7 @@ def _get_cli():
         '''Print a date in all formats.
 
         Print the date 2013-12-21 10:09 in all configured date(time)
-        formats to check if these locale settings are configured to one's
+        formats to check if these locale settings are configured to ones
         liking.'''
         from datetime import datetime
         time = datetime(2013, 12, 21, 10, 9)
