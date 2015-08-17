@@ -227,10 +227,10 @@ def test_printformats(runner):
     runner = runner(command='printformats', showalldays=False, days=2)
 
     result = runner.invoke(main_khal)
-    assert '\n'.join(['longdatetimeformat: 11.12.2013 10:09',
-                      'datetimeformat: 11.12. 10:09',
-                      'longdateformat: 11.12.2013',
-                      'dateformat: 11.12.',
+    assert '\n'.join(['longdatetimeformat: 21.12.2013 10:09',
+                      'datetimeformat: 21.12. 10:09',
+                      'longdateformat: 21.12.2013',
+                      'dateformat: 21.12.',
                       'timeformat: 10:09',
                       '']) == result.output
     assert not result.exception
