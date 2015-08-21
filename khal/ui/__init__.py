@@ -250,9 +250,14 @@ class EventColumn(urwid.WidgetWrap):
         self.editor = True
         editor = EventEditor(self.pane, event)
         current_day = self.container.contents[0][0]
+
+        if self.pane.conf['view']['frame']:
+            ContainerWidget = urwid.LineBox
+        else:
+            ContainerWidget = urwid.WidgetPlaceholder
         new_pane = urwid.Columns([
-            ('weight', 1.5, urwid.LineBox(editor)),
-            ('weight', 1, urwid.LineBox(current_day))
+            ('weight', 1.5, ContainerWidget(editor)),
+            ('weight', 1, ContainerWidget(current_day))
         ], dividechars=0, focus_column=0)
         new_pane.title = editor.title
         new_pane.get_keys = editor.get_keys
@@ -544,7 +549,9 @@ class ClassicView(Pane):
         self.conf = conf
         self.collection = collection
         self.deleted = []
-        self.eventscolumn = urwid.LineBox(EventColumn(pane=self))
+
+        ContainerWidget = urwid.LineBox if self.conf['view']['frame'] else urwid.WidgetPlaceholder
+        self.eventscolumn = ContainerWidget(EventColumn(pane=self))
         calendar = CalendarWidget(
             on_date_change=self.show_date,
             keybindings=self.conf['keybindings'],
@@ -552,7 +559,7 @@ class ClassicView(Pane):
             firstweekday=conf['locale']['firstweekday'],
             weeknumbers=conf['locale']['weeknumbers'],
         )
-        self.calendar = urwid.LineBox(calendar)
+        self.calendar = ContainerWidget(calendar)
         lwidth = 31 if conf['locale']['weeknumbers'] == 'right' else 28
         columns = CColumns([(lwidth, self.calendar), self.eventscolumn],
                            dividechars=0,
@@ -592,7 +599,7 @@ def start_pane(pane, callback, program_info=''):
     """Open the user interface with the given initial pane."""
     frame = Window(footer=program_info + ' | q: quit, ?: help')
     frame.open(pane, callback)
-    loop = urwid.MainLoop(frame, getattr(colors, pane.conf['default']['theme']),
+    loop = urwid.MainLoop(frame, getattr(colors, pane.conf['view']['theme']),
                           unhandled_input=frame.on_key_press,
                           pop_ups=True)
 

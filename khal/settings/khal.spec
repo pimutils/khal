@@ -135,6 +135,16 @@ days = integer(default=2)
 # event in text form, the path to where the event is now saved or nothing?
 print_new = option('event', 'path', 'False', default=False)
 
+# The view section contains config options that effect the visual appearance
+# when using ikhal
+[view]
+
+# This is the weighting that is applied to the event view window
+event_view_weighting = integer(default=1)
+
+# Set to true to always show the event view window when looking at the event list
+event_view_always_visible = boolean(default=False)
+
 # Choose a color theme for khal. This is very much work in progress. Help is
 # really welcome! The two currently available color schemes (*dark* and
 # *light*) reside in `khal/ui/themes.py*, you can either help improve those or
@@ -150,12 +160,6 @@ print_new = option('event', 'path', 'False', default=False)
 # __ http://insert.link
 theme = option('dark', 'light', default='dark')
 
-# The view section contains config options that effect the visual appearance
-# when using khal
-[view]
-
-# This is the weighting that is applied to the event view window
-event_view_weighting = integer(default=1)
-
-# Set to true to always show the event view window when looking at the event list
-event_view_always_visible = boolean(default=False)
+# Whether to show a visible frame (with *box drawing* characters) around some
+# (groups of) elements.
+frame = boolean(default=False)
