@@ -238,7 +238,6 @@ def construct_event(dtime_list, locale,
     see tests for examples
 
     """
-    assert all(isinstance(x, str) for x in dtime_list)
     today = datetime.today()
     try:
         dtstart, all_day = guessdatetimefstr(dtime_list, locale)
