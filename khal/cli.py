@@ -167,6 +167,7 @@ def prepare_context(ctx, config, verbose):
     except InvalidSettingsError:
         sys.exit(1)
 
+    logger.debug('khal %s' % __version__)
     logger.debug('Using config:')
     logger.debug(to_unicode(stringify_conf(conf), 'utf-8'))
 
