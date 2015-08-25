@@ -216,7 +216,7 @@ def test_invalid_calendar(runner):
 def test_no_vevent(runner, tmpdir, contents):
     runner = runner(command='agenda', showalldays=False, days=2)
     broken_item = runner.calendars['one'].join('broken_item.ics')
-    broken_item.write(to_bytes(contents, 'utf-8'), mode='wb')
+    broken_item.write(to_bytes(contents), mode='wb')
 
     result = runner.invoke(main_khal)
     assert not result.exception

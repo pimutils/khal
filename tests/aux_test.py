@@ -36,7 +36,7 @@ locale_de = {
 
 
 def _create_testcases(*cases):
-    return [(userinput, to_bytes('\r\n'.join(output) + '\r\n', 'utf-8'))
+    return [(userinput, to_bytes('\r\n'.join(output) + '\r\n'))
             for userinput, output in cases]
 
 
