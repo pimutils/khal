@@ -103,7 +103,6 @@ class HelpPane(Pane):
 
 
 class Window(urwid.Frame):
-
     """The main user interface frame.
 
     A window is a frame which displays a header, a footer and a body.
@@ -115,44 +114,6 @@ class Window(urwid.Frame):
     provides a mechanism allowing the panes to chain themselves, and
     to carry data between them.
     """
-    PALETTE = [('header', 'white', 'black'),
-               ('footer', 'white', 'black'),
-               ('line header', 'black', 'white', 'bold'),
-               ('bright', 'dark blue', 'white', ('bold', 'standout')),
-               ('list', 'black', 'white'),
-               ('list focused', 'white', 'light blue', 'bold'),
-               ('edit', 'black', 'white'),
-               ('edit focused', 'white', 'light blue', 'bold'),
-               ('button', 'black', 'dark cyan'),
-               ('button focused', 'white', 'light blue', 'bold'),
-               ('reveal focus', 'black', 'dark cyan', 'standout'),
-               ('today focus', 'white', 'dark cyan', 'standout'),
-               ('today', 'black', 'light gray', 'dark cyan'),
-               ('edit', 'white', 'dark blue'),
-               ('alert', 'white', 'dark red'),
-
-               ('editfc', 'white', 'dark blue', 'bold'),
-               ('editbx', 'light gray', 'dark blue'),
-               ('editcp', 'black', 'light gray', 'standout'),
-               ('popupbg', 'white', 'black', 'bold'),
-
-               ('black', 'black', ''),
-               ('dark red', 'dark red', ''),
-               ('dark green', 'dark green', ''),
-               ('brown', 'brown', ''),
-               ('dark blue', 'dark blue', ''),
-               ('dark magenta', 'dark magenta', ''),
-               ('dark cyan', 'dark cyan', ''),
-               ('light gray', 'light gray', ''),
-               ('dark gray', 'dark gray', ''),
-               ('light red', 'light red', ''),
-               ('light green', 'light green', ''),
-               ('yellow', 'yellow', ''),
-               ('light blue', 'light blue', ''),
-               ('light magenta', 'light magenta', ''),
-               ('light cyan', 'light cyan', ''),
-               ('white', 'white', ''),
-               ]
 
     def __init__(self, footer=''):
         self._track = []

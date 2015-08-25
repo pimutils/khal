@@ -29,6 +29,7 @@ import sys
 import urwid
 
 from .. import aux
+from . import colors
 from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker, Choice
 from .widgets import ExtendedEdit as Edit
 from .startendeditor import StartEndEditor
@@ -205,8 +206,7 @@ class EventColumn(urwid.WidgetWrap):
             self.container.contents.pop()
         if not event:
             return
-        self.container.contents.append((self.divider,
-                                        ('pack', None)))
+        self.container.contents.append((self.divider, ('pack', None)))
         self.container.contents.append(
             (EventDisplay(self.pane.conf, event, collection=self.pane.collection),
              ('weight', self.event_width)))
@@ -250,10 +250,15 @@ class EventColumn(urwid.WidgetWrap):
         self.editor = True
         editor = EventEditor(self.pane, event)
         current_day = self.container.contents[0][0]
+
+        if self.pane.conf['view']['frame']:
+            ContainerWidget = urwid.LineBox
+        else:
+            ContainerWidget = urwid.WidgetPlaceholder
         new_pane = urwid.Columns([
-            ('weight', 1.5, editor),
-            ('weight', 1, current_day)
-        ], dividechars=4, focus_column=0)
+            ('weight', 1.5, ContainerWidget(editor)),
+            ('weight', 1, ContainerWidget(current_day))
+        ], dividechars=0, focus_column=0)
         new_pane.title = editor.title
         new_pane.get_keys = editor.get_keys
 
@@ -391,7 +396,8 @@ class EventEditor(urwid.WidgetWrap):
         self.location = event.location
 
         self.startendeditor = StartEndEditor(
-            event.start_local, event.end_local, self.conf, self.pane.eventscolumn.set_current_date)
+            event.start_local, event.end_local, self.conf,
+            self.pane.eventscolumn.original_widget.set_current_date)
         self.recursioneditor = RecursionEditor(self.event.recurobject)
         self.summary = Edit(caption='Title: ', edit_text=event.summary)
 
@@ -543,7 +549,9 @@ class ClassicView(Pane):
         self.conf = conf
         self.collection = collection
         self.deleted = []
-        self.eventscolumn = EventColumn(pane=self)
+
+        ContainerWidget = urwid.LineBox if self.conf['view']['frame'] else urwid.WidgetPlaceholder
+        self.eventscolumn = ContainerWidget(EventColumn(pane=self))
         calendar = CalendarWidget(
             on_date_change=self.show_date,
             keybindings=self.conf['keybindings'],
@@ -551,10 +559,10 @@ class ClassicView(Pane):
             firstweekday=conf['locale']['firstweekday'],
             weeknumbers=conf['locale']['weeknumbers'],
         )
-        events = self.eventscolumn
-        lwidth = 29 if conf['locale']['weeknumbers'] else 25
-        columns = CColumns([(lwidth, calendar), events],
-                           dividechars=4,
+        self.calendar = ContainerWidget(calendar)
+        lwidth = 31 if conf['locale']['weeknumbers'] == 'right' else 28
+        columns = CColumns([(lwidth, self.calendar), self.eventscolumn],
+                           dividechars=0,
                            box_columns=[0, 1])
         Pane.__init__(self, columns, title=title, description=description)
 
@@ -576,10 +584,10 @@ class ClassicView(Pane):
                 ]
 
     def show_date(self, date):
-        self.eventscolumn.current_date = date
+        self.eventscolumn.original_widget.current_date = date
 
     def new_event(self, date):
-        self.eventscolumn.new(date)
+        self.eventscolumn.original_widget.new(date)
 
     def cleanup(self, data):
         for part in self.deleted:
@@ -591,7 +599,7 @@ def start_pane(pane, callback, program_info=''):
     """Open the user interface with the given initial pane."""
     frame = Window(footer=program_info + ' | q: quit, ?: help')
     frame.open(pane, callback)
-    loop = urwid.MainLoop(frame, Window.PALETTE,
+    loop = urwid.MainLoop(frame, getattr(colors, pane.conf['view']['theme']),
                           unhandled_input=frame.on_key_press,
                           pop_ups=True)
 

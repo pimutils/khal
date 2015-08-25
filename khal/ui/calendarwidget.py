@@ -280,12 +280,15 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         """
         if 1 in [day.day for day in week]:
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
+            attr = 'monthname'
         elif self.weeknumbers == 'left':
             month_name = ' {:2} '.format(getweeknumber(week[0]))
+            attr = 'weeknumber'
         else:
             month_name = '    '
+            attr = None
 
-        this_week = [(4, urwid.Text(month_name))]
+        this_week = [(4, urwid.AttrMap(urwid.Text(month_name), attr))]
         today = None
         for number, day in enumerate(week):
             if day == date.today():
@@ -341,8 +344,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             if contains_today:
                 focus_item = number
             weeks.append(week)
-        if clean_first_row and \
-           weeks[0][1].date.month != weeks[0][7].date.month:
+        if clean_first_row and weeks[0][1].date.month != weeks[0][7].date.month:
             if focus_item is not None:
                 focus_item = focus_item - 1
             return weeks[1:], focus_item
@@ -386,7 +388,8 @@ class CalendarWidget(urwid.WidgetWrap):
         if weeknumbers == 'right':
             dnames.append('#w')
         dnames = urwid.Columns(
-            [(4, urwid.Text('    '))] + [(2, urwid.Text(name)) for name in dnames],
+            [(4, urwid.Text('    '))] +
+            [(2, urwid.AttrMap(urwid.Text(name), 'dayname')) for name in dnames],
             dividechars=1)
         self.walker = CalendarWalker(
             on_date_change, on_press, default_keybindings, firstweekday, weeknumbers)
