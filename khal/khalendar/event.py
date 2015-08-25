@@ -28,7 +28,8 @@ from datetime import date, datetime, time, timedelta
 
 import icalendar
 
-from ..compat import iteritems, to_unicode
+from ..compat import to_unicode
+from six import iteritems
 from .aux import to_naive_utc, to_unix_time, invalid_timezone
 from ..log import logger
 

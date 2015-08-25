@@ -20,7 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import sys
+import six
 
 
 def to_unicode(string, *args, **kwargs):
@@ -35,19 +35,5 @@ def to_bytes(string, *args, **kwargs):
     return string
 
 
-if sys.version_info[0] == 2:  # pragma: nocover
-    VERSION = 2
-    unicode_type = unicode  # NOQA
-    bytes_type = str
-    to_native = to_bytes
-
-    def iteritems(d, *args, **kwargs):
-        return iter(d.iteritems(*args, **kwargs))
-else:  # pragma: nocover
-    VERSION = 3
-    unicode_type = str
-    bytes_type = bytes
-    to_native = to_unicode
-
-    def iteritems(d, *args, **kwargs):
-        return iter(d.items(*args, **kwargs))
+unicode_type = six.text_type
+bytes_type = six.binary_type
