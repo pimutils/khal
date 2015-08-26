@@ -34,6 +34,5 @@ def to_bytes(string, *args, **kwargs):
         return string.encode(*args, **kwargs)
     return string
 
-
 unicode_type = six.text_type
 bytes_type = six.binary_type

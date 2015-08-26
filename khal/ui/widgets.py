@@ -24,8 +24,7 @@ from datetime import date, datetime, timedelta
 import re
 
 import urwid
-
-from ..compat import to_unicode
+import six
 
 
 class DateConversionError(Exception):
@@ -86,30 +85,30 @@ class ExtendedEdit(urwid.Edit):
 
     def _delete_word(self):
         """delete word before cursor"""
-        text = to_unicode(self.get_edit_text(), 'utf-8')
+        text = six.u(self.get_edit_text())
         f_text = delete_last_word(text[:self.edit_pos])
         self.set_edit_text(f_text + text[self.edit_pos:])
         self.set_edit_pos(len(f_text))
 
     def _delete_till_beginning_of_line(self):
         """delete till start of line before cursor"""
-        text = to_unicode(self.get_edit_text(), 'utf-8')
+        text = six.u(self.get_edit_text())
         f_text = delete_till_beginning_of_line(text[:self.edit_pos])
         self.set_edit_text(f_text + text[self.edit_pos:])
         self.set_edit_pos(len(f_text))
 
     def _delete_till_end_of_line(self):
         """delete till end of line before cursor"""
-        text = to_unicode(self.get_edit_text(), 'utf-8')
+        text = six.u(self.get_edit_text())
         f_text = delete_till_end_of_line(text[self.edit_pos:])
         self.set_edit_text(text[:self.edit_pos] + f_text)
 
     def _goto_beginning_of_line(self):
-        text = to_unicode(self.get_edit_text(), 'utf-8')
+        text = six.u(self.get_edit_text())
         self.set_edit_pos(goto_beginning_of_line(text[:self.edit_pos]))
 
     def _goto_end_of_line(self):
-        text = to_unicode(self.get_edit_text(), 'utf-8')
+        text = six.u(self.get_edit_text())
         self.set_edit_pos(goto_end_of_line(text[self.edit_pos:]) + self.edit_pos)
 
 

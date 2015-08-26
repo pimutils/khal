@@ -23,8 +23,6 @@
 """this module contains some helper functions converting strings or list of
 strings to date(time) or event objects"""
 
-from .compat import to_unicode
-
 from datetime import date, datetime, timedelta
 from datetime import time as dtime
 import random
@@ -283,7 +281,7 @@ def construct_event(dtime_list, locale,
             dtend = locale['default_timezone'].localize(dtend)
 
     event = icalendar.Event()
-    text = to_unicode(' '.join(dtime_list), encoding)
+    text = ' '.join(dtime_list)
     if not description or not location:
         summary = text.split(' :: ', 1)[0]
         try:

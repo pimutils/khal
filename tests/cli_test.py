@@ -8,7 +8,6 @@ from datetime import timedelta
 import pytest
 from click.testing import CliRunner
 
-from khal.compat import to_bytes
 from khal.cli import main_khal
 
 from .aux import _get_text
@@ -216,7 +215,7 @@ def test_invalid_calendar(runner):
 def test_no_vevent(runner, tmpdir, contents):
     runner = runner(command='agenda', showalldays=False, days=2)
     broken_item = runner.calendars['one'].join('broken_item.ics')
-    broken_item.write(to_bytes(contents), mode='wb')
+    broken_item.write(contents, mode='w')
 
     result = runner.invoke(main_khal)
     assert not result.exception
