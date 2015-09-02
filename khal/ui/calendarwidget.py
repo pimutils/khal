@@ -27,6 +27,8 @@ from datetime import date
 
 import urwid
 
+from .. import compat
+
 
 def getweeknumber(day):
     """return iso week number for datetime.date object
@@ -384,7 +386,13 @@ class CalendarWidget(urwid.WidgetWrap):
 
         default_keybindings.update(keybindings)
         calendar.setfirstweekday(firstweekday)
-        dnames = calendar.weekheader(2).split(' ')
+
+        weekheader = calendar.weekheader(2)
+        # calendar.weekheader returns bytes for python2 and unicode for python3
+        if compat.VERSION == 2:
+            weekheader = weekheader.decode('utf-8')
+        dnames = weekheader.split(' ')
+
         if weeknumbers == 'right':
             dnames.append('#w')
         dnames = urwid.Columns(
