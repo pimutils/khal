@@ -162,6 +162,13 @@ def sanitize_timerange(dtstart, dtend, duration=None):
             dtstart = dtstart.date()
         dtend = dtstart + timedelta(days=1)
     elif dtend is not None:
+        utc = pytz.UTC
+
+        if hasattr(dtend, 'tzinfo') and dtend.tzinfo is not None:
+            dtend = dtend.replace(tzinfo=None)
+        if hasattr(dtstart, 'tzinfo') and dtstart.tzinfo is not None:
+            dtstart = dtstart.replace(tzinfo=None)
+
         if dtend < dtstart:
             raise ValueError('The event\'s end time (DTEND) is older than '
                              'the event\'s start time (DTSTART).')
@@ -215,6 +222,8 @@ def to_naive_utc(dtime):
 
 def invalid_timezone(prop):
     """check if a icalendar property has a timezone attached we don't understand"""
+    if not hasattr(prop, 'dt'):
+        return False
     if hasattr(prop.dt, 'tzinfo') and prop.dt.tzinfo is None and 'TZID' in prop.params:
         return True
     else:
