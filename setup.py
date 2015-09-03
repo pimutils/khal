@@ -14,6 +14,7 @@ requirements = [
     'python-dateutil',
     'configobj',
     'tzlocal>=1.0',
+    'six',
 ]
 
 extra_requirements = {

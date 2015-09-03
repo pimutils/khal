@@ -32,12 +32,12 @@ except ImportError:
 
 import click
 import pytz
+import six
 
 from khal import aux, controllers, khalendar, __version__
 from khal.log import logger
 from khal.settings import get_config, InvalidSettingsError
 from khal.exceptions import FatalError
-from .compat import to_unicode
 from .terminal import colored, get_terminal_size
 
 
@@ -169,7 +169,7 @@ def prepare_context(ctx, config, verbose):
 
     logger.debug('khal %s' % __version__)
     logger.debug('Using config:')
-    logger.debug(to_unicode(stringify_conf(conf), 'utf-8'))
+    logger.debug(six.u(stringify_conf(conf)))
 
     if conf is None:
         raise click.UsageError('Invalid config file, exiting.')
@@ -356,10 +356,7 @@ def _get_cli():
         for event in events:
             desc = textwrap.wrap(event.event_description, term_width)
             event_column.extend([colored(d, event.color) for d in desc])
-        click.echo(to_unicode(
-            '\n'.join(event_column),
-            ctx.obj['conf']['locale']['encoding'])
-        )
+        click.echo(six.u('\n'.join(event_column)))
 
     @cli.command()
     @multi_calendar_option
@@ -398,10 +395,7 @@ def _get_cli():
         for event in events:
             desc = textwrap.wrap(event.event_description, term_width)
             event_column.extend([colored(d, event.color) for d in desc])
-        click.echo(to_unicode(
-            '\n'.join(event_column),
-            ctx.obj['conf']['locale']['encoding'])
-        )
+        click.echo(six.u('\n'.join(event_column)))
 
     return cli, interactive_cli
 

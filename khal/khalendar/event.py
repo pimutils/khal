@@ -27,8 +27,8 @@ from __future__ import unicode_literals
 from datetime import date, datetime, time, timedelta
 
 import icalendar
+from six import iteritems
 
-from ..compat import iteritems, to_unicode
 from .aux import to_naive_utc, to_unix_time, invalid_timezone
 from ..log import logger
 
@@ -387,7 +387,7 @@ class Event(object):
         location = '\nLocation: ' + self.location if self.location != '' else ''
         description = '\nDescription: ' + self.description if \
             self.description != '' else ''
-        repitition = '\nRepeat: ' + to_unicode(self.recurpattern) if \
+        repitition = '\nRepeat: ' + self.recurpattern if \
             self.recurpattern != '' else ''
 
         return '{}: {}{}{}{}'.format(

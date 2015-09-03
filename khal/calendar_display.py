@@ -24,19 +24,14 @@ from __future__ import print_function
 import calendar
 import datetime
 
+import six
 from click import style
-
-from .compat import VERSION
 
 
 def month_abbr(month_no):
     """calendar.month_abbr[] are str (text) in python3 and str (bytes) in
     python2 """
-    if VERSION == 2:
-        # TODO check if how they are really encoded
-        return calendar.month_abbr[month_no].decode('utf-8')
-    elif VERSION == 3:
-        return calendar.month_abbr[month_no]
+    return six.u(calendar.month_abbr[month_no])
 
 
 def getweeknumber(date):
