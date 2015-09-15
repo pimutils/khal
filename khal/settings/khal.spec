@@ -110,6 +110,9 @@ today = force_list(default=list('t'))
 # save the currently edited event and leave the event editor
 save = force_list(default=list('meta enter'))
 
+# duplicate the currently selected event
+duplicate = force_list(default=list('p'))
+
 # The default section begins with a **[default]** tag. Some default values and
 # behaviours are set here.
 [default]

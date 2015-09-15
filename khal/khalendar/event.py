@@ -29,6 +29,7 @@ from datetime import date, datetime, time, timedelta
 import icalendar
 
 from ..compat import iteritems, to_unicode
+from ..aux import generate_random_uid
 from .aux import to_naive_utc, to_unix_time, invalid_timezone
 from ..log import logger
 
@@ -392,6 +393,21 @@ class Event(object):
 
         return '{}: {}{}{}{}'.format(
             self._rangestr, self.summary, location, repitition, description)
+
+    def duplicate(self):
+        """duplicate this event's PROTO event
+
+        :rtype: Event
+        """
+        new_uid = generate_random_uid()
+        vevent = self._vevents['PROTO'].copy()
+        vevent['SEQUENCE'] = 0
+        vevent['UID'] = new_uid
+        vevent['SUMMARY'] = vevent['SUMMARY'] + ' Copy'
+        event = self.fromVEvents([vevent])
+        event.calendar = self.calendar
+        return event
+
 
 
 class DatetimeEvent(Event):

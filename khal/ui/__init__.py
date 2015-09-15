@@ -92,6 +92,12 @@ class U_Event(urwid.Text):
             self.eventcolumn.pane.deleted.append(self.uid)
         self.set_title()
 
+    def duplicate(self):
+        """duplicate this event"""
+        event = self.event.duplicate()
+        event = self.eventcolumn.pane.collection.new(event)
+        # TODO reload this event list
+
     def keypress(self, _, key):
         binds = self.conf['keybindings']
         if key in binds['left']:
@@ -110,6 +116,8 @@ class U_Event(urwid.Text):
                 self.eventcolumn.current_event = self.event
         elif key in binds['delete']:
             self.toggle_delete()
+        elif key in binds['duplicate']:
+            self.duplicate()
         elif key in ['left', 'up', 'down']:
             if not self.conf['view']['event_view_always_visible']:
                 self.eventcolumn.current_event = None
