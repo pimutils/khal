@@ -281,3 +281,9 @@ def test_type_inference():
     assert type(event) == LocalizedEvent
     event = Event.fromString(_get_text('event_dt_simple_zulu'), **EVENT_KWARGS)
     assert type(event) == LocalizedEvent
+
+
+def test_duplicate_event():
+    event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    dupe = event.duplicate()
+    assert dupe._vevents['PROTO']['UID'].to_ical() != 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'

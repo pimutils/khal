@@ -402,8 +402,8 @@ class Event(object):
         new_uid = generate_random_uid()
         vevent = self._vevents['PROTO'].copy()
         vevent['SEQUENCE'] = 0
-        vevent['UID'] = new_uid
-        vevent['SUMMARY'] = vevent['SUMMARY'] + ' Copy'
+        vevent['UID'] = icalendar.vText(new_uid)
+        vevent['SUMMARY'] = icalendar.vText(vevent['SUMMARY'] + ' Copy')
         event = self.fromVEvents([vevent])
         event.calendar = self.calendar
         return event
