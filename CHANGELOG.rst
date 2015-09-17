@@ -13,7 +13,20 @@ not released yet
 
 * most of the internal representation of events was rewritten, the current
   benefit is that floating events are properly represented now, hopefully more
-  is to come
+  is to come (Christian Geier)
+* *printformats* uses a more sensible date now (John Shea)
+
+ikhal
+----
+
+* events are now displayed nicer (Thomas Glanzmann)
+* support for colorschemes, a *light* and *dark* one are currently included,
+  help is wanted to make them prettier and more functional (config option
+  *[view] theme: dark*) (Christian Geier)
+* ikhal can now display frames around some user interface elements, making it
+  nicer to look at in some eyes (config option *[view] frame: True*) (Christian
+  Geier)
+* events can now be duplicated (default keybinding: *p*) (Christian Geier)
 
 0.6.0
 =====
@@ -37,7 +50,7 @@ not released yet
   Unterwaditzer)
 * the zsh completion file has been updated (Hugo Osvaldo Barrera)
 * new command `import` lets users import .ics files (Christian Geier)
-* khal should accept relative dates on the command line (today, tomorrow and 
+* khal should accept relative dates on the command line (today, tomorrow and
   weekday names) (Christian Geier)
 * keybinding for saving an event from ikhal's event editor (default is `meta +
   enter`) (Christian Geier)
