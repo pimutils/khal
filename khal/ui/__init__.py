@@ -94,9 +94,11 @@ class U_Event(urwid.Text):
 
     def duplicate(self):
         """duplicate this event"""
+        focused = self.eventcolumn.events.list_walker.focus
         event = self.event.duplicate()
         event = self.eventcolumn.pane.collection.new(event)
-        # TODO reload this event list
+        self.eventcolumn.set_current_date(self.eventcolumn.current_date)
+        self.eventcolumn.events.list_walker.set_focus(focused)
 
     def keypress(self, _, key):
         binds = self.conf['keybindings']
