@@ -198,7 +198,6 @@ class EventColumn(urwid.WidgetWrap):
         self._current_date = None
         self.event_width = int(self.pane.conf['view']['event_view_weighting'])
 
-        # TODO make this switch from pile to columns depending on terminal size
         self.events = EventList(eventcolumn=self)
         self.container = CPile([self.events])
         urwid.WidgetWrap.__init__(self, self.container)

@@ -44,11 +44,9 @@ class Date(urwid.Text):
 
     """used in the main calendar for dates (a number)"""
 
-    def __init__(self, date, on_date_change, on_press, keybindings):
+    def __init__(self, date, on_date_change):
         self.date = date
         self.on_date_change = on_date_change
-        self.on_press = on_press
-        self.keybindings = keybindings
         if date.today == date:
             urwid.AttrMap(super(Date, self).__init__(str(date.day).rjust(2)),
                           None,
@@ -61,10 +59,7 @@ class Date(urwid.Text):
         return True
 
     def keypress(self, _, key):
-        if key in self.on_press:
-            return self.on_press[key](self.date)
-        else:
-            return key
+        return key
 
 
 class DateCColumns(urwid.Columns):
@@ -156,6 +151,7 @@ class CListBox(urwid.ListBox):
     def __init__(self, walker):
         self._init = True
         self.keybindings = walker.keybindings
+        self.on_press = walker.on_press
         super(CListBox, self).__init__(walker)
 
     def render(self, size, focus=False):
@@ -168,11 +164,14 @@ class CListBox(urwid.ListBox):
         return super(CListBox, self).render(size, focus)
 
     def keypress(self, size, key):
+        if key in self.on_press:
+            return self.on_press[key](self.body.focus_date)
         if key in self.keybindings['today']:
             self.body.set_focus(self.body.today)
             week = self.body[self.body.today]
             week.set_focus(week.today)
             self.set_focus_valign(('relative', 10))
+
         return super(CListBox, self).keypress(size, key)
 
 
@@ -293,12 +292,11 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         this_week = [(4, urwid.AttrMap(urwid.Text(month_name), attr))]
         today = None
         for number, day in enumerate(week):
+            new_date = Date(day, self.on_date_change)
             if day == date.today():
-                new_date = Date(day, self.on_date_change, self.on_press, self.keybindings)
                 this_week.append((2, urwid.AttrMap(new_date, 'today', 'today focus')))
                 today = number + 1
             else:
-                new_date = Date(day, self.on_date_change, self.on_press, self.keybindings)
                 this_week.append((2, urwid.AttrMap(new_date, None, 'reveal focus')))
         if self.weeknumbers == 'right':
             this_week.append((2, urwid.Text('{:2}'.format(getweeknumber(week[0])))))
