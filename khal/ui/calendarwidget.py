@@ -82,6 +82,7 @@ class DateCColumns(urwid.Columns):
         # cell regains focus after having lost it the the events column before
         self._old_attr_map = False
         self._old_pos = 0
+        self._init = True
         super(DateCColumns, self).__init__(widget_list, focus_column=today,
                                            **kwargs)
 
@@ -90,8 +91,12 @@ class DateCColumns(urwid.Columns):
 
     def _set_focus_position(self, position):
         """calls on_date_change before calling super()._set_focus_position"""
-
-        self.on_date_change(self.contents[position][0].original_widget.date)
+        # do not call when building up the interface, lots of potentially
+        # expensive calls made here
+        if self._init:
+            self._init = False
+        else:
+            self.on_date_change(self.contents[position][0].original_widget.date)
         super(DateCColumns, self)._set_focus_position(position)
 
     def set_focus_date(self, a_date):
