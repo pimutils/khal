@@ -2,6 +2,7 @@
 # vim: set ts=4 sw=4 expandtab sts=4:
 
 import os
+import sys
 import datetime
 from datetime import timedelta
 
@@ -9,7 +10,7 @@ import pytest
 from click.testing import CliRunner
 
 from khal.compat import to_bytes
-from khal.cli import main_khal
+from khal.cli import main_khal, main_ikhal
 
 from .aux import _get_text
 
@@ -245,3 +246,22 @@ def test_repeating(runner):
             now, end_date.strftime('%d.%m.%Y')).split())
     assert result.output == ''
     assert not result.exception
+
+
+def test_interactive_command(runner, monkeypatch):
+    runner = runner(command='agenda', showalldays=False, days=2)
+    token = "hooray"
+
+    def fake_ui(*a, **kw):
+        print(token)
+        sys.exit(0)
+
+    monkeypatch.setattr('khal.ui.start_pane', fake_ui)
+
+    result = runner.invoke(main_ikhal, ['-a', 'one'])
+    assert not result.exception
+    assert result.output.strip() == token
+
+    result = runner.invoke(main_khal, ['interactive', '-a', 'one'])
+    assert not result.exception
+    assert result.output.strip() == token

@@ -117,10 +117,22 @@ def calendar_option(f):
 
 
 def global_options(f):
+    def config_callback(ctx, option, config):
+        prepare_context(ctx, config)
+
+    def verbosity_callback(ctx, option, verbose):
+        if verbose:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+
     config = click.option('--config', '-c', default=None, metavar='PATH',
-                          help='The config file to use.')
+                          help='The config file to use.', is_eager=True,
+                          expose_value=False, callback=config_callback)
     verbose = click.option('--verbose', '-v', is_flag=True,
-                           help='Output debugging information.')
+                           help='Output debugging information.',
+                           expose_value=False,
+                           callback=verbosity_callback)
     version = click.version_option(version=__version__)
 
     return config(verbose(version(f)))
@@ -152,14 +164,8 @@ def build_collection(ctx):
     return collection
 
 
-def prepare_context(ctx, config, verbose):
-    if ctx.obj is not None:
-        return
-
-    if verbose:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
+def prepare_context(ctx, config):
+    assert ctx.obj is None
 
     ctx.obj = {}
     try:
@@ -195,12 +201,11 @@ def _get_cli():
     @click.group(invoke_without_command=True)
     @global_options
     @click.pass_context
-    def cli(ctx, config, verbose):
+    def cli(ctx):
         # setting the process title so it looks nicer in ps
         # shows up as 'khal' under linux and as 'python: khal (python2.7)'
         # under FreeBSD, which is still nicer than the default
         setproctitle('khal')
-        prepare_context(ctx, config, verbose)
 
         if not ctx.invoked_subcommand:
             command = ctx.obj['conf']['default']['default_command']
@@ -307,12 +312,11 @@ def _get_cli():
         controllers.interactive(build_collection(ctx), ctx.obj['conf'])
 
     @click.command()
-    @multi_calendar_option
     @global_options
+    @multi_calendar_option
     @click.pass_context
-    def interactive_cli(ctx, config, verbose):
+    def interactive_cli(ctx):
         '''Interactive UI. Also launchable via `khal interactive`.'''
-        prepare_context(ctx, config, verbose)
         controllers.interactive(build_collection(ctx), ctx.obj['conf'])
 
     @cli.command()
