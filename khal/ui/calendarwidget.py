@@ -153,7 +153,14 @@ class CListBox(urwid.ListBox):
         self.keybindings = walker.keybindings
         self.on_press = walker.on_press
         self._marked = False
-        self._marked_old = False
+        self._pos_old = False
+
+        def color(date):
+            if date == date.today():
+                return 'today'
+            else:
+                return None
+        self._get_color = color
         super(CListBox, self).__init__(walker)
 
     def render(self, size, focus=False):
@@ -165,36 +172,62 @@ class CListBox(urwid.ListBox):
 
         return super(CListBox, self).render(size, focus)
 
+    def _date(self, row, column):
+        return self.body[row].contents[column][0].original_widget.date
+
+    def _unmark_one(self, row, column):
+        self.body[row].contents[column][0].set_attr_map(
+            {None: self._get_color(self._date(row, column))})
+
+    def _mark_one(self, row, column):
+        self.body[row].contents[column][0].set_attr_map({None: 'mark'})
+
     def _mark(self, key):
-        old_diff = self._marked - self._marked_old
-        new_diff = self._marked - self.body.focus_date
+        def toggle(row, column):
+            if self.body[row].contents[column][0].attr_map[None] != 'mark':
+                self._mark_one(row, column)
+            else:
+                self._unmark_one(row, column)
 
-        if self.focus.focus.attr_map[None] != 'mark':
-            self.focus.focus.set_attr_map({None: 'mark'})
-        else:
-            self.focus.focus.set_attr_map({None: None})
-        self._marked_old = self.body.focus_date
+        start = min(self._marked['pos'][0], self.focus_position) - 2
+        stop = max(self._marked['pos'][0], self.focus_position) + 2
+        for row in range(start, stop):
+            for col in range(1, 8):
+                if self.body.focus_date > self._marked['date']:
+                    if self._marked['date'] <= self._date(row, col) < self.body.focus_date:
+                        self._mark_one(row, col)
+                    else:
+                        self._unmark_one(row, col)
+                else:
+                    if self._marked['date'] >= self._date(row, col) > self.body.focus_date:
+                        self._mark_one(row, col)
+                    else:
+                        self._unmark_one(row, col)
 
+            toggle(self.focus_position, self.focus.focus_col)
+        self._pos_old = self.focus_position, self.focus.focus_col
 
-    def _unmark(self):
-        pass
+    def _unmark_all(self):
+        start = min(self._marked['pos'][0], self._pos_old[0])
+        end = max(self._marked['pos'][0], self._pos_old[0]) + 1
+        for row in range(start, end):
+            for col in range(1, 8):
+                self._unmark_one(row, col)
 
     def keypress(self, size, key):
-        if self._marked:
-            self._mark(key)
-        if key in self.keybindings['mark']:
-            if self._marked:
-                self._unmark()
+        if key in self.keybindings['mark'] + ['esc'] and self._marked:
+                self._unmark_all()
                 self._marked = False
-                self._marked_old = False
-            else:
-                self._marked = self.body.focus_date
-                self._marked_old = self.body.focus_date
+                return
+        if key in self.keybindings['mark']:
+            self._marked = {'date': self.body.focus_date,
+                            'pos': (self.focus_position, self.focus.focus_col)}
+
 
         if key in self.on_press:
             if self._marked:
-                start = min(self.body.focus_date, self._marked)
-                end = max(self.body.focus_date, self._marked)
+                start = min(self.body.focus_date, self._marked['date'])
+                end = max(self.body.focus_date, self._marked['date'])
             else:
                 start = self.body.focus_date
                 end = None
@@ -205,7 +238,10 @@ class CListBox(urwid.ListBox):
             week.set_focus(week.today)
             self.set_focus_valign(('relative', 10))
 
-        return super(CListBox, self).keypress(size, key)
+        key = super(CListBox, self).keypress(size, key)
+        if self._marked:
+            self._mark(key)
+        return key
 
 
 class CalendarWalker(urwid.SimpleFocusListWalker):
