@@ -152,6 +152,8 @@ class CListBox(urwid.ListBox):
         self._init = True
         self.keybindings = walker.keybindings
         self.on_press = walker.on_press
+        self._marked = False
+        self._marked_old = False
         super(CListBox, self).__init__(walker)
 
     def render(self, size, focus=False):
@@ -163,9 +165,40 @@ class CListBox(urwid.ListBox):
 
         return super(CListBox, self).render(size, focus)
 
+    def _mark(self, key):
+        old_diff = self._marked - self._marked_old
+        new_diff = self._marked - self.body.focus_date
+
+        if self.focus.focus.attr_map[None] != 'mark':
+            self.focus.focus.set_attr_map({None: 'mark'})
+        else:
+            self.focus.focus.set_attr_map({None: None})
+        self._marked_old = self.body.focus_date
+
+
+    def _unmark(self):
+        pass
+
     def keypress(self, size, key):
+        if self._marked:
+            self._mark(key)
+        if key in self.keybindings['mark']:
+            if self._marked:
+                self._unmark()
+                self._marked = False
+                self._marked_old = False
+            else:
+                self._marked = self.body.focus_date
+                self._marked_old = self.body.focus_date
+
         if key in self.on_press:
-            return self.on_press[key](self.body.focus_date)
+            if self._marked:
+                start = min(self.body.focus_date, self._marked)
+                end = max(self.body.focus_date, self._marked)
+            else:
+                start = self.body.focus_date
+                end = None
+            return self.on_press[key](start, end)
         if key in self.keybindings['today']:
             self.body.set_focus(self.body.today)
             week = self.body[self.body.today]
@@ -368,16 +401,20 @@ class CalendarWidget(urwid.WidgetWrap):
                     Available commands:
                         'left', 'right', 'up', 'down': move cursor in direction
                         'today': refocus on today
-        on_press: dict of functions that are called when the key is pressed,
-                  getting the currently selected date as an argument. Their
-                  return values are interpreted as pressed keys.
+                        'mark': toggles selection mode
+        on_press: dict of functions that are called when the key is pressed.
+            These functions must accept at least two argument. In the normal
+            case the first argument is the currently selected date (datetime.date)
+            and the second is *None*. When a date range is selected, the first
+            argument is the earlier and the second argument is the later date.
+            The function's return values are interpreted as pressed keys.
         """
 
         default_keybindings = {
             'left': ['left'], 'down': ['down'], 'right': ['right'], 'up': ['up'],
             'today': ['t'],
             'view': [],
-
+            'mark': ['v'],
         }
         from collections import defaultdict
         on_press = defaultdict(lambda: lambda x: x, on_press)

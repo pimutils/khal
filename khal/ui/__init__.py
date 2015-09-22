@@ -276,14 +276,17 @@ class EventColumn(urwid.WidgetWrap):
             self.current_date = self.current_date
         self.pane.window.open(new_pane, callback=teardown)
 
-    def new(self, date):
+    def new(self, date, end):
         """create a new event on date
 
         :param date: default date for new event
         :type date: datetime.date
         """
-        event = aux.new_event(dtstart=date,
-                              timezone=self.pane.conf['locale']['default_timezone'])
+        if end is None:
+            event = aux.new_event(
+                dtstart=date, timezone=self.pane.conf['locale']['default_timezone'])
+        else:
+            event = aux.new_event(dtstart=date, dtend=end, allday=True)
 
         # TODO proper default cal
         event = self.pane.collection.new_event(
@@ -595,8 +598,8 @@ class ClassicView(Pane):
     def show_date(self, date):
         self.eventscolumn.original_widget.current_date = date
 
-    def new_event(self, date):
-        self.eventscolumn.original_widget.new(date)
+    def new_event(self, date, end):
+        self.eventscolumn.original_widget.new(date, end)
 
     def cleanup(self, data):
         for part in self.deleted:

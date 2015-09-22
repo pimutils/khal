@@ -39,6 +39,7 @@ dark = [
     ('monthname', 'light gray', 'white'),
     ('edit', 'white', 'dark blue'),
     ('alert', 'white', 'dark red'),
+    ('mark', 'white', 'dark green'),
 
     ('editfc', 'white', 'dark blue', 'bold'),
     ('editbx', 'light gray', 'dark blue'),

@@ -333,18 +333,23 @@ def construct_event(dtime_list, locale,
 
 
 def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
-              _now=datetime.now):
+              _now=datetime.now, allday=False):
     """create a new event
 
     :param dtstart: starttime of that event
     :type dtstart: datetime
-    :param dtend: end time of that event
+    :param dtend: end time of that event, if this is a *date*, this value is
+        interpreted as being the last date the event is scheduled on, i.e.
+        the VEVENT DTEND will be *one day later*
     :type dtend: datetime
     :param summary: description of the event, used in the SUMMARY property
     :type summary: unicode
     :param timezone: timezone of the event (start and end)
     :type timezone: pytz.timezone
     :param _now: a function that return now, used for testing
+    :param allday: if set to True, we will not transform dtstart and dtend to
+        datetime
+    ::type allday: bool
     :returns: event
     :rtype: icalendar.Event
     """
@@ -353,12 +358,14 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
     inonehour = now + timedelta(minutes=60)
     if dtstart is None:
         dtstart = inonehour
-    elif isinstance(dtstart, date):
+    elif isinstance(dtstart, date) and not allday:
         time_start = inonehour.time()
         dtstart = datetime.combine(dtstart, time_start)
 
     if dtend is None:
         dtend = dtstart + timedelta(minutes=60)
+    if allday:
+        dtend += timedelta(days=1)
     if summary is None:
         summary = ''
     if timezone is not None:
