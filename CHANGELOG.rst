@@ -27,6 +27,8 @@ ikhal
   nicer to look at in some eyes (config option *[view] frame: True*) (Christian
   Geier)
 * events can now be duplicated (default keybinding: *p*) (Christian Geier)
+* events created while time ranges are selected (default keybinding to enable date range
+  selection: *v*) will default to that date range (Christian Geier)
 
 0.6.0
 =====
