@@ -223,7 +223,6 @@ class CListBox(urwid.ListBox):
             self._marked = {'date': self.body.focus_date,
                             'pos': (self.focus_position, self.focus.focus_col)}
 
-
         if key in self.on_press:
             if self._marked:
                 start = min(self.body.focus_date, self._marked['date'])
