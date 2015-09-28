@@ -253,6 +253,16 @@ between), e.g. **ctrl n**.
       :type: list
       :default: down, j
 
+.. _keybindings-duplicate:
+
+.. object:: duplicate
+
+    
+    duplicate the currently selected event
+
+      :type: list
+      :default: p
+
 .. _keybindings-new:
 
 .. object:: new
@@ -299,6 +309,17 @@ The [default] section
 The default section begins with a **[default]** tag. Some default values and
 behaviours are set here.
 
+.. _default-default_calendar:
+
+.. object:: default_calendar
+
+    
+    The calendar to use if none is specified for some operation (e.g. if adding a
+    new event). If this is not set, such operations requre an explicit value.
+
+      :type: string
+      :default: None
+
 .. _default-default_command:
 
 .. object:: default_command
@@ -332,7 +353,35 @@ behaviours are set here.
       :type: integer
       :default: 2
 
-.. _default-theme:
+.. _default-show_all_days:
+
+.. object:: show_all_days
+
+    
+    By default, khal displays only dates with event in "agenda" view.
+    Setting this to *True* will show all days in "agenda", even
+    when there is no event
+
+      :type: boolean
+      :default: False
+
+The [view] section
+~~~~~~~~~~~~~~~~~~
+
+The view section contains config options that effect the visual appearance
+when using ikhal
+
+.. _view-event_view_weighting:
+
+.. object:: event_view_weighting
+
+    
+    This is the weighting that is applied to the event view window
+
+      :type: integer
+      :default: 1
+
+.. _view-theme:
 
 .. object:: theme
 
@@ -354,44 +403,16 @@ behaviours are set here.
       :type: option, allowed values are *dark* and *light*
       :default: dark
 
-.. _default-default_calendar:
+.. _view-frame:
 
-.. object:: default_calendar
-
-    
-    The calendar to use if none is specified for some operation (e.g. if adding a
-    new event). If this is not set, such operations requre an explicit value.
-
-      :type: string
-      :default: None
-
-.. _default-show_all_days:
-
-.. object:: show_all_days
+.. object:: frame
 
     
-    By default, khal displays only dates with event in "agenda" view.
-    Setting this to *True* will show all days in "agenda", even
-    when there is no event
+    Whether to show a visible frame (with *box drawing* characters) around some
+    (groups of) elements.
 
       :type: boolean
       :default: False
-
-The [view] section
-~~~~~~~~~~~~~~~~~~
-
-The view section contains config options that effect the visual appearance
-when using khal
-
-.. _view-event_view_weighting:
-
-.. object:: event_view_weighting
-
-    
-    This is the weighting that is applied to the event view window
-
-      :type: integer
-      :default: 1
 
 .. _view-event_view_always_visible:
 
