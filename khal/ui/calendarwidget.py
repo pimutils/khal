@@ -178,16 +178,23 @@ class CListBox(urwid.ListBox):
         return super(CListBox, self).render(size, focus)
 
     def _date(self, row, column):
+        """return the date at row `row` and  column `column`"""
         return self.body[row].contents[column][0].original_widget.date
 
     def _unmark_one(self, row, column):
+        """remove attribute *mark* from the date at row `row` and column `column`
+        returning it to the attributes defined by self._get_color()
+        """
         self.body[row].contents[column][0].set_attr_map(
             {None: self._get_color(self._date(row, column))})
 
     def _mark_one(self, row, column):
+        """set attribute *mark* on the date at row `row` and column `column`"""
         self.body[row].contents[column][0].set_attr_map({None: 'mark'})
 
-    def _mark(self, key):
+    def _mark(self):
+        """make sure everything between the marked entry and the curently
+        selected date is visually marked, and nothing else"""
         def toggle(row, column):
             if self.body[row].contents[column][0].attr_map[None] != 'mark':
                 self._mark_one(row, column)
@@ -244,7 +251,7 @@ class CListBox(urwid.ListBox):
 
         key = super(CListBox, self).keypress(size, key)
         if self._marked:
-            self._mark(key)
+            self._mark()
         return key
 
 
