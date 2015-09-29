@@ -65,15 +65,9 @@ reporting bugs, creating packages for your favorite operating system, writing
 blog posts etc. If don't have the time or the means to contribute in any of the
 above mentioned ways, donations are appreciated, too.
 
-.. image:: https://img.shields.io/gratipay/geier.svg
-   :alt: gratipay button
-   :target: https://gratipay.com/geier/
-
 .. image:: https://api.flattr.com/button/flattr-badge-large.png
    :alt: flattr button
    :target: http://flattr.com/thing/2475065/geierkhal-on-GitHub/
-
-
 
 License
 -------
