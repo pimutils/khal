@@ -258,15 +258,30 @@ def _get_cli():
                   help=('Repeat event: daily, weekly, monthly or yearly.'))
     @click.option('--until', '-u',
                   help=('Stop an event repeating on this date.'))
-    @click.argument('description', nargs=-1, required=True)
+    @click.argument('START', nargs=1, required=True)
+    @click.argument('END', nargs=1, required=False)
+    @click.argument('TIMEZONE', nargs=1, required=False)
+    @click.argument('SUMMARY', metavar='SUMMARY', nargs=1, required=False)
+    @click.argument('DESCRIPTION', metavar='[:: DESCRIPTION]', nargs=-1, required=False)
     @click.pass_context
-    def new(ctx, calendar, description, location, repeat, until):
-        '''Create a new event.'''
+    def new(ctx, calendar, start, end, timezone, summary, description, location, repeat, until):
+        '''Create a new event from this command's arguments.
+
+        START and END can be either dates, times or datetimes, please have a
+        look at the man page for details.
+        Everthing than can not be interpreted as a (date)times or a timezone is
+        assumed to be the event's summary, if two colons (::) are present,
+        everything behind them is taken as the event's description.
+        '''
+        # ugly hack to change how click presents the help string
+        eventlist = [start, end, timezone, summary] + list(description)
+        eventlist = [element for element in eventlist if element is not None]
+
         controllers.new_from_string(
             build_collection(ctx),
             calendar,
             ctx.obj['conf'],
-            list(description),
+            eventlist,
             location=location,
             repeat=repeat,
             until=until.split(' ') if until is not None else None,
