@@ -12,6 +12,14 @@ Please do provide feedback if *khal* works for you or even more importantly
 if it doesn't. Feature requests and other ideas on how to improve khal are also
 welcome.
 
+In case you are not satisfied with khal, there are at least two other projects
+with similar aim you might want to check out: calendar-cli_ (no
+offline storage and a bit different scope) and gcalcli_ (only works with
+google's calendar).
+
+.. _calendar-cli: https://github.com/tobixen/calendar-cli
+.. _gcalcli: https://github.com/insanum/gcalcli
+
 Submitting a Bug
 ----------------
 If you found a bug or any part of khal isn't working as you

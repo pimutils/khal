@@ -47,6 +47,15 @@ For khal's documentation have a look at the website_ or readthedocs_.
 .. _readthedocs: http://khal.readthedocs.org/
 
 
+Alternatives
+------------
+Projects with similar aims you might want to check out are calendar-cli_ (no
+offline storage and a bit different scope) and gcalcli_ (only works with
+google's calendar).
+
+.. _calendar-cli: https://github.com/tobixen/calendar-cli
+.. _gcalcli: https://github.com/insanum/gcalcli
+
 Contributing
 ------------
 You want to contribute to *khal*? Awesome!
