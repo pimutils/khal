@@ -63,10 +63,13 @@ def str_week(week, today, collection=None):
     """
     strweek = ''
     for day in week:
+        devents = collection.get_events_at(day)
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
-        elif len(collection.get_events_at(day))>0:
-            day = style(str(day.day).rjust(2), bg='green', fg='black')
+        elif len(devents)>0:
+            colors = devents[0].color.split()
+            color = colors[len(colors)-1]
+            day = style(str(day.day).rjust(2), bg=color, fg='black')
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '
