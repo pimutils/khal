@@ -49,7 +49,7 @@ def getweeknumber(date):
     return datetime.date.isocalendar(date)[1]
 
 
-def str_week(week, today):
+def str_week(week, today, collection=None):
     """returns a string representing one week,
     if for day == today colour is reversed
 
@@ -65,6 +65,8 @@ def str_week(week, today):
     for day in week:
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
+        elif len(collection.get_events_at(day))>0:
+            day = style(str(day.day).rjust(2), bg='green', fg='black')
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '
@@ -76,7 +78,8 @@ def vertical_month(month=datetime.date.today().month,
                    today=datetime.date.today(),
                    weeknumber=False,
                    count=3,
-                   firstweekday=0):
+                   firstweekday=0,
+                   collection=None):
     """
     returns a list() of str() of weeks for a vertical arranged calendar
 
@@ -108,7 +111,7 @@ def vertical_month(month=datetime.date.today().month,
     for _ in range(count):
         for week in _calendar.monthdatescalendar(year, month):
             new_month = len([day for day in week if day.day == 1])
-            strweek = str_week(week, today)
+            strweek = str_week(week, today, collection)
             if new_month:
                 m_name = style(month_abbr(week[6].month).ljust(4), bold=True)
             elif weeknumber == 'left':

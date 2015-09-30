@@ -140,7 +140,8 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8',
         collection, dates=date, width=rwidth, show_all_days=show_all_days,
         **kwargs)
     calendar_column = calendar_display.vertical_month(
-        firstweekday=firstweekday, weeknumber=weeknumber)
+        firstweekday=firstweekday, weeknumber=weeknumber,
+        collection=collection)
 
     rows = merge_columns(calendar_column, event_column)
     # XXX: Generate this as a unicode in the first place, rather than
