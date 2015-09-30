@@ -47,6 +47,15 @@ For khal's documentation have a look at the website_ or readthedocs_.
 .. _readthedocs: http://khal.readthedocs.org/
 
 
+Alternatives
+------------
+Projects with similar aims you might want to check out are calendar-cli_ (no
+offline storage and a bit different scope) and gcalcli_ (only works with
+google's calendar).
+
+.. _calendar-cli: https://github.com/tobixen/calendar-cli
+.. _gcalcli: https://github.com/insanum/gcalcli
+
 Contributing
 ------------
 You want to contribute to *khal*? Awesome!
@@ -56,15 +65,9 @@ reporting bugs, creating packages for your favorite operating system, writing
 blog posts etc. If don't have the time or the means to contribute in any of the
 above mentioned ways, donations are appreciated, too.
 
-.. image:: https://img.shields.io/gratipay/geier.svg
-   :alt: gratipay button
-   :target: https://gratipay.com/geier/
-
 .. image:: https://api.flattr.com/button/flattr-badge-large.png
    :alt: flattr button
    :target: http://flattr.com/thing/2475065/geierkhal-on-GitHub/
-
-
 
 License
 -------
