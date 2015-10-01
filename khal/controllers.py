@@ -142,7 +142,6 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
     term_width, _ = get_terminal_size()
     lwidth = 25
     rwidth = term_width - lwidth - 4
-    print(kwargs)
     event_column = get_agenda(
         collection, locale, dates=date, width=rwidth, show_all_days=show_all_days,
         **kwargs)

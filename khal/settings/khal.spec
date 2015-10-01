@@ -140,7 +140,7 @@ print_new = option('event', 'path', 'False', default=False)
 
 # If set to 1, khal will highlight days with events. Options for
 # highlighting are in [highlight_days] section.
-highlight_event_days = integer(default=0)
+highlight_event_days = boolean(default=False)
 
 # The view section contains config options that effect the visual appearance
 # when using ikhal

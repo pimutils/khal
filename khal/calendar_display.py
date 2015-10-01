@@ -94,7 +94,7 @@ def str_highlight_day(day, devents, hmethod, default_color, multiple, color):
 
 def str_week(week, today, collection=None,
              hmethod=None, default_color=None, multiple=None, color=None,
-             highlight_event_days=0, locale=None):
+             highlight_event_days=False, locale=None):
     """returns a string representing one week,
     if for day == today colour is reversed
 
@@ -110,7 +110,7 @@ def str_week(week, today, collection=None,
     for day in week:
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
-        elif highlight_event_days != 0:
+        elif highlight_event_days:
             localize = locale['local_timezone'].localize
             start = localize(datetime.datetime.combine(day, datetime.time.min))
             end = localize(datetime.datetime.combine(day, datetime.time.max))
@@ -137,7 +137,7 @@ def vertical_month(month=datetime.date.today().month,
                    default_color='',
                    multiple='',
                    color='',
-                   highlight_event_days=0,
+                   highlight_event_days=False,
                    locale=None):
     """
     returns a list() of str() of weeks for a vertical arranged calendar
