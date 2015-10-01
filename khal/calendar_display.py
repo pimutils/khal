@@ -115,7 +115,7 @@ def str_week(week, today, collection=None,
             start = localize(datetime.datetime.combine(day, datetime.time.min))
             end = localize(datetime.datetime.combine(day, datetime.time.max))
             devents = collection.get_datetime_by_time_range(start, end) + \
-                      collection.get_allday_by_time_range(day)
+                collection.get_allday_by_time_range(day)
             if len(devents) > 0:
                 day = str_highlight_day(day, devents, hmethod, default_color,
                                         multiple, color)
