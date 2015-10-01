@@ -65,10 +65,15 @@ def str_highlight_day(day, devents, hconf):
     dstr = str(day.day).rjust(2)
     hmethod = hconf['method']
     if hconf['color']=='':
-        dcolors = map(lambda x: get_event_color(x, hconf['default_color']), devents)
+        dcolors = list(set(map(lambda x: get_event_color(x, hconf['default_color']), devents)))
         if len(dcolors)>1:
             if hconf['multiple']=='':
-                dcolor = urwid_to_click('light magenta')
+                color1 = urwid_to_click(dcolors[0])
+                color2 = urwid_to_click(dcolors[1])
+                if hmethod=="foreground" or hmethod=="fg":
+                    return style(dstr[0:0], fg=color1)+style(dstr[1:1], fg=color2)
+                else:
+                    return style(dstr[:1], bg=color1)+style(dstr[1:], bg=color2)
             else:
                 dcolor = urwid_to_click(hconf['multiple'])
         else:
