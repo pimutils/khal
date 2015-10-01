@@ -71,7 +71,7 @@ def str_highlight_day(day, devents, hconf):
                 color1 = urwid_to_click(dcolors[0])
                 color2 = urwid_to_click(dcolors[1])
                 if hmethod=="foreground" or hmethod=="fg":
-                    return style(dstr[0:0], fg=color1)+style(dstr[1:1], fg=color2)
+                    return style(dstr[:1], fg=color1)+style(dstr[1:], fg=color2)
                 else:
                     return style(dstr[:1], bg=color1)+style(dstr[1:], bg=color2)
             else:
