@@ -138,7 +138,7 @@ days = integer(default=2)
 # event in text form, the path to where the event is now saved or nothing?
 print_new = option('event', 'path', 'False', default=False)
 
-# If set to 1, khal will highlight days with events. Options for
+# If true, khal will highlight days with events. Options for
 # highlighting are in [highlight_days] section.
 highlight_event_days = boolean(default=False)
 
