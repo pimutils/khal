@@ -1,8 +1,5 @@
+sudo: false
 language: python
-
-env:
-    - BUILD=tests
-    - BUILD=style
 
 python:
     - 2.7
@@ -10,11 +7,17 @@ python:
     - 3.4
     - 3.5
 
-before_install:
-  - sudo apt-get update && sudo apt-get --reinstall install -qq language-pack-de
+env:
+    - BUILD=tests
+    - BUILD=style
+
+addons:
+    apt:
+        packages:
+            - language-pack-de
 
 install: 
-        pip install tox
+        - "pip install tox"
 
 script:
     - ./.travis.run.sh
