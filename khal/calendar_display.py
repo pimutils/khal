@@ -26,7 +26,7 @@ import datetime
 
 from click import style
 
-from terminal import urwid_to_click
+from .terminal import urwid_to_click
 
 from .compat import VERSION
 
