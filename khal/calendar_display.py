@@ -51,18 +51,33 @@ def getweeknumber(date):
     return datetime.date.isocalendar(date)[1]
 
 
+def get_event_color(event, default_color):
+    """Because multi-line lambdas would be un-Pythonic
+    """
+    if event.color=='':
+        return default_color
+    return event.color
+
+
 def str_highlight_day(day, devents, hconf):
     """returns a string with day highlighted according to configuration
     """
     dstr = str(day.day).rjust(2)
     hmethod = hconf['method']
     if hconf['color']=='':
-        if devents[0].color=='':
-            dcolorv = hconf['default_color']
-            if dcolorv!='':
-                dcolor = urwid_to_click(dcolorv)
+        dcolors = map(lambda x: get_event_color(x, hconf['default_color']), devents)
+        if len(dcolors)>1:
+            if hconf['multiple']=='':
+                dcolor = urwid_to_click('light magenta')
+            else:
+                dcolor = urwid_to_click(hconf['multiple'])
         else:
-            dcolor = urwid_to_click(devents[0].color)
+            if devents[0].color=='':
+                dcolorv = hconf['default_color']
+                if dcolorv!='':
+                    dcolor = urwid_to_click(dcolorv)
+            else:
+                dcolor = urwid_to_click(devents[0].color)
     else:
         dcolor = urwid_to_click(hconf['color'])
     if dcolor!='':
@@ -86,8 +101,12 @@ def str_week(week, today, collection=None, conf=None):
     :rtype: str
     """
     strweek = ''
+    locale = conf['locale']
+    localize = locale['local_timezone'].localize
     for day in week:
-        devents = collection.get_events_at(day)
+        start = localize(datetime.datetime.combine(day, datetime.time.min))
+        end = localize(datetime.datetime.combine(day, datetime.time.max))
+        devents = collection.get_datetime_by_time_range(start,end)+collection.get_allday_by_time_range(day)
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
         elif len(devents)>0 and conf['default']['highlight_event_days']!=0:
