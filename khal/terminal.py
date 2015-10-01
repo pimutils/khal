@@ -99,4 +99,4 @@ def urwid_to_click(color):
     """convert urwid color name to click color name
     """
     colors = color.split()
-    return colors[len(colors)-1]
+    return colors[len(colors) - 1]
