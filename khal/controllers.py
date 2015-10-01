@@ -155,7 +155,6 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
         color=color,
         highlight_event_days=highlight_event_days,
         locale=locale)
-    
     rows = merge_columns(calendar_column, event_column)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
