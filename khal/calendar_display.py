@@ -59,15 +59,14 @@ def get_event_color(event, default_color):
     return event.color
 
 
-def str_highlight_day(day, devents, hconf):
+def str_highlight_day(day, devents, hmethod, default_color, multiple, color):
     """returns a string with day highlighted according to configuration
     """
     dstr = str(day.day).rjust(2)
-    hmethod = hconf['method']
-    if hconf['color'] == '':
-        dcolors = list(set(map(lambda x: get_event_color(x, hconf['default_color']), devents)))
+    if color == '':
+        dcolors = list(set(map(lambda x: get_event_color(x, default_color), devents)))
         if len(dcolors) > 1:
-            if hconf['multiple'] == '':
+            if multiple == '':
                 color1 = urwid_to_click(dcolors[0])
                 color2 = urwid_to_click(dcolors[1])
                 if hmethod == "foreground" or hmethod == "fg":
@@ -75,16 +74,16 @@ def str_highlight_day(day, devents, hconf):
                 else:
                     return style(dstr[:1], bg=color1) + style(dstr[1:], bg=color2)
             else:
-                dcolor = urwid_to_click(hconf['multiple'])
+                dcolor = urwid_to_click(multiple)
         else:
             if devents[0].color == '':
-                dcolorv = hconf['default_color']
+                dcolorv = default_color
                 if dcolorv != '':
                     dcolor = urwid_to_click(dcolorv)
             else:
                 dcolor = urwid_to_click(devents[0].color)
     else:
-        dcolor = urwid_to_click(hconf['color'])
+        dcolor = urwid_to_click(color)
     if dcolor != '':
         if hmethod == "foreground" or hmethod == "fg":
             return style(dstr, fg=dcolor)
@@ -115,7 +114,10 @@ def str_week(week, today, collection=None, conf=None):
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
         elif len(devents) > 0 and conf['default']['highlight_event_days'] != 0:
-            day = str_highlight_day(day, devents, conf['highlight_days'])
+            hconf = conf['highlight_days']
+            day = str_highlight_day(day, devents, hconf['method'],
+                                    hconf['default_color'], hconf['multiple'],
+                                    hconf['color'])
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '

@@ -129,7 +129,8 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
 
 
 def calendar(collection, date=None, firstweekday=0, encoding='utf-8',
-             weeknumber=False, show_all_days=False, conf=None, **kwargs):
+             weeknumber=False, show_all_days=False, conf=None,
+             **kwargs):
     if date is None:
         date = [datetime.datetime.today()]
 
