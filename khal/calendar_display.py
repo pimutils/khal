@@ -73,13 +73,19 @@ def str_week(week, today, collection=None, conf=None):
             hconf = conf['highlight_days']
             hmethod = hconf['method']
             if hconf['color']=='':
-                dcolor = urwid_to_click(devents[0].color)
+                if devents[0].color=='':
+                    dcolorv = hconf['default_color']
+                    if dcolorv!='':
+                        dcolor = urwid_to_click(dcolorv)
+                else:
+                    dcolor = urwid_to_click(devents[0].color)
             else:
                 dcolor = urwid_to_click(hconf['color'])
-            if hmethod=="foreground" or hmethod=="fg":
-                day = style(dstr, fg=dcolor)
-            else:
-                day = style(dstr, bg=dcolor)
+            if dcolor!='':
+                if hmethod=="foreground" or hmethod=="fg":
+                    day = style(dstr, fg=dcolor)
+                else:
+                    day = style(dstr, bg=dcolor)
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '
