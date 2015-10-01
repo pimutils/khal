@@ -92,9 +92,9 @@ def str_highlight_day(day, devents, hmethod, default_color, multiple, color):
     return dstr
 
 
-def str_week(week, today, collection,
-             hmethod, default_color, multiple, color,
-             highlight_event_days, locale):
+def str_week(week, today, collection=None,
+             hmethod=None, default_color=None, multiple=None, color=None,
+             highlight_event_days=0, locale=None):
     """returns a string representing one week,
     if for day == today colour is reversed
 
@@ -107,16 +107,19 @@ def str_week(week, today, collection,
     :rtype: str
     """
     strweek = ''
-    localize = locale['local_timezone'].localize
     for day in week:
-        start = localize(datetime.datetime.combine(day, datetime.time.min))
-        end = localize(datetime.datetime.combine(day, datetime.time.max))
-        devents = collection.get_datetime_by_time_range(start, end) + collection.get_allday_by_time_range(day)
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
-        elif len(devents) > 0 and highlight_event_days != 0:
-            day = str_highlight_day(day, devents, hmethod, default_color,
-                                    multiple, color)
+        elif highlight_event_days != 0:
+            localize = locale['local_timezone'].localize
+            start = localize(datetime.datetime.combine(day, datetime.time.min))
+            end = localize(datetime.datetime.combine(day, datetime.time.max))
+            devents = collection.get_datetime_by_time_range(start, end) + collection.get_allday_by_time_range(day)
+            if len(devents) > 0:
+                day = str_highlight_day(day, devents, hmethod, default_color,
+                                        multiple, color)
+            else:
+                day = str(day.day).rjust(2)
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '
