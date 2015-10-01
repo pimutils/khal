@@ -51,6 +51,28 @@ def getweeknumber(date):
     return datetime.date.isocalendar(date)[1]
 
 
+def str_highlight_day(day, devents, hconf):
+    """returns a string with day highlighted according to configuration
+    """
+    dstr = str(day.day).rjust(2)
+    hmethod = hconf['method']
+    if hconf['color']=='':
+        if devents[0].color=='':
+            dcolorv = hconf['default_color']
+            if dcolorv!='':
+                dcolor = urwid_to_click(dcolorv)
+        else:
+            dcolor = urwid_to_click(devents[0].color)
+    else:
+        dcolor = urwid_to_click(hconf['color'])
+    if dcolor!='':
+        if hmethod=="foreground" or hmethod=="fg":
+            return style(dstr, fg=dcolor)
+        else:
+            return style(dstr, bg=dcolor)
+    return dstr
+
+
 def str_week(week, today, collection=None, conf=None):
     """returns a string representing one week,
     if for day == today colour is reversed
@@ -69,23 +91,7 @@ def str_week(week, today, collection=None, conf=None):
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
         elif len(devents)>0 and conf['default']['highlight_event_days']!=0:
-            dstr = str(day.day).rjust(2)
-            hconf = conf['highlight_days']
-            hmethod = hconf['method']
-            if hconf['color']=='':
-                if devents[0].color=='':
-                    dcolorv = hconf['default_color']
-                    if dcolorv!='':
-                        dcolor = urwid_to_click(dcolorv)
-                else:
-                    dcolor = urwid_to_click(devents[0].color)
-            else:
-                dcolor = urwid_to_click(hconf['color'])
-            if dcolor!='':
-                if hmethod=="foreground" or hmethod=="fg":
-                    day = style(dstr, fg=dcolor)
-                else:
-                    day = style(dstr, bg=dcolor)
+            day = str_highlight_day(day, devents, conf['highlight_days'])
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '
