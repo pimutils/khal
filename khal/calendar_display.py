@@ -69,7 +69,7 @@ def str_week(week, today, collection=None):
         elif len(devents)>0:
             colors = devents[0].color.split()
             color = colors[len(colors)-1]
-            day = style(str(day.day).rjust(2), bg=color, fg='black')
+            day = style(str(day.day).rjust(2), fg=color)
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '
