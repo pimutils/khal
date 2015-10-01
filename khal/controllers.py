@@ -140,10 +140,17 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8',
     event_column = get_agenda(
         collection, dates=date, width=rwidth, show_all_days=show_all_days,
         **kwargs)
+    hconf = conf['highlight_days']
     calendar_column = calendar_display.vertical_month(
         firstweekday=firstweekday, weeknumber=weeknumber,
-        collection=collection, conf=conf)
-
+        collection=collection,
+        hmethod=hconf['method'],
+        default_color=hconf['default_color'],
+        multiple=hconf['multiple'],
+        color=hconf['color'],
+        highlight_event_days=conf['default']['highlight_event_days'],
+        locale=conf['locale'])
+    
     rows = merge_columns(calendar_column, event_column)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.

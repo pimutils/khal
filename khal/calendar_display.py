@@ -130,7 +130,12 @@ def vertical_month(month=datetime.date.today().month,
                    count=3,
                    firstweekday=0,
                    collection=None,
-                   conf=None):
+                   hmethod='fg',
+                   default_color='',
+                   multiple='',
+                   color='',
+                   highlight_event_days=0,
+                   locale=None):
     """
     returns a list() of str() of weeks for a vertical arranged calendar
 
@@ -162,12 +167,8 @@ def vertical_month(month=datetime.date.today().month,
     for _ in range(count):
         for week in _calendar.monthdatescalendar(year, month):
             new_month = len([day for day in week if day.day == 1])
-            hconf = conf['highlight_days']
-            strweek = str_week(week, today, collection,
-                               hconf['method'], hconf['default_color'],
-                               hconf['multiple'], hconf['color'],
-                               conf['default']['highlight_event_days'],
-                               conf['locale'])
+            strweek = str_week(week, today, collection, hmethod, default_color,
+                               multiple, color, highlight_event_days, locale)
             if new_month:
                 m_name = style(month_abbr(week[6].month).ljust(4), bold=True)
             elif weeknumber == 'left':
