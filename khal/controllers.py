@@ -128,8 +128,13 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
     return event_column
 
 
-def calendar(collection, date=None, firstweekday=0, encoding='utf-8',
+def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=None,
              weeknumber=False, show_all_days=False, conf=None,
+             hmethod='fg',
+             default_color='',
+             multiple='',
+             color='',
+             highlight_event_days=0,
              **kwargs):
     if date is None:
         date = [datetime.datetime.today()]
@@ -137,19 +142,19 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8',
     term_width, _ = get_terminal_size()
     lwidth = 25
     rwidth = term_width - lwidth - 4
+    print(kwargs)
     event_column = get_agenda(
-        collection, dates=date, width=rwidth, show_all_days=show_all_days,
+        collection, locale, dates=date, width=rwidth, show_all_days=show_all_days,
         **kwargs)
-    hconf = conf['highlight_days']
     calendar_column = calendar_display.vertical_month(
         firstweekday=firstweekday, weeknumber=weeknumber,
         collection=collection,
-        hmethod=hconf['method'],
-        default_color=hconf['default_color'],
-        multiple=hconf['multiple'],
-        color=hconf['color'],
-        highlight_event_days=conf['default']['highlight_event_days'],
-        locale=conf['locale'])
+        hmethod=hmethod,
+        default_color=default_color,
+        multiple=multiple,
+        color=color,
+        highlight_event_days=highlight_event_days,
+        locale=locale)
     
     rows = merge_columns(calendar_column, event_column)
     # XXX: Generate this as a unicode in the first place, rather than

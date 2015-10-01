@@ -231,7 +231,11 @@ def _get_cli():
             show_all_days=ctx.obj['conf']['default']['show_all_days'],
             days=days or ctx.obj['conf']['default']['days'],
             events=events,
-            conf=ctx.obj['conf']
+            hmethod=ctx.obj['conf']['highlight_days']['method'],
+            default_color=ctx.obj['conf']['highlight_days']['default_color'],
+            multiple=ctx.obj['conf']['highlight_days']['multiple'],
+            color=ctx.obj['conf']['highlight_days']['color'],
+            highlight_event_days=ctx.obj['conf']['default']['highlight_event_days']
         )
 
     @cli.command()
