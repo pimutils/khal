@@ -230,7 +230,8 @@ def _get_cli():
             weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
             show_all_days=ctx.obj['conf']['default']['show_all_days'],
             days=days or ctx.obj['conf']['default']['days'],
-            events=events
+            events=events,
+            conf=ctx.obj['conf']
         )
 
     @cli.command()
