@@ -26,6 +26,8 @@ import datetime
 
 from click import style
 
+from terminal import urwid_to_click
+
 from .compat import VERSION
 
 
@@ -67,9 +69,13 @@ def str_week(week, today, collection=None, conf=None):
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
         elif len(devents)>0 and conf['default']['highlight_event_days']!=0:
-            colors = devents[0].color.split()
-            color = colors[len(colors)-1]
-            day = style(str(day.day).rjust(2), fg=color)
+            dstr = str(day.day).rjust(2)
+            hmethod=conf['highlight_days']['method']
+            dcolor=urwid_to_click(devents[0].color)
+            if hmethod=="foreground" or hmethod=="fg":
+                day = style(dstr, fg=dcolor)
+            else:
+                day = style(dstr, bg=dcolor)
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '

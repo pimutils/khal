@@ -93,3 +93,10 @@ def merge_columns(lcolumn, rcolumn, width=25):
     rows = ['    '.join(one) for one in zip_longest(
         lcolumn, rcolumn, fillvalue='')]
     return rows
+
+
+def urwid_to_click(color):
+    """convert urwid color name to click color name
+    """
+    colors = color.split()
+    return colors[len(colors)-1]
