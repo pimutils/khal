@@ -42,6 +42,7 @@ class TestSettings(object):
                 'show_all_days': False,
                 'print_new': 'False',
                 'days': 2,
+                'highlight_event_days': 0
             }
         }
         for key in comp_config:
@@ -81,6 +82,7 @@ class TestSettings(object):
                 'print_new': 'False',
                 'show_all_days': False,
                 'days': 2,
+                'highlight_event_days': 0
             }
         }
         for key in comp_config:
