@@ -92,7 +92,9 @@ def str_highlight_day(day, devents, hmethod, default_color, multiple, color):
     return dstr
 
 
-def str_week(week, today, collection=None, conf=None):
+def str_week(week, today, collection,
+             hmethod, default_color, multiple, color,
+             highlight_event_days, locale):
     """returns a string representing one week,
     if for day == today colour is reversed
 
@@ -105,7 +107,6 @@ def str_week(week, today, collection=None, conf=None):
     :rtype: str
     """
     strweek = ''
-    locale = conf['locale']
     localize = locale['local_timezone'].localize
     for day in week:
         start = localize(datetime.datetime.combine(day, datetime.time.min))
@@ -113,11 +114,9 @@ def str_week(week, today, collection=None, conf=None):
         devents = collection.get_datetime_by_time_range(start, end) + collection.get_allday_by_time_range(day)
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
-        elif len(devents) > 0 and conf['default']['highlight_event_days'] != 0:
-            hconf = conf['highlight_days']
-            day = str_highlight_day(day, devents, hconf['method'],
-                                    hconf['default_color'], hconf['multiple'],
-                                    hconf['color'])
+        elif len(devents) > 0 and highlight_event_days != 0:
+            day = str_highlight_day(day, devents, hmethod, default_color,
+                                    multiple, color)
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '
@@ -163,7 +162,12 @@ def vertical_month(month=datetime.date.today().month,
     for _ in range(count):
         for week in _calendar.monthdatescalendar(year, month):
             new_month = len([day for day in week if day.day == 1])
-            strweek = str_week(week, today, collection, conf)
+            hconf = conf['highlight_days']
+            strweek = str_week(week, today, collection,
+                               hconf['method'], hconf['default_color'],
+                               hconf['multiple'], hconf['color'],
+                               conf['default']['highlight_event_days'],
+                               conf['locale'])
             if new_month:
                 m_name = style(month_abbr(week[6].month).ljust(4), bold=True)
             elif weeknumber == 'left':
