@@ -309,17 +309,6 @@ The [default] section
 The default section begins with a **[default]** tag. Some default values and
 behaviours are set here.
 
-.. _default-default_calendar:
-
-.. object:: default_calendar
-
-    
-    The calendar to use if none is specified for some operation (e.g. if adding a
-    new event). If this is not set, such operations requre an explicit value.
-
-      :type: string
-      :default: None
-
 .. _default-default_command:
 
 .. object:: default_command
@@ -352,6 +341,28 @@ behaviours are set here.
 
       :type: integer
       :default: 2
+
+.. _default-highlight_event_days:
+
+.. object:: highlight_event_days
+
+    
+    If true, khal will highlight days with events. Options for
+    highlighting are in [highlight_days] section.
+
+      :type: boolean
+      :default: False
+
+.. _default-default_calendar:
+
+.. object:: default_calendar
+
+    
+    The calendar to use if none is specified for some operation (e.g. if adding a
+    new event). If this is not set, such operations requre an explicit value.
+
+      :type: string
+      :default: None
 
 .. _default-show_all_days:
 
@@ -423,3 +434,53 @@ when using ikhal
 
       :type: boolean
       :default: False
+
+The [highlight_days] section
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When highlight_event_days is enabled, this section specifies how is
+the highlighting rendered.
+
+.. _highlight_days-color:
+
+.. object:: color
+
+    
+    What color to use when highlighting - explicit color or use calendar
+    color when set to ''
+
+      :type: option, allowed values are *black*, *white*, *brown*, *yellow*, *dark grey*, *dark green*, *dark blue*, *light grey*, *light green*, *light blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light cyan*, *light red* and **
+      :default: 
+
+.. _highlight_days-multiple:
+
+.. object:: multiple
+
+    
+    How to color days with events from multiple calendars - either
+    explicit color or use calendars' colors when set to ''
+
+      :type: option, allowed values are *black*, *white*, *brown*, *yellow*, *dark grey*, *dark green*, *dark blue*, *light grey*, *light green*, *light blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light cyan*, *light red* and **
+      :default: 
+
+.. _highlight_days-method:
+
+.. object:: method
+
+    
+    Highlighting method to use - foreground or background
+
+      :type: option, allowed values are *foreground*, *fg*, *background* and *bg*
+      :default: fg
+
+.. _highlight_days-default_color:
+
+.. object:: default_color
+
+    
+    Default color for calendars without color - when se to '' it
+    actually disables highlighting for events that should use the
+    default color.
+
+      :type: option, allowed values are *black*, *white*, *brown*, *yellow*, *dark grey*, *dark green*, *dark blue*, *light grey*, *light green*, *light blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light cyan*, *light red* and **
+      :default: 
