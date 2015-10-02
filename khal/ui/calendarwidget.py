@@ -62,9 +62,22 @@ class Date(urwid.WidgetWrap):
     def __init__(self, date):
         dstr = str(date.day).rjust(2)
         self.halves = [urwid.AttrMap(DatePart(dstr[:1]), None, None),
-                       urwid.AttrMap(DatePart(dstr[1:]), None, None)]
+                       urwid.AttrMap(DatePart(dstr[1:]), 'alert', None)]
         self.date = date
         super(Date, self).__init__(urwid.Columns(self.halves))
+
+    def set_styles(self, styles):
+        """If single string, sets the same style for both halves, if two
+        strings, sets different style for each half.
+        """
+        if type(styles) is tuple:
+            self.halves[0].set_attr_map({None: styles[0]})
+            self.halves[1].set_attr_map({None: styles[1]})
+        elif type(styles) is str:
+            self.halves[0].set_attr_map({None: styles})
+            self.halves[1].set_attr_map({None: styles})
+        else:
+            raise TypeError("styles must be tuple or string")
 
     @classmethod
     def selectable(cls):
@@ -108,12 +121,12 @@ class DateCColumns(urwid.Columns):
         if self._init:
             self._init = False
         else:
-            self.on_date_change(self.contents[position][0].original_widget.date)
+            self.on_date_change(self.contents[position][0].date)
         super(DateCColumns, self)._set_focus_position(position)
 
     def set_focus_date(self, a_date):
         for num, day in enumerate(self.contents[1:8], 1):
-            if day[0].original_widget.date == a_date:
+            if day[0].date == a_date:
                 self._set_focus_position(num)
                 return None
         raise ValueError('%s not found in this week' % a_date)
@@ -165,7 +178,7 @@ class CListBox(urwid.ListBox):
     it should contain a `CalendarWalker` instance which it autoextends on
     rendering, if needed """
 
-    def __init__(self, walker):
+    def __init__(self, walker, get_colors=None):
         self._init = True
         self.keybindings = walker.keybindings
         self.on_press = walker.on_press
@@ -177,7 +190,10 @@ class CListBox(urwid.ListBox):
                 return 'today'
             else:
                 return None
-        self._get_color = color
+        if get_colors is None:
+            self._get_colors = color
+        else:
+            self._get_colors = get_colors
         super(CListBox, self).__init__(walker)
 
     def render(self, size, focus=False):
@@ -191,14 +207,14 @@ class CListBox(urwid.ListBox):
 
     def _date(self, row, column):
         """return the date at row `row` and  column `column`"""
-        return self.body[row].contents[column][0].original_widget.date
+        return self.body[row].contents[column][0].date
 
     def _unmark_one(self, row, column):
         """remove attribute *mark* from the date at row `row` and column `column`
         returning it to the attributes defined by self._get_color()
         """
         self.body[row].contents[column][0].set_attr_map(
-            {None: self._get_color(self._date(row, column))})
+            {None: self._get_colors(self._date(row, column))})
 
     def _mark_one(self, row, column):
         """set attribute *mark* on the date at row `row` and column `column`"""
@@ -296,7 +312,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
         :rtype: datetime.date
         """
-        return self[self.focus].focus.original_widget.date
+        return self[self.focus].focus.date
 
     def set_focus_date(self, a_day):
         """set the focus to `a_day`
@@ -386,10 +402,10 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         for number, day in enumerate(week):
             new_date = Date(day)
             if day == date.today():
-                this_week.append((2, urwid.AttrMap(new_date, 'today', 'today focus')))
+                this_week.append((2, new_date))
                 today = number + 1
             else:
-                this_week.append((2, urwid.AttrMap(new_date, None, 'reveal focus')))
+                this_week.append((2, new_date))
         if self.weeknumbers == 'right':
             this_week.append((2, urwid.Text('{:2}'.format(getweeknumber(week[0])))))
 
