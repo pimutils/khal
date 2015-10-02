@@ -47,12 +47,7 @@ class Date(urwid.Text):
     def __init__(self, date, on_date_change):
         self.date = date
         self.on_date_change = on_date_change
-        if date.today == date:
-            urwid.AttrMap(super(Date, self).__init__(str(date.day).rjust(2)),
-                          None,
-                          'reveal focus')
-        else:
-            super(Date, self).__init__(str(date.day).rjust(2))
+        super(Date, self).__init__(str(date.day).rjust(2))
 
     @classmethod
     def selectable(cls):
