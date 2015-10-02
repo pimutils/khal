@@ -22,6 +22,9 @@
 
 from __future__ import unicode_literals
 
+from __future__ import print_function
+import sys
+
 import calendar
 from datetime import date
 
@@ -62,20 +65,28 @@ class Date(urwid.WidgetWrap):
     def __init__(self, date):
         dstr = str(date.day).rjust(2)
         self.halves = [urwid.AttrMap(DatePart(dstr[:1]), None, None),
-                       urwid.AttrMap(DatePart(dstr[1:]), 'alert', None)]
+                       urwid.AttrMap(DatePart(dstr[1:]), None, None)]
         self.date = date
         super(Date, self).__init__(urwid.Columns(self.halves))
 
     def set_styles(self, styles):
         """If single string, sets the same style for both halves, if two
-        strings, sets different style for each half.
+        strings, sets different style for each half. Unifies style for
+        focused/non-focused Dates - as they don't lose focus when
+        changing rows!
         """
+        print(styles, file=sys.stderr)
+        print(type(styles), file=sys.stderr)
         if type(styles) is tuple:
             self.halves[0].set_attr_map({None: styles[0]})
             self.halves[1].set_attr_map({None: styles[1]})
-        elif type(styles) is str:
+            self.halves[0].set_focus_map({None: styles[0]})
+            self.halves[1].set_focus_map({None: styles[1]})
+        elif type(styles) is str or type(styles) is unicode or styles is None:
             self.halves[0].set_attr_map({None: styles})
             self.halves[1].set_attr_map({None: styles})
+            self.halves[0].set_focus_map({None: styles})
+            self.halves[1].set_focus_map({None: styles})
         else:
             raise TypeError("styles must be tuple or string")
 
@@ -161,10 +172,12 @@ class DateCColumns(urwid.Columns):
             self.focus_position = 7
             return 'up'
 
+        self.contents[self.focus_position][0].set_styles('reveal focus')
+        self.contents[old_pos][0].set_styles(None)
+
         if key in self.keybindings['view']:  # XXX make this more generic
-            self._old_attr_map = self.contents[self.focus_position][0].get_attr_map()
             self._old_pos = old_pos
-            self.contents[self.focus_position][0].set_attr_map({None: 'today focus'})
+            self.contents[self.focus_position][0].set_styles('today focus')
             return 'right'
         elif self._old_attr_map:
             self.contents[self._old_pos][0].set_attr_map(self._old_attr_map)
