@@ -397,19 +397,22 @@ when using ikhal
 .. object:: theme
 
     
-    Choose a color theme for khal. This is very much work in progress. Help is
-    really welcome! The two currently available color schemes (*dark* and
-    *light*) reside in `khal/ui/themes.py*, you can either help improve those or
-    create a new one (see below). As ikhal uses urwid, have a lokk at `urwid's
-    documentation`__ for how to set colors and/or at the existing schemes. If
-    you cannot change the color of an element (or have any other problems) please
-    open an issue on github_.
+    Choose a color theme for khal.
+    
+    This is very much work in progress. Help is really welcome! The two currently
+    available color schemes (*dark* and *light*) are defined in
+    *khal/ui/themes.py*, you can either help improve those or create a new one
+    (see below). As ikhal uses urwid, have a look at `urwid's documentation`__
+    for how to set colors and/or at the existing schemes. If you cannot change
+    the color of an element (or have any other problems) please open an issue on
+    github_.
     
     If you want to create your own color scheme, just copy the structure of the
     existing ones, give it a new and unique name and also add it as an option in
     `khal/settings/khal.spec` in the section `[default]` of the property `theme`.
     
-    __ http://insert.link
+    __ http://urwid.org/manual/displayattributes.html
+    .. _github: # https://github.com/geier/khal/issues
 
       :type: option, allowed values are *dark* and *light*
       :default: dark
