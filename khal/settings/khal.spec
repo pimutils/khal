@@ -138,6 +138,10 @@ days = integer(default=2)
 # event in text form, the path to where the event is now saved or nothing?
 print_new = option('event', 'path', 'False', default=False)
 
+# If true, khal will highlight days with events. Options for
+# highlighting are in [highlight_days] section.
+highlight_event_days = boolean(default=False)
+
 # The view section contains config options that effect the visual appearance
 # when using ikhal
 [view]
@@ -166,3 +170,23 @@ theme = option('dark', 'light', default='dark')
 # Whether to show a visible frame (with *box drawing* characters) around some
 # (groups of) elements.
 frame = boolean(default=False)
+
+# When highlight_event_days is enabled, this section specifies how is
+# the highlighting rendered.
+[highlight_days]
+
+# Highlighting method to use - foreground or background
+method = option('foreground', 'fg', 'background', 'bg', default='fg')
+
+# What color to use when highlighting - explicit color or use calendar
+# color when set to ''
+color = option('black', 'white', 'brown', 'yellow','dark grey', 'dark green', 'dark blue','light grey', 'light green', 'light blue','dark magenta', 'dark cyan', 'dark red','light magenta', 'light cyan', 'light red', '', default='')
+
+# How to color days with events from multiple calendars - either
+# explicit color or use calendars' colors when set to ''
+multiple = option('black', 'white', 'brown', 'yellow','dark grey', 'dark green', 'dark blue','light grey', 'light green', 'light blue','dark magenta', 'dark cyan', 'dark red','light magenta', 'light cyan', 'light red', '', default='')
+
+# Default color for calendars without color - when se to '' it
+# actually disables highlighting for events that should use the
+# default color.
+default_color = option('black', 'white', 'brown', 'yellow','dark grey', 'dark green', 'dark blue','light grey', 'light green', 'light blue','dark magenta', 'dark cyan', 'dark red','light magenta', 'light cyan', 'light red', '', default='')

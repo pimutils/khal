@@ -26,6 +26,8 @@ import datetime
 
 from click import style
 
+from .terminal import urwid_to_click
+
 from .compat import VERSION
 
 
@@ -49,7 +51,50 @@ def getweeknumber(date):
     return datetime.date.isocalendar(date)[1]
 
 
-def str_week(week, today):
+def get_event_color(event, default_color):
+    """Because multi-line lambdas would be un-Pythonic
+    """
+    if event.color == '':
+        return default_color
+    return event.color
+
+
+def str_highlight_day(day, devents, hmethod, default_color, multiple, color):
+    """returns a string with day highlighted according to configuration
+    """
+    dstr = str(day.day).rjust(2)
+    if color == '':
+        dcolors = list(set(map(lambda x: get_event_color(x, default_color), devents)))
+        if len(dcolors) > 1:
+            if multiple == '':
+                color1 = urwid_to_click(dcolors[0])
+                color2 = urwid_to_click(dcolors[1])
+                if hmethod == "foreground" or hmethod == "fg":
+                    return style(dstr[:1], fg=color1) + style(dstr[1:], fg=color2)
+                else:
+                    return style(dstr[:1], bg=color1) + style(dstr[1:], bg=color2)
+            else:
+                dcolor = urwid_to_click(multiple)
+        else:
+            if devents[0].color == '':
+                dcolorv = default_color
+                if dcolorv != '':
+                    dcolor = urwid_to_click(dcolorv)
+            else:
+                dcolor = urwid_to_click(devents[0].color)
+    else:
+        dcolor = urwid_to_click(color)
+    if dcolor != '':
+        if hmethod == "foreground" or hmethod == "fg":
+            return style(dstr, fg=dcolor)
+        else:
+            return style(dstr, bg=dcolor)
+    return dstr
+
+
+def str_week(week, today, collection=None,
+             hmethod=None, default_color=None, multiple=None, color=None,
+             highlight_event_days=False, locale=None):
     """returns a string representing one week,
     if for day == today colour is reversed
 
@@ -65,6 +110,17 @@ def str_week(week, today):
     for day in week:
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
+        elif highlight_event_days:
+            localize = locale['local_timezone'].localize
+            start = localize(datetime.datetime.combine(day, datetime.time.min))
+            end = localize(datetime.datetime.combine(day, datetime.time.max))
+            devents = collection.get_datetime_by_time_range(start, end) + \
+                collection.get_allday_by_time_range(day)
+            if len(devents) > 0:
+                day = str_highlight_day(day, devents, hmethod, default_color,
+                                        multiple, color)
+            else:
+                day = str(day.day).rjust(2)
         else:
             day = str(day.day).rjust(2)
         strweek = strweek + day + ' '
@@ -76,7 +132,14 @@ def vertical_month(month=datetime.date.today().month,
                    today=datetime.date.today(),
                    weeknumber=False,
                    count=3,
-                   firstweekday=0):
+                   firstweekday=0,
+                   collection=None,
+                   hmethod='fg',
+                   default_color='',
+                   multiple='',
+                   color='',
+                   highlight_event_days=False,
+                   locale=None):
     """
     returns a list() of str() of weeks for a vertical arranged calendar
 
@@ -108,7 +171,8 @@ def vertical_month(month=datetime.date.today().month,
     for _ in range(count):
         for week in _calendar.monthdatescalendar(year, month):
             new_month = len([day for day in week if day.day == 1])
-            strweek = str_week(week, today)
+            strweek = str_week(week, today, collection, hmethod, default_color,
+                               multiple, color, highlight_event_days, locale)
             if new_month:
                 m_name = style(month_abbr(week[6].month).ljust(4), bold=True)
             elif weeknumber == 'left':
