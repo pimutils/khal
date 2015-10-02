@@ -22,6 +22,9 @@
 
 from __future__ import unicode_literals
 
+from __future__ import print_function
+import sys
+
 import calendar
 from datetime import date
 
@@ -40,14 +43,15 @@ def getweeknumber(day):
     return date.isocalendar(day)[1]
 
 
-class Date(urwid.Text):
+class Date(urwid.WidgetWrap):
 
     """used in the main calendar for dates (a number)"""
 
-    def __init__(self, date, on_date_change):
+    def __init__(self, date):
+        dstr = str(date.day).rjust(2)
+        self.halves=[urwid.Text(dstr[:1]),urwid.Text(dstr[1:])]
         self.date = date
-        self.on_date_change = on_date_change
-        super(Date, self).__init__(str(date.day).rjust(2))
+        super(Date, self).__init__(urwid.Columns(self.halves))
 
     @classmethod
     def selectable(cls):
@@ -91,6 +95,7 @@ class DateCColumns(urwid.Columns):
         if self._init:
             self._init = False
         else:
+            print(self.contents[position][0].original_widget.date, file=sys.stderr)
             self.on_date_change(self.contents[position][0].original_widget.date)
         super(DateCColumns, self)._set_focus_position(position)
 
@@ -367,7 +372,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         this_week = [(4, urwid.AttrMap(urwid.Text(month_name), attr))]
         today = None
         for number, day in enumerate(week):
-            new_date = Date(day, self.on_date_change)
+            new_date = Date(day)
             if day == date.today():
                 this_week.append((2, urwid.AttrMap(new_date, 'today', 'today focus')))
                 today = number + 1
