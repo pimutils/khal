@@ -61,7 +61,8 @@ class Date(urwid.WidgetWrap):
 
     def __init__(self, date):
         dstr = str(date.day).rjust(2)
-        self.halves=[DatePart(dstr[:1]),DatePart(dstr[1:])]
+        self.halves = [urwid.AttrMap(DatePart(dstr[:1]), None, None),
+                       urwid.AttrMap(DatePart(dstr[1:]), None, None)]
         self.date = date
         super(Date, self).__init__(urwid.Columns(self.halves))
 
