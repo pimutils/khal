@@ -102,11 +102,13 @@ class DateCColumns(urwid.Columns):
     calls 'on_date_change' on every focus change (see below for details)
     """
 
-    def __init__(self, widget_list, on_date_change, on_press, keybindings, today=None, **kwargs):
+    def __init__(self, widget_list, on_date_change, on_press, keybindings,
+                 today=None, get_styles=None, **kwargs):
         self.on_date_change = on_date_change
         self.on_press = on_press
         self.keybindings = keybindings
         self.today = today
+        self.get_styles = get_styles
         # we need the next two attributes to for attribute resetting when a
         # cell regains focus after having lost it the the events column before
         self._old_attr_map = False
@@ -125,7 +127,8 @@ class DateCColumns(urwid.Columns):
         if self._init:
             self._init = False
         else:
-            self.contents[position][0].set_styles('reveal focus')
+            self.contents[position][0].set_styles(
+                self.get_styles(self.contents[position][0].date, True))
             self.on_date_change(self.contents[position][0].date)
         super(DateCColumns, self)._set_focus_position(position)
 
@@ -160,28 +163,31 @@ class DateCColumns(urwid.Columns):
 
         # make sure we don't leave the calendar
         if old_pos == 7 and key == 'right':
-            self.contents[old_pos][0].set_styles(None)
+            self.contents[old_pos][0].set_styles(
+                self.get_styles(self.contents[old_pos][0], False))
             self.focus_position = 1
             return 'down'
         elif old_pos == 1 and key == 'left':
-            self.contents[old_pos][0].set_styles(None)
+            self.contents[old_pos][0].set_styles(
+                self.get_styles(self.contents[old_pos][0], False))
             self.focus_position = 7
             return 'up'
 
         if key in self.keybindings['view']:  # XXX make this more generic
             self._old_pos = old_pos
-            self.contents[self.focus_position][0].set_styles('today focus')
+            self.contents[old_pos][0].set_styles(
+                self.get_styles(self.contents[old_pos][0], True))
             return 'right'
-        elif self._old_attr_map:
-            self.contents[self._old_pos][0].set_attr_map(self._old_attr_map)
-            self._old_attr_map = False
 
         if old_pos != self.focus_position:
-            self.contents[old_pos][0].set_styles(None)
-            self.contents[self.focus_position][0].set_styles('reveal focus')
+            self.contents[old_pos][0].set_styles(
+                self.get_styles(self.contents[old_pos][0], False))
+            self.contents[self.focus_position][0].set_styles(
+                self.get_styles(self.contents[old_pos][0], True))
 
         if key in ['up', 'down']:
-            self.contents[old_pos][0].set_styles(None)
+            self.contents[old_pos][0].set_styles(
+                self.get_styles(self.contents[old_pos][0], False))
 
         return key
 
@@ -192,22 +198,13 @@ class CListBox(urwid.ListBox):
     it should contain a `CalendarWalker` instance which it autoextends on
     rendering, if needed """
 
-    def __init__(self, walker, get_colors=None):
+    def __init__(self, walker):
         self._init = True
         self.keybindings = walker.keybindings
         self.on_press = walker.on_press
         self._marked = False
         self._pos_old = False
 
-        def color(date):
-            if date == date.today():
-                return 'today'
-            else:
-                return None
-        if get_colors is None:
-            self._get_colors = color
-        else:
-            self._get_colors = get_colors
         super(CListBox, self).__init__(walker)
 
     def render(self, size, focus=False):
@@ -299,12 +296,14 @@ class CListBox(urwid.ListBox):
 
 class CalendarWalker(urwid.SimpleFocusListWalker):
 
-    def __init__(self, on_date_change, on_press, keybindings, firstweekday=0, weeknumbers=False):
+    def __init__(self, on_date_change, on_press, keybindings, firstweekday=0,
+                 weeknumbers=False, get_styles=None):
         self.firstweekday = firstweekday
         self.weeknumbers = weeknumbers
         self.on_date_change = on_date_change
         self.on_press = on_press
         self.keybindings = keybindings
+        self.get_styles = get_styles
         weeks, focus_item = self._construct_month()
         self.today = focus_item  # the item number which contains today
         urwid.SimpleFocusListWalker.__init__(self, weeks)
@@ -417,7 +416,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             new_date = Date(day)
             if day == date.today():
                 this_week.append((2, new_date))
-                new_date.set_styles('today focus')
+                new_date.set_styles(self.get_styles(new_date, True))
                 today = number + 1
             else:
                 this_week.append((2, new_date))
@@ -429,7 +428,8 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
                             on_press=self.on_press,
                             keybindings=self.keybindings,
                             dividechars=1,
-                            today=today)
+                            today=today,
+                            get_styles=self.get_styles)
         return week, bool(today)
 
     def _construct_month(self,
@@ -480,7 +480,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
 class CalendarWidget(urwid.WidgetWrap):
     def __init__(self, on_date_change, keybindings, on_press,
-                 firstweekday=0, weeknumbers=False):
+                 firstweekday=0, weeknumbers=False, get_styles=None):
         """
         on_date_change: a function that is called every time the selected date
                         is changed with the newly selected date as a first (and
@@ -518,6 +518,14 @@ class CalendarWidget(urwid.WidgetWrap):
             weekheader = weekheader.decode('utf-8')
         dnames = weekheader.split(' ')
 
+        def _get_styles(date, focus):
+            if focus:
+                return 'reveal focus'
+            else:
+                return None
+        if get_styles is None:
+            get_styles = _get_styles
+
         if weeknumbers == 'right':
             dnames.append('#w')
         dnames = urwid.Columns(
@@ -525,7 +533,8 @@ class CalendarWidget(urwid.WidgetWrap):
             [(2, urwid.AttrMap(urwid.Text(name), 'dayname')) for name in dnames],
             dividechars=1)
         self.walker = CalendarWalker(
-            on_date_change, on_press, default_keybindings, firstweekday, weeknumbers)
+            on_date_change, on_press, default_keybindings, firstweekday, weeknumbers,
+            get_styles)
         box = CListBox(self.walker)
         frame = urwid.Frame(box, header=dnames)
         urwid.WidgetWrap.__init__(self, frame)
