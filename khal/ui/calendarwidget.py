@@ -22,6 +22,9 @@
 
 from __future__ import unicode_literals
 
+from __future__ import print_function
+import sys
+
 import calendar
 from datetime import date
 
@@ -164,30 +167,30 @@ class DateCColumns(urwid.Columns):
         # make sure we don't leave the calendar
         if old_pos == 7 and key == 'right':
             self.contents[old_pos][0].set_styles(
-                self.get_styles(self.contents[old_pos][0], False))
+                self.get_styles(self.contents[old_pos][0].date, False))
             self.focus_position = 1
             return 'down'
         elif old_pos == 1 and key == 'left':
             self.contents[old_pos][0].set_styles(
-                self.get_styles(self.contents[old_pos][0], False))
+                self.get_styles(self.contents[old_pos][0].date, False))
             self.focus_position = 7
             return 'up'
 
         if key in self.keybindings['view']:  # XXX make this more generic
             self._old_pos = old_pos
             self.contents[old_pos][0].set_styles(
-                self.get_styles(self.contents[old_pos][0], True))
+                self.get_styles(self.contents[old_pos][0].date, True))
             return 'right'
 
         if old_pos != self.focus_position:
             self.contents[old_pos][0].set_styles(
-                self.get_styles(self.contents[old_pos][0], False))
+                self.get_styles(self.contents[old_pos][0].date, False))
             self.contents[self.focus_position][0].set_styles(
-                self.get_styles(self.contents[old_pos][0], True))
+                self.get_styles(self.contents[self.focus_position][0].date, True))
 
         if key in ['up', 'down']:
             self.contents[old_pos][0].set_styles(
-                self.get_styles(self.contents[old_pos][0], False))
+                self.get_styles(self.contents[old_pos][0].date, False))
 
         return key
 
@@ -416,7 +419,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             new_date = Date(day)
             if day == date.today():
                 this_week.append((2, new_date))
-                new_date.set_styles(self.get_styles(new_date, True))
+                new_date.set_styles(self.get_styles(new_date.date, True))
                 today = number + 1
             else:
                 this_week.append((2, new_date))
@@ -520,9 +523,15 @@ class CalendarWidget(urwid.WidgetWrap):
 
         def _get_styles(date, focus):
             if focus:
-                return 'reveal focus'
+                if date == date.today():
+                    return 'today focus'
+                else:
+                    return 'reveal focus'
             else:
-                return None
+                if date == date.today():
+                    return 'today'
+                else:
+                    return None
         if get_styles is None:
             get_styles = _get_styles
 
