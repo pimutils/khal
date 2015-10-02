@@ -75,7 +75,7 @@ def _multi_calendar_select_callback(ctx, option, calendars):
     elif mode == 'exclude_calendar':
         selection.update(ctx.obj['conf']['calendars'].keys())
         for value in calendars:
-            calendars.remove(value)
+            selection.remove(value)
     else:
         raise ValueError(mode)
 
