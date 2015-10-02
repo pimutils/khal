@@ -22,9 +22,6 @@
 
 from __future__ import unicode_literals
 
-from __future__ import print_function
-import sys
-
 import calendar
 from datetime import date
 
@@ -71,12 +68,8 @@ class Date(urwid.WidgetWrap):
 
     def set_styles(self, styles):
         """If single string, sets the same style for both halves, if two
-        strings, sets different style for each half. Unifies style for
-        focused/non-focused Dates - as they don't lose focus when
-        changing rows!
+        strings, sets different style for each half.
         """
-        print(styles, file=sys.stderr)
-        print(type(styles), file=sys.stderr)
         if type(styles) is tuple:
             self.halves[0].set_attr_map({None: styles[0]})
             self.halves[1].set_attr_map({None: styles[1]})
@@ -85,8 +78,8 @@ class Date(urwid.WidgetWrap):
         elif type(styles) is str or type(styles) is unicode or styles is None:
             self.halves[0].set_attr_map({None: styles})
             self.halves[1].set_attr_map({None: styles})
-            self.halves[0].set_focus_map({None: styles})
             self.halves[1].set_focus_map({None: styles})
+            self.halves[0].set_focus_map({None: styles})
         else:
             raise TypeError("styles must be tuple or string")
 
@@ -132,6 +125,7 @@ class DateCColumns(urwid.Columns):
         if self._init:
             self._init = False
         else:
+            self.contents[position][0].set_styles('reveal focus')
             self.on_date_change(self.contents[position][0].date)
         super(DateCColumns, self)._set_focus_position(position)
 
@@ -166,14 +160,13 @@ class DateCColumns(urwid.Columns):
 
         # make sure we don't leave the calendar
         if old_pos == 7 and key == 'right':
+            self.contents[old_pos][0].set_styles(None)
             self.focus_position = 1
             return 'down'
         elif old_pos == 1 and key == 'left':
+            self.contents[old_pos][0].set_styles(None)
             self.focus_position = 7
             return 'up'
-
-        self.contents[self.focus_position][0].set_styles('reveal focus')
-        self.contents[old_pos][0].set_styles(None)
 
         if key in self.keybindings['view']:  # XXX make this more generic
             self._old_pos = old_pos
@@ -182,6 +175,14 @@ class DateCColumns(urwid.Columns):
         elif self._old_attr_map:
             self.contents[self._old_pos][0].set_attr_map(self._old_attr_map)
             self._old_attr_map = False
+
+        if old_pos != self.focus_position:
+            self.contents[old_pos][0].set_styles(None)
+            self.contents[self.focus_position][0].set_styles('reveal focus')
+
+        if key in ['up', 'down']:
+            self.contents[old_pos][0].set_styles(None)
+
         return key
 
 
@@ -416,6 +417,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             new_date = Date(day)
             if day == date.today():
                 this_week.append((2, new_date))
+                new_date.set_styles('today focus')
                 today = number + 1
             else:
                 this_week.append((2, new_date))
