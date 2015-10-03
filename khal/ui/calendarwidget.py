@@ -169,11 +169,15 @@ class DateCColumns(urwid.Columns):
             self.contents[old_pos][0].set_styles(
                 self.get_styles(self.contents[old_pos][0].date, False))
             self.focus_position = 1
+            self.contents[self.focus_position][0].set_styles(
+                self.get_styles(self.contents[self.focus_position][0].date, False))
             return 'down'
         elif old_pos == 1 and key == 'left':
             self.contents[old_pos][0].set_styles(
                 self.get_styles(self.contents[old_pos][0].date, False))
             self.focus_position = 7
+            self.contents[self.focus_position][0].set_styles(
+                self.get_styles(self.contents[self.focus_position][0].date, False))
             return 'up'
 
         if key in self.keybindings['view']:  # XXX make this more generic
