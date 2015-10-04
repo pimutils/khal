@@ -258,7 +258,8 @@ class CalendarCollection(object):
                  default_color='',
                  multiple='',
                  color='',
-                 highlight_event_days=0):
+                 highlight_event_days=0,
+                 locale=None):
         self._calnames = dict()
         self._default_calendar_name = None
         self.hmethod = hmethod
@@ -266,6 +267,8 @@ class CalendarCollection(object):
         self.multiple = multiple
         self.color = color
         self.highlight_event_days = highlight_event_days
+        self.locale = locale
+        self.localize = self.locale['local_timezone'].localize
 
     @property
     def writable_names(self):
@@ -367,11 +370,31 @@ class CalendarCollection(object):
             events.extend(one.search(search_string))
         return events
 
-    def get_day_styles(self, date, focus):
-        if date == date.today():
-            return 'today'
-        else:
+    def get_event_color(self, event):
+        """Because multi-line lambdas would be un-Pythonic
+        """
+        if event.color == '':
+            return self.default_color
+        return event.color
+
+    def get_day_styles(self, day, focus):
+        start = self.localize(datetime.datetime.combine(day, datetime.time.min))
+        end = self.localize(datetime.datetime.combine(day, datetime.time.max))
+        devents = self.get_datetime_by_time_range(start, end) + \
+            self.get_allday_by_time_range(day)
+        if len(devents) == 0:
             return None
+        if self.color != '':
+            return self.color
+        dcolors = list(set(map(lambda x: self.get_event_color(x), devents)))
+        if len(dcolors) == 1:
+            if devents[0].color == '':
+                return self.default_color;
+            else:
+                return devents[0].color
+        if self.multiple !='':
+            return self.multiple
+        return (dcolors[0], dcolors[1])
 
     def get_styles(self, date, focus):
         if focus:
@@ -380,4 +403,7 @@ class CalendarCollection(object):
             else:
                 return 'reveal focus'
         else:
-            return self.get_day_styles(date, focus)
+            if date == date.today():
+                return 'today'
+            else:
+                return self.get_day_styles(date, focus)

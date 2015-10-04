@@ -146,7 +146,8 @@ def build_collection(ctx):
             default_color=ctx.obj['conf']['highlight_days']['default_color'],
             multiple=ctx.obj['conf']['highlight_days']['multiple'],
             color=ctx.obj['conf']['highlight_days']['color'],
-            highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'])
+            highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
+            locale=ctx.obj['conf']['locale'])
         selection = ctx.obj.get('calendar_selection', None)
 
         for name, cal in conf['calendars'].items():
