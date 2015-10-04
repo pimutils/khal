@@ -254,9 +254,18 @@ class Calendar(object):
 
 class CalendarCollection(object):
 
-    def __init__(self):
+    def __init__(self, hmethod='fg',
+                 default_color='',
+                 multiple='',
+                 color='',
+                 highlight_event_days=0):
         self._calnames = dict()
         self._default_calendar_name = None
+        self.hmethod = hmethod
+        self.default_color = default_color
+        self.multiple = multiple
+        self.color = color
+        self.highlight_event_days = highlight_event_days
 
     @property
     def writable_names(self):
