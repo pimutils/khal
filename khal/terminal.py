@@ -102,3 +102,12 @@ def urwid_to_click(color):
     if col == 'brown':
         return 'yellow'
     return col
+
+
+def urwid_to_click_bold(color):
+    """convert urwid color name to click bold attribute
+    """
+    col = color.split()[0]
+    if col == 'brown':
+        return False
+    return col == 'light' or col == 'yellow'
