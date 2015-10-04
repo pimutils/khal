@@ -406,4 +406,7 @@ class CalendarCollection(object):
             if date == date.today():
                 return 'today'
             else:
-                return self.get_day_styles(date, focus)
+                if self.highlight_event_days:
+                    return self.get_day_styles(date, focus)
+                else:
+                    return None
