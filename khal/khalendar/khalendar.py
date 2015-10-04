@@ -367,6 +367,12 @@ class CalendarCollection(object):
             events.extend(one.search(search_string))
         return events
 
+    def get_day_styles(self, date, focus):
+        if date == date.today():
+            return 'today'
+        else:
+            return None
+
     def get_styles(self, date, focus):
         if focus:
             if date == date.today():
@@ -374,7 +380,4 @@ class CalendarCollection(object):
             else:
                 return 'reveal focus'
         else:
-            if date == date.today():
-                return 'today'
-            else:
-                return None
+            return self.get_day_styles(date, focus)
