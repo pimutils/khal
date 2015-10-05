@@ -575,14 +575,14 @@ class EventEditor(urwid.WidgetWrap):
 class DeleteDialog(urwid.WidgetWrap):
     def __init__(self, this_func, future_func, all_func, abort_func):
         lines = []
-        lines.append(urwid.Text(u'You are trying to delete a recursive event.'))
-        lines.append(urwid.Text(u'What do you want to delete?'))
+        lines.append(urwid.Text(u'This is a recurring event.'))
+        lines.append(urwid.Text(u'Which instances do you want to delete?'))
         lines.append(urwid.Text(u''))
         buttons = urwid.Columns(
-            [urwid.Button(u'This instance', on_press=this_func),
-             urwid.Button(u'All future instances', on_press=future_func),
-             urwid.Button(u'All instances (past and future)', on_press=all_func),
-             urwid.Button(u'Nothing, Abort', on_press=abort_func),
+            [urwid.Button(u'Only this', on_press=this_func),
+             urwid.Button(u'All future', on_press=future_func),
+             urwid.Button(u'All (past and future)', on_press=all_func),
+             urwid.Button(u'Abort', on_press=abort_func),
              ])
         lines.append(buttons)
         content = urwid.Pile(lines)

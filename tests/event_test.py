@@ -287,3 +287,20 @@ def test_duplicate_event():
     event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
     dupe = event.duplicate()
     assert dupe._vevents['PROTO']['UID'].to_ical() != 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
+
+
+def test_remove_instance_from_rrule():
+    """removing an instance from a recurring event"""
+    event = Event.fromString(_get_text('event_dt_rr'), **EVENT_KWARGS)
+    event.delete_instance(datetime(2014, 4, 10, 9, 30))
+    assert 'EXDATE:20140410T093000' in event.raw.split('\r\n')
+    event.delete_instance(datetime(2014, 4, 12, 9, 30))
+    assert 'EXDATE:20140410T093000,20140412T093000' in event.raw.split('\r\n')
+
+
+def test_remove_instance_from_rdate():
+    """removing an instance from a recurring event"""
+    event = Event.fromString(_get_text('event_dt_rd'), **EVENT_KWARGS)
+    assert 'RDATE' in event.raw
+    event.delete_instance(datetime(2014, 4, 10, 9, 30))
+    assert 'RDATE' not in event.raw

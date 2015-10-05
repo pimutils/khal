@@ -30,7 +30,7 @@ import icalendar
 
 from ..compat import iteritems, to_unicode
 from ..aux import generate_random_uid
-from .aux import to_naive_utc, to_unix_time, invalid_timezone
+from .aux import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
 from ..log import logger
 
 
@@ -416,6 +416,11 @@ class Event(object):
         event.calendar = self.calendar
         return event
 
+    def delete_instance(self, instance):
+        """delete an instance from this event"""
+        assert self.recurring
+        delete_instance(self._vevents['PROTO'], instance)
+        # TODO also delete from self._vevents if applies
 
 
 class DatetimeEvent(Event):

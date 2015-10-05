@@ -1,7 +1,9 @@
-from datetime import datetime, timedelta
 
+from datetime import datetime, timedelta
 import calendar
+
 import dateutil.rrule
+import icalendar
 import pytz
 
 from .. import log
@@ -220,3 +222,58 @@ def invalid_timezone(prop):
         return True
     else:
         return False
+
+
+def _add_exdate(vevent, instance):
+    """remove a recurrence instance from a VEVENT's RRDATE list
+
+    :type vevent: icalendar.cal.Event
+    :type instance: datetime.datetime
+    """
+
+    def dates_from_exdate(vdddlist):
+        return [dts.dt for dts in vevent['EXDATE'].dts]
+
+    if 'EXDATE' not in vevent:
+        vevent.add('EXDATE', instance)
+    else:
+        if not isinstance(vevent['EXDATE'], list):
+            exdates = dates_from_exdate(vevent['EXDATE'])
+        else:
+            exdates = list()
+            for vddlist in vevent['EXDATE']:
+                exdates.append(dates_from_exdate(vddlist))
+        exdates += [instance]
+        vevent.pop('EXDATE')
+        vevent.add('EXDATE', exdates)
+
+
+def _remove_instance(vevent, instance):
+    """remove a recurrence instance from a VEVENT's RRDATE list
+
+    :type vevent: icalendar.cal.Event
+    :type instance: datetime.datetime
+    """
+    dts = [vddd.dt for vddd in vevent['RDATE'].dts]
+    dts = [one for one in dts if one != instance]
+    vevent.pop('RDATE')
+    if dts != []:
+        vevent.add('RDATE', dts)
+
+
+def delete_instance(vevent, instance):
+    """remove a recurrence instance from a VEVENT's RRDATE list
+
+    :type vevent: icalendar.cal.Event
+    :type instance: datetime.datetime
+    """
+
+    if 'RDATE' in vevent and 'RRULE' in vevent:
+        # TODO check where this instance is coming from and only call the
+        # appropriate function
+        _add_exdate(vevent, instance)
+        _remove_instance(vevent, instance)
+    elif 'RRULE' in vevent:
+        _add_exdate(vevent, instance)
+    elif 'RDATE' in vevent:
+        _remove_instance(vevent, instance)
