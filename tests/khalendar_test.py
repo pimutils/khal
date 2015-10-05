@@ -60,7 +60,7 @@ def cal_vdir(tmpdir):
 
 @pytest.fixture
 def coll_vdirs(tmpdir):
-    coll = CalendarCollection()
+    coll = CalendarCollection(locale=locale)
     vdirs = dict()
     for name in example_cals:
         path = str(tmpdir) + '/' + name
@@ -140,7 +140,7 @@ class TestCollection(object):
     bend = datetime.combine(bday, time.max)
 
     def test_default_calendar(self, tmpdir):
-        coll = CalendarCollection()
+        coll = CalendarCollection(locale=locale)
         coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
         coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale))
         coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
@@ -250,7 +250,7 @@ class TestCollection(object):
         assert event.allday is False
 
     def test_modify_readonly_calendar(self, tmpdir):
-        coll = CalendarCollection()
+        coll = CalendarCollection(locale=locale)
         coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
         coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale))
         coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))

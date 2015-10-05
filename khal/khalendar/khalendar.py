@@ -389,10 +389,10 @@ class CalendarCollection(object):
         dcolors = list(set(map(lambda x: self.get_event_color(x), devents)))
         if len(dcolors) == 1:
             if devents[0].color == '':
-                return self.default_color;
+                return self.default_color
             else:
                 return devents[0].color
-        if self.multiple !='':
+        if self.multiple != '':
             return self.multiple
         return (dcolors[0], dcolors[1])
 
