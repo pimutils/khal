@@ -75,7 +75,7 @@ class Date(urwid.WidgetWrap):
             self.halves[1].set_attr_map({None: styles[1]})
             self.halves[0].set_focus_map({None: styles[0]})
             self.halves[1].set_focus_map({None: styles[1]})
-        elif type(styles) is str or type(styles) is unicode or styles is None:
+        elif type(styles) is str or styles is None:
             self.halves[0].set_attr_map({None: styles})
             self.halves[1].set_attr_map({None: styles})
             self.halves[1].set_focus_map({None: styles})
