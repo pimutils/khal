@@ -10,7 +10,6 @@ requirements = [
     'pyxdg',
     'pytz',
     'vdirsyncer',
-    'pkginfo',
     'python-dateutil',
     'configobj',
     'tzlocal>=1.0',
