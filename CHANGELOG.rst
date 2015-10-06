@@ -15,6 +15,10 @@ not released yet
   benefit is that floating events are properly represented now, hopefully more
   is to come (Christian Geier)
 * *printformats* uses a more sensible date now (John Shea)
+* khal and ikhal can now highlight dates with events, at the moment, enabling it
+  does noticably slow down (i)khal's start; set *[default] highlight_event_days
+  = True* and see section *[highlight_days]* for further configuration (Dominik
+  Joe Pantůček)
 
 ikhal
 ----
@@ -22,7 +26,7 @@ ikhal
 * events are now displayed nicer (Thomas Glanzmann)
 * support for colorschemes, a *light* and *dark* one are currently included,
   help is wanted to make them prettier and more functional (config option
-  *[view] theme: dark*) (Christian Geier)
+  *[view] theme: (dark|light)*) (Christian Geier)
 * ikhal can now display frames around some user interface elements, making it
   nicer to look at in some eyes (config option *[view] frame: True*) (Christian
   Geier)
