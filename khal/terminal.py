@@ -98,4 +98,16 @@ def merge_columns(lcolumn, rcolumn, width=25):
 def urwid_to_click(color):
     """convert urwid color name to click color name
     """
-    return color.split()[-1]
+    col = color.split()[-1]
+    if col == 'brown':
+        return 'yellow'
+    return col
+
+
+def urwid_to_click_bold(color):
+    """convert urwid color name to click bold attribute
+    """
+    col = color.split()[0]
+    if col == 'brown':
+        return False
+    return col == 'light' or col == 'yellow'

@@ -570,6 +570,7 @@ class ClassicView(Pane):
             on_press={'n': self.new_event},
             firstweekday=conf['locale']['firstweekday'],
             weeknumbers=conf['locale']['weeknumbers'],
+            get_styles=collection.get_styles
         )
         self.calendar = ContainerWidget(calendar)
         lwidth = 31 if conf['locale']['weeknumbers'] == 'right' else 28

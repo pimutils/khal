@@ -254,9 +254,21 @@ class Calendar(object):
 
 class CalendarCollection(object):
 
-    def __init__(self):
+    def __init__(self, hmethod='fg',
+                 default_color='',
+                 multiple='',
+                 color='',
+                 highlight_event_days=0,
+                 locale=None):
         self._calnames = dict()
         self._default_calendar_name = None
+        self.hmethod = hmethod
+        self.default_color = default_color
+        self.multiple = multiple
+        self.color = color
+        self.highlight_event_days = highlight_event_days
+        self.locale = locale
+        self.localize = self.locale['local_timezone'].localize
 
     @property
     def writable_names(self):
@@ -357,3 +369,47 @@ class CalendarCollection(object):
         for one in self.calendars:
             events.extend(one.search(search_string))
         return events
+
+    def get_event_color(self, event):
+        """Because multi-line lambdas would be un-Pythonic
+        """
+        if event.color == '':
+            return self.default_color
+        return event.color
+
+    def get_day_styles(self, day, focus):
+        start = self.localize(datetime.datetime.combine(day, datetime.time.min))
+        end = self.localize(datetime.datetime.combine(day, datetime.time.max))
+        devents = self.get_datetime_by_time_range(start, end) + \
+            self.get_allday_by_time_range(day)
+        if len(devents) == 0:
+            return None
+        prefix = ''
+        if self.hmethod == 'bg' or self.hmethod == 'background':
+            prefix = 'bg '
+        if self.color != '':
+            return prefix+self.color
+        dcolors = list(set(map(lambda x: self.get_event_color(x), devents)))
+        if len(dcolors) == 1:
+            if devents[0].color == '':
+                return prefix+self.default_color
+            else:
+                return prefix+devents[0].color
+        if self.multiple != '':
+            return prefix+self.multiple
+        return (prefix+dcolors[0], prefix+dcolors[1])
+
+    def get_styles(self, date, focus):
+        if focus:
+            if date == date.today():
+                return 'today focus'
+            else:
+                return 'reveal focus'
+        else:
+            if date == date.today():
+                return 'today'
+            else:
+                if self.highlight_event_days:
+                    return self.get_day_styles(date, focus)
+                else:
+                    return None

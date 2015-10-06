@@ -26,7 +26,7 @@ import datetime
 
 from click import style
 
-from .terminal import urwid_to_click
+from .terminal import urwid_to_click, urwid_to_click_bold
 
 from .compat import VERSION
 
@@ -69,24 +69,31 @@ def str_highlight_day(day, devents, hmethod, default_color, multiple, color):
             if multiple == '':
                 color1 = urwid_to_click(dcolors[0])
                 color2 = urwid_to_click(dcolors[1])
+                bold1 = urwid_to_click_bold(dcolors[0])
+                bold2 = urwid_to_click_bold(dcolors[1])
                 if hmethod == "foreground" or hmethod == "fg":
-                    return style(dstr[:1], fg=color1) + style(dstr[1:], fg=color2)
+                    return style(dstr[:1], fg=color1, bold=bold1) + \
+                        style(dstr[1:], fg=color2, bold=bold2)
                 else:
                     return style(dstr[:1], bg=color1) + style(dstr[1:], bg=color2)
             else:
                 dcolor = urwid_to_click(multiple)
+                dbold = urwid_to_click_bold(multiple)
         else:
             if devents[0].color == '':
                 dcolorv = default_color
                 if dcolorv != '':
                     dcolor = urwid_to_click(dcolorv)
+                    dbold = urwid_to_click_bold(dcolorv)
             else:
                 dcolor = urwid_to_click(devents[0].color)
+                dbold = urwid_to_click_bold(devents[0].color)
     else:
         dcolor = urwid_to_click(color)
+        dbold = urwid_to_click_bold(color)
     if dcolor != '':
         if hmethod == "foreground" or hmethod == "fg":
-            return style(dstr, fg=dcolor)
+            return style(dstr, fg=dcolor, bold=dbold)
         else:
             return style(dstr, bg=dcolor)
     return dstr

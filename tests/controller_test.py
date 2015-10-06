@@ -58,7 +58,7 @@ def cal_vdir(tmpdir):
 
 @pytest.fixture
 def coll_vdirs(tmpdir):
-    coll = CalendarCollection()
+    coll = CalendarCollection(locale=locale)
     vdirs = dict()
     for name in example_cals:
         path = str(tmpdir) + '/' + name
