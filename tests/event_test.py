@@ -304,3 +304,12 @@ def test_remove_instance_from_rdate():
     assert 'RDATE' in event.raw
     event.delete_instance(datetime(2014, 4, 10, 9, 30))
     assert 'RDATE' not in event.raw
+
+
+def test_remove_instance_from_two_rdate():
+    """removing an instance from a recurring event which has two RDATE props"""
+    event = Event.fromString(_get_text('event_dt_two_rd'), **EVENT_KWARGS)
+    assert event.raw.count('RDATE') == 2
+    event.delete_instance(datetime(2014, 4, 10, 9, 30))
+    assert event.raw.count('RDATE') == 1
+    assert 'RDATE:20140411T093000,20140412T093000' in event.raw.split('\r\n')

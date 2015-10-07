@@ -254,11 +254,14 @@ def _remove_instance(vevent, instance):
     :type vevent: icalendar.cal.Event
     :type instance: datetime.datetime
     """
-    dts = [vddd.dt for vddd in vevent['RDATE'].dts]
-    dts = [one for one in dts if one != instance]
+    if isinstance(vevent['RDATE'], list):
+        rdates = [leaf.dt for tree in vevent['RDATE'] for leaf in tree.dts]
+    else:
+        rdates = [vddd.dt for vddd in vevent['RDATE'].dts]
+    rdates = [one for one in rdates if one != instance]
     vevent.pop('RDATE')
-    if dts != []:
-        vevent.add('RDATE', dts)
+    if rdates != []:
+        vevent.add('RDATE', rdates)
 
 
 def delete_instance(vevent, instance):
