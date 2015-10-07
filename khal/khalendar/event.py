@@ -377,9 +377,9 @@ class Event(object):
         body  = self.summary
         if full:
             if self.description.strip() != "":
-                body += body + ", " + self.description
+                body += ", " + self.description
             if self.location.strip() != "":
-                body += body + ", " + self.location
+                body += ", " + self.location
 
         comps = [startstr + tostr + endstr + ':', body, self._recur_str]
         return ' '.join(filter(bool, comps))
@@ -518,9 +518,9 @@ class AllDayEvent(Event):
         body  = self.summary
         if full:
             if self.description.strip() != "":
-                body += body + ", " + self.description
+                body += ", " + self.description
             if self.location.strip() != "":
-                body += body + ", " + self.location
+                body += ", " + self.location
 
         return ' '.join(filter(bool, (rangestr, body, self._recur_str)))
 
