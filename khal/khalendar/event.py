@@ -374,15 +374,12 @@ class Event(object):
         else:
             endstr = self.end_local.strftime(self._locale['timeformat'])
 
-        description = ""
-        location = ""
+        body  = self.summary
         if full:
             if self.description.strip() != "":
-                description = ", " + self.description.strip()
+                body += body + ", " + self.description
             if self.location.strip() != "":
-                location = ", " + self.location.strip()
-
-        body = ''.join([self.summary.strip(), description, location])
+                body += body + ", " + self.location
 
         comps = [startstr + tostr + endstr + ':', body, self._recur_str]
         return ' '.join(filter(bool, comps))
@@ -518,15 +515,13 @@ class AllDayEvent(Event):
             # only on `day`
             rangestr = ''
 
-        description = ""
-        location = ""
+        body  = self.summary
         if full:
             if self.description.strip() != "":
-                description = ", " + self.description.strip()
+                body += body + ", " + self.description
             if self.location.strip() != "":
-                location = ", " + self.location.strip()
+                body += body + ", " + self.location
 
-        body = ''.join([self.summary, description, location])
         return ' '.join(filter(bool, (rangestr, body, self._recur_str)))
 
     @property
