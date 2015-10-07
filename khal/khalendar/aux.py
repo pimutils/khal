@@ -96,7 +96,8 @@ def expand(vevent, href=''):
     if events_tz is not None:
         dtstartl = [events_tz.localize(start) for start in dtstartl]
     elif allday:
-        dtstartl = [start.date() for start in dtstartl]
+        # datutil's rrule turns dates into datetimes
+        dtstartl = [start.date() if isinstance(start, datetime) else start for start in dtstartl]
 
     # RRULE and RDATE may specify the same date twice, it is recommended by
     # the RFC to consider this as only one instance

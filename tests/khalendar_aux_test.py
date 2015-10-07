@@ -711,6 +711,14 @@ class TestRDate(object):
         assert dtstarts[0][0] == date(1965, 4, 23)
         assert dtstarts[-1][0] == date(2037, 4, 23)
 
+    def test_rdate_date(self):
+        vevent = _get_vevent_file('event_d_rdate')
+        dtstarts = aux.expand(vevent, berlin)
+        assert len(dtstarts) == 4
+        assert dtstarts == [(date(2015, 8, 12), date(2015, 8, 13)),
+                            (date(2015, 8, 13), date(2015, 8, 14)),
+                            (date(2015, 8, 14), date(2015, 8, 15)),
+                            (date(2015, 8, 15), date(2015, 8, 16))]
 
 noend_date = """
 BEGIN:VCALENDAR
