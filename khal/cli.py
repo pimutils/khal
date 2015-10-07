@@ -426,8 +426,11 @@ def _get_cli():
         event_column = list()
         term_width, _ = get_terminal_size()
         for event in events:
-            desc = textwrap.wrap(event.event_description, term_width)
-            event_column.extend([colored(d, event.color) for d in desc])
+            lines = list()
+            items = event.long().splitlines()
+            for item in items:
+                lines += textwrap.wrap(item, term_width)
+            event_column.extend([colored(line, event.color) for line in lines])
         click.echo(to_unicode(
             '\n'.join(event_column),
             ctx.obj['conf']['locale']['encoding'])
