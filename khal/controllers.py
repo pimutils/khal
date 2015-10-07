@@ -138,6 +138,7 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
              multiple='',
              color='',
              highlight_event_days=0,
+             full=False,
              **kwargs):
     if date is None:
         date = [datetime.datetime.today()]
@@ -146,8 +147,8 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
     lwidth = 25
     rwidth = term_width - lwidth - 4
     event_column = get_agenda(
-        collection, locale, dates=date, width=rwidth, show_all_days=show_all_days,
-        **kwargs)
+        collection, locale, dates=date, width=rwidth,
+        show_all_days=show_all_days, full=full, **kwargs)
     calendar_column = calendar_display.vertical_month(
         firstweekday=firstweekday, weeknumber=weeknumber,
         collection=collection,
