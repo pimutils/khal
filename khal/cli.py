@@ -427,7 +427,7 @@ def _get_cli():
         term_width, _ = get_terminal_size()
         for event in events:
             lines = list()
-            items = event.long().splitlines()
+            items = event.event_description.splitlines()
             for item in items:
                 lines += textwrap.wrap(item, term_width)
             event_column.extend([colored(line, event.color) for line in lines])
