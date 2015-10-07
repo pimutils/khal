@@ -339,7 +339,7 @@ class Event(object):
             recurstr = ''
         return recurstr
 
-    def relative_to(self, day):
+    def relative_to(self, day, full=False):
         """
         returns a short description of the event, with start and end
         relative to `day`
@@ -374,7 +374,17 @@ class Event(object):
         else:
             endstr = self.end_local.strftime(self._locale['timeformat'])
 
-        comps = [startstr + tostr + endstr + ':', self.summary, self._recur_str]
+        description = ""
+        location = ""
+        if full:
+            if self.description.strip() != "":
+                description = ", " + self.description.strip()
+            if self.location.strip() != "":
+                location = ", " + self.location.strip()
+
+        body = ''.join([self.summary.strip(), description, location])
+
+        comps = [startstr + tostr + endstr + ':', body, self._recur_str]
         return ' '.join(filter(bool, comps))
 
     @property
@@ -490,7 +500,7 @@ class AllDayEvent(Event):
             end += timedelta(days=1)
         return end - timedelta(days=1)
 
-    def relative_to(self, day):
+    def relative_to(self, day, full=False):
         if self.start > day or self.end < day:
             raise ValueError('Day out of range: {}'
                              .format(dict(day=day, start=self.start,
@@ -507,7 +517,17 @@ class AllDayEvent(Event):
         elif self.start == self.end == day:
             # only on `day`
             rangestr = ''
-        return ' '.join(filter(bool, (rangestr, self.summary, self._recur_str)))
+
+        description = ""
+        location = ""
+        if full:
+            if self.description.strip() != "":
+                description = ", " + self.description.strip()
+            if self.location.strip() != "":
+                location = ", " + self.location.strip()
+
+        body = ''.join([self.summary, description, location])
+        return ' '.join(filter(bool, (rangestr, body, self._recur_str)))
 
     @property
     def _rangestr(self):
