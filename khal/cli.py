@@ -225,7 +225,7 @@ def _get_cli():
     @time_args
     @multi_calendar_option
     @click.pass_context
-    @click.option('--full', help=('Print description and location with event'),
+    @click.option('--full', '-f', help=('Print description and location with event'),
                   is_flag=True)
     def calendar(ctx, days, events, dates, full=False):
         '''Print calendar with agenda.'''
@@ -251,7 +251,7 @@ def _get_cli():
     @time_args
     @multi_calendar_option
     @click.pass_context
-    @click.option('--full', help=('Print description and location with event'),
+    @click.option('--full', '-f', help=('Print description and location with event'),
                   is_flag=True)
     def agenda(ctx, days, events, dates, full=False):
         '''Print agenda.'''
