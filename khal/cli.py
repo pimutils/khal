@@ -126,13 +126,20 @@ def global_options(f):
         else:
             logger.setLevel(logging.INFO)
 
-    config = click.option('--config', '-c', default=None, metavar='PATH',
-                          help='The config file to use.', is_eager=True,
-                          expose_value=False, callback=config_callback)
-    verbose = click.option('--verbose', '-v', is_flag=True,
-                           help='Output debugging information.',
-                           expose_value=False,
-                           callback=verbosity_callback)
+    config = click.option(
+        '--config', '-c',
+        is_eager=True,  # make sure other options can access config
+        help='The config file to use.',
+        default=None, metavar='PATH', expose_value=False,
+        callback=config_callback
+    )
+    verbose = click.option(
+        '--verbose', '-v',
+        is_eager=True,  # make sure to log config when debugging
+        help='Output debugging information.',
+        is_flag=True, expose_value=False, callback=verbosity_callback
+    )
+
     version = click.version_option(version=__version__)
 
     return config(verbose(version(f)))
