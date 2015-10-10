@@ -13,3 +13,4 @@ Micah Nordland - micah [at] rehack [dot] me - https://w3.thoughtfuldragon.com/
 Thomas Glanzmann - thomas [at] glanzmann [dot] de - https://thomas.glanzmann.de/
 John Shea - coachshea [at] fastmail [dot] com
 Dominik Joe Pantůček - joe [at] joe [dot] cz - http://joe.cz/
+Thomas Schaper - libreman [at] libremail [dot] nl 

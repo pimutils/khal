@@ -194,7 +194,8 @@ class Event(object):
 
     def update_rrule(self, rrule):
         self._vevents['PROTO'].pop('RRULE')
-        self._vevents['PROTO'].add('RRULE', rrule)
+        if rrule is not None:
+            self._vevents['PROTO'].add('RRULE', rrule)
 
     def increment_sequence(self):
         """update the SEQUENCE number, call before saving this event"""
