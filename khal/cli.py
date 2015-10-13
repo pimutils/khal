@@ -232,7 +232,9 @@ def _get_cli():
     @time_args
     @multi_calendar_option
     @click.pass_context
-    def calendar(ctx, days, events, dates):
+    @click.option('--full', '-f', help=('Print description and location with event'),
+                  is_flag=True)
+    def calendar(ctx, days, events, dates, full=False):
         '''Print calendar with agenda.'''
         controllers.calendar(
             build_collection(ctx),
@@ -248,14 +250,17 @@ def _get_cli():
             default_color=ctx.obj['conf']['highlight_days']['default_color'],
             multiple=ctx.obj['conf']['highlight_days']['multiple'],
             color=ctx.obj['conf']['highlight_days']['color'],
-            highlight_event_days=ctx.obj['conf']['default']['highlight_event_days']
+            highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
+            full=full
         )
 
     @cli.command()
     @time_args
     @multi_calendar_option
     @click.pass_context
-    def agenda(ctx, days, events, dates):
+    @click.option('--full', '-f', help=('Print description and location with event'),
+                  is_flag=True)
+    def agenda(ctx, days, events, dates, full=False):
         '''Print agenda.'''
         controllers.agenda(
             build_collection(ctx),
@@ -266,6 +271,7 @@ def _get_cli():
             locale=ctx.obj['conf']['locale'],
             days=days or ctx.obj['conf']['default']['days'],
             events=events,
+            full=full,
         )
 
     @cli.command()

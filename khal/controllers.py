@@ -66,7 +66,7 @@ def construct_daynames(daylist, longdateformat):
 
 
 def get_agenda(collection, locale, dates=None, firstweekday=0,
-               days=None, events=None, width=45, show_all_days=False):
+               days=None, events=None, width=45, full=False, show_all_days=False):
     """returns a list of events scheduled for all days in daylist
 
     included are header "rows"
@@ -120,8 +120,11 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
         event_column.append(style(dayname, bold=True))
         events.sort(key=lambda e: e.start)
         for event in itertools.chain(all_day_events, events):
-            desc = textwrap.wrap(event.relative_to(day), width)
-            event_column.extend([colored(d, event.color) for d in desc])
+            lines = list()
+            items = event.relative_to(day, full).splitlines()
+            for item in items:
+                lines += textwrap.wrap(item, width)
+            event_column.extend([colored(line, event.color) for line in lines])
 
     if event_column == []:
         event_column = [style('No events', bold=True)]
@@ -135,6 +138,7 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
              multiple='',
              color='',
              highlight_event_days=0,
+             full=False,
              **kwargs):
     if date is None:
         date = [datetime.datetime.today()]
@@ -143,8 +147,8 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
     lwidth = 25
     rwidth = term_width - lwidth - 4
     event_column = get_agenda(
-        collection, locale, dates=date, width=rwidth, show_all_days=show_all_days,
-        **kwargs)
+        collection, locale, dates=date, width=rwidth,
+        show_all_days=show_all_days, full=full, **kwargs)
     calendar_column = calendar_display.vertical_month(
         firstweekday=firstweekday, weeknumber=weeknumber,
         collection=collection,
@@ -161,10 +165,10 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
 
 
 def agenda(collection, date=None, encoding='utf-8',
-           show_all_days=False, **kwargs):
+           show_all_days=False, full=False, **kwargs):
     term_width, _ = get_terminal_size()
     event_column = get_agenda(collection, dates=date, width=term_width,
-                              show_all_days=show_all_days, **kwargs)
+                              show_all_days=show_all_days, full=full, **kwargs)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
     echo(to_unicode('\n'.join(event_column), encoding))
