@@ -141,43 +141,49 @@ currently selected date.
 
 new
 ***
-allows for quick adding of new events. ``khal new`` should understand the following syntax:
+allows for adding new events. ``khal new`` should understand the following syntax:
 
 ::
 
-    khal new [-a CALENDAR] [OPTIONS] startdatetime [enddatetime] summary [description]
+    khal new [-a CALENDAR] [OPTIONS] startdatetime [enddatetime] [timezone] summary [description]
 
-where start- and enddatetime are either datetimes or times in the formats defined
-in the config file. If no calendar is given via :option:`-a`, the default
-calendar is used. :command:`new` does no support :option:`-d` and also
-:option:`-a` may only be used once.
+where start- and enddatetime are either datetimes, times, or keywords and times
+in the formats defined in the config file. If no calendar is given via
+:option:`-a`, the default calendar is used. :command:`new` does not support
+:option:`-d` and also :option:`-a` may only be used once.
 
-Start- and enddatetime can be one of the following:
+:command:`new` accepts these combinations for stard and endtimes (specifying
+the end is always optional):
 
-* **datetime datetime:** start and end datetime specified, if no year is given
-  (like the non-long version of dateformat, see config file, should allow),
-  this year is used.
+ * `datetime [datetime|time] [timezone]`
+ * `time [time] [timezone]`
+ * `date [date]`
 
-* **datetime time:** end date will be same as start date, unless that would make
-  the event end before it has started, then the next day is used as end date
+where the formats for datetime and time are as follows:
 
-* **datetime:** event will last for defaulttime
+ * `datetime = (longdatetimeformat|datetimeformat|keyword-date timeformat)`
+ * `time = timeformat`
+ * `date = (longdateformat|dateformat)`
 
-* **time time:** event starting today at the first time and ending today at the
-  second time, unless that would make the event end before it has started, then
-  the next day is used as end date
+and `timezone`, which describes the timezone the events start and end time are
+in, should be a valid Olson DB identifier (like `Europe/Berlin` or
+`America/New_York`. If no timezone is given, the *defaulttimezone* as
+configured in the configuration file is used instead.
 
-* **time:** event starting today at time, lasting for the default length
+The exact format of langdatetimeformat, datetimeformat, timeformat,
+longdateformat and dateformat can be configured in the configuration file.
+Valid keywords for dates are *today*, *tomorrow*, the English name of all seven
+weekdays and their three letter abbreviations (their next occurence is used).
 
-* **date date:** all day event starting on the first and ending on the last
-  event
+If no end is given, the default length of one hour or one day (for all-day
+events) is used. If only a start time is given the new event is assumed to be
+starting today. If only a time is given for the event to end on, the event ends
+on the same day it starts on, unless that would make the event end before it has
+started, then the next day is used as end date
 
-* **date:** all day event starting at given date and lasting for default length
-
-**description** is a string started by `::` (which will be removed) and will be
-used as the new event's *description*, i.d., the body of the event.
-
-The default length is either 1 hour or 1 day, depending on the type of event.
+If the **summary** contains the string `::`, everything after `::` is taken as
+the **description** of the new event, i.e., the "body" of the event (and `::`
+will be removed).
 
 Options
 """""""

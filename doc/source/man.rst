@@ -15,6 +15,5 @@ Table of Contents
    usage
    configure
    standards
-   timezones
    faq
    license
