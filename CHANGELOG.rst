@@ -14,11 +14,15 @@ not released yet
 * most of the internal representation of events was rewritten, the current
   benefit is that floating events are properly represented now, hopefully more
   is to come (Christian Geier)
-* *printformats* uses a more sensible date now (John Shea)
+* `printformats` uses a more sensible date now (John Shea)
 * khal and ikhal can now highlight dates with events, at the moment, enabling it
   does noticably slow down (i)khal's start; set *[default] highlight_event_days
   = True* and see section *[highlight_days]* for further configuration (Dominik
   Joe Pantůček)
+* fixed line wrapping for `at` (Thomas Schape)
+* `calendar` and `agenda` optionally print location and description of all
+  events, enable with the new --full/-f flag (Thomas Schaper)
+* updated and improved zsh completion file (Oliver Kiddle)
 
 ikhal
 ----
