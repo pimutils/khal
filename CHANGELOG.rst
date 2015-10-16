@@ -25,7 +25,7 @@ not released yet
 * updated and improved zsh completion file (Oliver Kiddle)
 
 ikhal
-----
+-----
 
 * events are now displayed nicer (Thomas Glanzmann)
 * support for colorschemes, a *light* and *dark* one are currently included,
