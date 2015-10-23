@@ -1,5 +1,6 @@
 from datetime import datetime, date, timedelta, time
 import os
+from time import sleep
 from textwrap import dedent
 
 import pytest
@@ -67,6 +68,21 @@ def coll_vdirs(tmpdir):
         os.makedirs(path, mode=0o770)
         coll.append(
             Calendar(name, ':memory:', path, color='dark blue', locale=locale))
+        vdirs[name] = FilesystemStorage(path, '.ics')
+    coll.default_calendar_name = cal1
+    return coll, vdirs
+
+
+@pytest.fixture
+def coll_vdirs_disk(tmpdir):
+    """same as above, but writes the database to disk as well, needed for some tests"""
+    coll = CalendarCollection(locale=locale)
+    vdirs = dict()
+    for name in example_cals:
+        path = str(tmpdir) + '/' + name
+        os.makedirs(path, mode=0o770)
+        coll.append(
+            Calendar(name, str(tmpdir) + '/db.db', path, color='dark blue', locale=locale))
         vdirs[name] = FilesystemStorage(path, '.ics')
     coll.default_calendar_name = cal1
     return coll, vdirs
@@ -280,6 +296,26 @@ class TestCollection(object):
         coll.new(event, cal1)
         assert len(coll.get_events_at(a_time)) == 1
         assert len(coll.get_events_at(b_time)) == 0
+
+    def test_delete_two_events(self, coll_vdirs_disk):
+            """testing if we can delete any of two events in two different
+            calendars with the same filename"""
+            coll, vdirs = coll_vdirs_disk
+            event1 = Event.fromString(_get_text('event_dt_simple'), calendar=cal1, locale=locale)
+            event2 = Event.fromString(_get_text('event_dt_simple'), calendar=cal2, locale=locale)
+            coll.new(event1, cal1)
+            sleep(0.1)  # make sure the etags are different
+            coll.new(event2, cal2)
+            etag1 = list(vdirs['foobar'].list())[0][1]
+            etag2 = list(vdirs['work'].list())[0][1]
+            events = coll.get_datetime_by_time_range(self.astart, self.aend)
+            assert len(events) == 2
+            assert events[0].calendar != events[1].calendar
+            for event in events:
+                if event.calendar == 'foobar':
+                    assert event.etag == etag1
+                if event.calendar == 'work':
+                    assert event.etag == etag2
 
 
 @pytest.fixture
