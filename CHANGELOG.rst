@@ -23,6 +23,8 @@ not released yet
 * `calendar` and `agenda` optionally print location and description of all
   events, enable with the new --full/-f flag (Thomas Schaper)
 * updated and improved zsh completion file (Oliver Kiddle)
+* FIX: deleting events did not always work if an event with the same filename existed
+  in an other calendar (but no data lost incurred) (Christian Geier)
 
 ikhal
 -----
