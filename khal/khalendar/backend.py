@@ -485,8 +485,8 @@ class SQLiteDb(object):
         if start and end are given, a specific Event from a Recursion set is
         returned, otherwise the Event returned exactly as saved in the db
         """
-        sql_s = 'SELECT href, etag, item FROM events WHERE href = ?;'
-        result = self.sql_ex(sql_s, (href, ))
+        sql_s = 'SELECT href, etag, item FROM events WHERE href = ? AND calendar = ?;'
+        result = self.sql_ex(sql_s, (href, self.calendar))
         href, etag, item = result[0]
         if dtype == DATE:
             start = start.date()
