@@ -84,6 +84,13 @@ class U_Event(urwid.Text):
         # TODO unify, either directly delete *normal* events as well
         # or stage recurring deletion as well
         def delete_this(_):
+            if self.event.ref == 'PROTO':
+                instance = self.event.start
+            else:
+                instance = self.event.ref
+            self.event.delete_instance(instance)
+
+            self.eventcolumn.pane.collection.update(self.event)
             self.eventcolumn.pane.window.backtrack()
 
         def delete_future(_):
@@ -580,7 +587,7 @@ class DeleteDialog(urwid.WidgetWrap):
         lines.append(urwid.Text(u''))
         buttons = urwid.Columns(
             [urwid.Button(u'Only this', on_press=this_func),
-             urwid.Button(u'All future', on_press=future_func),
+             # urwid.Button(u'All future', on_press=future_func),
              urwid.Button(u'All (past and future)', on_press=all_func),
              urwid.Button(u'Abort', on_press=abort_func),
              ])

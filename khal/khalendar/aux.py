@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import calendar
 
 import dateutil.rrule
-import icalendar
 import pytz
 
 from .. import log

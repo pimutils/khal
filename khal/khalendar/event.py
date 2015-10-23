@@ -420,7 +420,20 @@ class Event(object):
         """delete an instance from this event"""
         assert self.recurring
         delete_instance(self._vevents['PROTO'], instance)
-        # TODO also delete from self._vevents if applies
+
+        # in case the instance we want to delete is specified as a RECURRENCE-ID
+        # event, we should delete that as well
+        to_pop = list()
+        for key in self._vevents:
+            if key == 'PROTO':
+                continue
+            try:
+                if self._vevents[key].get('RECURRENCE-ID').dt == instance:
+                    to_pop.append(key)
+            except TypeError:  # localized/floating datetime mismatch
+                continue
+        for key in to_pop:
+            self._vevents.pop(key)
 
 
 class DatetimeEvent(Event):
