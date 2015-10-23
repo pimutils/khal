@@ -28,7 +28,6 @@ not released yet
 
 ikhal
 -----
-
 * events are now displayed nicer (Thomas Glanzmann)
 * support for colorschemes, a *light* and *dark* one are currently included,
   help is wanted to make them prettier and more functional (config option
@@ -39,6 +38,8 @@ ikhal
 * events can now be duplicated (default keybinding: *p*) (Christian Geier)
 * events created while time ranges are selected (default keybinding to enable date range
   selection: *v*) will default to that date range (Christian Geier)
+* when trying to delete recurring events, users are now asked if they want to
+  delete the complete event or just this instance (Christian Geier)
 
 0.6.0
 =====
