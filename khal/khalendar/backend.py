@@ -430,6 +430,57 @@ class SQLiteDb(object):
             event = self.get(href, start=start, end=end, ref=ref, dtype=dtype)
             yield event
 
+    def get_localized(self, calendars, start, end):
+        """returns
+        :type start: datetime.datetime
+        :type end: datetime.datetime
+        """
+        assert start.tzinfo is not None
+        assert end.tzinfo is not None
+        start = aux.to_unix_time(start)
+        end = aux.to_unix_time(end)
+        sql_s = ('SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
+                 'recs_loc JOIN events ON '
+                 'recs_loc.href = events.href AND '
+                 'recs_loc.calendar = events.calendar WHERE '
+                 '(dtstart >= ? AND dtstart <= ? OR '
+                 'dtend >= ? AND dtend <= ? OR '
+                 'dtstart <= ? AND dtend >= ?) AND events.calendar in ({});')
+        sql_s = sql_s.format(', '.join(['\'' + cal + '\'' for cal in calendars]))
+        stuple = (start, end, start, end, start, end)
+        result = self.sql_ex(sql_s, stuple)
+        for item, href, start, end, ref, etag, dtype, calendar in result:
+            start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
+            end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
+            yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
+
+    def get_floating(self, calendars, start, end):
+        """return floating events between `start` and `end`
+
+        :type calendars: list
+        :type start: datetime.datetime
+        :type end: datetime.datetime
+        """
+        assert start.tzinfo is None
+        assert end.tzinfo is None
+        strstart = aux.to_unix_time(start)
+        strend = aux.to_unix_time(end)
+
+        sql_s = ('SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
+                 'recs_float JOIN events ON '
+                 'recs_float.href = events.href AND '
+                 'recs_float.calendar = events.calendar WHERE '
+                 '(dtstart >= ? AND dtstart < ? OR '
+                 'dtend > ? AND dtend <= ? OR '
+                 'dtstart <= ? AND dtend > ? ) AND events.calendar in ({});')
+        sql_s = sql_s.format(', '.join(['\'' + cal + '\'' for cal in calendars]))
+        stuple = (strstart, strend, strstart, strend, strstart, strend)
+        result = self.sql_ex(sql_s, stuple)
+        for item, href, start, end, ref, etag, dtype, calendar in result:
+            start = datetime.utcfromtimestamp(start)
+            end = datetime.utcfromtimestamp(end)
+            yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
+
     def get_datetime_at(self, dtime):
         """return datetime events which are scheduled at `dtime`
 
@@ -491,6 +542,20 @@ class SQLiteDb(object):
                                 locale=self.locale,
                                 href=href,
                                 calendar=self.calendar,
+                                etag=etag,
+                                start=start,
+                                end=end,
+                                ref=ref,
+                                )
+
+    def construct_event(self, item, href, start, end, ref, etag, calendar, dtype=None):
+        if dtype == DATE:
+            start = start.date()
+            end = end.date()
+        return Event.fromString(item,
+                                locale=self.locale,
+                                href=href,
+                                calendar=calendar,
                                 etag=etag,
                                 start=start,
                                 end=end,

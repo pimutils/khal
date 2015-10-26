@@ -260,6 +260,8 @@ class CalendarCollection(object):
                  highlight_event_days=0,
                  locale=None):
         self._calnames = dict()
+        self._calendars = dict()
+        self._backend = None
         self._default_calendar_name = None
         self.hmethod = hmethod
         self.default_color = default_color
@@ -304,11 +306,17 @@ class CalendarCollection(object):
     def append(self, calendar):
         """append a new khalendar to this collection"""
         self._calnames[calendar.name] = calendar
+        self._calendars[calendar.name] = calendar.color
+        self._backend = calendar._dbtool  # TODO do this when creating the collection
 
     def get_allday_by_time_range(self, start):
         events = list()
         for one in self.calendars:
             events.extend(one.get_allday_by_time_range(start))
+        return events
+
+    def get_floating(self, start, end):
+        events = self._backend.get_floating(self._calendars.keys(), start, end)
         return events
 
     def get_datetime_by_time_range(self, start, end):
