@@ -30,7 +30,7 @@ import icalendar
 
 from ..compat import iteritems, to_unicode
 from ..aux import generate_random_uid
-from .aux import to_naive_utc, to_unix_time, invalid_timezone
+from .aux import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
 from ..log import logger
 
 
@@ -416,6 +416,24 @@ class Event(object):
         event.calendar = self.calendar
         return event
 
+    def delete_instance(self, instance):
+        """delete an instance from this event"""
+        assert self.recurring
+        delete_instance(self._vevents['PROTO'], instance)
+
+        # in case the instance we want to delete is specified as a RECURRENCE-ID
+        # event, we should delete that as well
+        to_pop = list()
+        for key in self._vevents:
+            if key == 'PROTO':
+                continue
+            try:
+                if self._vevents[key].get('RECURRENCE-ID').dt == instance:
+                    to_pop.append(key)
+            except TypeError:  # localized/floating datetime mismatch
+                continue
+        for key in to_pop:
+            self._vevents.pop(key)
 
 
 class DatetimeEvent(Event):

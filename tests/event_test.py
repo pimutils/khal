@@ -287,3 +287,39 @@ def test_duplicate_event():
     event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
     dupe = event.duplicate()
     assert dupe._vevents['PROTO']['UID'].to_ical() != 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
+
+
+def test_remove_instance_from_rrule():
+    """removing an instance from a recurring event"""
+    event = Event.fromString(_get_text('event_dt_rr'), **EVENT_KWARGS)
+    event.delete_instance(datetime(2014, 4, 10, 9, 30))
+    assert 'EXDATE:20140410T093000' in event.raw.split('\r\n')
+    event.delete_instance(datetime(2014, 4, 12, 9, 30))
+    assert 'EXDATE:20140410T093000,20140412T093000' in event.raw.split('\r\n')
+
+
+def test_remove_instance_from_rdate():
+    """removing an instance from a recurring event"""
+    event = Event.fromString(_get_text('event_dt_rd'), **EVENT_KWARGS)
+    assert 'RDATE' in event.raw
+    event.delete_instance(datetime(2014, 4, 10, 9, 30))
+    assert 'RDATE' not in event.raw
+
+
+def test_remove_instance_from_two_rdate():
+    """removing an instance from a recurring event which has two RDATE props"""
+    event = Event.fromString(_get_text('event_dt_two_rd'), **EVENT_KWARGS)
+    assert event.raw.count('RDATE') == 2
+    event.delete_instance(datetime(2014, 4, 10, 9, 30))
+    assert event.raw.count('RDATE') == 1
+    assert 'RDATE:20140411T093000,20140412T093000' in event.raw.split('\r\n')
+
+
+def test_remove_instance_from_recuid():
+    """remove an istane from an event which is specified via an additional VEVENT
+    with the same UID (which we call `recuid` here"""
+    event = Event.fromString(_get_text('event_rrule_recuid'), **EVENT_KWARGS)
+    assert event.raw.split('\r\n').count('UID:event_rrule_recurrence_id') == 2
+    event.delete_instance(BERLIN.localize(datetime(2014, 7, 7, 7, 0)))
+    assert event.raw.split('\r\n').count('UID:event_rrule_recurrence_id') == 1
+    assert 'EXDATE;TZID=Europe/Berlin:20140707T070000' in event.raw.split('\r\n')
