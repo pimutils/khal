@@ -97,7 +97,7 @@ class U_Event(urwid.Text):
             self.eventcolumn.pane.window.backtrack()
 
         def delete_all(_):
-            if self.uid in self.eventcolumn.pane.delete.remove(self.uid):
+            if self.uid in self.eventcolumn.pane.deleted:
                 self.eventcolumn.pane.deleted.remove(self.uid)
             else:
                 self.eventcolumn.pane.deleted.append(self.uid)
