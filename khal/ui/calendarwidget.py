@@ -257,12 +257,12 @@ class CListBox(urwid.ListBox):
         for row in range(start, stop):
             for col in range(1, 8):
                 if self.body.focus_date > self._marked['date']:
-                    if self._marked['date'] <= self._date(row, col) < self.body.focus_date:
+                    if self._marked['date'] <= self._date(row, col) <= self.body.focus_date:
                         self._mark_one(row, col)
                     else:
                         self._unmark_one(row, col)
                 else:
-                    if self._marked['date'] >= self._date(row, col) > self.body.focus_date:
+                    if self._marked['date'] >= self._date(row, col) >= self.body.focus_date:
                         self._mark_one(row, col)
                     else:
                         self._unmark_one(row, col)
