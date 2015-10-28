@@ -285,6 +285,10 @@ class CListBox(urwid.ListBox):
                 end = None
             return self.on_press[key](start, end)
         if key in self.keybindings['today']:
+            # reset colors of currently focused Date widget
+            self.focus.focus.set_styles(
+                self.focus.get_styles(self.body.focus_date, False))
+
             self.body.set_focus(self.body.today)
             week = self.body[self.body.today]
             week.set_focus(week.today)
