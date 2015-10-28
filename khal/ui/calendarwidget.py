@@ -59,11 +59,12 @@ class Date(urwid.WidgetWrap):
 
     """used in the main calendar for dates (a number)"""
 
-    def __init__(self, date):
+    def __init__(self, date, get_styles=None):
         dstr = str(date.day).rjust(2)
         self.halves = [urwid.AttrMap(DatePart(dstr[:1]), None, None),
                        urwid.AttrMap(DatePart(dstr[1:]), None, None)]
         self.date = date
+        self._get_styles = get_styles
         super(Date, self).__init__(urwid.Columns(self.halves))
 
     def set_styles(self, styles):
@@ -80,6 +81,16 @@ class Date(urwid.WidgetWrap):
             self.halves[1].set_attr_map({None: styles})
             self.halves[1].set_focus_map({None: styles})
             self.halves[0].set_focus_map({None: styles})
+
+    def reset_styles(self):
+        self.set_styles(self._get_styles(self.date, False))
+
+    @property
+    def marked(self):
+        if 'mark' in [self.halves[0].attr_map[None], self.halves[1].attr_map[None]]:
+            return True
+        else:
+            return False
 
     @classmethod
     def selectable(cls):
@@ -226,18 +237,17 @@ class CListBox(urwid.ListBox):
         """remove attribute *mark* from the date at row `row` and column `column`
         returning it to the attributes defined by self._get_color()
         """
-        self.body[row].contents[column][0].set_attr_map(
-            {None: self._get_colors(self._date(row, column))})
+        self.body[row].contents[column][0].reset_styles()
 
     def _mark_one(self, row, column):
         """set attribute *mark* on the date at row `row` and column `column`"""
-        self.body[row].contents[column][0].set_attr_map({None: 'mark'})
+        self.body[row].contents[column][0].set_styles('mark')
 
     def _mark(self):
         """make sure everything between the marked entry and the curently
         selected date is visually marked, and nothing else"""
         def toggle(row, column):
-            if self.body[row].contents[column][0].attr_map[None] != 'mark':
+            if self.body[row].contents[column][0].marked:
                 self._mark_one(row, column)
             else:
                 self._unmark_one(row, column)
@@ -419,7 +429,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         this_week = [(4, urwid.AttrMap(urwid.Text(month_name), attr))]
         today = None
         for number, day in enumerate(week):
-            new_date = Date(day)
+            new_date = Date(day, self.get_styles)
             if day == date.today():
                 this_week.append((2, new_date))
                 new_date.set_styles(self.get_styles(new_date.date, True))
