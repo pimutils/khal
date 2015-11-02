@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 
 import calendar
 from datetime import date
+from locale import getlocale
 
 import urwid
 
@@ -529,10 +530,12 @@ class CalendarWidget(urwid.WidgetWrap):
         default_keybindings.update(keybindings)
         calendar.setfirstweekday(firstweekday)
 
-        weekheader = calendar.weekheader(2)
-        # calendar.weekheader returns bytes for python2 and unicode for python3
+        mylocale = '.'.join(getlocale())
         if compat.VERSION == 2:
-            weekheader = weekheader.decode('utf-8')
+            mylocale = mylocale.encode('ascii')  # WTF?
+
+        _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)
+        weekheader = _calendar.formatweekheader(2)
         dnames = weekheader.split(' ')
 
         def _get_styles(date, focus):
