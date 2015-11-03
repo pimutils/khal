@@ -23,13 +23,16 @@ from __future__ import print_function
 
 import calendar
 import datetime
-from locale import getlocale
+from locale import getlocale, setlocale, LC_ALL
 
 from click import style
 
 from .terminal import urwid_to_click, urwid_to_click_bold
 
 from .compat import VERSION
+
+
+setlocale(LC_ALL, '')
 
 
 def month_abbr(month_no):

@@ -24,11 +24,14 @@ from __future__ import unicode_literals
 
 import calendar
 from datetime import date
-from locale import getlocale
+from locale import getlocale, setlocale, LC_ALL
 
 import urwid
 
 from .. import compat
+
+
+setlocale(LC_ALL, '')
 
 
 def getweeknumber(day):
