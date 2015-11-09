@@ -46,7 +46,11 @@ def month_abbr(month_no):
 
 
 def get_weekheader(firstweekday):
-    mylocale = None
+    try:
+        mylocale = '.'.join(getlocale())
+    except TypeError:
+        mylocale = 'C'
+
     _calendar = calendar.LocaleTextCalendar(firstweekday, locale=mylocale)
     return _calendar.formatweekheader(2)
 
@@ -181,11 +185,9 @@ def vertical_month(month=datetime.date.today().month,
     khal = list()
     w_number = '    ' if weeknumber == 'right' else ''
     calendar.setfirstweekday(firstweekday)
-    mylocale = '.'.join(getlocale())
-    _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)
-    khal.append(
-        style('    ' + _calendar.formatweekheader(2) + ' ' + w_number, bold=True)
-    )
+    weekheaders = get_weekheader(firstweekday)
+    khal.append(style('    ' + weekheaders + ' ' + w_number, bold=True))
+    _calendar = calendar.Calendar(firstweekday)
     for _ in range(count):
         for week in _calendar.monthdatescalendar(year, month):
             new_month = len([day for day in week if day.day == 1])

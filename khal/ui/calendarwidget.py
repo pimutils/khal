@@ -533,9 +533,14 @@ class CalendarWidget(urwid.WidgetWrap):
         default_keybindings.update(keybindings)
         calendar.setfirstweekday(firstweekday)
 
-        mylocale = '.'.join(getlocale())
+        try:
+            mylocale = '.'.join(getlocale())
+        except TypeError:  # language code and encoding may be None
+            mylocale = 'C'
+
         if compat.VERSION == 2:
-            mylocale = mylocale.encode('ascii')  # WTF?
+            # XXX please remove me when removing unicode literals
+            mylocale = mylocale.encode('ascii')
 
         _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)
         weekheader = _calendar.formatweekheader(2)
