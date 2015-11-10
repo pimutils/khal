@@ -23,12 +23,16 @@ from __future__ import print_function
 
 import calendar
 import datetime
+from locale import getlocale, setlocale, LC_ALL
 
 from click import style
 
 from .terminal import urwid_to_click, urwid_to_click_bold
 
 from .compat import VERSION
+
+
+setlocale(LC_ALL, '')
 
 
 def month_abbr(month_no):
@@ -39,6 +43,16 @@ def month_abbr(month_no):
         return calendar.month_abbr[month_no].decode('utf-8')
     elif VERSION == 3:
         return calendar.month_abbr[month_no]
+
+
+def get_weekheader(firstweekday):
+    try:
+        mylocale = '.'.join(getlocale())
+    except TypeError:
+        mylocale = 'C'
+
+    _calendar = calendar.LocaleTextCalendar(firstweekday, locale=mylocale)
+    return _calendar.formatweekheader(2)
 
 
 def getweeknumber(date):
@@ -171,10 +185,9 @@ def vertical_month(month=datetime.date.today().month,
     khal = list()
     w_number = '    ' if weeknumber == 'right' else ''
     calendar.setfirstweekday(firstweekday)
+    weekheaders = get_weekheader(firstweekday)
+    khal.append(style('    ' + weekheaders + ' ' + w_number, bold=True))
     _calendar = calendar.Calendar(firstweekday)
-    khal.append(
-        style('    ' + calendar.weekheader(2) + ' ' + w_number, bold=True)
-    )
     for _ in range(count):
         for week in _calendar.monthdatescalendar(year, month):
             new_month = len([day for day in week if day.day == 1])
