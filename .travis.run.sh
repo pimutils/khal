@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 if [ "$BUILD" = "style" ]; then
     TOXENV=style
@@ -7,3 +8,4 @@ else
 fi
 
 tox -e $TOXENV
+tox -e negtz
