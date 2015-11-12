@@ -20,8 +20,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from __future__ import unicode_literals
-
 from datetime import date, datetime, time
 import signal
 import sys
@@ -72,19 +70,19 @@ class U_Event(urwid.Text):
 
     @property
     def uid(self):
-        return self.event.calendar + '\n' + \
-            str(self.event.href) + '\n' + str(self.event.etag)
+        return self.event.calendar + u'\n' + \
+            str(self.event.href) + u'\n' + str(self.event.etag)
 
     def set_title(self, mark=''):
         if self.uid in self.eventcolumn.pane.deleted:
             mark = 'D'
-        self.set_text(mark + ' ' + self.event.relative_to(self.this_date))
+        self.set_text(mark + u' ' + self.event.relative_to(self.this_date))
 
     def toggle_delete(self):
         # TODO unify, either directly delete *normal* events as well
         # or stage recurring deletion as well
         def delete_this(_):
-            if self.event.ref == 'PROTO':
+            if self.event.ref == u'PROTO':
                 instance = self.event.start
             else:
                 instance = self.event.ref
@@ -226,7 +224,7 @@ class EventColumn(urwid.WidgetWrap):
 
     def __init__(self, pane):
         self.pane = pane
-        self.divider = urwid.Divider('─')
+        self.divider = urwid.Divider(u'─')
         self.editor = False
         self.eventcount = 0
         self._current_date = None
@@ -341,8 +339,8 @@ class RecursionEditor(urwid.WidgetWrap):
         self.rrule = rrule
         recursive = self.rrule['freq'][0].lower() if self.rrule else NOREPEAT
         self.recursion_choice = Choice(
-            [NOREPEAT, "weekly", "monthly", "yearly"], recursive)
-        self.columns = CColumns([(10, urwid.Text('Repeat: ')), (11, self.recursion_choice)])
+            [NOREPEAT, u"weekly", u"monthly", u"yearly"], recursive)
+        self.columns = CColumns([(10, urwid.Text(u'Repeat: ')), (11, self.recursion_choice)])
         urwid.WidgetWrap.__init__(self, self.columns)
 
     @property
@@ -375,17 +373,17 @@ class EventDisplay(urwid.WidgetWrap):
         self.conf = conf
         self.collection = collection
         self.event = event
-        divider = urwid.Divider(' ')
+        divider = urwid.Divider(u' ')
 
         lines = []
-        lines.append(urwid.Text('Title: ' + event.summary))
+        lines.append(urwid.Text(u'Title: ' + event.summary))
 
         # show organizer
-        if event.organizer != '':
-            lines.append(urwid.Text('Organizer: ' + event.organizer))
+        if event.organizer != u'':
+            lines.append(urwid.Text(u'Organizer: ' + event.organizer))
 
-        if event.location != '':
-            lines.append(urwid.Text('Location: ' + event.location))
+        if event.location != u'':
+            lines.append(urwid.Text(u'Location: ' + event.location))
 
         # start and end time/date
         if event.allday:
@@ -393,26 +391,26 @@ class EventDisplay(urwid.WidgetWrap):
             endstr = event.end_local.strftime(self.conf['locale']['dateformat'])
         else:
             startstr = event.start_local.strftime(
-                '{} {}'.format(self.conf['locale']['dateformat'],
+                u'{} {}'.format(self.conf['locale']['dateformat'],
                                self.conf['locale']['timeformat'])
             )
             if event.start_local.date == event.end_local.date:
                 endstr = event.end_local.strftime(self.conf['locale']['timeformat'])
             else:
                 endstr = event.end_local.strftime(
-                    '{} {}'.format(self.conf['locale']['dateformat'],
+                    u'{} {}'.format(self.conf['locale']['dateformat'],
                                    self.conf['locale']['timeformat'])
                 )
 
         if startstr == endstr:
-            lines.append(urwid.Text('Date: ' + startstr))
+            lines.append(urwid.Text(u'Date: ' + startstr))
         else:
-            lines.append(urwid.Text('Date: ' + startstr + ' - ' + endstr))
+            lines.append(urwid.Text(u'Date: ' + startstr + u' - ' + endstr))
 
-        lines.append(urwid.Text('Calendar: ' + event.calendar))
+        lines.append(urwid.Text(u'Calendar: ' + event.calendar))
         lines.append(divider)
 
-        if event.description != '':
+        if event.description != u'':
             lines.append(urwid.Text(event.description))
 
         pile = CPile(lines)
@@ -445,23 +443,23 @@ class EventEditor(urwid.WidgetWrap):
             event.start_local, event.end_local, self.conf,
             self.pane.eventscolumn.original_widget.set_current_date)
         self.recursioneditor = RecursionEditor(self.event.recurobject)
-        self.summary = Edit(caption='Title: ', edit_text=event.summary)
+        self.summary = Edit(caption=u'Title: u', edit_text=event.summary)
 
         divider = urwid.Divider(' ')
 
         # TODO warning message if len(self.collection.writable_names) == 0
 
         def decorate_choice(c):
-            return (c.color or '', c.name)
+            return (c.color or u'', c.name)
 
         self.calendar_chooser = Choice(
             [c for c in self.collection.calendars if not c.readonly],
             self.collection._calnames[self.event.calendar],
             decorate_choice
         )
-        self.description = Edit(caption='Description: ',
+        self.description = Edit(caption=u'Description: ',
                                 edit_text=self.description, multiline=True)
-        self.location = Edit(caption='Location: ',
+        self.location = Edit(caption=u'Location: ',
                              edit_text=self.location)
         self.pile = urwid.ListBox(CSimpleFocusListWalker([
             urwid.Columns([
@@ -475,19 +473,19 @@ class EventEditor(urwid.WidgetWrap):
             self.startendeditor,
             self.recursioneditor,
             divider,
-            urwid.Button('Save', on_press=self.save)
+            urwid.Button(u'Save', on_press=self.save)
         ]))
 
         urwid.WidgetWrap.__init__(self, self.pile)
 
     @property
     def title(self):  # Window title
-        return 'Edit: {}'.format(self.summary.get_edit_text())
+        return u'Edit: {}'.format(self.summary.get_edit_text())
 
     def get_keys(self):
-        return [(['arrows'], 'navigate through properties'),
-                (['enter'], 'edit property'),
-                (['esc'], 'abort')]
+        return [(['arrowsu'], u'navigate through properties'),
+                (['enter'], u'edit property'),
+                (['esc'], u'abort')]
 
     @classmethod
     def selectable(cls):

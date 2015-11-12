@@ -20,8 +20,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from __future__ import unicode_literals
-
 import calendar
 from datetime import date
 from locale import getlocale, setlocale, LC_ALL
@@ -91,7 +89,7 @@ class Date(urwid.WidgetWrap):
 
     @property
     def marked(self):
-        if 'mark' in [self.halves[0].attr_map[None], self.halves[1].attr_map[None]]:
+        if u'mark' in [self.halves[0].attr_map[None], self.halves[1].attr_map[None]]:
             return True
         else:
             return False
@@ -155,8 +153,8 @@ class DateCColumns(urwid.Columns):
     focus_position = property(
         urwid.Columns._get_focus_position,
         _set_focus_position,
-        doc=('Index of child widget in focus. Raises IndexError if read when '
-             'CColumns is empty, or when set to an invalid index.')
+        doc=(u'Index of child widget in focus. Raises IndexError if read when '
+             u'CColumns is empty, or when set to an invalid index.')
     )
 
     def keypress(self, size, key):
@@ -537,10 +535,6 @@ class CalendarWidget(urwid.WidgetWrap):
             mylocale = '.'.join(getlocale())
         except TypeError:  # language code and encoding may be None
             mylocale = 'C'
-
-        if compat.VERSION == 2:
-            # XXX please remove me when removing unicode literals
-            mylocale = mylocale.encode('ascii')
 
         _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)
         weekheader = _calendar.formatweekheader(2)
