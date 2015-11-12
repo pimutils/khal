@@ -443,7 +443,7 @@ class EventEditor(urwid.WidgetWrap):
             event.start_local, event.end_local, self.conf,
             self.pane.eventscolumn.original_widget.set_current_date)
         self.recursioneditor = RecursionEditor(self.event.recurobject)
-        self.summary = Edit(caption=u'Title: u', edit_text=event.summary)
+        self.summary = Edit(caption=u'Title: ', edit_text=event.summary)
 
         divider = urwid.Divider(' ')
 
