@@ -26,9 +26,6 @@ from locale import getlocale, setlocale, LC_ALL
 
 import urwid
 
-from .. import compat
-
-
 setlocale(LC_ALL, '')
 
 

@@ -392,14 +392,14 @@ class EventDisplay(urwid.WidgetWrap):
         else:
             startstr = event.start_local.strftime(
                 u'{} {}'.format(self.conf['locale']['dateformat'],
-                               self.conf['locale']['timeformat'])
+                                self.conf['locale']['timeformat'])
             )
             if event.start_local.date == event.end_local.date:
                 endstr = event.end_local.strftime(self.conf['locale']['timeformat'])
             else:
                 endstr = event.end_local.strftime(
                     u'{} {}'.format(self.conf['locale']['dateformat'],
-                                   self.conf['locale']['timeformat'])
+                                    self.conf['locale']['timeformat'])
                 )
 
         if startstr == endstr:

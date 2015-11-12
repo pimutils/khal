@@ -388,16 +388,16 @@ class CalendarCollection(object):
         if self.hmethod == 'bg' or self.hmethod == 'background':
             prefix = 'bg '
         if self.color != '':
-            return prefix+self.color
+            return prefix + self.color
         dcolors = list(set(map(lambda x: self.get_event_color(x), devents)))
         if len(dcolors) == 1:
             if devents[0].color == '':
-                return prefix+self.default_color
+                return prefix + self.default_color
             else:
-                return prefix+devents[0].color
+                return prefix + devents[0].color
         if self.multiple != '':
-            return prefix+self.multiple
-        return (prefix+dcolors[0], prefix+dcolors[1])
+            return prefix + self.multiple
+        return (prefix + dcolors[0], prefix + dcolors[1])
 
     def get_styles(self, date, focus):
         if focus:

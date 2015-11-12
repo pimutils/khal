@@ -510,7 +510,7 @@ class AllDayEvent(Event):
                            u'which is invalid as per RFC 2445. Khal will '
                            u'assume this is meant to be single-day event '
                            u'on {}'.format(self.href, self.summary,
-                                          self.start))
+                                           self.start))
             end += timedelta(days=1)
         return end - timedelta(days=1)
 
