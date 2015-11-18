@@ -238,6 +238,18 @@ def construct_event(dtime_list, locale,
     see tests for examples
 
     """
+    # TODO remove if this survives for some time in the wild without getting any reports
+    first_type = type(dtime_list[0])
+    try:
+        for part in dtime_list:
+            assert first_type == type(part)
+    except AssertionError:
+        logger.error(
+            "An internal error occured, please report the below error message "
+            "to khal's developers at https://github.com/geier/khal/issues or "
+            "via email at khal@lostpackets.de")
+        logger.error(u' '.join(['{} ({})'.format(part, type(part)) for part in dtime_list]))
+
     today = datetime.today()
     try:
         dtstart, all_day = guessdatetimefstr(dtime_list, locale)
