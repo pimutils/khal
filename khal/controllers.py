@@ -21,8 +21,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from __future__ import unicode_literals
-
 import icalendar
 from click import confirm, echo, style, prompt
 from vdirsyncer.utils.vobject import Item
@@ -58,9 +56,9 @@ def construct_daynames(daylist, longdateformat):
     """
     for date in daylist:
         if date == datetime.date.today():
-            yield (date, 'Today:')
+            yield (date, u'Today:')
         elif date == datetime.date.today() + datetime.timedelta(days=1):
-            yield (date, 'Tomorrow:')
+            yield (date, u'Tomorrow:')
         else:
             yield (date, date.strftime(longdateformat))
 
@@ -127,7 +125,7 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
             event_column.extend([colored(line, event.color) for line in lines])
 
     if event_column == []:
-        event_column = [style('No events', bold=True)]
+        event_column = [style(u'No events', bold=True)]
     return event_column
 
 
@@ -161,7 +159,7 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
     rows = merge_columns(calendar_column, event_column)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
-    echo('\n'.join(rows).encode(encoding))
+    echo(u'\n'.join(rows).encode(encoding))
 
 
 def agenda(collection, date=None, encoding='utf-8',
@@ -171,7 +169,7 @@ def agenda(collection, date=None, encoding='utf-8',
                               show_all_days=show_all_days, full=full, **kwargs)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
-    echo(to_unicode('\n'.join(event_column), encoding))
+    echo(to_unicode(u'\n'.join(event_column), encoding))
 
 
 def new_from_string(collection, calendar_name, conf, date_list, location=None, repeat=None,
@@ -207,11 +205,11 @@ def interactive(collection, conf):
     from . import ui
     pane = ui.ClassicView(collection,
                           conf,
-                          title='select an event',
-                          description='do something')
+                          title=u'select an event',
+                          description=u'do something')
     ui.start_pane(
         pane, pane.cleanup,
-        program_info='{0} v{1}'.format(__productname__, __version__)
+        program_info=u'{0} v{1}'.format(__productname__, __version__)
     )
 
 
@@ -250,11 +248,11 @@ def import_event(vevent, collection, locale, batch, random_uid):
     else:
         choice = list()
         for num, name in enumerate(collection.writable_names):
-            choice.append('{}({})'.format(name, num))
-        choice = ', '.join(choice)
+            choice.append(u'{}({})'.format(name, num))
+        choice = u', '.join(choice)
         while True:
-            value = prompt('Which calendar do you want to import to? \n'
-                           '{}'.format(choice), default=collection.default_calendar_name)
+            value = prompt(u'Which calendar do you want to import to? \n'
+                           u'{}'.format(choice), default=collection.default_calendar_name)
             try:
                 number = int(value)
                 calendar_name = collection.writable_names[number]
@@ -264,20 +262,20 @@ def import_event(vevent, collection, locale, batch, random_uid):
                 if len(matches) == 1:
                     calendar_name = matches[0]
                     break
-            echo('invalid choice')
+            echo(u'invalid choice')
 
-    if batch or confirm("Do you want to import this event into `{}`?"
-                        "".format(calendar_name)):
+    if batch or confirm(u"Do you want to import this event into `{}`?"
+                        u"".format(calendar_name)):
         ics = aux.ics_from_list(vevent, random_uid)
         try:
             collection.new(
                 Item(ics.to_ical().decode('utf-8')),
                 collection=calendar_name)
         except DuplicateUid:
-            if batch or confirm("An event with the same UID already exists. "
-                                "Do you want to update it?"):
+            if batch or confirm(u"An event with the same UID already exists. "
+                                u"Do you want to update it?"):
                 collection.force_update(
                     Item(ics.to_ical().decode('utf-8')),
                     collection=calendar_name)
             else:
-                logger.warn("Not importing event with UID `{}`".format(event.uid))
+                logger.warn(u"Not importing event with UID `{}`".format(event.uid))
