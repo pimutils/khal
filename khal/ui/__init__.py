@@ -82,12 +82,7 @@ class U_Event(urwid.Text):
         # TODO unify, either directly delete *normal* events as well
         # or stage recurring deletion as well
         def delete_this(_):
-            if self.event.ref == u'PROTO':
-                instance = self.event.start
-            else:
-                instance = self.event.ref
-            self.event.delete_instance(instance)
-
+            self.event.delete_instance(self.event.recurrence_id)
             self.eventcolumn.pane.collection.update(self.event)
             self.eventcolumn.pane.window.backtrack()
 

@@ -25,6 +25,7 @@
 from datetime import date, datetime, time, timedelta
 
 import icalendar
+import pytz
 
 from ..compat import iteritems, to_unicode
 from ..aux import generate_random_uid
@@ -194,6 +195,15 @@ class Event(object):
         self._vevents['PROTO'].pop('RRULE')
         if rrule is not None:
             self._vevents['PROTO'].add('RRULE', rrule)
+
+    @property
+    def recurrence_id(self):
+        """return the "original" start date of this event (i.e. their recurrence-id)
+        """
+        if self.ref == 'PROTO':
+            return self.start
+        else:
+            return pytz.UTC.localize(datetime.utcfromtimestamp(int(self.ref)))
 
     def increment_sequence(self):
         """update the SEQUENCE number, call before saving this event"""
