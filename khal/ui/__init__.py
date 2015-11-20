@@ -73,7 +73,7 @@ class U_Event(urwid.Text):
         return self.event.calendar + u'\n' + \
             str(self.event.href) + u'\n' + str(self.event.etag)
 
-    def set_title(self, mark=''):
+    def set_title(self, mark=' '):
         if self.uid in self.eventcolumn.pane.deleted:
             mark = 'D'
         self.set_text(mark + u' ' + self.event.relative_to(self.this_date))
