@@ -150,6 +150,11 @@ class U_Event(urwid.Text):
 
         if key in binds['view']:
             if self.is_viewed:
+                if self.uid in self.eventcolumn.pane.deleted[ALL] or \
+                        self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
+                    self.eventcolumn.pane.window.alert(
+                        ('light red', 'This event is marked as deleted'))
+                    return
                 self.eventcolumn.edit(self.event)
             else:
                 self.eventcolumn.current_event = self.event
