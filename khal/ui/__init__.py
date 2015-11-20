@@ -35,6 +35,9 @@ from .calendarwidget import CalendarWidget
 
 
 NOREPEAT = 'No'
+ALL = 0
+INSTANCES = 1
+
 
 
 class DateConversionError(Exception):
@@ -73,27 +76,33 @@ class U_Event(urwid.Text):
         return self.event.calendar + u'\n' + \
             str(self.event.href) + u'\n' + str(self.event.etag)
 
+    @property
+    def recuid(self):
+        return (self.uid, self.event.recurrence_id)
+
     def set_title(self, mark=' '):
-        if self.uid in self.eventcolumn.pane.deleted:
+        if self.uid in self.eventcolumn.pane.deleted[ALL]:
             mark = 'D'
+        elif self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
+            mark = 'd'
         self.set_text(mark + u' ' + self.event.relative_to(self.this_date))
 
     def toggle_delete(self):
-        # TODO unify, either directly delete *normal* events as well
-        # or stage recurring deletion as well
         def delete_this(_):
-            self.event.delete_instance(self.event.recurrence_id)
-            self.eventcolumn.pane.collection.update(self.event)
+            if self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
+                self.eventcolumn.pane.deleted[INSTANCES].remove(self.recuid)
+            else:
+                self.eventcolumn.pane.deleted[INSTANCES].append(self.recuid)
             self.eventcolumn.pane.window.backtrack()
 
         def delete_future(_):
             self.eventcolumn.pane.window.backtrack()
 
         def delete_all(_):
-            if self.uid in self.eventcolumn.pane.deleted:
-                self.eventcolumn.pane.deleted.remove(self.uid)
+            if self.uid in self.eventcolumn.pane.deleted[ALL]:
+                self.eventcolumn.pane.deleted[ALL].remove(self.uid)
             else:
-                self.eventcolumn.pane.deleted.append(self.uid)
+                self.eventcolumn.pane.deleted[ALL].append(self.uid)
             self.eventcolumn.pane.window.backtrack()
 
         if self.event.readonly:
@@ -101,22 +110,24 @@ class U_Event(urwid.Text):
                 ('light red',
                  'Calendar {} is read-only.'.format(self.event.calendar)))
             return
-        if self.uid in self.eventcolumn.pane.deleted:
-            self.eventcolumn.pane.deleted.remove(self.uid)
+
+        if self.uid in self.eventcolumn.pane.deleted[ALL]:
+            self.eventcolumn.pane.deleted[ALL].remove(self.uid)
+        elif self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
+            self.eventcolumn.pane.deleted[INSTANCES].remove(self.recuid)
+        elif self.event.recurring:
+            overlay = urwid.Overlay(
+                DeleteDialog(
+                    delete_this,
+                    delete_future,
+                    delete_all,
+                    self.eventcolumn.pane.window.backtrack,
+                ),
+                self.eventcolumn.pane,
+                'center', ('relative', 70), ('relative', 70), None)
+            self.eventcolumn.pane.window.open(overlay)
         else:
-            if self.event.recurring:
-                overlay = urwid.Overlay(
-                    DeleteDialog(
-                        delete_this,
-                        delete_future,
-                        delete_all,
-                        self.eventcolumn.pane.window.backtrack,
-                    ),
-                    self.eventcolumn.pane,
-                    'center', ('relative', 70), ('relative', 70), None)
-                self.eventcolumn.pane.window.open(overlay)
-            else:
-                self.eventcolumn.pane.deleted.append(self.uid)
+            self.eventcolumn.pane.deleted[ALL].append(self.uid)
         self.set_title()
 
     def duplicate(self):
@@ -231,6 +242,7 @@ class EventColumn(urwid.WidgetWrap):
 
     @property
     def current_event(self):
+        """returns the event currently in focus"""
         l = len(self.container.contents)
         assert l > 0
         if l > 2:
@@ -604,7 +616,7 @@ class ClassicView(Pane):
         self.window = None
         self.conf = conf
         self.collection = collection
-        self.deleted = []
+        self.deleted = {ALL: [], INSTANCES: []}
 
         ContainerWidget = urwid.LineBox if self.conf['view']['frame'] else urwid.WidgetPlaceholder
         self.eventscolumn = ContainerWidget(EventColumn(pane=self))
@@ -647,9 +659,14 @@ class ClassicView(Pane):
         self.eventscolumn.original_widget.new(date, end)
 
     def cleanup(self, data):
-        for part in self.deleted:
+        for part in self.deleted[ALL]:
             account, href, etag = part.split('\n', 2)
             self.collection.delete(href, etag, account)
+        for part, rec_id in self.deleted[INSTANCES]:
+            account, href, etag = part.split('\n', 2)
+            event = self.collection.get_event(href, account)
+            event.delete_instance(rec_id)
+            self.collection.update(event)
 
 
 def start_pane(pane, callback, program_info=''):
