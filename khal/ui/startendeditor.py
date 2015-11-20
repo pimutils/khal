@@ -24,7 +24,6 @@ from datetime import datetime
 
 import urwid
 
-from .base import CColumns, CPile
 from .widgets import DateWidget, TimeWidget
 
 
@@ -123,11 +122,11 @@ class StartEndEditor(urwid.WidgetWrap):
                 edit, align='left', width=len(self.dts.endtime) + 1, left=1)
             self.widgets.endtime = edit
 
-        columns = CPile([
+        columns = urwid.Pile([
             self.checkallday,
-            CColumns([(datewidth, self.widgets.startdate), (
+            urwid.Columns([(datewidth, self.widgets.startdate), (
                 timewidth, self.widgets.starttime)], dividechars=1),
-            CColumns(
+            urwid.Columns(
                 [(datewidth, self.widgets.enddate),
                  (timewidth, self.widgets.endtime)],
                 dividechars=1)

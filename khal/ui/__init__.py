@@ -28,7 +28,7 @@ import urwid
 
 from .. import aux
 from . import colors
-from .base import Pane, Window, CColumns, CPile, CSimpleFocusListWalker, Choice
+from .base import Pane, Window, Choice
 from .widgets import ExtendedEdit as Edit
 from .startendeditor import StartEndEditor
 from .calendarwidget import CalendarWidget
@@ -37,7 +37,6 @@ from .calendarwidget import CalendarWidget
 NOREPEAT = 'No'
 ALL = 0
 INSTANCES = 1
-
 
 
 class DateConversionError(Exception):
@@ -183,7 +182,7 @@ class EventList(urwid.WidgetWrap):
         self.eventcolumn = eventcolumn
         self.events = None
         self.list_walker = None
-        pile = urwid.Filler(CPile([]))
+        pile = urwid.Filler(urwid.Pile([]))
         urwid.WidgetWrap.__init__(self, pile)
         self.update()
 
@@ -216,7 +215,7 @@ class EventList(urwid.WidgetWrap):
         event_count = len(event_list)
         if not event_list:
             event_list = [urwid.Text('no scheduled events')]
-        self.list_walker = CSimpleFocusListWalker(event_list)
+        self.list_walker = urwid.SimpleFocusListWalker(event_list)
         pile = urwid.ListBox(self.list_walker)
         pile = urwid.Frame(pile, header=date_text)
         self._w = pile
@@ -237,7 +236,7 @@ class EventColumn(urwid.WidgetWrap):
         self.event_width = int(self.pane.conf['view']['event_view_weighting'])
 
         self.events = EventList(eventcolumn=self)
-        self.container = CPile([self.events])
+        self.container = urwid.Pile([self.events])
         urwid.WidgetWrap.__init__(self, self.container)
 
     @property
@@ -347,7 +346,7 @@ class RecursionEditor(urwid.WidgetWrap):
         recursive = self.rrule['freq'][0].lower() if self.rrule else NOREPEAT
         self.recursion_choice = Choice(
             [NOREPEAT, u"weekly", u"monthly", u"yearly"], recursive)
-        self.columns = CColumns([(10, urwid.Text(u'Repeat: ')), (11, self.recursion_choice)])
+        self.columns = urwid.Columns([(10, urwid.Text(u'Repeat: ')), (11, self.recursion_choice)])
         urwid.WidgetWrap.__init__(self, self.columns)
 
     @property
@@ -420,7 +419,7 @@ class EventDisplay(urwid.WidgetWrap):
         if event.description != u'':
             lines.append(urwid.Text(event.description))
 
-        pile = CPile(lines)
+        pile = urwid.Pile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
 
 
@@ -455,7 +454,6 @@ class EventEditor(urwid.WidgetWrap):
         divider = urwid.Divider(' ')
 
         # TODO warning message if len(self.collection.writable_names) == 0
-
         def decorate_choice(c):
             return (c.color or u'', c.name)
 
@@ -468,11 +466,8 @@ class EventEditor(urwid.WidgetWrap):
                                 edit_text=self.description, multiline=True)
         self.location = Edit(caption=u'Location: ',
                              edit_text=self.location)
-        self.pile = urwid.ListBox(CSimpleFocusListWalker([
-            urwid.Columns([
-                self.summary,
-                self.calendar_chooser
-            ], dividechars=2),
+        self.pile = urwid.ListBox(urwid.SimpleFocusListWalker([
+            urwid.Columns([self.summary, self.calendar_chooser], dividechars=2),
             divider,
             self.location,
             self.description,
@@ -630,9 +625,9 @@ class ClassicView(Pane):
         )
         self.calendar = ContainerWidget(calendar)
         lwidth = 31 if conf['locale']['weeknumbers'] == 'right' else 28
-        columns = CColumns([(lwidth, self.calendar), self.eventscolumn],
-                           dividechars=0,
-                           box_columns=[0, 1])
+        columns = urwid.Columns([(lwidth, self.calendar), self.eventscolumn],
+                                dividechars=0,
+                                box_columns=[0, 1])
         Pane.__init__(self, columns, title=title, description=description)
 
     def render(self, size, focus=False):

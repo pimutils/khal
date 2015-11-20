@@ -26,24 +26,6 @@ import threading
 import time
 
 
-class CColumns(urwid.Columns):
-
-    def keypress(self, size, key):
-        return urwid.Columns.keypress(self, size, key)
-
-
-class CPile(urwid.Pile):
-
-    def keypress(self, size, key):
-        return urwid.Pile.keypress(self, size, key)
-
-
-class CSimpleFocusListWalker(urwid.SimpleFocusListWalker):
-
-    def keypress(self, size, key):
-        return urwid.SimpleFocusListWalker.keypress(self, size, key)
-
-
 class Pane(urwid.WidgetWrap):
 
     """An abstract Pane to be used in a Window object."""
@@ -261,7 +243,7 @@ class ChoiceList(urwid.WidgetWrap):
                              on_press=self.set_choice, user_data=c)
             )
 
-        pile = CPile(buttons)
+        pile = urwid.Pile(buttons)
         fill = urwid.Filler(pile)
         urwid.WidgetWrap.__init__(self, urwid.AttrMap(fill, 'popupbg'))
 
