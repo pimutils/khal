@@ -562,9 +562,7 @@ class SQLiteDb_Birthdays(SQLiteDb):
             event.add('uid', href)
             event_str = event.to_ical().decode('utf-8')
             self._update_impl(event, href, self.calendar)
-            sql_s = (u'INSERT INTO events '
-                     u'(item, etag, href, calendar) '
-                     u'VALUES (?, ?, ?, ?);')
+            sql_s = (u'INSERT INTO events (item, etag, href, calendar) VALUES (?, ?, ?, ?);')
             stuple = (event_str, etag, href, self.calendar)
             self.sql_ex(sql_s, stuple)
 
