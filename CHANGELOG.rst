@@ -9,7 +9,9 @@ may want to subscribe to `GitHub's tag feed
 
 0.7.0
 =====
-not released yet
+released on 2015-11-24
+
+There are no new or dropped dependencies.
 
 * most of the internal representation of events was rewritten, the current
   benefit is that floating events are properly represented now, hopefully more

@@ -12,6 +12,7 @@ available as an `rss feed <https://lostpackets.de/khal/index.rss>`_ |rss|.
     :title: khal news
     :link: http://lostpackets.de/khal/
 
+    news/khal07
     news/khal06
     news/khal05
     news/khal04
