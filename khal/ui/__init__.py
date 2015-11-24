@@ -87,15 +87,14 @@ class U_Event(urwid.Text):
         self.set_text(mark + u' ' + self.event.relative_to(self.this_date))
 
     def toggle_delete(self):
+        """toggle the delete status of this event"""
         def delete_this(_):
             if self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
                 self.eventcolumn.pane.deleted[INSTANCES].remove(self.recuid)
             else:
                 self.eventcolumn.pane.deleted[INSTANCES].append(self.recuid)
             self.eventcolumn.pane.window.backtrack()
-
-        def delete_future(_):
-            self.eventcolumn.pane.window.backtrack()
+            self.set_title()
 
         def delete_all(_):
             if self.uid in self.eventcolumn.pane.deleted[ALL]:
@@ -103,6 +102,7 @@ class U_Event(urwid.Text):
             else:
                 self.eventcolumn.pane.deleted[ALL].append(self.uid)
             self.eventcolumn.pane.window.backtrack()
+            self.set_title()
 
         if self.event.readonly:
             self.eventcolumn.pane.window.alert(
@@ -118,7 +118,6 @@ class U_Event(urwid.Text):
             overlay = urwid.Overlay(
                 DeleteDialog(
                     delete_this,
-                    delete_future,
                     delete_all,
                     self.eventcolumn.pane.window.backtrack,
                 ),
@@ -585,14 +584,13 @@ class EventEditor(urwid.WidgetWrap):
 
 
 class DeleteDialog(urwid.WidgetWrap):
-    def __init__(self, this_func, future_func, all_func, abort_func):
+    def __init__(self, this_func, all_func, abort_func):
         lines = []
         lines.append(urwid.Text(u'This is a recurring event.'))
         lines.append(urwid.Text(u'Which instances do you want to delete?'))
         lines.append(urwid.Text(u''))
         buttons = urwid.Columns(
             [urwid.Button(u'Only this', on_press=this_func),
-             # urwid.Button(u'All future', on_press=future_func),
              urwid.Button(u'All (past and future)', on_press=all_func),
              urwid.Button(u'Abort', on_press=abort_func),
              ])
