@@ -557,7 +557,7 @@ class SQLiteDb_Birthdays(SQLiteDb):
             event = icalendar.Event()
             event.add('dtstart', bday)
             event.add('dtend', bday + timedelta(days=1))
-            event.add('summary', '{}\'s birthday'.format(name))
+            event.add('summary', u'{}\'s birthday'.format(name))
             event.add('rrule', {'freq': 'YEARLY'})
             event.add('uid', href)
             event_str = event.to_ical().decode('utf-8')
