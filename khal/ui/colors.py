@@ -37,6 +37,7 @@ dark = [
     ('today', 'black', 'light gray', 'dark cyan'),
     ('dayname', 'light gray', ''),
     ('monthname', 'light gray', ''),
+    ('weeknumber_right', 'light gray', ''),
     ('edit', 'white', 'dark blue'),
     ('alert', 'white', 'dark red'),
     ('mark', 'white', 'dark green'),
@@ -96,6 +97,7 @@ light = [
     ('today', 'light gray', 'black', 'dark cyan'),
     ('dayname', 'dark gray', ''),
     ('monthname', 'dark gray', ''),
+    ('weeknumber_right', 'light gray', ''),
     ('edit', 'white', 'dark blue'),
     ('alert', 'white', 'dark red'),
 

@@ -420,7 +420,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             attr = 'monthname'
         elif self.weeknumbers == 'left':
             month_name = ' {:2} '.format(getweeknumber(week[0]))
-            attr = 'weeknumber'
+            attr = 'weeknumber_left'
         else:
             month_name = '    '
             attr = None
@@ -437,7 +437,8 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
                 this_week.append((2, new_date))
                 new_date.set_styles(self.get_styles(new_date.date, False))
         if self.weeknumbers == 'right':
-            this_week.append((2, urwid.Text('{:2}'.format(getweeknumber(week[0])))))
+            this_week.append((2, urwid.AttrMap(
+                urwid.Text('{:2}'.format(getweeknumber(week[0]))), 'weeknumber_right')))
 
         week = DateCColumns(this_week,
                             on_date_change=self.on_date_change,
