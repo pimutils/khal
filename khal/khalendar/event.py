@@ -27,7 +27,6 @@ from datetime import date, datetime, time, timedelta
 import icalendar
 import pytz
 
-from ..compat import iteritems, to_unicode
 from ..aux import generate_random_uid
 from .aux import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
 from ..log import logger
@@ -404,7 +403,7 @@ class Event(object):
         location = u'\nLocation: ' + self.location if self.location != u'' else u''
         description = u'\nDescription: ' + self.description if \
             self.description != u'' else u''
-        repitition = u'\nRepeat: ' + to_unicode(self.recurpattern) if \
+        repitition = u'\nRepeat: ' + self.recurpattern if \
             self.recurpattern != u'' else u''
 
         return u'{}: {}{}{}{}'.format(
@@ -602,8 +601,14 @@ def create_timezone(tz, first_date=None, last_date=None):
     timezone = icalendar.Timezone()
     timezone.add('TZID', tz)
 
-    dst = {one[2]: 'DST' in two.__repr__() for one, two in iteritems(tz._tzinfos)}
-    bst = {one[2]: 'BST' in two.__repr__() for one, two in iteritems(tz._tzinfos)}
+    dst = {
+        one[2]: 'DST' in two.__repr__()
+        for one, two in iter(tz._tzinfos.items())
+    }
+    bst = {
+        one[2]: 'BST' in two.__repr__()
+        for one, two in iter(tz._tzinfos.items())
+    }
 
     # looking for the first and last transition time we need to include
     first_num, last_num = 0, len(tz._utc_transition_times) - 1

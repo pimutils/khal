@@ -8,7 +8,6 @@ import pytz
 
 from khal.aux import construct_event, guessdatetimefstr
 from khal import aux
-from khal.compat import to_bytes
 
 from .aux import _get_all_vevents_file, _get_text, \
     normalize_component
@@ -36,7 +35,7 @@ locale_de = {
 
 
 def _create_testcases(*cases):
-    return [(userinput, to_bytes('\r\n'.join(output) + '\r\n', 'utf-8'))
+    return [(userinput, ('\r\n'.join(output) + '\r\n').encode('utf-8'))
             for userinput, output in cases]
 
 

@@ -34,7 +34,6 @@ import sys
 import textwrap
 
 from khal import aux, calendar_display
-from khal.compat import to_unicode
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
 from khal.exceptions import InvalidDate, FatalError
 from khal.khalendar.event import Event
@@ -169,7 +168,7 @@ def agenda(collection, date=None, encoding='utf-8',
                               show_all_days=show_all_days, full=full, **kwargs)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
-    echo(to_unicode(u'\n'.join(event_column), encoding))
+    echo('\n'.join(event_column))
 
 
 def new_from_string(collection, calendar_name, conf, date_list, location=None, repeat=None,

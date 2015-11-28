@@ -6,7 +6,6 @@ import dateutil.rrule
 import pytz
 
 from .. import log
-from ..compat import to_unicode
 
 from .exceptions import UnsupportedRecursion
 
@@ -52,7 +51,7 @@ def expand(vevent, href=''):
 
     if 'RRULE' in vevent:
         vevent = sanitize_rrule(vevent)
-        rrulestr = to_unicode(vevent['RRULE'].to_ical())
+        rrulestr = vevent['RRULE'].to_ical().decode()
         rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=vevent['DTSTART'].dt)
 
         if not set(['UNTIL', 'COUNT']).intersection(vevent['RRULE'].keys()):
