@@ -246,7 +246,7 @@ def construct_event(dtime_list, locale,
             "An internal error occured, please report the below error message "
             "to khal's developers at https://github.com/geier/khal/issues or "
             "via email at khal@lostpackets.de")
-        logger.error(u' '.join(['{} ({})'.format(part, type(part)) for part in dtime_list]))
+        logger.error(' '.join(['{} ({})'.format(part, type(part)) for part in dtime_list]))
 
     today = datetime.today()
     try:

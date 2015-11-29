@@ -86,38 +86,38 @@ example_we_start_su = [
     '\x1b[1mMar \x1b[0m26 27 28 29  1  2  3 ']
 
 example_cz = [
-    u'\x1b[1m    Po \xdat St \u010ct P\xe1 So Ne \x1b[0m',
-    u'\x1b[1mpro \x1b[0m28 29 30  1  2  3  4 ',
-    u'     5  6  7  8  9 10 11 ',
-    u'    \x1b[7m12\x1b[0m 13 14 15 16 17 18 ',
-    u'    19 20 21 22 23 24 25 ',
-    u'\x1b[1mled \x1b[0m26 27 28 29 30 31  1 ',
-    u'     2  3  4  5  6  7  8 ',
-    u'     9 10 11 12 13 14 15 ',
-    u'    16 17 18 19 20 21 22 ',
-    u'    23 24 25 26 27 28 29 ',
-    u'\x1b[1m\xfano \x1b[0m30 31  1  2  3  4  5 ',
-    u'     6  7  8  9 10 11 12 ',
-    u'    13 14 15 16 17 18 19 ',
-    u'    20 21 22 23 24 25 26 ',
-    u'\x1b[1mb\u0159e \x1b[0m27 28 29  1  2  3  4 ']
+    '\x1b[1m    Po \xdat St \u010ct P\xe1 So Ne \x1b[0m',
+    '\x1b[1mpro \x1b[0m28 29 30  1  2  3  4 ',
+    '     5  6  7  8  9 10 11 ',
+    '    \x1b[7m12\x1b[0m 13 14 15 16 17 18 ',
+    '    19 20 21 22 23 24 25 ',
+    '\x1b[1mled \x1b[0m26 27 28 29 30 31  1 ',
+    '     2  3  4  5  6  7  8 ',
+    '     9 10 11 12 13 14 15 ',
+    '    16 17 18 19 20 21 22 ',
+    '    23 24 25 26 27 28 29 ',
+    '\x1b[1m\xfano \x1b[0m30 31  1  2  3  4  5 ',
+    '     6  7  8  9 10 11 12 ',
+    '    13 14 15 16 17 18 19 ',
+    '    20 21 22 23 24 25 26 ',
+    '\x1b[1mb\u0159e \x1b[0m27 28 29  1  2  3  4 ']
 
 example_de = [
-    u'\x1b[1m    Mo Di Mi Do Fr Sa So \x1b[0m',
-    u'\x1b[1mDez \x1b[0m28 29 30  1  2  3  4 ',
-    u'     5  6  7  8  9 10 11 ',
-    u'    \x1b[7m12\x1b[0m 13 14 15 16 17 18 ',
-    u'    19 20 21 22 23 24 25 ',
-    u'\x1b[1mJan \x1b[0m26 27 28 29 30 31  1 ',
-    u'     2  3  4  5  6  7  8 ',
-    u'     9 10 11 12 13 14 15 ',
-    u'    16 17 18 19 20 21 22 ',
-    u'    23 24 25 26 27 28 29 ',
-    u'\x1b[1mFeb \x1b[0m30 31  1  2  3  4  5 ',
-    u'     6  7  8  9 10 11 12 ',
-    u'    13 14 15 16 17 18 19 ',
-    u'    20 21 22 23 24 25 26 ',
-    u'\x1b[1mM\xe4r \x1b[0m27 28 29  1  2  3  4 ']
+    '\x1b[1m    Mo Di Mi Do Fr Sa So \x1b[0m',
+    '\x1b[1mDez \x1b[0m28 29 30  1  2  3  4 ',
+    '     5  6  7  8  9 10 11 ',
+    '    \x1b[7m12\x1b[0m 13 14 15 16 17 18 ',
+    '    19 20 21 22 23 24 25 ',
+    '\x1b[1mJan \x1b[0m26 27 28 29 30 31  1 ',
+    '     2  3  4  5  6  7  8 ',
+    '     9 10 11 12 13 14 15 ',
+    '    16 17 18 19 20 21 22 ',
+    '    23 24 25 26 27 28 29 ',
+    '\x1b[1mFeb \x1b[0m30 31  1  2  3  4  5 ',
+    '     6  7  8  9 10 11 12 ',
+    '    13 14 15 16 17 18 19 ',
+    '    20 21 22 23 24 25 26 ',
+    '\x1b[1mM\xe4r \x1b[0m27 28 29  1  2  3  4 ']
 
 
 def test_vertical_month():
@@ -155,7 +155,7 @@ def test_vertical_month_unicode():
     vert_str = vertical_month(month=12, year=2011,
                               today=datetime.date(2011, 12, 12))
     assert vert_str == example_de
-    u'\n'.join(vert_str)  # issue 142
+    '\n'.join(vert_str)  # issue 142
 
 
 def test_vertical_month_unicode_weekdeays():
@@ -175,4 +175,4 @@ def test_vertical_month_unicode_weekdeays():
     vert_str = vertical_month(month=12, year=2011,
                               today=datetime.date(2011, 12, 12))
     assert vert_str == example_cz
-    u'\n'.join(vert_str)  # issue 142/293
+    '\n'.join(vert_str)  # issue 142/293

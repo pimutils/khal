@@ -211,7 +211,7 @@ def test_invalid_calendar(runner):
 
 @pytest.mark.parametrize('contents', [
     '',
-    u'BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\nEND:VCALENDAR\n'
+    'BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\nEND:VCALENDAR\n'
 ])
 def test_no_vevent(runner, tmpdir, contents):
     runner = runner(command='agenda', showalldays=False, days=2)
