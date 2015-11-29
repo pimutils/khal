@@ -1,4 +1,3 @@
-# coding:utf-8
 from datetime import date, timedelta
 
 from khal.ui.calendarwidget import CalendarWidget

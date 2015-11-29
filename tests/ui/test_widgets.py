@@ -1,5 +1,3 @@
-# coding:utf-8
-
 from khal.ui.widgets import delete_last_word
 
 
