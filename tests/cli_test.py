@@ -1,5 +1,3 @@
-# vim: set ts=4 sw=4 expandtab sts=4:
-
 import os
 import sys
 import datetime

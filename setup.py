@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
-
 from setuptools import setup
 
 requirements = [

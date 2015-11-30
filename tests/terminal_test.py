@@ -1,6 +1,3 @@
-# vim: set ts=4 sw=4 expandtab sts=4:
-
-
 from khal.terminal import merge_columns, colored
 
 

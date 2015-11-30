@@ -1,4 +1,3 @@
-# vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
 # Copyright (c) 2013-2015 Christian Geier et al.
 #
 # Permission is hereby granted, free of charge, to any person obtaining

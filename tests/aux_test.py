@@ -1,4 +1,3 @@
-# vim: set fileencoding=utf-8:
 """testing functions from the khal.aux"""
 from datetime import date, datetime, time, timedelta
 import textwrap
