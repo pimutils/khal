@@ -86,6 +86,35 @@ class U_Event(urwid.Text):
             mark = 'd'
         self.set_text(mark + u' ' + self.event.relative_to(self.this_date))
 
+    def export_event(self):
+        """
+        export the event as ICS
+        """
+        def export_this(_, user_data):
+            try:
+                self.event.export_ics(user_data.get_edit_text())
+            except Exception as e:
+                self.eventcolumn.pane.window.backtrack()
+                self.eventcolumn.pane.window.alert(
+                    ('light red',
+                     'Failed to save event: %s' % e))
+                return
+
+            self.eventcolumn.pane.window.backtrack()
+            self.eventcolumn.pane.window.alert(
+                ('light green',
+                 'Event successfuly exported'))
+
+        overlay = urwid.Overlay(
+            ExportDialog(
+                export_this,
+                self.eventcolumn.pane.window.backtrack,
+                self.event,
+            ),
+            self.eventcolumn.pane,
+            'center', ('relative', 50), ('relative', 50), None)
+        self.eventcolumn.pane.window.open(overlay)
+
     def toggle_delete(self):
         """toggle the delete status of this event"""
         def delete_this(_):
@@ -161,6 +190,8 @@ class U_Event(urwid.Text):
             self.toggle_delete()
         elif key in binds['duplicate']:
             self.duplicate()
+        elif key in binds['export']:
+            self.export_event()
         elif key in ['left', 'up', 'down']:
             if not self.conf['view']['event_view_always_visible']:
                 self.eventcolumn.current_event = None
@@ -479,7 +510,8 @@ class EventEditor(urwid.WidgetWrap):
             self.startendeditor,
             self.recursioneditor,
             divider,
-            urwid.Button(u'Save', on_press=self.save)
+            urwid.Button(u'Save', on_press=self.save),
+            urwid.Button(u'Export', on_press=self.export)
         ]))
 
         urwid.WidgetWrap.__init__(self, self.pile)
@@ -527,6 +559,36 @@ class EventEditor(urwid.WidgetWrap):
             # if rrule and rrule["freq"][0] != NOREPEAT:
             #    self.event.vevent.add("RRULE", rrule)
         # TODO self.newaccount = self.calendar_chooser.active ?
+
+    def export(self, button):
+        """
+        export the event as ICS
+        :param button: not needed, passed via the button press
+        """
+        def export_this(_, user_data):
+            try:
+                self.event.export_ics(user_data.get_edit_text())
+            except Exception as e:
+                self.pane.window.backtrack()
+                self.pane.window.alert(
+                    ('light red',
+                     'Failed to save event: %s' % e))
+                return
+
+            self.pane.window.backtrack()
+            self.pane.window.alert(
+                ('light green',
+                 'Event successfuly exported'))
+
+        overlay = urwid.Overlay(
+            ExportDialog(
+                export_this,
+                self.pane.window.backtrack,
+                self.event,
+            ),
+            self.pane,
+            'center', ('relative', 50), ('relative', 50), None)
+        self.pane.window.open(overlay)
 
     def save(self, button):
         """
@@ -599,6 +661,22 @@ class DeleteDialog(urwid.WidgetWrap):
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
 
 
+class ExportDialog(urwid.WidgetWrap):
+    def __init__(self, this_func, abort_func, event):
+        lines = []
+        lines.append(urwid.Text(u'Export event as ICS file'))
+        lines.append(urwid.Text(u''))
+        export_location = urwid.Edit(caption=u'Location: ',
+                                     edit_text="~/%s.ics" % event.summary.strip())
+        lines.append(export_location)
+        lines.append(urwid.Divider(' '))
+        lines.append(
+            urwid.Button(u'Save', on_press=this_func, user_data=export_location)
+        )
+        content = urwid.Pile(lines)
+        urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
+
+
 class ClassicView(Pane):
 
     """default Pane for khal
@@ -647,6 +725,7 @@ class ClassicView(Pane):
                 (['enter', 'tab'], 'select a date/event, show/edit event'),
                 (['n'], 'create event on selected day'),
                 (['d'], 'delete selected event'),
+                (['e'], 'export selected event'),
                 (['q', 'esc'], 'previous pane/quit'),
                 ]
 

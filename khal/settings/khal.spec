@@ -113,6 +113,9 @@ save = force_list(default=list('meta enter'))
 # duplicate the currently selected event
 duplicate = force_list(default=list('p'))
 
+# export event as ICS
+export = force_list(default=list('e'))
+
 # The default section begins with a **[default]** tag. Some default values and
 # behaviours are set here.
 [default]

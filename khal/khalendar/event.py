@@ -24,6 +24,7 @@
 
 from datetime import date, datetime, time, timedelta
 
+import os
 import icalendar
 import pytz
 
@@ -313,6 +314,13 @@ class Event(object):
         for vevent in self._vevents.values():
             calendar.add_component(vevent)
         return calendar.to_ical().decode('utf-8')
+
+    def export_ics(self, path):
+        """export event as ICS
+        """
+        export_path = os.path.expanduser(path)
+        with open(export_path, 'w') as fh:
+            fh.write(self.raw)
 
     @property
     def ident(self):
