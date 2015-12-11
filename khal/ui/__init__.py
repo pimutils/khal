@@ -229,23 +229,16 @@ class EventList(urwid.WidgetWrap):
 
         date_text = urwid.Text(
             this_date.strftime(self.eventcolumn.pane.conf['locale']['longdateformat']))
-        event_column = list()
-        all_day_events = self.eventcolumn.pane.collection.get_allday_by_time_range(this_date)
-        events = self.eventcolumn.pane.collection.get_datetime_by_time_range(start, end)
+        self.events = sorted(self.eventcolumn.pane.collection.get_events_on(this_date))
 
-        for event in all_day_events:
+
+        # TODO cleanup: event_column is not needed at all
+        event_column = list()
+        for event in self.events:
             event_column.append(
-                urwid.AttrMap(U_Event(event, this_date=this_date,
-                                      eventcolumn=self.eventcolumn),
+                urwid.AttrMap(U_Event(event, this_date=this_date, eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
-        events.sort(key=lambda e: e.start)
-        for event in events:
-            event_column.append(
-                urwid.AttrMap(U_Event(event, this_date=this_date,
-                                      eventcolumn=self.eventcolumn),
-                              event.color, 'reveal focus'))
-        event_list = [urwid.AttrMap(event, None, 'reveal focus')
-                      for event in event_column]
+        event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
         event_count = len(event_list)
         if not event_list:
             event_list = [urwid.Text('no scheduled events')]
@@ -253,7 +246,6 @@ class EventList(urwid.WidgetWrap):
         pile = urwid.ListBox(self.list_walker)
         pile = urwid.Frame(pile, header=date_text)
         self._w = pile
-        self.events = all_day_events + events
         return event_count
 
 

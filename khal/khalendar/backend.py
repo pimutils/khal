@@ -102,6 +102,9 @@ class SQLiteDb(object):
         self._check_table_version()
         self._check_calendar_exists()
 
+    def _calendars(self, calendars):
+        return ', '.join(['\'' + cal + '\'' for cal in calendars])
+
     @contextlib.contextmanager
     def at_once(self):
         assert not self._at_once
@@ -378,58 +381,6 @@ class SQLiteDb(object):
         sql_s = 'SELECT href, etag FROM events WHERE calendar = ?;'
         return list(set(self.sql_ex(sql_s, (self.calendar, ))))
 
-    def get_time_range(self, start, end):
-        """returns
-        :type start: datetime.datetime
-        :type end: datetime.datetime
-        """
-        # XXX rename get_localized_range()
-        if start.tzinfo is None:
-            start = self.locale['local_timezone'].localize(start)
-        if end.tzinfo is None:
-            end = self.locale['local_timezone'].localize(end)
-        start = aux.to_unix_time(start)
-        end = aux.to_unix_time(end)
-        sql_s = ('SELECT recs_loc.href, dtstart, dtend, ref, dtype FROM '
-                 'recs_loc JOIN events ON '
-                 'recs_loc.href = events.href AND '
-                 'recs_loc.calendar = events.calendar WHERE '
-                 '(dtstart >= ? AND dtstart <= ? OR '
-                 'dtend >= ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend >= ?) AND events.calendar = ?;')
-        stuple = (start, end, start, end, start, end, self.calendar)
-        result = self.sql_ex(sql_s, stuple)
-        for href, start, end, ref, dtype in result:
-            start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
-            end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
-            event = self.get(href, start=start, end=end, ref=ref, dtype=dtype)
-            yield event
-
-    def get_allday_range(self, start):
-        """
-        get all allday events scheduled for day `start`
-
-        :type start: datetime.date
-        :type end: datetime.date
-        """
-        # XXX rename get_float_range()
-        strstart = aux.to_unix_time(start)
-        strend = aux.to_unix_time(start + timedelta(days=1))
-        sql_s = ('SELECT recs_float.href, dtstart, dtend, ref, dtype FROM '
-                 'recs_float JOIN events ON '
-                 'recs_float.href = events.href AND '
-                 'recs_float.calendar = events.calendar WHERE '
-                 '(dtstart >= ? AND dtstart < ? OR '
-                 'dtend > ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend > ? ) AND events.calendar = ?;')
-        stuple = (strstart, strend, strstart, strend, strstart, strend, self.calendar)
-        result = self.sql_ex(sql_s, stuple)
-        for href, start, end, ref, dtype in result:
-            start = datetime.utcfromtimestamp(start)
-            end = datetime.utcfromtimestamp(end)
-            event = self.get(href, start=start, end=end, ref=ref, dtype=dtype)
-            yield event
-
     def get_localized(self, calendars, start, end):
         """returns
         :type start: datetime.datetime
@@ -446,9 +397,8 @@ class SQLiteDb(object):
                  '(dtstart >= ? AND dtstart <= ? OR '
                  'dtend >= ? AND dtend <= ? OR '
                  'dtstart <= ? AND dtend >= ?) AND events.calendar in ({});')
-        sql_s = sql_s.format(', '.join(['\'' + cal + '\'' for cal in calendars]))
         stuple = (start, end, start, end, start, end)
-        result = self.sql_ex(sql_s, stuple)
+        result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
@@ -473,9 +423,8 @@ class SQLiteDb(object):
                  '(dtstart >= ? AND dtstart < ? OR '
                  'dtend > ? AND dtend <= ? OR '
                  'dtstart <= ? AND dtend > ? ) AND events.calendar in ({});')
-        sql_s = sql_s.format(', '.join(['\'' + cal + '\'' for cal in calendars]))
         stuple = (strstart, strend, strstart, strend, strstart, strend)
-        result = self.sql_ex(sql_s, stuple)
+        result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = datetime.utcfromtimestamp(start)
             end = datetime.utcfromtimestamp(end)

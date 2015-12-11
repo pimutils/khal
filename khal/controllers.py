@@ -101,21 +101,14 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
         daylist.sort()
 
     daylist = construct_daynames(daylist, locale['longdateformat'])
-    localize = locale['local_timezone'].localize
 
     for day, dayname in daylist:
-        start = localize(datetime.datetime.combine(day, datetime.time.min))
-        end = localize(datetime.datetime.combine(day, datetime.time.max))
-
-        # TODO unify allday and datetime events
-        all_day_events = collection.get_allday_by_time_range(day)
-        events = collection.get_datetime_by_time_range(start, end)
-        if len(events) == 0 and len(all_day_events) == 0 and not show_all_days:
+        events = sorted(collection.get_events_on(day))
+        if not events:
             continue
 
         event_column.append(style(dayname, bold=True))
-        events.sort(key=lambda e: e.start)
-        for event in itertools.chain(all_day_events, events):
+        for event in itertools.chain(floating_events, localized_events):
             lines = list()
             items = event.relative_to(day, full).splitlines()
             for item in items:
