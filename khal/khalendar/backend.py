@@ -552,7 +552,11 @@ class SQLiteDb_Birthdays(SQLiteDb):
                 logger.info('cannot parse BIRTHDAY in {} in collection '
                             '{}'.format(href, self.calendar))
                 return
-            name = vcard['FN']
+            if 'FN' in vcard:
+                name = vcard['FN']
+            else:
+                n = vcard['N'].split(';')
+                name = ' '.join([n[1], n[2], n[0]])
             event = icalendar.Event()
             event.add('dtstart', bday)
             event.add('dtend', bday + timedelta(days=1))
