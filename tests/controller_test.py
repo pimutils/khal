@@ -80,15 +80,15 @@ class TestGetAgenda(object):
     def test_empty_recurrence(self, cal_vdir):
         cal, vdir = cal_vdir
         cal.new(cal.new_event(dedent(
-            u'BEGIN:VEVENT\r\n'
-            u'UID:no_recurrences\r\n'
-            u'SUMMARY:No recurrences\r\n'
-            u'RRULE:FREQ=DAILY;COUNT=2;INTERVAL=1\r\n'
-            u'EXDATE:20110908T130000\r\n'
-            u'EXDATE:20110909T130000\r\n'
-            u'DTSTART:20110908T130000\r\n'
-            u'DTEND:20110908T170000\r\n'
-            u'END:VEVENT\r\n'
+            'BEGIN:VEVENT\r\n'
+            'UID:no_recurrences\r\n'
+            'SUMMARY:No recurrences\r\n'
+            'RRULE:FREQ=DAILY;COUNT=2;INTERVAL=1\r\n'
+            'EXDATE:20110908T130000\r\n'
+            'EXDATE:20110909T130000\r\n'
+            'DTSTART:20110908T130000\r\n'
+            'DTEND:20110908T170000\r\n'
+            'END:VEVENT\r\n'
         )))
         assert 'no events' in '\n'.join(get_agenda(
             cal, locale,

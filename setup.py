@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-# vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
-
+#!/usr/bin/env python3
 from setuptools import setup
 
 requirements = [
@@ -48,7 +46,10 @@ setup(
         "Environment :: Console :: Curses",
         "Intended Audience :: End Users/Desktop",
         "Operating System :: POSIX",
-        "Programming Language :: Python :: 2 :: Only",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3 :: Only",
         "Topic :: Utilities",
         "Topic :: Communications",
     ],

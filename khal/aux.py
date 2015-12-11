@@ -1,4 +1,3 @@
-# vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
 # Copyright (c) 2013-2015 Christian Geier et al.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -22,8 +21,6 @@
 
 """this module contains some helper functions converting strings or list of
 strings to date(time) or event objects"""
-
-from .compat import to_unicode
 
 from datetime import date, datetime, timedelta
 from datetime import time as dtime
@@ -248,7 +245,7 @@ def construct_event(dtime_list, locale,
             "An internal error occured, please report the below error message "
             "to khal's developers at https://github.com/geier/khal/issues or "
             "via email at khal@lostpackets.de")
-        logger.error(u' '.join(['{} ({})'.format(part, type(part)) for part in dtime_list]))
+        logger.error(' '.join(['{} ({})'.format(part, type(part)) for part in dtime_list]))
 
     today = datetime.today()
     try:
@@ -295,7 +292,7 @@ def construct_event(dtime_list, locale,
             dtend = locale['default_timezone'].localize(dtend)
 
     event = icalendar.Event()
-    text = to_unicode(' '.join(dtime_list), encoding)
+    text = ' '.join(dtime_list)
     if not description or not location:
         summary = text.split(' :: ', 1)[0]
         try:

@@ -1,4 +1,3 @@
-# vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
 # Copyright (c) 2013-2015 Christian Geier et al.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -72,8 +71,8 @@ class U_Event(urwid.Text):
 
     @property
     def uid(self):
-        return self.event.calendar + u'\n' + \
-            str(self.event.href) + u'\n' + str(self.event.etag)
+        return self.event.calendar + '\n' + \
+            str(self.event.href) + '\n' + str(self.event.etag)
 
     @property
     def recuid(self):
@@ -84,7 +83,7 @@ class U_Event(urwid.Text):
             mark = 'D'
         elif self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
             mark = 'd'
-        self.set_text(mark + u' ' + self.event.relative_to(self.this_date))
+        self.set_text(mark + ' ' + self.event.relative_to(self.this_date))
 
     def export_event(self):
         """
@@ -264,7 +263,7 @@ class EventColumn(urwid.WidgetWrap):
 
     def __init__(self, pane):
         self.pane = pane
-        self.divider = urwid.Divider(u'─')
+        self.divider = urwid.Divider('─')
         self.editor = False
         self.eventcount = 0
         self._current_date = None
@@ -381,7 +380,7 @@ class RecursionEditor(urwid.WidgetWrap):
         recursive = self.rrule['freq'][0].lower() if self.rrule else NOREPEAT
         self.recursion_choice = Choice(
             [NOREPEAT, u"weekly", u"monthly", u"yearly"], recursive)
-        self.columns = urwid.Columns([(10, urwid.Text(u'Repeat: ')), (11, self.recursion_choice)])
+        self.columns = urwid.Columns([(10, urwid.Text('Repeat: ')), (11, self.recursion_choice)])
         urwid.WidgetWrap.__init__(self, self.columns)
 
     @property
@@ -414,17 +413,17 @@ class EventDisplay(urwid.WidgetWrap):
         self.conf = conf
         self.collection = collection
         self.event = event
-        divider = urwid.Divider(u' ')
+        divider = urwid.Divider(' ')
 
         lines = []
-        lines.append(urwid.Text(u'Title: ' + event.summary))
+        lines.append(urwid.Text('Title: ' + event.summary))
 
         # show organizer
-        if event.organizer != u'':
-            lines.append(urwid.Text(u'Organizer: ' + event.organizer))
+        if event.organizer != '':
+            lines.append(urwid.Text('Organizer: ' + event.organizer))
 
-        if event.location != u'':
-            lines.append(urwid.Text(u'Location: ' + event.location))
+        if event.location != '':
+            lines.append(urwid.Text('Location: ' + event.location))
 
         # start and end time/date
         if event.allday:
@@ -432,26 +431,26 @@ class EventDisplay(urwid.WidgetWrap):
             endstr = event.end_local.strftime(self.conf['locale']['dateformat'])
         else:
             startstr = event.start_local.strftime(
-                u'{} {}'.format(self.conf['locale']['dateformat'],
-                                self.conf['locale']['timeformat'])
+                '{} {}'.format(self.conf['locale']['dateformat'],
+                               self.conf['locale']['timeformat'])
             )
             if event.start_local.date == event.end_local.date:
                 endstr = event.end_local.strftime(self.conf['locale']['timeformat'])
             else:
                 endstr = event.end_local.strftime(
-                    u'{} {}'.format(self.conf['locale']['dateformat'],
-                                    self.conf['locale']['timeformat'])
+                    '{} {}'.format(self.conf['locale']['dateformat'],
+                                   self.conf['locale']['timeformat'])
                 )
 
         if startstr == endstr:
-            lines.append(urwid.Text(u'Date: ' + startstr))
+            lines.append(urwid.Text('Date: ' + startstr))
         else:
-            lines.append(urwid.Text(u'Date: ' + startstr + u' - ' + endstr))
+            lines.append(urwid.Text('Date: ' + startstr + ' - ' + endstr))
 
-        lines.append(urwid.Text(u'Calendar: ' + event.calendar))
+        lines.append(urwid.Text('Calendar: ' + event.calendar))
         lines.append(divider)
 
-        if event.description != u'':
+        if event.description != '':
             lines.append(urwid.Text(event.description))
 
         pile = urwid.Pile(lines)
@@ -484,22 +483,22 @@ class EventEditor(urwid.WidgetWrap):
             event.start_local, event.end_local, self.conf,
             self.pane.eventscolumn.original_widget.set_current_date)
         self.recursioneditor = RecursionEditor(self.event.recurobject)
-        self.summary = Edit(caption=u'Title: ', edit_text=event.summary)
+        self.summary = Edit(caption='Title: ', edit_text=event.summary)
 
         divider = urwid.Divider(' ')
 
         # TODO warning message if len(self.collection.writable_names) == 0
         def decorate_choice(c):
-            return (c.color or u'', c.name)
+            return (c.color or '', c.name)
 
         self.calendar_chooser = Choice(
             [c for c in self.collection.calendars if not c.readonly],
             self.collection._calnames[self.event.calendar],
             decorate_choice
         )
-        self.description = Edit(caption=u'Description: ',
+        self.description = Edit(caption='Description: ',
                                 edit_text=self.description, multiline=True)
-        self.location = Edit(caption=u'Location: ',
+        self.location = Edit(caption='Location: ',
                              edit_text=self.location)
         self.pile = urwid.ListBox(urwid.SimpleFocusListWalker([
             urwid.Columns([self.summary, self.calendar_chooser], dividechars=2),
@@ -510,20 +509,20 @@ class EventEditor(urwid.WidgetWrap):
             self.startendeditor,
             self.recursioneditor,
             divider,
-            urwid.Button(u'Save', on_press=self.save),
-            urwid.Button(u'Export', on_press=self.export)
+            urwid.Button('Save', on_press=self.save),
+            urwid.Button('Export', on_press=self.export)
         ]))
 
         urwid.WidgetWrap.__init__(self, self.pile)
 
     @property
     def title(self):  # Window title
-        return u'Edit: {}'.format(self.summary.get_edit_text())
+        return 'Edit: {}'.format(self.summary.get_edit_text())
 
     def get_keys(self):
-        return [(['arrowsu'], u'navigate through properties'),
-                (['enter'], u'edit property'),
-                (['esc'], u'abort')]
+        return [(['arrowsu'], 'navigate through properties'),
+                (['enter'], 'edit property'),
+                (['esc'], 'abort')]
 
     @classmethod
     def selectable(cls):
@@ -648,13 +647,13 @@ class EventEditor(urwid.WidgetWrap):
 class DeleteDialog(urwid.WidgetWrap):
     def __init__(self, this_func, all_func, abort_func):
         lines = []
-        lines.append(urwid.Text(u'This is a recurring event.'))
-        lines.append(urwid.Text(u'Which instances do you want to delete?'))
-        lines.append(urwid.Text(u''))
+        lines.append(urwid.Text('This is a recurring event.'))
+        lines.append(urwid.Text('Which instances do you want to delete?'))
+        lines.append(urwid.Text(''))
         buttons = urwid.Columns(
-            [urwid.Button(u'Only this', on_press=this_func),
-             urwid.Button(u'All (past and future)', on_press=all_func),
-             urwid.Button(u'Abort', on_press=abort_func),
+            [urwid.Button('Only this', on_press=this_func),
+             urwid.Button('All (past and future)', on_press=all_func),
+             urwid.Button('Abort', on_press=abort_func),
              ])
         lines.append(buttons)
         content = urwid.Pile(lines)
@@ -664,14 +663,14 @@ class DeleteDialog(urwid.WidgetWrap):
 class ExportDialog(urwid.WidgetWrap):
     def __init__(self, this_func, abort_func, event):
         lines = []
-        lines.append(urwid.Text(u'Export event as ICS file'))
-        lines.append(urwid.Text(u''))
-        export_location = urwid.Edit(caption=u'Location: ',
+        lines.append(urwid.Text('Export event as ICS file'))
+        lines.append(urwid.Text(''))
+        export_location = urwid.Edit(caption='Location: ',
                                      edit_text="~/%s.ics" % event.summary.strip())
         lines.append(export_location)
         lines.append(urwid.Divider(' '))
         lines.append(
-            urwid.Button(u'Save', on_press=this_func, user_data=export_location)
+            urwid.Button('Save', on_press=this_func, user_data=export_location)
         )
         content = urwid.Pile(lines)
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))

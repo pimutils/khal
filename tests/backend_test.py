@@ -7,7 +7,6 @@ import icalendar
 
 from khal.khalendar import backend
 from khal.khalendar.event import LocalizedEvent
-from khal.compat import unicode_type
 from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 
 from .aux import _get_text
@@ -250,10 +249,10 @@ def test_event_rrule_this_and_future():
     assert events[4].end == BERLIN.localize(datetime(2014, 7, 28, 18, 0))
     assert events[5].end == BERLIN.localize(datetime(2014, 8, 4, 18, 0))
 
-    assert unicode_type(events[0].summary) == u'Arbeit'
+    assert str(events[0].summary) == 'Arbeit'
     for num, event in enumerate(events[1:]):
         event.raw
-        assert unicode_type(event.summary) == u'Arbeit (lang)'
+        assert str(event.summary) == 'Arbeit (lang)'
 
 
 event_rrule_this_and_future_multi_day_shift = \
@@ -282,9 +281,9 @@ def test_event_rrule_this_and_future_multi_day_shift():
     assert events[4].end == BERLIN.localize(datetime(2014, 7, 30, 15, 0))
     assert events[5].end == BERLIN.localize(datetime(2014, 8, 6, 15, 0))
 
-    assert unicode_type(events[0].summary) == u'Arbeit'
+    assert str(events[0].summary) == 'Arbeit'
     for event in events[1:]:
-        assert unicode_type(event.summary) == u'Arbeit (lang)'
+        assert str(event.summary) == 'Arbeit (lang)'
 
 event_rrule_this_and_future_allday_temp = """
 BEGIN:VCALENDAR
@@ -346,9 +345,9 @@ def test_event_rrule_this_and_future_allday():
     assert events[4].end == date(2014, 7, 29)
     assert events[5].end == date(2014, 8, 5)
 
-    assert unicode_type(events[0].summary) == u'Arbeit'
+    assert str(events[0].summary) == 'Arbeit'
     for event in events[1:]:
-        assert unicode_type(event.summary) == u'Arbeit (lang)'
+        assert str(event.summary) == 'Arbeit (lang)'
 
 
 def test_event_rrule_this_and_future_allday_prior():
@@ -376,9 +375,9 @@ def test_event_rrule_this_and_future_allday_prior():
     assert events[4].end == date(2014, 7, 26)
     assert events[5].end == date(2014, 8, 2)
 
-    assert unicode_type(events[0].summary) == u'Arbeit'
+    assert str(events[0].summary) == 'Arbeit'
     for event in events[1:]:
-        assert unicode_type(event.summary) == u'Arbeit (lang)'
+        assert str(event.summary) == 'Arbeit (lang)'
 
 
 event_rrule_multi_this_and_future_allday = """BEGIN:VCALENDAR
@@ -433,11 +432,11 @@ def test_event_rrule_multi_this_and_future_allday():
     assert events[6].end == date(2014, 7, 24)
     assert events[7].end == date(2014, 7, 31)
 
-    assert unicode_type(events[0].summary) == u'Arbeit'
+    assert str(events[0].summary) == 'Arbeit'
     for event in events[1:3] + events[4:6]:
-        assert unicode_type(event.summary) == u'Arbeit (lang)'
+        assert str(event.summary) == 'Arbeit (lang)'
     for event in events[3:4] + events[6:]:
-        assert unicode_type(event.summary) == u'Arbeit (neu)'
+        assert str(event.summary) == 'Arbeit (neu)'
 
 
 master = """BEGIN:VEVENT
@@ -598,7 +597,7 @@ def test_birthdays(tmpdir):
     db.update(card, 'unix.vcf')
     events = list(db.get_allday_range(date(1971, 3, 11)))
     assert len(events) == 1
-    assert events[0].summary == u'Unix\'s birthday'
+    assert events[0].summary == 'Unix\'s birthday'
 
 
 def test_birthdays_no_year(tmpdir):
@@ -608,7 +607,7 @@ def test_birthdays_no_year(tmpdir):
     db.update(card_no_year, 'unix.vcf')
     events = list(db.get_allday_range(date(1971, 3, 11)))
     assert len(events) == 1
-    assert events[0].summary == u'Unix\'s birthday'
+    assert events[0].summary == 'Unix\'s birthday'
 
 
 def test_birthday_does_not_parse(tmpdir):

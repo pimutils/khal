@@ -1,4 +1,3 @@
-# vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
 # Copyright (c) 2013-2015 Christian Geier et al.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -28,7 +27,6 @@ import os
 import icalendar
 import pytz
 
-from ..compat import iteritems, to_unicode
 from ..aux import generate_random_uid
 from .aux import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
 from ..log import logger
@@ -219,19 +217,19 @@ class Event(object):
     def symbol_strings(self):
         if self._locale['unicode_symbols']:
             return dict(
-                recurring=u'\N{Clockwise gapped circle arrow}',
-                range=u'\N{Left right arrow}',
-                range_end=u'\N{Rightwards arrow to bar}',
-                range_start=u'\N{Rightwards arrow from bar}',
-                right_arrow=u'\N{Rightwards arrow}'
+                recurring='\N{Clockwise gapped circle arrow}',
+                range='\N{Left right arrow}',
+                range_end='\N{Rightwards arrow to bar}',
+                range_start='\N{Rightwards arrow from bar}',
+                right_arrow='\N{Rightwards arrow}'
             )
         else:
             return dict(
-                recurring=u'R',
-                range=u'<->',
-                range_end=u'->|',
-                range_start=u'|->',
-                right_arrow=u'->'
+                recurring='R',
+                range='<->',
+                range_end='->|',
+                range_start='|->',
+                right_arrow='->'
             )
 
     @property
@@ -269,12 +267,12 @@ class Event(object):
     @property
     def organizer(self):
         if 'ORGANIZER' not in self._vevents[self.ref]:
-            return u''
+            return ''
         organizer = self._vevents[self.ref]['ORGANIZER']
         cn = organizer.params.get('CN', '')
         email = organizer.split(':')[-1]
         if cn:
-            return u'{} ({})'.format(cn, email)
+            return '{} ({})'.format(cn, email)
         else:
             return email
 
@@ -287,8 +285,8 @@ class Event(object):
         :rtype: icalendar.Calendar()
         """
         calendar = icalendar.Calendar()
-        calendar.add(u'version', u'2.0')
-        calendar.add(u'prodid', u'-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
+        calendar.add('version', '2.0')
+        calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
         return calendar
 
     @property
@@ -353,7 +351,7 @@ class Event(object):
         if self.recurring:
             recurstr = self.symbol_strings['recurring']
         else:
-            recurstr = u''
+            recurstr = ''
         return recurstr
 
     def relative_to(self, day, full=False):
@@ -378,28 +376,28 @@ class Event(object):
         day_start = self._locale['local_timezone'].localize(datetime.combine(day, time.min))
         day_end = self._locale['local_timezone'].localize(datetime.combine(day, time.max))
 
-        tostr = u'-'
+        tostr = '-'
         if self.start_local < day_start:
-            startstr = self.symbol_strings['right_arrow'] + u' '
-            tostr = u''
+            startstr = self.symbol_strings['right_arrow'] + ' '
+            tostr = ''
         else:
             startstr = self.start_local.strftime(self._locale['timeformat'])
 
         if self.end_local > day_end:
-            endstr = self.symbol_strings['right_arrow'] + u' '
-            tostr = u''
+            endstr = self.symbol_strings['right_arrow'] + ' '
+            tostr = ''
         else:
             endstr = self.end_local.strftime(self._locale['timeformat'])
 
         body = self.summary
         if full:
-            if self.description.strip() != u'':
-                body += u', ' + self.description.strip()
-            if self.location.strip() != u'':
-                body += u', ' + self.location.strip()
+            if self.description.strip() != '':
+                body += ', ' + self.description.strip()
+            if self.location.strip() != '':
+                body += ', ' + self.location.strip()
 
-        comps = [startstr + tostr + endstr + u':', body, self._recur_str]
-        return u' '.join(filter(bool, comps))
+        comps = [startstr + tostr + endstr + ':', body, self._recur_str]
+        return ' '.join(filter(bool, comps))
 
     @property
     def event_description(self):   # XXX rename me
@@ -409,13 +407,13 @@ class Event(object):
         :returns: event description
         """
 
-        location = u'\nLocation: ' + self.location if self.location != u'' else u''
-        description = u'\nDescription: ' + self.description if \
-            self.description != u'' else u''
-        repitition = u'\nRepeat: ' + to_unicode(self.recurpattern) if \
-            self.recurpattern != u'' else u''
+        location = '\nLocation: ' + self.location if self.location != '' else ''
+        description = '\nDescription: ' + self.description if \
+            self.description != '' else ''
+        repitition = '\nRepeat: ' + self.recurpattern if \
+            self.recurpattern != '' else ''
 
-        return u'{}: {}{}{}{}'.format(
+        return '{}: {}{}{}{}'.format(
             self._rangestr, self.summary, location, repitition, description)
 
     def duplicate(self):
@@ -460,11 +458,11 @@ class DatetimeEvent(Event):
             starttime = self.start_local.strftime(self._locale['timeformat'])
             endtime = self.end_local.strftime(self._locale['timeformat'])
             datestr = self.end_local.strftime(self._locale['longdateformat'])
-            rangestr = starttime + u'-' + endtime + u' ' + datestr
+            rangestr = starttime + '-' + endtime + ' ' + datestr
         else:
             startstr = self.start_local.strftime(self._locale['longdatetimeformat'])
             endstr = self.end_local.strftime(self._locale['longdatetimeformat'])
-            rangestr = startstr + u' - ' + endstr
+            rangestr = startstr + ' - ' + endstr
         return rangestr
 
 
@@ -476,7 +474,7 @@ class LocalizedEvent(DatetimeEvent):
     def start(self):
         """in case DTSTART has no tzinfo (or it is set to None) we assume
         it was meant to be set in the default_timezone"""
-        if getattr(self._start, u'tzinfo', None) is not None:
+        if getattr(self._start, 'tzinfo', None) is not None:
             return self._start
         return self._locale['default_timezone'].localize(self._start)
 
@@ -523,11 +521,11 @@ class AllDayEvent(Event):
         end = super(AllDayEvent, self).end
         if end == self.start:
             # https://github.com/geier/khal/issues/129
-            logger.warning(u'{} ("{}"): The event\'s end date property '
-                           u'contains the same value as the start date, '
-                           u'which is invalid as per RFC 2445. Khal will '
-                           u'assume this is meant to be single-day event '
-                           u'on {}'.format(self.href, self.summary,
+            logger.warning('{} ("{}"): The event\'s end date property '
+                           'contains the same value as the start date, '
+                           'which is invalid as per RFC 2445. Khal will '
+                           'assume this is meant to be single-day event '
+                           'on {}'.format(self.href, self.summary,
                                            self.start))
             end += timedelta(days=1)
         return end - timedelta(days=1)
@@ -548,16 +546,16 @@ class AllDayEvent(Event):
             rangestr = self.symbol_strings['range_start']
         elif self.start == self.end == day:
             # only on `day`
-            rangestr = u''
+            rangestr = ''
 
         body = self.summary
         if full:
-            if self.description.strip() != u'':
-                body += u', ' + self.description.strip()
-            if self.location.strip() != u'':
-                body += u', ' + self.location.strip()
+            if self.description.strip() != '':
+                body += ', ' + self.description.strip()
+            if self.location.strip() != '':
+                body += ', ' + self.location.strip()
 
-        return u' '.join(filter(bool, (rangestr, body, self._recur_str)))
+        return ' '.join(filter(bool, (rangestr, body, self._recur_str)))
 
     @property
     def _rangestr(self):
@@ -569,7 +567,7 @@ class AllDayEvent(Event):
             else:
                 startstr = self.start_local.strftime(self._locale['longdateformat'])
             endstr = self.end_local.strftime(self._locale['longdateformat'])
-            rangestr = startstr + u' - ' + endstr
+            rangestr = startstr + ' - ' + endstr
         return rangestr
 
 
@@ -610,8 +608,14 @@ def create_timezone(tz, first_date=None, last_date=None):
     timezone = icalendar.Timezone()
     timezone.add('TZID', tz)
 
-    dst = {one[2]: 'DST' in two.__repr__() for one, two in iteritems(tz._tzinfos)}
-    bst = {one[2]: 'BST' in two.__repr__() for one, two in iteritems(tz._tzinfos)}
+    dst = {
+        one[2]: 'DST' in two.__repr__()
+        for one, two in iter(tz._tzinfos.items())
+    }
+    bst = {
+        one[2]: 'BST' in two.__repr__()
+        for one, two in iter(tz._tzinfos.items())
+    }
 
     # looking for the first and last transition time we need to include
     first_num, last_num = 0, len(tz._utc_transition_times) - 1

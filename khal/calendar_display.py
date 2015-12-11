@@ -1,4 +1,3 @@
-# vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
 # Copyright (c) 2013-2015 Christian Geier et al.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -29,8 +28,6 @@ from click import style
 
 from .terminal import urwid_to_click, urwid_to_click_bold
 
-from .compat import VERSION
-
 
 setlocale(LC_ALL, '')
 
@@ -38,11 +35,7 @@ setlocale(LC_ALL, '')
 def month_abbr(month_no):
     """calendar.month_abbr[] are str (text) in python3 and str (bytes) in
     python2 """
-    if VERSION == 2:
-        # TODO check if how they are really encoded
-        return calendar.month_abbr[month_no].decode('utf-8')
-    elif VERSION == 3:
-        return calendar.month_abbr[month_no]
+    return calendar.month_abbr[month_no]
 
 
 def get_weekheader(firstweekday):

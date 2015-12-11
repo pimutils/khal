@@ -1,4 +1,3 @@
-# vim: set ts=4 sw=4 expandtab sts=4 fileencoding=utf-8:
 # Copyright (c) 2013-2015 Christian Geier et al.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -34,7 +33,6 @@ import sys
 import textwrap
 
 from khal import aux, calendar_display
-from khal.compat import to_unicode
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
 from khal.exceptions import InvalidDate, FatalError
 from khal.khalendar.event import Event
@@ -56,9 +54,9 @@ def construct_daynames(daylist, longdateformat):
     """
     for date in daylist:
         if date == datetime.date.today():
-            yield (date, u'Today:')
+            yield (date, 'Today:')
         elif date == datetime.date.today() + datetime.timedelta(days=1):
-            yield (date, u'Tomorrow:')
+            yield (date, 'Tomorrow:')
         else:
             yield (date, date.strftime(longdateformat))
 
@@ -125,7 +123,7 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
             event_column.extend([colored(line, event.color) for line in lines])
 
     if event_column == []:
-        event_column = [style(u'No events', bold=True)]
+        event_column = [style('No events', bold=True)]
     return event_column
 
 
@@ -159,7 +157,7 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
     rows = merge_columns(calendar_column, event_column)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
-    echo(u'\n'.join(rows).encode(encoding))
+    echo('\n'.join(rows).encode(encoding))
 
 
 def agenda(collection, date=None, encoding='utf-8',
@@ -169,7 +167,7 @@ def agenda(collection, date=None, encoding='utf-8',
                               show_all_days=show_all_days, full=full, **kwargs)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
-    echo(to_unicode(u'\n'.join(event_column), encoding))
+    echo('\n'.join(event_column))
 
 
 def new_from_string(collection, calendar_name, conf, date_list, location=None, repeat=None,
@@ -205,11 +203,11 @@ def interactive(collection, conf):
     from . import ui
     pane = ui.ClassicView(collection,
                           conf,
-                          title=u'select an event',
-                          description=u'do something')
+                          title='select an event',
+                          description='do something')
     ui.start_pane(
         pane, pane.cleanup,
-        program_info=u'{0} v{1}'.format(__productname__, __version__)
+        program_info='{0} v{1}'.format(__productname__, __version__)
     )
 
 
@@ -248,11 +246,11 @@ def import_event(vevent, collection, locale, batch, random_uid):
     else:
         choice = list()
         for num, name in enumerate(collection.writable_names):
-            choice.append(u'{}({})'.format(name, num))
-        choice = u', '.join(choice)
+            choice.append('{}({})'.format(name, num))
+        choice = ', '.join(choice)
         while True:
-            value = prompt(u'Which calendar do you want to import to? \n'
-                           u'{}'.format(choice), default=collection.default_calendar_name)
+            value = prompt('Which calendar do you want to import to? \n'
+                           '{}'.format(choice), default=collection.default_calendar_name)
             try:
                 number = int(value)
                 calendar_name = collection.writable_names[number]
@@ -262,7 +260,7 @@ def import_event(vevent, collection, locale, batch, random_uid):
                 if len(matches) == 1:
                     calendar_name = matches[0]
                     break
-            echo(u'invalid choice')
+            echo('invalid choice')
 
     if batch or confirm(u"Do you want to import this event into `{}`?"
                         u"".format(calendar_name)):
