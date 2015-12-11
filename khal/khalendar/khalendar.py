@@ -109,14 +109,6 @@ class Calendar(object):
     def local_ctag(self):
         return os.path.getmtime(self.path)
 
-    def get_allday_by_time_range(self, start):
-        return [self._cover_event(event) for event in
-                self._dbtool.get_allday_range(start)]
-
-    def get_datetime_by_time_range(self, start, end):
-        return [self._cover_event(event) for event in
-                self._dbtool.get_time_range(start, end)]
-
     def get_events_at(self, dtime=datetime.datetime.now()):
         """return events which are scheduled at `dtime`"""
         events = list()
