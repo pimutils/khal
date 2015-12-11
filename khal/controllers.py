@@ -153,8 +153,7 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
     echo('\n'.join(rows).encode(encoding))
 
 
-def agenda(collection, date=None, encoding='utf-8',
-           show_all_days=False, full=False, **kwargs):
+def agenda(collection, date=None, encoding='utf-8', show_all_days=False, full=False, **kwargs):
     term_width, _ = get_terminal_size()
     event_column = get_agenda(collection, dates=date, width=term_width,
                               show_all_days=show_all_days, full=full, **kwargs)
@@ -259,14 +258,11 @@ def import_event(vevent, collection, locale, batch, random_uid):
                         u"".format(calendar_name)):
         ics = aux.ics_from_list(vevent, random_uid)
         try:
-            collection.new(
-                Item(ics.to_ical().decode('utf-8')),
-                collection=calendar_name)
+            collection.new(Item(ics.to_ical().decode('utf-8')), collection=calendar_name)
         except DuplicateUid:
             if batch or confirm(u"An event with the same UID already exists. "
                                 u"Do you want to update it?"):
                 collection.force_update(
-                    Item(ics.to_ical().decode('utf-8')),
-                    collection=calendar_name)
+                    Item(ics.to_ical().decode('utf-8')), collection=calendar_name)
             else:
                 logger.warn(u"Not importing event with UID `{}`".format(event.uid))

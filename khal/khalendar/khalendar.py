@@ -248,8 +248,7 @@ class Calendar(object):
         return Event.fromString(ical, locale=self._locale, calendar=self.name)
 
     def search(self, search_string):
-        return [self._cover_event(event) for event in
-                self._dbtool.search(search_string)]
+        return [self._cover_event(event) for event in self._dbtool.search(search_string)]
 
 
 class CalendarCollection(object):
