@@ -143,7 +143,15 @@ class Event(object):
         return cls.fromVEvents(events, ref, **kwargs)
 
     def __lt__(self, other):
-        return self.start_local <= other.start_local
+        try:
+            return self.start_local <= other.start_local
+        except TypeError:  # not the same type (should be datetime and date)
+            if not isinstance(other.start_local, datetime):
+                return 0
+            elif not isinstance(self.start_local, datetime):
+                return 1
+            else:
+                raise ValueError('Cannot compare events {} and {}'.format(self, other))
 
     def update_start_end(self, start, end):
         """update start and end time of this event
