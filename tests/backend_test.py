@@ -589,6 +589,13 @@ BDAY:x
 END:VCARD
 """
 
+card_no_fn = """BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Dennis;MacAlistair;;
+BDAY:19410909
+END:VCARD
+"""
+
 
 def test_birthdays(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
@@ -608,6 +615,16 @@ def test_birthdays_no_year(tmpdir):
     events = list(db.get_allday_range(date(1971, 3, 11)))
     assert len(events) == 1
     assert events[0].summary == 'Unix\'s birthday'
+
+
+def test_birthdays_no_fn(tmpdir):
+    dbpath = str(tmpdir) + '/khal.db'
+    db = backend.SQLiteDb_Birthdays('home', dbpath, locale=LOCALE_BERLIN)
+    assert list(db.get_allday_range(date(1941, 9, 9))) == list()
+    db.update(card_no_fn, 'unix.vcf')
+    events = list(db.get_allday_range(date(1941, 9, 9)))
+    assert len(events) == 1
+    assert events[0].summary == 'Dennis MacAlistair Ritchie\'s birthday'
 
 
 def test_birthday_does_not_parse(tmpdir):
