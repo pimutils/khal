@@ -7,6 +7,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.8.0
+=====
+not released yet
+
+BREAKING CHANGE: python 2 is no longer supported (Hugo Osvaldo Barrera)
+
 0.7.0
 =====
 released on 2015-11-24
