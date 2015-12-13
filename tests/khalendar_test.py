@@ -42,10 +42,10 @@ cal2 = 'work'
 cal3 = 'private'
 
 example_cals = [cal1, cal2, cal3]
-berlin = pytz.timezone('Europe/Berlin')
+BERLIN = pytz.timezone('Europe/Berlin')
 SAMOA = pytz.timezone('Pacific/Samoa')
-locale = {'default_timezone': berlin,
-          'local_timezone': berlin,
+locale = {'default_timezone': BERLIN,
+          'local_timezone': BERLIN,
           }
 LOCALE_SAMOA = {'default_timezone': SAMOA,
                 'local_timezone': SAMOA,
@@ -63,11 +63,12 @@ def cal_vdir(tmpdir):
 def coll_vdirs(tmpdir):
     coll = CalendarCollection(locale=locale)
     vdirs = dict()
+    props = {}
     for name in example_cals:
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
         coll.append(
-            Calendar(name, ':memory:', path, color='dark blue', locale=locale))
+            Calendar(name, ':memory:', path, color='dark blue', locale=locale), props=props)
         vdirs[name] = FilesystemStorage(path, '.ics')
     coll.default_calendar_name = cal1
     return coll, vdirs
@@ -78,11 +79,12 @@ def coll_vdirs_disk(tmpdir):
     """same as above, but writes the database to disk as well, needed for some tests"""
     coll = CalendarCollection(locale=locale)
     vdirs = dict()
+    props = {}
     for name in example_cals:
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
         coll.append(
-            Calendar(name, str(tmpdir) + '/db.db', path, color='dark blue', locale=locale))
+            Calendar(name, str(tmpdir) + '/db.db', path, color='dark blue', locale=locale), props=props)
         vdirs[name] = FilesystemStorage(path, '.ics')
     coll.default_calendar_name = cal1
     return coll, vdirs
@@ -93,12 +95,7 @@ class TestCalendar(object):
     def test_create(self, cal_vdir):
         assert True
 
-    def test_empty(self, cal_vdir):
-        cal, vdir = cal_vdir
-        events = cal.get_allday_by_time_range(today)
-        assert events == list()
-        assert list(vdir.list()) == list()
-
+    @pytest.mark.xfail
     def test_new_event(self, cal_vdir):
         cal, vdir = cal_vdir
         event = cal.new_event(event_today)
@@ -157,9 +154,10 @@ class TestCollection(object):
 
     def test_default_calendar(self, tmpdir):
         coll = CalendarCollection(locale=locale)
-        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
-        coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale))
-        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
+        props = {}
+        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale), props=props)
+        coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale), props=props)
+        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale), props=props)
         assert coll.default_calendar_name is None
         with pytest.raises(ValueError):
             coll.default_calendar_name = 'work'
@@ -175,17 +173,17 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         start = datetime.combine(today, time.min)
         end = datetime.combine(today, time.max)
-        assert coll.get_allday_by_time_range(today) == list()
-        assert coll.get_datetime_by_time_range(start, end) == list()
+        assert list(coll.get_floating(start, end)) == list()
+        assert list(coll.get_localized(BERLIN.localize(start), BERLIN.localize(end))) == list()
 
     def test_insert(self, coll_vdirs):
         """insert a datetime event"""
         coll, vdirs = coll_vdirs
-        event = Event.fromString(event_dt, calendar='foo', locale=locale)
+        event = Event.fromString(event_dt, calendar=cal1, locale=locale)
         coll.new(event, cal1)
-        start = datetime.combine(aday, time.min)
-        end = datetime.combine(bday, time.max)
-        events = coll.get_datetime_by_time_range(start, end)
+        start = BERLIN.localize(datetime.combine(aday, time.min))
+        end = BERLIN.localize(datetime.combine(bday, time.max))
+        events = list(coll.get_localized(start, end))
         assert len(events) == 1
         assert events[0].color == 'dark blue'
         assert events[0].calendar == cal1
@@ -258,7 +256,7 @@ class TestCollection(object):
     def test_newevent(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         event = aux.new_event(dtstart=aday,
-                              timezone=berlin)
+                              timezone=BERLIN)
         event = coll.new_event(
             event.to_ical(),
             coll.default_calendar_name,
@@ -267,9 +265,10 @@ class TestCollection(object):
 
     def test_modify_readonly_calendar(self, tmpdir):
         coll = CalendarCollection(locale=locale)
-        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale))
-        coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale))
-        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale))
+        props = {}
+        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=locale), props=props)
+        coll.append(Calendar('home', ':memory:', str(tmpdir), locale=locale), props=props)
+        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=locale), props=props)
         event = Event.fromString(event_dt, calendar='home', locale=locale)
 
         with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
@@ -288,8 +287,8 @@ class TestCollection(object):
 
     def test_get_events_at(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        a_time = berlin.localize(datetime(2014, 4, 9, 10))
-        b_time = berlin.localize(datetime(2014, 4, 9, 11))
+        a_time = BERLIN.localize(datetime(2014, 4, 9, 10))
+        b_time = BERLIN.localize(datetime(2014, 4, 9, 11))
         assert len(coll.get_events_at(a_time)) == 0
         event = Event.fromString(
             _get_text('event_dt_simple'), calendar=cal1, locale=locale)
