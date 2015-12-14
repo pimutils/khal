@@ -21,9 +21,14 @@
 
 
 """
+This module is currently being refactored.
+
+The Calendar class will vanish, everything should be done through CalendarCollection
+
 khalendar.Calendar and CalendarCollection should be a nice, abstract interface
-to a calendar (collection). Calendar operates on vdirs but uses an sqlite db
-for caching (see backend if you're interested).
+CalendarCollection should enable modifying and querying a collection of
+calendars. Each calendar is defined by the contents of a vdir, but uses an
+sqlite db for caching (see backend if you're interested).
 """
 import datetime
 import os
@@ -304,16 +309,15 @@ class CalendarCollection(object):
     def append(self, calendar, props):
         """append a new khalendar to this collection"""
         self._calnames[calendar.name] = calendar
-        self._calendars[calendar.name] = calendar.color
         self._props[calendar.name] = props
         self._backend = calendar._dbtool  # TODO do this when creating the collection
 
     def get_floating(self, start, end):
-        events = self._backend.get_floating(self._calendars.keys(), start, end)
+        events = self._backend.get_floating(self.names, start, end)
         return (self._cover_event(event) for event in events)
 
     def get_localized(self, start, end):
-        events = self._backend.get_localized(self._calendars.keys(), start, end)
+        events = self._backend.get_localized(self.names, start, end)
         return (self._cover_event(event) for event in events)
 
     def get_events_on(self, day):

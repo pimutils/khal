@@ -585,7 +585,7 @@ class SQLiteDb_Birthdays(SQLiteDb):
 
 
 def calc_shift_deltas(vevent):
-    """calculate an events duration and by how much its start time has shifted
+    """calculate an event's duration and by how much its start time has shifted
     versus its recurrence-id time
 
     :param event: an event with an RECURRENCE-ID property
