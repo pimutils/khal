@@ -88,21 +88,22 @@ class SQLiteDb(object):
     :type db_path: str or None
     """
 
-    def __init__(self, calendar, db_path, locale):
+    def __init__(self, calendars, db_path, locale):
         if db_path is None:
             db_path = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
+        self.calendars = calendars
         self.db_path = path.expanduser(db_path)
-        self.calendar = calendar
         self._create_dbdir()
         self.locale = locale
         self._at_once = False
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
         self._create_default_tables()
+        self._check_calendars_exists()
         self._check_table_version()
-        self._check_calendar_exists()
 
-    def _calendars(self, calendars):
+    @staticmethod
+    def _calendars(calendars):
         return ', '.join(['\'' + cal + '\'' for cal in calendars])
 
     @contextlib.contextmanager
@@ -190,20 +191,21 @@ class SQLiteDb(object):
             );''')
         self.conn.commit()
 
-    def _check_calendar_exists(self):
+    def _check_calendars_exists(self):
         """make sure an entry for the current calendar exists in `calendar`
         table
         """
-        self.cursor.execute('''SELECT count(*) FROM calendars
-                WHERE calendar = ?;''', (self.calendar,))
-        result = self.cursor.fetchone()
+        for cal in self.calendars:
+            self.cursor.execute('''SELECT count(*) FROM calendars
+                    WHERE calendar = ?;''', (cal,))
+            result = self.cursor.fetchone()
 
-        if result[0] != 0:
-            logger.debug(u"tables for calendar {0} exist".format(self.calendar))
-        else:
-            sql_s = 'INSERT INTO calendars (calendar, resource) VALUES (?, ?);'
-            stuple = (self.calendar, '')
-            self.sql_ex(sql_s, stuple)
+            if result[0] != 0:
+                logger.debug(u"tables for calendar {0} exist".format(cal))
+            else:
+                sql_s = 'INSERT INTO calendars (calendar, resource) VALUES (?, ?);'
+                stuple = (cal, '')
+                self.sql_ex(sql_s, stuple)
 
     def sql_ex(self, statement, stuple=''):
         """wrapper for sql statements, does a "fetchall" """
@@ -213,7 +215,7 @@ class SQLiteDb(object):
             self.conn.commit()
         return result
 
-    def update(self, vevent_str, href, etag=''):
+    def update(self, vevent_str, href, etag='', calendar=None):
         """insert a new or update an existing card in the db
 
         This is mostly a wrapper around two SQL statements, doing some cleanup
@@ -236,27 +238,65 @@ class SQLiteDb(object):
                      set
         :type etag: str()
         """
+        assert calendar is not None
         if href is None:
             raise ValueError('href may not be None')
         ical = icalendar.Event.from_ical(vevent_str)
 
-        vevents = (aux.sanitize(c, self.locale['default_timezone'], href, self.calendar) for
+        vevents = (aux.sanitize(c, self.locale['default_timezone'], href, calendar) for
                    c in ical.walk() if c.name == 'VEVENT')
         # Need to delete the whole event in case we are updating a
         # recurring event with an event which is either not recurring any
         # more or has EXDATEs, as those would be left in the recursion
         # tables. There are obviously better ways to achieve the same
         # result.
-        self.delete(href)
+        self.delete(href, calendar=calendar)
         for vevent in sorted(vevents, key=sort_key):
-            check_support(vevent, href, self.calendar)
-            self._update_impl(vevent, href, self.calendar)
+            check_support(vevent, href, calendar)
+            self._update_impl(vevent, href, calendar)
 
         sql_s = ('INSERT INTO events '
                  '(item, etag, href, calendar) '
                  'VALUES (?, ?, ?, ?);')
-        stuple = (vevent_str, etag, href, self.calendar)
+        stuple = (vevent_str, etag, href, calendar)
         self.sql_ex(sql_s, stuple)
+
+    def update_birthday(self, vevent, href, etag='', calendar=None):
+        """
+        XXX write docstring
+        """
+        assert calendar is not None
+
+        if href is None:
+            raise ValueError('href may not be None')
+        ical = icalendar.Event.from_ical(vevent)
+        vcard = ical.walk()[0]
+        if 'BDAY' in vcard.keys():
+            bday = vcard['BDAY']
+            try:
+                if bday[0:2] == '--' and bday[3] != '-':
+                    bday = '1900' + bday[2:]
+                bday = parser.parse(bday).date()
+            except ValueError:
+                logger.info('cannot parse BIRTHDAY in {0} in collection '
+                            '{1}'.format(href, calendar))
+                return
+            if 'FN' in vcard:
+                name = vcard['FN']
+            else:
+                n = vcard['N'].split(';')
+                name = ' '.join([n[1], n[2], n[0]])
+            event = icalendar.Event()
+            event.add('dtstart', bday)
+            event.add('dtend', bday + timedelta(days=1))
+            event.add('summary', '{0}\'s birthday'.format(name))
+            event.add('rrule', {'freq': 'YEARLY'})
+            event.add('uid', href)
+            event_str = event.to_ical().decode('utf-8')
+            self._update_impl(event, href, calendar)
+            sql_s = ('INSERT INTO events (item, etag, href, calendar) VALUES (?, ?, ?, ?);')
+            stuple = (event_str, etag, href, calendar)
+            self.sql_ex(sql_s, stuple)
 
     def _update_impl(self, vevent, href, calendar):
         """insert `vevent` into the database
@@ -327,12 +367,12 @@ class SQLiteDb(object):
                     'INSERT OR REPLACE INTO {0} '
                     '(dtstart, dtend, href, ref, dtype, rec_inst, calendar)'
                     'VALUES (?, ?, ?, ?, ?, ?, ?);'.format(recs_table))
-                stuple = (dbstart, dbend, href, ref, dtype, rec_inst, self.calendar)
+                stuple = (dbstart, dbend, href, ref, dtype, rec_inst, calendar)
             self.sql_ex(recs_sql_s, stuple)
             # end of loop
 
-    def get_ctag(self):
-        stuple = (self.calendar, )
+    def get_ctag(self, calendar):
+        stuple = (calendar, )
         sql_s = 'SELECT ctag FROM calendars WHERE calendar = ?;'
         try:
             ctag = self.sql_ex(sql_s, stuple)[0][0]
@@ -340,13 +380,13 @@ class SQLiteDb(object):
         except IndexError:
             return None
 
-    def set_ctag(self, ctag):
-        stuple = (ctag, self.calendar, )
+    def set_ctag(self, ctag, calendar):
+        stuple = (ctag, calendar, )
         sql_s = 'UPDATE calendars SET ctag = ? WHERE calendar = ?;'
         self.sql_ex(sql_s, stuple)
         self.conn.commit()
 
-    def get_etag(self, href):
+    def get_etag(self, href, calendar):
         """get etag for href
 
         type href: str()
@@ -355,12 +395,12 @@ class SQLiteDb(object):
         """
         sql_s = 'SELECT etag FROM events WHERE href = ? AND calendar = ?;'
         try:
-            etag = self.sql_ex(sql_s, (href, self.calendar))[0][0]
+            etag = self.sql_ex(sql_s, (href, calendar))[0][0]
             return etag
         except IndexError:
             return None
 
-    def delete(self, href, etag=None):
+    def delete(self, href, etag=None, calendar=None):
         """
         removes the event from the db,
 
@@ -368,18 +408,19 @@ class SQLiteDb(object):
                      we always delete
         :returns: None
         """
+        assert calendar is not None
         for table in ['recs_loc', 'recs_float']:
             sql_s = 'DELETE FROM {0} WHERE href = ? AND calendar = ?;'.format(table)
-            self.sql_ex(sql_s, (href, self.calendar))
+            self.sql_ex(sql_s, (href, calendar))
         sql_s = 'DELETE FROM events WHERE href = ? AND calendar = ?;'
-        self.sql_ex(sql_s, (href, self.calendar))
+        self.sql_ex(sql_s, (href, calendar))
 
-    def list(self):
+    def list(self, calendar):
         """
         :returns: list of (href, etag)
         """
         sql_s = 'SELECT href, etag FROM events WHERE calendar = ?;'
-        return list(set(self.sql_ex(sql_s, (self.calendar, ))))
+        return list(set(self.sql_ex(sql_s, (calendar, ))))
 
     def get_localized(self, calendars, start, end):
         """returns
@@ -397,7 +438,7 @@ class SQLiteDb(object):
             'recs_loc.calendar = events.calendar WHERE '
             '(dtstart >= ? AND dtstart <= ? OR '
             'dtend >= ? AND dtend <= ? OR '
-            'dtstart <= ? AND dtend >= ?) AND events.calendar in ({});')
+            'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0});')
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
@@ -416,7 +457,6 @@ class SQLiteDb(object):
         assert end.tzinfo is None
         strstart = aux.to_unix_time(start)
         strend = aux.to_unix_time(end)
-
         sql_s = (
             'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
             'recs_float JOIN events ON '
@@ -424,7 +464,7 @@ class SQLiteDb(object):
             'recs_float.calendar = events.calendar WHERE '
             '(dtstart >= ? AND dtstart < ? OR '
             'dtend > ? AND dtend <= ? OR '
-            'dtstart <= ? AND dtend > ? ) AND events.calendar in ({});')
+            'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0});')
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
@@ -432,59 +472,58 @@ class SQLiteDb(object):
             end = datetime.utcfromtimestamp(end)
             yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
-    def get_datetime_at(self, dtime):
-        """return datetime events which are scheduled at `dtime`
+    def get_localized_at(self, calendars, dtime):
+        """return localized events which are scheduled at `dtime`
 
-        :param dtime: if dtime is not localized it is treated as if it were
-             in UTC
         :type dtime: datetime.datetime
         """
+        assert dtime.tzinfo is not None
         dtime = aux.to_unix_time(dtime)
-        sql_s = ('SELECT recs_loc.href, dtstart, dtend, ref, dtype FROM '
-                 'recs_loc JOIN events ON '
-                 'recs_loc.href = events.href AND '
-                 'recs_loc.calendar = events.calendar WHERE '
-                 '(dtstart <= ? AND dtend >= ? ) '
-                 'AND events.calendar = ?;')
-        stuple = (dtime, dtime, self.calendar)
-        result = self.sql_ex(sql_s, stuple)
-        for href, start, end, ref, dtype in result:
+        sql_s = (
+            'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
+            'recs_loc JOIN events ON '
+            'recs_loc.href = events.href AND '
+            'recs_loc.calendar = events.calendar WHERE '
+            '(dtstart <= ? AND dtend >= ? ) '
+            'AND events.calendar in ({0});')
+        stuple = (dtime, dtime)
+        result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
+        for item, href, start, end, ref, etag, dtype, calendar in result:
             start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
-            event = self.get(href, start=start, end=end, ref=ref, dtype=dtype)
-            yield event
+            yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
-    def get_allday_at(self, dtime):
+    def get_floating_at(self, calendars, dtime):
         """return allday events which are scheduled at `dtime`
 
-        :type start: datetime.date
-        :type end: datetime.date
+        :type calendars: list
+        :type dtime: datetime.datetime
         """
-        if isinstance(dtime, datetime):
-            dtime = dtime.date()
+        assert dtime.tzinfo is None
         dtime = aux.to_unix_time(dtime)
-        sql_s = ('SELECT recs_float.href, dtstart, dtend, ref, dtype FROM '
-                 'recs_float JOIN events ON '
-                 'recs_float.href = events.href AND '
-                 'recs_float.calendar = events.calendar WHERE '
-                 '(dtstart <= ? AND dtend >= ? )'
-                 'AND events.calendar = ?;')
-        stuple = (dtime, dtime, self.calendar)
-        result = self.sql_ex(sql_s, stuple)
-        for href, start, end, ref, dtype in result:
+        sql_s = (
+            'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
+            'recs_float JOIN events ON '
+            'recs_float.href = events.href AND '
+            'recs_float.calendar = events.calendar WHERE '
+            '(dtstart <= ? AND dtend >= ? ) '
+            'AND events.calendar in ({0});')
+        stuple = (dtime, dtime)
+        result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
+        for item, href, start, end, ref, etag, dtype, calendar in result:
             start = datetime.utcfromtimestamp(start)
             end = datetime.utcfromtimestamp(end)
-            event = self.get(href, start=start, end=end, ref=ref, dtype=dtype)
-            yield event
+            yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
-    def get(self, href, start=None, end=None, ref=None, dtype=None):
+    def get(self, href, start=None, end=None, ref=None, dtype=None, calendar=None):
         """returns the Event matching href
 
         if start and end are given, a specific Event from a Recursion set is
         returned, otherwise the Event returned exactly as saved in the db
         """
+        assert calendar is not None
         sql_s = 'SELECT href, etag, item FROM events WHERE href = ? AND calendar = ?;'
-        result = self.sql_ex(sql_s, (href, self.calendar))
+        result = self.sql_ex(sql_s, (href, calendar))
         href, etag, item = result[0]
         if dtype == DATE:
             start = start.date()
@@ -492,7 +531,7 @@ class SQLiteDb(object):
         return Event.fromString(item,
                                 locale=self.locale,
                                 href=href,
-                                calendar=self.calendar,
+                                calendar=calendar,
                                 etag=etag,
                                 start=start,
                                 end=end,
@@ -513,14 +552,14 @@ class SQLiteDb(object):
                                 ref=ref,
                                 )
 
-    def search(self, search_string):
+    def search(self, search_string, calendars):
         """search for events matching `search_string`"""
-        sql_s = ('SELECT href FROM events '
-                 'WHERE item LIKE (?) and calendar = (?)')
-        stuple = ('%' + search_string + '%', self.calendar)
-        result = self.sql_ex(sql_s, stuple)
-        for href, in result:
-            event = self.get(href)
+        sql_s = ('SELECT href, calendar FROM events '
+                 'WHERE item LIKE (?) and calendar in ({0});')
+        stuple = ('%{0}%'.format(search_string), )
+        result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
+        for href, calendar in result:
+            event = self.get(href, calendar=calendar)
             yield event
 
 
@@ -537,53 +576,19 @@ def check_support(vevent, href, calendar):
         raise UpdateFailed(
             'The parameter `THISANDPRIOR` is not (and will not be) '
             'supported by khal (as applications supporting the latest '
-            'standard MUST NOT create those. Therefore event {} from '
-            'calendar {} will not be shown in khal'
+            'standard MUST NOT create those. Therefore event {0} from '
+            'calendar {1} will not be shown in khal'
             .format(href, calendar)
         )
     rdate = vevent.get('RDATE')
     if rdate is not None and rdate.params.get('VALUE') == 'PERIOD':
         raise UpdateFailed(
             '`RDATE;VALUE=PERIOD` is currently not supported by khal. '
-            'Therefore event {} from calendar {} will not be shown in khal.\n'
+            'Therefore event {0} from calendar {1} will not be shown in khal.\n'
             'Please post exemplary events (please remove any private data) '
             'to https://github.com/geier/khal/issues/152 .'
             .format(href, calendar)
         )
-
-
-class SQLiteDb_Birthdays(SQLiteDb):
-    def update(self, vevent, href, etag=''):
-        if href is None:
-            raise ValueError('href may not be None')
-        ical = icalendar.Event.from_ical(vevent)
-        vcard = ical.walk()[0]
-        if 'BDAY' in vcard.keys():
-            bday = vcard['BDAY']
-            try:
-                if bday[0:2] == '--' and bday[3] != '-':
-                    bday = '1900' + bday[2:]
-                bday = parser.parse(bday).date()
-            except ValueError:
-                logger.info('cannot parse BIRTHDAY in {} in collection '
-                            '{}'.format(href, self.calendar))
-                return
-            if 'FN' in vcard:
-                name = vcard['FN']
-            else:
-                n = vcard['N'].split(';')
-                name = ' '.join([n[1], n[2], n[0]])
-            event = icalendar.Event()
-            event.add('dtstart', bday)
-            event.add('dtend', bday + timedelta(days=1))
-            event.add('summary', '{}\'s birthday'.format(name))
-            event.add('rrule', {'freq': 'YEARLY'})
-            event.add('uid', href)
-            event_str = event.to_ical().decode('utf-8')
-            self._update_impl(event, href, self.calendar)
-            sql_s = ('INSERT INTO events (item, etag, href, calendar) VALUES (?, ?, ?, ?);')
-            stuple = (event_str, etag, href, self.calendar)
-            self.sql_ex(sql_s, stuple)
 
 
 def calc_shift_deltas(vevent):
