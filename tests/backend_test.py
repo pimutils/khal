@@ -348,7 +348,9 @@ def test_event_rrule_this_and_future_allday():
     dbi.update(event_rrule_this_and_future_allday,
                href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
-    events = list(dbi.get_floating([calname], datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 27, 0, 0)))
+    events = list(dbi.get_floating([calname],
+                                   datetime(2014, 4, 30, 0, 0),
+                                   datetime(2014, 9, 27, 0, 0)))
     assert len(events) == 6
 
     assert events[0].start == date(2014, 6, 30)
@@ -377,7 +379,9 @@ def test_event_rrule_this_and_future_allday_prior():
     dbi.update(event_rrule_this_and_future_allday_prior,
                href='rrule_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('rrule_this_and_future_allday.ics', 'abcd')]
-    events = list(dbi.get_floating([calname], datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 27, 0, 0)))
+    events = list(dbi.get_floating([calname],
+                                   datetime(2014, 4, 30, 0, 0),
+                                   datetime(2014, 9, 27, 0, 0)))
 
     assert len(events) == 6
 
@@ -430,7 +434,9 @@ def test_event_rrule_multi_this_and_future_allday():
     dbi.update(event_rrule_multi_this_and_future_allday,
                href='event_rrule_multi_this_and_future_allday.ics', etag='abcd')
     assert dbi.list() == [('event_rrule_multi_this_and_future_allday.ics', 'abcd')]
-    events = sorted(dbi.get_floating([calname], datetime(2014, 4, 30, 0, 0), datetime(2014, 9, 27, 0, 0)))
+    events = sorted(dbi.get_floating([calname],
+                                     datetime(2014, 4, 30, 0, 0),
+                                     datetime(2014, 9, 27, 0, 0)))
     assert len(events) == 6
 
     assert events[0].start == date(2014, 6, 30)
@@ -555,7 +561,9 @@ def test_update_one_should_not_affect_others(tmpdir):
     events = db.get_floating([calname], datetime(2015, 4, 9, 0, 0), datetime(2015, 4, 10, 0, 0))
     assert len(list(events)) == 1
     db.update(event_rrule_multi_this_and_future_allday, href='second')
-    events = list(db.get_floating([calname], datetime(2015, 4, 9, 0, 0), datetime(2015, 4, 10, 0, 0)))
+    events = list(db.get_floating([calname],
+                                  datetime(2015, 4, 9, 0, 0),
+                                  datetime(2015, 4, 10, 0, 0)))
     assert len(events) == 1
 
 

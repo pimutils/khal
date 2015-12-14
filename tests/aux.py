@@ -62,7 +62,8 @@ def coll_vdirs_disk(tmpdir):
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
         coll.append(
-            Calendar(name, str(tmpdir) + '/db.db', path, color='dark blue', locale=locale), props=props)
+            Calendar(name, str(tmpdir) + '/db.db', path, color='dark blue', locale=locale),
+            props=props)
         vdirs[name] = FilesystemStorage(path, '.ics')
     coll.default_calendar_name = cal1
     return coll, vdirs

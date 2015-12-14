@@ -169,8 +169,7 @@ def build_collection(ctx):
                     unicode_symbols=conf['locale']['unicode_symbols'],
                     locale=conf['locale'],
                     ctype=cal['type'],
-                ),
-                                  props=props)
+                ), props=props)
     except FatalError as error:
         logger.fatal(error)
         sys.exit(1)

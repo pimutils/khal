@@ -14,7 +14,7 @@ from khal.khalendar.event import Event
 from khal.khalendar.backend import CouldNotCreateDbDir
 import khal.khalendar.exceptions
 
-from .aux import _get_text, cal1, cal2, cal3, cal_vdir, coll_vdirs, coll_vdirs_disk
+from .aux import _get_text, cal1, cal2, cal3, cal_vdir, coll_vdirs, coll_vdirs_disk  # noqa
 from . import aux
 
 
@@ -35,6 +35,7 @@ END:VEVENT"""
 event_today = event_allday_template.format(today.strftime('%Y%m%d'),
                                            tomorrow.strftime('%Y%m%d'))
 item_today = Item(event_today)
+
 
 class TestCalendar(object):
 
@@ -102,9 +103,12 @@ class TestCollection(object):
     def test_default_calendar(self, tmpdir):
         coll = CalendarCollection(locale=aux.locale)
         props = {}
-        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=aux.locale), props=props)
-        coll.append(Calendar('home', ':memory:', str(tmpdir), locale=aux.locale), props=props)
-        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=aux.locale), props=props)
+        coll.append(Calendar('foobar', ':memory:', str(tmpdir),
+                             readonly=True, locale=aux.locale), props=props)
+        coll.append(Calendar('home', ':memory:', str(tmpdir),
+                             locale=aux.locale), props=props)
+        coll.append(Calendar('work', ':memory:', str(tmpdir),
+                             readonly=True, locale=aux.locale), props=props)
         assert coll.default_calendar_name is None
         with pytest.raises(ValueError):
             coll.default_calendar_name = 'work'
@@ -121,7 +125,8 @@ class TestCollection(object):
         start = datetime.combine(today, time.min)
         end = datetime.combine(today, time.max)
         assert list(coll.get_floating(start, end)) == list()
-        assert list(coll.get_localized(aux.BERLIN.localize(start), aux.BERLIN.localize(end))) == list()
+        assert list(coll.get_localized(aux.BERLIN.localize(start),
+                                       aux.BERLIN.localize(end))) == list()
 
     def test_insert(self, coll_vdirs_disk):
         """insert a localized event"""
@@ -211,9 +216,12 @@ class TestCollection(object):
     def test_modify_readonly_calendar(self, tmpdir):
         coll = CalendarCollection(locale=aux.locale)
         props = {}
-        coll.append(Calendar('foobar', ':memory:', str(tmpdir), readonly=True, locale=aux.locale), props=props)
-        coll.append(Calendar('home', ':memory:', str(tmpdir), locale=aux.locale), props=props)
-        coll.append(Calendar('work', ':memory:', str(tmpdir), readonly=True, locale=aux.locale), props=props)
+        coll.append(Calendar('foobar', ':memory:', str(tmpdir),
+                             readonly=True, locale=aux.locale), props=props)
+        coll.append(Calendar('home', ':memory:', str(tmpdir),
+                             locale=aux.locale), props=props)
+        coll.append(Calendar('work', ':memory:', str(tmpdir),
+                             readonly=True, locale=aux.locale), props=props)
         event = Event.fromString(event_dt, calendar='home', locale=aux.locale)
 
         with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
@@ -245,8 +253,10 @@ class TestCollection(object):
             """testing if we can delete any of two events in two different
             calendars with the same filename"""
             coll, vdirs = coll_vdirs_disk
-            event1 = Event.fromString(_get_text('event_dt_simple'), calendar=cal1, locale=aux.locale)
-            event2 = Event.fromString(_get_text('event_dt_simple'), calendar=cal2, locale=aux.locale)
+            event1 = Event.fromString(_get_text('event_dt_simple'),
+                                      calendar=cal1, locale=aux.locale)
+            event2 = Event.fromString(_get_text('event_dt_simple'),
+                                      calendar=cal2, locale=aux.locale)
             coll.new(event1, cal1)
             sleep(0.1)  # make sure the etags are different
             coll.new(event2, cal2)

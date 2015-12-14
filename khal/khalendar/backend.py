@@ -390,13 +390,14 @@ class SQLiteDb(object):
         assert end.tzinfo is not None
         start = aux.to_unix_time(start)
         end = aux.to_unix_time(end)
-        sql_s = ('SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
-                 'recs_loc JOIN events ON '
-                 'recs_loc.href = events.href AND '
-                 'recs_loc.calendar = events.calendar WHERE '
-                 '(dtstart >= ? AND dtstart <= ? OR '
-                 'dtend >= ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend >= ?) AND events.calendar in ({});')
+        sql_s = (
+            'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
+            'recs_loc JOIN events ON '
+            'recs_loc.href = events.href AND '
+            'recs_loc.calendar = events.calendar WHERE '
+            '(dtstart >= ? AND dtstart <= ? OR '
+            'dtend >= ? AND dtend <= ? OR '
+            'dtstart <= ? AND dtend >= ?) AND events.calendar in ({});')
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
@@ -416,13 +417,14 @@ class SQLiteDb(object):
         strstart = aux.to_unix_time(start)
         strend = aux.to_unix_time(end)
 
-        sql_s = ('SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
-                 'recs_float JOIN events ON '
-                 'recs_float.href = events.href AND '
-                 'recs_float.calendar = events.calendar WHERE '
-                 '(dtstart >= ? AND dtstart < ? OR '
-                 'dtend > ? AND dtend <= ? OR '
-                 'dtstart <= ? AND dtend > ? ) AND events.calendar in ({});')
+        sql_s = (
+            'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
+            'recs_float JOIN events ON '
+            'recs_float.href = events.href AND '
+            'recs_float.calendar = events.calendar WHERE '
+            '(dtstart >= ? AND dtstart < ? OR '
+            'dtend > ? AND dtend <= ? OR '
+            'dtstart <= ? AND dtend > ? ) AND events.calendar in ({});')
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:

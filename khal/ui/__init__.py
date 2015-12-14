@@ -19,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from datetime import date, datetime, time
+from datetime import date, datetime
 import signal
 import sys
 
@@ -223,14 +223,10 @@ class EventList(urwid.WidgetWrap):
     def update(self, this_date=date.today()):
         if this_date is None:   # this_date might be None
             return
-        local_tz = self.eventcolumn.pane.conf['locale']['local_timezone']
-        start = local_tz.localize(datetime.combine(this_date, time.min))
-        end = local_tz.localize(datetime.combine(this_date, time.max))
 
         date_text = urwid.Text(
             this_date.strftime(self.eventcolumn.pane.conf['locale']['longdateformat']))
         self.events = sorted(self.eventcolumn.pane.collection.get_events_on(this_date))
-
 
         # TODO cleanup: event_column is not needed at all
         event_column = list()

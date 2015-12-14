@@ -4,7 +4,7 @@ from textwrap import dedent
 from vdirsyncer.storage.base import Item
 from khal.controllers import get_agenda, import_ics
 
-from .aux import _get_text, coll_vdirs, coll_vdirs_disk
+from .aux import _get_text, coll_vdirs, coll_vdirs_disk  # noqa
 from . import aux
 
 
@@ -65,7 +65,8 @@ class TestImport(object):
         assert len(events) == 6
         events = sorted(events)
         assert events[1].start_local == aux.BERLIN.localize(datetime.datetime(2014, 7, 7, 9, 0))
-        assert aux.BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) in [ev.start for ev in events]
+        assert aux.BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) in \
+            [ev.start for ev in events]
 
         import_ics(coll, {'locale': aux.locale}, _get_text('event_rrule_recuid_update'),
                    batch=True)
