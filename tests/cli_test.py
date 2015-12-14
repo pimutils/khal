@@ -150,7 +150,7 @@ def test_showalldays(runner):
     assert not result.exception
 
 
-@pytest.mark.xfail
+@pytest.mark.xfail  # cannot currently run on a given day
 def test_calendar(runner):
     runner = runner(command='calendar', showalldays=False, days=0)
     result = runner.invoke(main_khal)

@@ -32,11 +32,15 @@ def test_new_db_version():
 def test_event_rrule_recurrence_id():
     dbi = backend.SQLiteDb(calname, ':memory:', locale=LOCALE_BERLIN)
     assert dbi.list() == list()
-    events = dbi.get_localized([calname], BERLIN.localize(datetime(2014, 6, 30, 0, 0)), BERLIN.localize(datetime(2014, 8, 26, 0, 0)))
+    events = dbi.get_localized([calname],
+                               BERLIN.localize(datetime(2014, 6, 30, 0, 0)),
+                               BERLIN.localize(datetime(2014, 8, 26, 0, 0)))
     assert list(events) == list()
     dbi.update(_get_text('event_rrule_recuid'), href='12345.ics', etag='abcd')
     assert dbi.list() == [('12345.ics', 'abcd')]
-    events = dbi.get_localized([calname], BERLIN.localize(datetime(2014, 6, 30, 0, 0)), BERLIN.localize(datetime(2014, 8, 26, 0, 0)))
+    events = dbi.get_localized([calname],
+                               BERLIN.localize(datetime(2014, 6, 30, 0, 0)),
+                               BERLIN.localize(datetime(2014, 8, 26, 0, 0)))
     events = sorted(events, key=lambda x: x.start)
     assert len(events) == 6
 
@@ -560,7 +564,9 @@ def test_zuluv_events(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
     db = backend.SQLiteDb(calname, dbpath, locale=LOCALE_BERLIN)
     db.update(_get_text('event_dt_simple_zulu'), href='event_zulu')
-    events = db.get_localized([calname], BERLIN.localize(datetime(2014, 4, 9, 0, 0)), BERLIN.localize(datetime(2014, 4, 10, 0, 0)))
+    events = db.get_localized([calname],
+                              BERLIN.localize(datetime(2014, 4, 9, 0, 0)),
+                              BERLIN.localize(datetime(2014, 4, 10, 0, 0)))
     events = list(events)
     assert len(events) == 1
     event = events[0]
@@ -631,6 +637,7 @@ day = date(1971, 3, 11)
 start = datetime.combine(day, time.min)
 end = datetime.combine(day, time.max)
 
+
 def test_birthdays(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
     db = backend.SQLiteDb_Birthdays(calname, dbpath, locale=LOCALE_BERLIN)
@@ -646,7 +653,7 @@ def test_birthdays_no_year(tmpdir):
     db = backend.SQLiteDb_Birthdays(calname, dbpath, locale=LOCALE_BERLIN)
     assert list(db.get_floating([calname], start, end)) == list()
     db.update(card_no_year, 'unix.vcf')
-    events = list(db.get_floating([calname], start ,end))
+    events = list(db.get_floating([calname], start, end))
     assert len(events) == 1
     assert events[0].summary == 'Unix\'s birthday'
 
@@ -654,9 +661,13 @@ def test_birthdays_no_year(tmpdir):
 def test_birthdays_no_fn(tmpdir):
     dbpath = str(tmpdir) + '/khal.db'
     db = backend.SQLiteDb_Birthdays('home', dbpath, locale=LOCALE_BERLIN)
-    assert list(db.get_allday_range(date(1941, 9, 9))) == list()
+    assert list(db.get_floating(['home'],
+                                datetime(1941, 9, 9, 0, 0),
+                                datetime(1941, 9, 9, 23, 59, 59, 9999))) == list()
     db.update(card_no_fn, 'unix.vcf')
-    events = list(db.get_allday_range(date(1941, 9, 9)))
+    events = list(db.get_floating(['home'],
+                                  datetime(1941, 9, 9, 0, 0),
+                                  datetime(1941, 9, 9, 23, 59, 59, 9999)))
     assert len(events) == 1
     assert events[0].summary == 'Dennis MacAlistair Ritchie\'s birthday'
 
@@ -666,5 +677,5 @@ def test_birthday_does_not_parse(tmpdir):
     db = backend.SQLiteDb_Birthdays(calname, dbpath, locale=LOCALE_BERLIN)
     assert list(db.get_floating([calname], start, end)) == list()
     db.update(card_does_not_parse, 'unix.vcf')
-    events = list(db.get_floating(calname, start ,end))
+    events = list(db.get_floating(calname, start, end))
     assert len(events) == 0

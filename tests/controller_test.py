@@ -1,18 +1,11 @@
 import datetime
-import os
 from textwrap import dedent
 
-import pytest
-import pytz
-
-from vdirsyncer.storage.filesystem import FilesystemStorage
 from vdirsyncer.storage.base import Item
-
-
-from khal.khalendar import Calendar, CalendarCollection
 from khal.controllers import get_agenda, import_ics
 
-from .aux import _get_text
+from .aux import _get_text, coll_vdirs, coll_vdirs_disk
+from . import aux
 
 
 today = datetime.date.today()
@@ -33,53 +26,17 @@ event_today = event_allday_template.format(today.strftime('%Y%m%d'),
                                            tomorrow.strftime('%Y%m%d'))
 item_today = Item(event_today)
 
-cal1 = 'foobar'
-cal2 = 'work'
-cal3 = 'private'
-
-example_cals = [cal1, cal2, cal3]
-
-BERLIN = pytz.timezone('Europe/Berlin')
-
-locale = {'default_timezone': BERLIN,
-          'local_timezone': BERLIN,
-          'dateformat': '%d.%m.%Y',
-          'timeformat': '%H:%M',
-          'longdateformat': '%d.%m.%Y %H:%M',
-          }
-
-
-@pytest.fixture
-def cal_vdir(tmpdir):
-    cal = Calendar(cal1, ':memory:', str(tmpdir), locale=locale)
-    vdir = FilesystemStorage(str(tmpdir), '.ics')
-    return cal, vdir
-
-
-@pytest.fixture
-def coll_vdirs(tmpdir):
-    coll = CalendarCollection(locale=locale)
-    vdirs = dict()
-    for name in example_cals:
-        path = str(tmpdir) + '/' + name
-        os.makedirs(path, mode=0o770)
-        coll.append(Calendar(name, ':memory:', path, locale=locale))
-        vdirs[name] = FilesystemStorage(path, '.ics')
-    coll.default_calendar_name = cal1
-    return coll, vdirs
-
 
 class TestGetAgenda(object):
-    def test_new_event(self, cal_vdir):
-        cal, vdir = cal_vdir
-        event = cal.new_event(event_today)
-        cal.new(event)
-        assert ['\x1b[1mToday:\x1b[0m', 'a meeting'] == \
-            get_agenda(cal, locale)
+    def test_new_event(self, coll_vdirs_disk):
+        coll, vdirs = coll_vdirs_disk
+        event = coll.new_event(event_today, aux.cal1)
+        coll.new(event)
+        assert ['\x1b[1mToday:\x1b[0m', '\x1b[34ma meeting\x1b[0m'] == get_agenda(coll, aux.locale)
 
-    def test_empty_recurrence(self, cal_vdir):
-        cal, vdir = cal_vdir
-        cal.new(cal.new_event(dedent(
+    def test_empty_recurrence(self, coll_vdirs):
+        coll, vidrs = coll_vdirs
+        coll.new(coll.new_event(dedent(
             'BEGIN:VEVENT\r\n'
             'UID:no_recurrences\r\n'
             'SUMMARY:No recurrences\r\n'
@@ -89,32 +46,32 @@ class TestGetAgenda(object):
             'DTSTART:20110908T130000\r\n'
             'DTEND:20110908T170000\r\n'
             'END:VEVENT\r\n'
-        )))
+        ), aux.cal1))
         assert 'no events' in '\n'.join(get_agenda(
-            cal, locale,
+            coll, aux.locale,
             dates=[datetime.date(2011, 9, 8),
                    datetime.date(2011, 9, 9)]
         )).lower()
 
 
 class TestImport(object):
-    def test_import(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
-        import_ics(coll, {'locale': locale}, _get_text('event_rrule_recuid'),
+    def test_import(self, coll_vdirs_disk):
+        coll, vdirs = coll_vdirs_disk
+        import_ics(coll, {'locale': aux.locale}, _get_text('event_rrule_recuid'),
                    batch=True)
-        start_date = datetime.datetime(2014, 4, 30)
-        end_date = datetime.datetime(2014, 9, 26)
-        events = coll.get_datetime_by_time_range(start_date, end_date)
+        start_date = aux.BERLIN.localize(datetime.datetime(2014, 4, 30))
+        end_date = aux.BERLIN.localize(datetime.datetime(2014, 9, 26))
+        events = list(coll.get_localized(start_date, end_date))
         assert len(events) == 6
         events = sorted(events)
-        assert events[1].start_local == BERLIN.localize(datetime.datetime(2014, 7, 7, 9, 0))
-        assert BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) in [ev.start for ev in events]
+        assert events[1].start_local == aux.BERLIN.localize(datetime.datetime(2014, 7, 7, 9, 0))
+        assert aux.BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) in [ev.start for ev in events]
 
-        import_ics(coll, {'locale': locale}, _get_text('event_rrule_recuid_update'),
+        import_ics(coll, {'locale': aux.locale}, _get_text('event_rrule_recuid_update'),
                    batch=True)
-        events = coll.get_datetime_by_time_range(start_date, end_date)
+        events = list(coll.get_localized(start_date, end_date))
         for ev in events:
             print(ev.start)
         assert len(events) == 5
-        assert BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) not in \
+        assert aux.BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) not in \
             [ev.start_local for ev in events]

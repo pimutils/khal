@@ -27,7 +27,6 @@ from vdirsyncer.utils.vobject import Item
 from collections import defaultdict
 
 import datetime
-import itertools
 import logging
 import sys
 import textwrap
@@ -104,11 +103,11 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
 
     for day, dayname in daylist:
         events = sorted(collection.get_events_on(day))
-        if not events:
+        if not events and not show_all_days:
             continue
 
         event_column.append(style(dayname, bold=True))
-        for event in itertools.chain(floating_events, localized_events):
+        for event in events:
             lines = list()
             items = event.relative_to(day, full).splitlines()
             for item in items:
