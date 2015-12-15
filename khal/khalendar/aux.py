@@ -112,9 +112,6 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     """
     clean up vevents we do not understand
 
-    Currently this only transform vevents with neither DTEND or DURATION into
-    all day events lasting one day.
-
     :param vevent: the vevent that needs to be cleaned
     :type vevent: icalendar.cal.event
     :param default_timezone: timezone to apply to stard and/or end dates which
@@ -130,6 +127,8 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     :returns: clean vevent
     :rtype: icalendar.cal.event
     """
+    # convert localized datetimes with timezone information we don't
+    # understand to the default timezone
     # TODO do this for everything where a TZID can appear (RDATE, EXDATE,
     # RRULE:UNTIL)
     for prop in ['DTSTART', 'DTEND', 'DUE', 'RECURRENCE-ID']:
@@ -138,6 +137,7 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
             vevent.add(prop, value)
             logger.warn('{} has invalid or incomprehensible timezone '
                         'information in {} in {}'.format(prop, href, calendar))
+
     vdtstart = vevent.pop('DTSTART', None)
     vdtend = vevent.pop('DTEND', None)
     dtstart = getattr(vdtstart, 'dt', None)
@@ -156,8 +156,9 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
 
 
 def sanitize_timerange(dtstart, dtend, duration=None):
-    '''Deal with events that have an invalid or missing DTEND, assuming the
-    event just lasts one day.'''
+    '''return sensible dtstart and end for events that have an invalid or
+    missing DTEND, assuming the event just lasts one day.'''
+
     if dtend is None and duration is None:
         if isinstance(dtstart, datetime):
             dtstart = dtstart.date()
