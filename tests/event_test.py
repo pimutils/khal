@@ -252,6 +252,24 @@ def test_event_no_dst():
     assert event.event_description == '09:30-10:30 09.04.2014: An Event'
 
 
+def test_event_raw_UTC():
+    """test .raw() on events which are localized in UTC"""
+    event_utc = _get_text('event_dt_simple_zulu')
+    event = Event.fromString(event_utc, **EVENT_KWARGS)
+    assert event.raw == '\r\n'.join([
+        '''BEGIN:VCALENDAR''',
+        '''VERSION:2.0''',
+        '''PRODID:-//CALENDARSERVER.ORG//NONSGML Version 1//EN''',
+        '''BEGIN:VEVENT''',
+        '''SUMMARY:An Event''',
+        '''DTSTART:20140409T093000Z''',
+        '''DTEND:20140409T103000Z''',
+        '''DTSTAMP;VALUE=DATE-TIME:20140401T234817Z''',
+        '''UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU''',
+        '''END:VEVENT''',
+        '''END:VCALENDAR\r\n'''])
+
+
 def test_dtend_equals_dtstart():
     event = Event.fromString(_get_text('event_d_same_start_end'),
                              calendar='foobar', locale=LOCALE)

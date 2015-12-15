@@ -306,6 +306,8 @@ class Event(object):
                 tzs.append(vevent['DTEND'].dt.tzinfo)
 
         for tzinfo in tzs:
+            if tzinfo == pytz.UTC:
+                continue
             timezone = create_timezone(tzinfo, self.start)
             calendar.add_component(timezone)
 
