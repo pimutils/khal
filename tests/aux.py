@@ -1,6 +1,30 @@
 import icalendar
 import os
 
+import pytz
+
+cal1 = 'foobar'
+cal2 = 'work'
+cal3 = 'private'
+
+example_cals = [cal1, cal2, cal3]
+
+BERLIN = pytz.timezone('Europe/Berlin')
+
+locale = {'default_timezone': BERLIN,
+          'local_timezone': BERLIN,
+          'dateformat': '%d.%m.%Y',
+          'timeformat': '%H:%M',
+          'longdateformat': '%d.%m.%Y %H:%M',
+          'unicode_symbols': True,
+          }
+
+SAMOA = pytz.timezone('Pacific/Samoa')
+LOCALE_SAMOA = {'default_timezone': SAMOA,
+                'local_timezone': SAMOA,
+                'unicode_symbols': True,
+                }
+
 
 def normalize_component(x):
     x = icalendar.cal.Component.from_ical(x)

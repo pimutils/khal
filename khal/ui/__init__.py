@@ -19,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from datetime import date, datetime, time
+from datetime import date, datetime
 import signal
 import sys
 
@@ -223,29 +223,18 @@ class EventList(urwid.WidgetWrap):
     def update(self, this_date=date.today()):
         if this_date is None:   # this_date might be None
             return
-        local_tz = self.eventcolumn.pane.conf['locale']['local_timezone']
-        start = local_tz.localize(datetime.combine(this_date, time.min))
-        end = local_tz.localize(datetime.combine(this_date, time.max))
 
         date_text = urwid.Text(
             this_date.strftime(self.eventcolumn.pane.conf['locale']['longdateformat']))
-        event_column = list()
-        all_day_events = self.eventcolumn.pane.collection.get_allday_by_time_range(this_date)
-        events = self.eventcolumn.pane.collection.get_datetime_by_time_range(start, end)
+        self.events = sorted(self.eventcolumn.pane.collection.get_events_on(this_date))
 
-        for event in all_day_events:
+        # TODO cleanup: event_column is not needed at all
+        event_column = list()
+        for event in self.events:
             event_column.append(
-                urwid.AttrMap(U_Event(event, this_date=this_date,
-                                      eventcolumn=self.eventcolumn),
+                urwid.AttrMap(U_Event(event, this_date=this_date, eventcolumn=self.eventcolumn),
                               event.color, 'reveal focus'))
-        events.sort(key=lambda e: e.start)
-        for event in events:
-            event_column.append(
-                urwid.AttrMap(U_Event(event, this_date=this_date,
-                                      eventcolumn=self.eventcolumn),
-                              event.color, 'reveal focus'))
-        event_list = [urwid.AttrMap(event, None, 'reveal focus')
-                      for event in event_column]
+        event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
         event_count = len(event_list)
         if not event_list:
             event_list = [urwid.Text('no scheduled events')]
@@ -253,7 +242,6 @@ class EventList(urwid.WidgetWrap):
         pile = urwid.ListBox(self.list_walker)
         pile = urwid.Frame(pile, header=date_text)
         self._w = pile
-        self.events = all_day_events + events
         return event_count
 
 
@@ -635,8 +623,7 @@ class EventEditor(urwid.WidgetWrap):
         if key in ['esc'] and self.changed and not self._abort_confirmed:
             # TODO Use user-defined keybindings
             self.pane.window.alert(
-                ('light red',
-                 'Unsaved changes! Hit ESC again to discard.'))
+                ('light red', 'Unsaved changes! Hit ESC again to discard.'))
             self._abort_confirmed = True
             return
         if key in self.pane.conf['keybindings']['save']:

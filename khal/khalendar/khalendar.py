@@ -21,13 +21,19 @@
 
 
 """
+This module is currently being refactored.
+
+The Calendar class will vanish, everything should be done through CalendarCollection
+
 khalendar.Calendar and CalendarCollection should be a nice, abstract interface
-to a calendar (collection). Calendar operates on vdirs but uses an sqlite db
-for caching (see backend if you're interested).
+CalendarCollection should enable modifying and querying a collection of
+calendars. Each calendar is defined by the contents of a vdir, but uses an
+sqlite db for caching (see backend if you're interested).
 """
 import datetime
 import os
 import os.path
+import itertools
 
 from vdirsyncer.storage.filesystem import FilesystemStorage
 from vdirsyncer.exceptions import AlreadyExistingError
@@ -107,14 +113,6 @@ class Calendar(object):
 
     def local_ctag(self):
         return os.path.getmtime(self.path)
-
-    def get_allday_by_time_range(self, start):
-        return [self._cover_event(event) for event in
-                self._dbtool.get_allday_range(start)]
-
-    def get_datetime_by_time_range(self, start, end):
-        return [self._cover_event(event) for event in
-                self._dbtool.get_time_range(start, end)]
 
     def get_events_at(self, dtime=datetime.datetime.now()):
         """return events which are scheduled at `dtime`"""
@@ -247,19 +245,22 @@ class Calendar(object):
         return Event.fromString(ical, locale=self._locale, calendar=self.name)
 
     def search(self, search_string):
-        return [self._cover_event(event) for event in
-                self._dbtool.search(search_string)]
+        return [self._cover_event(event) for event in self._dbtool.search(search_string)]
 
 
 class CalendarCollection(object):
 
-    def __init__(self, hmethod='fg',
+    def __init__(self,
+                 hmethod='fg',
                  default_color='',
                  multiple='',
                  color='',
                  highlight_event_days=0,
                  locale=None):
         self._calnames = dict()
+        self._calendars = dict()
+        self._props = dict()
+        self._backend = None
         self._default_calendar_name = None
         self.hmethod = hmethod
         self.default_color = default_color
@@ -290,32 +291,48 @@ class CalendarCollection(object):
         if default is None:
             self._default_calendar_name = default
         elif default not in self.names:
-            raise ValueError('Unknown calendar: {}'
-                             .format(default))
+            raise ValueError('Unknown calendar: {}'.format(default))
 
         readonly = self._calnames[default].readonly
 
         if not readonly:
             self._default_calendar_name = default
         else:
-            raise ValueError('Default calendar is read-only: {}'
-                             .format(default))
+            raise ValueError('Default calendar is read-only: {}'.format(default))
 
-    def append(self, calendar):
+    def _cover_event(self, event):
+        event.color = self._props[event.calendar]['color']
+        event.readonly = self._props[event.calendar]['readonly']
+        event.unicode_symbols = self.locale['unicode_symbols']
+        return event
+
+    def append(self, calendar, props):
         """append a new khalendar to this collection"""
         self._calnames[calendar.name] = calendar
+        self._props[calendar.name] = props
+        self._backend = calendar._dbtool  # TODO do this when creating the collection
 
-    def get_allday_by_time_range(self, start):
-        events = list()
-        for one in self.calendars:
-            events.extend(one.get_allday_by_time_range(start))
-        return events
+    def get_floating(self, start, end):
+        events = self._backend.get_floating(self.names, start, end)
+        return (self._cover_event(event) for event in events)
 
-    def get_datetime_by_time_range(self, start, end):
-        events = list()
-        for one in self.calendars:
-            events.extend(one.get_datetime_by_time_range(start, end))
-        return events
+    def get_localized(self, start, end):
+        events = self._backend.get_localized(self.names, start, end)
+        return (self._cover_event(event) for event in events)
+
+    def get_events_on(self, day):
+        """return all events on `day`
+
+        :param day: datetime.date
+        :rtype: list()
+        """
+        start = datetime.datetime.combine(day, datetime.time.min)
+        end = datetime.datetime.combine(day, datetime.time.max)
+        floating_events = self.get_floating(start, end)
+        localize = self.locale['local_timezone'].localize
+        localized_events = self.get_localized(localize(start), localize(end))
+
+        return itertools.chain(floating_events, localized_events)
 
     def get_events_at(self, dtime=datetime.datetime.now()):
         if dtime is None:
@@ -377,10 +394,7 @@ class CalendarCollection(object):
         return event.color
 
     def get_day_styles(self, day, focus):
-        start = self.localize(datetime.datetime.combine(day, datetime.time.min))
-        end = self.localize(datetime.datetime.combine(day, datetime.time.max))
-        devents = self.get_datetime_by_time_range(start, end) + \
-            self.get_allday_by_time_range(day)
+        devents = list(self.get_events_on(day))
         if len(devents) == 0:
             return None
         prefix = ''

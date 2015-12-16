@@ -157,6 +157,9 @@ def build_collection(ctx):
 
         for name, cal in conf['calendars'].items():
             if selection is None or name in ctx.obj['calendar_selection']:
+                props = {'readonly': cal['readonly'],
+                         'color': cal['color'],
+                         }
                 collection.append(khalendar.Calendar(
                     name=name,
                     dbpath=conf['sqlite']['path'],
@@ -166,7 +169,7 @@ def build_collection(ctx):
                     unicode_symbols=conf['locale']['unicode_symbols'],
                     locale=conf['locale'],
                     ctype=cal['type'],
-                ))
+                ), props=props)
     except FatalError as error:
         logger.fatal(error)
         sys.exit(1)

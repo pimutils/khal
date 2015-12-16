@@ -125,11 +125,7 @@ def str_week(week, today, collection=None,
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
         elif highlight_event_days:
-            localize = locale['local_timezone'].localize
-            start = localize(datetime.datetime.combine(day, datetime.time.min))
-            end = localize(datetime.datetime.combine(day, datetime.time.max))
-            devents = collection.get_datetime_by_time_range(start, end) + \
-                collection.get_allday_by_time_range(day)
+            devents = list(collection.get_events_on(day))
             if len(devents) > 0:
                 day = str_highlight_day(day, devents, hmethod, default_color,
                                         multiple, color)

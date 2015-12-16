@@ -27,7 +27,6 @@ from vdirsyncer.utils.vobject import Item
 from collections import defaultdict
 
 import datetime
-import itertools
 import logging
 import sys
 import textwrap
@@ -101,21 +100,14 @@ def get_agenda(collection, locale, dates=None, firstweekday=0,
         daylist.sort()
 
     daylist = construct_daynames(daylist, locale['longdateformat'])
-    localize = locale['local_timezone'].localize
 
     for day, dayname in daylist:
-        start = localize(datetime.datetime.combine(day, datetime.time.min))
-        end = localize(datetime.datetime.combine(day, datetime.time.max))
-
-        # TODO unify allday and datetime events
-        all_day_events = collection.get_allday_by_time_range(day)
-        events = collection.get_datetime_by_time_range(start, end)
-        if len(events) == 0 and len(all_day_events) == 0 and not show_all_days:
+        events = sorted(collection.get_events_on(day))
+        if not events and not show_all_days:
             continue
 
         event_column.append(style(dayname, bold=True))
-        events.sort(key=lambda e: e.start)
-        for event in itertools.chain(all_day_events, events):
+        for event in events:
             lines = list()
             items = event.relative_to(day, full).splitlines()
             for item in items:
@@ -160,8 +152,7 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
     echo('\n'.join(rows).encode(encoding))
 
 
-def agenda(collection, date=None, encoding='utf-8',
-           show_all_days=False, full=False, **kwargs):
+def agenda(collection, date=None, encoding='utf-8', show_all_days=False, full=False, **kwargs):
     term_width, _ = get_terminal_size()
     event_column = get_agenda(collection, dates=date, width=term_width,
                               show_all_days=show_all_days, full=full, **kwargs)
@@ -266,14 +257,11 @@ def import_event(vevent, collection, locale, batch, random_uid):
                         u"".format(calendar_name)):
         ics = aux.ics_from_list(vevent, random_uid)
         try:
-            collection.new(
-                Item(ics.to_ical().decode('utf-8')),
-                collection=calendar_name)
+            collection.new(Item(ics.to_ical().decode('utf-8')), collection=calendar_name)
         except DuplicateUid:
             if batch or confirm(u"An event with the same UID already exists. "
                                 u"Do you want to update it?"):
                 collection.force_update(
-                    Item(ics.to_ical().decode('utf-8')),
-                    collection=calendar_name)
+                    Item(ics.to_ical().decode('utf-8')), collection=calendar_name)
             else:
                 logger.warn(u"Not importing event with UID `{}`".format(event.uid))
