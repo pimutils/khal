@@ -453,11 +453,11 @@ def test_event_rrule_multi_this_and_future_allday():
     assert events[4].end == date(2014, 7, 24)
     assert events[5].end == date(2014, 7, 31)
 
-    assert str(events[0].summary) == u'Arbeit'
+    assert str(events[0].summary) == 'Arbeit'
     for event in [events[1], events[3]]:
-        assert str(event.summary) == u'Arbeit (lang)'
+        assert str(event.summary) == 'Arbeit (lang)'
     for event in [events[2], events[4], events[5]]:
-        assert str(event.summary) == u'Arbeit (neu)'
+        assert str(event.summary) == 'Arbeit (neu)'
 
 
 master = """BEGIN:VEVENT
