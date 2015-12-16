@@ -14,7 +14,7 @@ from khal.khalendar.event import Event
 from khal.khalendar.backend import CouldNotCreateDbDir
 import khal.khalendar.exceptions
 
-from .aux import _get_text, cal1, cal2, cal3, cal_vdir, coll_vdirs, coll_vdirs_disk  # noqa
+from .aux import _get_text, cal1, cal2, cal3
 from . import aux
 
 

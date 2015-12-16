@@ -4,7 +4,7 @@ from textwrap import dedent
 from vdirsyncer.storage.base import Item
 from khal.controllers import get_agenda, import_ics
 
-from .aux import _get_text, coll_vdirs, coll_vdirs_disk  # noqa
+from .aux import _get_text
 from . import aux
 
 
