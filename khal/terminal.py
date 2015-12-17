@@ -21,10 +21,7 @@
 #
 """all functions related to terminal display are collected here"""
 
-try:
-    from itertools import izip_longest as zip_longest
-except ImportError:
-    from itertools import zip_longest
+from itertools import zip_longest
 
 try:
     # python 3.3+
