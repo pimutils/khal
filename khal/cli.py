@@ -401,8 +401,7 @@ def _get_cli():
             desc = textwrap.wrap(event.event_description, term_width)
             event_column.extend([colored(d, event.color) for d in desc])
         click.echo(
-            '\n'.join(event_column),
-            ctx.obj['conf']['locale']['encoding']
+            '\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding'])
         )
 
     @cli.command()
@@ -446,8 +445,7 @@ def _get_cli():
                 lines += textwrap.wrap(item, term_width)
             event_column.extend([colored(line, event.color) for line in lines])
         click.echo(
-            '\n'.join(event_column),
-            ctx.obj['conf']['locale']['encoding']
+            '\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding'])
         )
 
     return cli, interactive_cli
