@@ -100,6 +100,8 @@ def urwid_to_click(color):
     col = color.split()[-1]
     if col == 'brown':
         return 'yellow'
+    if col == 'grey':
+        return 'white'
     return col
 
 
