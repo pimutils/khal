@@ -38,7 +38,7 @@ import icalendar
 import pytz
 import xdg.BaseDirectory
 
-from .event import Event
+from .event import Event, EventStandIn
 from . import aux
 from .. import log
 from .exceptions import CouldNotCreateDbDir, OutdatedDbVersionError, UpdateFailed
@@ -422,10 +422,12 @@ class SQLiteDb(object):
         sql_s = 'SELECT href, etag FROM events WHERE calendar = ?;'
         return list(set(self.sql_ex(sql_s, (calendar, ))))
 
-    def get_localized(self, calendars, start, end):
+    def get_localized(self, calendars, start, end, minimal=False):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
+        :param minimal: if set, we do not return an event but a minimal stand in
+        :type minimal: bool
         """
         assert start.tzinfo is not None
         assert end.tzinfo is not None
@@ -444,14 +446,19 @@ class SQLiteDb(object):
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
-            yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
+            if minimal:
+                yield EventStandIn(calendar)
+            else:
+                yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
-    def get_floating(self, calendars, start, end):
+    def get_floating(self, calendars, start, end, minimal=False):
         """return floating events between `start` and `end`
 
         :type calendars: list
         :type start: datetime.datetime
         :type end: datetime.datetime
+        :param minimal: if set, we do not return an event but a minimal stand in
+        :type minimal: bool
         """
         assert start.tzinfo is None
         assert end.tzinfo is None
@@ -470,7 +477,10 @@ class SQLiteDb(object):
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = datetime.utcfromtimestamp(start)
             end = datetime.utcfromtimestamp(end)
-            yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
+            if minimal:
+                yield EventStandIn(calendar)
+            else:
+                yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
     def get_localized_at(self, calendars, dtime):
         """return localized events which are scheduled at `dtime`

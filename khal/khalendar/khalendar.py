@@ -132,15 +132,15 @@ class CalendarCollection(object):
         event.unicode_symbols = self._locale['unicode_symbols']
         return event
 
-    def get_floating(self, start, end):
-        events = self._backend.get_floating(self.names, start, end)
+    def get_floating(self, start, end, minimal=False):
+        events = self._backend.get_floating(self.names, start, end, minimal)
         return (self._cover_event(event) for event in events)
 
-    def get_localized(self, start, end):
-        events = self._backend.get_localized(self.names, start, end)
+    def get_localized(self, start, end, minimal=False):
+        events = self._backend.get_localized(self.names, start, end, minimal)
         return (self._cover_event(event) for event in events)
 
-    def get_events_on(self, day):
+    def get_events_on(self, day, minimal=False):
         """return all events on `day`
 
         :param day: datetime.date
@@ -148,9 +148,9 @@ class CalendarCollection(object):
         """
         start = datetime.datetime.combine(day, datetime.time.min)
         end = datetime.datetime.combine(day, datetime.time.max)
-        floating_events = self.get_floating(start, end)
+        floating_events = self.get_floating(start, end, minimal)
         localize = self._locale['local_timezone'].localize
-        localized_events = self.get_localized(localize(start), localize(end))
+        localized_events = self.get_localized(localize(start), localize(end), minimal)
 
         return itertools.chain(floating_events, localized_events)
 
@@ -308,7 +308,7 @@ class CalendarCollection(object):
                 self._backend.search(search_string, self.names))
 
     def get_day_styles(self, day, focus):
-        devents = list(self.get_events_on(day))
+        devents = list(self.get_events_on(day, minimal=True))
         if len(devents) == 0:
             return None
         if self.color != '':

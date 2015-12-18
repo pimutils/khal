@@ -668,3 +668,11 @@ def create_timezone(tz, first_date=None, last_date=None):
         timezone.add_component(subcomp)
 
     return timezone
+
+
+class EventStandIn():
+    def __init__(self, calendar):
+        self.calendar = calendar
+        self.color = None
+        self.unicode_symbols = None
+        self.readonly = None
