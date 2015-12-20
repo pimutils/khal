@@ -174,5 +174,5 @@ def test_vertical_month_unicode_weekdeays():
 
     vert_str = vertical_month(month=12, year=2011,
                               today=datetime.date(2011, 12, 12))
-    assert vert_str == example_cz
+    assert vert_str == [line.lower() for line in example_cz]
     '\n'.join(vert_str)  # issue 142/293
