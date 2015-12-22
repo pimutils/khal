@@ -182,33 +182,20 @@ class CalendarCollection(object):
             self._backend.set_ctag(self.local_ctag(event.calendar), calendar=event.calendar)
 
     def force_update(self, event, collection=None):
+        """update `event` even if an event with the same uid/href already exists"""
         calendar = collection if collection is not None else event.calendar
-
-        # FIXME after the next vdirsyncer release, that check function is
-        # not needed than
-        # AlreadyExistingError now knows the conflicting events uid
-        def check(self, item):
-            """check if this an event with this item's uid already exists"""
-            try:
-                # FIXME remove on next vdirsyncer release
-                href = self._deterministic_href(item)
-            except AttributeError:
-                href = self._get_href(item.uid)
-            if not self.has(href):
-                return None, None
-            else:
-                return href, self.get(href)[1]
-
         if self._calendars[calendar]['readonly']:
             raise ReadOnlyCalendarError()
+
         with self._backend.at_once():
-            href, etag = check(self._storages[calendar], event)
-            if href is None:
-                self.new(event)
-            else:
+            try:
+                href, etag = self._storages[calendar].upload(event)
+            except AlreadyExistingError as error:
+                href = error.existing_href
+                _, etag = self._storages[calendar].get(href)
                 etag = self._storages[calendar].update(href, event, etag)
-                self._backend.update(event.raw, href, etag, calendar=calendar)
-                self._backend.set_ctag(self.local_ctag(calendar), calendar=calendar)
+            self._backend.update(event.raw, href, etag, calendar=calendar)
+            self._backend.set_ctag(self.local_ctag(calendar), calendar=calendar)
 
     def new(self, event, collection=None):
         """save a new event to the vdir and the database
