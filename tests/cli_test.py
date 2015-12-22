@@ -244,6 +244,30 @@ def test_repeating(runner):
     assert not result.exception
 
 
+def test_at(runner):
+    runner = runner(command='calendar', showalldays=False, days=2)
+    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    result = runner.invoke(
+        main_khal, ['new'] + '{} 18:00 myevent'.format(
+            now, end_date.strftime('%d.%m.%Y')).split())
+    result = runner.invoke(main_khal, ['at', '18:30'])
+    assert result.output.startswith('\x1b[34m18:00')
+    assert not result.exception
+
+
+def test_search(runner):
+    runner = runner(command='calendar', showalldays=False, days=2)
+    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    result = runner.invoke(
+        main_khal, ['new'] + '{} 18:00 myevent'.format(
+            now, end_date.strftime('%d.%m.%Y')).split())
+    result = runner.invoke(main_khal, ['search', 'myevent'])
+    assert result.output.startswith('\x1b[34m18:00')
+    assert not result.exception
+
+
 def test_interactive_command(runner, monkeypatch):
     runner = runner(command='agenda', showalldays=False, days=2)
     token = "hooray"
