@@ -11,11 +11,21 @@ may want to subscribe to `GitHub's tag feed
 =====
 not released yet
 
-BREAKING CHANGE: python 2 is no longer supported (Hugo Osvaldo Barrera)
+* BREAKING CHANGE: python 2 is no longer supported (Hugo Osvaldo Barrera)
+* updated dependency: vdirsyncer >= 0.5.2
 
+* support for showing the birthday of contacts with no FN property (Hugo
+  Osvaldo Barrera)
+* increased start up time when coloring is enabled (Christian Geier)
 * improved color support (256 colors and 24-bit colors), see configuration
   documentation for details (Sebastian Hamann)
 * renamed color `grey` to `gray` (Sebastian Hamann)
+
+ikhal
+-----
+* basic export of events from event editor pane and from event lists (default
+  keybinding: *e* (Filip Pytloun)
+
 
 0.7.0
 =====
