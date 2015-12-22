@@ -89,7 +89,7 @@ class CalendarCollection(object):
         self.highlight_event_days = highlight_event_days
         self._locale = locale
         self._backend = backend.SQLiteDb(
-            calendars=self._calendars.keys(), db_path=dbpath, locale=self._locale)
+            calendars=self.names, db_path=dbpath, locale=self._locale)
         self.update_db()
 
     @property
