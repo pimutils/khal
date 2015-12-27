@@ -8,6 +8,7 @@ python:
 
 env:
     - BUILD=tests
+    - BUILD=tests-negtz
     - BUILD=style
 
 addons:
@@ -19,7 +20,7 @@ install:
         - "pip install tox"
 
 script:
-    - ./.travis.run.sh
+    - "tox -e py-$BUILD"
 
 matrix:
     exclude:
