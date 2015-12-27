@@ -102,9 +102,9 @@ class SQLiteDb(object):
         self._check_calendars_exists()
         self._check_table_version()
 
-    @staticmethod
-    def _calendars(calendars):
-        return ', '.join(['\'' + cal + '\'' for cal in calendars])
+    @property
+    def _select_calendars(self):
+        return ', '.join(['\'' + cal + '\'' for cal in self.calendars])
 
     @contextlib.contextmanager
     def at_once(self):
@@ -416,13 +416,15 @@ class SQLiteDb(object):
         self.sql_ex(sql_s, (href, calendar))
 
     def list(self, calendar):
-        """
+        """ list all events in `calendar`
+
+        used for testing
         :returns: list of (href, etag)
         """
         sql_s = 'SELECT href, etag FROM events WHERE calendar = ?;'
         return list(set(self.sql_ex(sql_s, (calendar, ))))
 
-    def get_localized(self, calendars, start, end, minimal=False):
+    def get_localized(self, start, end, minimal=False):
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
@@ -442,7 +444,7 @@ class SQLiteDb(object):
             'dtend >= ? AND dtend <= ? OR '
             'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0});')
         stuple = (start, end, start, end, start, end)
-        result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
+        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
@@ -451,10 +453,9 @@ class SQLiteDb(object):
             else:
                 yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
-    def get_floating(self, calendars, start, end, minimal=False):
+    def get_floating(self, start, end, minimal=False):
         """return floating events between `start` and `end`
 
-        :type calendars: list
         :type start: datetime.datetime
         :type end: datetime.datetime
         :param minimal: if set, we do not return an event but a minimal stand in
@@ -473,7 +474,7 @@ class SQLiteDb(object):
             'dtend > ? AND dtend <= ? OR '
             'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0});')
         stuple = (strstart, strend, strstart, strend, strstart, strend)
-        result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
+        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = datetime.utcfromtimestamp(start)
             end = datetime.utcfromtimestamp(end)
@@ -482,7 +483,7 @@ class SQLiteDb(object):
             else:
                 yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
-    def get_localized_at(self, calendars, dtime):
+    def get_localized_at(self, dtime):
         """return localized events which are scheduled at `dtime`
 
         :type dtime: datetime.datetime
@@ -497,16 +498,15 @@ class SQLiteDb(object):
             '(dtstart <= ? AND dtend >= ? ) '
             'AND events.calendar in ({0});')
         stuple = (dtime, dtime)
-        result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
+        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
             yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
-    def get_floating_at(self, calendars, dtime):
+    def get_floating_at(self, dtime):
         """return allday events which are scheduled at `dtime`
 
-        :type calendars: list
         :type dtime: datetime.datetime
         """
         assert dtime.tzinfo is None
@@ -519,7 +519,7 @@ class SQLiteDb(object):
             '(dtstart <= ? AND dtend >= ? ) '
             'AND events.calendar in ({0});')
         stuple = (dtime, dtime)
-        result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
+        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = datetime.utcfromtimestamp(start)
             end = datetime.utcfromtimestamp(end)
@@ -562,12 +562,12 @@ class SQLiteDb(object):
                                 ref=ref,
                                 )
 
-    def search(self, search_string, calendars):
+    def search(self, search_string):
         """search for events matching `search_string`"""
         sql_s = ('SELECT href, calendar FROM events '
                  'WHERE item LIKE (?) and calendar in ({0});')
         stuple = ('%{0}%'.format(search_string), )
-        result = self.sql_ex(sql_s.format(self._calendars(calendars)), stuple)
+        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
         for href, calendar in result:
             event = self.get(href, calendar=calendar)
             yield event

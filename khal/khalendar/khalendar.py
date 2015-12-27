@@ -133,11 +133,11 @@ class CalendarCollection(object):
         return event
 
     def get_floating(self, start, end, minimal=False):
-        events = self._backend.get_floating(self.names, start, end, minimal)
+        events = self._backend.get_floating(start, end, minimal)
         return (self._cover_event(event) for event in events)
 
     def get_localized(self, start, end, minimal=False):
-        events = self._backend.get_localized(self.names, start, end, minimal)
+        events = self._backend.get_localized(start, end, minimal)
         return (self._cover_event(event) for event in events)
 
     def get_events_on(self, day, minimal=False):
@@ -166,8 +166,8 @@ class CalendarCollection(object):
             naive_dtime = dtime.replace(tzinfo=None)
             local_dtime = dtime
 
-        floating_events = self._backend.get_floating_at(self.names, naive_dtime)
-        localized_events = self._backend.get_localized_at(self.names, local_dtime)
+        floating_events = self._backend.get_floating_at(naive_dtime)
+        localized_events = self._backend.get_localized_at(local_dtime)
         return (self._cover_event(event) for event in
                 itertools.chain(floating_events, localized_events))
 
@@ -291,8 +291,7 @@ class CalendarCollection(object):
 
     def search(self, search_string):
         """search for the db for events matching `search_string`"""
-        return (self._cover_event(event) for event in
-                self._backend.search(search_string, self.names))
+        return (self._cover_event(event) for event in self._backend.search(search_string))
 
     def get_day_styles(self, day, focus):
         devents = list(self.get_events_on(day, minimal=True))
