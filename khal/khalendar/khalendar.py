@@ -123,7 +123,7 @@ class CalendarCollection(object):
             raise ValueError(
                 'Calendar "{0}" is read-only and cannot be used as default'.format(default))
 
-    def local_ctag(self, calendar):
+    def _local_ctag(self, calendar):
         return os.path.getmtime(self._calendars[calendar]['path'])
 
     def _cover_event(self, event):
@@ -179,7 +179,7 @@ class CalendarCollection(object):
         with self._backend.at_once():
             event.etag = self._storages[event.calendar].update(event.href, event, event.etag)
             self._backend.update(event.raw, event.href, event.etag, calendar=event.calendar)
-            self._backend.set_ctag(self.local_ctag(event.calendar), calendar=event.calendar)
+            self._backend.set_ctag(self._local_ctag(event.calendar), calendar=event.calendar)
 
     def force_update(self, event, collection=None):
         """update `event` even if an event with the same uid/href already exists"""
@@ -195,7 +195,7 @@ class CalendarCollection(object):
                 _, etag = self._storages[calendar].get(href)
                 etag = self._storages[calendar].update(href, event, etag)
             self._backend.update(event.raw, href, etag, calendar=calendar)
-            self._backend.set_ctag(self.local_ctag(calendar), calendar=calendar)
+            self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
     def new(self, event, collection=None):
         """save a new event to the vdir and the database
@@ -217,7 +217,7 @@ class CalendarCollection(object):
                 href = getattr(Error, 'existing_href', None)
                 raise DuplicateUid(href)
             self._backend.update(event.raw, href, etag, calendar=calendar)
-            self._backend.set_ctag(self.local_ctag(calendar), calendar=calendar)
+            self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
     def delete(self, href, etag, calendar):
         if self._calendars[calendar]['readonly']:
@@ -251,7 +251,7 @@ class CalendarCollection(object):
 
     def _needs_update(self, calendar):
         """checks if the db for the given calendar needs an update"""
-        return self.local_ctag(calendar) != self._backend.get_ctag(calendar)
+        return self._local_ctag(calendar) != self._backend.get_ctag(calendar)
 
     def _db_update(self, calendar):
         """implements the actual db update on a per calendar base"""
@@ -261,13 +261,13 @@ class CalendarCollection(object):
         with self._backend.at_once():
             for href, etag in self._storages[calendar].list():
                 storage_hrefs.add(href)
-                dbetag = self._backend.get_etag(href, calendar=calendar)
-                if etag != dbetag:
-                    logger.debug('Updating {0} because {1} != {2}'.format(href, etag, dbetag))
+                db_etag = self._backend.get_etag(href, calendar=calendar)
+                if etag != db_etag:
+                    logger.debug('Updating {0} because {1} != {2}'.format(href, etag, db_etag))
                     self._update_vevent(href, calendar=calendar)
             for href in db_hrefs - storage_hrefs:
                 self._backend.delete(href, calendar=calendar)
-            self._backend.set_ctag(self.local_ctag(calendar), calendar=calendar)
+            self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
     def _update_vevent(self, href, calendar):
         """should only be called during db_update, only updates the db,
