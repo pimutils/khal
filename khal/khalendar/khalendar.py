@@ -45,7 +45,7 @@ logger = log.logger
 def create_directory(path):
     if not os.path.isdir(path):
         if os.path.exists(path):
-            raise RuntimeError('{} is not a directory.'.format(path))
+            raise RuntimeError('{0} is not a directory.'.format(path))
         try:
             os.makedirs(path, mode=0o750)
         except OSError as error:
@@ -113,7 +113,7 @@ class CalendarCollection(object):
         if default is None:
             self._default_calendar_name = default
         elif default not in self.names:
-            raise ValueError('Unknown calendar: {}'.format(default))
+            raise ValueError('Unknown calendar: {0}'.format(default))
 
         readonly = self._calendars[default].get('readonly', False)
 
