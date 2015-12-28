@@ -54,6 +54,17 @@ class TestCalendar(object):
         assert len(list(coll.get_events_on(yesterday))) == 0
         assert len(list(vdirs[cal1].list())) == 1
 
+    def test_sanity(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        mtimes = dict()
+        for i in range(100):
+            for cal in coll._calendars:
+                mtime = os.path.getmtime(coll._calendars[cal]['path'])
+                if mtimes.get(cal):
+                    assert mtimes[cal] == mtime
+                else:
+                    mtimes[cal] = mtime
+
     def test_db_needs_update(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         assert coll._needs_update(cal1) is False
