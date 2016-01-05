@@ -282,6 +282,9 @@ def construct_event(dtime_list, locale,
         dtend = dtend.date()
 
     else:
+        if not dtime_list:
+            logger.fatal('No event summary provided, aborting.')
+            raise FatalError
         try:
             # next element is a valid Olson db timezone string
             dtstart = pytz.timezone(dtime_list[0]).localize(dtstart)
