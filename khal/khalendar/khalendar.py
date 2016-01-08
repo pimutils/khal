@@ -29,6 +29,7 @@ import datetime
 import os
 import os.path
 import itertools
+import math
 
 from vdirsyncer.storage.filesystem import FilesystemStorage
 from vdirsyncer.exceptions import AlreadyExistingError
@@ -128,7 +129,7 @@ class CalendarCollection(object):
         mtime = getattr(stat, 'st_mtime_ns', None)
         if mtime is None:
             mtime = stat.st_mtime
-        return '{:.9f}'.format(mtime)
+        return str(int(math.floor(mtime * 1e9)))
 
     def _cover_event(self, event):
         event.color = self._calendars[event.calendar]['color']

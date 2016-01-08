@@ -159,7 +159,7 @@ class SQLiteDb(object):
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS calendars (
             calendar TEXT NOT NULL UNIQUE,
             resource TEXT NOT NULL,
-            ctag FLOAT
+            ctag TEXT
             )''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS events (
                 href TEXT NOT NULL,

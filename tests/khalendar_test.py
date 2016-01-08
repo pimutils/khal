@@ -74,6 +74,7 @@ class TestCalendar(object):
                 calendar, coll._local_ctag(calendar), coll._backend.get_ctag(calendar)))
         assert len(list(vdirs[cal1].list())) == 0
         assert coll._needs_update(cal1) is False
+        sleep(0.01)
 
         vdirs[cal1].upload(item_today)
         print('upload')
