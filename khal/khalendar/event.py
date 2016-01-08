@@ -351,6 +351,40 @@ class Event(object):
     def update_summary(self, summary):
         self._vevents[self.ref]['SUMMARY'] = summary
 
+    @staticmethod
+    def _can_handle_alarm(alarm):
+        """
+        Decides whether we can handle a certain alarm.
+        """
+        return alarm.get('ACTION') == 'DISPLAY' and isinstance(alarm.get('TRIGGER').dt, timedelta)
+
+    @property
+    def alarms(self):
+        """
+        Returns a list of all alarms in th original event that we can handle. Unknown types of
+        alarms are ignored.
+        """
+        return [(a.get('TRIGGER').dt, a.get('DESCRIPTION'))
+                for a in self._vevents[self.ref].subcomponents
+                if a.name == 'VALARM' and self._can_handle_alarm(a)]
+
+    def update_alarms(self, alarms):
+        """
+        Replaces all alarms in the event that can be handled with the ones provided.
+        """
+        components = self._vevents[self.ref].subcomponents
+        # remove all alarms that we can handle from the subcomponents
+        components = [c for c in components
+                      if not (c.name == 'VALARM' and self._can_handle_alarm(c))]
+        # add all alarms we could handle from the input
+        for alarm in alarms:
+            new = icalendar.Alarm()
+            new.add('ACTION', 'DISPLAY')
+            new.add('TRIGGER', alarm[0])
+            new.add('DESCRIPTION', alarm[1])
+            components.append(new)
+        self._vevents[self.ref].subcomponents = components
+
     @property
     def location(self):
         return self._vevents[self.ref].get('LOCATION', '')
