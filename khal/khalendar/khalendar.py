@@ -124,7 +124,11 @@ class CalendarCollection(object):
                 'Calendar "{0}" is read-only and cannot be used as default'.format(default))
 
     def _local_ctag(self, calendar):
-        return os.path.getmtime(self._calendars[calendar]['path'])
+        stat = os.stat(self._calendars[calendar]['path'])
+        mtime = getattr(stat, 'st_mtime_ns', None)
+        if mtime is None:
+            mtime = stat.st_mtime
+        return '{:.9f}'.format(mtime)
 
     def _cover_event(self, event):
         event.color = self._calendars[event.calendar]['color']

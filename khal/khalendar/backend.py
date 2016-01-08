@@ -45,7 +45,7 @@ from .exceptions import CouldNotCreateDbDir, OutdatedDbVersionError, UpdateFaile
 
 logger = log.logger
 
-DB_VERSION = 4  # The current db layout version
+DB_VERSION = 5  # The current db layout version
 
 RECURRENCE_ID = 'RECURRENCE-ID'
 THISANDFUTURE = 'THISANDFUTURE'
