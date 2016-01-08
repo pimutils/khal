@@ -27,8 +27,8 @@ import urwid
 
 from .. import aux
 from . import colors
+from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice, AlarmsEditor
 from .base import Pane, Window
-from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice
 from .startendeditor import StartEndEditor
 from .calendarwidget import CalendarWidget
 
@@ -506,6 +506,7 @@ class EventEditor(urwid.WidgetWrap):
                                 edit_text=self.description, multiline=True)
         self.location = Edit(caption='Location: ',
                              edit_text=self.location)
+        self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
             NColumns([self.summary, self.calendar_chooser], dividechars=2),
             divider,
@@ -514,6 +515,8 @@ class EventEditor(urwid.WidgetWrap):
             divider,
             self.startendeditor,
             self.recursioneditor,
+            divider,
+            self.alarms,
             divider,
             urwid.Button('Save', on_press=self.save),
             urwid.Button('Export', on_press=self.export)
@@ -546,6 +549,8 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if self.recursioneditor.changed:
             return True
+        if self.alarms.changed:
+            return True
         return False
 
     def update_vevent(self):
@@ -564,6 +569,9 @@ class EventEditor(urwid.WidgetWrap):
             # if rrule and rrule["freq"][0] != NOREPEAT:
             #    self.event.vevent.add("RRULE", rrule)
         # TODO self.newaccount = self.calendar_chooser.active ?
+
+        if self.alarms.changed:
+            self.event.update_alarms(self.alarms.get_alarms())
 
     def export(self, button):
         """
