@@ -31,7 +31,7 @@ from .exceptions import InvalidSettingsError, CannotParseConfigFileError
 from khal import __productname__
 from ..log import logger
 from .utils import is_timezone, weeknumber_option, config_checks, \
-    expand_path, expand_db_path
+    expand_path, expand_db_path, is_color
 
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
 
@@ -98,6 +98,7 @@ def get_config(config_path=None):
              'expand_path': expand_path,
              'expand_db_path': expand_db_path,
              'weeknumbers': weeknumber_option,
+             'color': is_color,
              }
     validator = Validator(fdict)
     results = user_config.validate(validator, preserve_errors=True)

@@ -26,7 +26,7 @@ from locale import getlocale, setlocale, LC_ALL
 
 from click import style
 
-from .terminal import urwid_to_click, urwid_to_click_bold
+from .terminal import colored
 
 
 setlocale(LC_ALL, '')
@@ -74,35 +74,26 @@ def str_highlight_day(day, devents, hmethod, default_color, multiple, color):
         dcolors = list(set(map(lambda x: get_event_color(x, default_color), devents)))
         if len(dcolors) > 1:
             if multiple == '':
-                color1 = urwid_to_click(dcolors[0])
-                color2 = urwid_to_click(dcolors[1])
-                bold1 = urwid_to_click_bold(dcolors[0])
-                bold2 = urwid_to_click_bold(dcolors[1])
                 if hmethod == "foreground" or hmethod == "fg":
-                    return style(dstr[:1], fg=color1, bold=bold1) + \
-                        style(dstr[1:], fg=color2, bold=bold2)
+                    return colored(dstr[:1], fg=dcolors[0]) + \
+                        colored(dstr[1:], fg=dcolors[1])
                 else:
-                    return style(dstr[:1], bg=color1) + style(dstr[1:], bg=color2)
+                    return colored(dstr[:1], bg=dcolors[0]) + \
+                        colored(dstr[1:], bg=dcolors[1])
             else:
-                dcolor = urwid_to_click(multiple)
-                dbold = urwid_to_click_bold(multiple)
+                dcolor = multiple
         else:
             if devents[0].color == '':
-                dcolorv = default_color
-                if dcolorv != '':
-                    dcolor = urwid_to_click(dcolorv)
-                    dbold = urwid_to_click_bold(dcolorv)
+                dcolor = default_color
             else:
-                dcolor = urwid_to_click(devents[0].color)
-                dbold = urwid_to_click_bold(devents[0].color)
+                dcolor = devents[0].color
     else:
-        dcolor = urwid_to_click(color)
-        dbold = urwid_to_click_bold(color)
+        dcolor = color
     if dcolor != '':
         if hmethod == "foreground" or hmethod == "fg":
-            return style(dstr, fg=dcolor, bold=dbold)
+            return colored(dstr, fg=dcolor)
         else:
-            return style(dstr, bg=dcolor)
+            return colored(dstr, bg=dcolor)
     return dstr
 
 

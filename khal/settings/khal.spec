@@ -13,7 +13,13 @@ path = expand_path(default=None)
 # khal will use this color for coloring this calendar's event. Depending on
 # your terminal emulator's settings, they might look different than what their
 # name implies.
-color = option('black', 'white', 'brown', 'yellow','dark grey', 'dark green', 'dark blue','light grey', 'light green', 'light blue','dark magenta', 'dark cyan', 'dark red','light magenta', 'light cyan', 'light red', '', default='')
+# In addition to the 16 named colors and index from the 256-color paltte or a
+# 24-bit color code can be used, if your terminal supports this.
+# The 256-color paltte index is simply a number between 0 and 255.
+# The 24-bit color must be given as #RRGGBB, where RR, GG, BB is the
+# hexadecimal value of the reg, green or blue component, respectively.
+# When using a 24-bit color, make sure to enclose the color value in ' or "!
+color = color(default='')
 
 # setting this to *True*, will keep khal from making any changes to this
 # calendar
@@ -177,6 +183,10 @@ theme = option('dark', 'light', default='dark')
 # (groups of) elements.
 frame = boolean(default=False)
 
+# Whether to use bold text for light colors or not. Non-bold light colors may
+# not work on all terminals but allow using light background colors.
+bold_for_light_color = boolean(default=True)
+
 # When highlight_event_days is enabled, this section specifies how is
 # the highlighting rendered.
 [highlight_days]
@@ -186,13 +196,13 @@ method = option('foreground', 'fg', 'background', 'bg', default='fg')
 
 # What color to use when highlighting - explicit color or use calendar
 # color when set to ''
-color = option('black', 'white', 'brown', 'yellow','dark grey', 'dark green', 'dark blue','light grey', 'light green', 'light blue','dark magenta', 'dark cyan', 'dark red','light magenta', 'light cyan', 'light red', '', default='')
+color = color(default='')
 
 # How to color days with events from multiple calendars - either
 # explicit color or use calendars' colors when set to ''
-multiple = option('black', 'white', 'brown', 'yellow','dark grey', 'dark green', 'dark blue','light grey', 'light green', 'light blue','dark magenta', 'dark cyan', 'dark red','light magenta', 'light cyan', 'light red', '', default='')
+multiple = color(default='')
 
 # Default color for calendars without color - when se to '' it
 # actually disables highlighting for events that should use the
 # default color.
-default_color = option('black', 'white', 'brown', 'yellow','dark grey', 'dark green', 'dark blue','light grey', 'light green', 'light blue','dark magenta', 'dark cyan', 'dark red','light magenta', 'light cyan', 'light red', '', default='')
+default_color = color(default='')
