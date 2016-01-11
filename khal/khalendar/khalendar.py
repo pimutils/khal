@@ -386,31 +386,17 @@ class CalendarCollection(object):
             events.extend(one.search(search_string))
         return events
 
-    def get_event_color(self, event):
-        """Because multi-line lambdas would be un-Pythonic
-        """
-        if event.color == '':
-            return self.default_color
-        return event.color
-
     def get_day_styles(self, day, focus):
         devents = list(self.get_events_on(day))
         if len(devents) == 0:
             return None
-        prefix = ''
-        if self.hmethod == 'bg' or self.hmethod == 'background':
-            prefix = 'bg '
         if self.color != '':
-            return prefix + self.color
-        dcolors = list(set(map(lambda x: self.get_event_color(x), devents)))
-        if len(dcolors) == 1:
-            if devents[0].color == '':
-                return prefix + self.default_color
-            else:
-                return prefix + devents[0].color
+            return 'highlight_days_color'
+        if len(devents) == 1:
+            return 'calendar ' + devents[0].calendar
         if self.multiple != '':
-            return prefix + self.multiple
-        return (prefix + dcolors[0], prefix + dcolors[1])
+            return 'highlight_days_multiple'
+        return ('calendar ' + devents[0].calendar, 'calendar ' + devents[1].calendar)
 
     def get_styles(self, date, focus):
         if focus:
