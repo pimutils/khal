@@ -13,6 +13,10 @@ not released yet
 
 BREAKING CHANGE: python 2 is no longer supported (Hugo Osvaldo Barrera)
 
+* improved color support (256 colors and 24-bit colors), see configuration
+  documentation for details (Sebastian Hamann)
+* renamed color `grey` to `gray` (Sebastian Hamann)
+
 0.7.0
 =====
 released on 2015-11-24
