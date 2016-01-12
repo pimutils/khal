@@ -794,7 +794,7 @@ def _urwid_palette_entry(name, color, hmethod):
         color = 'h' + str(best)
     # We unconditionally add the color to the high color slot. It seems to work
     # in lower color terminals as well.
-    if hmethod == 'fg' or hmethod == 'foreground':
+    if hmethod in ['fg', 'foreground']:
         return (name, '', '', '', color, '')
     else:
         return (name, '', '', '', '', color)

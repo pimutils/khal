@@ -67,8 +67,7 @@ COLORS = {
 }
 
 
-def colored(string, fg=None, bg=None):
-    bold_for_light_color = True  # FIXME: this should be a config option
+def colored(string, fg=None, bg=None, bold_for_light_color=True):
     result = ''
     for colorstring, is_bg in ((fg, False), (bg, True)):
         if colorstring:
