@@ -10,15 +10,21 @@
 # the path to a *vdir* where this calendar is saved
 path = expand_path(default=None)
 
-# khal will use this color for coloring this calendar's event. Depending on
-# your terminal emulator's settings, they might look different than what their
-# name implies.
-# In addition to the 16 named colors and index from the 256-color paltte or a
+# khal will use this color for coloring this calendar's event.
+# The following color names are supported: *black*, *white*, *brown*, *yellow*,
+# *dark gray*, *dark green*, *dark blue*, *light gray*, *light green*, *light
+# blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light
+# cyan*, *light red*
+# Depending on your terminal emulator's settings, they might look different
+# than what their name implies.
+# In addition to the 16 named colors an index from the 256-color paltte or a
 # 24-bit color code can be used, if your terminal supports this.
 # The 256-color paltte index is simply a number between 0 and 255.
 # The 24-bit color must be given as #RRGGBB, where RR, GG, BB is the
-# hexadecimal value of the reg, green or blue component, respectively.
+# hexadecimal value of the red, green and blue component, respectively.
 # When using a 24-bit color, make sure to enclose the color value in ' or "!
+# If the color is set to '' (the default), the default_color (see below) is
+# used.
 color = color(default='')
 
 # setting this to *True*, will keep khal from making any changes to this

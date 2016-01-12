@@ -56,8 +56,8 @@ COLORS = {
     'dark magenta': NamedColor(index=5, light=False),
     'dark cyan': NamedColor(index=6, light=False),
     'white': NamedColor(index=7, light=False),
-    'light grey': NamedColor(index=7, light=True),
-    'dark grey': NamedColor(index=0, light=True),  # actually light black
+    'light gray': NamedColor(index=7, light=True),
+    'dark gray': NamedColor(index=0, light=True),  # actually light black
     'light red': NamedColor(index=1, light=True),
     'light green': NamedColor(index=2, light=True),
     'yellow': NamedColor(index=3, light=True),

@@ -745,8 +745,7 @@ def _urwid_palette_entry(name, color, hmethod):
     from ..terminal import COLORS
     if color == '' or color in COLORS:
         # Named colors already use urwid names, no need to change anything.
-        # Except for grey, which is called gray by urwid.
-        color = color.replace('grey', 'gray')
+        pass
     elif color.isdigit():
         # Colors from the 256 color palette need to be prefixed with h in
         # urwid.
@@ -766,10 +765,10 @@ def _urwid_palette_entry(name, color, hmethod):
                 for b in range(0, 6):
                     colors[r * 36 + g * 6 + b + 16] = \
                         (colorlevels[r], colorlevels[g], colorlevels[b])
-        # Greyscale
-        greylevels = [0x08 + 10 * i for i in range(0, 24)]
+        # Grayscale
+        graylevels = [0x08 + 10 * i for i in range(0, 24)]
         for c in range(0, 24):
-            colors[232 + c] = (greylevels[c], ) * 3
+            colors[232 + c] = (graylevels[c], ) * 3
         # Parse the HTML-style color into the variables r, g, b.
         if len(color) == 4:
             # e.g. #ABC, equivalent to #AABBCC
