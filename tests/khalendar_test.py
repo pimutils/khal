@@ -9,7 +9,7 @@ from vdirsyncer.storage.base import Item
 
 import khal.aux
 
-from khal.khalendar import Calendar, CalendarCollection
+from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
 from khal.khalendar.backend import CouldNotCreateDbDir
 import khal.khalendar.exceptions
@@ -39,11 +39,11 @@ item_today = Item(event_today)
 
 class TestCalendar(object):
 
-    def test_create(self, cal_vdir):
+    def test_create(self, coll_vdirs):
         assert True
 
-    def test_new_event(self, coll_vdirs_disk):
-        coll, vdirs = coll_vdirs_disk
+    def test_new_event(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, cal1)
         assert event.calendar == cal1
         coll.new(event)
@@ -54,28 +54,52 @@ class TestCalendar(object):
         assert len(list(coll.get_events_on(yesterday))) == 0
         assert len(list(vdirs[cal1].list())) == 1
 
-    def test_db_needs_update(self, cal_vdir):
-        cal, vdir = cal_vdir
-        vdir.upload(item_today)
-        cal.db_update()
-        assert cal._db_needs_update() is False
+    def test_sanity(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        mtimes = dict()
+        for i in range(100):
+            for cal in coll._calendars:
+                mtime = os.path.getmtime(coll._calendars[cal]['path'])
+                if mtimes.get(cal):
+                    assert mtimes[cal] == mtime
+                else:
+                    mtimes[cal] = mtime
 
-    def test_db_needs_update_after_insert(self, cal_vdir):
-        cal, vdir = cal_vdir
-        event = cal.new_event(event_today)
-        cal.new(event)
-        assert cal._db_needs_update() is False
+    def test_db_needs_update(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+
+        print('init')
+        for calendar in coll._calendars:
+            print('{}: saved ctag: {}, vdir ctag: {}'.format(
+                calendar, coll._local_ctag(calendar), coll._backend.get_ctag(calendar)))
+        assert len(list(vdirs[cal1].list())) == 0
+        assert coll._needs_update(cal1) is False
+        sleep(0.01)
+
+        vdirs[cal1].upload(item_today)
+        print('upload')
+        for calendar in coll._calendars:
+            print('{}: saved ctag: {}, vdir ctag: {}'.format(
+                calendar, coll._local_ctag(calendar), coll._backend.get_ctag(calendar)))
+        assert len(list(vdirs[cal1].list())) == 1
+        assert coll._needs_update(cal1) is True
+        coll.update_db()
+        print('updated')
+        for calendar in coll._calendars:
+            print('{}: saved ctag: {}, vdir ctag: {}'.format(
+                calendar, coll._local_ctag(calendar), coll._backend.get_ctag(calendar)))
+        assert coll._needs_update(cal1) is False
 
 
 class TestVdirsyncerCompat(object):
-    def test_list(self, cal_vdir):
-        cal, vdir = cal_vdir
-        event = Event.fromString(event_d, calendar=cal.name, locale=aux.locale)
-        cal.new(event)
-        event = Event.fromString(event_today, calendar=cal.name, locale=aux.locale)
-        cal.new(event)
-        hrefs = sorted(href for href, uid in cal._dbtool.list())
-        assert set(str(cal._dbtool.get(href).uid) for href in hrefs) == set((
+    def test_list(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        event = Event.fromString(event_d, calendar=cal1, locale=aux.locale)
+        coll.new(event)
+        event = Event.fromString(event_today, calendar=cal1, locale=aux.locale)
+        coll.new(event)
+        hrefs = sorted(href for href, uid in coll._backend.list(cal1))
+        assert set(str(coll._backend.get(href, calendar=cal1).uid) for href in hrefs) == set((
             'uid3@host1.com',
             'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU',
         ))
@@ -101,14 +125,12 @@ class TestCollection(object):
     bend_berlin = aux.BERLIN.localize(bend)
 
     def test_default_calendar(self, tmpdir):
-        coll = CalendarCollection(locale=aux.locale)
-        props = {}
-        coll.append(Calendar('foobar', ':memory:', str(tmpdir),
-                             readonly=True, locale=aux.locale), props=props)
-        coll.append(Calendar('home', ':memory:', str(tmpdir),
-                             locale=aux.locale), props=props)
-        coll.append(Calendar('work', ':memory:', str(tmpdir),
-                             readonly=True, locale=aux.locale), props=props)
+        calendars = {
+            'foobar': {'name': 'foobar', 'path': str(tmpdir), 'readonly': True},
+            'home': {'name': 'home', 'path': str(tmpdir)},
+            'work': {'name': 'work', 'path': str(tmpdir), 'readonly': True},
+        }
+        coll = CalendarCollection(calendars=calendars, locale=aux.locale, dbpath=':memory:')
         assert coll.default_calendar_name is None
         with pytest.raises(ValueError):
             coll.default_calendar_name = 'work'
@@ -128,9 +150,9 @@ class TestCollection(object):
         assert list(coll.get_localized(aux.BERLIN.localize(start),
                                        aux.BERLIN.localize(end))) == list()
 
-    def test_insert(self, coll_vdirs_disk):
+    def test_insert(self, coll_vdirs):
         """insert a localized event"""
-        coll, vdirs = coll_vdirs_disk
+        coll, vdirs = coll_vdirs
         event = Event.fromString(event_dt, calendar=cal1, locale=aux.locale)
         coll.new(event, cal1)
         events = list(coll.get_localized(self.astart_berlin, self.aend_berlin))
@@ -148,11 +170,10 @@ class TestCollection(object):
         assert len(list(vdirs[cal3].list())) == 0
         assert list(coll.get_floating(self.astart, self.aend)) == []
 
-    def test_insert_d(self, coll_vdirs_disk):
+    def test_insert_d(self, coll_vdirs):
         """insert a floating event"""
-        coll, vdirs = coll_vdirs_disk
-
-        event = Event.fromString(event_d, calendar='foo', locale=aux.locale)
+        coll, vdirs = coll_vdirs
+        event = Event.fromString(event_d, calendar=cal1, locale=aux.locale)
         coll.new(event, cal1)
         events = list(coll.get_events_on(aday))
         assert len(events) == 1
@@ -163,11 +184,11 @@ class TestCollection(object):
         assert len(list(vdirs[cal3].list())) == 0
         assert list(coll.get_localized(self.bstart_berlin, self.bend_berlin)) == []
 
-    def test_insert_d_no_value(self, coll_vdirs_disk):
+    def test_insert_d_no_value(self, coll_vdirs):
         """insert a date event with no VALUE=DATE option"""
-        coll, vdirs = coll_vdirs_disk
+        coll, vdirs = coll_vdirs
 
-        event = Event.fromString(event_d_no_value, calendar='foo', locale=aux.locale)
+        event = Event.fromString(event_d_no_value, calendar=cal1, locale=aux.locale)
         coll.new(event, cal1)
         events = list(coll.get_events_on(aday))
         assert len(events) == 1
@@ -177,10 +198,10 @@ class TestCollection(object):
         assert len(list(vdirs[cal3].list())) == 0
         assert list(coll.get_localized(self.bstart_berlin, self.bend_berlin)) == []
 
-    def test_change(self, coll_vdirs_disk):
+    def test_change(self, coll_vdirs):
         """moving an event from one calendar to another"""
-        coll, vdirs = coll_vdirs_disk
-        event = Event.fromString(event_dt, calendar='foo', locale=aux.locale)
+        coll, vdirs = coll_vdirs
+        event = Event.fromString(event_dt, calendar=cal1, locale=aux.locale)
         coll.new(event, cal1)
         event = list(coll.get_events_on(aday))[0]
         assert event.calendar == cal1
@@ -190,9 +211,9 @@ class TestCollection(object):
         assert len(events) == 1
         assert events[0].calendar == cal2
 
-    def test_update_event(self, coll_vdirs_disk):
+    def test_update_event(self, coll_vdirs):
         """updating one event"""
-        coll, vdirs = coll_vdirs_disk
+        coll, vdirs = coll_vdirs
         event = Event.fromString(
             _get_text('event_dt_simple'), calendar=cal1, locale=aux.locale)
         coll.new(event, cal1)
@@ -213,16 +234,11 @@ class TestCollection(object):
         event = coll.new_event(event.to_ical(), coll.default_calendar_name)
         assert event.allday is False
 
-    def test_modify_readonly_calendar(self, tmpdir):
-        coll = CalendarCollection(locale=aux.locale)
-        props = {}
-        coll.append(Calendar('foobar', ':memory:', str(tmpdir),
-                             readonly=True, locale=aux.locale), props=props)
-        coll.append(Calendar('home', ':memory:', str(tmpdir),
-                             locale=aux.locale), props=props)
-        coll.append(Calendar('work', ':memory:', str(tmpdir),
-                             readonly=True, locale=aux.locale), props=props)
-        event = Event.fromString(event_dt, calendar='home', locale=aux.locale)
+    def test_modify_readonly_calendar(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        coll._calendars[cal1]['readonly'] = True
+        coll._calendars[cal3]['readonly'] = True
+        event = Event.fromString(event_dt, calendar=cal1, locale=aux.locale)
 
         with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
             coll.new(event, cal1)
@@ -232,27 +248,27 @@ class TestCollection(object):
 
     def test_search(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        assert len(coll.search('Event')) == 0
+        assert len(list(coll.search('Event'))) == 0
         event = Event.fromString(
             _get_text('event_dt_simple'), calendar=cal1, locale=aux.locale)
         coll.new(event, cal1)
-        assert len(coll.search('Event')) == 1
+        assert len(list(coll.search('Event'))) == 1
 
     def test_get_events_at(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         a_time = aux.BERLIN.localize(datetime(2014, 4, 9, 10))
         b_time = aux.BERLIN.localize(datetime(2014, 4, 9, 11))
-        assert len(coll.get_events_at(a_time)) == 0
+        assert len(list(coll.get_events_at(a_time))) == 0
         event = Event.fromString(
             _get_text('event_dt_simple'), calendar=cal1, locale=aux.locale)
         coll.new(event, cal1)
-        assert len(coll.get_events_at(a_time)) == 1
-        assert len(coll.get_events_at(b_time)) == 0
+        assert len(list(coll.get_events_at(a_time))) == 1
+        assert len(list(coll.get_events_at(b_time))) == 0
 
-    def test_delete_two_events(self, coll_vdirs_disk):
+    def test_delete_two_events(self, coll_vdirs):
             """testing if we can delete any of two events in two different
             calendars with the same filename"""
-            coll, vdirs = coll_vdirs_disk
+            coll, vdirs = coll_vdirs
             event1 = Event.fromString(_get_text('event_dt_simple'),
                                       calendar=cal1, locale=aux.locale)
             event2 = Event.fromString(_get_text('event_dt_simple'),
@@ -260,109 +276,98 @@ class TestCollection(object):
             coll.new(event1, cal1)
             sleep(0.1)  # make sure the etags are different
             coll.new(event2, cal2)
-            etag1 = list(vdirs['foobar'].list())[0][1]
-            etag2 = list(vdirs['work'].list())[0][1]
+            etag1 = list(vdirs[cal1].list())[0][1]
+            etag2 = list(vdirs[cal2].list())[0][1]
             events = list(coll.get_localized(self.astart_berlin, self.aend_berlin))
             assert len(events) == 2
             assert events[0].calendar != events[1].calendar
             for event in events:
-                if event.calendar == 'foobar':
+                if event.calendar == cal1:
                     assert event.etag == etag1
-                if event.calendar == 'work':
+                if event.calendar == cal2:
                     assert event.etag == etag2
-
-
-@pytest.fixture
-def cal_dbpath(tmpdir):
-    name = 'testcal'
-    vdirpath = str(tmpdir) + '/' + name
-    dbpath = str(tmpdir) + '/subdir/' + 'khal.db'
-    cal = Calendar(name, dbpath, vdirpath, locale=aux.locale)
-
-    return cal, dbpath
 
 
 class TestDbCreation(object):
 
     def test_create_db(self, tmpdir):
-        name = 'testcal'
-        vdirpath = str(tmpdir) + '/' + name
+        vdirpath = str(tmpdir) + '/' + cal1
+        os.makedirs(vdirpath, mode=0o770)
         dbdir = str(tmpdir) + '/subdir/'
         dbpath = dbdir + 'khal.db'
 
         assert not os.path.isdir(dbdir)
-        Calendar(name, dbpath, vdirpath, aux.locale)
+        calendars = {cal1: {'name': cal1, 'path': vdirpath}}
+        CalendarCollection(calendars, dbpath=dbpath, locale=aux.locale)
         assert os.path.isdir(dbdir)
 
     def test_failed_create_db(self, tmpdir):
-        name = 'testcal'
-        vdirpath = str(tmpdir) + '/' + name
         dbdir = str(tmpdir) + '/subdir/'
         dbpath = dbdir + 'khal.db'
-
         os.chmod(str(tmpdir), 400)
 
+        calendars = {cal1: {'name': cal1, 'path': str(tmpdir)}}
         with pytest.raises(CouldNotCreateDbDir):
-            Calendar(name, dbpath, vdirpath, aux.locale)
+            CalendarCollection(calendars, dbpath=dbpath, locale=aux.locale)
 
 
-def test_default_calendar(coll_vdirs_disk):
+def test_default_calendar(coll_vdirs):
     """test if an update to the vdir is detected by the CalendarCollection"""
-    coll, vdirs = coll_vdirs_disk
+    coll, vdirs = coll_vdirs
     vdir = vdirs['foobar']
     event = coll.new_event(event_today, 'foobar')
     vdir.upload(event)
     href, etag = list(vdir.list())[0]
     assert len(list(coll.get_events_on(today))) == 0
-    coll.db_update()
+    coll.update_db()
     assert len(list(coll.get_events_on(today))) == 1
     vdir.delete(href, etag)
     assert len(list(coll.get_events_on(today))) == 1
-    coll.db_update()
+    coll.update_db()
     assert len(list(coll.get_events_on(today))) == 0
 
 
-def test_only_update_old_event(cal_vdir, monkeypatch):
-    cal, vdir = cal_vdir
+def test_only_update_old_event(coll_vdirs, monkeypatch):
+    coll, vdirs = coll_vdirs
 
-    href_one, etag_one = vdir.upload(cal.new_event(dedent("""
+    href_one, etag_one = vdirs[cal1].upload(coll.new_event(dedent("""
     BEGIN:VEVENT
     UID:meeting-one
     DTSTART;VALUE=DATE:20140909
     DTEND;VALUE=DATE:20140910
     SUMMARY:first meeting
     END:VEVENT
-    """)))
+    """), cal1))
 
-    href_two, etag_two = vdir.upload(cal.new_event(dedent("""
+    href_two, etag_two = vdirs[cal1].upload(coll.new_event(dedent("""
     BEGIN:VEVENT
     UID:meeting-two
     DTSTART;VALUE=DATE:20140910
     DTEND;VALUE=DATE:20140911
     SUMMARY:second meeting
     END:VEVENT
-    """)))
+    """), cal1))
 
-    cal.db_update()
-    assert not cal._db_needs_update()
+    coll.update_db()
+    assert not coll._needs_update(cal1)
 
-    old_update_vevent = cal._update_vevent
+    old_update_vevent = coll._update_vevent
     updated_hrefs = []
 
-    def _update_vevent(href):
+    def _update_vevent(href, calendar):
         updated_hrefs.append(href)
-        return old_update_vevent(href)
-    monkeypatch.setattr(cal, '_update_vevent', _update_vevent)
+        return old_update_vevent(href, calendar)
+    monkeypatch.setattr(coll, '_update_vevent', _update_vevent)
 
-    href_three, etag_three = vdir.upload(cal.new_event(dedent("""
+    href_three, etag_three = vdirs[cal1].upload(coll.new_event(dedent("""
     BEGIN:VEVENT
     UID:meeting-three
     DTSTART;VALUE=DATE:20140911
     DTEND;VALUE=DATE:20140912
     SUMMARY:third meeting
     END:VEVENT
-    """)))
+    """), cal1))
 
-    assert cal._db_needs_update()
-    cal.db_update()
+    assert coll._needs_update(cal1)
+    coll.update_db()
     assert updated_hrefs == [href_three]

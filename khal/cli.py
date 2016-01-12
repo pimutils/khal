@@ -146,30 +146,28 @@ def global_options(f):
 def build_collection(ctx):
     try:
         conf = ctx.obj['conf']
+        selection = ctx.obj.get('calendar_selection', None)
+
+        props = dict()
+        for name, cal in conf['calendars'].items():
+            if selection is None or name in ctx.obj['calendar_selection']:
+                props[name] = {
+                    'name': name,
+                    'path': cal['path'],
+                    'readonly': cal['readonly'],
+                    'color': cal['color'],
+                    'ctype': cal['type'],
+                }
         collection = khalendar.CalendarCollection(
+            calendars=props,
+            color=ctx.obj['conf']['highlight_days']['color'],
+            locale=ctx.obj['conf']['locale'],
+            dbpath=conf['sqlite']['path'],
             hmethod=ctx.obj['conf']['highlight_days']['method'],
             default_color=ctx.obj['conf']['highlight_days']['default_color'],
             multiple=ctx.obj['conf']['highlight_days']['multiple'],
-            color=ctx.obj['conf']['highlight_days']['color'],
             highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
-            locale=ctx.obj['conf']['locale'])
-        selection = ctx.obj.get('calendar_selection', None)
-
-        for name, cal in conf['calendars'].items():
-            if selection is None or name in ctx.obj['calendar_selection']:
-                props = {'readonly': cal['readonly'],
-                         'color': cal['color'],
-                         }
-                collection.append(khalendar.Calendar(
-                    name=name,
-                    dbpath=conf['sqlite']['path'],
-                    path=cal['path'],
-                    readonly=cal['readonly'],
-                    color=cal['color'],
-                    unicode_symbols=conf['locale']['unicode_symbols'],
-                    locale=conf['locale'],
-                    ctype=cal['type'],
-                ), props=props)
+        )
     except FatalError as error:
         logger.fatal(error)
         sys.exit(1)

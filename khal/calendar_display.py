@@ -18,7 +18,6 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-from __future__ import print_function
 
 import calendar
 import datetime
@@ -118,7 +117,7 @@ def str_week(week, today, collection=None,
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
         elif highlight_event_days:
-            devents = list(collection.get_events_on(day))
+            devents = list(collection.get_events_on(day, minimal=True))
             if len(devents) > 0:
                 day = str_highlight_day(day, devents, hmethod, default_color,
                                         multiple, color, bold_for_light_color)

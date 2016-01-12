@@ -477,11 +477,11 @@ class EventEditor(urwid.WidgetWrap):
 
         # TODO warning message if len(self.collection.writable_names) == 0
         def decorate_choice(c):
-            return ('calendar ' + c.name, c.name)
+            return ('calendar ' + c['name'], c['name'])
 
         self.calendar_chooser = Choice(
-            [c for c in self.collection.calendars if not c.readonly],
-            self.collection._calnames[self.event.calendar],
+            [self.collection._calendars[c] for c in self.collection.writable_names],
+            self.collection._calendars[self.event.calendar],
             decorate_choice
         )
         self.description = Edit(caption='Description: ',
@@ -606,12 +606,12 @@ class EventEditor(urwid.WidgetWrap):
             self.event.allday = self.startendeditor.allday
             self.event.increment_sequence()
             if self.event.etag is None:  # has not been saved before
-                self.event.calendar = self.calendar_chooser.active.name
+                self.event.calendar = self.calendar_chooser.active['name']
                 self.collection.new(self.event)
             elif self.calendar_chooser.changed:
                 self.collection.change_collection(
                     self.event,
-                    self.calendar_chooser.active.name
+                    self.calendar_chooser.active['name']
                 )
             else:
                 self.collection.update(self.event)
@@ -811,12 +811,12 @@ def _add_calendar_colors(palette, collection):
     :rtype: list
     """
     for cal in collection.calendars:
-        if cal.color == '':
+        if cal['color'] == '':
             # No color set for this calendar, use default_color instead.
             color = collection.default_color
         else:
-            color = cal.color
-        palette.append(_urwid_palette_entry('calendar ' + cal.name, color,
+            color = cal['color']
+        palette.append(_urwid_palette_entry('calendar ' + cal['name'], color,
                                             collection.hmethod))
     palette.append(_urwid_palette_entry('highlight_days_color',
                                         collection.color, collection.hmethod))

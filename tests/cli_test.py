@@ -28,9 +28,11 @@ def runner(tmpdir):
     config = tmpdir.join('config.ini')
     db = tmpdir.join('khal.db')
     calendar = tmpdir.mkdir('calendar')
+    calendar2 = tmpdir.mkdir('calendar2')
 
     def inner(**kwargs):
         config.write(config_template.format(calpath=str(calendar),
+                                            calpath2=str(calendar2),
                                             dbpath=str(db), **kwargs))
         runner = CustomCliRunner(config=config, db=db,
                                  calendars=dict(one=calendar))
@@ -42,6 +44,10 @@ config_template = '''
 [[one]]
 path = {calpath}
 color = dark blue
+
+[[two]]
+path = {calpath2}
+color = dark green
 
 [locale]
 local_timezone = Europe/Berlin
@@ -200,10 +206,23 @@ def test_invalid_calendar(runner):
         main_khal, ['new'] + '-a one 18:00 myevent'.split())
     assert not result.exception
     result = runner.invoke(
-        main_khal, ['new'] + '-a two 18:00 myevent'.split())
+        main_khal, ['new'] + '-a three 18:00 myevent'.split())
     assert result.exception
     assert result.exit_code == 2
     assert 'Unknown calendar ' in result.output
+
+
+def test_attach_calendar(runner):
+    runner = runner(command='calendar', showalldays=False, days=2)
+    result = runner.invoke(main_khal, ['printcalendars'])
+    assert set(result.output.split('\n')[:2]) == set(['one', 'two'])
+    assert not result.exception
+    result = runner.invoke(main_khal, ['printcalendars', '-a', 'one'])
+    assert result.output == 'one\n'
+    assert not result.exception
+    result = runner.invoke(main_khal, ['printcalendars', '-d', 'one'])
+    assert result.output == 'two\n'
+    assert not result.exception
 
 
 @pytest.mark.parametrize('contents', [
@@ -241,6 +260,30 @@ def test_repeating(runner):
         main_khal, ['new'] + '{} 18:00 myevent -r weekly -u {}'.format(
             now, end_date.strftime('%d.%m.%Y')).split())
     assert result.output == ''
+    assert not result.exception
+
+
+def test_at(runner):
+    runner = runner(command='calendar', showalldays=False, days=2)
+    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    result = runner.invoke(
+        main_khal, ['new'] + '{} 18:00 myevent'.format(
+            now, end_date.strftime('%d.%m.%Y')).split())
+    result = runner.invoke(main_khal, ['at', '18:30'])
+    assert result.output.startswith('\x1b[34m18:00')
+    assert not result.exception
+
+
+def test_search(runner):
+    runner = runner(command='calendar', showalldays=False, days=2)
+    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    result = runner.invoke(
+        main_khal, ['new'] + '{} 18:00 myevent'.format(
+            now, end_date.strftime('%d.%m.%Y')).split())
+    result = runner.invoke(main_khal, ['search', 'myevent'])
+    assert result.output.startswith('\x1b[34m18:00')
     assert not result.exception
 
 

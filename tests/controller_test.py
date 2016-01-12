@@ -28,8 +28,8 @@ item_today = Item(event_today)
 
 
 class TestGetAgenda(object):
-    def test_new_event(self, coll_vdirs_disk):
-        coll, vdirs = coll_vdirs_disk
+    def test_new_event(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, aux.cal1)
         coll.new(event)
         assert ['\x1b[1mToday:\x1b[0m', '\x1b[34ma meeting\x1b[0m'] == get_agenda(coll, aux.locale)
@@ -55,8 +55,8 @@ class TestGetAgenda(object):
 
 
 class TestImport(object):
-    def test_import(self, coll_vdirs_disk):
-        coll, vdirs = coll_vdirs_disk
+    def test_import(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
         import_ics(coll, {'locale': aux.locale}, _get_text('event_rrule_recuid'),
                    batch=True)
         start_date = aux.BERLIN.localize(datetime.datetime(2014, 4, 30))

@@ -21,19 +21,15 @@
 
 
 """
-This module is currently being refactored.
-
-The Calendar class will vanish, everything should be done through CalendarCollection
-
-khalendar.Calendar and CalendarCollection should be a nice, abstract interface
 CalendarCollection should enable modifying and querying a collection of
 calendars. Each calendar is defined by the contents of a vdir, but uses an
-sqlite db for caching (see backend if you're interested).
+SQLite db for caching (see backend if you're interested).
 """
 import datetime
 import os
 import os.path
 import itertools
+import math
 
 from vdirsyncer.storage.filesystem import FilesystemStorage
 from vdirsyncer.exceptions import AlreadyExistingError
@@ -50,7 +46,7 @@ logger = log.logger
 def create_directory(path):
     if not os.path.isdir(path):
         if os.path.exists(path):
-            raise RuntimeError('{} is not a directory.'.format(path))
+            raise RuntimeError('{0} is not a directory.'.format(path))
         try:
             os.makedirs(path, mode=0o750)
         except OSError as error:
@@ -58,229 +54,56 @@ def create_directory(path):
             raise CouldNotCreateDbDir()
 
 
-class Calendar(object):
-
-    def __init__(self, name, dbpath, path, readonly=False, color='',
-                 unicode_symbols=True, locale=None, ctype='calendar'):
-        """
-        :param name: the name of the calendar
-        :type name: str
-        :param dbpath: path where the local chaching db should be saved
-        :type dbpath: str
-        :param readonly: if True, this Calendar cannot be modified
-        :type readonly: bool
-        :param color: the color which this calendar's events should be
-                      printed in
-        :type color: str
-        :param unicode_symbols: if True, unicode symbols will be used for
-                                representing this calendars's events properties
-        :type unicode_symbols: bool
-        :param locale: the locale settings
-        :type locale: dict()
-        """
-        self._locale = locale
-
-        self.name = name
-        self.color = color
-        self.path = os.path.expanduser(path)
-        create_directory(path)
-        if ctype == 'calendar':
-            self._dbtool = backend.SQLiteDb(
-                self.name, dbpath, locale=self._locale)
-            file_ext = '.ics'
-        elif ctype == 'birthdays':
-            self._dbtool = backend.SQLiteDb_Birthdays(
-                self.name, dbpath, locale=self._locale)
-            file_ext = '.vcf'
-        else:
-            raise ValueError('ctype must be either `calendar` or `birthdays`')
-        self._storage = FilesystemStorage(path, file_ext)
-        self._readonly = readonly
-        self._unicode_symbols = unicode_symbols
-
-        if self._db_needs_update():
-            self.db_update()
-
-    @property
-    def readonly(self):
-        return self._readonly
-
-    def _cover_event(self, event):
-        event.color = self.color
-        event.readonly = self._readonly
-        event.unicode_symbols = self._unicode_symbols
-        return event
-
-    def local_ctag(self):
-        return os.path.getmtime(self.path)
-
-    def get_events_at(self, dtime=datetime.datetime.now()):
-        """return events which are scheduled at `dtime`"""
-        events = list()
-        events.extend(self._dbtool.get_allday_at(dtime))
-        events.extend(self._dbtool.get_datetime_at(dtime))
-        return [self._cover_event(event) for event in events]
-
-    def get_event(self, href):
-        return self._cover_event(self._dbtool.get(href))
-
-    def update(self, event):
-        """update an event in vdir storage and in the database
-
-        param event: the event that should be updated
-        type event: event.Event
-        """
-        assert event.etag
-        if self._readonly:
-            raise ReadOnlyCalendarError()
-
-        with self._dbtool.at_once():
-            event.etag = self._storage.update(event.href, event, event.etag)
-            self._dbtool.update(event.raw, event.href, event.etag)
-            self._dbtool.set_ctag(self.local_ctag())
-
-    def force_update(self, event):
-        # FIXME after the next vdirsyncer release, that check function is
-        # not needed than
-        # AlreadyExistingError now knows the conflicting events uid
-        def check(self, item):
-            """check if this an event with this item's uid already exists"""
-            try:
-                # FIXME remove on next vdirsyncer release
-                href = self._deterministic_href(item)
-            except AttributeError:
-                href = self._get_href(item.uid)
-            if not self.has(href):
-                return None, None
-            else:
-                return href, self.get(href)[1]
-
-        if self._readonly:
-            raise ReadOnlyCalendarError()
-        with self._dbtool.at_once():
-            href, etag = check(self._storage, event)
-            if href is None:
-                self.new(event)
-            else:
-                etag = self._storage.update(href, event, etag)
-                self._dbtool.update(event.raw, href, etag)
-                self._dbtool.set_ctag(self.local_ctag())
-
-    def new(self, event):
-        """save a new event to the vdir and the database
-
-        param event: the event that should be updated
-        type event: event.Event
-        """
-        if hasattr(event, 'etag'):
-            assert not event.etag
-        if self._readonly:
-            raise ReadOnlyCalendarError()
-
-        with self._dbtool.at_once():
-
-            try:
-                href, etag = self._storage.upload(event)
-            except AlreadyExistingError as Error:
-                href = getattr(Error, 'existing_href', None)
-                raise DuplicateUid(href)
-            self._dbtool.update(event.raw, href, etag)
-            self._dbtool.set_ctag(self.local_ctag())
-
-    def delete(self, href, etag):
-        """delete event from this collection
-        """
-        if self._readonly:
-            raise ReadOnlyCalendarError()
-        self._storage.delete(href, etag)
-        self._dbtool.delete(href)
-
-    def _db_needs_update(self):
-        if self.local_ctag() == self._dbtool.get_ctag():
-            return False
-        else:
-            return True
-
-    def db_update(self):
-        """update the db from the vdir,
-
-        should be called after every change to the vdir
-        """
-        db_hrefs = set(href for href, etag in self._dbtool.list())
-        storage_hrefs = set()
-
-        with self._dbtool.at_once():
-            for href, etag in self._storage.list():
-                storage_hrefs.add(href)
-                dbetag = self._dbtool.get_etag(href)
-                if etag != dbetag:
-                    logger.debug('Updating {} because {} != {}'
-                                 .format(href, etag, dbetag))
-                    self._update_vevent(href)
-            for href in db_hrefs - storage_hrefs:
-                self._dbtool.delete(href)
-
-            self._dbtool.set_ctag(self.local_ctag())
-
-    def _update_vevent(self, href):
-        """should only be called during db_update, only updates the db,
-        does not check for readonly"""
-        event, etag = self._storage.get(href)
-        try:
-            self._dbtool.update(event.raw, href=href, etag=etag)
-            return True
-        except Exception as e:
-            if not isinstance(e, (UpdateFailed, UnsupportedFeatureError)):
-                logger.exception('Unknown exception happened.')
-            logger.warning(
-                'Skipping {}/{}: {}\n'
-                'This event will not be available in khal.'
-                .format(self.name, href, str(e))
-            )
-            return False
-
-    def new_event(self, ical):
-        """creates and returns (but does not insert) new event from ical
-        string"""
-        return Event.fromString(ical, locale=self._locale, calendar=self.name)
-
-    def search(self, search_string):
-        return [self._cover_event(event) for event in self._dbtool.search(search_string)]
-
-
 class CalendarCollection(object):
+    """CalendarCollection allows access to various calendars stored in vdirs
+
+    all calendars are cached in an sqlitedb for perforamce reasons"""
 
     def __init__(self,
+                 calendars=None,
                  hmethod='fg',
                  default_color='',
                  multiple='',
                  color='',
                  highlight_event_days=0,
-                 locale=None):
-        self._calnames = dict()
-        self._calendars = dict()
-        self._props = dict()
-        self._backend = None
+                 locale=None,
+                 dbpath=None,
+                 ):
+        assert dbpath is not None
+        assert calendars is not None
+        self._calendars = calendars
         self._default_calendar_name = None
+        self._storages = dict()
+        for name, calendar in self._calendars.items():
+            ctype = calendar.get('ctype', 'calendar')
+            if ctype == 'calendar':
+                file_ext = '.ics'
+            elif ctype == 'birthdays':
+                file_ext = '.vcf'
+            else:
+                raise ValueError('ctype must be either `calendar` or `birthdays`')
+            self._storages[name] = FilesystemStorage(calendar['path'], file_ext)
         self.hmethod = hmethod
         self.default_color = default_color
         self.multiple = multiple
         self.color = color
         self.highlight_event_days = highlight_event_days
-        self.locale = locale
-        self.localize = self.locale['local_timezone'].localize
+        self._locale = locale
+        self._backend = backend.SQLiteDb(
+            calendars=self.names, db_path=dbpath, locale=self._locale)
+        self.update_db()
 
     @property
     def writable_names(self):
-        return [c.name for c in self.calendars if not c.readonly]
+        return [c for c in self._calendars if not self._calendars[c].get('readonly', False)]
 
     @property
     def calendars(self):
-        return self._calnames.values()
+        return self._calendars.values()
 
     @property
     def names(self):
-        return self._calnames.keys()
+        return self._calendars.keys()
 
     @property
     def default_calendar_name(self):
@@ -291,36 +114,38 @@ class CalendarCollection(object):
         if default is None:
             self._default_calendar_name = default
         elif default not in self.names:
-            raise ValueError('Unknown calendar: {}'.format(default))
+            raise ValueError('Unknown calendar: {0}'.format(default))
 
-        readonly = self._calnames[default].readonly
+        readonly = self._calendars[default].get('readonly', False)
 
         if not readonly:
             self._default_calendar_name = default
         else:
-            raise ValueError('Default calendar is read-only: {}'.format(default))
+            raise ValueError(
+                'Calendar "{0}" is read-only and cannot be used as default'.format(default))
+
+    def _local_ctag(self, calendar):
+        stat = os.stat(self._calendars[calendar]['path'])
+        mtime = getattr(stat, 'st_mtime_ns', None)
+        if mtime is None:
+            mtime = stat.st_mtime
+        return str(int(math.floor(mtime * 1e9)))
 
     def _cover_event(self, event):
-        event.color = self._props[event.calendar]['color']
-        event.readonly = self._props[event.calendar]['readonly']
-        event.unicode_symbols = self.locale['unicode_symbols']
+        event.color = self._calendars[event.calendar]['color']
+        event.readonly = self._calendars[event.calendar]['readonly']
+        event.unicode_symbols = self._locale['unicode_symbols']
         return event
 
-    def append(self, calendar, props):
-        """append a new khalendar to this collection"""
-        self._calnames[calendar.name] = calendar
-        self._props[calendar.name] = props
-        self._backend = calendar._dbtool  # TODO do this when creating the collection
-
-    def get_floating(self, start, end):
-        events = self._backend.get_floating(self.names, start, end)
+    def get_floating(self, start, end, minimal=False):
+        events = self._backend.get_floating(start, end, minimal)
         return (self._cover_event(event) for event in events)
 
-    def get_localized(self, start, end):
-        events = self._backend.get_localized(self.names, start, end)
+    def get_localized(self, start, end, minimal=False):
+        events = self._backend.get_localized(start, end, minimal)
         return (self._cover_event(event) for event in events)
 
-    def get_events_on(self, day):
+    def get_events_on(self, day, minimal=False):
         """return all events on `day`
 
         :param day: datetime.date
@@ -328,66 +153,153 @@ class CalendarCollection(object):
         """
         start = datetime.datetime.combine(day, datetime.time.min)
         end = datetime.datetime.combine(day, datetime.time.max)
-        floating_events = self.get_floating(start, end)
-        localize = self.locale['local_timezone'].localize
-        localized_events = self.get_localized(localize(start), localize(end))
+        floating_events = self.get_floating(start, end, minimal)
+        localize = self._locale['local_timezone'].localize
+        localized_events = self.get_localized(localize(start), localize(end), minimal)
 
         return itertools.chain(floating_events, localized_events)
 
     def get_events_at(self, dtime=datetime.datetime.now()):
-        if dtime is None:
-            dtime = datetime.datetime.now()
-        events = list()
-        for one in self.calendars:
-            events.extend(one.get_events_at(dtime))
-        return events
+        """get all events at datetime `dtime`
+
+        :type dtime: datetime.datetime
+        """
+        if dtime.tzinfo is None:
+            naive_dtime = dtime
+            local_dtime = self._locale['local_timezone'].localize(dtime)
+        else:
+            naive_dtime = dtime.replace(tzinfo=None)
+            local_dtime = dtime
+
+        floating_events = self._backend.get_floating_at(naive_dtime)
+        localized_events = self._backend.get_localized_at(local_dtime)
+        return (self._cover_event(event) for event in
+                itertools.chain(floating_events, localized_events))
 
     def update(self, event):
-        self._calnames[event.calendar].update(event)
+        """update `event` in vdir and db"""
+        assert event.etag
+        if self._calendars[event.calendar]['readonly']:
+            raise ReadOnlyCalendarError()
+        with self._backend.at_once():
+            event.etag = self._storages[event.calendar].update(event.href, event, event.etag)
+            self._backend.update(event.raw, event.href, event.etag, calendar=event.calendar)
+            self._backend.set_ctag(self._local_ctag(event.calendar), calendar=event.calendar)
 
     def force_update(self, event, collection=None):
-        if collection:
-            self._calnames[collection].force_update(event)
-        else:
-            self._calnames[event.calendar].force_update(event)
+        """update `event` even if an event with the same uid/href already exists"""
+        calendar = collection if collection is not None else event.calendar
+        if self._calendars[calendar]['readonly']:
+            raise ReadOnlyCalendarError()
+
+        with self._backend.at_once():
+            try:
+                href, etag = self._storages[calendar].upload(event)
+            except AlreadyExistingError as error:
+                href = error.existing_href
+                _, etag = self._storages[calendar].get(href)
+                etag = self._storages[calendar].update(href, event, etag)
+            self._backend.update(event.raw, href, etag, calendar=calendar)
+            self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
     def new(self, event, collection=None):
-        if collection:
-            self._calnames[collection].new(event)
-        else:
-            self._calnames[event.calendar].new(event)
+        """save a new event to the vdir and the database
+
+        param event: the event that should be updated
+        type event: event.Event
+        """
+        calendar = collection if collection is not None else event.calendar
+        if hasattr(event, 'etag'):
+            assert not event.etag
+        if self._calendars[calendar]['readonly']:
+            raise ReadOnlyCalendarError()
+
+        with self._backend.at_once():
+
+            try:
+                href, etag = self._storages[calendar].upload(event)
+            except AlreadyExistingError as Error:
+                href = getattr(Error, 'existing_href', None)
+                raise DuplicateUid(href)
+            self._backend.update(event.raw, href, etag, calendar=calendar)
+            self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
     def delete(self, href, etag, calendar):
-        self._calnames[calendar].delete(href, etag)
+        if self._calendars[calendar]['readonly']:
+            raise ReadOnlyCalendarError()
+        self._storages[calendar].delete(href, etag)
+        self._backend.delete(href, calendar=calendar)
 
     def get_event(self, href, calendar):
-        return self._calnames[calendar].get_event(href)
+        return self._cover_event(self._backend.get(href, calendar))
 
     def change_collection(self, event, new_collection):
         href, etag, calendar = event.href, event.etag, event.calendar
         event.etag = None
-        self._calnames[new_collection].new(event)
-        self._calnames[calendar].delete(href, etag)
+        self.new(event, new_collection)
+        self.delete(href, etag, calendar=calendar)
 
     def new_event(self, ical, collection):
-        """returns a new event"""
-        return self._calnames[collection or self.writable_names[0]].new_event(ical)
+        """creates and returns (but does not insert) new event from ical
+        string"""
+        calendar = collection or self.writable_names[0]
+        return Event.fromString(ical, locale=self._locale, calendar=calendar)
 
-    def _db_needs_update(self):
-        any([one._db_needs_update() for one in self.calendars])
+    def update_db(self):
+        """update the db from the vdir,
 
-    def db_update(self):
-        for one in self.calendars:
-            one.db_update()
+        should be called after every change to the vdir
+        """
+        for calendar in self._calendars:
+            if self._needs_update(calendar):
+                self._db_update(calendar)
+
+    def _needs_update(self, calendar):
+        """checks if the db for the given calendar needs an update"""
+        return self._local_ctag(calendar) != self._backend.get_ctag(calendar)
+
+    def _db_update(self, calendar):
+        """implements the actual db update on a per calendar base"""
+        db_hrefs = set(href for href, etag in self._backend.list(calendar))
+        storage_hrefs = set()
+
+        with self._backend.at_once():
+            for href, etag in self._storages[calendar].list():
+                storage_hrefs.add(href)
+                db_etag = self._backend.get_etag(href, calendar=calendar)
+                if etag != db_etag:
+                    logger.debug('Updating {0} because {1} != {2}'.format(href, etag, db_etag))
+                    self._update_vevent(href, calendar=calendar)
+            for href in db_hrefs - storage_hrefs:
+                self._backend.delete(href, calendar=calendar)
+            self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
+
+    def _update_vevent(self, href, calendar):
+        """should only be called during db_update, only updates the db,
+        does not check for readonly"""
+        event, etag = self._storages[calendar].get(href)
+        try:
+            if self._calendars[calendar].get('ctype') == 'birthdays':
+                update = self._backend.update_birthday
+            else:
+                update = self._backend.update
+            update(event.raw, href=href, etag=etag, calendar=calendar)
+
+            return True
+        except Exception as e:
+            if not isinstance(e, (UpdateFailed, UnsupportedFeatureError)):
+                logger.exception('Unknown exception happened.')
+            logger.warning(
+                'Skipping {0}/{1}: {2}\n'
+                'This event will not be available in khal.'.format(calendar, href, str(e)))
+            return False
 
     def search(self, search_string):
-        events = list()
-        for one in self.calendars:
-            events.extend(one.search(search_string))
-        return events
+        """search for the db for events matching `search_string`"""
+        return (self._cover_event(event) for event in self._backend.search(search_string))
 
     def get_day_styles(self, day, focus):
-        devents = list(self.get_events_on(day))
+        devents = list(self.get_events_on(day, minimal=True))
         if len(devents) == 0:
             return None
         if self.color != '':
