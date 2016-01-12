@@ -477,7 +477,7 @@ class EventEditor(urwid.WidgetWrap):
 
         # TODO warning message if len(self.collection.writable_names) == 0
         def decorate_choice(c):
-            return ('calendar ' + c['name'], c[.name])
+            return ('calendar ' + c['name'], c['name'])
 
         self.calendar_chooser = Choice(
             [self.collection._calendars[c] for c in self.collection.writable_names],
@@ -811,12 +811,12 @@ def _add_calendar_colors(palette, collection):
     :rtype: list
     """
     for cal in collection.calendars:
-        if cal.color == '':
+        if cal['color'] == '':
             # No color set for this calendar, use default_color instead.
             color = collection.default_color
         else:
-            color = cal.color
-        palette.append(_urwid_palette_entry('calendar ' + cal.name, color,
+            color = cal['color']
+        palette.append(_urwid_palette_entry('calendar ' + cal['name'], color,
                                             collection.hmethod))
     palette.append(_urwid_palette_entry('highlight_days_color',
                                         collection.color, collection.hmethod))
