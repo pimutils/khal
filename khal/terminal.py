@@ -21,6 +21,7 @@
 #
 """all functions related to terminal display are collected here"""
 
+from collections import namedtuple
 from itertools import zip_longest
 
 try:
@@ -40,36 +41,82 @@ except ImportError:
             w, h = 80, 24
         return w, h
 
+NamedColor = namedtuple('NamedColor', ['index', 'light'])
+
 RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal
 BTEXT = '\x1b[1m'  # bold
 RESET = '\33[0m'
 COLORS = {
-    'black': '\33[30m',
-    'dark red': '\33[31m',
-    'dark green': '\33[32m',
-    'brown': '\33[33m',
-    'dark blue': '\33[34m',
-    'dark magenta': '\33[35m',
-    'dark cyan': '\33[36m',
-    'white': '\33[37m',
-    'light grey': '\33[1;37m',
-    'dark grey': '\33[1;30m',
-    'light red': '\33[1;31m',
-    'light green': '\33[1;32m',
-    'yellow': '\33[1;33m',
-    'light blue': '\33[1;34m',
-    'light magenta': '\33[1;35m',
-    'light cyan': '\33[1;36m'
+    'black': NamedColor(index=0, light=False),
+    'dark red': NamedColor(index=1, light=False),
+    'dark green': NamedColor(index=2, light=False),
+    'brown': NamedColor(index=3, light=False),
+    'dark blue': NamedColor(index=4, light=False),
+    'dark magenta': NamedColor(index=5, light=False),
+    'dark cyan': NamedColor(index=6, light=False),
+    'white': NamedColor(index=7, light=False),
+    'light gray': NamedColor(index=7, light=True),
+    'dark gray': NamedColor(index=0, light=True),  # actually light black
+    'light red': NamedColor(index=1, light=True),
+    'light green': NamedColor(index=2, light=True),
+    'yellow': NamedColor(index=3, light=True),
+    'light blue': NamedColor(index=4, light=True),
+    'light magenta': NamedColor(index=5, light=True),
+    'light cyan': NamedColor(index=6, light=True)
 }
 
 
-def colored(string, colorstring):
-    try:
-        color = COLORS[colorstring]
-    except KeyError:
-        color = ''
-    return color + string + (RESET if color else '')
+def colored(string, fg=None, bg=None, bold_for_light_color=True):
+    result = ''
+    for colorstring, is_bg in ((fg, False), (bg, True)):
+        if colorstring:
+            color = '\33['
+            if colorstring in COLORS:
+                # 16 color palette
+                if not is_bg:
+                    # foreground color
+                    c = 30 + COLORS[colorstring].index
+                    if COLORS[colorstring].light:
+                        if bold_for_light_color:
+                            color += '1;'
+                        else:
+                            c += 60
+                else:
+                    # background color
+                    c = 40 + COLORS[colorstring].index
+                    if COLORS[colorstring].light:
+                        if not bold_for_light_color:
+                            c += 60
+                color += str(c)
+            elif colorstring.isdigit():
+                # 256 color palette
+                if not is_bg:
+                    color += '38;5;' + colorstring
+                else:
+                    color += '48;5;' + colorstring
+            else:
+                # HTML-style 24-bit color
+                if len(colorstring) == 4:
+                    # e.g. #ABC, equivalent to #AABBCC
+                    r = int(colorstring[1] * 2, 16)
+                    g = int(colorstring[2] * 2, 16)
+                    b = int(colorstring[3] * 2, 16)
+                else:
+                    # e.g. #AABBCC
+                    r = int(colorstring[1:3], 16)
+                    g = int(colorstring[3:5], 16)
+                    b = int(colorstring[5:7], 16)
+                if not is_bg:
+                    color += '38;2;{!s};{!s};{!s}'.format(r, g, b)
+                else:
+                    color += '48;2;{!s};{!s};{!s}'.format(r, g, b)
+            color += 'm'
+            result += color
+    result += string
+    if fg or bg:
+        result += RESET
+    return result
 
 
 def merge_columns(lcolumn, rcolumn, width=25):
@@ -89,23 +136,3 @@ def merge_columns(lcolumn, rcolumn, width=25):
     rows = ['    '.join(one) for one in zip_longest(
         lcolumn, rcolumn, fillvalue='')]
     return rows
-
-
-def urwid_to_click(color):
-    """convert urwid color name to click color name
-    """
-    col = color.split()[-1]
-    if col == 'brown':
-        return 'yellow'
-    if col == 'grey':
-        return 'white'
-    return col
-
-
-def urwid_to_click_bold(color):
-    """convert urwid color name to click bold attribute
-    """
-    col = color.split()[0]
-    if col == 'brown':
-        return False
-    return col == 'light' or col == 'yellow'

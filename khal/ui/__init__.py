@@ -233,7 +233,7 @@ class EventList(urwid.WidgetWrap):
         for event in self.events:
             event_column.append(
                 urwid.AttrMap(U_Event(event, this_date=this_date, eventcolumn=self.eventcolumn),
-                              event.color, 'reveal focus'))
+                              'calendar ' + event.calendar, 'reveal focus'))
         event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
         event_count = len(event_list)
         if not event_list:
@@ -477,7 +477,7 @@ class EventEditor(urwid.WidgetWrap):
 
         # TODO warning message if len(self.collection.writable_names) == 0
         def decorate_choice(c):
-            return (c.color or '', c.name)
+            return ('calendar ' + c.name, c.name)
 
         self.calendar_chooser = Choice(
             [c for c in self.collection.calendars if not c.readonly],
@@ -732,13 +732,111 @@ class ClassicView(Pane):
             self.collection.update(event)
 
 
+def _urwid_palette_entry(name, color, hmethod):
+    """Create an urwid compatible palette entry.
+
+    :param name: name of the new attribute in the palette
+    :type name: string
+    :param color: color for the new attribute
+    :type color: string
+    :returns: an urwid palette entry
+    :rtype: tuple
+    """
+    from ..terminal import COLORS
+    if color == '' or color in COLORS:
+        # Named colors already use urwid names, no need to change anything.
+        pass
+    elif color.isdigit():
+        # Colors from the 256 color palette need to be prefixed with h in
+        # urwid.
+        color = 'h' + color
+    else:
+        # 24-bit colors are not supported by urwid.
+        # Convert it to some color on the 256 color palette that might resemble
+        # the 24-bit color.
+        # First, generate the palette (indices 16-255 only). This assumes, that
+        # the terminal actually uses the same palette, which may or may not be
+        # the case.
+        colors = {}
+        # Colorcube
+        colorlevels = (0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff)
+        for r in range(0, 6):
+            for g in range(0, 6):
+                for b in range(0, 6):
+                    colors[r * 36 + g * 6 + b + 16] = \
+                        (colorlevels[r], colorlevels[g], colorlevels[b])
+        # Grayscale
+        graylevels = [0x08 + 10 * i for i in range(0, 24)]
+        for c in range(0, 24):
+            colors[232 + c] = (graylevels[c], ) * 3
+        # Parse the HTML-style color into the variables r, g, b.
+        if len(color) == 4:
+            # e.g. #ABC, equivalent to #AABBCC
+            r = int(color[1] * 2, 16)
+            g = int(color[2] * 2, 16)
+            b = int(color[3] * 2, 16)
+        else:
+            # e.g. #AABBCC
+            r = int(color[1:3], 16)
+            g = int(color[3:5], 16)
+            b = int(color[5:7], 16)
+        # Now, find the color with the least distance to the requested color.
+        best = None
+        bestdist = 0.0
+        for index, rgb in colors.items():
+            # This is the euclidean distance metric. It is quick, simple and
+            # wrong (in the sense of human color perception). However, any
+            # serious color distance metric would be way more complicated.
+            dist = (r - rgb[0]) ** 2 + (g - rgb[1]) ** 2 + (b - rgb[2]) ** 2
+            if best is None or dist < bestdist:
+                best = index
+                bestdist = dist
+        color = 'h' + str(best)
+    # We unconditionally add the color to the high color slot. It seems to work
+    # in lower color terminals as well.
+    if hmethod in ['fg', 'foreground']:
+        return (name, '', '', '', color, '')
+    else:
+        return (name, '', '', '', '', color)
+
+
+def _add_calendar_colors(palette, collection):
+    """Add the colors for the defined calendars to the palette.
+
+    :param palette: the base palette
+    :type palette: list
+    :param collection:
+    :type collection: CalendarCollection
+    :returns: the modified palette
+    :rtype: list
+    """
+    for cal in collection.calendars:
+        if cal.color == '':
+            # No color set for this calendar, use default_color instead.
+            color = collection.default_color
+        else:
+            color = cal.color
+        palette.append(_urwid_palette_entry('calendar ' + cal.name, color,
+                                            collection.hmethod))
+    palette.append(_urwid_palette_entry('highlight_days_color',
+                                        collection.color, collection.hmethod))
+    palette.append(_urwid_palette_entry('highlight_days_multiple',
+                                        collection.multiple, collection.hmethod))
+    return palette
+
+
 def start_pane(pane, callback, program_info=''):
     """Open the user interface with the given initial pane."""
     frame = Window(footer=program_info + ' | q: quit, ?: help')
     frame.open(pane, callback)
-    loop = urwid.MainLoop(frame, getattr(colors, pane.conf['view']['theme']),
+    palette = _add_calendar_colors(getattr(colors, pane.conf['view']['theme']),
+                                   pane.collection)
+    loop = urwid.MainLoop(frame, palette,
                           unhandled_input=frame.on_key_press,
                           pop_ups=True)
+    # Make urwid use 256 color mode.
+    loop.screen.set_terminal_properties(
+        colors=256, bright_is_bold=pane.conf['view']['bold_for_light_color'])
 
     def ctrl_c(signum, f):
         raise urwid.ExitMainLoop()

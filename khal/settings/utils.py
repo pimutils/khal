@@ -30,6 +30,8 @@ from validate import VdtValueError
 from ..log import logger
 from .exceptions import InvalidSettingsError
 
+from ..terminal import COLORS
+
 
 def is_timezone(tzstring):
     """tries to convert tzstring into a pytz timezone
@@ -75,6 +77,25 @@ def expand_db_path(path):
     if path is None:
         path = join(xdg.BaseDirectory.xdg_data_home, 'khal', 'khal.db')
     return expanduser(expandvars(path))
+
+
+def is_color(color):
+    """checks if color represents a valid color
+
+    raises a VdtValueError if color is not valid
+    """
+    # check if color is
+    # 1) the default empty value
+    # 2) a color name from the 16 color palette
+    # 3) a color index from the 256 color palette
+    # 4) a HTML-style color code
+    if (color == '' or
+            color in COLORS.keys() or
+            (color.isdigit() and int(color) >= 0 and int(color) <= 255) or
+            (color.startswith('#') and (len(color) == 7 or len(color) == 4) and
+             all(c in '01234567890abcdefABCDEF' for c in color[1:]))):
+        return color
+    raise VdtValueError(color)
 
 
 def test_default_calendar(config):

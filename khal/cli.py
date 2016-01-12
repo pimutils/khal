@@ -252,7 +252,8 @@ def _get_cli():
             multiple=ctx.obj['conf']['highlight_days']['multiple'],
             color=ctx.obj['conf']['highlight_days']['color'],
             highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
-            full=full
+            full=full,
+            bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color']
         )
 
     @cli.command()
@@ -273,6 +274,7 @@ def _get_cli():
             days=days or ctx.obj['conf']['default']['days'],
             events=events,
             full=full,
+            bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color']
         )
 
     @cli.command()
@@ -399,7 +401,11 @@ def _get_cli():
         term_width, _ = get_terminal_size()
         for event in events:
             desc = textwrap.wrap(event.event_description, term_width)
-            event_column.extend([colored(d, event.color) for d in desc])
+            event_column.extend(
+                [colored(d, event.color,
+                         bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
+                 for d in desc]
+            )
         click.echo(
             '\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding'])
         )
@@ -443,7 +449,11 @@ def _get_cli():
             items = event.event_description.splitlines()
             for item in items:
                 lines += textwrap.wrap(item, term_width)
-            event_column.extend([colored(line, event.color) for line in lines])
+            event_column.extend(
+                [colored(line, event.color,
+                         bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
+                 for line in lines]
+            )
         click.echo(
             '\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding'])
         )
