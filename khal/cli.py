@@ -22,6 +22,7 @@
 import logging
 import sys
 import textwrap
+from shutil import get_terminal_size
 
 try:
     from setproctitle import setproctitle
@@ -36,7 +37,7 @@ from khal import aux, controllers, khalendar, __version__
 from khal.log import logger
 from khal.settings import get_config, InvalidSettingsError
 from khal.exceptions import FatalError
-from .terminal import colored, get_terminal_size
+from .terminal import colored
 
 
 days_option = click.option('--days', default=None, type=int,

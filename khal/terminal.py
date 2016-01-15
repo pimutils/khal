@@ -24,22 +24,6 @@
 from collections import namedtuple
 from itertools import zip_longest
 
-try:
-    # python 3.3+
-    import shutil.get_terminal_size as get_terminal_size
-except ImportError:
-    def get_terminal_size():
-        import fcntl
-        import struct
-        import termios
-        try:
-            h, w, hp, wp = struct.unpack(
-                'HHHH',
-                fcntl.ioctl(0, termios.TIOCGWINSZ,
-                            struct.pack('HHHH', 0, 0, 0, 0)))
-        except IOError:
-            w, h = 80, 24
-        return w, h
 
 NamedColor = namedtuple('NamedColor', ['index', 'light'])
 

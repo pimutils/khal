@@ -25,6 +25,7 @@ from click import confirm, echo, style, prompt
 from vdirsyncer.utils.vobject import Item
 
 from collections import defaultdict
+from shutil import get_terminal_size
 
 import datetime
 import logging
@@ -38,7 +39,7 @@ from khal.khalendar.event import Event
 from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
 from khal.log import logger
-from .terminal import colored, get_terminal_size, merge_columns
+from .terminal import colored, merge_columns
 
 
 def construct_daynames(daylist, longdateformat):
