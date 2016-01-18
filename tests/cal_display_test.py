@@ -52,12 +52,12 @@ example1 = [
 
 
 example_weno = [
-    '\x1b[1m    Mo Tu We Th Fr Sa Su     \x1b[0m',
-    '\x1b[1mDec \x1b[0m28 29 30  1  2  3  4 \x1b[1m 48\x1b[0m',
-    '     5  6  7  8  9 10 11 \x1b[1m 49\x1b[0m',
-    '    \x1b[7m12\x1b[0m 13 14 15 16 17 18 \x1b[1m 50\x1b[0m',
-    '    19 20 21 22 23 24 25 \x1b[1m 51\x1b[0m',
-    '\x1b[1mJan \x1b[0m26 27 28 29 30 31  1 \x1b[1m 52\x1b[0m',
+    '\x1b[1m    Mo Tu We Th Fr Sa Su   \x1b[0m',
+    '\x1b[1mDec \x1b[0m28 29 30  1  2  3  4 \x1b[1m48\x1b[0m',
+    '     5  6  7  8  9 10 11 \x1b[1m49\x1b[0m',
+    '    \x1b[7m12\x1b[0m 13 14 15 16 17 18 \x1b[1m50\x1b[0m',
+    '    19 20 21 22 23 24 25 \x1b[1m51\x1b[0m',
+    '\x1b[1mJan \x1b[0m26 27 28 29 30 31  1 \x1b[1m52\x1b[0m',
     '     2  3  4  5  6  7  8 \x1b[1m 1\x1b[0m',
     '     9 10 11 12 13 14 15 \x1b[1m 2\x1b[0m',
     '    16 17 18 19 20 21 22 \x1b[1m 3\x1b[0m',
