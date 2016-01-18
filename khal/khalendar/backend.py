@@ -28,6 +28,9 @@ note on naming:
     respective types
 
 """
+# TODO remove creating Events from SQLiteDb
+# we currently expect str/CALENDAR objects but return Event(), we should
+# accept and return the same kind of events
 import contextlib
 from datetime import datetime, timedelta
 from os import makedirs, path
