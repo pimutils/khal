@@ -640,7 +640,10 @@ def test_birthdays(tmpdir):
     db.update_birthday(card, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 1
-    assert events[0].summary == 'Unix\'s birthday'
+    assert events[0].summary == 'Unix\'s 0th birthday'
+    events = list(db.get_floating(datetime(2016, 3, 11, 0, 0),
+                                  datetime(2016, 3, 11, 23, 59, 59, 999)))
+    assert events[0].summary == 'Unix\'s 45th birthday'
 
 
 def test_birthdays_no_year(tmpdir):
@@ -660,7 +663,7 @@ def test_birthdays_no_fn(tmpdir):
     events = list(db.get_floating(datetime(1941, 9, 9, 0, 0),
                                   datetime(1941, 9, 9, 23, 59, 59, 9999)))
     assert len(events) == 1
-    assert events[0].summary == 'Dennis MacAlistair Ritchie\'s birthday'
+    assert events[0].summary == 'Dennis MacAlistair Ritchie\'s 0th birthday'
 
 
 def test_birthday_does_not_parse(tmpdir):

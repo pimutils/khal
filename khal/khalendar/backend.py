@@ -276,6 +276,9 @@ class SQLiteDb(object):
             try:
                 if bday[0:2] == '--' and bday[3] != '-':
                     bday = '1900' + bday[2:]
+                    orig_bday = False
+                else:
+                    orig_bday = True
                 bday = parser.parse(bday).date()
             except ValueError:
                 logger.info('cannot parse BIRTHDAY in {0} in collection '
@@ -291,6 +294,10 @@ class SQLiteDb(object):
             event.add('dtend', bday + timedelta(days=1))
             event.add('summary', '{0}\'s birthday'.format(name))
             event.add('rrule', {'freq': 'YEARLY'})
+            if orig_bday:
+                event.add('x-birthday',
+                          '{:04}{:02}{:02}'.format(bday.year, bday.month, bday.day))
+                event.add('x-fname', name)
             event.add('uid', href)
             event_str = event.to_ical().decode('utf-8')
             self._update_impl(event, href, calendar)

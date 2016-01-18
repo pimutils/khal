@@ -340,7 +340,13 @@ class Event(object):
 
     @property
     def summary(self):
-        return self._vevents[self.ref].get('SUMMARY', '')
+        bday = self._vevents[self.ref].get('x-birthday', None)
+        if bday:
+            number = self.start_local.year - int(bday[:4])
+            name = self._vevents[self.ref].get('x-fname', None)
+            return '{name}\'s {number}th birthday'.format(name=name, number=number)
+        else:
+            return self._vevents[self.ref].get('SUMMARY', '')
 
     def update_summary(self, summary):
         self._vevents[self.ref]['SUMMARY'] = summary
