@@ -107,6 +107,8 @@ def get_agenda(collection, locale, dates=None, firstweekday=0, days=None, events
         if not events and not show_all_days:
             continue
 
+        if event_column:
+            event_column.append('')
         event_column.append(style(dayname, bold=True))
         for event in events:
             lines = list()
