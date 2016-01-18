@@ -559,6 +559,17 @@ def test_zuluv_events():
     assert event.start_local == BERLIN.localize(datetime(2014, 4, 9, 11, 30))
 
 
+def test_no_dtend():
+    """test support for events with no dtend"""
+    db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
+    db.update(_get_text('event_dt_no_end'), href='event_dt_no_end', calendar=calname)
+    events = db.get_floating(datetime(2016, 1, 16, 0, 0),
+                             datetime(2016, 1, 17, 0, 0))
+    event = list(events)[0]
+    assert event.start == date(2016, 1, 16)
+    assert event.end == date(2016, 1, 16)
+
+
 event_rdate_period = """BEGIN:VEVENT
 SUMMARY:RDATE period
 DTSTART:19961230T020000Z

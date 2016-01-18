@@ -133,7 +133,10 @@ class Event(object):
         except KeyError:
             pass
 
-        instcls = cls._get_type_from_vDDD(vevents[ref]['DTSTART'])
+        if kwargs.get('start'):
+            instcls = cls._get_type_from_date(kwargs.get('start'))
+        else:
+            instcls = cls._get_type_from_vDDD(vevents[ref]['DTSTART'])
         return instcls(vevents, ref=ref, **kwargs)
 
     @classmethod
