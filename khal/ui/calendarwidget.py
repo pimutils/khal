@@ -19,6 +19,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+"""contains a re-usable CalendarWidget for urwid"""
+
 import calendar
 from datetime import date
 from locale import getlocale, setlocale, LC_ALL
@@ -116,8 +118,8 @@ class DateCColumns(urwid.Columns):
         self.keybindings = keybindings
         self.today = today
         self.get_styles = get_styles
-        # we need the next two attributes to for attribute resetting when a
-        # cell regains focus after having lost it the the events column before
+        # we need the next two attributes for attribute resetting when a
+        # cell regains focus after having lost it
         self._old_attr_map = False
         self._old_pos = 0
         self._init = True
@@ -204,7 +206,7 @@ class DateCColumns(urwid.Columns):
 
 
 class CListBox(urwid.ListBox):
-    """our custom version of ListBox for containing CalendarWalker
+    """our custom version of ListBox containing a CalendarWalker instance
 
     it should contain a `CalendarWalker` instance which it autoextends on
     rendering, if needed """
