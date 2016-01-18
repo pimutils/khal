@@ -165,7 +165,7 @@ def vertical_month(month=datetime.date.today().month,
     """
 
     khal = list()
-    w_number = '    ' if weeknumber == 'right' else ''
+    w_number = '  ' if weeknumber == 'right' else ''
     calendar.setfirstweekday(firstweekday)
     weekheaders = get_weekheader(firstweekday)
     khal.append(style('    ' + weekheaders + ' ' + w_number, bold=True))
@@ -178,13 +178,11 @@ def vertical_month(month=datetime.date.today().month,
             if new_month:
                 m_name = style(month_abbr(week[6].month).ljust(4), bold=True)
             elif weeknumber == 'left':
-                m_name = \
-                    style(' {:2} '.format(getweeknumber(week[0])), bold=True)
+                m_name = style(' {:2} '.format(getweeknumber(week[0])), bold=True)
             else:
                 m_name = '    '
             if weeknumber == 'right':
-                w_number = \
-                    style(' {}'.format(getweeknumber(week[0])), bold=True)
+                w_number = style('{:2}'.format(getweeknumber(week[0])), bold=True)
             else:
                 w_number = ''
 
