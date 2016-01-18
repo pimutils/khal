@@ -112,19 +112,17 @@ class DateCColumns(urwid.Columns):
     """
 
     def __init__(self, widget_list, on_date_change, on_press, keybindings,
-                 today=None, get_styles=None, **kwargs):
+                 get_styles=None, **kwargs):
         self.on_date_change = on_date_change
         self.on_press = on_press
         self.keybindings = keybindings
-        self.today = today
         self.get_styles = get_styles
         # we need the next two attributes for attribute resetting when a
         # cell regains focus after having lost it
         self._old_attr_map = False
         self._old_pos = 0
         self._init = True
-        super(DateCColumns, self).__init__(widget_list, focus_column=today,
-                                           **kwargs)
+        super(DateCColumns, self).__init__(widget_list, **kwargs)
 
     def __repr__(self):
         return '<DateCColumns from {} to {}>'.format(self[1].date, self[7].date)
@@ -299,7 +297,6 @@ class CListBox(urwid.ListBox):
             self.focus.focus.set_styles(
                 self.focus.get_styles(self.body.focus_date, False))
             self.body.set_focus_date(date.today())
-
             self.set_focus_valign(('relative', 10))
 
         key = super(CListBox, self).keypress(size, key)
@@ -318,10 +315,9 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         self.on_press = on_press
         self.keybindings = keybindings
         self.get_styles = get_styles
-        weeks, focus_item = self._construct_month()
-        self.today = focus_item  # the item number which contains today
+        weeks = self._construct_month()
+        self.today = 0  # the item number which contains today
         urwid.SimpleFocusListWalker.__init__(self, weeks)
-        self.set_focus(focus_item)
 
     def set_focus(self, position):
         """set focus by item number"""
@@ -375,7 +371,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         last_year = date_last_month.year
         month = last_month % 12 + 1
         year = last_year if not last_month == 12 else last_year + 1
-        weeks, _ = self._construct_month(year, month, clean_first_row=True)
+        weeks = self._construct_month(year, month, clean_first_row=True)
         self.extend(weeks)
 
     def _autoprepend(self):
@@ -397,7 +393,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         else:
             month = first_month - 1
             year = first_year
-        weeks, _ = self._construct_month(year, month, clean_last_row=True)
+        weeks = self._construct_month(year, month, clean_last_row=True)
         weeks.reverse()
         for one in weeks:
             self.insert(0, one)
@@ -425,15 +421,12 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             attr = None
 
         this_week = [(4, urwid.AttrMap(urwid.Text(month_name), attr))]
-        today = None
         for number, day in enumerate(week):
             new_date = Date(day, self.get_styles)
+            this_week.append((2, new_date))
             if day == date.today():
-                this_week.append((2, new_date))
                 new_date.set_styles(self.get_styles(new_date.date, True))
-                today = number + 1
             else:
-                this_week.append((2, new_date))
                 new_date.set_styles(self.get_styles(new_date.date, False))
         if self.weeknumbers == 'right':
             this_week.append((2, urwid.AttrMap(
@@ -444,9 +437,8 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
                             on_press=self.on_press,
                             keybindings=self.keybindings,
                             dividechars=1,
-                            today=today,
                             get_styles=self.get_styles)
-        return week, bool(today)
+        return week
 
     def _construct_month(self,
                          year=date.today().year,
@@ -477,21 +469,16 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         plain_weeks = calendar.Calendar(
             self.firstweekday).monthdatescalendar(year, month)
         weeks = list()
-        focus_item = None
         for number, week in enumerate(plain_weeks):
-            week, contains_today = self._construct_week(week)
-            if contains_today:
-                focus_item = number
+            week = self._construct_week(week)
             weeks.append(week)
         if clean_first_row and weeks[0][1].date.month != weeks[0][7].date.month:
-            if focus_item is not None:
-                focus_item = focus_item - 1
-            return weeks[1:], focus_item
+            return weeks[1:]
         elif clean_last_row and \
                 weeks[-1][1].date.month != weeks[-1][7].date.month:
-            return weeks[:-1], focus_item
+            return weeks[:-1]
         else:
-            return weeks, focus_item
+            return weeks
 
 
 class CalendarWidget(urwid.WidgetWrap):
@@ -563,9 +550,10 @@ class CalendarWidget(urwid.WidgetWrap):
         box = CListBox(self.walker)
         frame = urwid.Frame(box, header=dnames)
         urwid.WidgetWrap.__init__(self, frame)
+        self.focus_today()
 
     def focus_today(self):
-        self.set_focus(date.today())
+        self.set_focus_date(date.today())
 
     @property
     def focus_date(self):
