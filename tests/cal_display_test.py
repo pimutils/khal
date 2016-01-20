@@ -102,6 +102,24 @@ example_cz = [
     '    20 21 22 23 24 25 26 ',
     '\x1b[1mb\u0159e \x1b[0m27 28 29  1  2  3  4 ']
 
+example_gr = [
+    '\x1b[1m    Δε Τρ Τε Πε Πα Σα Κυ \x1b[0m',
+    '\x1b[1mΔεκ \x1b[0m28 29 30  1  2  3  4 ',
+    '     5  6  7  8  9 10 11 ',
+    '    \x1b[7m12\x1b[0m 13 14 15 16 17 18 ',
+    '    19 20 21 22 23 24 25 ',
+    '\x1b[1mΙαν \x1b[0m26 27 28 29 30 31  1 ',
+    '     2  3  4  5  6  7  8 ',
+    '     9 10 11 12 13 14 15 ',
+    '    16 17 18 19 20 21 22 ',
+    '    23 24 25 26 27 28 29 ',
+    '\x1b[1mΦεβ \x1b[0m30 31  1  2  3  4  5 ',
+    '     6  7  8  9 10 11 12 ',
+    '    13 14 15 16 17 18 19 ',
+    '    20 21 22 23 24 25 26 ',
+    '\x1b[1mΜάρ \x1b[0m27 28 29  1  2  3  4 ']
+
+
 example_de = [
     '\x1b[1m    Mo Di Mi Do Fr Sa So \x1b[0m',
     '\x1b[1mDez \x1b[0m28 29 30  1  2  3  4 ',
@@ -174,5 +192,25 @@ def test_vertical_month_unicode_weekdeays():
 
     vert_str = vertical_month(month=12, year=2011,
                               today=datetime.date(2011, 12, 12))
-    assert vert_str == [line.lower() for line in example_cz]
+    assert [line.lower() for line in vert_str] == [line.lower() for line in example_cz]
+    '\n'.join(vert_str)  # issue 142/293
+
+
+def test_vertical_month_unicode_weekdeays_gr():
+    try:
+        locale.setlocale(locale.LC_ALL, 'el_GR.UTF-8')
+    except locale.Error as error:
+        if str(error) == 'unsupported locale setting':
+            pytest.xfail(
+                'To get this test to run, you need to add `el_GR.UTF-8` to '
+                'your locales. On Debian GNU/Linux 8 you do this by '
+                'uncommenting `el_GR.UTF-8` in /etc/locale.gen and then run '
+                '`locale-gen` (as root).'
+            )
+        else:
+            raise
+
+    vert_str = vertical_month(month=12, year=2011,
+                              today=datetime.date(2011, 12, 12))
+    assert [line.lower() for line in vert_str] == [line.lower() for line in example_gr]
     '\n'.join(vert_str)  # issue 142/293
