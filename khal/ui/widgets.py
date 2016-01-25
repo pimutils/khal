@@ -161,7 +161,6 @@ class DateTimeWidget(ExtendedEdit):
         self.set_edit_text(new_date.strftime(self.dateformat))
 
 
-
 class DateWidget(DateTimeWidget):
     dtype = date
     timedelta = timedelta(days=1)
