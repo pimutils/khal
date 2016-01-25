@@ -316,7 +316,6 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         self.keybindings = keybindings
         self.get_styles = get_styles
         weeks = self._construct_month()
-        self.today = 0  # the item number which contains today
         urwid.SimpleFocusListWalker.__init__(self, weeks)
 
     def set_focus(self, position):
@@ -325,7 +324,6 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             self._autoextend()
         while position <= 0:
             no_additional_weeks = self._autoprepend()
-            self.today += no_additional_weeks
             position += no_additional_weeks
         return urwid.SimpleFocusListWalker.set_focus(self, position)
 
