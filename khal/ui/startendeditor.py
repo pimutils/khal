@@ -60,7 +60,8 @@ class CalendarPopUp(urwid.PopUpLauncher):
             self._on_date_change(new_date)
 
         keybindings = {}  # TODO use same keybindings as before
-        on_press = {'enter': lambda _, __: self.close_pop_up()}
+        on_press = {'enter': lambda _, __: self.close_pop_up(),
+                    'esc': lambda _, __: self.close_pop_up()}
         pop_up = CalendarWidget(
             on_change, keybindings, on_press,
             firstweekday=self._conf['locale']['firstweekday'],
