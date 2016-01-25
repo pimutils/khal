@@ -146,6 +146,15 @@ class DateCColumns(urwid.Columns):
                 return None
         raise ValueError('%s not found in this week' % a_date)
 
+    def get_date_column(self, a_date):
+        """return the column `a_date` is in, raises ValueError if `a_date`
+           cannot be found
+        """
+        for num, day in enumerate(self.contents[1:8], 1):
+            if day[0].date == a_date:
+                return num
+        raise ValueError('%s not found in this week' % a_date)
+
     focus_position = property(
         urwid.Columns._get_focus_position,
         _set_focus_position,
@@ -340,6 +349,17 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
         :type: a_day: datetime.date
         """
+        row, column = self.get_date_pos(a_day)
+        self.set_focus(row)
+        self[self.focus]._set_focus_position(column)
+        return None
+
+    def get_date_pos(self, a_day):
+        """get row and column where `a_day` is located
+
+        :type: a_day: datetime.date
+        :rtype: tuple(int, int)
+        """
         # rough estimate of difference in lines, i.e. full weeks, we might be
         # off by as much as one week though
         week_diff = int((self.focus_date - a_day).days / 7)
@@ -353,13 +373,14 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             week_diff = int((self.focus_date - a_day).days / 7)
             new_focus = self.focus - week_diff
         for offset in [0, -1, 1]:  # we might be off by a week
-            self.set_focus(new_focus + offset)
+            row = new_focus + offset
+            self.set_focus(row)
             try:
-                self[self.focus].set_focus_date(a_day)
+                column = self[self.focus].get_date_column(a_day)
+                return row, column
             except ValueError:
                 pass
-            else:
-                return None
+        # we didn't find the date we were looking for...
         raise ValueError('something is wrong')
 
     def _autoextend(self):
