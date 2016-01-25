@@ -67,6 +67,7 @@ def goto_end_of_line(text):
 
 
 class ExtendedEdit(urwid.Edit):
+    """A text editing widget supporting some more editing commands"""
     def keypress(self, size, key):
         if key == 'ctrl w':
             self._delete_word()
