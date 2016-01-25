@@ -25,6 +25,9 @@ ikhal
 -----
 * basic export of events from event editor pane and from event lists (default
   keybinding: *e* (Filip Pytloun)
+* pressing *enter* in a date editing widget will now open a small calendar
+  widget, arrow keys can be used to select a date, enter (or escape) will close
+  it again (Christian Geier)
 
 
 0.7.0
