@@ -242,7 +242,7 @@ class CListBox(urwid.ListBox):
         self.body[row].contents[column][0].set_styles('mark')
 
     def _mark(self):
-        """make sure everything between the marked entry and the curently
+        """make sure everything between the marked entry and the currently
         selected date is visually marked, and nothing else"""
         def toggle(row, column):
             if self.body[row].contents[column][0].marked:
