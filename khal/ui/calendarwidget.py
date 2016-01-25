@@ -483,22 +483,27 @@ class CalendarWidget(urwid.WidgetWrap):
     def __init__(self, on_date_change, keybindings, on_press,
                  firstweekday=0, weeknumbers=False, get_styles=None):
         """
-        on_date_change: a function that is called every time the selected date
+        :param on_date_change: a function that is called every time the selected date
                         is changed with the newly selected date as a first (and
                         only argument)
-        keybindings: bind keys to specific functions, keys are commands (e.g.
-                    movement commands, values are lists of keys that should be
-                    bound to those commands. See below for the defaults.
-                    Available commands:
-                        'left', 'right', 'up', 'down': move cursor in direction
-                        'today': refocus on today
-                        'mark': toggles selection mode
-        on_press: dict of functions that are called when the key is pressed.
-            These functions must accept at least two argument. In the normal
-            case the first argument is the currently selected date (datetime.date)
-            and the second is *None*. When a date range is selected, the first
-            argument is the earlier and the second argument is the later date.
-            The function's return values are interpreted as pressed keys.
+        :type on_date_change: function
+        :param keybindings: bind keys to specific functions, keys are
+            commands (e.g. movement commands, values are lists of keys
+            that should be bound to those commands. See below for the
+            defaults.
+            Available commands:
+                'left', 'right', 'up', 'down': move cursor in direction
+                'today': refocus on today
+                'mark': toggles selection mode
+        :type keybindings: dict
+        :param on_press: dict of functions that are called when the key is
+            pressed. These functions must accept at least two argument. In the
+            normal case the first argument is the currently selected date
+            (datetime.date) and the second is *None*. When a date range is
+            selected, the first argument is the earlier and the second argument
+            is the later date. The function's return values are interpreted as
+            pressed keys.
+        :type on_pres: dict
         """
 
         default_keybindings = {
