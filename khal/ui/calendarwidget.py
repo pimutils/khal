@@ -564,4 +564,8 @@ class CalendarWidget(urwid.WidgetWrap):
         return self.walker.focus_date
 
     def set_focus_date(self, a_day):
+        """set the focus to `a_day`
+
+        :type a_day: datetime.date
+        """
         self.walker.set_focus_date(a_day)
