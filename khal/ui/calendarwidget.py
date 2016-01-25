@@ -480,8 +480,9 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
 
 class CalendarWidget(urwid.WidgetWrap):
-    def __init__(self, on_date_change, keybindings, on_press,
-                 firstweekday=0, weeknumbers=False, get_styles=None):
+    def __init__(self, on_date_change, keybindings, on_press, firstweekday=0,
+                 weeknumbers=False, get_styles=None, initial=date.today()):
+
         """
         :param on_date_change: a function that is called every time the selected date
                         is changed with the newly selected date as a first (and
@@ -553,7 +554,7 @@ class CalendarWidget(urwid.WidgetWrap):
         box = CListBox(self.walker)
         frame = urwid.Frame(box, header=dnames)
         urwid.WidgetWrap.__init__(self, frame)
-        self.focus_today()
+        self.set_focus_date(initial)
 
     def focus_today(self):
         self.set_focus_date(date.today())

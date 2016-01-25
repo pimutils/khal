@@ -63,8 +63,8 @@ class CalendarPopUp(urwid.PopUpLauncher):
         on_press = {'enter': lambda _, __: self.close_pop_up()}
         pop_up = CalendarWidget(
             on_change, keybindings, on_press,
-            firstweekday=self._conf['locale']['firstweekday'])
-        pop_up.set_focus_date(self._original_widget._get_current_value())
+            firstweekday=self._conf['locale']['firstweekday'],
+            initial=self._original_widget._get_current_value())
         pop_up = urwid.LineBox(pop_up)
         return pop_up
 
