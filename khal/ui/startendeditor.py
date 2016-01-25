@@ -236,7 +236,14 @@ class StartEndEditor(urwid.WidgetWrap):
                 newenddatetime = tzinfo.localize(newenddatetime)
             except TypeError:
                 return None
-        return newenddatetime
+        if newenddatetime < self.newstart:
+            self.bgs.startdate = 'alert'
+            self.bgs.enddate = 'alert'
+            return None
+        else:
+            self.bgs.startdate = 'edit'
+            self.bgs.enddate = 'edit'
+            return newenddatetime
 
     @property
     def _newenddate(self):
