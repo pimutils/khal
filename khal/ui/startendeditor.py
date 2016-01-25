@@ -24,6 +24,7 @@ from datetime import datetime
 import urwid
 
 from .widgets import DateWidget, TimeWidget
+from .calendarwidget import CalendarWidget
 
 
 class DateConversionError(Exception):
@@ -39,6 +40,36 @@ class StartEnd(object):
         self.starttime = starttime
         self.enddate = enddate
         self.endtime = endtime
+
+
+class CalendarPopUp(urwid.PopUpLauncher):
+    def __init__(self, widget, conf, on_date_change):
+        self._conf = conf
+        self._on_date_change = on_date_change
+        self.__super.__init__(widget)
+
+    def keypress(self, size, key):
+        if key == 'enter':
+            self.open_pop_up()
+        else:
+            return super().keypress(size, key)
+
+    def create_pop_up(self):
+        def on_change(new_date):
+            self._original_widget.set_value(new_date)
+            self._on_date_change(new_date)
+
+        keybindings = {}  # TODO use same keybindings as before
+        on_press = {'enter': lambda _, __: self.close_pop_up()}
+        pop_up = CalendarWidget(
+            on_change, keybindings, on_press,
+            firstweekday=self._conf['locale']['firstweekday'])
+        pop_up.set_focus_date(self._original_widget._get_current_value())
+        pop_up = urwid.LineBox(pop_up)
+        return pop_up
+
+    def get_pop_up_parameters(self):
+        return {'left': 0, 'top': 1, 'overlay_width': 28, 'overlay_height': 8}
 
 
 class StartEndEditor(urwid.WidgetWrap):
@@ -87,6 +118,7 @@ class StartEndEditor(urwid.WidgetWrap):
             self.conf['locale']['longdateformat'],
             caption=('', 'From: '), edit_text=self.dts.startdate,
             on_date_change=self.on_date_change)
+        edit = CalendarPopUp(edit, self.conf, self.on_date_change)
         edit = urwid.AttrMap(edit, self.bgs.startdate, 'editcp', )
         edit = urwid.Padding(
             edit, align='left', width=datewidth, left=0, right=1)
@@ -95,6 +127,7 @@ class StartEndEditor(urwid.WidgetWrap):
         edit = DateWidget(
             self.conf['locale']['longdateformat'],
             caption=('', 'To:   '), edit_text=self.dts.enddate)
+        edit = CalendarPopUp(edit, self.conf, self.on_date_change)
         edit = urwid.AttrMap(edit, self.bgs.enddate, 'editcp', )
         edit = urwid.Padding(
             edit, align='left', width=datewidth, left=0, right=1)
@@ -162,7 +195,7 @@ class StartEndEditor(urwid.WidgetWrap):
         try:
             self.dts.startdate = \
                 self.widgets.startdate. \
-                original_widget.original_widget.get_edit_text()
+                original_widget.original_widget._original_widget.get_edit_text()
 
             newstartdate = datetime.strptime(
                 self.dts.startdate,
@@ -209,7 +242,7 @@ class StartEndEditor(urwid.WidgetWrap):
     def _newenddate(self):
         try:
             self.dts.enddate = self.widgets.enddate. \
-                original_widget.original_widget.get_edit_text()
+                original_widget.original_widget._original_widget.get_edit_text()
 
             newenddate = datetime.strptime(
                 self.dts.enddate,

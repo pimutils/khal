@@ -156,6 +156,10 @@ class DateTimeWidget(ExtendedEdit):
         except DateConversionError:
             pass
 
+    def set_value(self, new_date):
+        self.set_edit_text(new_date.strftime(self.dateformat))
+
+
 
 class DateWidget(DateTimeWidget):
     dtype = date
