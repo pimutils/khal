@@ -59,18 +59,20 @@ class CalendarPopUp(urwid.PopUpLauncher):
             self._original_widget.set_value(new_date)
             self._on_date_change(new_date)
 
-        keybindings = {}  # TODO use same keybindings as before
+        keybindings = self._conf['keybindings']
         on_press = {'enter': lambda _, __: self.close_pop_up(),
                     'esc': lambda _, __: self.close_pop_up()}
         pop_up = CalendarWidget(
             on_change, keybindings, on_press,
             firstweekday=self._conf['locale']['firstweekday'],
+            weeknumbers=self._conf['locale']['weeknumbers'],
             initial=self._original_widget._get_current_value())
         pop_up = urwid.LineBox(pop_up)
         return pop_up
 
     def get_pop_up_parameters(self):
-        return {'left': 0, 'top': 1, 'overlay_width': 28, 'overlay_height': 8}
+        width = 31 if self._conf['locale']['weeknumbers'] == 'right' else 28
+        return {'left': 0, 'top': 1, 'overlay_width': width, 'overlay_height': 8}
 
 
 class StartEndEditor(urwid.WidgetWrap):
