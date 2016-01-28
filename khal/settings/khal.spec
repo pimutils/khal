@@ -131,6 +131,10 @@ export = force_list(default=list('e'))
 # go into highlight (visual) mode to choose a date range
 mark = force_list(default=list('v'))
 
+# in highlight mode go to the other end of the highlighted date range
+other = force_list(default=list('o'))
+
+
 # The default section begins with a **[default]** tag. Some default values and
 # behaviours are set here.
 [default]

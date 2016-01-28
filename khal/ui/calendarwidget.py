@@ -292,6 +292,12 @@ class CListBox(urwid.ListBox):
         if key in self.keybindings['mark']:
             self._marked = {'date': self.body.focus_date,
                             'pos': (self.focus_position, self.focus.focus_col)}
+        if self._marked and key in self.keybindings['other']:
+            row, col = self._marked['pos']
+            self._marked = {'date': self.body.focus_date,
+                            'pos': (self.focus_position, self.focus.focus_col)}
+            self.focus.focus_col = col
+            self.focus_position = row
 
         if key in self.on_press:
             if self._marked:
