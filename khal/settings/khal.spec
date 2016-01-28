@@ -128,6 +128,9 @@ duplicate = force_list(default=list('p'))
 # export event as ICS
 export = force_list(default=list('e'))
 
+# go into highlight (visual) mode to choose a date range
+mark = force_list(default=list('v'))
+
 # The default section begins with a **[default]** tag. Some default values and
 # behaviours are set here.
 [default]
