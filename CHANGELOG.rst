@@ -28,6 +28,8 @@ ikhal
 * pressing *enter* in a date editing widget will now open a small calendar
   widget, arrow keys can be used to select a date, enter (or escape) will close
   it again (Christian Geier)
+* in highlight/date range selection mode the other end can be selected, default
+  keybinding `o` (as in *Other*) (Christian Geier)
 
 
 0.7.0
