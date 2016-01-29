@@ -251,8 +251,8 @@ class CListBox(urwid.ListBox):
         self.body[row].contents[column][0].set_styles('mark')
 
     def _mark(self, a_date=None):
-        """make sure everything between the marked entry and the currently
-        selected date is visually marked, and nothing else"""
+        """make sure everything between the marked entry and `a_date`
+        is visually marked, and nothing else"""
 
         if a_date is None:
             a_date = self.body.focus_date
