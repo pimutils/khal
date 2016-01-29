@@ -187,6 +187,7 @@ class U_Event(urwid.Text):
                 self.eventcolumn.current_event = self.event
         elif key in binds['delete']:
             self.toggle_delete()
+            key = 'down'
         elif key in binds['duplicate']:
             self.duplicate()
         elif key in binds['export']:
