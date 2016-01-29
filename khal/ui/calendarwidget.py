@@ -449,10 +449,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         for number, day in enumerate(week):
             new_date = Date(day, self.get_styles)
             this_week.append((2, new_date))
-            if day == date.today():
-                new_date.set_styles(self.get_styles(new_date.date, True))
-            else:
-                new_date.set_styles(self.get_styles(new_date.date, False))
+            new_date.set_styles(self.get_styles(new_date.date, False))
         if self.weeknumbers == 'right':
             this_week.append((2, urwid.AttrMap(
                 urwid.Text('{:2}'.format(getweeknumber(week[0]))), 'weeknumber_right')))
