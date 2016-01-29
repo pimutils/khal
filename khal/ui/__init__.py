@@ -228,20 +228,14 @@ class EventList(urwid.WidgetWrap):
             this_date.strftime(self.eventcolumn.pane.conf['locale']['longdateformat']))
         self.events = sorted(self.eventcolumn.pane.collection.get_events_on(this_date))
 
-        # TODO cleanup: event_column is not needed at all
-        event_column = list()
-        for event in self.events:
-            event_column.append(
-                urwid.AttrMap(U_Event(event, this_date=this_date, eventcolumn=self.eventcolumn),
-                              'calendar ' + event.calendar, 'reveal focus'))
-        event_list = [urwid.AttrMap(event, None, 'reveal focus') for event in event_column]
+        event_list = [
+            urwid.AttrMap(U_Event(event, this_date=this_date, eventcolumn=self.eventcolumn),
+                         'calendar ' + event.calendar, 'reveal focus') for event in self.events]
         event_count = len(event_list)
         if not event_list:
             event_list = [urwid.Text('no scheduled events')]
         self.list_walker = urwid.SimpleFocusListWalker(event_list)
-        pile = urwid.ListBox(self.list_walker)
-        pile = urwid.Frame(pile, header=date_text)
-        self._w = pile
+        self._w = urwid.Frame(urwid.ListBox(self.list_walker), header=date_text)
         return event_count
 
 
