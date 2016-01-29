@@ -44,21 +44,27 @@ class DateConversionError(Exception):
 
 class U_Event(urwid.Text):
 
-    def __init__(self, event, this_date=None, eventcolumn=None):
+    def __init__(self, event, this_date=None, eventcolumn=None, relative=True):
         """
         representation of an event in EventList
 
         :param event: the encapsulated event
         :type event: khal.event.Event
         """
-        if isinstance(this_date, datetime) or not isinstance(this_date, date):
-            raise ValueError('`this_date` is of type `{}`, sould be '
-                             '`datetime.date`'.format(type(this_date)))
+        if relative:
+            if isinstance(this_date, datetime) or not isinstance(this_date, date):
+                raise ValueError('`this_date` is of type `{}`, sould be '
+                                 '`datetime.date`'.format(type(this_date)))
         self.event = event
         self.this_date = this_date
         self.eventcolumn = eventcolumn
         self.conf = eventcolumn.pane.conf
-        super(U_Event, self).__init__(self.event.relative_to(self.this_date))
+        self.relative = relative
+        if self.relative:
+            text = self.event.relative_to(self.this_date)
+        else:
+            text = self.event.event_description
+        super(U_Event, self).__init__(text)
         self.set_title()
 
     @property
@@ -83,7 +89,11 @@ class U_Event(urwid.Text):
             mark = 'D'
         elif self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
             mark = 'd'
-        self.set_text(mark + ' ' + self.event.relative_to(self.this_date))
+        if self.relative:
+            text = self.event.relative_to(self.this_date)
+        else:
+            text = self.event.event_description
+        self.set_text(mark + ' ' + text)
 
     def export_event(self):
         """
@@ -218,9 +228,9 @@ class EventList(urwid.WidgetWrap):
         self.list_walker = None
         pile = urwid.Filler(urwid.Pile([]))
         urwid.WidgetWrap.__init__(self, pile)
-        self.update()
+        self.update_by_date()
 
-    def update(self, this_date=date.today()):
+    def update_by_date(self, this_date=date.today()):
         if this_date is None:   # this_date might be None
             return
 
@@ -237,6 +247,20 @@ class EventList(urwid.WidgetWrap):
         self.list_walker = urwid.SimpleFocusListWalker(event_list)
         self._w = urwid.Frame(urwid.ListBox(self.list_walker), header=date_text)
         return event_count
+
+    def update_events(self, events):
+        if events:
+            header = urwid.Text('Your search results')
+        else:
+            header = urwid.Text('No results found')
+
+        event_list = [
+            urwid.AttrMap(U_Event(event, relative=False, eventcolumn=self.eventcolumn),
+                         'calendar ' + event.calendar, 'reveal focus') for event in events]
+        event_count = len(event_list)
+        self.list_walker = urwid.SimpleFocusListWalker(event_list)
+        self._w = urwid.Frame(urwid.ListBox(self.list_walker), header=header)
+        return(len(event_list))
 
 
 class EventColumn(urwid.WidgetWrap):
@@ -281,7 +305,7 @@ class EventColumn(urwid.WidgetWrap):
     @current_date.setter
     def current_date(self, date):
         self._current_date = date
-        self.eventcount = self.events.update(date)
+        self.eventcount = self.events.update_by_date(date)
         self.current_event = self.current_event
 
         # Show first event if show event view is true
@@ -646,13 +670,39 @@ class ExportDialog(urwid.WidgetWrap):
         lines = []
         lines.append(urwid.Text('Export event as ICS file'))
         lines.append(urwid.Text(''))
-        export_location = urwid.Edit(caption='Location: ',
+        export_location = Edit(caption='Location: ',
                                      edit_text="~/%s.ics" % event.summary.strip())
         lines.append(export_location)
         lines.append(urwid.Divider(' '))
         lines.append(
             urwid.Button('Save', on_press=this_func, user_data=export_location)
         )
+        content = urwid.Pile(lines)
+        urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
+
+
+class SearchDialog(urwid.WidgetWrap):
+    def __init__(self, search_func, abort_func):
+
+        class Search(Edit):
+
+            def keypress(self, size, key):
+                if key == 'enter':
+                    search_func(self.text)
+                else:
+                    return super().keypress(size, key)
+
+        search_field = Search('')
+
+        def this_func(_):
+            search_func(search_field.text)
+
+        lines = []
+        lines.append(urwid.Text('Please enter a search term (Escape cancels):'))
+        lines.append(search_field)
+        buttons = urwid.Columns([urwid.Button('Search', on_press=this_func),
+                                 urwid.Button('Abort', on_press=abort_func)])
+        lines.append(buttons)
         content = urwid.Pile(lines)
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
 
@@ -690,6 +740,29 @@ class ClassicView(Pane):
                                 dividechars=0,
                                 box_columns=[0, 1])
         Pane.__init__(self, columns, title=title, description=description)
+
+    def keypress(self, size, key):
+        binds = self.conf['keybindings']
+        if key in binds['search']:
+            self.search()
+        return super().keypress(size, key)
+
+
+    def search(self):
+        overlay = urwid.Overlay(
+            SearchDialog(self._search, self.window.backtrack), self,
+            align='center',
+            width=('relative', 70),
+            valign=('relative', 50),
+            height=None)
+        self.window.open(overlay)
+
+    def _search(self, search_term):
+        self.window.backtrack()
+        events = list(self.collection.search(search_term))
+        self.eventscolumn.original_widget.events.update_events(events)
+        self.widget.set_focus_column(1)
+
 
     def render(self, size, focus=False):
         rval = super(ClassicView, self).render(size, focus)
