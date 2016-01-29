@@ -215,7 +215,6 @@ class EventList(urwid.WidgetWrap):
 
     def __init__(self, eventcolumn):
         self.eventcolumn = eventcolumn
-        self.events = None
         self.list_walker = None
         pile = urwid.Filler(urwid.Pile([]))
         urwid.WidgetWrap.__init__(self, pile)
@@ -227,11 +226,11 @@ class EventList(urwid.WidgetWrap):
 
         date_text = urwid.Text(
             this_date.strftime(self.eventcolumn.pane.conf['locale']['longdateformat']))
-        self.events = sorted(self.eventcolumn.pane.collection.get_events_on(this_date))
+        events = sorted(self.eventcolumn.pane.collection.get_events_on(this_date))
 
         event_list = [
             urwid.AttrMap(U_Event(event, this_date=this_date, eventcolumn=self.eventcolumn),
-                         'calendar ' + event.calendar, 'reveal focus') for event in self.events]
+                         'calendar ' + event.calendar, 'reveal focus') for event in events]
         event_count = len(event_list)
         if not event_list:
             event_list = [urwid.Text('no scheduled events')]
