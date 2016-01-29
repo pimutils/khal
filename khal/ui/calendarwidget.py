@@ -250,9 +250,12 @@ class CListBox(urwid.ListBox):
         """set attribute *mark* on the date at row `row` and column `column`"""
         self.body[row].contents[column][0].set_styles('mark')
 
-    def _mark(self):
+    def _mark(self, a_date=None):
         """make sure everything between the marked entry and the currently
         selected date is visually marked, and nothing else"""
+
+        if a_date is None:
+            a_date = self.body.focus_date
         def toggle(row, column):
             if self.body[row].contents[column][0].marked:
                 self._mark_one(row, column)
@@ -263,13 +266,13 @@ class CListBox(urwid.ListBox):
         stop = max(self._marked['pos'][0], self.focus_position) + 2
         for row in range(start, stop):
             for col in range(1, 8):
-                if self.body.focus_date > self._marked['date']:
-                    if self._marked['date'] <= self._date(row, col) <= self.body.focus_date:
+                if a_date > self._marked['date']:
+                    if self._marked['date'] <= self._date(row, col) <= a_date:
                         self._mark_one(row, col)
                     else:
                         self._unmark_one(row, col)
                 else:
-                    if self._marked['date'] >= self._date(row, col) >= self.body.focus_date:
+                    if self._marked['date'] >= self._date(row, col) >= a_date:
                         self._mark_one(row, col)
                     else:
                         self._unmark_one(row, col)
@@ -278,11 +281,17 @@ class CListBox(urwid.ListBox):
         self._pos_old = self.focus_position, self.focus.focus_col
 
     def _unmark_all(self):
-        start = min(self._marked['pos'][0], self._pos_old[0])
-        end = max(self._marked['pos'][0], self._pos_old[0]) + 1
+        start = min(self._marked['pos'][0], self.focus_position, self._pos_old[0])
+        end = max(self._marked['pos'][0], self.focus_position, self._pos_old[0]) + 1
         for row in range(start, end):
             for col in range(1, 8):
                 self._unmark_one(row, col)
+
+    def set_focus_date(self, a_day):
+        if self._marked:
+            self._unmark_all()
+            self._mark(a_day)
+        self.body.set_focus_date(a_day)
 
     def keypress(self, size, key):
         if key in self.keybindings['mark'] + ['esc'] and self._marked:
@@ -311,7 +320,7 @@ class CListBox(urwid.ListBox):
             # reset colors of currently focused Date widget
             self.focus.focus.set_styles(
                 self.focus.get_styles(self.body.focus_date, False))
-            self.body.set_focus_date(date.today())
+            self.set_focus_date(date.today())
             self.set_focus_valign(('relative', 10))
 
         key = super(CListBox, self).keypress(size, key)
@@ -575,8 +584,8 @@ class CalendarWidget(urwid.WidgetWrap):
         self.walker = CalendarWalker(
             on_date_change, on_press, default_keybindings, firstweekday, weeknumbers,
             get_styles)
-        box = CListBox(self.walker)
-        frame = urwid.Frame(box, header=dnames)
+        self.box = CListBox(self.walker)
+        frame = urwid.Frame(self.box, header=dnames)
         urwid.WidgetWrap.__init__(self, frame)
         self.set_focus_date(initial)
 
@@ -592,4 +601,4 @@ class CalendarWidget(urwid.WidgetWrap):
 
         :type a_day: datetime.date
         """
-        self.walker.set_focus_date(a_day)
+        self.box.set_focus_date(a_day)
