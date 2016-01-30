@@ -256,6 +256,7 @@ class CListBox(urwid.ListBox):
 
         if a_date is None:
             a_date = self.body.focus_date
+
         def toggle(row, column):
             if self.body[row].contents[column][0].marked:
                 self._mark_one(row, column)

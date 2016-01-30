@@ -240,7 +240,7 @@ class EventList(urwid.WidgetWrap):
 
         event_list = [
             urwid.AttrMap(U_Event(event, this_date=this_date, eventcolumn=self.eventcolumn),
-                         'calendar ' + event.calendar, 'reveal focus') for event in events]
+                          'calendar ' + event.calendar, 'reveal focus') for event in events]
         event_count = len(event_list)
         if not event_list:
             event_list = [urwid.Text('no scheduled events')]
@@ -256,8 +256,7 @@ class EventList(urwid.WidgetWrap):
 
         event_list = [
             urwid.AttrMap(U_Event(event, relative=False, eventcolumn=self.eventcolumn),
-                         'calendar ' + event.calendar, 'reveal focus') for event in events]
-        event_count = len(event_list)
+                          'calendar ' + event.calendar, 'reveal focus') for event in events]
         self.list_walker = urwid.SimpleFocusListWalker(event_list)
         self._w = urwid.Frame(urwid.ListBox(self.list_walker), header=header)
         return(len(event_list))
@@ -671,7 +670,7 @@ class ExportDialog(urwid.WidgetWrap):
         lines.append(urwid.Text('Export event as ICS file'))
         lines.append(urwid.Text(''))
         export_location = Edit(caption='Location: ',
-                                     edit_text="~/%s.ics" % event.summary.strip())
+                               edit_text="~/%s.ics" % event.summary.strip())
         lines.append(export_location)
         lines.append(urwid.Divider(' '))
         lines.append(
@@ -747,7 +746,6 @@ class ClassicView(Pane):
             self.search()
         return super().keypress(size, key)
 
-
     def search(self):
         overlay = urwid.Overlay(
             SearchDialog(self._search, self.window.backtrack), self,
@@ -762,7 +760,6 @@ class ClassicView(Pane):
         events = list(self.collection.search(search_term))
         self.eventscolumn.original_widget.events.update_events(events)
         self.widget.set_focus_column(1)
-
 
     def render(self, size, focus=False):
         rval = super(ClassicView, self).render(size, focus)
