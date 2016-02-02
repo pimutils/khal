@@ -290,7 +290,7 @@ class NextMixin(SupportsNext):
 
         if key == 'tab':
             if self.outermost and self.focus_position == self._last_selectable():
-                self._select_first_selectable(self)
+                self._select_first_selectable()
             else:
                 for i in range(self.focus_position + 1, len(self._contents)):
                     if self._contents[i][0].selectable():
