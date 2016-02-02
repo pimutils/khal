@@ -28,7 +28,7 @@ import urwid
 from .. import aux
 from . import colors
 from .base import Pane, Window, Choice
-from .widgets import ExtendedEdit as Edit
+from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox
 from .startendeditor import StartEndEditor
 from .calendarwidget import CalendarWidget
 
@@ -505,8 +505,8 @@ class EventEditor(urwid.WidgetWrap):
                                 edit_text=self.description, multiline=True)
         self.location = Edit(caption='Location: ',
                              edit_text=self.location)
-        self.pile = urwid.ListBox(urwid.SimpleFocusListWalker([
-            urwid.Columns([self.summary, self.calendar_chooser], dividechars=2),
+        self.pile = NListBox(urwid.SimpleFocusListWalker([
+            NColumns([self.summary, self.calendar_chooser], dividechars=2),
             divider,
             self.location,
             self.description,
@@ -516,7 +516,7 @@ class EventEditor(urwid.WidgetWrap):
             divider,
             urwid.Button('Save', on_press=self.save),
             urwid.Button('Export', on_press=self.export)
-        ]))
+        ]), outermost=True)
 
         urwid.WidgetWrap.__init__(self, self.pile)
 
@@ -654,11 +654,11 @@ class DeleteDialog(urwid.WidgetWrap):
         lines.append(urwid.Text('This is a recurring event.'))
         lines.append(urwid.Text('Which instances do you want to delete?'))
         lines.append(urwid.Text(''))
-        buttons = urwid.Columns(
+        buttons = NColumns(
             [urwid.Button('Only this', on_press=this_func),
              urwid.Button('All (past and future)', on_press=all_func),
              urwid.Button('Abort', on_press=abort_func),
-             ])
+             ], outermost=True)
         lines.append(buttons)
         content = urwid.Pile(lines)
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
@@ -676,7 +676,7 @@ class ExportDialog(urwid.WidgetWrap):
         lines.append(
             urwid.Button('Save', on_press=this_func, user_data=export_location)
         )
-        content = urwid.Pile(lines)
+        content = NPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
 
 
@@ -702,7 +702,7 @@ class SearchDialog(urwid.WidgetWrap):
         buttons = urwid.Columns([urwid.Button('Search', on_press=this_func),
                                  urwid.Button('Abort', on_press=abort_func)])
         lines.append(buttons)
-        content = urwid.Pile(lines)
+        content = NPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
 
 

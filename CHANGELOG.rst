@@ -31,6 +31,8 @@ ikhal
 * in highlight/date range selection mode the other end can be selected, default
   keybinding `o` (as in *Other*) (Christian Geier)
 * basic search is now supported (default keybinding `/`) (Christian Geier)
+* in the event editor and pop-up Dialogs select the next (previous) item with tab
+  (shift tab) (Christian Geier)
 
 
 0.7.0

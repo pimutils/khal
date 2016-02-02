@@ -23,7 +23,7 @@ from datetime import datetime
 
 import urwid
 
-from .widgets import DateWidget, TimeWidget
+from .widgets import DateWidget, TimeWidget, NColumns, NPile
 from .calendarwidget import CalendarWidget
 
 
@@ -157,11 +157,11 @@ class StartEndEditor(urwid.WidgetWrap):
                 edit, align='left', width=len(self.dts.endtime) + 1, left=1)
             self.widgets.endtime = edit
 
-        columns = urwid.Pile([
+        columns = NPile([
             self.checkallday,
-            urwid.Columns([(datewidth, self.widgets.startdate), (
+            NColumns([(datewidth, self.widgets.startdate), (
                 timewidth, self.widgets.starttime)], dividechars=1),
-            urwid.Columns(
+            NColumns(
                 [(datewidth, self.widgets.enddate),
                  (timewidth, self.widgets.endtime)],
                 dividechars=1)

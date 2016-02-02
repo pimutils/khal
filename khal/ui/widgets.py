@@ -185,3 +185,129 @@ class TimeWidget(DateTimeWidget):
             raise DateConversionError
         else:
             return new_datetime
+
+
+class SupportsNext(object):
+    """classes inheriting from SupportsNext must implement the following methods:
+    _select_first_selectable
+    _select_last_selectable
+    """
+    def __init__(self, *args, **kwargs):
+        self.outermost = kwargs.get('outermost', False)
+        if 'outermost' in kwargs:
+            kwargs.pop('outermost')
+        super(SupportsNext, self).__init__(*args, **kwargs)
+
+
+class NextMixin(SupportsNext):
+    """Implements SupportsNext for urwid.Pile and urwid.Columns"""
+    def _select_first_selectable(self):
+        """select our first selectable item (recursivly if that item SupportsNext)"""
+        i = self._first_selectable()
+        self.set_focus(i)
+        if isinstance(self.contents[i][0], SupportsNext):
+            self.contents[i][0]._select_first_selectable()
+
+    def _select_last_selectable(self):
+        """select our last selectable item (recursivly if that item SupportsNext)"""
+        i = self._last_selectable()
+        self.set_focus(i)
+        if isinstance(self._contents[i][0], SupportsNext):
+            self.contents[i][0]._select_last_selectable()
+
+    def _first_selectable(self):
+        """return sequence number of self.contents last selectable item"""
+        for j in range(0, len(self._contents)):
+            if self._contents[j][0].selectable():
+                return j
+        return False
+
+    def _last_selectable(self):
+        """return sequence number of self._contents last selectable item"""
+        for j in range(len(self._contents) - 1, - 1, - 1):
+            if self._contents[j][0].selectable():
+                return j
+        return False
+
+    def keypress(self, size, key):
+        key = super(NextMixin, self).keypress(size, key)
+
+        if key == 'tab':
+            if self.outermost and self.focus_position == self._last_selectable():
+                self._select_first_selectable(self)
+            else:
+                for i in range(self.focus_position + 1, len(self._contents)):
+                    if self._contents[i][0].selectable():
+                        self.set_focus(i)
+                        if isinstance(self._contents[i][0], SupportsNext):
+                            self._contents[i][0]._select_first_selectable()
+                        break
+                else:  # no break
+                    return key
+        elif key == 'shift tab':
+            if self.outermost and self.focus_position == self._first_selectable():
+                self._select_last_selectable()
+            else:
+                for i in range(self.focus_position - 1, 0 - 1, -1):
+                    if self._contents[i][0].selectable():
+                        self.set_focus(i)
+                        if isinstance(self._contents[i][0], SupportsNext):
+                            self._contents[i][0]._select_last_selectable()
+                        break
+                else:  # no break
+                    return key
+        else:
+            return key
+
+
+class NPile(NextMixin, urwid.Pile):
+    pass
+
+
+class NColumns(NextMixin, urwid.Columns):
+    pass
+
+
+class NListBox(SupportsNext, urwid.ListBox):
+    def _select_first_selectable(self):
+        """select our first selectable item (recursivly if that item SupportsNext)"""
+        i = self._first_selectable()
+        self.set_focus(i)
+        if isinstance(self.body[i], SupportsNext):
+            self.body[i]._select_first_selectable()
+
+    def _select_last_selectable(self):
+        """select our last selectable item (recursivly if that item SupportsNext)"""
+        i = self._last_selectable()
+        self.set_focus(i)
+        if isinstance(self.body[i], SupportsNext):
+            self.body[i]._select_last_selectable()
+
+    def _first_selectable(self):
+        """return sequence number of self._contents last selectable item"""
+        for j in range(0, len(self.body)):
+            if self.body[j].selectable():
+                return j
+        return False
+
+    def _last_selectable(self):
+        """return sequence number of self.contents last selectable item"""
+        for j in range(len(self.body) - 1, - 1, - 1):
+            if self.body[j].selectable():
+                return j
+        return False
+
+    def keypress(self, size, key):
+        key = super().keypress(size, key)
+        if key == 'tab':
+            if self.outermost and self.focus_position == self._last_selectable():
+                self._select_first_selectable()
+            else:
+                self._keypress_down(size)
+        elif key == 'shift tab':
+            if self.outermost and self.focus_position == self._first_selectable():
+                self._select_last_selectable()
+            else:
+                self._keypress_up(size)
+        else:
+            return key
