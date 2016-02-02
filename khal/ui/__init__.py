@@ -27,8 +27,8 @@ import urwid
 
 from .. import aux
 from . import colors
-from .base import Pane, Window, Choice
-from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox
+from .base import Pane, Window
+from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice
 from .startendeditor import StartEndEditor
 from .calendarwidget import CalendarWidget
 

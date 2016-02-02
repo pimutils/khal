@@ -187,6 +187,62 @@ class TimeWidget(DateTimeWidget):
             return new_datetime
 
 
+class Choice(urwid.PopUpLauncher):
+    def __init__(self, choices, active, decorate_func=None):
+        self.choices = choices
+        self._decorate = decorate_func or (lambda x: x)
+        self.active = self._original = active
+
+    def create_pop_up(self):
+        pop_up = ChoiceList(self)
+        urwid.connect_signal(pop_up, 'close',
+                             lambda button: self.close_pop_up())
+        return pop_up
+
+    def get_pop_up_parameters(self):
+        return {'left': 0,
+                'top': 1,
+                'overlay_width': 32,
+                'overlay_height': len(self.choices)}
+
+    @property
+    def changed(self):
+        return self._active != self._original
+
+    @property
+    def active(self):
+        return self._active
+
+    @active.setter
+    def active(self, val):
+        self._active = val
+        self.button = urwid.Button(self._decorate(self._active))
+        urwid.PopUpLauncher.__init__(self, self.button)
+        urwid.connect_signal(self.button, 'click',
+                             lambda button: self.open_pop_up())
+
+
+class ChoiceList(urwid.WidgetWrap):
+    signals = ['close']
+
+    def __init__(self, parent):
+        self.parent = parent
+        buttons = []
+        for c in parent.choices:
+            buttons.append(
+                urwid.Button(parent._decorate(c),
+                             on_press=self.set_choice, user_data=c)
+            )
+
+        pile = urwid.Pile(buttons)
+        fill = urwid.Filler(pile)
+        urwid.WidgetWrap.__init__(self, urwid.AttrMap(fill, 'popupbg'))
+
+    def set_choice(self, button, account):
+        self.parent.active = account
+        self._emit("close")
+
+
 class SupportsNext(object):
     """classes inheriting from SupportsNext must implement the following methods:
     _select_first_selectable
