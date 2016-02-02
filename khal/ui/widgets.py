@@ -234,7 +234,7 @@ class ChoiceList(urwid.WidgetWrap):
                              on_press=self.set_choice, user_data=c)
             )
 
-        pile = urwid.Pile(buttons)
+        pile = NPile(buttons, outermost=True)
         fill = urwid.Filler(pile)
         urwid.WidgetWrap.__init__(self, urwid.AttrMap(fill, 'popupbg'))
 
