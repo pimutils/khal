@@ -599,27 +599,8 @@ class EventEditor(urwid.WidgetWrap):
         saves the event to the db (only when it has been changed)
         :param button: not needed, passed via the button press
         """
-        # need to call this to set date backgrounds to False
-        changed = self.changed
-        if 'alert' in [self.startendeditor.bgs.startdate,
-                       self.startendeditor.bgs.starttime,
-                       self.startendeditor.bgs.enddate,
-                       self.startendeditor.bgs.endtime]:
-            # toggle also updates the background, therefore we toggle the state
-            # to the current state, thus only updating the background colors
-            # finally we set the focus to the element containing the
-            # StartEndEditor
-            self.startendeditor.toggle(None, state=self.startendeditor.allday)
-            for num, element in enumerate(self.pile.body):
-                if isinstance(element, StartEndEditor):
-                    self.pile.set_focus(num)
-                    self.startendeditor.toggle(None, state=self.startendeditor.allday)
-                    break
-            return
-        else:
+        if self.changed is True:
             self.update_vevent()
-
-        if changed is True:
             self.event.allday = self.startendeditor.allday
             self.event.increment_sequence()
             if self.event.etag is None:  # has not been saved before

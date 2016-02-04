@@ -116,7 +116,7 @@ class DateTimeWidget(ExtendedEdit):
     def __init__(self, dateformat, on_date_change=lambda x: None, **kwargs):
         self.dateformat = dateformat
         self.on_date_change = on_date_change
-        super(DateTimeWidget, self).__init__(wrap='any', **kwargs)
+        super().__init__(wrap='any', **kwargs)
 
     def keypress(self, size, key):
         if key == 'ctrl x':
@@ -127,8 +127,8 @@ class DateTimeWidget(ExtendedEdit):
             return None
 
         if (
-                key in ['up', 'down'] or
-                (key in ['right', 'tab'] and self.edit_pos >= len(self.edit_text)) or
+                key in ['up', 'down', 'tab', 'shift tab'] or
+                (key in ['right'] and self.edit_pos >= len(self.edit_text)) or
                 (key in ['left'] and self.edit_pos == 0)):
             # when leaving the current Widget we check if currently
             # entered value is valid and if so pass the new value
@@ -367,3 +367,51 @@ class NListBox(SupportsNext, urwid.ListBox):
                 self._keypress_up(size)
         else:
             return key
+
+
+class ValidatedEdit(urwid.WidgetWrap):
+    def __init__(self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs):
+        assert validate
+        self._validate_func = validate
+        self._original_widget = urwid.AttrMap(EditWidget(*args, **kwargs), 'edit', 'editf')
+        super().__init__(self._original_widget)
+
+    @property
+    def _get_base_widget(self):
+        return self._original_widget
+
+    @property
+    def base_widget(self):
+        return self._original_widget.original_widget
+
+    def _validate(self):
+        text = self.base_widget.get_edit_text()
+        if self._validate_func(text):
+            self._original_widget.set_attr_map({None: 'edit'})
+            self._original_widget.set_focus_map({None: 'edit'})
+            return True
+        else:
+            self._original_widget.set_attr_map({None: 'alert'})
+            self._original_widget.set_focus_map({None: 'alert'})
+            return False
+
+    def get_edit_text(self):
+        self._validate()
+        return self.base_widget.get_edit_text()
+
+    @property
+    def edit_pos(self):
+        return self.base_widget.edit_pos
+
+    @property
+    def edit_text(self):
+        return self.base_widget.edit_text
+
+    def keypress(self, size, key):
+        if (
+                key in ['up', 'down', 'tab', 'shift tab'] or
+                (key in ['right'] and self.edit_pos >= len(self.edit_text)) or
+                (key in ['left'] and self.edit_pos == 0)):
+            if not self._validate():
+                return
+        return super().keypress(size, key)
