@@ -350,6 +350,7 @@ def test_only_update_old_event(coll_vdirs, monkeypatch):
 
     coll.update_db()
     assert not coll._needs_update(cal1)
+    sleep(0.01)
 
     old_update_vevent = coll._update_vevent
     updated_hrefs = []
