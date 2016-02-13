@@ -592,6 +592,7 @@ def check_support(vevent, href, calendar):
     :type href: str
     """
     rec_id = vevent.get(RECURRENCE_ID)
+
     if rec_id is not None and rec_id.params.get('RANGE') == THISANDPRIOR:
         raise UpdateFailed(
             'The parameter `THISANDPRIOR` is not (and will not be) '
