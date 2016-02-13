@@ -317,13 +317,17 @@ def test_default_calendar(coll_vdirs):
     vdir = vdirs['foobar']
     event = coll.new_event(event_today, 'foobar')
     vdir.upload(event)
+    sleep(0.01)
     href, etag = list(vdir.list())[0]
     assert len(list(coll.get_events_on(today))) == 0
     coll.update_db()
+    sleep(0.01)
     assert len(list(coll.get_events_on(today))) == 1
     vdir.delete(href, etag)
+    sleep(0.01)
     assert len(list(coll.get_events_on(today))) == 1
     coll.update_db()
+    sleep(0.01)
     assert len(list(coll.get_events_on(today))) == 0
 
 
@@ -348,9 +352,10 @@ def test_only_update_old_event(coll_vdirs, monkeypatch):
     END:VEVENT
     """), cal1))
 
-    coll.update_db()
-    assert not coll._needs_update(cal1)
     sleep(0.01)
+    coll.update_db()
+    sleep(0.01)
+    assert not coll._needs_update(cal1)
 
     old_update_vevent = coll._update_vevent
     updated_hrefs = []
@@ -368,7 +373,9 @@ def test_only_update_old_event(coll_vdirs, monkeypatch):
     SUMMARY:third meeting
     END:VEVENT
     """), cal1))
+    sleep(0.01)
 
     assert coll._needs_update(cal1)
     coll.update_db()
+    sleep(0.01)
     assert updated_hrefs == [href_three]
