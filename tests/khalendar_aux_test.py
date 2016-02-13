@@ -1,12 +1,10 @@
-import os
-
 from datetime import date, datetime, timedelta
 import icalendar
 import pytz
 
 from khal.khalendar import aux
 
-from .aux import _get_text
+from .aux import _get_text, _get_vevent_file
 
 # FIXME this file is in urgent need of a clean up
 
@@ -224,16 +222,6 @@ new_york = pytz.timezone('America/New_York')
 
 def _get_vevent(event):
     ical = icalendar.Event.from_ical(event)
-    for component in ical.walk():
-        if component.name == 'VEVENT':
-            return component
-
-
-def _get_vevent_file(event_path):
-    directory = '/'.join(__file__.split('/')[:-1]) + '/ics/'
-    ical = icalendar.Calendar.from_ical(
-        open(os.path.join(directory, event_path + '.ics'), 'rb').read()
-    )
     for component in ical.walk():
         if component.name == 'VEVENT':
             return component
@@ -680,17 +668,6 @@ RDATE:20131213T190000
 UID:datetime123
 END:VEVENT"""
 
-event_r_past = """BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:EVENT
-DTSTART;VALUE=DATE:19650423
-DURATION:P1D
-UID:date_event_past
-RRULE:FREQ=YEARLY
-SUMMARY:Dummy's Birthday (1965)
-END:VEVENT
-END:VCALENDAR"""
-
 
 class TestRDate(object):
     """Testing expanding of recurrence rules"""
@@ -705,7 +682,8 @@ class TestRDate(object):
         assert len(dtstart) == 7
 
     def test_rrule_past(self):
-        vevent = _get_vevent(event_r_past)
+        vevent = _get_vevent_file('event_r_past')
+        assert vevent is not None
         dtstarts = aux.expand(vevent, berlin)
         assert len(dtstarts) == 73
         assert dtstarts[0][0] == date(1965, 4, 23)
