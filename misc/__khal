@@ -1,7 +1,7 @@
 #compdef khal
 # install by copying to file where your zsh looks for completion scripts
 # e.g. add this to your zshrc:
-# fpath=(~/.zsh/completion $fpath) 
+# fpath=(~/.zsh/completion $fpath)
 
 _calendars() {
   local expl

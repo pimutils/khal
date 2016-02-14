@@ -16,7 +16,7 @@ addons:
         packages:
             - language-pack-de
 
-install: 
+install:
         - "pip install tox"
 
 script:

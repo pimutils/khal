@@ -14,13 +14,13 @@ Here is a small example:
 
 .. object:: color
 
-    
+
     khal will use this color for coloring this calendar's event. Depending on
     your terminal emulator's settings, they might look different than what their
     name implies.
 
       :type: option, allowed values are *black*, *white*, *brown*, *yellow*, *dark grey*, *dark green*, *dark blue*, *light grey*, *light green*, *light blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light cyan*, *light red* and **
-      :default: 
+      :default:
 
 .. _calendars-path:
 
@@ -35,7 +35,7 @@ Here is a small example:
 
 .. object:: readonly
 
-    
+
     setting this to *True*, will keep khal from making any changes to this
     calendar
 
@@ -46,7 +46,7 @@ Here is a small example:
 
 .. object:: type
 
-    
+
     Set the type of this collection, the default is ``calendar``.
     If set to ``birthdays`` khal will expect a VCARD collection and extract
     birthdays from those VCARDS. ``birthdays`` also implies ``readonly=True``.
@@ -76,7 +76,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: encoding
 
-    
+
     set this to the encoding of your terminal emulator
 
       :type: string
@@ -86,7 +86,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: local_timezone
 
-    
+
     khal will show all times in this timezone
     If no timezone is set, the timezone your computer is set to will be used.
 
@@ -97,7 +97,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: unicode_symbols
 
-    
+
     by default khal uses some unicode symbols (as in 'non-ascii') as indicators for things like repeating events,
     if your font, encoding etc. does not support those symbols, set this to *False* (this will enable ascii based replacements).
 
@@ -108,7 +108,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: longdateformat
 
-    
+
     khal will display and understand all dates in this format, it should
     contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
 
@@ -119,7 +119,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: longdatetimeformat
 
-    
+
     khal will display and understand all datetimes in this format, it should
     contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
 
@@ -130,7 +130,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: default_timezone
 
-    
+
     this timezone will be used for new events (when no timezone is specified) and
     when khal does not understand the timezone specified in the icalendar file.
     If no timezone is set, the timezone your computer is set to will be used.
@@ -142,7 +142,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: datetimeformat
 
-    
+
     khal will display and understand all datetimes in this format, see
     :ref:`timeformat <locale-timeformat>` for the format.
 
@@ -153,8 +153,8 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: weeknumbers
 
-    
-    
+
+
     Enable weeknumbers in `calendar` and `interactive` (ikhal) mode. As those are
     iso weeknumbers, they only work properly if `firstweekday` is set to 0
 
@@ -165,9 +165,9 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: timeformat
 
-    
+
     khal will display and understand all times in this format.
-    
+
     The formatting string is interpreted as defined by Python's `strftime
     <https://docs.python.org/2/library/time.html#time.strftime>`_, which is
     similar to the format specified in ``man strftime``.
@@ -179,7 +179,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: dateformat
 
-    
+
     khal will display and understand all dates in this format, see :ref:`timeformat <locale-timeformat>` for the format
 
       :type: string
@@ -189,7 +189,7 @@ The most important options in the the **[locale]** section are probably (long-)t
 
 .. object:: firstweekday
 
-    
+
     the day first day of the week, were Monday is 0 and Sunday is 6
 
       :type: integer, allowed values are between 0 and 6
@@ -207,7 +207,7 @@ between), e.g. **ctrl n**.
 
 .. object:: save
 
-    
+
     save the currently edited event and leave the event editor
 
       :type: list
@@ -217,7 +217,7 @@ between), e.g. **ctrl n**.
 
 .. object:: right
 
-    
+
     move the cursor right (in the calendar browser)
 
       :type: list
@@ -227,7 +227,7 @@ between), e.g. **ctrl n**.
 
 .. object:: view
 
-    
+
     show details or edit (if details are already shown) the currently selected event
 
       :type: list
@@ -237,7 +237,7 @@ between), e.g. **ctrl n**.
 
 .. object:: up
 
-    
+
     move the cursor up (in the calendar browser)
 
       :type: list
@@ -247,7 +247,7 @@ between), e.g. **ctrl n**.
 
 .. object:: down
 
-    
+
     move the cursor down (in the calendar browser)
 
       :type: list
@@ -257,7 +257,7 @@ between), e.g. **ctrl n**.
 
 .. object:: duplicate
 
-    
+
     duplicate the currently selected event
 
       :type: list
@@ -267,7 +267,7 @@ between), e.g. **ctrl n**.
 
 .. object:: new
 
-    
+
     create a new event on the selected date
 
       :type: list
@@ -277,7 +277,7 @@ between), e.g. **ctrl n**.
 
 .. object:: left
 
-    
+
     move the cursor left (in the calendar browser)
 
       :type: list
@@ -287,7 +287,7 @@ between), e.g. **ctrl n**.
 
 .. object:: today
 
-    
+
     focus the calendar browser on today
 
       :type: list
@@ -297,7 +297,7 @@ between), e.g. **ctrl n**.
 
 .. object:: delete
 
-    
+
     delete the currently selected event
 
       :type: list
@@ -313,7 +313,7 @@ behaviours are set here.
 
 .. object:: default_command
 
-    
+
     command to be executed if no command is given when executing khal
 
       :type: option, allowed values are *calendar*, *agenda*, *interactive*, *printformats*, *printcalendars* and **
@@ -323,7 +323,7 @@ behaviours are set here.
 
 .. object:: print_new
 
-    
+
     After adding a new event, what should be printed to standard out? The whole
     event in text form, the path to where the event is now saved or nothing?
 
@@ -334,7 +334,7 @@ behaviours are set here.
 
 .. object:: days
 
-    
+
     By default, khal show events for today and tomorrow.
     Setting this to a different value will show events of that amount of days by
     defaut.
@@ -346,7 +346,7 @@ behaviours are set here.
 
 .. object:: highlight_event_days
 
-    
+
     If true, khal will highlight days with events. Options for
     highlighting are in [highlight_days] section.
 
@@ -357,7 +357,7 @@ behaviours are set here.
 
 .. object:: default_calendar
 
-    
+
     The calendar to use if none is specified for some operation (e.g. if adding a
     new event). If this is not set, such operations requre an explicit value.
 
@@ -368,7 +368,7 @@ behaviours are set here.
 
 .. object:: show_all_days
 
-    
+
     By default, khal displays only dates with event in "agenda" view.
     Setting this to *True* will show all days in "agenda", even
     when there is no event
@@ -386,7 +386,7 @@ when using ikhal
 
 .. object:: event_view_weighting
 
-    
+
     This is the weighting that is applied to the event view window
 
       :type: integer
@@ -396,9 +396,9 @@ when using ikhal
 
 .. object:: theme
 
-    
+
     Choose a color theme for khal.
-    
+
     This is very much work in progress. Help is really welcome! The two currently
     available color schemes (*dark* and *light*) are defined in
     *khal/ui/themes.py*, you can either help improve those or create a new one
@@ -406,11 +406,11 @@ when using ikhal
     for how to set colors and/or at the existing schemes. If you cannot change
     the color of an element (or have any other problems) please open an issue on
     github_.
-    
+
     If you want to create your own color scheme, just copy the structure of the
     existing ones, give it a new and unique name and also add it as an option in
     `khal/settings/khal.spec` in the section `[default]` of the property `theme`.
-    
+
     __ http://urwid.org/manual/displayattributes.html
     .. _github: # https://github.com/geier/khal/issues
 
@@ -421,7 +421,7 @@ when using ikhal
 
 .. object:: frame
 
-    
+
     Whether to show a visible frame (with *box drawing* characters) around some
     (groups of) elements.
 
@@ -432,7 +432,7 @@ when using ikhal
 
 .. object:: event_view_always_visible
 
-    
+
     Set to true to always show the event view window when looking at the event list
 
       :type: boolean
@@ -448,29 +448,29 @@ the highlighting rendered.
 
 .. object:: color
 
-    
+
     What color to use when highlighting - explicit color or use calendar
     color when set to ''
 
       :type: option, allowed values are *black*, *white*, *brown*, *yellow*, *dark grey*, *dark green*, *dark blue*, *light grey*, *light green*, *light blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light cyan*, *light red* and **
-      :default: 
+      :default:
 
 .. _highlight_days-multiple:
 
 .. object:: multiple
 
-    
+
     How to color days with events from multiple calendars - either
     explicit color or use calendars' colors when set to ''
 
       :type: option, allowed values are *black*, *white*, *brown*, *yellow*, *dark grey*, *dark green*, *dark blue*, *light grey*, *light green*, *light blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light cyan*, *light red* and **
-      :default: 
+      :default:
 
 .. _highlight_days-method:
 
 .. object:: method
 
-    
+
     Highlighting method to use - foreground or background
 
       :type: option, allowed values are *foreground*, *fg*, *background* and *bg*
@@ -480,10 +480,10 @@ the highlighting rendered.
 
 .. object:: default_color
 
-    
+
     Default color for calendars without color - when se to '' it
     actually disables highlighting for events that should use the
     default color.
 
       :type: option, allowed values are *black*, *white*, *brown*, *yellow*, *dark grey*, *dark green*, *dark blue*, *light grey*, *light green*, *light blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light cyan*, *light red* and **
-      :default: 
+      :default:

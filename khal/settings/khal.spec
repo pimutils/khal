@@ -178,7 +178,7 @@ event_view_weighting = integer(default=1)
 event_view_always_visible = boolean(default=False)
 
 # Choose a color theme for khal.
-# 
+#
 # This is very much work in progress. Help is really welcome! The two currently
 # available color schemes (*dark* and *light*) are defined in
 # *khal/ui/themes.py*, you can either help improve those or create a new one
