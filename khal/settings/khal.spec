@@ -7,7 +7,9 @@
 # .. literalinclude:: ../../tests/configs/small.conf
 #  :language: ini
 [[__many__]]
-# the path to a *vdir* where this calendar is saved
+# The path to an existing directory where this calendar is saved as a *vdir*.
+# The directory is searched for events or birthdays (see ``type``) but the
+# search is not recursive.
 path = expand_path(default=None)
 
 # khal will use this color for coloring this calendar's event.
@@ -34,6 +36,9 @@ readonly = boolean(default=False)
 # Set the type of this collection, the default is ``calendar``.
 # If set to ``birthdays`` khal will expect a VCARD collection and extract
 # birthdays from those VCARDS. ``birthdays`` also implies ``readonly=True``.
+# If set to ``calendar`` only files with the ``.ics`` extension will be used
+# and if set to ``birthdays`` only files with the ``.vcf`` extension will be
+# used.
 type = option('calendar', 'birthdays', default='calendar')
 
 [sqlite]
