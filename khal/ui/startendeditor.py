@@ -143,7 +143,8 @@ class StartEndEditor(urwid.WidgetWrap):
     def _validate_start_time(self, text):
         try:
             startval = datetime.strptime(text, self.conf['locale']['timeformat'])
-            self.startdt = self.localize_start(datetime.combine(self._startdt.date(), startval.time()))
+            self.startdt = self.localize_start(
+                datetime.combine(self._startdt.date(), startval.time()))
         except ValueError:
             return False
         else:
@@ -152,7 +153,8 @@ class StartEndEditor(urwid.WidgetWrap):
     def _validate_start_date(self, text):
         try:
             startval = datetime.strptime(text, self.conf['locale']['longdateformat'])
-            self.startdt = self.localize_start(datetime.combine(startval.date(), self._startdt.time()))
+            self.startdt = self.localize_start(
+                datetime.combine(startval.date(), self._startdt.time()))
         except ValueError:
             return False
         else:
