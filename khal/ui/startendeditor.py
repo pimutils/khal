@@ -32,7 +32,6 @@ class DateConversionError(Exception):
 
 
 class StartEnd(object):
-    # TODO convert to namespace
 
     def __init__(self, startdate, starttime, enddate, endtime):
         """collecting some common properties"""
@@ -80,16 +79,21 @@ class StartEndEditor(urwid.WidgetWrap):
     Wigdet for editing start and end times (of an event)
 
     we cannot change timezones ATM  # TODO
-    pop up on strings not matching timeformat # TODO
     """
 
     def __init__(self, start, end, conf, on_date_change=lambda x: None):
+        """
+        :type start: datetime.datetime
+        :type end: datetime.datetime
+        """
         self.allday = not isinstance(start, datetime)
         self.conf = conf
-        self.startdt = start
-        self.enddt = end
+        self._startdt, self._original_start = start, start
+        self._enddt, self._original_end = end, end
         self.on_date_change = on_date_change
-        self.dts = StartEnd(
+        # TODO Remove self.dts, we only need this for the length of the strings
+        # to edit
+        self.dts = StartEnd(  # as in DateTimeString
             startdate=start.strftime(self.conf['locale']['longdateformat']),
             starttime=start.strftime(self.conf['locale']['timeformat']),
             enddate=end.strftime(self.conf['locale']['longdateformat']),
@@ -101,20 +105,81 @@ class StartEndEditor(urwid.WidgetWrap):
                                           on_state_change=self.toggle)
         self.toggle(None, self.allday)
 
-    def _validate_date(self, text):
-        try:
-            return datetime.strptime(text, self.conf['locale']['longdateformat'])
-        except ValueError:
-            return False
+    @property
+    def startdt(self):
+        return self._startdt
 
-    def _validate_time(self, text):
+    @startdt.setter
+    def startdt(self, value):
+        self._startdt = value
+        self.widgets.startdate.base_widget.set_edit_text(
+            self._startdt.strftime(self.conf['locale']['longdateformat']))
+        if not self.checkallday.state:
+            self.widgets.starttime.base_widget.set_edit_text(
+                self._startdt.strftime(self.conf['locale']['timeformat']))
+
+    @property
+    def localize_start(self):
+        if getattr(self.startdt, 'tzinfo', None) is None:
+            return self.conf['locale']['default_timezone'].localize
+        else:
+            return self.startdt.tzinfo.localize
+
+    @property
+    def localize_end(self):
+        if getattr(self.enddt, 'tzinfo', None) is None:
+            return self.conf['locale']['default_timezone'].localize
+        else:
+            return self.enddt.tzinfo.localize
+
+    @property
+    def enddt(self):
+        return self._enddt
+
+    @enddt.setter
+    def enddt(self, value):
+        self._enddt = value
+        self.widgets.enddate.base_widget.set_edit_text(
+            self._enddt.strftime(self.conf['locale']['longdateformat']))
+        if not self.checkallday.state:
+            self.widgets.endtime.base_widget.set_edit_text(
+                self._enddt.strftime(self.conf['locale']['timeformat']))
+
+    def _validate_start_time(self, text):
         try:
-            return datetime.strptime(text, self.conf['locale']['timeformat'])
+            startval = datetime.strptime(text, self.conf['locale']['timeformat'])
+            self.startdt = self.localize_start(datetime.combine(self._startdt.date(), startval.time()))
         except ValueError:
             return False
+        else:
+            return startval
+
+    def _validate_start_date(self, text):
+        try:
+            startval = datetime.strptime(text, self.conf['locale']['longdateformat'])
+            self.startdt = self.localize_start(datetime.combine(startval.date(), self._startdt.time()))
+        except ValueError:
+            return False
+        else:
+            return startval
+
+    def _validate_end_time(self, text):
+        try:
+            endval = datetime.strptime(text, self.conf['locale']['timeformat'])
+            self.enddt = self.localize_end(datetime.combine(self._enddt.date(), endval.time()))
+        except ValueError:
+            return False
+        else:
+            return endval
 
     def _validate_end_date(self, text):
-        return self._validate_date(text) and self.newstart <= self.newend
+        try:
+            endval = datetime.strptime(text, self.conf['locale']['longdateformat'])
+            self.enddt = self.localize_end(datetime.combine(endval.date(), self._enddt.time()))
+        except ValueError:
+            return False
+        else:
+            return endval
 
     def toggle(self, checkbox, state):
         """change from allday to datetime event
@@ -133,9 +198,9 @@ class StartEndEditor(urwid.WidgetWrap):
         edit = ValidatedEdit(
             dateformat=self.conf['locale']['longdateformat'],
             EditWidget=DateWidget,
-            validate=self._validate_date,
+            validate=self._validate_start_date,
             caption=('', 'From: '),
-            edit_text=self.dts.startdate,
+            edit_text=self.startdt.strftime(self.conf['locale']['longdateformat']),
             on_date_change=self.on_date_change)
         edit = CalendarPopUp(edit, self.conf, self.on_date_change)
         edit = urwid.Padding(edit, align='left', width=datewidth, left=0, right=1)
@@ -147,7 +212,7 @@ class StartEndEditor(urwid.WidgetWrap):
             EditWidget=DateWidget,
             validate=self._validate_end_date,
             caption=('', 'To:   '),
-            edit_text=self.dts.enddate,
+            edit_text=self.enddt.strftime(self.conf['locale']['longdateformat']),
             on_date_change=self.on_date_change)
         edit = CalendarPopUp(edit, self.conf, self.on_date_change)
         edit = urwid.Padding(edit, align='left', width=datewidth, left=0, right=1)
@@ -162,8 +227,9 @@ class StartEndEditor(urwid.WidgetWrap):
             edit = ValidatedEdit(
                 dateformat=self.conf['locale']['timeformat'],
                 EditWidget=TimeWidget,
-                validate=self._validate_time,
-                edit_text=self.dts.starttime)
+                validate=self._validate_start_time,
+                edit_text=self.startdt.strftime(self.conf['locale']['timeformat']),
+            )
             edit = urwid.Padding(
                 edit, align='left', width=len(self.dts.starttime) + 1, left=1)
             self.widgets.starttime = edit
@@ -171,8 +237,9 @@ class StartEndEditor(urwid.WidgetWrap):
             edit = ValidatedEdit(
                 dateformat=self.conf['locale']['timeformat'],
                 EditWidget=TimeWidget,
-                validate=self._validate_time,
-                edit_text=self.dts.endtime)
+                validate=self._validate_end_time,
+                edit_text=self.enddt.strftime(self.conf['locale']['timeformat']),
+            )
             edit = urwid.Padding(
                 edit, align='left', width=len(self.dts.endtime) + 1, left=1)
             self.widgets.endtime = edit
@@ -191,55 +258,4 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def changed(self):
         """returns True if content has been edited, False otherwise"""
-        return (self.startdt != self.newstart) or (self.enddt != self.newend)
-
-    @property
-    def newstart(self):
-        newstartdatetime = self._newstartdate
-        if not self.checkallday.state:
-            if getattr(self.startdt, 'tzinfo', None) is None:
-                tzinfo = self.conf['locale']['default_timezone']
-            else:
-                tzinfo = self.startdt.tzinfo
-            try:
-                newstartdatetime = datetime.combine(newstartdatetime, self._newstarttime)
-                newstartdatetime = tzinfo.localize(newstartdatetime)
-            except TypeError:
-                return None
-        return newstartdatetime
-
-    @property
-    def _newstartdate(self):
-        self.dts.startdate = self.widgets.startdate.base_widget.get_edit_text()
-        return self._validate_date(self.dts.startdate)
-
-    @property
-    def _newstarttime(self):
-        self.dts.starttime = self.widgets.starttime.base_widget.get_edit_text()
-        return self._validate_time(self.dts.starttime).time()
-
-    @property
-    def newend(self):
-        newenddatetime = self._newenddate
-        if not self.checkallday.state:
-            if not hasattr(self.enddt, 'tzinfo') or self.enddt.tzinfo is None:
-                tzinfo = self.conf['locale']['default_timezone']
-            else:
-                tzinfo = self.enddt.tzinfo
-            try:
-                newenddatetime = datetime.combine(newenddatetime, self._newendtime)
-                newenddatetime = tzinfo.localize(newenddatetime)
-
-            except TypeError:
-                return None
-        return newenddatetime
-
-    @property
-    def _newenddate(self):
-        self.enddate = self.widgets.enddate.base_widget.get_edit_text()
-        return self._validate_date(self.enddate)
-
-    @property
-    def _newendtime(self):
-        self.dts.endtime = self.widgets.endtime.base_widget.get_edit_text()
-        return self._validate_time(self.dts.endtime).time()
+        return (self.startdt != self._original_start) or (self.enddt != self._original_end)

@@ -553,8 +553,8 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_location(self.location.get_edit_text())
 
         if self.startendeditor.changed:
-            self.event.update_start_end(self.startendeditor.newstart,
-                                        self.startendeditor.newend)
+            self.event.update_start_end(self.startendeditor.startdt,
+                                        self.startendeditor.enddt)
         if self.recursioneditor.changed:
             rrule = self.recursioneditor.active
             self.event.update_rrule(rrule)
