@@ -138,10 +138,10 @@ def datetimefstr_weekday(dtime_list, timeformat):
     if len(dtime_list) == 0:
         raise ValueError()
     day = calc_day(dtime_list[0])
-    time = timefstr(dtime_list[1:], timeformat)
+    this_time = timefstr(dtime_list[1:], timeformat)
     dtime_list.pop(0)
     dtime_list.pop(0)  # we need to pop twice as timefstr gets a copy
-    dtime = datetime.combine(day, time.time())
+    dtime = datetime.combine(day, this_time.time())
     return dtime
 
 
