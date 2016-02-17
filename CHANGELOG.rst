@@ -21,6 +21,7 @@ not released yet
 * improved color support (256 colors and 24-bit colors), see configuration
   documentation for details (Sebastian Hamann)
 * renamed color `grey` to `gray` (Sebastian Hamann)
+* in `khal new` treat 24:00 as the end of a day/00:00 of the next (Christian Geier)
 
 ikhal
 -----

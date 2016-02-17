@@ -124,6 +124,16 @@ test_set_format_de = _create_testcases(
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'END:VEVENT']),
+    # start and end date same, ends 24:00 which should be 00:00 (start) of next
+    # day
+    ('25.10.2013 18:00 24:00 Äwesöme Event',
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T000000',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
     # start and end date same, explicit end date (but no year) given
     # XXX FIXME: if no explicit year is given for the end, this_year is used
     ('25.10.2013 18:00 26.10. 20:00 Äwesöme Event',

@@ -22,8 +22,7 @@
 """this module contains some helper functions converting strings or list of
 strings to date(time) or event objects"""
 
-from datetime import date, datetime, timedelta
-from datetime import time as dtime
+from datetime import date, datetime, timedelta, time
 import random
 import string
 
@@ -35,11 +34,9 @@ from khal.exceptions import FatalError
 
 
 def timefstr(dtime_list, timeformat):
-    """
-    converts a time (as a string) to a datetimeobject
+    """converts a time (as a string) to a datetimeobject
 
     the date is today
-
     removes "used" elements of list
 
     :returns: datetimeobject
@@ -47,7 +44,7 @@ def timefstr(dtime_list, timeformat):
     if len(dtime_list) == 0:
         raise ValueError()
     time_start = datetime.strptime(dtime_list[0], timeformat)
-    time_start = dtime(*time_start.timetuple()[3:5])
+    time_start = time(*time_start.timetuple()[3:5])
     day_start = date.today()
     dtstart = datetime.combine(day_start, time_start)
     dtime_list.pop(0)
@@ -157,8 +154,12 @@ def guessdatetimefstr(dtime_list, locale, default_day=datetime.today()):
     """
     # TODO rename in guessdatetimefstrLIST or something saner altogether
     def timefstr_day(dtime_list, timeformat):
-        a_date = timefstr(dtime_list, timeformat)
-        a_date = datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
+        if dtime_list[0] == '24:00':
+            a_date = datetime.combine(default_day, time(0))
+            dtime_list.pop(0)
+        else:
+            a_date = timefstr(dtime_list, timeformat)
+            a_date = datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
         return a_date
 
     def datefstr_year(dtime_list, dateformat):
