@@ -86,7 +86,7 @@ string *now*. ``at`` defaults to *now*.
 
 calendar
 ********
-shows a calendar (similiar to :manpage:`cal(1)`) and agenda. ``khal calendar``
+shows a calendar (similar to :manpage:`cal(1)`) and agenda. ``khal calendar``
 should understand the following syntax:
 
 ::
@@ -96,7 +96,7 @@ should understand the following syntax:
 Date selection works exactly as for ``khal agenda``. The displayed calendar
 contains three consecutive months, where the first month is the month
 containing the first given date. If today is included, it is highlighted.
-Have a look at ``khal agenda`` for a descrption of the options.
+Have a look at ``khal agenda`` for a description of the options.
 
 
 import
@@ -152,7 +152,7 @@ in the formats defined in the config file. If no calendar is given via
 :option:`-a`, the default calendar is used. :command:`new` does not support
 :option:`-d` and also :option:`-a` may only be used once.
 
-:command:`new` accepts these combinations for stard and endtimes (specifying
+:command:`new` accepts these combinations for start and endtimes (specifying
 the end is always optional):
 
  * `datetime [datetime|time] [timezone]`
@@ -170,16 +170,19 @@ in, should be a valid Olson DB identifier (like `Europe/Berlin` or
 `America/New_York`. If no timezone is given, the *defaulttimezone* as
 configured in the configuration file is used instead.
 
-The exact format of langdatetimeformat, datetimeformat, timeformat,
+The exact format of longdatetimeformat, datetimeformat, timeformat,
 longdateformat and dateformat can be configured in the configuration file.
 Valid keywords for dates are *today*, *tomorrow*, the English name of all seven
-weekdays and their three letter abbreviations (their next occurence is used).
+weekdays and their three letter abbreviations (their next occurrence is used).
 
 If no end is given, the default length of one hour or one day (for all-day
 events) is used. If only a start time is given the new event is assumed to be
 starting today. If only a time is given for the event to end on, the event ends
 on the same day it starts on, unless that would make the event end before it has
 started, then the next day is used as end date
+
+If a 24:00 time is configured (timeformat = %H:%M) an end time of `24:00` is
+accepted as the end of a given date.
 
 If the **summary** contains the string `::`, everything after `::` is taken as
 the **description** of the new event, i.e., the "body" of the event (and `::`
@@ -212,9 +215,9 @@ adds a new event tomorrow at 16:30
 
 ::
 
-    khal new 25.10. 16:00 18:00 Another Event :: with Alice and Bob
+    khal new 25.10. 18:00 24:00 Another Event :: with Alice and Bob
 
-adds a new event on 25th of October lasting from 16:00 to 18:00 with an
+adds a new event on 25th of October lasting from 18:00 to 24:00 with an
 additional description
 
 ::
