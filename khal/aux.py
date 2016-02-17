@@ -154,7 +154,7 @@ def guessdatetimefstr(dtime_list, locale, default_day=datetime.today()):
     """
     # TODO rename in guessdatetimefstrLIST or something saner altogether
     def timefstr_day(dtime_list, timeformat):
-        if dtime_list[0] == '24:00':
+        if locale['timeformat'] == '%H:%M' and dtime_list[0] == '24:00':
             a_date = datetime.combine(default_day, time(0))
             dtime_list.pop(0)
         else:
