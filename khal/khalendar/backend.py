@@ -451,7 +451,7 @@ class SQLiteDb(object):
             'recs_loc.href = events.href AND '
             'recs_loc.calendar = events.calendar WHERE '
             '(dtstart >= ? AND dtstart <= ? OR '
-            'dtend >= ? AND dtend <= ? OR '
+            'dtend > ? AND dtend <= ? OR '
             'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0});')
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
