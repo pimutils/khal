@@ -402,7 +402,10 @@ class Event(object):
         else:
             startstr = self.start_local.strftime(self._locale['timeformat'])
 
-        if self.end_local > day_end:
+        start_of_next_day = day_start + timedelta(days=1)
+        if (self.end_local == start_of_next_day and self._locale['timeformat'] == '%H:%M'):
+            endstr = '24:00'
+        elif self.end_local > day_end:
             endstr = self.symbol_strings['right_arrow'] + ' '
             tostr = ''
         else:
