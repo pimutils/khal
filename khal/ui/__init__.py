@@ -599,6 +599,10 @@ class EventEditor(urwid.WidgetWrap):
         saves the event to the db (only when it has been changed)
         :param button: not needed, passed via the button press
         """
+        if not self.startendeditor.validate():
+            self.pane.window.alert(
+                ('light red', "Can't save: end date is before start date!"))
+            return
         if self.changed is True:
             self.update_vevent()
             self.event.allday = self.startendeditor.allday

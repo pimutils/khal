@@ -258,3 +258,6 @@ class StartEndEditor(urwid.WidgetWrap):
     def changed(self):
         """returns True if content has been edited, False otherwise"""
         return (self.startdt != self._original_start) or (self.enddt != self._original_end)
+
+    def validate(self):
+        return self.startdt <= self.enddt

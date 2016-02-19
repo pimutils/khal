@@ -35,6 +35,7 @@ ikhal
 * basic search is now supported (default keybinding `/`) (Christian Geier)
 * in the event editor and pop-up Dialogs select the next (previous) item with tab
   (shift tab) (Christian Geier)
+* only allow saving when starttime < endtime (Christian Geier)
 
 
 0.7.0
