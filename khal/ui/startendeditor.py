@@ -75,16 +75,14 @@ class CalendarPopUp(urwid.PopUpLauncher):
 
 
 class StartEndEditor(urwid.WidgetWrap):
-    """
-    Wigdet for editing start and end times (of an event)
-
-    we cannot change timezones ATM  # TODO
-    """
+    """Wigdet for editing start and end times (of an event)"""
 
     def __init__(self, start, end, conf, on_date_change=lambda x: None):
         """
         :type start: datetime.datetime
         :type end: datetime.datetime
+        :param on_date_change: a callable that gets called everytime a new
+            date is entered, with that new date as an argument
         """
         self.allday = not isinstance(start, datetime)
         self.conf = conf

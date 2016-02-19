@@ -19,6 +19,11 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+"""A collection of (reusable) urwid widgets
+
+Widgets that are specific to calendaring/khal should go into __init__.py or,
+if they are large, into their own files
+"""
 from datetime import date, datetime, timedelta
 import re
 
