@@ -19,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from datetime import datetime, date, time
+from datetime import datetime, time
 
 import urwid
 
@@ -105,7 +105,7 @@ class StartEndEditor(urwid.WidgetWrap):
 
     @property
     def startdt(self):
-        if self.allday and not isinstance(self._startdt, date):
+        if self.allday and isinstance(self._startdt, datetime):
             return self._startdt.date()
         else:
             return self._startdt
@@ -116,15 +116,6 @@ class StartEndEditor(urwid.WidgetWrap):
             return self._startdt.time()
         except AttributeError:
             return time(0)
-
-    @startdt.setter
-    def startdt(self, value):
-        self._startdt = value
-        self.widgets.startdate.base_widget.set_edit_text(
-            self._startdt.strftime(self.conf['locale']['longdateformat']))
-        if not self.checkallday.state:
-            self.widgets.starttime.base_widget.set_edit_text(
-                self._startdt.strftime(self.conf['locale']['timeformat']))
 
     @property
     def localize_start(self):
@@ -142,7 +133,7 @@ class StartEndEditor(urwid.WidgetWrap):
 
     @property
     def enddt(self):
-        if self.allday and not isinstance(self._enddt, date):
+        if self.allday and isinstance(self._enddt, datetime):
             return self._enddt.date()
         else:
             return self._enddt
@@ -154,19 +145,10 @@ class StartEndEditor(urwid.WidgetWrap):
         except AttributeError:
             return time(0)
 
-    @enddt.setter
-    def enddt(self, value):
-        self._enddt = value
-        self.widgets.enddate.base_widget.set_edit_text(
-            self._enddt.strftime(self.conf['locale']['longdateformat']))
-        if not self.checkallday.state:
-            self.widgets.endtime.base_widget.set_edit_text(
-                self._enddt.strftime(self.conf['locale']['timeformat']))
-
     def _validate_start_time(self, text):
         try:
             startval = datetime.strptime(text, self.conf['locale']['timeformat'])
-            self.startdt = self.localize_start(
+            self._startdt = self.localize_start(
                 datetime.combine(self._startdt.date(), startval.time()))
         except ValueError:
             return False
@@ -176,7 +158,7 @@ class StartEndEditor(urwid.WidgetWrap):
     def _validate_start_date(self, text):
         try:
             startval = datetime.strptime(text, self.conf['locale']['longdateformat'])
-            self.startdt = self.localize_start(
+            self._startdt = self.localize_start(
                 datetime.combine(startval.date(), self._start_time))
         except ValueError:
             return False
@@ -186,7 +168,7 @@ class StartEndEditor(urwid.WidgetWrap):
     def _validate_end_time(self, text):
         try:
             endval = datetime.strptime(text, self.conf['locale']['timeformat'])
-            self.enddt = self.localize_end(datetime.combine(self._enddt.date(), endval.time()))
+            self._enddt = self.localize_end(datetime.combine(self._enddt.date(), endval.time()))
         except ValueError:
             return False
         else:
@@ -195,7 +177,7 @@ class StartEndEditor(urwid.WidgetWrap):
     def _validate_end_date(self, text):
         try:
             endval = datetime.strptime(text, self.conf['locale']['longdateformat'])
-            self.enddt = self.localize_end(datetime.combine(endval.date(), self._end_time))
+            self._enddt = self.localize_end(datetime.combine(endval.date(), self._end_time))
         except ValueError:
             return False
         else:
