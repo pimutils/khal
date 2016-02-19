@@ -630,6 +630,14 @@ BDAY:19410909
 END:VCARD
 """
 
+card_two_birthdays = """BEGIN:VCARD
+VERSION:3.0
+N:Ritchie;Dennis;MacAlistair;;
+BDAY:19410909
+BDAY:--0311
+END:VCARD
+"""
+
 day = date(1971, 3, 11)
 start = datetime.combine(day, time.min)
 end = datetime.combine(day, time.max)
@@ -671,5 +679,13 @@ def test_birthday_does_not_parse(tmpdir):
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
     db.update_birthday(card_does_not_parse, 'unix.vcf', calendar=calname)
+    events = list(db.get_floating(start, end))
+    assert len(events) == 0
+
+
+def test_birthday_does_not_parse(tmpdir):
+    db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
+    assert list(db.get_floating(start, end)) == list()
+    db.update_birthday(card_two_birthdays, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 0
