@@ -685,10 +685,10 @@ class SearchDialog(urwid.WidgetWrap):
         lines = []
         lines.append(urwid.Text('Please enter a search term (Escape cancels):'))
         lines.append(search_field)
-        buttons = urwid.Columns([urwid.Button('Search', on_press=this_func),
-                                 urwid.Button('Abort', on_press=abort_func)])
+        buttons = NColumns([urwid.Button('Search', on_press=this_func),
+                            urwid.Button('Abort', on_press=abort_func)])
         lines.append(buttons)
-        content = NPile(lines)
+        content = NPile(lines, outermost=True)
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
 
 
