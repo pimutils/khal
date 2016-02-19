@@ -623,11 +623,12 @@ class EventEditor(urwid.WidgetWrap):
 
     def keypress(self, size, key):
         if key in ['esc'] and self.changed and not self._abort_confirmed:
-            # TODO Use user-defined keybindings
             self.pane.window.alert(
                 ('light red', 'Unsaved changes! Hit ESC again to discard.'))
             self._abort_confirmed = True
             return
+        else:
+            self._abort_confirmed = False
         if key in self.pane.conf['keybindings']['save']:
             self.save(None)
         return super(EventEditor, self).keypress(size, key)
