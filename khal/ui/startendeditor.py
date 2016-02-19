@@ -19,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from datetime import datetime
+from datetime import datetime, date, time
 
 import urwid
 
@@ -100,9 +100,22 @@ class StartEndEditor(urwid.WidgetWrap):
                                           on_state_change=self.toggle)
         self.toggle(None, self.allday)
 
+    def keypress(self, size, key):
+        return super().keypress(size, key)
+
     @property
     def startdt(self):
-        return self._startdt
+        if self.allday and not isinstance(self._startdt, date):
+            return self._startdt.date()
+        else:
+            return self._startdt
+
+    @property
+    def _start_time(self):
+        try:
+            return self._startdt.time()
+        except AttributeError:
+            return time(0)
 
     @startdt.setter
     def startdt(self, value):
@@ -129,7 +142,17 @@ class StartEndEditor(urwid.WidgetWrap):
 
     @property
     def enddt(self):
-        return self._enddt
+        if self.allday and not isinstance(self._enddt, date):
+            return self._enddt.date()
+        else:
+            return self._enddt
+
+    @property
+    def _end_time(self):
+        try:
+            return self._enddt.time()
+        except AttributeError:
+            return time(0)
 
     @enddt.setter
     def enddt(self, value):
@@ -154,7 +177,7 @@ class StartEndEditor(urwid.WidgetWrap):
         try:
             startval = datetime.strptime(text, self.conf['locale']['longdateformat'])
             self.startdt = self.localize_start(
-                datetime.combine(startval.date(), self._startdt.time()))
+                datetime.combine(startval.date(), self._start_time))
         except ValueError:
             return False
         else:
@@ -172,7 +195,7 @@ class StartEndEditor(urwid.WidgetWrap):
     def _validate_end_date(self, text):
         try:
             endval = datetime.strptime(text, self.conf['locale']['longdateformat'])
-            self.enddt = self.localize_end(datetime.combine(endval.date(), self._enddt.time()))
+            self.enddt = self.localize_end(datetime.combine(endval.date(), self._end_time))
         except ValueError:
             return False
         else:
