@@ -643,7 +643,7 @@ start = datetime.combine(day, time.min)
 end = datetime.combine(day, time.max)
 
 
-def test_birthdays(tmpdir):
+def test_birthdays():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
     db.update_birthday(card, 'unix.vcf', calendar=calname)
@@ -655,7 +655,7 @@ def test_birthdays(tmpdir):
     assert events[0].summary == 'Unix\'s 45th birthday'
 
 
-def test_birthdays_no_year(tmpdir):
+def test_birthdays_no_year():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
     db.update_birthday(card_no_year, 'unix.vcf', calendar=calname)
@@ -664,7 +664,7 @@ def test_birthdays_no_year(tmpdir):
     assert events[0].summary == 'Unix\'s birthday'
 
 
-def test_birthdays_no_fn(tmpdir):
+def test_birthdays_no_fn():
     db = backend.SQLiteDb(['home'], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(datetime(1941, 9, 9, 0, 0),
                                 datetime(1941, 9, 9, 23, 59, 59, 9999))) == list()
@@ -675,7 +675,7 @@ def test_birthdays_no_fn(tmpdir):
     assert events[0].summary == 'Dennis MacAlistair Ritchie\'s 0th birthday'
 
 
-def test_birthday_does_not_parse(tmpdir):
+def test_birthday_does_not_parse():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
     db.update_birthday(card_does_not_parse, 'unix.vcf', calendar=calname)
@@ -683,7 +683,7 @@ def test_birthday_does_not_parse(tmpdir):
     assert len(events) == 0
 
 
-def test_vcard_two_birthdays(tmpdir):
+def test_vcard_two_birthdays():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
     db.update_birthday(card_two_birthdays, 'unix.vcf', calendar=calname)
