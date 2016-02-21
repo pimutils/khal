@@ -683,7 +683,7 @@ def test_birthday_does_not_parse(tmpdir):
     assert len(events) == 0
 
 
-def test_birthday_does_not_parse(tmpdir):
+def test_vcard_two_birthdays(tmpdir):
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
     db.update_birthday(card_two_birthdays, 'unix.vcf', calendar=calname)
