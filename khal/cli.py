@@ -291,7 +291,7 @@ def _get_cli():
     @click.argument('DESCRIPTION', metavar='[:: DESCRIPTION]', nargs=-1, required=False)
     @click.pass_context
     def new(ctx, calendar, start, end, timezone, summary, description, location, repeat, until):
-        '''Create a new event from this command's arguments.
+        '''Create a new event from arguments.
 
         START and END can be either dates, times or datetimes, please have a
         look at the man page for details.
