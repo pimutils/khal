@@ -21,8 +21,3 @@ install:
 
 script:
     - "tox -e py-$BUILD"
-
-matrix:
-    exclude:
-        - python: pypy
-          env: BUILD=style
