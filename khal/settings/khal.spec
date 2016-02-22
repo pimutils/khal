@@ -37,10 +37,11 @@ readonly = boolean(default=False)
 # Set the type of this collection, the default is ``calendar``.
 # If set to ``birthdays`` khal will expect a VCARD collection and extract
 # birthdays from those VCARDS. ``birthdays`` also implies ``readonly=True``.
-# If set to ``calendar`` only files with the ``.ics`` extension will be used
-# and if set to ``birthdays`` only files with the ``.vcf`` extension will be
-# used.
-type = option('calendar', 'birthdays', default='calendar')
+# If set to ``calendar`` only files with the ``.ics`` extension will be used,
+# if set to ``birthdays`` only files with the ``.vcf`` extension will be
+# used, if it is set to ``discover`` khal will use all subdirectories
+# of ``paths``'s that contain only ``.ics`` files.
+type = option('calendar', 'birthdays', 'discover', default='calendar')
 
 [sqlite]
 # khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).

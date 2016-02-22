@@ -21,6 +21,7 @@
 #
 
 from os.path import expandvars, expanduser, join
+import os
 
 import pytz
 import xdg
@@ -124,12 +125,54 @@ def get_color_from_vdir(path):
         return ''
 
 
+def get_display_name_from_vdir(path):
+    try:
+        with open(path + '/displayname') as dfile:
+            return dfile.readline().strip('\n')
+    except FileNotFoundError:
+        logger.debug('Found no `displayname` file in {}'.format(path))
+        return None
+
+
+def get_unique_name(path, names):
+    # TODO take care of edge cases, make unique name finding less brain-dead
+    name = get_display_name_from_vdir(path)
+    if name is None:
+        name = os.path.split(path)[-1]
+    if name in names:
+        while name in names:
+            name = name + '1'
+    return name
+
+
+def get_all_vdirs(path):
+    """returns (recursively) all directories under `path` that contain
+    only files (not directories).
+    """
+    # TODO take care of links
+    vdirs = list()
+    contains_only_file = True
+    items = os.listdir(path)
+    for item in items:
+        itempath = os.path.join(path, item)
+        if os.path.isdir(itempath):
+            contains_only_file = False
+            vdirs += get_all_vdirs(itempath)
+    if contains_only_file:
+        vdirs.append(path)
+    return vdirs
+
+
+def get_vdir_type(_):
+    # TODO implement
+    return 'calendar'
+
+
 def config_checks(config):
     """do some tests on the config we cannot do with configobj's validator"""
     if len(config['calendars'].keys()) < 1:
         logger.fatal('Found no calendar section in the config file')
         raise InvalidSettingsError()
-    test_default_calendar(config)
     config['sqlite']['path'] = expand_db_path(config['sqlite']['path'])
     if not config['locale']['default_timezone']:
         config['locale']['default_timezone'] = is_timezone(
@@ -137,6 +180,23 @@ def config_checks(config):
     if not config['locale']['local_timezone']:
         config['locale']['local_timezone'] = is_timezone(
             config['locale']['local_timezone'])
+
+    # expand calendars with type = discover
+    vdirs = list()
+    for calendar in list(config['calendars'].keys()):
+        if config['calendars'][calendar]['type'] == 'discover':
+            vdirs += get_all_vdirs(config['calendars'][calendar]['path'])
+            config['calendars'].pop(calendar)
+    for vdir in vdirs:
+        calendar = {'path': vdir,
+                    'color': get_color_from_vdir(vdir),
+                    'type': get_vdir_type(vdir),
+                    'readonly': False
+                    }
+        name = get_unique_name(vdir, config['calendars'].keys())
+        config['calendars'][name] = calendar
+
+    test_default_calendar(config)
     for calendar in config['calendars']:
         if config['calendars'][calendar]['type'] == 'birthdays':
             config['calendars'][calendar]['readonly'] = True

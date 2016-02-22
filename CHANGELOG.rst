@@ -26,6 +26,9 @@ not released yet
   set, khal will try to read a file called `color` from that calendar's vdir (see
   vdirsyncer's documentation on `metasync`). If that file is not present or its
   contents is not understood, the default color will be used (Christian Geier)
+* new allowed value for calendar's type: `discover`, if set, khal will
+  (recursively) search that calendar's path for valid vdirs and add those to
+  the configured calendars (Christian Geier)
 
 ikhal
 -----
