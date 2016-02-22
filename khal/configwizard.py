@@ -27,7 +27,7 @@ from functools import partial
 from os.path import expanduser, expandvars, join, normpath, split, exists, isdir
 from os import makedirs
 
-import datetime as dt
+from datetime import date, datetime
 import sys
 
 from khal.log import logger
@@ -66,7 +66,7 @@ def choose_datetime_format():
         prompt_text = "Please choose one of the above options"
         seperator = seperator_choices[prompt(prompt_text, value_proc=validate)]
         dateformat = seperator.join(ordering_choices[ordering_no][1])
-        today = dt.date.today()
+        today = date.today()
         text = ("Does this look sensible to you: {} "
                 "(today as an example: {})?".format(dateformat, today.strftime(dateformat)))
         if confirm(text):
@@ -82,7 +82,7 @@ def choose_time_format():
         validate = partial(validate_int, min_value=0, max_value=1)
         prompt_text = "Please choose one of the above options"
         timeformat = choices[prompt(prompt_text, default=0, value_proc=validate)]
-        now = dt.datetime.now()
+        now = datetime.now()
         text = ("Does this look sensible to you: {} "
                 "(current time as an example: {})?".format(timeformat, now.strftime(timeformat)))
         if confirm(text):

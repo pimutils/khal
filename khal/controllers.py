@@ -27,10 +27,11 @@ from vdirsyncer.utils.vobject import Item
 from collections import defaultdict
 from shutil import get_terminal_size
 
-import datetime
+from datetime import date, datetime, timedelta
 import logging
 import sys
 import textwrap
+
 
 from khal import aux, calendar_display
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
@@ -52,13 +53,13 @@ def construct_daynames(daylist, longdateformat):
     :returns: list of names and dates
     :rtype: list((str, datetime.date))
     """
-    for date in daylist:
-        if date == datetime.date.today():
-            yield (date, 'Today:')
-        elif date == datetime.date.today() + datetime.timedelta(days=1):
-            yield (date, 'Tomorrow:')
+    for day in daylist:
+        if day == date.today():
+            yield (day, 'Today:')
+        elif day == date.today() + timedelta(days=1):
+            yield (day, 'Tomorrow:')
         else:
-            yield (date, date.strftime(longdateformat))
+            yield (day, day.strftime(longdateformat))
 
 
 def get_agenda(collection, locale, dates=None, firstweekday=0, days=None, events=None, width=45,
@@ -83,21 +84,21 @@ def get_agenda(collection, locale, dates=None, firstweekday=0, days=None, events
         days = 2
 
     if dates is None or len(dates) == 0:
-        dates = [datetime.date.today()]
+        dates = [date.today()]
     else:
         try:
             dates = [
-                aux.guessdatetimefstr([date], locale)[0].date()
-                if not isinstance(date, datetime.date) else date
-                for date in dates
+                aux.guessdatetimefstr([day], locale)[0].date()
+                if not isinstance(day, date) else day
+                for day in dates
             ]
         except InvalidDate as error:
             logging.fatal(error)
             sys.exit(1)
 
     if days is not None:
-        daylist = [date + datetime.timedelta(days=one)
-                   for one in range(days) for date in dates]
+        daylist = [day + timedelta(days=one)
+                   for one in range(days) for day in dates]
         daylist.sort()
 
     daylist = construct_daynames(daylist, locale['longdateformat'])
@@ -125,7 +126,7 @@ def get_agenda(collection, locale, dates=None, firstweekday=0, days=None, events
     return event_column
 
 
-def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=None,
+def calendar(collection, dates=None, firstweekday=0, encoding='utf-8', locale=None,
              weeknumber=False, show_all_days=False, conf=None,
              hmethod='fg',
              default_color='',
@@ -135,14 +136,14 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
              full=False,
              bold_for_light_color=True,
              **kwargs):
-    if date is None:
-        date = [datetime.datetime.today()]
+    if dates is None:
+        dates = [datetime.today()]
 
     term_width, _ = get_terminal_size()
     lwidth = 25
     rwidth = term_width - lwidth - 4
     event_column = get_agenda(
-        collection, locale, dates=date, width=rwidth,
+        collection, locale, dates=dates, width=rwidth,
         show_all_days=show_all_days, full=full, bold_for_light_color=bold_for_light_color,
         **kwargs)
     calendar_column = calendar_display.vertical_month(
@@ -159,10 +160,10 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
     echo('\n'.join(rows))
 
 
-def agenda(collection, date=None, encoding='utf-8', show_all_days=False, full=False,
+def agenda(collection, dates=None, encoding='utf-8', show_all_days=False, full=False,
            bold_for_light_color=True, **kwargs):
     term_width, _ = get_terminal_size()
-    event_column = get_agenda(collection, dates=date, width=term_width,
+    event_column = get_agenda(collection, dates=dates, width=term_width,
                               show_all_days=show_all_days, full=full,
                               bold_for_light_color=bold_for_light_color, **kwargs)
     # XXX: Generate this as a unicode in the first place, rather than
