@@ -33,10 +33,11 @@ except ImportError:
 import click
 import pytz
 
-from khal import aux, controllers, khalendar, __version__
-from khal.log import logger
-from khal.settings import get_config, InvalidSettingsError
-from khal.exceptions import FatalError
+from . import aux, controllers, khalendar, __version__
+from .log import logger
+from .settings import get_config, InvalidSettingsError
+from .settings.exceptions import NoConfigFile
+from .exceptions import FatalError
 from .terminal import colored
 
 
@@ -184,6 +185,11 @@ def prepare_context(ctx, config):
     try:
         ctx.obj['conf'] = conf = get_config(config)
     except InvalidSettingsError:
+        sys.exit(1)
+    except NoConfigFile:
+        logger.fatal(
+            'If you have no configuration file yet, you might want to run '
+            '`khal configure`.')
         sys.exit(1)
 
     logger.debug('khal %s' % __version__)
@@ -457,6 +463,14 @@ def _get_cli():
             '\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding'])
         )
 
+    @cli.command()
+    @click.pass_context
+    def configure(ctx):
+        """Helper for initial configuration of khal."""
+        from . import configwizard
+        configwizard.configwizard()
+
     return cli, interactive_cli
+
 
 main_khal, main_ikhal = _get_cli()

@@ -27,7 +27,7 @@ from configobj import ConfigObj, flatten_errors, get_extra_values, \
 from validate import Validator
 import xdg.BaseDirectory
 
-from .exceptions import InvalidSettingsError, CannotParseConfigFileError
+from .exceptions import InvalidSettingsError, CannotParseConfigFileError, NoConfigFile
 from khal import __productname__
 from ..log import logger
 from .utils import is_timezone, weeknumber_option, config_checks, \
@@ -36,7 +36,7 @@ from .utils import is_timezone, weeknumber_option, config_checks, \
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
 
 
-def _find_configuration_file():
+def find_configuration_file():
     """Return the configuration filename.
 
     This function builds the list of paths known by khal and
@@ -76,7 +76,10 @@ def get_config(config_path=None):
     :rtype: dict
     """
     if config_path is None:
-        config_path = _find_configuration_file()
+        config_path = find_configuration_file()
+    if config_path is None:
+        logger.fatal('Cannot find a config file.')
+        raise NoConfigFile()
 
     logger.debug('using the config file at {}'.format(config_path))
 

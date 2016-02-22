@@ -29,6 +29,8 @@ not released yet
 * new allowed value for calendar's type: `discover`, if set, khal will
   (recursively) search that calendar's path for valid vdirs and add those to
   the configured calendars (Christian Geier)
+* new command `configure` which should help new users set up a configuration
+  file (Christian Geier)
 
 ikhal
 -----

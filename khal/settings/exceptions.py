@@ -29,3 +29,7 @@ class InvalidSettingsError(Error):
 
 class CannotParseConfigFileError(Error):
     pass
+
+
+class NoConfigFile(Error):
+    pass
