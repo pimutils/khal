@@ -86,13 +86,14 @@ def is_color(color):
     """
     # check if color is
     # 1) the default empty value
-    # 2) a color name from the 16 color palette
-    # 3) a color index from the 256 color palette
-    # 4) a HTML-style color code
-    if (color == '' or
+    # 2) auto
+    # 3) a color name from the 16 color palette
+    # 4) a color index from the 256 color palette
+    # 5) a HTML-style color code
+    if (color in ['', 'auto'] or
             color in COLORS.keys() or
             (color.isdigit() and int(color) >= 0 and int(color) <= 255) or
-            (color.startswith('#') and (len(color) == 7 or len(color) == 4) and
+            (color.startswith('#') and (len(color) in [4, 7, 9]) and
              all(c in '01234567890abcdefABCDEF' for c in color[1:]))):
         return color
     raise VdtValueError(color)
@@ -113,6 +114,16 @@ def test_default_calendar(config):
         raise InvalidSettingsError()
 
 
+def get_color_from_vdir(path):
+    try:
+        with open(path + '/color') as cfile:
+            color = cfile.readline().strip('\n')
+            return is_color(color)
+    except FileNotFoundError:
+        logger.debug('Found no `color` file in {}'.format(path))
+        return ''
+
+
 def config_checks(config):
     """do some tests on the config we cannot do with configobj's validator"""
     if len(config['calendars'].keys()) < 1:
@@ -129,3 +140,6 @@ def config_checks(config):
     for calendar in config['calendars']:
         if config['calendars'][calendar]['type'] == 'birthdays':
             config['calendars'][calendar]['readonly'] = True
+        if config['calendars'][calendar]['color'] == 'auto':
+            config['calendars'][calendar]['color'] = \
+                get_color_from_vdir(config['calendars'][calendar]['path'])

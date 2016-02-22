@@ -22,6 +22,10 @@ not released yet
   documentation for details (Sebastian Hamann)
 * renamed color `grey` to `gray` (Sebastian Hamann)
 * in `khal new` treat 24:00 as the end of a day/00:00 of the next (Christian Geier)
+* new allowed value for a calendar's color: `auto` (also the new default), if
+  set, khal will try to read a file called `color` from that calendar's vdir (see
+  vdirsyncer's documentation on `metasync`). If that file is not present or its
+  contents is not understood, the default color will be used (Christian Geier)
 
 ikhal
 -----

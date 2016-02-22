@@ -25,9 +25,10 @@ path = expand_path(default=None)
 # The 24-bit color must be given as #RRGGBB, where RR, GG, BB is the
 # hexadecimal value of the red, green and blue component, respectively.
 # When using a 24-bit color, make sure to enclose the color value in ' or "!
-# If the color is set to '' (the default), the default_color (see below) is
-# used.
-color = color(default='')
+# If the color is set to *auto* (the default), khal tries to read the file
+# *color* from this calendar's vdir, if this fails the default_color (see
+# below) is used. If color is set to '', the default_color is always used.
+color = color(default='auto')
 
 # setting this to *True*, will keep khal from making any changes to this
 # calendar
