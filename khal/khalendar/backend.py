@@ -462,8 +462,8 @@ class SQLiteDb(object):
                 'ORDER BY dtstart')
         else:
             sql_s = (
-                'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
-                'recs_loc JOIN events ON '
+                'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
+                'FROM recs_loc JOIN events ON '
                 'recs_loc.href = events.href AND '
                 'recs_loc.calendar = events.calendar WHERE '
                 '(dtstart >= ? AND dtstart <= ? OR '
@@ -505,8 +505,8 @@ class SQLiteDb(object):
                 'ORDER BY dtstart')
         else:
             sql_s = (
-                'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
-                'recs_float JOIN events ON '
+                'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar '
+                'FROM recs_float JOIN events ON '
                 'recs_float.href = events.href AND '
                 'recs_float.calendar = events.calendar WHERE '
                 '(dtstart >= ? AND dtstart < ? OR '
