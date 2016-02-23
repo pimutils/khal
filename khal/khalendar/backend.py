@@ -245,7 +245,7 @@ class SQLiteDb(object):
         if href is None:
             raise ValueError('href may not be None')
         ical = icalendar.Event.from_ical(vevent_str)
-
+        check_for_errors(ical, calendar, href)
         vevents = (aux.sanitize(c, self.locale['default_timezone'], href, calendar) for
                    c in ical.walk() if c.name == 'VEVENT')
         # Need to delete the whole event in case we are updating a
@@ -255,6 +255,7 @@ class SQLiteDb(object):
         # result.
         self.delete(href, calendar=calendar)
         for vevent in sorted(vevents, key=sort_key):
+            check_for_errors(vevent, calendar, href)
             check_support(vevent, href, calendar)
             self._update_impl(vevent, href, calendar)
 
@@ -641,6 +642,17 @@ def check_support(vevent, href, calendar):
             'to https://github.com/geier/khal/issues/152 .'
             .format(href, calendar)
         )
+
+
+def check_for_errors(component, calendar, href):
+    """checking if component.errors exists, is not empty and if so warn the user"""
+    if hasattr(component, 'errors') and component.errors:
+        logger.error(
+            'Errors occurred when parsing {0}/{1} for the following '
+            'reasons:'.format(calendar, href))
+        for error in component.errors:
+            logger.error(error)
+        logger.error('This might lead to this event being show wrongly or not at all.')
 
 
 def calc_shift_deltas(vevent):
