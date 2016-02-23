@@ -330,11 +330,12 @@ class CalendarCollection(object):
             return None
         if self.color != '':
             return 'highlight_days_color'
-        if len(devents) == 1:
-            return 'calendar ' + devents[0].calendar
+        dcalendars = list(set(map(lambda event: event.calendar, devents)))
+        if len(dcalendars) == 1:
+            return 'calendar ' + dcalendars[0]
         if self.multiple != '':
             return 'highlight_days_multiple'
-        return ('calendar ' + devents[0].calendar, 'calendar ' + devents[1].calendar)
+        return ('calendar ' + dcalendars[0], 'calendar ' + dcalendars[1])
 
     def get_styles(self, date, focus):
         if focus:
