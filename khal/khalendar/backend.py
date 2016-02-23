@@ -457,7 +457,8 @@ class SQLiteDb(object):
             'recs_loc.calendar = events.calendar WHERE '
             '(dtstart >= ? AND dtstart <= ? OR '
             'dtend > ? AND dtend <= ? OR '
-            'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0});')
+            'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
+            'ORDER BY dtstart')
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
@@ -487,7 +488,8 @@ class SQLiteDb(object):
             'recs_float.calendar = events.calendar WHERE '
             '(dtstart >= ? AND dtstart < ? OR '
             'dtend > ? AND dtend <= ? OR '
-            'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0});')
+            'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0}) '
+            'ORDER BY dtstart')
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:

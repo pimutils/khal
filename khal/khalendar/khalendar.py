@@ -145,6 +145,32 @@ class CalendarCollection(object):
         events = self._backend.get_localized(start, end, minimal)
         return (self._cover_event(event) for event in events)
 
+    def merge_events(self, floating, localized):
+
+        """Merges two event generators into one while preserving order."""
+
+        try:
+            a = next(floating)
+        except StopIteration:
+            a = None
+        try:
+            b = next(localized)
+        except StopIteration:
+            b = None
+        while (a is not None) or (b is not None):
+            if a is not None and (b is None or a < b):
+                yield a
+                try:
+                    a = next(floating)
+                except StopIteration:
+                    a = None
+            else:
+                yield b
+                try:
+                    b = next(localized)
+                except StopIteration:
+                    b = None
+
     def get_events_on(self, day, minimal=False):
         """return all events on `day`
 
@@ -157,7 +183,7 @@ class CalendarCollection(object):
         localize = self._locale['local_timezone'].localize
         localized_events = self.get_localized(localize(start), localize(end), minimal)
 
-        return itertools.chain(floating_events, localized_events)
+        return self.merge_events(floating_events, localized_events)
 
     def get_events_at(self, dtime=datetime.datetime.now()):
         """get all events at datetime `dtime`
