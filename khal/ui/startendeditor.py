@@ -55,7 +55,7 @@ class CalendarPopUp(urwid.PopUpLauncher):
 
     def create_pop_up(self):
         def on_change(new_date):
-            self._original_widget.set_value(new_date)
+            self._get_base_widget().set_value(new_date)
             self._on_date_change(new_date)
 
         keybindings = self._conf['keybindings']

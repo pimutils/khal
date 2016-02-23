@@ -163,6 +163,10 @@ class DateTimeWidget(ExtendedEdit):
             pass
 
     def set_value(self, new_date):
+        """set a new value for this widget
+
+        :type new_date: datetime.date
+        """
         self.set_edit_text(new_date.strftime(self.dateformat))
 
 
