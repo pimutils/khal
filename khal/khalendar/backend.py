@@ -456,9 +456,11 @@ class SQLiteDb(object):
                 'recs_loc JOIN events ON '
                 'recs_loc.href = events.href AND '
                 'recs_loc.calendar = events.calendar WHERE '
-                '(dtstart >= ? AND dtstart <= ? OR '
-                'dtend > ? AND dtend <= ? OR '
-                'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
+                '(dtstart BETWEEN ? AND ? OR '
+                'dtend BETWEEN ? AND ? OR '
+                '? BETWEEN dtstart AND dtend OR '
+                '? BETWEEN dtstart AND dtend) '
+                'AND events.calendar in ({0}) '
                 'ORDER BY dtstart')
         else:
             sql_s = (
@@ -466,9 +468,11 @@ class SQLiteDb(object):
                 'FROM recs_loc JOIN events ON '
                 'recs_loc.href = events.href AND '
                 'recs_loc.calendar = events.calendar WHERE '
-                '(dtstart >= ? AND dtstart <= ? OR '
-                'dtend > ? AND dtend <= ? OR '
-                'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
+                '(dtstart BETWEEN ? AND ? OR '
+                'dtend BETWEEN ? AND ? OR '
+                '? BETWEEN dtstart AND dtend OR '
+                '? BETWEEN dtstart AND dtend) '
+                'AND events.calendar in ({0}) '
                 'ORDER BY dtstart')
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
