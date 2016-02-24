@@ -450,22 +450,35 @@ class SQLiteDb(object):
         assert end.tzinfo is not None
         start = aux.to_unix_time(start)
         end = aux.to_unix_time(end)
-        sql_s = (
-            'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
-            'recs_loc JOIN events ON '
-            'recs_loc.href = events.href AND '
-            'recs_loc.calendar = events.calendar WHERE '
-            '(dtstart >= ? AND dtstart <= ? OR '
-            'dtend > ? AND dtend <= ? OR '
-            'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0});')
+        if minimal:
+            sql_s = (
+                'SELECT events.calendar FROM '
+                'recs_loc JOIN events ON '
+                'recs_loc.href = events.href AND '
+                'recs_loc.calendar = events.calendar WHERE '
+                '(dtstart >= ? AND dtstart <= ? OR '
+                'dtend > ? AND dtend <= ? OR '
+                'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
+                'ORDER BY dtstart')
+        else:
+            sql_s = (
+                'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
+                'FROM recs_loc JOIN events ON '
+                'recs_loc.href = events.href AND '
+                'recs_loc.calendar = events.calendar WHERE '
+                '(dtstart >= ? AND dtstart <= ? OR '
+                'dtend > ? AND dtend <= ? OR '
+                'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
+                'ORDER BY dtstart')
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
-        for item, href, start, end, ref, etag, dtype, calendar in result:
-            start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
-            end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
-            if minimal:
-                yield EventStandIn(calendar)
-            else:
+        if minimal:
+            for calendar in result:
+                yield EventStandIn(calendar[0])
+        else:
+            for item, href, start, end, ref, etag, dtype, calendar in result:
+                start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
+                end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
                 yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
     def get_floating(self, start, end, minimal=False):
@@ -480,22 +493,35 @@ class SQLiteDb(object):
         assert end.tzinfo is None
         strstart = aux.to_unix_time(start)
         strend = aux.to_unix_time(end)
-        sql_s = (
-            'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar FROM '
-            'recs_float JOIN events ON '
-            'recs_float.href = events.href AND '
-            'recs_float.calendar = events.calendar WHERE '
-            '(dtstart >= ? AND dtstart < ? OR '
-            'dtend > ? AND dtend <= ? OR '
-            'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0});')
+        if minimal:
+            sql_s = (
+                'SELECT events.calendar FROM '
+                'recs_float JOIN events ON '
+                'recs_float.href = events.href AND '
+                'recs_float.calendar = events.calendar WHERE '
+                '(dtstart >= ? AND dtstart < ? OR '
+                'dtend > ? AND dtend <= ? OR '
+                'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0}) '
+                'ORDER BY dtstart')
+        else:
+            sql_s = (
+                'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar '
+                'FROM recs_float JOIN events ON '
+                'recs_float.href = events.href AND '
+                'recs_float.calendar = events.calendar WHERE '
+                '(dtstart >= ? AND dtstart < ? OR '
+                'dtend > ? AND dtend <= ? OR '
+                'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0}) '
+                'ORDER BY dtstart')
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
-        for item, href, start, end, ref, etag, dtype, calendar in result:
-            start = datetime.utcfromtimestamp(start)
-            end = datetime.utcfromtimestamp(end)
-            if minimal:
-                yield EventStandIn(calendar)
-            else:
+        if minimal:
+            for calendar in result:
+                yield EventStandIn(calendar[0])
+        else:
+            for item, href, start, end, ref, etag, dtype, calendar in result:
+                start = datetime.utcfromtimestamp(start)
+                end = datetime.utcfromtimestamp(end)
                 yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
     def get_localized_at(self, dtime):
