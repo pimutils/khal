@@ -451,17 +451,7 @@ class SQLiteDb(object):
         start = aux.to_unix_time(start)
         end = aux.to_unix_time(end)
         if minimal:
-            sql_s = (
-                'SELECT events.calendar FROM '
-                'recs_loc JOIN events ON '
-                'recs_loc.href = events.href AND '
-                'recs_loc.calendar = events.calendar WHERE '
-                '(dtstart BETWEEN ? AND ? OR '
-                'dtend BETWEEN ? AND ? OR '
-                '? BETWEEN dtstart AND dtend OR '
-                '? BETWEEN dtstart AND dtend) '
-                'AND events.calendar in ({0}) '
-                'ORDER BY dtstart')
+            sql_s = 'SELECT events.calendar FROM events'
         else:
             sql_s = (
                 'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
