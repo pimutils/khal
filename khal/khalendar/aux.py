@@ -88,7 +88,7 @@ def expand(vevent, href=''):
         dtstartl = {vevent['DTSTART'].dt}
 
     def get_dates(vevent, key):
-        dates = vevent.get(key, None)
+        dates = vevent.get(key)
         if dates is None:
             return
         if not isinstance(dates, list):
