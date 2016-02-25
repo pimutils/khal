@@ -3,6 +3,9 @@ khal
 .. image:: https://travis-ci.org/geier/khal.svg?branch=master
     :target: https://travis-ci.org/geier/khal
 
+.. image:: https://codecov.io/github/geier/khal/coverage.svg?branch=master
+  :target: https://codecov.io/github/geier/khal?branch=master
+
 *Khal* is a standards based CLI (console) calendar program, able to synchronize
 with CalDAV_ servers through vdirsyncer_.
 
