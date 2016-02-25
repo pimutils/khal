@@ -32,6 +32,8 @@ from ..log import logger
 from .exceptions import InvalidSettingsError
 
 from ..terminal import COLORS
+from vdirsyncer.storage.filesystem import FilesystemStorage
+from vdirsyncer.exceptions import CollectionNotFound
 
 
 def is_timezone(tzstring):
@@ -117,27 +119,19 @@ def test_default_calendar(config):
 
 def get_color_from_vdir(path):
     try:
-        with open(path + '/color') as cfile:
-            color = cfile.readline().strip('\n')
-            return is_color(color)
-    except FileNotFoundError:
-        logger.debug('Found no `color` file in {}'.format(path))
-        return ''
-
-
-def get_display_name_from_vdir(path):
-    try:
-        with open(path + '/displayname') as dfile:
-            return dfile.readline().strip('\n')
-    except FileNotFoundError:
-        logger.debug('Found no `displayname` file in {}'.format(path))
-        return None
+        color = FilesystemStorage(path, '.ics').get_meta('color')
+    except CollectionNotFound:
+        color = None
+    if color is None:
+        logger.debug('Found no file named `color` in {}'.format(path))
+    return color
 
 
 def get_unique_name(path, names):
     # TODO take care of edge cases, make unique name finding less brain-dead
-    name = get_display_name_from_vdir(path)
+    name = FilesystemStorage(path, '.ics').get_meta('displayname')
     if name is None:
+        logger.debug('Found no file named `displayname` in {}'.format(path))
         name = os.path.split(path)[-1]
     if name in names:
         while name in names:
