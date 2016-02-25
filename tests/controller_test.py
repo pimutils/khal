@@ -76,3 +76,28 @@ class TestImport(object):
         assert len(events) == 5
         assert aux.BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) not in \
             [ev.start_local for ev in events]
+
+    def test_mix_datetime_types(self, coll_vdirs):
+        """
+        Test importing events with mixed tz-aware and tz-naive datetimes.
+        """
+        coll, vdirs = coll_vdirs
+        import_ics(
+            coll,
+            {'locale': aux.locale},
+            _get_text('event_dt_mixed_awareness'),
+            batch=True
+        )
+        start_date = aux.BERLIN.localize(datetime.datetime(2015, 5, 29))
+        end_date = aux.BERLIN.localize(datetime.datetime(2015, 6, 3))
+        events = list(coll.get_localized(start_date, end_date))
+        assert len(events) == 2
+        events = sorted(events)
+        assert events[0].start_local == \
+            aux.BERLIN.localize(datetime.datetime(2015, 5, 30, 12, 0))
+        assert events[0].end_local == \
+            aux.BERLIN.localize(datetime.datetime(2015, 5, 30, 16, 0))
+        assert events[1].start_local == \
+            aux.BERLIN.localize(datetime.datetime(2015, 6, 2, 12, 0))
+        assert events[1].end_local == \
+            aux.BERLIN.localize(datetime.datetime(2015, 6, 2, 16, 0))
