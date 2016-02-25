@@ -156,9 +156,7 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
         locale=locale,
         bold_for_light_color=bold_for_light_color)
     rows = merge_columns(calendar_column, event_column)
-    # XXX: Generate this as a unicode in the first place, rather than
-    # casting it.
-    echo('\n'.join(rows).encode(encoding))
+    echo('\n'.join(rows))
 
 
 def agenda(collection, date=None, encoding='utf-8', show_all_days=False, full=False,
