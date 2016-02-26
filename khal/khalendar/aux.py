@@ -159,6 +159,20 @@ def sanitize_timerange(dtstart, dtend, duration=None):
     '''return sensible dtstart and end for events that have an invalid or
     missing DTEND, assuming the event just lasts one day.'''
 
+    if isinstance(dtstart, datetime) and isinstance(dtend, datetime):
+        if dtstart.tzinfo and not dtend.tzinfo:
+            logger.warning(
+                "Event end time has no timezone. "
+                "Assuming it's the same timezone as the start time"
+            )
+            dtend = dtstart.tzinfo.localize(dtend)
+        if not dtstart.tzinfo and dtend.tzinfo:
+            logger.warning(
+                "Event start time has no timezone. "
+                "Assuming it's the same timezone as the end time"
+            )
+            dtstart = dtend.tzinfo.localize(dtstart)
+
     if dtend is None and duration is None:
         if isinstance(dtstart, datetime):
             dtstart = dtstart.date()
