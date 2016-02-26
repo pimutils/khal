@@ -31,9 +31,9 @@ Feedback
 --------
 Please do provide feedback if *khal* works for you or even more importantly if
 it doesn't. The preferred way to get in contact (especially if something isn't
-working) is via github, otherwise you can reach the original author via
-email at khal (at) lostpackets (dot) de or via jabber/XMPP at geier (at) jabber
-(dot) ccc (dot) de.
+working) is via github or IRC (#vdirsyncer on Freenode), otherwise you can reach
+the original author via email at khal (at) lostpackets (dot) de or via
+jabber/XMPP at geier (at) jabber (dot) ccc (dot) de.
 
 .. _vdir: https://vdirsyncer.readthedocs.org/en/stable/vdir.html
 .. _vdirsyncer: https://github.com/untitaker/vdirsyncer
@@ -64,9 +64,10 @@ Contributing
 You want to contribute to *khal*? Awesome!
 
 The most appreciated way of contributing is by supplying code or documentation,
-reporting bugs, creating packages for your favorite operating system, writing
-blog posts etc. If don't have the time or the means to contribute in any of the
-above mentioned ways, donations are appreciated, too.
+reporting bugs, creating packages for your favorite operating system, making
+khal better know by telling your friends about it, etc. If you don't have
+the time or the means to contribute in any of the above mentioned ways,
+donations are appreciated, too.
 
 .. image:: https://api.flattr.com/button/flattr-badge-large.png
    :alt: flattr button
