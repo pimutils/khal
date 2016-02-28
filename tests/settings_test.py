@@ -8,6 +8,7 @@ from tzlocal import get_localzone
 from khal.settings import get_config
 from khal.settings.exceptions import InvalidSettingsError, \
     CannotParseConfigFileError
+from khal.settings.utils import get_all_vdirs, get_unique_name, config_checks
 
 PATH = __file__.rsplit('/', 1)[0] + '/configs/'
 
@@ -123,3 +124,101 @@ foo = bar
             conf.write(config)
         get_config(conf_path)
         # FIXME test for log entries
+
+
+@pytest.fixture
+def metavdirs(tmpdir):
+    tmpdir = str(tmpdir)
+    dirstructure = [
+        '/cal1/public/',
+        '/cal1/private/',
+        '/cal2/public/',
+        '/dir/cal3/public/',
+        '/dir/cal3/work/',
+        '/dir/cal3/home/',
+    ]
+    for one in dirstructure:
+        os.makedirs(tmpdir + one)
+    filestructure = [
+        ('/cal1/public/displayname', 'my calendar'),
+        ('/cal1/public/color', 'red'),
+        ('/cal1/private/displayname', 'my private calendar'),
+        ('/cal1/private/color', '#FF00FF'),
+    ]
+    for filename, content in filestructure:
+        with open(tmpdir + filename, 'w') as metafile:
+            metafile.write(content)
+    return tmpdir
+
+
+def test_discover(metavdirs):
+    path = metavdirs
+    vdirs = {vdir[len(path):] for vdir in get_all_vdirs(path)}
+    assert vdirs == {
+        '/cal1/public', '/cal1/private', '/cal2/public', '/dir/cal3/home',
+        '/dir/cal3/public', '/dir/cal3/work'
+    }
+
+
+def test_get_unique_name(metavdirs):
+    path = metavdirs
+    vdirs = [vdir for vdir in get_all_vdirs(path)]
+    names = list()
+    for vdir in sorted(vdirs):
+        names.append(get_unique_name(vdir, names))
+    assert names == ['my private calendar', 'my calendar', 'public', 'home', 'public1', 'work']
+
+
+def test_config_checks(metavdirs):
+    path = metavdirs
+    config = {'calendars': {'default': {'path': path, 'type': 'discover'}},
+              'sqlite': {'path': '/tmp'},
+              'locale': {'default_timezone': 'Europe/Berlin', 'local_timezone': 'Europe/Berlin'},
+              'default': {'default_calendar': None},
+              }
+    config_checks(config)
+    for cal in ['home', 'my calendar', 'my private calendar', 'work', 'public1', 'public']:
+        config['calendars'][cal]['path'] = config['calendars'][cal]['path'][len(metavdirs):]
+    assert config == {
+        'calendars': {
+            'home': {
+                'color': None,
+                'path': '/dir/cal3/home',
+                'readonly': False,
+                'type': 'calendar',
+            },
+            'my calendar': {
+                'color': 'red',
+                'path': '/cal1/public',
+                'readonly': False,
+                'type': 'calendar',
+            },
+            'my private calendar': {
+                'color': '#FF00FF',
+                'path': '/cal1/private',
+                'readonly': False,
+                'type': 'calendar',
+            },
+            'public': {
+                'color': None,
+                'path': '/cal2/public',
+                'readonly': False,
+                'type': 'calendar',
+            },
+            'public1': {
+                'color': None,
+                'path': '/dir/cal3/public',
+                'readonly': False,
+                'type': 'calendar',
+            },
+            'work': {
+                'color': None,
+                'path': '/dir/cal3/work',
+                'readonly': False,
+                'type': 'calendar',
+            },
+        },
+        'default': {'default_calendar': None},
+        'locale': {'default_timezone': 'Europe/Berlin', 'local_timezone': 'Europe/Berlin'},
+        'sqlite': {'path': '/tmp'},
+    }

@@ -181,7 +181,7 @@ def config_checks(config):
         if config['calendars'][calendar]['type'] == 'discover':
             vdirs += get_all_vdirs(config['calendars'][calendar]['path'])
             config['calendars'].pop(calendar)
-    for vdir in vdirs:
+    for vdir in sorted(vdirs):
         calendar = {'path': vdir,
                     'color': get_color_from_vdir(vdir),
                     'type': get_vdir_type(vdir),
