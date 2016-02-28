@@ -234,7 +234,9 @@ def _get_cli():
     @click.pass_context
     @click.option('--full', '-f', help=('Print description and location with event'),
                   is_flag=True)
-    def calendar(ctx, days, events, dates, full=False):
+    @click.option('--force-color', help=('Always use color (even when stdout is no tty'),
+                  is_flag=True)
+    def calendar(ctx, days, events, dates, full=False, force_color=False):
         '''Print calendar with agenda.'''
         controllers.calendar(
             build_collection(ctx),
@@ -252,7 +254,8 @@ def _get_cli():
             color=ctx.obj['conf']['highlight_days']['color'],
             highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
             full=full,
-            bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color']
+            bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
+            force_color=force_color,
         )
 
     @cli.command()
@@ -261,7 +264,9 @@ def _get_cli():
     @click.pass_context
     @click.option('--full', '-f', help=('Print description and location with event'),
                   is_flag=True)
-    def agenda(ctx, days, events, dates, full=False):
+    @click.option('--force-color', help=('Always use color (even when stdout is no tty'),
+                  is_flag=True)
+    def agenda(ctx, days, events, dates, full=False, force_color=False):
         '''Print agenda.'''
         controllers.agenda(
             build_collection(ctx),
@@ -273,7 +278,8 @@ def _get_cli():
             days=days or ctx.obj['conf']['default']['days'],
             events=events,
             full=full,
-            bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color']
+            bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
+            force_color=force_color,
         )
 
     @cli.command()

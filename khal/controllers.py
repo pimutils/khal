@@ -134,6 +134,7 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
              highlight_event_days=0,
              full=False,
              bold_for_light_color=True,
+             force_color=False,
              **kwargs):
     if date is None:
         date = [datetime.datetime.today()]
@@ -156,18 +157,24 @@ def calendar(collection, date=None, firstweekday=0, encoding='utf-8', locale=Non
         locale=locale,
         bold_for_light_color=bold_for_light_color)
     rows = merge_columns(calendar_column, event_column)
-    echo('\n'.join(rows))
+    if force_color:
+        echo('\n'.join(rows).encode(encoding))
+    else:
+        echo('\n'.join(rows))
 
 
 def agenda(collection, date=None, encoding='utf-8', show_all_days=False, full=False,
-           bold_for_light_color=True, **kwargs):
+           bold_for_light_color=True, force_color=False, **kwargs):
     term_width, _ = get_terminal_size()
     event_column = get_agenda(collection, dates=date, width=term_width,
                               show_all_days=show_all_days, full=full,
                               bold_for_light_color=bold_for_light_color, **kwargs)
     # XXX: Generate this as a unicode in the first place, rather than
     # casting it.
-    echo('\n'.join(event_column))
+    if force_color:
+        echo('\n'.join(event_column).encode(encoding))
+    else:
+        echo('\n'.join(event_column))
 
 
 def new_from_string(collection, calendar_name, conf, date_list, location=None, repeat=None,
