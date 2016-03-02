@@ -794,7 +794,7 @@ def _urwid_palette_entry(name, color, hmethod):
     :rtype: tuple
     """
     from ..terminal import COLORS
-    if color == '' or color in COLORS:
+    if color == '' or color in COLORS or color is None:
         # Named colors already use urwid names, no need to change anything.
         pass
     elif color.isdigit():
