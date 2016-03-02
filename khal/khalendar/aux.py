@@ -36,75 +36,78 @@ def expand(vevent, href=''):
     else:
         duration = vevent['DTEND'].dt - vevent['DTSTART'].dt
 
-    # dateutil.rrule converts everything to datetime
+    events_tz = getattr(vevent['DTSTART'].dt, 'tzinfo', None)
     allday = not isinstance(vevent['DTSTART'].dt, datetime)
-    if 'RRULE' not in vevent.keys() and 'RDATE' not in vevent.keys():
-        return [(vevent['DTSTART'].dt, vevent['DTSTART'].dt + duration)]
 
-    events_tz = None
-    if getattr(vevent['DTSTART'].dt, 'tzinfo', False):
-        # dst causes problem while expanding the rrule, therefor we transform
+    def sanitize_datetime(date):
+        if allday and isinstance(date, datetime):
+            date = date.date()
+        if events_tz is not None:
+            date = events_tz.localize(date)
+        return date
+
+    rrule_param = vevent.get('RRULE')
+    if rrule_param is not None:
+        vevent = sanitize_rrule(vevent)
+
+        # dst causes problem while expanding the rrule, therefore we transform
         # everything to naive datetime objects and tranform back after
         # expanding
-        events_tz = vevent['DTSTART'].dt.tzinfo
-        vevent['DTSTART'].dt = vevent['DTSTART'].dt.replace(tzinfo=None)
+        # See https://github.com/dateutil/dateutil/issues/102
+        dtstart = vevent['DTSTART'].dt
+        if events_tz:
+            dtstart = dtstart.replace(tzinfo=None)
 
-    if 'RRULE' in vevent:
-        vevent = sanitize_rrule(vevent)
-        rrulestr = vevent['RRULE'].to_ical().decode()
-        rrule = dateutil.rrule.rrulestr(rrulestr, dtstart=vevent['DTSTART'].dt)
+        rrule = dateutil.rrule.rrulestr(
+            rrule_param.to_ical().decode(),
+            dtstart=dtstart
+        )
 
-        if not set(['UNTIL', 'COUNT']).intersection(vevent['RRULE'].keys()):
+        if rrule._until is None:
             # rrule really doesn't like to calculate all recurrences until
             # eternity, so we only do it until 2037, because a) I'm not sure
             # if python can deal with larger datetime values yet and b) pytz
             # doesn't know any larger transition times
             rrule._until = datetime(2037, 12, 31)
+        elif getattr(rrule._until, 'tzinfo', None):
+            rrule._until = rrule._until \
+                .astimezone(events_tz) \
+                .replace(tzinfo=None)
 
-        if getattr(rrule._until, 'tzinfo', False):
-            rrule._until = rrule._until.astimezone(events_tz)
-            rrule._until = rrule._until.replace(tzinfo=None)
+        rrule = map(sanitize_datetime, rrule)
 
         logger.debug('calculating recurrence dates for {0}, '
                      'this might take some time.'.format(href))
-        dtstartl = list(rrule)
-        if len(dtstartl) == 0:
-            raise UnsupportedRecursion
+
+        # RRULE and RDATE may specify the same date twice, it is recommended by
+        # the RFC to consider this as only one instance
+        dtstartl = set(rrule)
+        if not dtstartl:
+            raise UnsupportedRecursion()
     else:
-        dtstartl = [vevent['DTSTART'].dt]
+        dtstartl = {vevent['DTSTART'].dt}
+
+    def get_dates(vevent, key):
+        dates = vevent.get(key)
+        if dates is None:
+            return
+        if not isinstance(dates, list):
+            dates = [dates]
+
+        dates = (leaf.dt for tree in dates for leaf in tree.dts)
+        dates = localize_strip_tz(dates, events_tz)
+        return map(sanitize_datetime, dates)
 
     # include explicitly specified recursion dates
-    if 'RDATE' in vevent:
-        if not isinstance(vevent['RDATE'], list):
-            rdates = [vevent['RDATE']]
-        else:
-            rdates = vevent['RDATE']
-        rdates = [leaf.dt for tree in rdates for leaf in tree.dts]
-        rdates = localize_strip_tz(rdates, events_tz)
-        dtstartl += rdates
+    dtstartl.update(get_dates(vevent, 'RDATE') or ())
 
     # remove excluded dates
-    if 'EXDATE' in vevent:
-        if not isinstance(vevent['EXDATE'], list):
-            exdates = [vevent['EXDATE']]
-        else:
-            exdates = vevent['EXDATE']
-        exdates = [leaf.dt for tree in exdates for leaf in tree.dts]
-        exdates = localize_strip_tz(exdates, events_tz)
-        dtstartl = [start for start in dtstartl if start not in exdates]
-
-    if events_tz is not None:
-        dtstartl = [events_tz.localize(start) for start in dtstartl]
-    elif allday:
-        # datutil's rrule turns dates into datetimes
-        dtstartl = [start.date() if isinstance(start, datetime) else start for start in dtstartl]
-
-    # RRULE and RDATE may specify the same date twice, it is recommended by
-    # the RFC to consider this as only one instance
-    dtstartl = list(set(dtstartl))
-    dtstartl.sort()  # this is not necessary, but I prefer an ordered list
+    for date in get_dates(vevent, 'EXDATE') or ():
+        dtstartl.remove(date)
 
     dtstartend = [(start, start + duration) for start in dtstartl]
+    # not necessary, but I prefer deterministic output
+    dtstartend.sort()
     return dtstartend
 
 
@@ -200,13 +203,11 @@ def sanitize_rrule(vevent):
 
 def localize_strip_tz(dates, timezone):
     """converts a list of dates to timezone, than removes tz info"""
-    outdates = []
     for one_date in dates:
         if getattr(one_date, 'tzinfo', None) is not None:
             one_date = one_date.astimezone(timezone)
             one_date = one_date.replace(tzinfo=None)
-        outdates.append(one_date)
-    return outdates
+        yield one_date
 
 
 def to_unix_time(dtime):
