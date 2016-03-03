@@ -174,6 +174,8 @@ print_new = option('event', 'path', 'False', default=False)
 # highlighting are in [highlight_days] section.
 highlight_event_days = boolean(default=False)
 
+# A list of calendars that should be excluded by default when running `khal`.
+# These can be included again explicitly by using the `-a` flag.
 exclude_calendars = force_list(default=list())
 
 # The view section contains config options that effect the visual appearance
