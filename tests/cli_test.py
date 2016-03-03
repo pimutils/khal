@@ -309,3 +309,14 @@ def test_interactive_command(runner, monkeypatch):
     result = runner.invoke(main_khal, ['interactive', '-a', 'one'])
     assert not result.exception
     assert result.output.strip() == token
+
+
+def test_color_option(runner):
+    runner = runner(command='agenda', showalldays=False, days=2)
+
+    result = runner.invoke(main_khal, ['--no-color'])
+    assert result.output == 'No events\n'
+
+    result = runner.invoke(main_khal, ['--color'])
+    assert 'No events' in result.output
+    assert result.output != 'No events\n'

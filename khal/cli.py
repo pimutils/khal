@@ -126,6 +126,9 @@ def global_options(f):
         else:
             logger.setLevel(logging.INFO)
 
+    def color_callback(ctx, option, value):
+        ctx.color = value
+
     config = click.option(
         '--config', '-c',
         is_eager=True,  # make sure other options can access config
@@ -139,10 +142,17 @@ def global_options(f):
         help='Output debugging information.',
         is_flag=True, expose_value=False, callback=verbosity_callback
     )
+    color = click.option(
+        '--color/--no-color',
+        help=('Use colored/uncolored output. Default is to only enable colors '
+              'when not part of a pipe.'),
+        expose_value=False, default=None,
+        callback=color_callback
+    )
 
     version = click.version_option(version=__version__)
 
-    return config(verbose(version(f)))
+    return config(verbose(color(version(f))))
 
 
 def build_collection(ctx):
