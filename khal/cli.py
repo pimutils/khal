@@ -60,7 +60,7 @@ def _multi_calendar_select_callback(ctx, option, calendars):
     if not isinstance(calendars, tuple):
         calendars = (calendars,)
 
-    mode = option.name
+    mode = ctx.obj['calendar_selection_mode'] = option.name
     selection = ctx.obj['calendar_selection'] = set()
 
     if mode == 'include_calendar':
@@ -149,10 +149,17 @@ def build_collection(ctx):
     try:
         conf = ctx.obj['conf']
         selection = ctx.obj.get('calendar_selection', None)
+        mode = ctx.obj.get('calendar_selection_model')
+
+        if ctx.command.name != 'interactive':
+            exclude = ctx.obj['conf']['default']['exclude_calendars']
+        else:
+            exclude = []
 
         props = dict()
         for name, cal in conf['calendars'].items():
-            if selection is None or name in ctx.obj['calendar_selection']:
+            if (selection is None or name in selection) and \
+               (mode == 'include_calendar' or (name not in exclude)):
                 props[name] = {
                     'name': name,
                     'path': cal['path'],

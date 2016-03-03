@@ -174,6 +174,8 @@ print_new = option('event', 'path', 'False', default=False)
 # highlighting are in [highlight_days] section.
 highlight_event_days = boolean(default=False)
 
+exclude_calendars = force_list(default=list())
+
 # The view section contains config options that effect the visual appearance
 # when using ikhal
 [view]
