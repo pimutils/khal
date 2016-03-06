@@ -31,6 +31,8 @@ not released yet
   the configured calendars (Christian Geier)
 * new command `configure` which should help new users set up a configuration
   file (Christian Geier)
+* warn user when parsing broken icalendar files, this requires icalendar > 3.9.2
+  (Christian Geier)
 
 ikhal
 -----
