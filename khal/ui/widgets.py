@@ -116,6 +116,18 @@ class ExtendedEdit(urwid.Edit):
         self.set_edit_pos(goto_end_of_line(text[self.edit_pos:]) + self.edit_pos)
 
 
+class EnterEdit(ExtendedEdit):
+    """Edit class that emits signal `enter` if user tries to edit"""
+    signals = ['enter']
+
+    def keypress(self, size, key):
+        if key not in ['up', 'down', 'left', 'right', 'tab', 'shift tab']:
+            self._emit('enter')
+            return
+        else:
+            return super().keypress(size, key)
+
+
 class DateTimeWidget(ExtendedEdit):
 
     def __init__(self, dateformat, on_date_change=lambda x: None, **kwargs):
@@ -197,23 +209,31 @@ class TimeWidget(DateTimeWidget):
 
 
 class Choice(urwid.PopUpLauncher):
-    def __init__(self, choices, active, decorate_func=None, overlay_width=32):
+    def __init__(self, choices, active, decorate_func=None, win_len=None,
+                 overlay_width=32):
         self.choices = choices
+        self._win_len = win_len
         self._decorate = decorate_func or (lambda x: x)
         self._overlay_width = overlay_width
         self.active = self._original = active
 
     def create_pop_up(self):
         pop_up = ChoiceList(self)
-        urwid.connect_signal(pop_up, 'close',
-                             lambda button: self.close_pop_up())
+        urwid.connect_signal(pop_up, 'close', lambda button: self.close_pop_up())
         return pop_up
+
+    @property
+    def win_len(self):
+        if self._win_len:
+            return self._win_len
+        else:
+            return len(self.choices)
 
     def get_pop_up_parameters(self):
         return {'left': 0,
                 'top': 1,
                 'overlay_width': self._overlay_width,
-                'overlay_height': len(self.choices)}
+                'overlay_height': self.win_len}
 
     @property
     def changed(self):
@@ -230,6 +250,24 @@ class Choice(urwid.PopUpLauncher):
         urwid.PopUpLauncher.__init__(self, self.button)
         urwid.connect_signal(self.button, 'click',
                              lambda button: self.open_pop_up())
+
+
+class EditSelect(Choice):
+    def create_pop_up(self):
+        pop_up = ChoiceListEdit(self)
+        urwid.connect_signal(pop_up, 'close', lambda button: self.close_pop_up())
+        return pop_up
+
+    @property
+    def active(self):
+        return self._active
+
+    @active.setter
+    def active(self, val):
+        self._active = val
+        self.button = EnterEdit('', self._decorate(self._active))
+        urwid.PopUpLauncher.__init__(self, self.button)
+        urwid.connect_signal(self.button, 'enter', lambda button: self.open_pop_up())
 
 
 class ChoiceList(urwid.WidgetWrap):
@@ -253,7 +291,63 @@ class ChoiceList(urwid.WidgetWrap):
 
     def set_choice(self, button, account):
         self.parent.active = account
-        self._emit("close")
+        self._emit('close')
+
+    def keypress(self, size, key):
+        if key == 'esc':
+            self._emit('close')
+            return
+        else:
+            return super().keypress(size, key)
+
+
+class ChoiceListEdit(ChoiceList):
+    """
+    +------------------+
+    | Edit self._edit  |    Both Elements are wrapped in an NPile,
+    +------------------+    one can jump from Edit to the Walker with tab
+    | ListWalker       |    and back with shift tab
+    | self._walker     |
+    | over             |    When Edit is updated, only choices containing the
+    | allowed          |    Edit.text are displayed
+    | choices          |
+    +------------------+
+    """
+    def __init__(self, parent):
+        self.parent = parent
+        self._edit = ExtendedEdit('', parent.active)
+        urwid.connect_signal(self._edit, 'change',
+                             lambda edit, text: self.filter(text))
+        self._walker = urwid.SimpleFocusListWalker([self._edit])
+        walker = urwid.BoxAdapter(
+            urwid.ListBox(self._walker), height=self.parent.win_len - 1)
+        self._pile = NPile([self._edit, walker], outermost=True)
+        self.filter('')
+        self.focus_on(self.parent.active)
+        fill = urwid.Filler(self._pile, 'top')
+        urwid.WidgetWrap.__init__(self, urwid.AttrMap(fill, 'popupbg'))
+
+    def focus_on(self, text):
+        for num, widget in enumerate(self._walker):
+            if widget.label == text:
+                self._walker.set_focus(num)
+                return
+
+    def filter(self, text):
+        buttons = [self._edit]
+        buttons = list()
+        text = text.lower()
+        for c in self.parent.choices:
+            if text in c.lower():
+                buttons.append(
+                    urwid.Button(self.parent._decorate(c),
+                                 on_press=self.set_choice, user_data=c)
+                )
+
+        if not buttons:
+            buttons = [urwid.Text('no match')]
+        self._walker.clear()
+        self._walker.extend(buttons)
 
 
 class SupportsNext(object):

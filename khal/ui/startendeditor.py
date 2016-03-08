@@ -22,8 +22,9 @@
 from datetime import datetime, time
 
 import urwid
+import pytz
 
-from .widgets import DateWidget, TimeWidget, NColumns, NPile, ValidatedEdit
+from .widgets import DateWidget, TimeWidget, NColumns, NPile, ValidatedEdit, EditSelect
 from .calendarwidget import CalendarWidget
 
 
@@ -250,14 +251,25 @@ class StartEndEditor(urwid.WidgetWrap):
                 edit, align='left', width=self._timewidth + 1, left=1)
             self.widgets.endtime = edit
 
+        test = EditSelect(pytz.common_timezones, 'Europe/Berlin', win_len=10)
+
         columns = NPile([
             self.checkallday,
-            NColumns([(datewidth, self.widgets.startdate), (
-                timewidth, self.widgets.starttime)], dividechars=1),
             NColumns(
-                [(datewidth, self.widgets.enddate),
-                 (timewidth, self.widgets.endtime)],
-                dividechars=1)
+                [
+                    (datewidth, self.widgets.startdate),
+                    (timewidth, self.widgets.starttime),
+                    (2, urwid.Text('\N{EARTH GLOBE EUROPE-AFRICA}')),
+                    (4, urwid.CheckBox('', state=True)),
+                ],
+                dividechars=1),
+            NColumns(
+                [
+                    (datewidth, self.widgets.enddate),
+                    (timewidth, self.widgets.endtime),
+                ],
+                dividechars=1),
+            test,
         ], focus_item=1)
         urwid.WidgetWrap.__init__(self, columns)
 
