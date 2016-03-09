@@ -4,9 +4,12 @@ import textwrap
 
 import icalendar
 import pytz
+from freezegun import freeze_time
 
 from khal.aux import construct_event, guessdatetimefstr
 from khal import aux
+from khal.exceptions import FatalError
+import pytest
 
 from .aux import _get_all_vevents_file, _get_text, \
     normalize_component
@@ -258,6 +261,30 @@ def test_construct_event_format_de_complexer():
                                 _now=_now,
                                 locale=locale_de)
         assert _replace_uid(event).to_ical() == vevent
+
+
+test_set_leap_year = _create_testcases(
+    ('29.02. Äwesöme Event',
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;VALUE=DATE:20160229',
+      'DTEND;VALUE=DATE:20160301',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'END:VEVENT']),
+)
+
+
+def test_leap_year():
+    for data_list, vevent in test_set_leap_year:
+        with freeze_time('1999-1-1'):
+            with pytest.raises(FatalError):
+                event = construct_event(
+                    data_list.split(), _now=_now, locale=locale_de)
+        with freeze_time('2016-1-1'):
+            event = construct_event(
+                data_list.split(), _now=_now, locale=locale_de)
+            assert _replace_uid(event).to_ical() == vevent
 
 
 test_set_description = _create_testcases(

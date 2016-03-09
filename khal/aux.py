@@ -22,9 +22,11 @@
 """this module contains some helper functions converting strings or list of
 strings to date(time) or event objects"""
 
+from calendar import isleap
 from datetime import date, datetime, timedelta, time
 import random
 import string
+from time import strptime
 
 import icalendar
 import pytz
@@ -145,14 +147,18 @@ def datetimefstr_weekday(dtime_list, timeformat):
     return dtime
 
 
-def guessdatetimefstr(dtime_list, locale, default_day=datetime.today()):
+def guessdatetimefstr(dtime_list, locale, default_day=None):
     """
     :type dtime_list: list
     :type locale: dict
     :type default_day: datetime.datetime
     :rtype: datetime.datetime
     """
+    # if now() is called as default param, mocking with freezegun won't work
+    if default_day is None:
+        default_day = datetime.now().date()
     # TODO rename in guessdatetimefstrLIST or something saner altogether
+
     def timefstr_day(dtime_list, timeformat):
         if locale['timeformat'] == '%H:%M' and dtime_list[0] == '24:00':
             a_date = datetime.combine(default_day, time(0))
@@ -163,8 +169,26 @@ def guessdatetimefstr(dtime_list, locale, default_day=datetime.today()):
         return a_date
 
     def datefstr_year(dtime_list, dateformat):
-        a_date = datetimefstr(dtime_list, dateformat)
-        a_date = datetime(*(default_day.timetuple()[:1] + a_date.timetuple()[1:5]))
+        """should be used if a date(time) without year is given
+
+        we cannot use datetimefstr() here, because only time.strptime can
+        parse the 29th of Feb. if no year is given
+
+        example: dtime_list = ['17.03.', 'description']
+                 dateformat = '%d.%m.'
+        or     : dtime_list = ['17.03.', '16:00', 'description']
+                 dateformat = '%d.%m. %H:%M'
+        """
+        parts = dtformat.count(' ') + 1
+        dtstring = ' '.join(dtime_list[0:parts])
+        dtstart = strptime(dtstring, dtformat)
+        if dtstart.tm_mon == 2 and dtstart.tm_mday == 29 and not isleap(default_day.year):
+            raise ValueError
+
+        for _ in range(parts):
+            dtime_list.pop(0)
+
+        a_date = datetime(*(default_day.timetuple()[:1] + dtstart[1:5]))
         return a_date
 
     dtstart = None

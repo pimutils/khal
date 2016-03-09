@@ -13,6 +13,10 @@ requirements = [
     'tzlocal>=1.0',
 ]
 
+test_requirements = [
+    'freezegun'
+]
+
 extra_requirements = {
     'proctitle': ['setproctitle'],
 }
@@ -38,6 +42,7 @@ setup(
     },
     install_requires=requirements,
     extras_require=extra_requirements,
+    tests_require=test_requirements,
     setup_requires=['setuptools_scm'],  # not needed when using packages from PyPI
     use_scm_version={'write_to': 'khal/version.py'},
     classifiers=[

@@ -14,6 +14,7 @@ not released yet
 * BREAKING CHANGE: python 2 is no longer supported (Hugo Osvaldo Barrera)
 * updated dependency: vdirsyncer >= 0.5.2
 * make tests work with icalendar 3.9.2 (no functional changes) (Christian Geier)
+* new dependency: freezegun (only for running the tests)
 
 * support for showing the birthday of contacts with no FN property (Hugo
   Osvaldo Barrera)
