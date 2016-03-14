@@ -15,16 +15,8 @@ from .aux import _get_all_vevents_file, _get_text, \
     normalize_component
 
 
-def _now():
-    """mock datetime.datetime.now"""
-    return datetime(2014, 2, 16, 12, 0, 0, 0)
-
-
 today = date.today()
 tomorrow = today + timedelta(days=1)
-today_s = '{0:02}{1:02}{2:02}'.format(*today.timetuple()[0:3])
-tomorrow_s = '{0:02}{1:02}{2:02}'.format(*tomorrow.timetuple()[0:3])
-this_year_s = str(today.year)
 
 locale_de = {
     'timeformat': '%H:%M',
@@ -179,10 +171,10 @@ test_set_format_de = _create_testcases(
 )
 
 
+@freeze_time('20140216T120000')
 def test_construct_event_format_de():
     for data_list, vevent in test_set_format_de:
         event = construct_event(data_list.split(),
-                                _now=_now,
                                 locale=locale_de)
 
         assert _replace_uid(event).to_ical() == vevent
@@ -200,8 +192,8 @@ test_set_format_us = _create_testcases(
     ('12/18 12/20 Äwesöme Event',
      ['BEGIN:VEVENT',
       'SUMMARY:Äwesöme Event',
-      'DTSTART;VALUE=DATE:{}1218'.format(this_year_s),
-      'DTEND;VALUE=DATE:{}1221'.format(this_year_s),
+      'DTSTART;VALUE=DATE:20141218',
+      'DTEND;VALUE=DATE:20141221',
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'END:VEVENT']),
@@ -218,10 +210,9 @@ def test_construct_event_format_us():
         'default_timezone': pytz.timezone('America/New_York'),
     }
     for data_list, vevent in test_set_format_us:
-        event = construct_event(data_list.split(),
-                                _now=_now,
-                                locale=locale_us)
-        assert _replace_uid(event).to_ical() == vevent
+        with freeze_time('2014-02-16 12:00:00'):
+            event = construct_event(data_list.split(), locale=locale_us)
+            assert _replace_uid(event).to_ical() == vevent
 
 
 test_set_format_de_complexer = _create_testcases(
@@ -230,8 +221,8 @@ test_set_format_de_complexer = _create_testcases(
     ('8:00 Äwesöme Event',
      ['BEGIN:VEVENT',
       'SUMMARY:Äwesöme Event',
-      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T080000'.format(today_s),
-      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T090000'.format(today_s),
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'END:VEVENT']),
@@ -239,16 +230,16 @@ test_set_format_de_complexer = _create_testcases(
     ('22:00  1:00 Äwesöme Event',
      ['BEGIN:VEVENT',
       'SUMMARY:Äwesöme Event',
-      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T220000'.format(today_s),
-      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T010000'.format(tomorrow_s),
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T220000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140217T010000',
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'END:VEVENT']),
     ('15.06. Äwesöme Event',
      ['BEGIN:VEVENT',
       'SUMMARY:Äwesöme Event',
-      'DTSTART;VALUE=DATE:{}0615'.format(this_year_s),
-      'DTEND;VALUE=DATE:{}0616'.format(this_year_s),
+      'DTSTART;VALUE=DATE:20140615',
+      'DTEND;VALUE=DATE:20140616',
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'END:VEVENT']),
@@ -257,10 +248,9 @@ test_set_format_de_complexer = _create_testcases(
 
 def test_construct_event_format_de_complexer():
     for data_list, vevent in test_set_format_de_complexer:
-        event = construct_event(data_list.split(),
-                                _now=_now,
-                                locale=locale_de)
-        assert _replace_uid(event).to_ical() == vevent
+        with freeze_time('2014-02-16 12:00:00'):
+            event = construct_event(data_list.split(), locale=locale_de)
+            assert _replace_uid(event).to_ical() == vevent
 
 
 test_set_leap_year = _create_testcases(
@@ -269,7 +259,7 @@ test_set_leap_year = _create_testcases(
       'SUMMARY:Äwesöme Event',
       'DTSTART;VALUE=DATE:20160229',
       'DTEND;VALUE=DATE:20160301',
-      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'DTSTAMP;VALUE=DATE-TIME:20160101T202122Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'END:VEVENT']),
 )
@@ -280,10 +270,10 @@ def test_leap_year():
         with freeze_time('1999-1-1'):
             with pytest.raises(FatalError):
                 event = construct_event(
-                    data_list.split(), _now=_now, locale=locale_de)
-        with freeze_time('2016-1-1'):
+                    data_list.split(), locale=locale_de)
+        with freeze_time('2016-1-1 20:21:22'):
             event = construct_event(
-                data_list.split(), _now=_now, locale=locale_de)
+                data_list.split(), locale=locale_de)
             assert _replace_uid(event).to_ical() == vevent
 
 
@@ -293,8 +283,8 @@ test_set_description = _create_testcases(
     ('8:00 Äwesöme Event :: this is going to be awesome',
      ['BEGIN:VEVENT',
       'SUMMARY:Äwesöme Event',
-      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T080000'.format(today_s),
-      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T090000'.format(today_s),
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'DESCRIPTION:this is going to be awesome',
@@ -303,8 +293,8 @@ test_set_description = _create_testcases(
     ('22:00  1:00 Äwesöme Event :: Will be even better',
      ['BEGIN:VEVENT',
       'SUMMARY:Äwesöme Event',
-      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T220000'.format(today_s),
-      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T010000'.format(tomorrow_s),
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T220000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140217T010000',
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'DESCRIPTION:Will be even better',
@@ -312,8 +302,8 @@ test_set_description = _create_testcases(
     ('15.06. Äwesöme Event :: and again',
      ['BEGIN:VEVENT',
       'SUMMARY:Äwesöme Event',
-      'DTSTART;VALUE=DATE:{}0615'.format(this_year_s),
-      'DTEND;VALUE=DATE:{}0616'.format(this_year_s),
+      'DTSTART;VALUE=DATE:20140615',
+      'DTEND;VALUE=DATE:20140616',
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'DESCRIPTION:and again',
@@ -323,8 +313,9 @@ test_set_description = _create_testcases(
 
 def test_description():
     for data_list, vevent in test_set_description:
-        event = construct_event(data_list.split(), _now=_now, locale=locale_de)
-        assert _replace_uid(event).to_ical() == vevent
+        with freeze_time('2014-02-16 12:00:00'):
+            event = construct_event(data_list.split(), locale=locale_de)
+            assert _replace_uid(event).to_ical() == vevent
 
 test_set_repeat = _create_testcases(
     # now events where the start date has to be inferred, too
@@ -332,8 +323,8 @@ test_set_repeat = _create_testcases(
     ('8:00 Äwesöme Event',
      ['BEGIN:VEVENT',
       'SUMMARY:Äwesöme Event',
-      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T080000'.format(today_s),
-      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T090000'.format(today_s),
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'DESCRIPTION:please describe the event',
@@ -343,13 +334,13 @@ test_set_repeat = _create_testcases(
 
 def test_repeat():
     for data_list, vevent in test_set_repeat:
-        event = construct_event(data_list.split(),
-                                description='please describe the event',
-                                repeat='daily',
-                                until=['05.06.2015'],
-                                _now=_now,
-                                locale=locale_de)
-        assert _replace_uid(event).to_ical() == vevent
+        with freeze_time('2014-02-16 12:00:00'):
+            event = construct_event(data_list.split(),
+                                    description='please describe the event',
+                                    repeat='daily',
+                                    until=['05.06.2015'],
+                                    locale=locale_de)
+            assert _replace_uid(event).to_ical() == vevent
 
 
 test_set_description_and_location = _create_testcases(
@@ -358,8 +349,8 @@ test_set_description_and_location = _create_testcases(
     ('8:00 Äwesöme Event',
      ['BEGIN:VEVENT',
       'SUMMARY:Äwesöme Event',
-      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T080000'.format(today_s),
-      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:{}T090000'.format(today_s),
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
       'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
       'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
       'DESCRIPTION:please describe the event',
@@ -369,12 +360,12 @@ test_set_description_and_location = _create_testcases(
 
 def test_description_and_location():
     for data_list, vevent in test_set_description_and_location:
-        event = construct_event(data_list.split(),
-                                description='please describe the event',
-                                _now=_now,
-                                location='in the office',
-                                locale=locale_de)
-        assert _replace_uid(event).to_ical() == vevent
+        with freeze_time('2014-02-16 12:00:00'):
+            event = construct_event(data_list.split(),
+                                    description='please describe the event',
+                                    location='in the office',
+                                    locale=locale_de)
+            assert _replace_uid(event).to_ical() == vevent
 
 
 class TestIcsFromList(object):

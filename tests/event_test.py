@@ -2,6 +2,7 @@ from datetime import datetime, date, timedelta
 
 import pytest
 import pytz
+from freezegun import freeze_time
 
 from icalendar import vRecur
 
@@ -136,7 +137,8 @@ def test_dt_two_tz():
     cal_dt_two_tz = _get_text('cal_dt_two_tz')
 
     event = Event.fromString(event_dt_two_tz, **EVENT_KWARGS)
-    assert normalize_component(cal_dt_two_tz) == normalize_component(event.raw)
+    with freeze_time('2016-02-16 12:00:00'):
+        assert normalize_component(cal_dt_two_tz) == normalize_component(event.raw)
 
     # local (Berlin) time!
     assert event.relative_to(date(2014, 4, 9)) == '09:30-16:30: An Event'

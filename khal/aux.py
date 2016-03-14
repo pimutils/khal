@@ -179,9 +179,9 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
         or     : dtime_list = ['17.03.', '16:00', 'description']
                  dateformat = '%d.%m. %H:%M'
         """
-        parts = dtformat.count(' ') + 1
+        parts = dateformat.count(' ') + 1
         dtstring = ' '.join(dtime_list[0:parts])
-        dtstart = strptime(dtstring, dtformat)
+        dtstart = strptime(dtstring, dateformat)
         if dtstart.tm_mon == 2 and dtstart.tm_mday == 29 and not isleap(default_day.year):
             raise ValueError
 
@@ -222,12 +222,11 @@ def generate_random_uid():
 def construct_event(dtime_list, locale,
                     defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
                     description=None, location=None, repeat=None, until=None,
-                    _now=datetime.now, **kwargs):
+                    **kwargs):
     """takes a list of strings and constructs a vevent from it
 
     :param encoding: the encoding of your terminal, should be a valid encoding
     :type encoding: str
-    :param _now: function that returns now, used for testing
 
     the parts of the list can be either of these:
         * datetime datetime description
@@ -363,14 +362,14 @@ def construct_event(dtime_list, locale,
 
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
-    event.add('dtstamp', _now())
+    event.add('dtstamp', datetime.now())
     event.add('summary', summary)
     event.add('uid', generate_random_uid())  # TODO add proper UID
     return event
 
 
 def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
-              _now=datetime.now, allday=False):
+              allday=False):
     """create a new event
 
     :param dtstart: starttime of that event
@@ -383,10 +382,9 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
     :type summary: unicode
     :param timezone: timezone of the event (start and end)
     :type timezone: pytz.timezone
-    :param _now: a function that return now, used for testing
     :param allday: if set to True, we will not transform dtstart and dtend to
         datetime
-    ::type allday: bool
+    :type allday: bool
     :returns: event
     :rtype: icalendar.Event
     """
@@ -411,7 +409,7 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
-    event.add('dtstamp', _now())
+    event.add('dtstamp', datetime.now())
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
     event.add('sequence', 0)
