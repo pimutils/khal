@@ -24,9 +24,9 @@ Features
 
 
 .. _vdir: https://vdirsyncer.readthedocs.org/en/stable/vdir.html
-.. _vdirsyncer: https://github.com/untitaker/vdirsyncer
+.. _vdirsyncer: https://github.com/pimutils/vdirsyncer
 .. _CalDAV: http://en.wikipedia.org/wiki/CalDAV
-.. _github: https://github.com/geier/khal/
+.. _github: https://github.com/pimutils/khal/
 .. __: http://en.wikipedia.org/wiki/Comparison_of_CalDAV_and_CardDAV_implementations
 
 

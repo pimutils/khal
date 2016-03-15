@@ -25,7 +25,7 @@ Submitting a Bug
 If you found a bug or any part of khal isn't working as you
 expected, please check if that bug is either already reported at
 
-https://github.com/geier/khal/issues?state=open
+https://github.com/pimutils/khal/issues?state=open
 
 If it isn't, always run the command again with the -v option
 and paste the output of that (of course you can edit out any private

@@ -110,7 +110,7 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'github_user': 'geier',
+    'github_user': 'pimutils',
     'github_repo': 'khal',
     'travis_button': 'true',
 }

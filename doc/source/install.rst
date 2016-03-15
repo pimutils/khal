@@ -41,7 +41,7 @@ You can install the latest released version of *khal* by executing::
 
 or the latest development version by executing::
 
-     pip install git+git://github.com/geier/khal.git
+     pip install git+git://github.com/pimutils/khal.git
 
 This should also take care of installing all required dependencies.
 
