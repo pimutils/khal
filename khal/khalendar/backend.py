@@ -639,7 +639,7 @@ def check_support(vevent, href, calendar):
             '`RDATE;VALUE=PERIOD` is currently not supported by khal. '
             'Therefore event {0} from calendar {1} will not be shown in khal.\n'
             'Please post exemplary events (please remove any private data) '
-            'to https://github.com/geier/khal/issues/152 .'
+            'to https://github.com/pimutils/khal/issues/152 .'
             .format(href, calendar)
         )
 

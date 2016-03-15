@@ -542,13 +542,12 @@ class AllDayEvent(Event):
     def end(self):
         end = super(AllDayEvent, self).end
         if end == self.start:
-            # https://github.com/geier/khal/issues/129
+            # https://github.com/pimutils/khal/issues/129
             logger.warning('{} ("{}"): The event\'s end date property '
                            'contains the same value as the start date, '
                            'which is invalid as per RFC 2445. Khal will '
                            'assume this is meant to be single-day event '
-                           'on {}'.format(self.href, self.summary,
-                                           self.start))
+                           'on {}'.format(self.href, self.summary, self.start))
             end += timedelta(days=1)
         return end - timedelta(days=1)
 

@@ -1,10 +1,10 @@
 khal
 ====
-.. image:: https://travis-ci.org/geier/khal.svg?branch=master
-    :target: https://travis-ci.org/geier/khal
+.. image:: https://travis-ci.org/pimutils/khal.svg?branch=master
+    :target: https://travis-ci.org/pimutils/khal
 
-.. image:: https://codecov.io/github/geier/khal/coverage.svg?branch=master
-  :target: https://codecov.io/github/geier/khal?branch=master
+.. image:: https://codecov.io/github/pimutils/khal/coverage.svg?branch=master
+  :target: https://codecov.io/github/pimutils/khal?branch=master
 
 *Khal* is a standards based CLI (console) calendar program, able to synchronize
 with CalDAV_ servers through vdirsyncer_.
@@ -31,14 +31,14 @@ Feedback
 --------
 Please do provide feedback if *khal* works for you or even more importantly if
 it doesn't. The preferred way to get in contact (especially if something isn't
-working) is via github or IRC (#vdirsyncer on Freenode), otherwise you can reach
+working) is via github or IRC (#pimutils on Freenode), otherwise you can reach
 the original author via email at khal (at) lostpackets (dot) de or via
 jabber/XMPP at geier (at) jabber (dot) ccc (dot) de.
 
 .. _vdir: https://vdirsyncer.readthedocs.org/en/stable/vdir.html
-.. _vdirsyncer: https://github.com/untitaker/vdirsyncer
+.. _vdirsyncer: https://github.com/pimutils/vdirsyncer
 .. _CalDAV: http://en.wikipedia.org/wiki/CalDAV
-.. _github: https://github.com/geier/khal/
+.. _github: https://github.com/pimutils/khal/
 .. __: http://en.wikipedia.org/wiki/Comparison_of_CalDAV_and_CardDAV_implementations
 
 

@@ -199,7 +199,7 @@ event_view_always_visible = boolean(default=False)
 # `khal/settings/khal.spec` in the section `[default]` of the property `theme`.
 #
 # __ http://urwid.org/manual/displayattributes.html
-# .. _github: # https://github.com/geier/khal/issues
+# .. _github: # https://github.com/pimutils/khal/issues
 theme = option('dark', 'light', default='dark')
 
 # Whether to show a visible frame (with *box drawing* characters) around some

@@ -267,7 +267,7 @@ def construct_event(dtime_list, locale,
     except AssertionError:
         logger.error(
             "An internal error occured, please report the below error message "
-            "to khal's developers at https://github.com/geier/khal/issues or "
+            "to khal's developers at https://github.com/pimutils/khal/issues or "
             "via email at khal@lostpackets.de")
         logger.error(' '.join(['{} ({})'.format(part, type(part)) for part in dtime_list]))
 
