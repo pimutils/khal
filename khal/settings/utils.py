@@ -122,16 +122,17 @@ def get_color_from_vdir(path):
         color = FilesystemStorage(path, '.ics').get_meta('color')
     except CollectionNotFound:
         color = None
-    if color is None:
-        logger.debug('Found no file named `color` in {}'.format(path))
+    if color is None or color is '':
+        logger.debug('Found no or empty file `color` in {}'.format(path))
+        color = None
     return color
 
 
 def get_unique_name(path, names):
     # TODO take care of edge cases, make unique name finding less brain-dead
     name = FilesystemStorage(path, '.ics').get_meta('displayname')
-    if name is None:
-        logger.debug('Found no file named `displayname` in {}'.format(path))
+    if name is None or name == '':
+        logger.debug('Found no or empty file `displayname` in {}'.format(path))
         name = os.path.split(path)[-1]
     if name in names:
         while name in names:
