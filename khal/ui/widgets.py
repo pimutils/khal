@@ -429,6 +429,14 @@ class ValidatedEdit(urwid.WidgetWrap):
 class DurationWidget(urwid.WidgetWrap):
 
     @staticmethod
+    def unsigned_int(number):
+        """test if `number` can be converted to a positive int"""
+        try:
+            return int(number) >= 0:
+        except ValueError:
+            return False
+
+    @staticmethod
     def _convert_timedelta(dt):
         seconds = dt.total_seconds()
         days = int(seconds // (24 * 60 * 60))
@@ -440,10 +448,14 @@ class DurationWidget(urwid.WidgetWrap):
     def __init__(self, dt):
         days, hours, minutes, seconds = self._convert_timedelta(dt)
 
-        self.days_edit = ExtendedEdit(edit_text=str(days), align='right')
-        self.hours_edit = ExtendedEdit(edit_text=str(hours), align='right')
-        self.minutes_edit = ExtendedEdit(edit_text=str(minutes), align='right')
-        self.seconds_edit = ExtendedEdit(edit_text=str(seconds), align='right')
+        self.days_edit = ValidatedEdit(
+            edit_text=str(days), validate=self.unsigned_int, align='right')
+        self.hours_edit = ValidatedEdit(
+            edit_text=str(hours), validate=self.unsigned_int, align='right')
+        self.minutes_edit = ValidatedEdit(
+            edit_text=str(minutes), validate=self.unsigned_int, align='right')
+        self.seconds_edit = ValidatedEdit(
+            edit_text=str(seconds), validate=self.unsigned_int, align='right')
 
         self.columns = urwid.Columns([
             (4, self.days_edit),
