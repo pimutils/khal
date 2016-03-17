@@ -254,10 +254,21 @@ class SQLiteDb(object):
         # tables. There are obviously better ways to achieve the same
         # result.
         self.delete(href, calendar=calendar)
-        for vevent in sorted(vevents, key=sort_key):
+        vevents = sorted(vevents, key=sort_key)
+
+        # checking if we have a `master`/`PROTO` event
+        if sort_key(vevents[0])[1] == 0:
+            expand = True
+        else:
+            expand = False
+            logger.info(
+                'Found no master event for {} from calendar {}'.format(href, calendar)
+            )
+
+        for vevent in vevents:
             check_for_errors(vevent, calendar, href)
             check_support(vevent, href, calendar)
-            self._update_impl(vevent, href, calendar)
+            self._update_impl(vevent, href, calendar, expand)
 
         sql_s = ('INSERT INTO events '
                  '(item, etag, href, calendar) '
@@ -314,7 +325,7 @@ class SQLiteDb(object):
             stuple = (event_str, etag, href, calendar)
             self.sql_ex(sql_s, stuple)
 
-    def _update_impl(self, vevent, href, calendar):
+    def _update_impl(self, vevent, href, calendar, expand=True):
         """insert `vevent` into the database
 
         expand `vevent`'s reccurence rules (if needed) and insert all instance
@@ -346,7 +357,7 @@ class SQLiteDb(object):
             start_shift = start_shift.days * 3600 * 24 + start_shift.seconds
             duration = duration.days * 3600 * 24 + duration.seconds
 
-        dtstartend = aux.expand(vevent, href)
+        dtstartend = aux.expand(vevent, href, expand=expand)
         if not dtstartend:
             # Does this event even have dates? Technically it is possible for
             # events to be empty/non-existent by deleting all their recurrences
