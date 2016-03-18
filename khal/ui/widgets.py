@@ -432,7 +432,7 @@ class DurationWidget(urwid.WidgetWrap):
     def unsigned_int(number):
         """test if `number` can be converted to a positive int"""
         try:
-            return int(number) >= 0:
+            return int(number) >= 0
         except ValueError:
             return False
 
