@@ -457,7 +457,7 @@ class DurationWidget(urwid.WidgetWrap):
         self.seconds_edit = ValidatedEdit(
             edit_text=str(seconds), validate=self.unsigned_int, align='right')
 
-        self.columns = urwid.Columns([
+        self.columns = NColumns([
             (4, self.days_edit),
             (2, urwid.Text('D')),
             (3, self.hours_edit),
