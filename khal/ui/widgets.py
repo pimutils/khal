@@ -526,4 +526,7 @@ class AlarmsEditor(urwid.WidgetWrap):
 
     @property
     def changed(self):
-        return self.event.alarms != self.get_alarms()
+        try:
+            return self.event.alarms != self.get_alarms()
+        except ValueError:
+            return False
