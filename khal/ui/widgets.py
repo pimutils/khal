@@ -424,3 +424,106 @@ class ValidatedEdit(urwid.WidgetWrap):
             if not self._validate():
                 return
         return super().keypress(size, key)
+
+
+class DurationWidget(urwid.WidgetWrap):
+
+    @staticmethod
+    def unsigned_int(number):
+        """test if `number` can be converted to a positive int"""
+        try:
+            return int(number) >= 0:
+        except ValueError:
+            return False
+
+    @staticmethod
+    def _convert_timedelta(dt):
+        seconds = dt.total_seconds()
+        days = int(seconds // (24 * 60 * 60))
+        hours = int((seconds // 3600) % 24)
+        minutes = int((seconds % 3600) // 60)
+        seconds = int(seconds % 60)
+        return days, hours, minutes, seconds
+
+    def __init__(self, dt):
+        days, hours, minutes, seconds = self._convert_timedelta(dt)
+
+        self.days_edit = ValidatedEdit(
+            edit_text=str(days), validate=self.unsigned_int, align='right')
+        self.hours_edit = ValidatedEdit(
+            edit_text=str(hours), validate=self.unsigned_int, align='right')
+        self.minutes_edit = ValidatedEdit(
+            edit_text=str(minutes), validate=self.unsigned_int, align='right')
+        self.seconds_edit = ValidatedEdit(
+            edit_text=str(seconds), validate=self.unsigned_int, align='right')
+
+        self.columns = urwid.Columns([
+            (4, self.days_edit),
+            (2, urwid.Text('D')),
+            (3, self.hours_edit),
+            (2, urwid.Text('H')),
+            (3, self.minutes_edit),
+            (2, urwid.Text('M')),
+            (3, self.seconds_edit),
+            (2, urwid.Text('S')),
+        ])
+
+        urwid.WidgetWrap.__init__(self, self.columns)
+
+    def get_timedelta(self):
+        return timedelta(
+            seconds=int(self.seconds_edit.get_edit_text()) +
+            int(self.minutes_edit.get_edit_text()) * 60 +
+            int(self.hours_edit.get_edit_text()) * 60 * 60 +
+            int(self.days_edit.get_edit_text()) * 24 * 60 * 60)
+
+
+class AlarmsEditor(urwid.WidgetWrap):
+
+    class AlarmEditor(urwid.WidgetWrap):
+
+        def __init__(self, alarm, delete_handler):
+            self.alarm = alarm
+            self.duration = DurationWidget(alarm[0])
+            self.description = ExtendedEdit(edit_text=alarm[1])
+            self.columns = urwid.Columns([
+                (2, urwid.Text('  ')),
+                (21, self.duration),
+                (20, self.description),
+                (10, urwid.Button('Delete', on_press=delete_handler, user_data=self)),
+            ])
+
+            urwid.WidgetWrap.__init__(self, self.columns)
+
+        def get_alarm(self):
+            return (self.duration.get_timedelta(), self.description.get_edit_text())
+
+    def __init__(self, event):
+        self.event = event
+
+        self.pile = urwid.Pile(
+            [urwid.Text('Alarms:')] +
+            [self.AlarmEditor(a, self.remove_alarm) for a in event.alarms] +
+            [urwid.Button('Add', on_press=self.add_alarm)])
+
+        urwid.WidgetWrap.__init__(self, self.pile)
+
+    def add_alarm(self, button):
+        self.pile.contents.insert(
+            len(self.pile.contents) - 1,
+            (self.AlarmEditor((timedelta(0), self.event.summary), self.remove_alarm),
+             ('weight', 1)))
+
+    def remove_alarm(self, button, editor):
+        self.pile.contents.remove((editor, ('weight', 1)))
+
+    def get_alarms(self):
+        alarms = []
+        for widget, _ in self.pile.contents:
+            if isinstance(widget, self.AlarmEditor):
+                alarms.append(widget.get_alarm())
+        return alarms
+
+    @property
+    def changed(self):
+        return self.event.alarms != self.get_alarms()
