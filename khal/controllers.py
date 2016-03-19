@@ -179,7 +179,7 @@ def agenda(collection, dates=None, encoding='utf-8', show_all_days=False, full=F
 
 
 def new_from_string(collection, calendar_name, conf, date_list, location=None, repeat=None,
-                    until=None):
+                    until=None, alarm=None):
     """construct a new event from a string and add it"""
     try:
         event = aux.construct_event(
@@ -187,6 +187,7 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None, r
             location=location,
             repeat=repeat,
             until=until,
+            alarm=alarm,
             locale=conf['locale'])
     except FatalError:
         sys.exit(1)
