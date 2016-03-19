@@ -257,7 +257,7 @@ def import_event(vevent, collection, locale, batch, random_uid):
                 calendar_name = collection.writable_names[number]
                 break
             except (ValueError, IndexError):
-                matches = filter(lambda x: x.startswith(value), collection.writable_names)
+                matches = [x for x in collection.writable_names if x.startswith(value)]
                 if len(matches) == 1:
                     calendar_name = matches[0]
                     break
