@@ -33,6 +33,9 @@ def _create_vevent(*args):
     """
     Adapt and return a default vevent for testing.
 
+    Accepts an arbitrary amount of strings like 'DTSTART;VALUE=DATE:2013015'.
+    Updates the default vevent if the key (the first word) is found and
+    appends the value otherwise.
     """
     def_vevent = OrderedDict(
                      [('BEGIN', 'BEGIN:VEVENT'),
@@ -103,7 +106,7 @@ test_set_format_de = _create_testcases(
     # 2 day
     ('15.08.2014 16.08. Äwesöme Event',
      _create_vevent('DTSTART;VALUE=DATE:20140815',
-                    'DTEND;VALUE=DATE:20140817')), # XXX
+                    'DTEND;VALUE=DATE:20140817')),  # XXX
 
     # end date in next year and not specified
     ('29.12.2014 03.01. Äwesöme Event',

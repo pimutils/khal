@@ -20,3 +20,4 @@ Sebastian Hamann
 Lucas Hoffmann
 Johannes Wienke - languitar [at] semipol [dot] de - https://www.semipol.de
 Laurent Arnoud - laurent [at] spkdev [dot] net - http://spkdev.net/
+Julian Mehne
