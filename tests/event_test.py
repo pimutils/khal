@@ -48,8 +48,9 @@ def test_raw_dt():
     start = BERLIN.localize(datetime(2014, 4, 9, 9, 30))
     end = BERLIN.localize(datetime(2014, 4, 9, 10, 30))
     event = Event.fromString(event_dt, start=start, end=end, **EVENT_KWARGS)
-    assert normalize_component(event.raw) == \
-        normalize_component(_get_text('event_dt_simple_inkl_vtimezone'))
+    with freeze_time('2016-1-1'):
+        assert normalize_component(event.raw) == \
+            normalize_component(_get_text('event_dt_simple_inkl_vtimezone'))
     assert event.relative_to(date(2014, 4, 9)) == '09:30-10:30: An Event'
 
     event = Event.fromString(event_dt, **EVENT_KWARGS)
