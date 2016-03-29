@@ -127,6 +127,11 @@ class DateCColumns(urwid.Columns):
     def __repr__(self):
         return '<DateCColumns from {} to {}>'.format(self[1].date, self[7].date)
 
+    def _clear_cursor(self):
+        old_pos = self.focus_position
+        self.contents[old_pos][0].set_styles(
+            self.get_styles(self.contents[old_pos][0].date, False))
+
     def _set_focus_position(self, position):
         """calls on_date_change before calling super()._set_focus_position"""
         # do not call when building up the interface, lots of potentially
@@ -134,6 +139,7 @@ class DateCColumns(urwid.Columns):
         if self._init:
             self._init = False
         else:
+            self._clear_cursor()
             self.contents[position][0].set_styles(
                 self.get_styles(self.contents[position][0].date, True))
             self.on_date_change(self.contents[position][0].date)
@@ -174,40 +180,28 @@ class DateCColumns(urwid.Columns):
         elif key in self.keybindings['down']:
             key = 'down'
 
+        exit_row = False
         old_pos = self.focus_position
+
         key = super(DateCColumns, self).keypress(size, key)
 
         # make sure we don't leave the calendar
         if old_pos == 7 and key == 'right':
-            self.contents[old_pos][0].set_styles(
-                self.get_styles(self.contents[old_pos][0].date, False))
             self.focus_position = 1
-            self.contents[self.focus_position][0].set_styles(
-                self.get_styles(self.contents[self.focus_position][0].date, False))
-            return 'down'
+            exit_row = True
+            key = 'down'
         elif old_pos == 1 and key == 'left':
-            self.contents[old_pos][0].set_styles(
-                self.get_styles(self.contents[old_pos][0].date, False))
             self.focus_position = 7
-            self.contents[self.focus_position][0].set_styles(
-                self.get_styles(self.contents[self.focus_position][0].date, False))
-            return 'up'
+            exit_row = True
+            key = 'up'
+        elif key in self.keybindings['view']:  # XXX make this more generic
+            self.focus_position = old_pos
+            key = 'right'
+        elif key in ['up', 'down']:
+            exit_row = True
 
-        if key in self.keybindings['view']:  # XXX make this more generic
-            self._old_pos = old_pos
-            self.contents[old_pos][0].set_styles(
-                self.get_styles(self.contents[old_pos][0].date, True))
-            return 'right'
-
-        if old_pos != self.focus_position:
-            self.contents[old_pos][0].set_styles(
-                self.get_styles(self.contents[old_pos][0].date, False))
-            self.contents[self.focus_position][0].set_styles(
-                self.get_styles(self.contents[self.focus_position][0].date, True))
-
-        if key in ['up', 'down']:
-            self.contents[old_pos][0].set_styles(
-                self.get_styles(self.contents[old_pos][0].date, False))
+        if exit_row:
+            self._clear_cursor()
 
         return key
 
