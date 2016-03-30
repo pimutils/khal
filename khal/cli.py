@@ -188,26 +188,29 @@ def build_collection(ctx):
     return collection
 
 
+class _NoConfig(object):
+    def __getitem__(self, key):
+        logger.fatal(
+            'Cannot find a config file. If you have no configuration file '
+            'yet, you might want to run `khal configure`.')
+        sys.exit(1)
+
+
 def prepare_context(ctx, config):
     assert ctx.obj is None
 
-    ctx.obj = {}
+    logger.debug('khal %s' % __version__)
     try:
-        ctx.obj['conf'] = conf = get_config(config)
+        conf = get_config(config)
+    except NoConfigFile:
+        conf = _NoConfig()
     except InvalidSettingsError:
         sys.exit(1)
-    except NoConfigFile:
-        logger.fatal(
-            'If you have no configuration file yet, you might want to run '
-            '`khal configure`.')
-        sys.exit(1)
+    else:
+        logger.debug('Using config:')
+        logger.debug(stringify_conf(conf))
 
-    logger.debug('khal %s' % __version__)
-    logger.debug('Using config:')
-    logger.debug(stringify_conf(conf))
-
-    if conf is None:
-        raise click.UsageError('Invalid config file, exiting.')
+    ctx.obj = {'conf_path': config, 'conf': conf}
 
 
 def stringify_conf(conf):

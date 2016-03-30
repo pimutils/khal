@@ -77,8 +77,7 @@ def get_config(config_path=None):
     """
     if config_path is None:
         config_path = find_configuration_file()
-    if config_path is None:
-        logger.fatal('Cannot find a config file.')
+    if config_path is None or not os.path.exists(config_path):
         raise NoConfigFile()
 
     logger.debug('using the config file at {}'.format(config_path))
