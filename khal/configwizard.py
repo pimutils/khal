@@ -52,20 +52,20 @@ def choose_datetime_format():
             ('day month year', ['%d', '%m', '%Y']),
             ('month day year', ['%m', '%d', '%Y']),
         ]
-        seperator_choices = ['-', '.', '/']
+        separator_choices = ['-', '.', '/']
         validate = partial(validate_int, min_value=0, max_value=2)
 
         print("What ordering of year, month, date do you want to use? "
-              "(You can choose the seperator in the next step)")
+              "(You can choose the separator in the next step)")
         print('\n'.join(
             ['[{}] {}'.format(num, one) for num, (one, _) in enumerate(ordering_choices)]))
         ordering_no = prompt("Please choose one of the above options", value_proc=validate)
         print()
-        print("Now, please choose a seperator")
-        print('\n'.join(['[{}] {}'.format(num, one) for num, one in enumerate(seperator_choices)]))
+        print("Now, please choose a separator")
+        print('\n'.join(['[{}] {}'.format(num, one) for num, one in enumerate(separator_choices)]))
         prompt_text = "Please choose one of the above options"
-        seperator = seperator_choices[prompt(prompt_text, value_proc=validate)]
-        dateformat = seperator.join(ordering_choices[ordering_no][1])
+        separator = separator_choices[prompt(prompt_text, value_proc=validate)]
+        dateformat = separator.join(ordering_choices[ordering_no][1])
         today = date.today()
         text = ("Does this look sensible to you: {} "
                 "(today as an example: {})?".format(dateformat, today.strftime(dateformat)))
