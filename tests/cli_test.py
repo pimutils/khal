@@ -320,3 +320,18 @@ def test_color_option(runner):
     result = runner.invoke(main_khal, ['--color'])
     assert 'No events' in result.output
     assert result.output != 'No events\n'
+
+
+def test_configure_command(runner, monkeypatch):
+    e = Exception('Hocus pocus!')
+
+    def hocus_pocus(*a, **kw):
+        raise e
+
+    monkeypatch.setattr('khal.configwizard.configwizard', hocus_pocus)
+
+    runner = runner(command='agenda', showalldays=False, days=2)
+    runner.config.remove()
+
+    result = runner.invoke(main_khal, ['configure'])
+    assert result.exception is e

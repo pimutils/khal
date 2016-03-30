@@ -27,9 +27,9 @@ class InvalidSettingsError(Error):
     pass
 
 
-class CannotParseConfigFileError(Error):
+class CannotParseConfigFileError(InvalidSettingsError):
     pass
 
 
-class NoConfigFile(Error):
+class NoConfigFile(InvalidSettingsError):
     pass
