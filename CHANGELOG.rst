@@ -35,6 +35,11 @@ not released yet
   file (Christian Geier)
 * warn user when parsing broken icalendar files, this requires icalendar > 3.9.2
   (Christian Geier)
+* khal will now strip all ANSI escape codes when it detects that stdout is no
+  tty, this behaviour can be overwritten with the new options --color/ --no-color
+  (Markus Unterwaditzer)
+* calendar and agenda have a new option --week, if set all events from current week
+  (or the week containing the given date) are shown (Stephan Weller)
 
 ikhal
 -----
@@ -49,6 +54,8 @@ ikhal
 * in the event editor and pop-up Dialogs select the next (previous) item with tab
   (shift tab) (Christian Geier)
 * only allow saving when starttime < endtime (Christian Geier)
+* the event editor now allows editing of alarms (but khal will not actually
+  alarm you at the given time) (Johannes Wienke)
 
 
 0.7.0
