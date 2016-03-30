@@ -144,7 +144,7 @@ def create_vdir(names=[]):
 def configwizard(dry_run=False):
     config_file = settings.find_configuration_file()
     if not dry_run and config_file is not None:
-        logger.fatal("Found an existing config file at {}.")
+        logger.fatal("Found an existing config file at {}.".format(config_file))
         logger.fatal(
             "If you want to create a new configuration file, "
             "please remove the old onef first. Exiting.")
