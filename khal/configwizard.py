@@ -147,7 +147,7 @@ def configwizard(dry_run=False):
         logger.fatal("Found an existing config file at {}.".format(config_file))
         logger.fatal(
             "If you want to create a new configuration file, "
-            "please remove the old onef first. Exiting.")
+            "please remove the old one first. Exiting.")
         sys.exit(1)
     dateformat = choose_datetime_format()
     print()
