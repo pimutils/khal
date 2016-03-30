@@ -97,7 +97,7 @@ longdatetimeformat = string(default='%d.%m.%Y %H:%M')
 weeknumbers = weeknumbers(default='off')
 
 # keybindings for :command:`ikhal` are set here. You can bind more than one key
-# (combination) to a command by supplying a comma-seperated list of keys.
+# (combination) to a command by supplying a comma-separated list of keys.
 # For binding key combinations just add concatenate them (with a space in
 # between), e.g. **ctrl n**.
 [keybindings]
