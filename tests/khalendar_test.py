@@ -8,15 +8,14 @@ import pytest
 from vdirsyncer.storage.base import Item
 
 import khal.aux
-
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
 from khal.khalendar.backend import CouldNotCreateDbDir
 import khal.khalendar.exceptions
-
-from .aux import _get_text, cal1, cal2, cal3
+from .aux import _get_text, cal1, cal2, cal3, normalize_component
 from . import aux
 
+from freezegun import freeze_time
 
 today = date.today()
 yesterday = today - timedelta(days=1)
@@ -32,9 +31,10 @@ DESCRIPTION:short description
 LOCATION:LDB Lobby
 END:VEVENT"""
 
-event_today = event_allday_template.format(today.strftime('%Y%m%d'),
-                                           tomorrow.strftime('%Y%m%d'))
+event_today = event_allday_template.format(
+    today.strftime('%Y%m%d'), tomorrow.strftime('%Y%m%d'))
 item_today = Item(event_today)
+SIMPLE_EVENT_UID = 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
 
 
 class TestCalendar(object):
@@ -197,6 +197,16 @@ class TestCollection(object):
         assert len(list(vdirs[cal2].list())) == 0
         assert len(list(vdirs[cal3].list())) == 0
         assert list(coll.get_localized(self.bstart_berlin, self.bend_berlin)) == []
+
+    def test_get(self, coll_vdirs):
+        """test getting an event by its href"""
+        coll, vdirs = coll_vdirs
+        event = Event.fromString(event_dt, href='xyz.ics', calendar=cal1, locale=aux.locale)
+        coll.new(event, cal1)
+        event_from_db = coll.get_event(SIMPLE_EVENT_UID + '.ics', cal1)
+        with freeze_time('2016-1-1'):
+            assert normalize_component(event_from_db.raw) == \
+                normalize_component(_get_text('event_dt_simple_inkl_vtimezone'))
 
     def test_change(self, coll_vdirs):
         """moving an event from one calendar to another"""

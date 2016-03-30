@@ -231,7 +231,7 @@ class CalendarCollection(object):
         self._backend.delete(href, calendar=calendar)
 
     def get_event(self, href, calendar):
-        return self._cover_event(self._backend.get(href, calendar))
+        return self._cover_event(self._backend.get(href, calendar=calendar))
 
     def change_collection(self, event, new_collection):
         href, etag, calendar = event.href, event.etag, event.calendar
