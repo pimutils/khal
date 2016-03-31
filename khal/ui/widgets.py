@@ -197,9 +197,10 @@ class TimeWidget(DateTimeWidget):
 
 
 class Choice(urwid.PopUpLauncher):
-    def __init__(self, choices, active, decorate_func=None):
+    def __init__(self, choices, active, decorate_func=None, overlay_width=32):
         self.choices = choices
         self._decorate = decorate_func or (lambda x: x)
+        self._overlay_width = overlay_width
         self.active = self._original = active
 
     def create_pop_up(self):
@@ -211,7 +212,7 @@ class Choice(urwid.PopUpLauncher):
     def get_pop_up_parameters(self):
         return {'left': 0,
                 'top': 1,
-                'overlay_width': 32,
+                'overlay_width': self._overlay_width,
                 'overlay_height': len(self.choices)}
 
     @property
@@ -483,28 +484,42 @@ class AlarmsEditor(urwid.WidgetWrap):
     class AlarmEditor(urwid.WidgetWrap):
 
         def __init__(self, alarm, delete_handler):
-            self.alarm = alarm
-            self.duration = DurationWidget(alarm[0])
-            self.description = ExtendedEdit(edit_text=alarm[1])
-            self.columns = urwid.Columns([
+            duration, description = alarm
+            if duration.total_seconds() > 0:
+                direction = 'after'
+            else:
+                direction = 'before'
+                duration = -1 * duration
+
+            self.duration = DurationWidget(duration)
+            self.description = ExtendedEdit(edit_text=description)
+            self.direction = Choice(
+                ['before', 'after'], active=direction, overlay_width=10)
+            self.columns = NColumns([
                 (2, urwid.Text('  ')),
                 (21, self.duration),
-                (20, self.description),
+                (14, urwid.Padding(self.direction, right=1)),
+                self.description,
                 (10, urwid.Button('Delete', on_press=delete_handler, user_data=self)),
             ])
 
             urwid.WidgetWrap.__init__(self, self.columns)
 
         def get_alarm(self):
-            return (self.duration.get_timedelta(), self.description.get_edit_text())
+            direction = self.direction.active
+            if direction == 'before':
+                prefix = -1
+            else:
+                prefix = 1
+            return (prefix * self.duration.get_timedelta(), self.description.get_edit_text())
 
     def __init__(self, event):
         self.event = event
 
-        self.pile = urwid.Pile(
+        self.pile = NPile(
             [urwid.Text('Alarms:')] +
             [self.AlarmEditor(a, self.remove_alarm) for a in event.alarms] +
-            [urwid.Button('Add', on_press=self.add_alarm)])
+            [urwid.Columns([(12, urwid.Button('Add', on_press=self.add_alarm))])])
 
         urwid.WidgetWrap.__init__(self, self.pile)
 
