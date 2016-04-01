@@ -230,6 +230,14 @@ class CListBox(urwid.ListBox):
 
         return super(CListBox, self).render(size, focus)
 
+    def mouse_event(self, *args):
+        size, event, button, col, row, focus = args
+
+        if event == 'mouse press' and button == 1:
+            self.focus.focus.set_styles(
+                self.focus.get_styles(self.body.focus_date, False))
+        return super().mouse_event(*args)
+
     def _date(self, row, column):
         """return the date at row `row` and  column `column`"""
         return self.body[row].contents[column][0].date
