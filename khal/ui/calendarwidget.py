@@ -311,10 +311,11 @@ class CListBox(urwid.ListBox):
                 start = self.body.focus_date
                 end = None
             return self.on_press[key](start, end)
-        if key in self.keybindings['today']:
+        if key in self.keybindings['today'] + ['page down', 'page up']:
             # reset colors of currently focused Date widget
             self.focus.focus.set_styles(
                 self.focus.get_styles(self.body.focus_date, False))
+        if key in self.keybindings['today']:
             self.set_focus_date(date.today())
             self.set_focus_valign(('relative', 10))
 
