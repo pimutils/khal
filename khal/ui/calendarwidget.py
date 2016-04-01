@@ -180,7 +180,7 @@ class DateCColumns(urwid.Columns):
         elif key in self.keybindings['down']:
             key = 'down'
 
-        exit_row = False
+        exit_row = False  # set this, if we are leaving the current row
         old_pos = self.focus_position
 
         key = super(DateCColumns, self).keypress(size, key)
