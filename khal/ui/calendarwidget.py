@@ -82,8 +82,8 @@ class Date(urwid.WidgetWrap):
             self.halves[1].set_focus_map({None: styles})
             self.halves[0].set_focus_map({None: styles})
 
-    def reset_styles(self):
-        self.set_styles(self._get_styles(self.date, False))
+    def reset_styles(self, focus=False):
+        self.set_styles(self._get_styles(self.date, focus))
 
     @property
     def marked(self):
@@ -371,7 +371,17 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         row, column = self.get_date_pos(a_day)
         self.set_focus(row)
         self[self.focus]._set_focus_position(column)
-        return None
+
+    def reset_styles_range(self, min_date, max_date):
+        """reset styles for all dates between min_date and max_date"""
+        minr, minc = self.get_date_pos(min_date)
+        maxr, maxc = self.get_date_pos(max_date)
+        focus_pos = self.focus, self[self.focus].focus_col
+
+        for row in range(minr, maxr + 1):
+            for column in range(1, 8):
+                focus = ((row, column) == focus_pos)
+                self[row][column].reset_styles(focus)
 
     def get_date_pos(self, a_day):
         """get row and column where `a_day` is located
@@ -595,6 +605,9 @@ class CalendarWidget(urwid.WidgetWrap):
 
     def focus_today(self):
         self.set_focus_date(date.today())
+
+    def reset_styles_range(self, min_date, max_date):
+        self.walker.reset_styles_range(min_date, max_date)
 
     @property
     def focus_date(self):

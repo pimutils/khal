@@ -330,12 +330,30 @@ class EventColumn(urwid.WidgetWrap):
                  'Calendar {} is read-only.'.format(event.calendar)))
             return
 
+        if isinstance(event.start_local, datetime):
+            original_start = event.start_local.date()
+        else:
+            original_start = event.start_local
+        if isinstance(event.end_local, datetime):
+            original_end = event.end_local.date()
+        else:
+            original_end = event.end_local
+
+        def update_colors(new_start, new_end):
+            if isinstance(new_start, datetime):
+                new_start = new_start.date()
+            if isinstance(new_end, datetime):
+                new_end = new_end.date()
+            min_date = min(original_start, new_start)
+            max_date = max(original_end, new_end)
+            self.pane.calendar.base_widget.reset_styles_range(min_date, max_date)
+
         if self.editor:
             self.pane.window.backtrack()
 
         assert not self.editor
         self.editor = True
-        editor = EventEditor(self.pane, event)
+        editor = EventEditor(self.pane, event, update_colors)
         current_day = self.container.contents[0][0]
 
         if self.pane.conf['view']['frame']:
@@ -469,13 +487,17 @@ class EventEditor(urwid.WidgetWrap):
     Widget for event Editing
     """
 
-    def __init__(self, pane, event):
+    def __init__(self, pane, event, save_callback=None):
         """
         :type event: khal.event.Event
+        :param save_callback: call when saving event with new start and end
+             dates as parameters
+        :type save_callback: callable
         """
 
         self.pane = pane
         self.event = event
+        self._save_callback = save_callback
 
         self.collection = pane.collection
         self.conf = pane.conf
@@ -627,6 +649,7 @@ class EventEditor(urwid.WidgetWrap):
             else:
                 self.collection.update(self.event)
 
+            self._save_callback(self.event.start_local, self.event.end_local)
         self._abort_confirmed = False
         self.pane.window.backtrack()
 
