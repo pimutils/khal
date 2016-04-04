@@ -663,7 +663,7 @@ class EventEditor(urwid.WidgetWrap):
             self._abort_confirmed = False
         if key in self.pane.conf['keybindings']['save']:
             self.save(None)
-        return super(EventEditor, self).keypress(size, key)
+        return super().keypress(size, key)
 
 
 class DeleteDialog(urwid.WidgetWrap):
