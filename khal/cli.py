@@ -311,13 +311,16 @@ def _get_cli():
                   help=('Repeat event: daily, weekly, monthly or yearly.'))
     @click.option('--until', '-u',
                   help=('Stop an event repeating on this date.'))
+    @click.option('--alarm', '-m',
+                  help=('Alarm time for the new event.'))
     @click.argument('START', nargs=1, required=True)
     @click.argument('END', nargs=1, required=False)
     @click.argument('TIMEZONE', nargs=1, required=False)
     @click.argument('SUMMARY', metavar='SUMMARY', nargs=1, required=False)
     @click.argument('DESCRIPTION', metavar='[:: DESCRIPTION]', nargs=-1, required=False)
     @click.pass_context
-    def new(ctx, calendar, start, end, timezone, summary, description, location, repeat, until):
+    def new(ctx, calendar, start, end, timezone, summary, description, location, repeat,
+            until, alarm):
         '''Create a new event from arguments.
 
         START and END can be either dates, times or datetimes, please have a
@@ -338,6 +341,7 @@ def _get_cli():
             location=location,
             repeat=repeat,
             until=until.split(' ') if until is not None else None,
+            alarm=alarm,
         )
 
     @cli.command('import')

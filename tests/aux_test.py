@@ -7,7 +7,7 @@ import icalendar
 import pytz
 from freezegun import freeze_time
 
-from khal.aux import construct_event, guessdatetimefstr
+from khal.aux import construct_event, guessdatetimefstr, guesstimedeltafstr
 from khal import aux
 from khal.exceptions import FatalError
 import pytest
@@ -94,6 +94,35 @@ class TestGuessDatetimefstr(object):
     def test_time_tomorrow(self):
         assert (self.tomorrow16, False) == \
             guessdatetimefstr('16:00'.split(), locale=locale_de, default_day=tomorrow)
+
+
+class TestGuessTimedeltafstr(object):
+
+    def test_single(self):
+        assert timedelta(minutes=10) == guesstimedeltafstr('10m')
+
+    def test_negative(self):
+        assert timedelta(minutes=-10) == guesstimedeltafstr('-10m')
+
+    def test_multi(self):
+        assert timedelta(days=1, hours=-3, minutes=10) == \
+            guesstimedeltafstr(' 1d -3H 10min ')
+
+    def test_multi_nospace(self):
+        assert timedelta(days=1, hours=-3, minutes=10) == \
+            guesstimedeltafstr('1D-3hour10m')
+
+    def test_garbage(self):
+        with pytest.raises(ValueError):
+                guesstimedeltafstr('10mbar')
+
+    def test_moregarbage(self):
+        with pytest.raises(ValueError):
+                guesstimedeltafstr('foo10m')
+
+    def test_same(self):
+        assert timedelta(minutes=20) == \
+            guesstimedeltafstr('10min 10minutes')
 
 
 test_set_format_de = _create_testcases(
@@ -290,6 +319,33 @@ def test_repeat():
                                     description='please describe the event',
                                     repeat='daily',
                                     until=['05.06.2015'],
+                                    locale=locale_de)
+            assert _replace_uid(event).to_ical() == vevent
+
+
+test_set_alarm = _create_testcases(
+    ('8:00 Äwesöme Event',
+     ['BEGIN:VEVENT',
+      'SUMMARY:Äwesöme Event',
+      'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
+      'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
+      'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z',
+      'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+      'DESCRIPTION:please describe the event',
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:please describe the event',
+      'TRIGGER:-PT23M',
+      'END:VALARM',
+      'END:VEVENT']))
+
+
+def test_alarm():
+    for data_list, vevent in test_set_alarm:
+        with freeze_time('2014-02-16 12:00:00'):
+            event = construct_event(data_list.split(),
+                                    description='please describe the event',
+                                    alarm='23m',
                                     locale=locale_de)
             assert _replace_uid(event).to_ical() == vevent
 

@@ -26,6 +26,7 @@ from calendar import isleap
 from datetime import date, datetime, timedelta, time
 import random
 import string
+import re
 from time import strptime
 
 import icalendar
@@ -210,6 +211,43 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
     raise ValueError()
 
 
+def guesstimedeltafstr(delta_string):
+    """parses a timedelta from a string
+
+    :param delta_string: string encoding time-delta, e.g. '1h 15m'
+    :type delta_string: str
+    :rtype: datetime.timedelta
+    """
+
+    tups = re.split(r'(-?\d+)', delta_string)
+    if not re.match(r'^\s*$', tups[0]):
+        raise ValueError('Invalid beginning of timedelta string "%s": "%s"'
+                         % (delta_string, tups[0]))
+    tups = tups[1:]
+    res = timedelta()
+
+    for num, unit in zip(tups[0::2], tups[1::2]):
+        try:
+            numint = int(num)
+        except ValueError:
+            raise ValueError('Invalid number in timedelta string "%s": "%s"'
+                             % (delta_string, num))
+
+        ulower = unit.lower().strip()
+        if ulower == 'd' or ulower == 'day' or ulower == 'days':
+            res += timedelta(days=numint)
+        elif ulower == 'h' or ulower == 'hour' or ulower == 'hours':
+            res += timedelta(hours=numint)
+        elif (ulower == 'm' or ulower == 'minute' or ulower == 'minutes' or
+              ulower == 'min'):
+            res += timedelta(minutes=numint)
+        else:
+            raise ValueError('Invalid unit in timedelta string "%s": "%s"'
+                             % (delta_string, unit))
+
+    return res
+
+
 def generate_random_uid():
     """generate a random uid
 
@@ -222,7 +260,7 @@ def generate_random_uid():
 def construct_event(dtime_list, locale,
                     defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
                     description=None, location=None, repeat=None, until=None,
-                    **kwargs):
+                    alarm=None, **kwargs):
     """takes a list of strings and constructs a vevent from it
 
     :param encoding: the encoding of your terminal, should be a valid encoding
@@ -359,6 +397,13 @@ def construct_event(dtime_list, locale,
             logger.fatal("Invalid value for the repeat option. \
                     Possible values are: daily, weekly, monthly or yearly")
             raise FatalError()
+    if alarm:
+        alarm_trig = -1 * guesstimedeltafstr(alarm)
+        new_alarm = icalendar.Alarm()
+        new_alarm.add('ACTION', 'DISPLAY')
+        new_alarm.add('TRIGGER', alarm_trig)
+        new_alarm.add('DESCRIPTION', description)
+        event.add_component(new_alarm)
 
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
