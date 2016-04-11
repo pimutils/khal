@@ -45,6 +45,13 @@ Several options are common to almost all of :program:`khal`'s commands
         Specifiy a calendar which will be disregarded for this run, can be used
         several times.
 
+.. option:: --color/--no-color
+
+       :program:`khal` will detect if standard output is not a tty, e.g., you
+       redirect khal's output into a file, and if so remove all
+       highlighting/coloring from its output. Use :option:`--color` if you want
+       to force highlighting/coloring and :option:`--no-color` if you want
+       coloring always removed.
 
 dates
 -----
