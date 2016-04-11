@@ -105,6 +105,10 @@ contains three consecutive months, where the first month is the month
 containing the first given date. If today is included, it is highlighted.
 Have a look at ``khal agenda`` for a description of the options.
 
+configure
+*********
+will help users creating an initial configuration file. :command:`configure` will
+refuse to run if there already is a configuration file.
 
 import
 ******
