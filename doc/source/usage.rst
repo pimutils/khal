@@ -130,24 +130,52 @@ behind each calendar's name or any unique prefix of a calendar's name.
 interactive
 ***********
 invokes the interactive version of khal, can also be invoked by calling
-:command:`ikhal`.
+:command:`ikhal`. While ikhal can be used entirely with the keyboard, some
+elements respond if clicked on with a mouse (mostly by being selected).
 
-Use the arrow keys to navigate in the calendar. Press 'tab' or 'enter' to move
-the focus into the events column and 'left arrow' to return the focus to the
-calendar area. You can navigate the events column with the up and down arrows
-and view an event via pressing 'enter'. Pressing 'd' will delete an event (a 'D'
-will appear in front of the events description, or 'RO' if you cannot delete
-that event). Pressing 'd' again will undelete that event.
+When the calendar on the left is in focus, you can
 
-When viewing an event's details, pressing 'enter' again will open the
-currently selected event in a simple event editor; you can navigate with the
-arrow keys again. As long as the event has not been edited you can leave the
-editor with pressing 'escape'. Once it has been edited you need to move down the
-'Cancel' button and press the 'enter' key to discard your edits or press the
-'Save' button to save your edits (and upload them on the next sync).
+ * move through the calendar (default keybindings are the arrow keys, :kbd:`space` and
+   :kbd:`backspace`, those keybindings are configurable in the config file) 
+ * focus on the right column by pressing :kbd:`tab` or :kbd:`enter`
+ * re-focus on the current date, default keybinding :kbd:`t` as in today
+ * marking a date range, default keybinding :kbd:`v`, as in visual, think visual
+   mode in Vim, pressing :kbd:`esc` escape this visual mode
+ * if in visual mode, you can select the other end of the currently marked
+   range, default keybinding :kbd:`o` as in other (again as in Vim)
+ * create a new event on the currently focused day (or date range if a range is
+   selected), default keybinding :kbd:`n` as in new
+ * search for events, default keybinding :kbd:`/`, a pop-up will ask for your
+   search term
 
-While the calendar area is focused, pressing 'n' will add a new event on the
-currently selected date.
+When an event list is in focus, you can
+
+ * view an event's details with pressing :kbd:`enter` (or :kbd:`tab`) and edit it with pressing
+   :kbd:`enter` (or :kbd:`tab`) again (if ``[default] event_view_always_visible`` is set to
+   True, the event in focus will always be shown in detail)
+ * toggle an event's deletion status, default keybinding :kbd:`d` as in delete,
+   events marked for deletion will appear with a :kbd:`D` in front and will be
+   deleted when khal exits.
+ * duplicate the selected event, default keybinding :kbd:`p` as in duplicate
+   (d was already taken)
+ * export the selected event, default keybinding :kbd:`e`
+
+In the event editor, you can
+
+* jump to the next (previous) selectable element with pressing :kbd:`tab`
+  (:kbd:`shift+tab`)
+* quick save, default keybinding :kbd:`meta+enter` (:kbd:`meta` will probably be :kbd:`alt`)
+* use some common editing short cuts in most text fields (:kbd:`ctrl+w` deletes word
+  before cursor, :kbd:`ctrl+u` (:kbd:`ctrl+k`) deletes till the beginning (end) of the
+  line, :kbd:`ctrl+a` (:kbd:`ctrl+e`) will jump to the beginning (end) of the line
+* in the date and time field you can increment and decrement the number under
+  the cursor with :kbd:`ctrl+a` and :kbd:`ctrl+x` (time in 15 minute steps)
+* activate actions by pressing :kbd:`enter` on text enclosed by angled brackets, e.g.
+  :guilabel:`< Save >` (sometimes this might open a pop up)
+
+Pressing :kbd:`esc` will cancel the current action and/or take you back to the
+previously shown pane (i.e. what you see when you open ikhal), if you are at the
+start pane, ikhal will quit on pressing :kbd:`esc` again.
 
 
 new
