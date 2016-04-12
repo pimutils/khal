@@ -396,6 +396,17 @@ behaviours are set here.
       :type: boolean
       :default: False
 
+.. _default-exclude_calendars:
+
+.. object:: exclude_calendars
+
+    
+    A list of calendars that should be excluded by default when running `khal`.
+    These can be included again explicitly by using the `-a` flag.
+
+      :type: list
+      :default: 
+
 .. _default-default_calendar:
 
 .. object:: default_calendar
