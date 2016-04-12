@@ -40,6 +40,7 @@ not released yet
   (Markus Unterwaditzer)
 * calendar and agenda have a new option --week, if set all events from current week
   (or the week containing the given date) are shown (Stephan Weller)
+* new option --alarm DURATION for `new` (Max Voit)
 
 ikhal
 -----

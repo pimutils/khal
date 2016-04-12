@@ -237,6 +237,10 @@ Options
 
 * **-u, --until=UNTIL** specify until when a recurring event should run
 
+* **--alarm DURATION** will add an alarm DURATION before the start of the event,
+  *DURATION* should look like `1day 10minutes` or `1d3H10m`, negative
+  *DURATIONs* will set alarm after the start of the event.
+
 Examples
 """"""""
 ::
