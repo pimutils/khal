@@ -9,7 +9,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.8.0
 =====
-not released yet
+released on 2015-04-13
 
 * BREAKING CHANGE: python 2 is no longer supported (Hugo Osvaldo Barrera)
 * updated dependency: vdirsyncer >= 0.5.2
