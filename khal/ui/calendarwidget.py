@@ -404,6 +404,8 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         for offset in [0, -1, 1]:  # we might be off by a week
             row = new_focus + offset
             try:
+                if row >= len(self):
+                    self._autoextend()
                 column = self[row].get_date_column(a_day)
                 return row, column
             except ValueError:
@@ -527,7 +529,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
 class CalendarWidget(urwid.WidgetWrap):
     def __init__(self, on_date_change, keybindings, on_press, firstweekday=0,
-                 weeknumbers=False, get_styles=None, initial=date.today()):
+                 weeknumbers=False, get_styles=None, initial=None):
 
         """
         :param on_date_change: a function that is called every time the selected date
@@ -552,6 +554,8 @@ class CalendarWidget(urwid.WidgetWrap):
             pressed keys.
         :type on_pres: dict
         """
+        if initial is None:
+            self._initial = date.today()
 
         default_keybindings = {
             'left': ['left'], 'down': ['down'], 'right': ['right'], 'up': ['up'],
@@ -600,7 +604,7 @@ class CalendarWidget(urwid.WidgetWrap):
         self.box = CListBox(self.walker)
         frame = urwid.Frame(self.box, header=dnames)
         urwid.WidgetWrap.__init__(self, frame)
-        self.set_focus_date(initial)
+        self.set_focus_date(self._initial)
 
     def focus_today(self):
         self.set_focus_date(date.today())
