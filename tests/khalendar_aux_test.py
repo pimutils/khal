@@ -649,6 +649,13 @@ class TestSpecial(object):
         assert dtstart[-1] == (berlin.localize(datetime(2014, 12, 3, 9, 30)),
                                berlin.localize(datetime(2014, 12, 3, 10, 30)))
 
+    def test_event_no_master(self):
+        """an event with recuid that has no master event"""
+        vevent = _get_vevent(_get_text('event_recuid_no_master'))
+        dtstart = aux.expand(vevent, berlin, expand=False)
+        assert len(dtstart) == 1
+        assert dtstart == [(date(2016, 1, 3), date(2016, 1, 4))]
+
 simple_rdate = """BEGIN:VEVENT
 SUMMARY:Simple Rdate
 DTSTART;TZID=Europe/Berlin:20131113T190000

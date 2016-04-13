@@ -12,7 +12,7 @@ from .exceptions import UnsupportedRecurrence
 logger = log.logger
 
 
-def expand(vevent, href=''):
+def expand(vevent, href='', expand=True):
     """
     Constructs a list of start and end dates for all recurring instances of the
     event defined in vevent.
@@ -27,9 +27,13 @@ def expand(vevent, href=''):
     :param href: the href of the vevent, used for more informative logging and
                  nothing else
     :type href: str
+    :param expand: if set, we expand the event, otherwise we just perform some
+         sanitize the event
+    :type expand: bool
     :returns: list of start and end (date)times of the expanded event
     :rtyped list(tuple(datetime, datetime))
     """
+    # TODO move all sanitizing into another function
     # we do this now and than never care about the "real" end time again
     if 'DURATION' in vevent:
         duration = vevent['DURATION'].dt
@@ -47,7 +51,7 @@ def expand(vevent, href=''):
         return date
 
     rrule_param = vevent.get('RRULE')
-    if rrule_param is not None:
+    if rrule_param is not None and expand:
         vevent = sanitize_rrule(vevent)
 
         # dst causes problem while expanding the rrule, therefore we transform

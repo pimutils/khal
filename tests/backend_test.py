@@ -570,6 +570,20 @@ def test_no_dtend():
     assert event.end == date(2016, 1, 16)
 
 
+def test_recuid_no_master():
+    """test support for vevents with a RECURRENCE-ID and no master VEVENT"""
+    db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
+    db.update(
+        _get_text('event_recuid_no_master'),
+        href='event_recuid_no_master',
+        calendar=calname,
+    )
+    events = db.get_floating(datetime(2016, 1, 1, 0, 0),
+                             datetime(2017, 1, 1, 0, 0))
+    events = list(events)
+    assert len(events) == 1
+
+
 event_rdate_period = """BEGIN:VEVENT
 SUMMARY:RDATE period
 DTSTART:19961230T020000Z
