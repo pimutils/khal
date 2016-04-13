@@ -7,7 +7,7 @@ import pytz
 
 from .. import log
 
-from .exceptions import UnsupportedRecursion
+from .exceptions import UnsupportedRecurrence
 
 logger = log.logger
 
@@ -18,7 +18,7 @@ def expand(vevent, href=''):
     event defined in vevent.
 
     It considers RRULE as well as RDATE and EXDATE properties. In case of
-    unsupported recursion rules an UnsupportedRecursion exception is thrown.
+    unsupported recursion rules an UnsupportedRecurrence exception is thrown.
     If the timezone defined in vevent is not understood by icalendar,
     default_tz is used.
 
@@ -83,7 +83,7 @@ def expand(vevent, href=''):
         # the RFC to consider this as only one instance
         dtstartl = set(rrule)
         if not dtstartl:
-            raise UnsupportedRecursion()
+            raise UnsupportedRecurrence()
     else:
         dtstartl = {vevent['DTSTART'].dt}
 

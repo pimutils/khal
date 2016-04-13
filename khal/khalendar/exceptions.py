@@ -54,7 +54,7 @@ class UpdateFailed(Error):
     """could not update the event in the database"""
 
 
-class UnsupportedRecursion(Error):
+class UnsupportedRecurrence(Error):
 
     """raised if the RRULE is not understood by dateutil.rrule"""
     pass
