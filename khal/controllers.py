@@ -204,7 +204,7 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None, r
         echo(event.event_description)
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
-        echo(path.encode(conf['locale']['encoding']))
+        echo(path)
 
 
 def interactive(collection, conf):

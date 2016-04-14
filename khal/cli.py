@@ -436,9 +436,7 @@ def _get_cli():
                          bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
                  for d in desc]
             )
-        click.echo(
-            '\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding'])
-        )
+        click.echo('\n'.join(event_column))
 
     @cli.command()
     @multi_calendar_option
@@ -484,9 +482,7 @@ def _get_cli():
                          bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
                  for line in lines]
             )
-        click.echo(
-            '\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding'])
-        )
+        click.echo('\n'.join(event_column))
 
     @cli.command()
     @click.pass_context
