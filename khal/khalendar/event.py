@@ -566,7 +566,10 @@ class FloatingEvent(DatetimeEvent):
 
     @property
     def end_local(self):
-        return self._locale['local_timezone'].localize(self.end)
+        if(self.end.tzinfo is not None):
+            return self.end
+        else:
+            return self._locale['local_timezone'].localize(self.end)
 
 
 class AllDayEvent(Event):
