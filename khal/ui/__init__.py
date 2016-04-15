@@ -398,35 +398,35 @@ class EventColumn(urwid.WidgetWrap):
         return bool(self.eventcount)
 
 
-class RecursionEditor(urwid.WidgetWrap):
+class RecurrenceEditor(urwid.WidgetWrap):
 
     def __init__(self, rrule):
-        # TODO: actually implement the Recursion Editor
+        # TODO: support more recurrence schemes
 
         self.rrule = rrule
-        recursive = self.rrule['freq'][0].lower() if self.rrule else NOREPEAT
-        self.recursion_choice = Choice(
-            [NOREPEAT, u"weekly", u"monthly", u"yearly"], recursive)
-        self.columns = urwid.Columns([(10, urwid.Text('Repeat: ')), (11, self.recursion_choice)])
+        recurrence = self.rrule['freq'][0].lower() if self.rrule else NOREPEAT
+        self.recurrence_choice = Choice(
+            [NOREPEAT, u"weekly", u"monthly", u"yearly"], recurrence)
+        self.columns = urwid.Columns([(10, urwid.Text('Repeat: ')), (11, self.recurrence_choice)])
         urwid.WidgetWrap.__init__(self, self.columns)
 
     @property
     def changed(self):
-        if self.recursion_choice.changed:
+        if self.recurrence_choice.changed:
             return True
         return False
 
     @property
     def active(self):
-        recursive = self.recursion_choice.active
-        if recursive != NOREPEAT:
-            self.rrule["freq"] = [recursive]
+        recurrence = self.recurrence_choice.active
+        if recurrence != NOREPEAT:
+            self.rrule["freq"] = [recurrence]
             return self.rrule
         return None
 
     @active.setter
     def active(self, val):
-        self.recursion_choice.active = val
+        self.recurrence_choice.active = val
 
 
 class EventDisplay(urwid.WidgetWrap):
@@ -513,7 +513,7 @@ class EventEditor(urwid.WidgetWrap):
         self.startendeditor = StartEndEditor(
             event.start_local, event.end_local, self.conf,
             self.pane.eventscolumn.original_widget.set_current_date)
-        self.recursioneditor = RecursionEditor(self.event.recurobject)
+        self.recurrenceeditor = RecurrenceEditor(self.event.recurobject)
         self.summary = Edit(caption='Title: ', edit_text=event.summary)
 
         divider = urwid.Divider(' ')
@@ -538,7 +538,7 @@ class EventEditor(urwid.WidgetWrap):
             self.description,
             divider,
             self.startendeditor,
-            self.recursioneditor,
+            self.recurrenceeditor,
             divider,
             self.alarms,
             divider,
@@ -571,7 +571,7 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
-        if self.recursioneditor.changed:
+        if self.recurrenceeditor.changed:
             return True
         if self.alarms.changed:
             return True
@@ -585,8 +585,8 @@ class EventEditor(urwid.WidgetWrap):
         if self.startendeditor.changed:
             self.event.update_start_end(self.startendeditor.startdt,
                                         self.startendeditor.enddt)
-        if self.recursioneditor.changed:
-            rrule = self.recursioneditor.active
+        if self.recurrenceeditor.changed:
+            rrule = self.recurrenceeditor.active
             self.event.update_rrule(rrule)
 
             # self.event.vevent.pop("RRULE")
