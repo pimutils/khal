@@ -582,16 +582,11 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_location(self.location.get_edit_text())
 
         if self.startendeditor.changed:
-            self.event.update_start_end(self.startendeditor.startdt,
-                                        self.startendeditor.enddt)
+            self.event.update_start_end(
+                self.startendeditor.startdt, self.startendeditor.enddt)
         if self.recurrenceeditor.changed:
             rrule = self.recurrenceeditor.active
             self.event.update_rrule(rrule)
-
-            # self.event.vevent.pop("RRULE")
-            # if rrule and rrule["freq"][0] != NOREPEAT:
-            #    self.event.vevent.add("RRULE", rrule)
-        # TODO self.newaccount = self.calendar_chooser.active ?
 
         if self.alarms.changed:
             self.event.update_alarms(self.alarms.get_alarms())
