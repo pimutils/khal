@@ -158,6 +158,7 @@ class Window(urwid.Frame):
         return self._track[-1][0] if self._track else None
 
     def update_header(self, alert=None):
+        # TODO setting colors does not work, but is actually used
         pane_title = getattr(self._get_current_pane(), 'title', None)
         text = []
 

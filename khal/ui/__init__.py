@@ -378,6 +378,9 @@ class EventColumn(urwid.WidgetWrap):
         :param date: default date for new event
         :type date: datetime.date
         """
+        if not self.pane.collection.writable_names:
+            self.pane.window.alert(('light red', 'No writable calendar.'))
+            return
         if end is None:
             event = aux.new_event(
                 dtstart=date, timezone=self.pane.conf['locale']['default_timezone'])
@@ -515,7 +518,6 @@ class EventEditor(urwid.WidgetWrap):
 
         divider = urwid.Divider(' ')
 
-        # TODO warning message if len(self.collection.writable_names) == 0
         def decorate_choice(c):
             return ('calendar ' + c['name'], c['name'])
 
