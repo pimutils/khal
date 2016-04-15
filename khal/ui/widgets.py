@@ -233,6 +233,7 @@ class Choice(urwid.PopUpLauncher):
 
 
 class ChoiceList(urwid.WidgetWrap):
+    """A pile of Button() widgets, intended to be used with Choice()"""
     signals = ['close']
 
     def __init__(self, parent):
@@ -245,6 +246,8 @@ class ChoiceList(urwid.WidgetWrap):
             )
 
         pile = NPile(buttons, outermost=True)
+        num = [num for num, elem in enumerate(parent.choices) if elem == parent.active][0]
+        pile.set_focus(num)
         fill = urwid.Filler(pile)
         urwid.WidgetWrap.__init__(self, urwid.AttrMap(fill, 'popupbg'))
 
