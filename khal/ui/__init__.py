@@ -387,7 +387,6 @@ class EventColumn(urwid.WidgetWrap):
         else:
             event = aux.new_event(dtstart=date, dtend=end, allday=True)
 
-        # TODO proper default cal
         event = self.pane.collection.new_event(
             event.to_ical(), self.pane.collection.default_calendar_name)
 
