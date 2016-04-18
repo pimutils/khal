@@ -199,16 +199,6 @@ The most important options in the the **[locale]** section are probably (long-)t
       :type: string
       :default: %H:%M
 
-.. _locale-encoding:
-
-.. object:: encoding
-
-    
-    set this to the encoding of your terminal emulator
-
-      :type: string
-      :default: utf-8
-
 .. _locale-firstweekday:
 
 .. object:: firstweekday

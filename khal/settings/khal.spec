@@ -50,9 +50,6 @@ path = expand_db_path(default=None)
 # The most important options in the the **[locale]** section are probably (long-)time and dateformat.
 [locale]
 
-# set this to the encoding of your terminal emulator
-encoding = string(default='utf-8')
-
 # the day first day of the week, were Monday is 0 and Sunday is 6
 firstweekday = integer(0, 6, default=0)
 

@@ -131,7 +131,7 @@ def get_agenda(collection, locale, dates=None, firstweekday=0, days=None, events
     return event_column
 
 
-def calendar(collection, dates=None, firstweekday=0, encoding='utf-8', locale=None,
+def calendar(collection, dates=None, firstweekday=0, locale=None,
              weeknumber=False, show_all_days=False, conf=None,
              hmethod='fg',
              default_color='',
@@ -166,7 +166,7 @@ def calendar(collection, dates=None, firstweekday=0, encoding='utf-8', locale=No
     echo('\n'.join(rows))
 
 
-def agenda(collection, dates=None, encoding='utf-8', show_all_days=False, full=False,
+def agenda(collection, dates=None, show_all_days=False, full=False,
            week=False, bold_for_light_color=True, **kwargs):
     term_width, _ = get_terminal_size()
     event_column = get_agenda(collection, dates=dates, width=term_width,
@@ -204,7 +204,7 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None, r
         echo(event.event_description)
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
-        echo(path.encode(conf['locale']['encoding']))
+        echo(path)
 
 
 def interactive(collection, conf):

@@ -263,7 +263,6 @@ def _get_cli():
             build_collection(ctx),
             dates=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
-            encoding=ctx.obj['conf']['locale']['encoding'],
             locale=ctx.obj['conf']['locale'],
             weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
             show_all_days=ctx.obj['conf']['default']['show_all_days'],
@@ -293,7 +292,6 @@ def _get_cli():
             build_collection(ctx),
             dates=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
-            encoding=ctx.obj['conf']['locale']['encoding'],
             show_all_days=ctx.obj['conf']['default']['show_all_days'],
             locale=ctx.obj['conf']['locale'],
             days=days or ctx.obj['conf']['default']['days'],
@@ -436,9 +434,7 @@ def _get_cli():
                          bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
                  for d in desc]
             )
-        click.echo(
-            '\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding'])
-        )
+        click.echo('\n'.join(event_column))
 
     @cli.command()
     @multi_calendar_option
@@ -484,9 +480,7 @@ def _get_cli():
                          bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
                  for line in lines]
             )
-        click.echo(
-            '\n'.join(event_column).encode(ctx.obj['conf']['locale']['encoding'])
-        )
+        click.echo('\n'.join(event_column))
 
     @cli.command()
     @click.pass_context
