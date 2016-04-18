@@ -12,6 +12,7 @@ from .aux import normalize_component, _get_text
 
 
 BERLIN = pytz.timezone('Europe/Berlin')
+NEW_YORK = pytz.timezone('America/New_York')
 # the lucky people in Bogota don't know the pain that is DST
 BOGOTA = pytz.timezone('America/Bogota')
 
@@ -141,7 +142,11 @@ def test_dt_two_tz():
     with freeze_time('2016-02-16 12:00:00'):
         assert normalize_component(cal_dt_two_tz) == normalize_component(event.raw)
 
+    assert event.start == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
+    assert event.end == NEW_YORK.localize(datetime(2014, 4, 9, 10, 30))
     # local (Berlin) time!
+    assert event.start_local == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
+    assert event.end_local == BERLIN.localize(datetime(2014, 4, 9, 16, 30))
     assert event.relative_to(date(2014, 4, 9)) == '09:30-16:30: An Event'
     assert event.event_description == '09:30-16:30 09.04.2014: An Event'
 
@@ -151,6 +156,7 @@ def test_event_dt_duration():
     event_dt_duration = _get_text('event_dt_duration')
     event = Event.fromString(event_dt_duration, **EVENT_KWARGS)
     assert event.relative_to(date(2014, 4, 9)) == '09:30-10:30: An Event'
+    assert event.start == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
     assert event.end == BERLIN.localize(datetime(2014, 4, 9, 10, 30))
     assert event.event_description == '09:30-10:30 09.04.2014: An Event'
 

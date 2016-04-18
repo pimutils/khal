@@ -61,6 +61,8 @@ def test_event_different_timezones():
     event = events[0]
     assert event.start_local == LONDON.localize(datetime(2014, 4, 9, 14))
     assert event.end_local == LONDON.localize(datetime(2014, 4, 9, 19))
+    assert event.start == LONDON.localize(datetime(2014, 4, 9, 14))
+    assert event.end == LONDON.localize(datetime(2014, 4, 9, 19))
 
     # no event scheduled on the next day
     events = dbi.get_localized(BERLIN.localize(datetime(2014, 4, 10, 0, 0)),
@@ -77,6 +79,8 @@ def test_event_different_timezones():
     event = events[0]
     assert event.start_local == SYDNEY.localize(datetime(2014, 4, 9, 23))
     assert event.end_local == SYDNEY.localize(datetime(2014, 4, 10, 4))
+    assert event.start == LONDON.localize(datetime(2014, 4, 9, 14))
+    assert event.end == LONDON.localize(datetime(2014, 4, 9, 19))
 
     # the event spans midnight Sydney, therefor it should also show up on the
     # next day
@@ -179,6 +183,9 @@ def test_no_valid_timezone():
     assert len(events) == 1
     event = events[0]
     assert event.start == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
+    assert event.end == BERLIN.localize(datetime(2014, 4, 9, 10, 30))
+    assert event.start_local == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
+    assert event.end_local == BERLIN.localize(datetime(2014, 4, 9, 10, 30))
 
 
 def test_event_delete():

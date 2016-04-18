@@ -526,19 +526,23 @@ class LocalizedEvent(DatetimeEvent):
     """
     see parent
     """
-    @property
-    def start(self):
-        """in case DTSTART has no tzinfo (or it is set to None) we assume
-        it was meant to be set in the default_timezone"""
-        if getattr(self._start, 'tzinfo', None) is not None:
-            return self._start
-        return self._locale['default_timezone'].localize(self._start)
-
-    @property
-    def end(self):
-        if getattr(self._end, 'tzinfo', None) is not None:
-            return self._end
-        return self._locale['default_timezone'].localize(self._end)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        starttz = getattr(self._vevents[self.ref]['DTSTART'].dt, 'tzinfo', None)
+        if starttz is None:
+            starttz = self._locale['default_timezone']
+        try:
+            endtz = getattr(self._vevents[self.ref]['DTEND'].dt, 'tzinfo', None)
+        except KeyError:
+            endtz = starttz
+        if endtz is None:
+            endtz = self._locale['default_timezone']
+        try:
+            self._start = self._start.astimezone(starttz)
+            self._end = self._end.astimezone(endtz)
+        except ValueError:
+            self._start = starttz.localize(self._start)
+            self._end = endtz.localize(self._end)
 
     @property
     def start_local(self):
