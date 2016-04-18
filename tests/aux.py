@@ -44,7 +44,7 @@ def normalize_component(x):
 def _get_text(event_name):
     directory = '/'.join(__file__.split('/')[:-1]) + '/ics/'
     if directory == '/ics/':
-        directory == './ics/'
+        directory = './ics/'
 
     return open(os.path.join(directory, event_name + '.ics'), 'rb').read().decode('utf-8')
 
