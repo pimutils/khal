@@ -114,7 +114,7 @@ def test_simple(runner):
 
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(
-        main_khal, ['new'] + '{} 18:00 myevent'.format(now).split())
+        main_khal, 'new {} 18:00 myevent'.format(now).split())
     assert result.output == ''
     assert not result.exception
 
@@ -130,8 +130,7 @@ def test_simple_color(runner):
     runner = runner(command='agenda', showalldays=False, days=2)
 
     now = datetime.datetime.now().strftime('%d.%m.%Y')
-    result = runner.invoke(main_khal, ['new'] +
-                           '{} 18:00 myevent'.format(now).split())
+    result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
     assert result.output == ''
     assert not result.exception
 
@@ -144,14 +143,12 @@ def test_days(runner):
     runner = runner(command='agenda', showalldays=False, days=9)
 
     when = (datetime.datetime.now() + timedelta(days=7)).strftime('%d.%m.%Y')
-    result = runner.invoke(
-        main_khal, ['new'] + '{} 18:00 nextweek'.format(when).split())
+    result = runner.invoke(main_khal, 'new {} 18:00 nextweek'.format(when).split())
     assert result.output == ''
     assert not result.exception
 
     when = (datetime.datetime.now() + timedelta(days=30)).strftime('%d.%m.%Y')
-    result = runner.invoke(
-        main_khal, ['new'] + '{} 18:00 nextmonth'.format(when).split())
+    result = runner.invoke(main_khal, 'new {} 18:00 nextmonth'.format(when).split())
     assert result.output == ''
     assert not result.exception
 
@@ -271,7 +268,7 @@ def test_repeating(runner):
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
-        main_khal, ['new'] + '{} 18:00 myevent -r weekly -u {}'.format(
+        main_khal, 'new {} 18:00 myevent -r weekly -u {}'.format(
             now, end_date.strftime('%d.%m.%Y')).split())
     assert result.output == ''
     assert not result.exception
@@ -282,8 +279,8 @@ def test_at(runner):
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
-        main_khal, ['new'] + '{} 18:00 myevent'.format(
-            now, end_date.strftime('%d.%m.%Y')).split())
+        main_khal,
+        'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
     result = runner.invoke(main_khal, ['--color', 'at', '18:30'])
     assert result.output.startswith('\x1b[34m18:00')
     assert not result.exception
@@ -292,10 +289,7 @@ def test_at(runner):
 def test_search(runner):
     runner = runner(command='calendar', showalldays=False, days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
-    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
-    result = runner.invoke(
-        main_khal, ['new'] + '{} 18:00 myevent'.format(
-            now, end_date.strftime('%d.%m.%Y')).split())
+    result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
     result = runner.invoke(main_khal, ['--color', 'search', 'myevent'])
     assert result.output.startswith('\x1b[34m18:00')
     assert not result.exception
