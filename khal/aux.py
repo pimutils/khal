@@ -258,13 +258,10 @@ def generate_random_uid():
 
 
 def construct_event(dtime_list, locale,
-                    defaulttimelen=60, defaultdatelen=1, encoding='utf-8',
-                    description=None, location=None, repeat=None, until=None,
-                    alarm=None, **kwargs):
+                    defaulttimelen=60, defaultdatelen=1, description=None,
+                    location=None, repeat=None, until=None, alarm=None,
+                    **kwargs):
     """takes a list of strings and constructs a vevent from it
-
-    :param encoding: the encoding of your terminal, should be a valid encoding
-    :type encoding: str
 
     the parts of the list can be either of these:
         * datetime datetime description
