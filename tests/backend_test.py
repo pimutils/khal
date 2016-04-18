@@ -279,7 +279,7 @@ def test_event_rrule_this_and_future():
 
     assert str(events[0].summary) == 'Arbeit'
     for num, event in enumerate(events[1:]):
-        event.raw
+        assert event.raw  # just making sure we don't raise any exception
         assert str(event.summary) == 'Arbeit (lang)'
 
 
