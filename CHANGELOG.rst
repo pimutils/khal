@@ -7,6 +7,14 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+
+0.9.0
+=====
+not released yet
+
+* removed configuration variable `encoding` (in section [locale]), the correct
+  locale should now be figured out automatically (Markus Unterwaditzer)
+
 0.8.1
 =====
 released on 2015-04-13
