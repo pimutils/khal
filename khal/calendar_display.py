@@ -129,9 +129,9 @@ def str_week(week, today, collection=None,
     return strweek
 
 
-def vertical_month(month=datetime.date.today().month,
-                   year=datetime.date.today().year,
-                   today=datetime.date.today(),
+def vertical_month(month=None,
+                   year=None,
+                   today=None,
                    weeknumber=False,
                    count=3,
                    firstweekday=0,
@@ -163,6 +163,12 @@ def vertical_month(month=datetime.date.today().month,
               ANSI (color) escape strings
     :rtype: list() of str()
     """
+    if month is None:
+        month = datetime.date.today().month
+    if year is None:
+        year = datetime.date.today().year
+    if today is None:
+        today = datetime.date.today()
 
     khal = list()
     w_number = '  ' if weeknumber == 'right' else ''

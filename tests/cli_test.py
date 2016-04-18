@@ -4,6 +4,7 @@ import datetime
 from datetime import timedelta
 
 import pytest
+from freezegun import freeze_time
 from click.testing import CliRunner
 
 from khal.cli import main_khal, main_ikhal
@@ -169,31 +170,31 @@ def test_showalldays(runner):
     assert not result.exception
 
 
-@pytest.mark.xfail  # cannot currently run on a given day
 def test_calendar(runner):
-    runner = runner(command='calendar', showalldays=False, days=0)
-    result = runner.invoke(main_khal)
-    assert not result.exception
-    assert result.exit_code == 0
-    output = '\n'.join([
-        "    Mo Tu We Th Fr Sa Su     No events",
-        "Jun  1  2  3  4  5  6  7     ",
-        "     8  9 10 11 12 13 14     ",
-        "    15 16 17 18 19 20 21     ",
-        "    22 23 24 25 26 27 28     ",
-        "Jul 29 30  1  2  3  4  5     ",
-        "     6  7  8  9 10 11 12     ",
-        "    13 14 15 16 17 18 19     ",
-        "    20 21 22 23 24 25 26     ",
-        "Aug 27 28 29 30 31  1  2     ",
-        "     3  4  5  6  7  8  9     ",
-        "    10 11 12 13 14 15 16     ",
-        "    17 18 19 20 21 22 23     ",
-        "    24 25 26 27 28 29 30     ",
-        "Sep 31  1  2  3  4  5  6     ",
-        "",
-    ])
-    assert result.output == output
+    with freeze_time('2015-6-1'):
+        runner = runner(command='calendar', showalldays=False, days=0)
+        result = runner.invoke(main_khal)
+        assert not result.exception
+        assert result.exit_code == 0
+        output = '\n'.join([
+            "    Mo Tu We Th Fr Sa Su     No events",
+            "Jun  1  2  3  4  5  6  7     ",
+            "     8  9 10 11 12 13 14     ",
+            "    15 16 17 18 19 20 21     ",
+            "    22 23 24 25 26 27 28     ",
+            "Jul 29 30  1  2  3  4  5     ",
+            "     6  7  8  9 10 11 12     ",
+            "    13 14 15 16 17 18 19     ",
+            "    20 21 22 23 24 25 26     ",
+            "Aug 27 28 29 30 31  1  2     ",
+            "     3  4  5  6  7  8  9     ",
+            "    10 11 12 13 14 15 16     ",
+            "    17 18 19 20 21 22 23     ",
+            "    24 25 26 27 28 29 30     ",
+            "Sep 31  1  2  3  4  5  6     ",
+            "",
+        ])
+        assert result.output == output
 
 
 def test_default_command_empty(runner):
