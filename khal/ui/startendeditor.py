@@ -86,6 +86,7 @@ class StartEndEditor(urwid.WidgetWrap):
             date is entered, with that new date as an argument
         """
         self.allday = not isinstance(start, datetime)
+        self._tz_state = False
         self.conf = conf
         self._startdt, self._original_start = start, start
         self._enddt, self._original_end = end, end
@@ -95,9 +96,9 @@ class StartEndEditor(urwid.WidgetWrap):
         # this will contain the widgets for [start|end] [date|time]
         self.widgets = StartEnd(None, None, None, None)
 
-        self.checkallday = urwid.CheckBox('Allday', state=self.allday,
-                                          on_state_change=self.toggle)
-        self.toggle(None, self.allday)
+        self.checkallday = urwid.CheckBox(
+            'Allday', state=self.allday, on_state_change=self.toggle_allday)
+        self.rebuild()
 
     def keypress(self, size, key):
         return super().keypress(size, key)
@@ -182,7 +183,7 @@ class StartEndEditor(urwid.WidgetWrap):
         else:
             return endval
 
-    def toggle(self, checkbox, state):
+    def toggle_allday(self, checkbox, state):
         """change from allday to datetime event
 
         :param checkbox: the checkbox instance that is used for toggling, gets
@@ -200,6 +201,14 @@ class StartEndEditor(urwid.WidgetWrap):
             self._startdt = self._startdt.date()
             self._enddt = self._enddt.date()
         self.allday = state
+        self.rebuild()
+
+    def toggle_tz(self, checkbox, state):
+        self._tz_state = state
+        self.rebuild()
+        self._start_edit.set_focus(3)
+
+    def rebuild(self):
         datewidth = self._datewidth + 7
         # startdate
         edit = ValidatedEdit(
@@ -225,11 +234,11 @@ class StartEndEditor(urwid.WidgetWrap):
         edit = urwid.Padding(edit, align='left', width=datewidth, left=0, right=1)
         self.widgets.enddate = edit
 
-        if state is True:
+        if self.allday is True:
             timewidth = 1
             self.widgets.starttime = urwid.Text('')
             self.widgets.endtime = urwid.Text('')
-        elif state is False:
+        elif self.allday is False:
             timewidth = self._timewidth + 1
             edit = ValidatedEdit(
                 dateformat=self.conf['locale']['timeformat'],
@@ -251,26 +260,27 @@ class StartEndEditor(urwid.WidgetWrap):
                 edit, align='left', width=self._timewidth + 1, left=1)
             self.widgets.endtime = edit
 
-        test = EditSelect(pytz.common_timezones, 'Europe/Berlin', win_len=10)
+        if self._tz_state:
+            self._tz_widget = EditSelect(pytz.common_timezones, 'Europe/Berlin', win_len=10)
+        else:
+            self._tz_widget = urwid.Text('')
 
-        columns = NPile([
-            self.checkallday,
-            NColumns(
-                [
-                    (datewidth, self.widgets.startdate),
-                    (timewidth, self.widgets.starttime),
-                    (2, urwid.Text('\N{EARTH GLOBE EUROPE-AFRICA}')),
-                    (4, urwid.CheckBox('', state=True)),
-                ],
-                dividechars=1),
-            NColumns(
-                [
-                    (datewidth, self.widgets.enddate),
-                    (timewidth, self.widgets.endtime),
-                ],
-                dividechars=1),
-            test,
-        ], focus_item=1)
+        self._start_edit = NColumns(
+            [
+                (datewidth, self.widgets.startdate),
+                (timewidth, self.widgets.starttime),
+                #  (2, urwid.Text('\N{EARTH GLOBE EUROPE-AFRICA}')),
+                #  (4, urwid.CheckBox('', state=self._tz_state, on_state_change=self.toggle_tz)),
+                #  self._tz_widget,
+            ],
+            dividechars=1
+        )
+        self._end_edit = NColumns(
+            [(datewidth, self.widgets.enddate), (timewidth, self.widgets.endtime)],
+            dividechars=1)
+        columns = NPile(
+            [self.checkallday, self._start_edit, self._end_edit],
+            focus_item=1)
         urwid.WidgetWrap.__init__(self, columns)
 
     @property
