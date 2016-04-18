@@ -98,13 +98,7 @@ def multi_calendar_option(f):
 
 
 def _calendar_select_callback(ctx, option, calendar):
-    calendar = calendar or ctx.obj['conf']['default']['default_calendar']
-    if not calendar:
-        raise click.BadParameter(
-            'No default calendar is configured, '
-            'please provide one explicitly.'
-        )
-    if calendar not in ctx.obj['conf']['calendars']:
+    if calendar and calendar not in ctx.obj['conf']['calendars']:
         raise click.BadParameter(
             'Unknown calendar {}, run `khal printcalendars` to get a '
             'list of all configured calendars.'.format(calendar)
@@ -330,6 +324,12 @@ def _get_cli():
         # ugly hack to change how click presents the help string
         eventlist = [start, end, timezone, summary] + list(description)
         eventlist = [element for element in eventlist if element is not None]
+        calendar = calendar or ctx.obj['conf']['default']['default_calendar']
+        if calendar is None:
+            raise click.BadParameter(
+                'No default calendar is configured, '
+                'please provide one explicitly.'
+            )
 
         controllers.new_from_string(
             build_collection(ctx),
