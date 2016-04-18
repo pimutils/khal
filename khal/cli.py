@@ -97,13 +97,22 @@ def multi_calendar_option(f):
     return d(a(f))
 
 
+def _select_one_calendar_callback(ctx, option, calendar):
+    if isinstance(calendar, tuple):
+        if len(calendar) > 1:
+            raise click.UsageError(
+                'Can\'t use "--include-calendar" / "-a" more than once for this command.')
+        elif len(calendar) == 1:
+            calendar = calendar[0]
+    return _calendar_select_callback(ctx, option, calendar)
+
+
 def _calendar_select_callback(ctx, option, calendar):
     if calendar and calendar not in ctx.obj['conf']['calendars']:
         raise click.BadParameter(
             'Unknown calendar {}, run `khal printcalendars` to get a '
             'list of all configured calendars.'.format(calendar)
         )
-
     return calendar
 
 
@@ -344,15 +353,14 @@ def _get_cli():
 
     @cli.command('import')
     @click.option('--include-calendar', '-a', help=('The calendar to use.'),
-                  expose_value=False, callback=_calendar_select_callback,
-                  metavar='CAL')
+                  callback=_select_one_calendar_callback, multiple=True)
     @click.option('--batch', help=('do not ask for any confirmation.'),
                   is_flag=True)
     @click.option('--random_uid', '-r', help=('Select a random uid.'),
                   is_flag=True)
     @click.argument('ics', type=click.File('rb'))
     @click.pass_context
-    def import_ics(ctx, ics, batch, random_uid):
+    def import_ics(ctx, ics, include_calendar, batch, random_uid):
         '''Import events from an .ics file.
 
         If an event with the same UID is already present in the (implicitly)
@@ -365,6 +373,12 @@ def _get_cli():
         each calendar's name or any unique prefix of a calendar's name.
 
         '''
+        if include_calendar:
+            ctx.obj['calendar_selection'] = {include_calendar, }
+
+        # TODO --batch: make sure either calendar selected with -a or
+        # default_calendar set in conf file
+
         ics_str = ics.read()
         controllers.import_ics(
             build_collection(ctx),

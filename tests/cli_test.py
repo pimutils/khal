@@ -31,11 +31,19 @@ def runner(tmpdir):
     calendar2 = tmpdir.mkdir('calendar2')
     calendar3 = tmpdir.mkdir('calendar3')
 
-    def inner(**kwargs):
-        config.write(config_template.format(calpath=str(calendar),
-                                            calpath2=str(calendar2),
-                                            calpath3=str(calendar3),
-                                            dbpath=str(db), **kwargs))
+    def inner(command='agenda', showalldays=False, days=2, default_calendar=True,
+              **kwargs):
+        if default_calendar:
+            default_calendar = 'default_calendar = one'
+        else:
+            default_calendar = ''
+        config.write(config_template.format(
+            command=command,
+            showalldays=showalldays,
+            days=days,
+            calpath=str(calendar), calpath2=str(calendar2), calpath3=str(calendar3),
+            default_calendar=default_calendar,
+            dbpath=str(db), **kwargs))
         runner = CustomCliRunner(config=config, db=db,
                                  calendars=dict(one=calendar))
         return runner
@@ -67,7 +75,7 @@ firstweekday = 0
 
 [default]
 default_command = {command}
-default_calendar = one
+{default_calendar}
 show_all_days = {showalldays}
 days = {days}
 
@@ -290,6 +298,47 @@ def test_search(runner):
     result = runner.invoke(main_khal, ['--color', 'search', 'myevent'])
     assert result.output.startswith('\x1b[34m18:00')
     assert not result.exception
+
+
+def test_no_default_new(runner):
+    runner = runner(default_calendar=False)
+    result = runner.invoke(main_khal, 'new 18:00 beer'.split())
+    assert ("Error: Invalid value: No default calendar is configured, "
+            "please provide one explicitly.") in result.output
+    assert result.exit_code == 2
+
+
+def test_import(runner, monkeypatch):
+    runner = runner()
+    result = runner.invoke(main_khal, 'import -a one -a two import file.ics'.split())
+    assert result.exception
+    assert result.exit_code == 2
+    assert 'Can\'t use "--include-calendar" / "-a" more than once' in result.output
+
+    class FakeImport():
+        args, kwargs = None, None
+
+        def clean(self):
+            self.args, self.kwargs = None, None
+
+        def import_ics(self, *args, **kwargs):
+            print('saving args')
+            print(args)
+            self.args = args
+            self.kwargs = kwargs
+
+    fake = FakeImport()
+    monkeypatch.setattr('khal.controllers.import_ics', fake.import_ics)
+    # as we are not actually parsing the file we want to import, we can use
+    # any readable file at all, therefore re-using the configuration file
+    result = runner.invoke(main_khal, 'import -a one {}'.format(runner.config).split())
+    assert not result.exception
+    assert {cal['name'] for cal in fake.args[0].calendars} == {'one'}
+
+    fake.clean()
+    result = runner.invoke(main_khal, 'import {}'.format(runner.config).split())
+    assert not result.exception
+    assert {cal['name'] for cal in fake.args[0].calendars} == {'one', 'two', 'three'}
 
 
 def test_interactive_command(runner, monkeypatch):
