@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 from setuptools import setup
+import sys
+
+if sys.version_info < (3, 3):
+    errstr = "khal only supports python version 3.3+. Please Upgrade.\n"
+    sys.stderr.write("#" * len(errstr) + '\n')
+    sys.stderr.write(errstr)
+    sys.stderr.write("#" * len(errstr) + '\n')
+    sys.exit(1)
 
 requirements = [
     'click>=3.2',
