@@ -191,6 +191,13 @@ class StartEndEditor(urwid.WidgetWrap):
                       True if allday event, False if datetime
         :type state: bool
         """
+
+        if self.allday is True and state is False:
+            self._startdt = datetime.combine(self._startdt, datetime.min.time())
+            self._enddt = datetime.combine(self._enddt, datetime.min.time())
+        elif self.allday is False and state is True:
+            self._startdt = self._startdt.date()
+            self._enddt = self._enddt.date()
         self.allday = state
         datewidth = self._datewidth + 7
         # startdate
