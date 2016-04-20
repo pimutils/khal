@@ -118,18 +118,26 @@ class StartEndEditor(urwid.WidgetWrap):
             return time(0)
 
     @property
-    def localize_start(self):
+    def timezone_start(self):
         if getattr(self.startdt, 'tzinfo', None) is None:
-            return self.conf['locale']['default_timezone'].localize
+            return self.conf['locale']['default_timezone']
         else:
-            return self.startdt.tzinfo.localize
+            return self.startdt.tzinfo
+
+    @property
+    def localize_start(self):
+        return self.timezone_start.localize
+
+    @property
+    def timezone_end(self):
+        if getattr(self.enddt, 'tzinfo', None) is None:
+            return self.conf['locale']['default_timezone']
+        else:
+            return self.enddt.tzinfo
 
     @property
     def localize_end(self):
-        if getattr(self.enddt, 'tzinfo', None) is None:
-            return self.conf['locale']['default_timezone'].localize
-        else:
-            return self.enddt.tzinfo.localize
+        return self.timezone_end.localize
 
     @property
     def enddt(self):
@@ -189,7 +197,7 @@ class StartEndEditor(urwid.WidgetWrap):
         :param checkbox: the checkbox instance that is used for toggling, gets
                          automatically passed by urwid (is not used)
         :type checkbox: checkbox
-        :param state: state the event will toggle to;
+        :param state: allday-eventness of this event;
                       True if allday event, False if datetime
         :type state: bool
         """
@@ -204,11 +212,27 @@ class StartEndEditor(urwid.WidgetWrap):
         self.rebuild()
 
     def toggle_tz(self, checkbox, state):
+        """change from displaying the timezone chooser or not
+
+        :param checkbox: the checkbox instance that is used for toggling, gets
+                         automatically passed by urwid (is not used)
+        :type checkbox: checkbox
+        :param state: show timezone chooser or not
+        :type state: bool
+
+        """
+        if self._tz_state is False and state is True:
+            self._startdt = self._startdt.astimezone(self._get_chosen_timezone())
+            self._enddt = self._enddt.astimezone(self._get_chosen_timezone())
+        elif self._tz_state is True and state is False:
+            self._startdt = self._startdt.astimezone(self.conf['locale']['default_timezone'])
+            self._enddt = self._enddt.astimezone(self.conf['locale']['default_timezone'])
         self._tz_state = state
         self.rebuild()
         self._start_edit.set_focus(3)
 
     def rebuild(self):
+        """rebuild the start/end/timezone editor"""
         datewidth = self._datewidth + 7
         # startdate
         edit = ValidatedEdit(
@@ -261,7 +285,8 @@ class StartEndEditor(urwid.WidgetWrap):
             self.widgets.endtime = edit
 
         if self._tz_state:
-            self._tz_widget = EditSelect(pytz.common_timezones, 'Europe/Berlin', win_len=10)
+            self._tz_widget = EditSelect(
+                pytz.common_timezones, str(self.timezone_start), win_len=10)
         else:
             self._tz_widget = urwid.Text('')
 
@@ -269,9 +294,9 @@ class StartEndEditor(urwid.WidgetWrap):
             [
                 (datewidth, self.widgets.startdate),
                 (timewidth, self.widgets.starttime),
-                #  (2, urwid.Text('\N{EARTH GLOBE EUROPE-AFRICA}')),
-                #  (4, urwid.CheckBox('', state=self._tz_state, on_state_change=self.toggle_tz)),
-                #  self._tz_widget,
+                (2, urwid.Text('\N{EARTH GLOBE EUROPE-AFRICA}')),
+                (4, urwid.CheckBox('', state=self._tz_state, on_state_change=self.toggle_tz)),
+                self._tz_widget,
             ],
             dividechars=1
         )
@@ -283,10 +308,15 @@ class StartEndEditor(urwid.WidgetWrap):
             focus_item=1)
         urwid.WidgetWrap.__init__(self, columns)
 
+    def _get_chosen_timezone(self):
+        import ipdb; ipdb.set_trace()
+
+
     @property
     def changed(self):
         """returns True if content has been edited, False otherwise"""
         return (self.startdt != self._original_start) or (self.enddt != self._original_end)
 
     def validate(self):
+        """make sure startdt <= enddt"""
         return self.startdt <= self.enddt
