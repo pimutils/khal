@@ -2,6 +2,8 @@
 import pytest
 import pytz
 
+import pkg_resources
+
 from datetime import date, datetime, timedelta, time
 import icalendar
 
@@ -603,7 +605,8 @@ def test_check_support():
         [backend.check_support(event, '', '') for event in ical.walk()]
 
     # icalendar 3.9.2 changed how it deals with unsupported components
-    if tuple([int(i) for i in icalendar.__version__.split('.')[:3]]) <= (3, 9, 1):
+    if pkg_resources.get_distribution('icalendar').parsed_version \
+       <= pkg_resources.parse_version('3.9.1'):
         ical = icalendar.Calendar.from_ical(event_rdate_period)
         with pytest.raises(UpdateFailed):
             [backend.check_support(event, '', '') for event in ical.walk()]
