@@ -139,26 +139,41 @@ example_de = [
 
 
 def test_vertical_month():
-    locale.setlocale(locale.LC_ALL, 'en_US.utf-8')
-    vert_str = vertical_month(month=12, year=2011,
-                              today=datetime.date(2011, 12, 12))
-    assert vert_str == example1
+    try:
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+        vert_str = vertical_month(month=12, year=2011,
+                                  today=datetime.date(2011, 12, 12))
+        assert vert_str == example1
 
-    weno_str = vertical_month(month=12, year=2011,
-                              today=datetime.date(2011, 12, 12),
-                              weeknumber='right')
-    assert weno_str == example_weno
+        weno_str = vertical_month(month=12, year=2011,
+                                  today=datetime.date(2011, 12, 12),
+                                  weeknumber='right')
+        assert weno_str == example_weno
 
-    we_start_su_str = vertical_month(
-        month=12, year=2011,
-        today=datetime.date(2011, 12, 12),
-        firstweekday=6)
-    assert we_start_su_str == example_we_start_su
+        we_start_su_str = vertical_month(
+            month=12, year=2011,
+            today=datetime.date(2011, 12, 12),
+            firstweekday=6)
+        assert we_start_su_str == example_we_start_su
+    except locale.Error as error:
+        if str(error) == 'unsupported locale setting':
+            pytest.xfail(
+                'To get this test to run, you need to add `en_US.utf-8` to '
+                'your locales. On Debian GNU/Linux 8 you do this by '
+                'uncommenting `de_DE.utf-8 in /etc/locale.gen and then run '
+                '`locale-gen` (as root).'
+            )
+    finally:
+        locale.setlocale(locale.LC_ALL, 'C')
 
 
 def test_vertical_month_unicode():
     try:
         locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
+        vert_str = vertical_month(month=12, year=2011,
+                                  today=datetime.date(2011, 12, 12))
+        assert vert_str == example_de
+        '\n'.join(vert_str)  # issue 142
     except locale.Error as error:
         if str(error) == 'unsupported locale setting':
             pytest.xfail(
@@ -169,17 +184,17 @@ def test_vertical_month_unicode():
             )
         else:
             raise
-
-    vert_str = vertical_month(month=12, year=2011,
-                              today=datetime.date(2011, 12, 12))
-    assert vert_str == example_de
-    '\n'.join(vert_str)  # issue 142
-    locale.setlocale(locale.LC_ALL, 'C')
+    finally:
+        locale.setlocale(locale.LC_ALL, 'C')
 
 
 def test_vertical_month_unicode_weekdeays():
     try:
         locale.setlocale(locale.LC_ALL, 'cs_CZ.UTF-8')
+        vert_str = vertical_month(month=12, year=2011,
+                                  today=datetime.date(2011, 12, 12))
+        assert [line.lower() for line in vert_str] == [line.lower() for line in example_cz]
+        '\n'.join(vert_str)  # issue 142/293
     except locale.Error as error:
         if str(error) == 'unsupported locale setting':
             pytest.xfail(
@@ -190,17 +205,17 @@ def test_vertical_month_unicode_weekdeays():
             )
         else:
             raise
-
-    vert_str = vertical_month(month=12, year=2011,
-                              today=datetime.date(2011, 12, 12))
-    assert [line.lower() for line in vert_str] == [line.lower() for line in example_cz]
-    '\n'.join(vert_str)  # issue 142/293
-    locale.setlocale(locale.LC_ALL, 'C')
+    finally:
+        locale.setlocale(locale.LC_ALL, 'C')
 
 
 def test_vertical_month_unicode_weekdeays_gr():
     try:
         locale.setlocale(locale.LC_ALL, 'el_GR.UTF-8')
+        vert_str = vertical_month(month=12, year=2011,
+                                  today=datetime.date(2011, 12, 12))
+        assert [line.lower() for line in vert_str] == [line.lower() for line in example_gr]
+        '\n'.join(vert_str)  # issue 142/293
     except locale.Error as error:
         if str(error) == 'unsupported locale setting':
             pytest.xfail(
@@ -211,9 +226,5 @@ def test_vertical_month_unicode_weekdeays_gr():
             )
         else:
             raise
-
-    vert_str = vertical_month(month=12, year=2011,
-                              today=datetime.date(2011, 12, 12))
-    assert [line.lower() for line in vert_str] == [line.lower() for line in example_gr]
-    '\n'.join(vert_str)  # issue 142/293
-    locale.setlocale(locale.LC_ALL, 'C')
+    finally:
+        locale.setlocale(locale.LC_ALL, 'C')
