@@ -28,6 +28,6 @@ def test_popup(monkeypatch):
         'khal.ui.calendarwidget.CalendarWidget.__init__', fake.store)
     see = StartEndEditor(START, END, CONF)
     see.widgets.startdate.keypress((22, ), 'enter')
-    assert fake.kwargs['initial'] == date(2016, 4, 26)
+    assert fake.kwargs['initial'] == date(2015, 4, 26)
     see.widgets.enddate.keypress((22, ), 'enter')
-    assert fake.kwargs['initial'] == date(2016, 4, 27)
+    assert fake.kwargs['initial'] == date(2015, 4, 27)
