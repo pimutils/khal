@@ -334,16 +334,17 @@ class CListBox(urwid.ListBox):
 
 
 class CalendarWalker(urwid.SimpleFocusListWalker):
-
     def __init__(self, on_date_change, on_press, keybindings, firstweekday=0,
-                 weeknumbers=False, get_styles=None):
+                 weeknumbers=False, get_styles=None, initial=None):
+        if initial is None:
+            initial = date.today()
         self.firstweekday = firstweekday
         self.weeknumbers = weeknumbers
         self.on_date_change = on_date_change
         self.on_press = on_press
         self.keybindings = keybindings
         self.get_styles = get_styles
-        weeks = self._construct_month()
+        weeks = self._construct_month(initial.year, initial.month)
         urwid.SimpleFocusListWalker.__init__(self, weeks)
 
     def set_focus(self, position):
@@ -600,7 +601,7 @@ class CalendarWidget(urwid.WidgetWrap):
             dividechars=1)
         self.walker = CalendarWalker(
             on_date_change, on_press, default_keybindings, firstweekday, weeknumbers,
-            get_styles)
+            get_styles, initial=self._initial)
         self.box = CListBox(self.walker)
         frame = urwid.Frame(self.box, header=dnames)
         urwid.WidgetWrap.__init__(self, frame)
