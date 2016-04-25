@@ -17,6 +17,8 @@ locale = {'default_timezone': BERLIN,
           'timeformat': '%H:%M',
           'longdateformat': '%d.%m.%Y %H:%M',
           'unicode_symbols': True,
+          'firstweekday': 0,
+          'weeknumbers': False,
           }
 
 SAMOA = pytz.timezone('Pacific/Samoa')

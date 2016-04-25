@@ -556,6 +556,8 @@ class CalendarWidget(urwid.WidgetWrap):
         """
         if initial is None:
             self._initial = date.today()
+        else:
+            self._initial = initial
 
         default_keybindings = {
             'left': ['left'], 'down': ['down'], 'right': ['right'], 'up': ['up'],
