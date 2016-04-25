@@ -9,8 +9,8 @@ BERLIN = pytz.timezone('Europe/Berlin')
 
 CONF = {'locale': locale, 'keybindings': {}}
 
-START = BERLIN.localize(datetime(2016, 4, 26, 22, 23))
-END = BERLIN.localize(datetime(2016, 4, 27, 23, 23))
+START = BERLIN.localize(datetime(2015, 4, 26, 22, 23))
+END = BERLIN.localize(datetime(2015, 4, 27, 23, 23))
 
 
 def test_popup(monkeypatch):
