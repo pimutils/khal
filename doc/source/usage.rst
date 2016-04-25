@@ -1,17 +1,15 @@
 Usage
 =====
-
 Khal offers a set of commands, most importantly :command:`agenda`,
 :command:`calendar`, :command:`interactive`, :command:`new`,
 :command:`printcalendars`, :command:`printformats`, and :command:`search`. See
 below for a description of what every command does. Calling :program:`khal`
 without any command will invoke the default command, which can be specified in
-the configuration file.
+the :doc:`configuration file <configure>`.
 
 
 Options
 -------
-
 :program:`khal` (without any commands) has some options to print some
 information about :program:`khal`:
 
@@ -50,7 +48,7 @@ Several options are common to almost all of :program:`khal`'s commands
        :program:`khal` will detect if standard output is not a tty, e.g., you
        redirect khal's output into a file, and if so remove all
        highlighting/coloring from its output. Use :option:`--color` if you want
-       to force highlighting/coloring and :option:`--no-color` if you want
+       to force highlighting/coloring and :option:`--no-color <--color>` if you want
        coloring always removed.
 
 dates
@@ -136,7 +134,7 @@ elements respond if clicked on with a mouse (mostly by being selected).
 When the calendar on the left is in focus, you can
 
  * move through the calendar (default keybindings are the arrow keys, :kbd:`space` and
-   :kbd:`backspace`, those keybindings are configurable in the config file) 
+   :kbd:`backspace`, those keybindings are configurable in the config file)
  * focus on the right column by pressing :kbd:`tab` or :kbd:`enter`
  * re-focus on the current date, default keybinding :kbd:`t` as in today
  * marking a date range, default keybinding :kbd:`v`, as in visual, think visual
@@ -277,7 +275,7 @@ prints a list of all configured calendars.
 
 printformats
 ************
-prints a fixed date (*2013-12-11 10:09*) in all configured date(time) formats.
+prints a fixed date (*2013-12-21 10:09*) in all configured date(time) formats.
 This is supposed to help check if those formats are configured as intended.
 
 search

@@ -13,8 +13,6 @@ does not support it yet. Please submit any real world examples of events with
 `RDATE;VALUE=PERIOD` you might encounter (khal will print warnings if you have
 any in your calendars).
 
-.. _icalendar: https://github.com/collective/icalendar/
-
 RANGE=THISANDPRIOR
 ------------------
 

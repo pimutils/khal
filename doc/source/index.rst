@@ -46,3 +46,4 @@ Table of Contents
    faq
    license
    news
+   contact

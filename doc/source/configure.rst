@@ -5,12 +5,18 @@ keys separated from values by a **=**, while section and subsection names are
 enclosed by single or double square brackets (like **[sectionname]** and
 **[[subsectionname]]**).
 
+Help with initial configuration
+-------------------------------
+If you do not have a configuration file yet, running :command:`khal configure`
+will launch a small, interactive tool that should help you with initial
+configuration of :command:`khal`.
+
 Location of configuration file
 ------------------------------
 :command:`khal` is looking for a configuration file named *khal.conf* in the
 following places: in :file:`$XDG_CONFIG_HOME/khal/` (on most systems this is
 :file:`~/.config/khal/` by default), :file:`~/.khal/` and in the current directory.
-Alternatively you can specify with configuration file to use with :option:`-c
+Alternatively you can specify which configuration file to use with :option:`-c
 path/to/config` at runtime.
 
 .. include:: configspec.rst
@@ -22,7 +28,7 @@ Example
 .. literalinclude:: ../../tests/configs/simple.conf
   :language: ini
 
-syncing
+Syncing
 -------
 To get :command:`khal` working with CalDAV you will first need to setup
 vdirsyncer_.  After each start :command:`khal` will automatically check if
