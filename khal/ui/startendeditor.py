@@ -87,9 +87,26 @@ class StartEndEditor(urwid.WidgetWrap):
         """
         self.allday = not isinstance(start, datetime)
         self._tz_state = False
+
         self.conf = conf
-        self._startdt, self._original_start = start, start
-        self._enddt, self._original_end = end, end
+
+        self._original_start = start
+        self._original_end = end
+
+        def separate_date_time_timezone(dtime):
+            if isinstance(dtime, datetime):
+                date_ = dtime.date()
+                time_ = dtime.time()
+                timezone_ = dtime.tzinfo
+            else:
+                date_ = start
+                time_ = None
+                timezone_ = None
+            return {'date': date_, 'time': time_, 'timezone': timezone_}
+
+        self._startdt = separate_date_time_timezone(start)
+        self._enddt = separate_date_time_timezone(end)
+
         self.on_date_change = on_date_change
         self._datewidth = len(start.strftime(self.conf['locale']['longdateformat']))
         self._timewidth = len(start.strftime(self.conf['locale']['timeformat']))
@@ -105,91 +122,37 @@ class StartEndEditor(urwid.WidgetWrap):
 
     @property
     def startdt(self):
-        if self.allday and isinstance(self._startdt, datetime):
-            return self._startdt.date()
+        if self.allday and self._startdt['time'] is None:
+            return self._startdt['date']
         else:
-            return self._startdt
-
-    @property
-    def _start_time(self):
-        try:
-            return self._startdt.time()
-        except AttributeError:
-            return time(0)
-
-    @property
-    def timezone_start(self):
-        if getattr(self.startdt, 'tzinfo', None) is None:
-            return self.conf['locale']['default_timezone']
-        else:
-            return self.startdt.tzinfo
-
-    @property
-    def localize_start(self):
-        return self.timezone_start.localize
-
-    @property
-    def timezone_end(self):
-        if getattr(self.enddt, 'tzinfo', None) is None:
-            return self.conf['locale']['default_timezone']
-        else:
-            return self.enddt.tzinfo
-
-    @property
-    def localize_end(self):
-        return self.timezone_end.localize
+            return datetime.combine(self._startdt['date'], self._startdt['time'])
 
     @property
     def enddt(self):
-        if self.allday and isinstance(self._enddt, datetime):
-            return self._enddt.date()
+        if self.allday and self._enddt['time'] is None:
+            return self._enddt['date']
         else:
-            return self._enddt
+            return datetime.combine(self._enddt['date'], self._enddt['time'])
 
-    @property
-    def _end_time(self):
+
+    def _validate_dt(self, startend, type_, dformat, function, text):
         try:
-            return self._enddt.time()
-        except AttributeError:
-            return time(0)
+            getattr(self, startend)[type_] = function(datetime.strptime(text, self.conf['locale'][dformat]))
+            return True
+        except ValueError:
+            False
 
     def _validate_start_time(self, text):
-        try:
-            startval = datetime.strptime(text, self.conf['locale']['timeformat'])
-            self._startdt = self.localize_start(
-                datetime.combine(self._startdt.date(), startval.time()))
-        except ValueError:
-            return False
-        else:
-            return startval
+        return self._validate_dt('_startdt', 'time', 'timeformat', datetime.time, text)
 
     def _validate_start_date(self, text):
-        try:
-            startval = datetime.strptime(text, self.conf['locale']['longdateformat'])
-            self._startdt = self.localize_start(
-                datetime.combine(startval.date(), self._start_time))
-        except ValueError:
-            return False
-        else:
-            return startval
+        return self._validate_dt('_startdt', 'date', 'longdateformat', datetime.date, text)
 
     def _validate_end_time(self, text):
-        try:
-            endval = datetime.strptime(text, self.conf['locale']['timeformat'])
-            self._enddt = self.localize_end(datetime.combine(self._enddt.date(), endval.time()))
-        except ValueError:
-            return False
-        else:
-            return endval
+        return self._validate_dt('_enddt', 'time', 'timeformat', datetime.time, text)
 
     def _validate_end_date(self, text):
-        try:
-            endval = datetime.strptime(text, self.conf['locale']['longdateformat'])
-            self._enddt = self.localize_end(datetime.combine(endval.date(), self._end_time))
-        except ValueError:
-            return False
-        else:
-            return endval
+        return self._validate_dt('_enddt', 'date', 'longdateformat', datetime.date, text)
 
     def toggle_allday(self, checkbox, state):
         """change from allday to datetime event
@@ -203,11 +166,11 @@ class StartEndEditor(urwid.WidgetWrap):
         """
 
         if self.allday is True and state is False:
-            self._startdt = datetime.combine(self._startdt, datetime.min.time())
-            self._enddt = datetime.combine(self._enddt, datetime.min.time())
+            self._startdt['time'] = self._original_start.time()
+            self._enddt['time'] = self._original_end.time()
         elif self.allday is False and state is True:
-            self._startdt = self._startdt.date()
-            self._enddt = self._enddt.date()
+            self._startdt['time'] = None
+            self._enddt['time'] = None
         self.allday = state
         self.rebuild()
 
@@ -221,15 +184,15 @@ class StartEndEditor(urwid.WidgetWrap):
         :type state: bool
 
         """
-        if self._tz_state is False and state is True:
-            self._startdt = self._startdt.astimezone(self._get_chosen_timezone())
-            self._enddt = self._enddt.astimezone(self._get_chosen_timezone())
-        elif self._tz_state is True and state is False:
-            self._startdt = self._startdt.astimezone(self.conf['locale']['default_timezone'])
-            self._enddt = self._enddt.astimezone(self.conf['locale']['default_timezone'])
         self._tz_state = state
         self.rebuild()
         self._start_edit.set_focus(3)
+        if self._tz_state is False and state is True:
+            self._startdt = self._get_chosen_timezone()
+            self._enddt = self._get_chosen_timezone()
+        elif self._tz_state is True and state is False:
+            self._startdt['timezone'] = None
+            self._enddt['timezone'] = None
 
     def rebuild(self):
         """rebuild the start/end/timezone editor"""
@@ -262,6 +225,7 @@ class StartEndEditor(urwid.WidgetWrap):
             timewidth = 1
             self.widgets.starttime = urwid.Text('')
             self.widgets.endtime = urwid.Text('')
+            self._tz_widget = urwid.Text('')
         elif self.allday is False:
             timewidth = self._timewidth + 1
             edit = ValidatedEdit(
@@ -284,17 +248,17 @@ class StartEndEditor(urwid.WidgetWrap):
                 edit, align='left', width=self._timewidth + 1, left=1)
             self.widgets.endtime = edit
 
-        if self._tz_state:
-            self._tz_widget = EditSelect(
-                pytz.common_timezones, str(self.timezone_start), win_len=10)
-        else:
-            self._tz_widget = urwid.Text('')
+            if self._tz_state:
+                self._tz_widget = EditSelect(
+                    pytz.common_timezones, str(self._startdt['timezone']), win_len=10)
+            else:
+                self._tz_widget = urwid.Text('')
 
         self._start_edit = NColumns(
             [
                 (datewidth, self.widgets.startdate),
                 (timewidth, self.widgets.starttime),
-                (2, urwid.Text('\N{EARTH GLOBE EUROPE-AFRICA}')),
+                (3, urwid.Text('\N{EARTH GLOBE EUROPE-AFRICA}')),
                 (4, urwid.CheckBox('', state=self._tz_state, on_state_change=self.toggle_tz)),
                 self._tz_widget,
             ],
@@ -309,7 +273,7 @@ class StartEndEditor(urwid.WidgetWrap):
         urwid.WidgetWrap.__init__(self, columns)
 
     def _get_chosen_timezone(self):
-        import ipdb; ipdb.set_trace()
+        import pdb; pdb.set_trace()
 
 
     @property
