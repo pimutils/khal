@@ -22,6 +22,7 @@
 """contains a re-usable CalendarWidget for urwid"""
 
 import calendar
+from collections import defaultdict
 from datetime import date
 from locale import getlocale, setlocale, LC_ALL
 
@@ -566,9 +567,7 @@ class CalendarWidget(urwid.WidgetWrap):
             'view': [],
             'mark': ['v'],
         }
-        from collections import defaultdict
         on_press = defaultdict(lambda: lambda x: x, on_press)
-
         default_keybindings.update(keybindings)
         calendar.setfirstweekday(firstweekday)
 
