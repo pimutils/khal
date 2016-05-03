@@ -292,6 +292,7 @@ class CListBox(urwid.ListBox):
                 self._unmark_one(row, col)
 
     def set_focus_date(self, a_day):
+        self.focus.focus.set_styles(self.focus.get_styles(self.body.focus_date, False))
         if self._marked:
             self._unmark_all()
             self._mark(a_day)
