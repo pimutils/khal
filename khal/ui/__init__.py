@@ -27,7 +27,8 @@ import urwid
 
 from .. import aux
 from . import colors
-from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice, AlarmsEditor
+from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice, AlarmsEditor, \
+    FocusLineBox
 from .base import Pane, Window
 from .startendeditor import StartEndEditor
 from .calendarwidget import CalendarWidget
@@ -357,7 +358,7 @@ class EventColumn(urwid.WidgetWrap):
         current_day = self.container.contents[0][0]
 
         if self.pane.conf['view']['frame']:
-            ContainerWidget = urwid.LineBox
+            ContainerWidget = FocusLineBox
         else:
             ContainerWidget = urwid.WidgetPlaceholder
         new_pane = urwid.Columns([
@@ -737,7 +738,7 @@ class ClassicView(Pane):
         self.collection = collection
         self.deleted = {ALL: [], INSTANCES: []}
 
-        ContainerWidget = urwid.LineBox if self.conf['view']['frame'] else urwid.WidgetPlaceholder
+        ContainerWidget = FocusLineBox if self.conf['view']['frame'] else urwid.WidgetPlaceholder
         self.eventscolumn = ContainerWidget(EventColumn(pane=self))
         calendar = CalendarWidget(
             on_date_change=self.show_date,
