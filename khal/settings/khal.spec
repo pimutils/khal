@@ -206,8 +206,12 @@ event_view_always_visible = boolean(default=False)
 theme = option('dark', 'light', default='dark')
 
 # Whether to show a visible frame (with *box drawing* characters) around some
-# (groups of) elements.
-frame = boolean(default=False)
+# (groups of) elements or not. There are currently several different frame
+# options available, that should visually differentiate wether an element is
+# in focus or not. Some of them will probably be removed in future releases of
+# khal, so please try them out and give feedback on which style you prefer (the
+# color of all variants can be defined in the color themes).
+frame = option('False', 'width', 'color', 'top', default='False')
 
 # Whether to use bold text for light colors or not. Non-bold light colors may
 # not work on all terminals but allow using light background colors.
