@@ -548,3 +548,122 @@ class AlarmsEditor(urwid.WidgetWrap):
             return self.event.alarms != self.get_alarms()
         except ValueError:
             return False
+
+
+class FocusLineBoxWidth(urwid.WidgetDecoration, urwid.WidgetWrap):
+    def __init__(self, widget):
+        hline = urwid.Divider('─')
+        hline_focus = urwid.Divider('━')
+        self._vline = urwid.SolidFill('│')
+        self._vline_focus = urwid.SolidFill('┃')
+        self._topline = urwid.Columns([
+            ('fixed', 1, urwid.Text('┌')),
+            hline,
+            ('fixed', 1, urwid.Text('┐')),
+        ])
+        self._topline_focus = urwid.Columns([
+            ('fixed', 1, urwid.Text('┏')),
+            hline_focus,
+            ('fixed', 1, urwid.Text('┓')),
+        ])
+        self._bottomline = urwid.Columns([
+            ('fixed', 1, urwid.Text('└')),
+            hline,
+            ('fixed', 1, urwid.Text('┘')),
+        ])
+        self._bottomline_focus = urwid.Columns([
+            ('fixed', 1, urwid.Text('┗')),
+            hline_focus,
+            ('fixed', 1, urwid.Text('┛')),
+        ])
+        self._middle = urwid.Columns(
+            [('fixed', 1, self._vline), widget, ('fixed', 1, self._vline)],
+            focus_column=1,
+        )
+        self._all = urwid.Pile(
+            [('flow', self._topline), self._middle, ('flow', self._bottomline)],
+            focus_item=1,
+        )
+
+        urwid.WidgetDecoration.__init__(self, widget)
+        urwid.WidgetWrap.__init__(self, self._all)
+
+    def render(self, size, focus):
+        inner = self._all.contents[1][0]
+        if focus:
+            self._all.contents[0] = (self._topline_focus, ('pack', None))
+            inner.contents[0] = (self._vline_focus, ('given', 1, False))
+            inner.contents[2] = (self._vline_focus, ('given', 1, False))
+            self._all.contents[2] = (self._bottomline_focus, ('pack', None))
+        else:
+            self._all.contents[0] = (self._topline, ('pack', None))
+            inner.contents[0] = (self._vline, ('given', 1, False))
+            inner.contents[2] = (self._vline, ('given', 1, False))
+            self._all.contents[2] = (self._bottomline, ('pack', None))
+        return super().render(size, focus)
+
+
+class FocusLineBoxColor(urwid.WidgetDecoration, urwid.WidgetWrap):
+    def __init__(self, widget):
+        hline = urwid.Divider('─')
+        self._vline = urwid.AttrMap(urwid.SolidFill('│'), 'frame')
+        self._topline = urwid.AttrMap(
+            urwid.Columns([
+                ('fixed', 1, urwid.Text('┌')),
+                hline,
+                ('fixed', 1, urwid.Text('┐')),
+            ]),
+            'frame')
+        self._bottomline = urwid.AttrMap(
+            urwid.Columns([
+                ('fixed', 1, urwid.Text('└')),
+                hline,
+                ('fixed', 1, urwid.Text('┘')),
+            ]),
+            'frame')
+
+        self._middle = urwid.Columns(
+            [('fixed', 1, self._vline), widget, ('fixed', 1, self._vline)],
+            focus_column=1,
+        )
+        self._all = urwid.Pile(
+            [('flow', self._topline), self._middle, ('flow', self._bottomline)],
+            focus_item=1,
+        )
+
+        urwid.WidgetWrap.__init__(self, self._all)
+        urwid.WidgetDecoration.__init__(self, widget)
+
+    def render(self, size, focus):
+        if focus:
+            self._middle.contents[0][0].set_attr_map({None: 'frame focus color'})
+            self._all.contents[0][0].set_attr_map({None: 'frame focus color'})
+            self._all.contents[2][0].set_attr_map({None: 'frame focus color'})
+        else:
+            self._middle.contents[0][0].set_attr_map({None: 'frame'})
+            self._all.contents[0][0].set_attr_map({None: 'frame'})
+            self._all.contents[2][0].set_attr_map({None: 'frame'})
+        return super().render(size, focus)
+
+
+class FocusLineBoxTop(urwid.WidgetDecoration, urwid.WidgetWrap):
+    def __init__(self, widget):
+        topline = urwid.AttrMap(urwid.Divider('━'), 'frame')
+        self._all = urwid.Pile([('flow', topline), widget], focus_item=1)
+        urwid.WidgetWrap.__init__(self, self._all)
+        urwid.WidgetDecoration.__init__(self, widget)
+
+    def render(self, size, focus):
+        if focus:
+            self._all.contents[0][0].set_attr_map({None: 'frame focus top'})
+        else:
+            self._all.contents[0][0].set_attr_map({None: 'frame'})
+        return super().render(size, focus)
+
+
+linebox = {
+    'color': FocusLineBoxColor,
+    'top': FocusLineBoxTop,
+    'width': FocusLineBoxWidth,
+    'False': urwid.WidgetPlaceholder,
+}

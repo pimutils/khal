@@ -40,6 +40,10 @@ dark = [
     ('edit', 'white', 'dark blue'),
     ('alert', 'white', 'dark red'),
     ('mark', 'white', 'dark green'),
+    ('frame', 'white', 'dark gray'),
+    ('frame focus', 'light red', 'dark gray'),
+    ('frame focus color', 'dark blue', 'dark gray'),
+    ('frame focus top', 'dark magenta', 'dark gray'),
 
     ('editfc', 'white', 'dark blue', 'bold'),
     ('editbx', 'light gray', 'dark blue'),
@@ -65,6 +69,10 @@ light = [
     ('weeknumber_right', 'dark gray', 'white'),
     ('edit', 'white', 'dark blue'),
     ('alert', 'white', 'dark red'),
+    ('frame', 'dark gray', 'white'),
+    ('frame focus', 'light red', 'white'),
+    ('frame focus color', 'dark blue', 'white'),
+    ('frame focus top', 'dark magenta', 'white'),
 
     ('editfc', 'white', 'dark blue', 'bold'),
     ('editbx', 'light gray', 'dark blue'),
