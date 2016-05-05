@@ -187,6 +187,10 @@ longdatetimeformat = {longdateformat} {timeformat}
     if dry_run:
         print(config)
         sys.exit(0)
+    config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
+    if not exists(config_dir) and not isdir(config_dir):
+        makedirs(config_dir)
+        print('created directory {}'.format(config_dir))
     with open(config_path, 'w') as config_file:
         config_file.write(config)
     print("Successfully wrote configuration to {}".format(config_path))
