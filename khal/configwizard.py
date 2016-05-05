@@ -106,7 +106,7 @@ def find_vdirs():
     for storage in vdir_config.storages.values():
         if storage['type'] == 'filesystem':
             # TODO detect type of storage properly
-            vdirs.append((storage['instance_name'], storage['path'], 'collection'))
+            vdirs.append((storage['instance_name'], storage['path'], 'discover'))
     if vdirs == list():
         print("No usable collections were found")
         return None
@@ -159,17 +159,19 @@ def configwizard(dry_run=False):
         vdirs = create_vdir()
         print()
 
-    calendars = '[[calendars]]\n'
+    calendars = '[calendars]\n'
     for name, path, type_ in vdirs:
-        calendars += '''[{name}]
+        calendars += '''[[{name}]]
 path = {path}
-type = {type}'''.format(name=name, path=path, type=type_)
+type = {type}
+'''.format(name=name, path=path, type=type_)
     locale = '''[locale]
 timeformat = {timeformat}
 dateformat = {dateformat}
 longdateformat = {longdateformat}
 datetimeformat = {dateformat} {timeformat}
-longdatetimeformat = {longdateformat} {timeformat}'''.format(
+longdatetimeformat = {longdateformat} {timeformat}
+'''.format(
         timeformat=timeformat,
         dateformat=dateformat,
         longdateformat=dateformat,
