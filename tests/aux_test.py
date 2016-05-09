@@ -350,7 +350,7 @@ def test_alarm():
             assert _replace_uid(event).to_ical() == vevent
 
 
-test_set_description_and_location = _create_testcases(
+test_set_description_and_location_and_categories = _create_testcases(
     # now events where the start date has to be inferred, too
     # today
     ('8:00 Äwesöme Event',
@@ -358,15 +358,17 @@ test_set_description_and_location = _create_testcases(
         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
         'DESCRIPTION:please describe the event',
-        'LOCATION:in the office')))
+        'LOCATION:in the office',
+        'CATEGORIES:boring meeting')))
 
 
-def test_description_and_location():
-    for data_list, vevent in test_set_description_and_location:
+def test_description_and_location_and_categories():
+    for data_list, vevent in test_set_description_and_location_and_categories:
         with freeze_time('2014-02-16 12:00:00'):
             event = construct_event(data_list.split(),
                                     description='please describe the event',
                                     location='in the office',
+                                    categories='boring meeting',
                                     locale=locale_de)
             assert _replace_uid(event).to_ical() == vevent
 

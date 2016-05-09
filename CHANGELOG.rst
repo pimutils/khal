@@ -14,6 +14,7 @@ not released yet
 
 * removed configuration variable `encoding` (in section [locale]), the correct
   locale should now be figured out automatically (Markus Unterwaditzer)
+* support for categories (and add `-g` flag for `khal new`) (Pierre David)
 
 0.8.1
 =====

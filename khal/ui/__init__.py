@@ -451,6 +451,9 @@ class EventDisplay(urwid.WidgetWrap):
         if event.location != '':
             lines.append(urwid.Text('Location: ' + event.location))
 
+        if event.categories != '':
+            lines.append(urwid.Text('Categories: ' + event.categories))
+
         # start and end time/date
         if event.allday:
             startstr = event.start_local.strftime(self.conf['locale']['dateformat'])
@@ -508,6 +511,7 @@ class EventEditor(urwid.WidgetWrap):
 
         self.description = event.description
         self.location = event.location
+        self.categories = event.categories
 
         self.startendeditor = StartEndEditor(
             event.start_local, event.end_local, self.conf,
@@ -529,11 +533,14 @@ class EventEditor(urwid.WidgetWrap):
                                 edit_text=self.description, multiline=True)
         self.location = Edit(caption='Location: ',
                              edit_text=self.location)
+        self.categories = Edit(caption='Categories: ',
+                             edit_text=self.categories)
         self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
             NColumns([self.summary, self.calendar_chooser], dividechars=2),
             divider,
             self.location,
+            self.categories,
             self.description,
             divider,
             self.startendeditor,
@@ -568,6 +575,8 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if self.location.get_edit_text() != self.event.location:
             return True
+        if self.categories.get_edit_text() != self.event.categories:
+            return True
         if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
         if self.recurrenceeditor.changed:
@@ -580,6 +589,7 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_summary(self.summary.get_edit_text())
         self.event.update_description(self.description.get_edit_text())
         self.event.update_location(self.location.get_edit_text())
+        self.event.update_categories(self.categories.get_edit_text())
 
         if self.startendeditor.changed:
             self.event.update_start_end(

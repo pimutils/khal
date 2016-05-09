@@ -178,13 +178,14 @@ def agenda(collection, dates=None, show_all_days=False, full=False,
     echo('\n'.join(event_column))
 
 
-def new_from_string(collection, calendar_name, conf, date_list, location=None, repeat=None,
+def new_from_string(collection, calendar_name, conf, date_list, location=None, categories=None, repeat=None,
                     until=None, alarm=None):
     """construct a new event from a string and add it"""
     try:
         event = aux.construct_event(
             date_list,
             location=location,
+            categories=categories,
             repeat=repeat,
             until=until,
             alarm=alarm,

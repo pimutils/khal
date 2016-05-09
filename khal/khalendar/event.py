@@ -393,6 +393,13 @@ class Event(object):
         self._vevents[self.ref]['LOCATION'] = location
 
     @property
+    def categories(self):
+        return self._vevents[self.ref].get('CATEGORIES', '')
+
+    def update_categories(self, categories):
+        self._vevents[self.ref]['CATEGORIES'] = categories
+
+    @property
     def description(self):
         return self._vevents[self.ref].get('DESCRIPTION', '')
 
@@ -451,6 +458,8 @@ class Event(object):
                 body += ', ' + self.description.strip()
             if self.location.strip() != '':
                 body += ', ' + self.location.strip()
+            if self.categories.strip() != '':
+                body += ', ' + self.categories.strip()
 
         comps = [startstr + tostr + endstr + ':', body, self._recur_str]
         return ' '.join(filter(bool, comps))
@@ -466,11 +475,12 @@ class Event(object):
         location = '\nLocation: ' + self.location if self.location != '' else ''
         description = '\nDescription: ' + self.description if \
             self.description != '' else ''
+        categories = '\nCategories: ' + self.categories if self.categories != '' else ''
         repitition = '\nRepeat: ' + self.recurpattern if \
             self.recurpattern != '' else ''
 
         return '{}: {}{}{}{}'.format(
-            self._rangestr, self.summary, location, repitition, description)
+            self._rangestr, self.summary, location, categories, repitition, description)
 
     def duplicate(self):
         """duplicate this event's PROTO event
@@ -611,6 +621,8 @@ class AllDayEvent(Event):
         if full:
             if self.description.strip() != '':
                 body += ', ' + self.description.strip()
+            if self.categories.strip() != '':
+                body += ', ' + self.categories.strip()
             if self.location.strip() != '':
                 body += ', ' + self.location.strip()
 
