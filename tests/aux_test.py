@@ -357,9 +357,9 @@ test_set_description_and_location_and_categories = _create_testcases(
      _create_vevent(
         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
+        'CATEGORIES:boring meeting',
         'DESCRIPTION:please describe the event',
-        'LOCATION:in the office',
-        'CATEGORIES:boring meeting')))
+        'LOCATION:in the office')))
 
 
 def test_description_and_location_and_categories():
