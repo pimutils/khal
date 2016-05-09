@@ -171,6 +171,9 @@ print_new = option('event', 'path', 'False', default=False)
 # highlighting are in [highlight_days] section.
 highlight_event_days = boolean(default=False)
 
+# Default timedelta for use with daterange options
+timedelta = string(default='')
+
 # The view section contains config options that effect the visual appearance
 # when using ikhal
 [view]
@@ -206,6 +209,9 @@ frame = boolean(default=False)
 # Whether to use bold text for light colors or not. Non-bold light colors may
 # not work on all terminals but allow using light background colors.
 bold_for_light_color = boolean(default=True)
+
+# Default format for events (used in list)
+event_format = string(default='{start}-{end} {title}')
 
 # When highlight_event_days is enabled, this section specifies how is
 # the highlighting rendered.

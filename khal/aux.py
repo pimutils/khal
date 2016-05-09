@@ -248,6 +248,104 @@ def guesstimedeltafstr(delta_string):
     return res
 
 
+def guessrangefstr(daterange, locale, default_timedelta=None):
+    """parses a range string
+
+    :param daterange: date1 [date2 | timedelta]
+    :type daterange: str or list
+    :param locale:
+    :rtype: (datetime, datetime)
+
+    """
+
+    range_list = daterange
+    if isinstance(daterange, str):
+        range_list = daterange.split()
+
+    try:
+        if len(default_timedelta) == 0:
+            default_timedelta = None
+        else:
+            default_timedelta = guesstimedeltafstr(default_timedelta)
+    except:
+        default_timedelta = None
+
+    for i in range(1, len(range_list) + 1):
+        start = ' '.join(range_list[:i])
+        end = ' '.join(range_list[i:])
+        try:
+            if start is None:
+                start = datetime_fillin(end=False)
+            elif not isinstance(start, date):
+                split = start.split(" ")
+                start = guessdatetimefstr(split, locale)[0]
+                if len(split) != 0:
+                    continue
+
+            if end is None or len(end) == 0:
+                if default_timedelta is not None:
+                    end = start + default_timedelta
+                else:
+                    end = datetime_fillin(day=start)
+            else:
+                if end.lower() == 'eod':
+                    end = datetime_fillin(day=start)
+                else:
+                    try:
+                        delta = guesstimedeltafstr(end)
+                        end = start + delta
+                    except:
+                        split = end.split(" ")
+                        end = guessdatetimefstr(split, locale, default_day=start.date())[0]
+                        if len(split) != 0:
+                            continue
+                    end = datetime_fillin(end)
+            return start, end
+        except Exception:
+            pass
+
+    return None, None
+
+
+def datetime_fillin(dt=None, end=True, locale=None, day=None):
+    """returns a datetime that is filled in (with time etc)
+
+    :param dt:
+    :type dt: datetime or date or time if None then day is used
+    :param end:
+    :type end: boolean set True if time.max should be used (else min)
+    :param locale:
+    :type locale: if set the time will be in this locale
+    :param day:
+    :type day: the day to be used if just a time is passed in (else today)
+    :rtype: datetime
+
+    """
+    if day is None:
+        day = datetime.today()
+
+    if isinstance(day, datetime):
+        day = day.date()
+
+    if dt is None:
+        dt = day
+
+    if isinstance(dt, time) and not isinstance(dt, datetime):
+        dt = datetime.combine(day, dt)
+
+    if isinstance(dt, date) and not isinstance(dt, datetime):
+        t = time.max if end else time.min
+        dt = datetime.combine(dt, t)
+
+    if locale is not None:
+        try:
+            dt = locale['local_timezone'].localize(dt)
+        except:
+            pass
+
+    return dt
+
+
 def generate_random_uid():
     """generate a random uid
 
