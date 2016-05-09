@@ -534,7 +534,7 @@ class EventEditor(urwid.WidgetWrap):
         self.location = Edit(caption='Location: ',
                              edit_text=self.location)
         self.categories = Edit(caption='Categories: ',
-                             edit_text=self.categories)
+                               edit_text=self.categories)
         self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
             NColumns([self.summary, self.calendar_chooser], dividechars=2),
