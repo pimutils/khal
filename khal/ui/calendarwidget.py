@@ -111,6 +111,8 @@ class DateCColumns(urwid.Columns):
     focus can only move away by pressing 'TAB',
     calls 'on_date_change' on every focus change (see below for details)
     """
+    # TODO only call on_date_change when we change our date ourselves,
+    # not if it gets changed by an (external) call to set_focus_date()
 
     def __init__(self, widget_list, on_date_change, on_press, keybindings,
                  get_styles=None, **kwargs):

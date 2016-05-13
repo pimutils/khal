@@ -268,14 +268,24 @@ class DListBox(urwid.ListBox):
             except IndexError:
                 pass
             day = self.body[self.body.focus].date
+
+            # we need to save DatePile.selected_date and reset it later, because
+            # calling CalendarWalker.set_focus_date() calls back into
+            # DayWalker().update_by_date() which actually set selected_date
+            # that's why it's called callback hell...
+            currently_selected_date = DatePile.selected_date
             self.parent.pane.calendar.base_widget.set_focus_date(day)  # TODO convert to callback
-            self.body[self.focus_position + 1].contents[0][0].set_attr_map({None: 'red'})
+            DatePile.selected_date = currently_selected_date
+#            self.body[self.focus_position + 1].contents[0][0].set_attr_map({None: 'date focus'})
         rval = super().keypress(size, key)
         self.clean()
         return rval
 
 
 class DayWalker(urwid.SimpleFocusListWalker):
+    """A list Walker that contains a list of DPile objects, each representing
+    one day and associated events"""
+
     def __init__(self, this_date, eventcolumn):
         self.eventcolumn = eventcolumn
         self._init = True
@@ -284,24 +294,26 @@ class DayWalker(urwid.SimpleFocusListWalker):
         urwid.SimpleFocusListWalker.__init__(self, [])
 
     def update_by_date(self, day):
-        position = None
+        """make sure a DPile for `day` exists and bring it into focus"""
+        item_no = None
         if len(self) == 0:
             pile = self._get_events(day)
             self.append(pile)
             self._last_day = day
             self._first_day = day
-            position = 0
+            item_no = 0
         while day < self[0].date:
             self._autoprepend()
-            position = 0
+            item_no = 0
         while day > self[-1].date:
             self._autoextend()
-            position = len(self) - 1
-        if position is None:
-            position = (day - self[0].date).days
+            item_no = len(self) - 1
+        if item_no is None:
+            item_no = (day - self[0].date).days
 
-        assert self[position].date == day
-        self.set_focus(position)
+        assert self[item_no].date == day
+        DatePile.selected_date = day
+        self.set_focus(item_no)
 
     def set_focus(self, position):
         """set focus by item number"""
@@ -310,7 +322,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         while position <= 0:
             self._autoprepend()
             position += 1
-        rval = super().set_focus(position)
+        return super().set_focus(position)
 
     def _autoextend(self):
         self._last_day += timedelta(days=1)
@@ -323,7 +335,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self.insert(0, pile)
 
     def _get_events(self, day):
-        """get all events on day, return a Pile of U_Event
+        """get all events on day, return a Pile of `U_Event()`s
 
         :type day: datetime.date
         """
@@ -334,9 +346,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self.events = sorted(self.eventcolumn.pane.collection.get_events_on(day))
         if not self.events:
             event_list.append(
-                urwid.AttrMap(
-                    SelectableText('  no scheduled events'),
-                    'text', 'reveal focus'))
+                urwid.AttrMap(SelectableText('  no scheduled events'), 'text', 'reveal focus'))
         event_list.extend([
             urwid.AttrMap(U_Event(event, this_date=day, eventcolumn=self.eventcolumn),
                           'calendar ' + event.calendar, 'reveal focus') for event in self.events])
@@ -352,19 +362,22 @@ class DayWalker(urwid.SimpleFocusListWalker):
 
 
 class DatePile(urwid.Pile):
+    selected_date = None
+
     def __init__(self, *args, date, **kwargs):
         self.date = date
-        self._selected = None
         super().__init__(*args, **kwargs)
 
     def keypress(self, size, key):
         return super().keypress(size, key)
 
     def render(self, a, focus):
-       # if focus or self._selected:
-       #     self.contents[0][0].set_attr_map({None: 'selected date'})
-       # else:
-       #     self.contents[0][0].set_attr_map({None: 'date'})
+        if DatePile.selected_date == self.date:
+            self.contents[0][0].set_attr_map({None: 'date selected'})
+        elif focus:
+            self.contents[0][0].set_attr_map({None: 'date focused'})
+        else:
+            self.contents[0][0].set_attr_map({None: 'date'})
         return super().render(a, focus)
 
     @property
@@ -516,6 +529,11 @@ class EventColumn(urwid.WidgetWrap):
             else:
                 self.eventcolumn.current_event = self.event
         return super().keypress(size, key)
+
+    def render(self, a, focus):
+        if focus:
+            DatePile.selected_date = None
+        return super().render(a, focus)
 
 
 class RecurrenceEditor(urwid.WidgetWrap):
