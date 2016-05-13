@@ -46,6 +46,7 @@ def validate_int(input, min_value, max_value):
 
 
 def choose_datetime_format():
+    """query user for their date format of choice"""
     while True:
         ordering_choices = [
             ('year month day', ['%Y', '%m', '%d']),
@@ -75,6 +76,7 @@ def choose_datetime_format():
 
 
 def choose_time_format():
+    """query user for their time format of choice"""
     choices = ['%H:%M', '%I:%M %p']
     while True:
         print("What timeformat do you want to use?")
@@ -90,18 +92,26 @@ def choose_time_format():
     return timeformat
 
 
-def find_vdirs():
+def get_vdirs_from_vdirsyncer_config():
+    """trying to load vdirsyncer's config and read all vdirs from it"""
     print("If you use vdirsyncer to sync with CalDAV servers, we can try to "
           "load its config file and add your calendars to khal's config.")
     if not confirm("Should we try to load vdirsyncer's config?", default='y'):
         return None
     try:
         from vdirsyncer.cli import config
+        from vdirsyncer.exceptions import UserError
     except ImportError:
         print("Sorry, cannot import vdirsyncer. Please make sure you have it "
               "installed.")
         return None
-    vdir_config = config.load_config()
+    try:
+        vdir_config = config.load_config()
+    except UserError as error:
+        print("Sorry, trying to load vdirsyncer failed with the following "
+              "error message:")
+        print(error)
+        return None
     vdirs = list()
     for storage in vdir_config.storages.values():
         if storage['type'] == 'filesystem':
@@ -153,7 +163,7 @@ def configwizard(dry_run=False):
     print()
     timeformat = choose_time_format()
     print()
-    vdirs = find_vdirs()
+    vdirs = get_vdirs_from_vdirsyncer_config()
     print()
     if not vdirs:
         vdirs = create_vdir()
