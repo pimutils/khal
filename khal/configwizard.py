@@ -141,11 +141,11 @@ def create_vdir(names=[]):
         else:
             name += '1'
     try:
-        dirpath = split(path)[0]
-        if not exists(dirpath) and not isdir(dirpath):
-            makedirs(dirpath)
+        if not exists(path) and not isdir(path):
+            makedirs(path)
+            print("Created new vdir at {}".format(path))
     except OSError as error:
-        print("Could not create directory {} because of {}".format(dirpath, error))
+        print("Could not create directory {} because of {}".format(path, error))
         return None
     else:
         return [(name, path, 'calendar')]
