@@ -7,6 +7,14 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.8.2
+=====
+released on 2015-05-16
+
+* fixed some bugs in `configure` that would lead to invalid configuration files
+  and crashes (Christian Geier)
+* fixed detecting of icalendar version (Markus Unterwaditzer)
+
 0.8.1
 =====
 released on 2015-04-13
