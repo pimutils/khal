@@ -18,7 +18,7 @@ not released yet
 
 0.8.2
 =====
-released on 2015-05-16
+released on 2016-05-16
 
 * fixed some bugs in `configure` that would lead to invalid configuration files
   and crashes (Christian Geier)
@@ -26,13 +26,13 @@ released on 2015-05-16
 
 0.8.1
 =====
-released on 2015-04-13
+released on 2016-04-13
 
 * fix bug in CalendarWidget.set_focus_date() (Christian Geier)
 
 0.8.0
 =====
-released on 2015-04-13
+released on 2016-04-13
 
 * BREAKING CHANGE: python 2 is no longer supported (Hugo Osvaldo Barrera)
 * updated dependency: vdirsyncer >= 0.5.2
