@@ -7,7 +7,6 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
-
 0.9.0
 =====
 not released yet
@@ -16,6 +15,14 @@ not released yet
   locale should now be figured out automatically (Markus Unterwaditzer)
 * added command `list`
 * support for categories (and add `-g` flag for `khal new`) (Pierre David)
+
+0.8.2
+=====
+released on 2015-05-16
+
+* fixed some bugs in `configure` that would lead to invalid configuration files
+  and crashes (Christian Geier)
+* fixed detecting of icalendar version (Markus Unterwaditzer)
 
 0.8.1
 =====
