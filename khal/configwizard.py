@@ -24,7 +24,7 @@ from click import confirm, prompt, UsageError
 import xdg
 
 from functools import partial
-from os.path import expanduser, expandvars, join, normpath, split, exists, isdir
+from os.path import expanduser, expandvars, join, normpath, exists, isdir
 from os import makedirs
 
 from datetime import date, datetime
