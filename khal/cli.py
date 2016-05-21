@@ -304,6 +304,29 @@ def _get_cli():
             bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color']
         )
 
+    @cli.command("list")
+    @multi_calendar_option
+    @click.option('--format', '-f',
+                  help=('The format of the events.'))
+    @click.option('--once', '-o', help=('Print event only once'),
+                  is_flag=True)
+    @click.option('--notstarted', help=('Print only events that have not started'),
+                  is_flag=True)
+    @click.argument('DATERANGE', nargs=-1, required=False)
+    @click.pass_context
+    def klist(ctx, daterange, once, notstarted, format):
+        '''Print list.'''
+        controllers.khal_list(
+            build_collection(ctx),
+            format=format,
+            daterange=daterange,
+            once=once,
+            notstarted=notstarted,
+            locale=ctx.obj['conf']['locale'],
+            conf=ctx.obj['conf'],
+            env={"calendars": ctx.obj['conf']['calendars']}
+        )
+
     @cli.command()
     @calendar_option
     @click.option('--location', '-l',

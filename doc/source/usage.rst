@@ -89,6 +89,131 @@ string *now*. ``at`` defaults to *now*.
 
         khal at [-a CALENDAR ... | -d CALENDAR ...] [DATETIME | now]
 
+list
+****
+shows all events scheduled for a given date (or datetime) range, with custom
+formatting
+
+::
+        khal list [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
+        [--once] [--notstarted] [START DATE] [END DATE]
+
+if no end date is given, midnight of the start date is assumed. If no start
+date is given the today is assumed. The `--once` option only allows event to
+appear once even if they are on multiple days. The `--notstarted` option only
+shows events that start after `START DATE`. `END DATE` can also be of the form
+`I{m,h,d}` where `I` is an integer and `m` means minutes, `h` means hours, and
+`d` means days, this is the offset from the start date. In addition `eod` can
+be used to specify the end of day of the start date, this is useful if you have
+set a timedelta in the config.
+
+The format is a string that will be used with python's `string.format()`. The
+available templates are:
+
+.. option:: title
+
+        The title of the event.
+
+.. option:: description
+
+        The description of the event.
+
+.. option:: start
+
+        The start datetime in datetimeformat.
+
+.. option:: start-long
+
+        The start datetime in longdatetimeformat.
+
+.. option:: start-date
+
+        The start date in dateformat.
+
+.. option:: start-date-long
+
+        The start date in longdateformat.
+
+.. option:: start-time
+
+        The start time in timeformat.
+
+.. option:: end
+
+        The end datetime in datetimeformat.
+
+.. option:: end-long
+
+        The end datetime in longdatetimeformat.
+
+.. option:: end-date
+
+        The end date in dateformat.
+
+.. option:: end-date-long
+
+        The end date in longdateformat.
+
+.. option:: end-time
+
+        The end time in timeformat.
+
+.. option:: recurse
+
+        A repeating symbol (loop arrow) if the event is repeating.
+
+.. option:: description
+
+        The event description.
+
+.. option:: location
+
+        The event location.
+
+.. option:: calendar
+
+        The calendar name.
+
+.. option:: calendar-color
+
+        Changes the output color to the calendar's color.
+
+.. option:: start-style
+
+        The start time in timeformat OR an appropriate symbol.
+
+.. option:: to-style
+
+        A hyphen "-" or nothing such that it appropriatly fits between
+        start-style and end-style.
+
+.. option:: end-style
+
+        The end time in timeformat OR an appropriate symbol.
+
+.. option:: start-end-time-style
+
+        A concatenation of start-style, to-style, and end-style OR an
+        appropriate symbol.
+
+.. option:: start-date-once
+
+        The start date, so long as that date has not yet been printed.
+
+.. option:: start-date-once-newline
+
+        A newline if start-date-once is not "".
+
+In addtion there are colors: `black`, `red`, `green`, `yellow`, `blue`,
+`magenta`, `cyan`, `white` (and their bold versions: `red-bold`, etc.). There
+is also `reset`, which clears the styling.
+
+For example the below command with print the title and description of all events today.
+
+::
+
+        khal list --format "{title} {description}"
+
 calendar
 ********
 shows a calendar (similar to :manpage:`cal(1)`) and agenda. ``khal calendar``

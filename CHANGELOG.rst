@@ -14,6 +14,7 @@ not released yet
 
 * removed configuration variable `encoding` (in section [locale]), the correct
   locale should now be figured out automatically (Markus Unterwaditzer)
+* added command `list`
 
 0.8.1
 =====

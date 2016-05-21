@@ -431,6 +431,17 @@ behaviours are set here.
       :type: option, allowed values are *event*, *path* and *False*
       :default: False
 
+.. _default-timedelta:
+
+.. object:: timedelta
+
+    
+    The default timedelta to use in the list command if no end is specified.
+    Leave blank for end of day, otherwise a timedelta in the form `I{m,h,d}`.
+
+    :type: string
+    :default: None
+
 The [view] section
 ~~~~~~~~~~~~~~~~~~
 

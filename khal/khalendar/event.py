@@ -30,6 +30,7 @@ import pytz
 from ..aux import generate_random_uid
 from .aux import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
 from ..log import logger
+from click import style
 
 
 class Event(object):
@@ -146,15 +147,20 @@ class Event(object):
         return cls.fromVEvents(events, ref, **kwargs)
 
     def __lt__(self, other):
+        start = self.start_local
+        other_start = other.start_local
+        if isinstance(start, date) and not isinstance(start, datetime):
+            start = datetime.combine(start, time.min)
+
+        if isinstance(other_start, date) and not isinstance(other_start, datetime):
+            other_start = datetime.combine(other_start, time.max)
+
+        start = start.replace(tzinfo=None)
+        other_start = other_start.replace(tzinfo=None)
         try:
-            return self.start_local <= other.start_local
-        except TypeError:  # not the same type (should be datetime and date)
-            if not isinstance(other.start_local, datetime):
-                return 0
-            elif not isinstance(self.start_local, datetime):
-                return 1
-            else:
-                raise ValueError('Cannot compare events {} and {}'.format(self, other))
+            return start <= other_start
+        except TypeError:
+            raise ValueError('Cannot compare events {} and {}'.format(start, other_start))
 
     def update_start_end(self, start, end):
         """update start and end time of this event
@@ -454,6 +460,107 @@ class Event(object):
 
         comps = [startstr + tostr + endstr + ':', body, self._recur_str]
         return ' '.join(filter(bool, comps))
+
+    def format(self, format_string, relative_to, env={}):
+        attributes = {}
+
+        try:
+            relative_to_start, relative_to_end = relative_to
+        except:
+            relative_to_start = relative_to
+            relative_to_end = relative_to
+
+        if isinstance(relative_to_start.date(), datetime) or not isinstance(relative_to_start.date(), date):
+            raise ValueError('`this_date` is of type `{}`, should be '
+                             '`datetime.date`'.format(type(relative_to_start)))
+        if isinstance(relative_to_end.date(), datetime) or not isinstance(relative_to_end.date(), date):
+            raise ValueError('`this_date` is of type `{}`, should be '
+                             '`datetime.date`'.format(type(relative_to_end)))
+
+        day_start = self._locale['local_timezone'].localize(datetime.combine(relative_to_start.date(), time.min))
+        day_end = self._locale['local_timezone'].localize(datetime.combine(relative_to_end.date(), time.max))
+
+        self_start = self.start_local
+        if isinstance(self_start, date) and not isinstance(self_start, datetime):
+            self_start = self._locale['local_timezone'].localize(datetime.combine(self_start, time.min))
+
+        self_end = self.end_local
+        if isinstance(self_end, date) and not isinstance(self_end, datetime):
+            self_end = self._locale['local_timezone'].localize(datetime.combine(self_end, time.max))
+
+        attributes["start"] = self.start_local.strftime(self._locale['datetimeformat'])
+        attributes["start-long"] = self.start_local.strftime(self._locale['longdatetimeformat'])
+        attributes["start-date"] = self.start_local.strftime(self._locale['dateformat'])
+        attributes["start-date-long"] = self.start_local.strftime(self._locale['longdateformat'])
+        attributes["start-time"] = self.start_local.strftime(self._locale['timeformat'])
+        attributes["end"] = self.end_local.strftime(self._locale['datetimeformat'])
+        attributes["end-long"] = self.end_local.strftime(self._locale['longdatetimeformat'])
+        attributes["end-date"] = self.end_local.strftime(self._locale['dateformat'])
+        attributes["end-date-long"] = self.end_local.strftime(self._locale['longdateformat'])
+        attributes["end-time"] = self.end_local.strftime(self._locale['timeformat'])
+
+        tostr = ""
+        if self_start < day_start:
+            attributes["start-style"] = self.symbol_strings["right_arrow"]
+        elif self_start == day_start:
+            attributes["start-style"] = self.symbol_strings['range_start']
+        else:
+            attributes["start-style"] = attributes["start-time"]
+            tostr = "-"
+
+        if self_end == day_end:
+            attributes["end-style"] = self.symbol_strings["range_end"]
+            tostr = ""
+        elif self_end > day_end:
+            attributes["end-style"] = self.symbol_strings["right_arrow"]
+            tostr = ""
+        else:
+            attributes["end-style"] = attributes["end-time"]
+
+        attributes["to-style"] = tostr
+        if self_start < day_start and self_end > day_end:
+            attributes["start-end-time-style"] = self.symbol_strings["range"]
+        elif self_start == day_start and self_end == day_end:
+            attributes["start-end-time-style"] = ""
+        else:
+            attributes["start-end-time-style"] = attributes["start-style"] + attributes["to-style"] + attributes["end-style"]
+
+        attributes["recurse"] = self._recur_str
+        attributes["title"] = self.summary
+        attributes["description"] = self.description.strip()
+        attributes["location"] = self.location.strip()
+
+        attributes["calendar"] = self.calendar
+        attributes["calendar-color"] = ""
+        try:
+            cal = env["calendars"][self.calendar]
+            if "color" in cal and cal["color"] is not None:
+                attributes["calendar-color"] = cal["color"]
+            if "displayname" in cal and cal["displayname"] is not None:
+                attributes["calendar"] = cal["displayname"]
+        except:
+            pass
+
+        attributes["start-date-once"] = attributes["start-date"]
+        if self_start.replace(tzinfo=None) < relative_to_start:
+            attributes["start-date-once"] = relative_to_start.strftime(self._locale['dateformat'])
+        attributes["start-date-once-newline"] = "\n"
+        if "seen-days" not in env:
+            env["seen-days"] = set()
+        if attributes["start-date-once"] in env["seen-days"]:
+            attributes["start-date-once"] = ""
+            attributes["start-date-once-newline"] = ""
+        env["seen-days"].add(attributes["start-date-once"])
+
+        colors = {"reset": style("", reset=True)}
+        for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
+            colors[c] = style("", reset=False, fg=c)
+            colors[c + "-bold"] = style("", reset=False, fg=c, bold=True)
+        attributes.update(colors)
+        try:
+            return format_string.format(**attributes) + colors["reset"]
+        except:
+            raise KeyError("cannot format event with: %s" % format_string)
 
     @property
     def event_description(self):   # XXX rename me

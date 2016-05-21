@@ -286,6 +286,19 @@ def test_at(runner):
     assert not result.exception
 
 
+def test_list(runner):
+    runner = runner(command='calendar', showalldays=False, days=2)
+    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    result = runner.invoke(
+        main_khal,
+        'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+    format = '{red}{start-end-time-style}{reset} {title} :: {description}'
+    result = runner.invoke(main_khal, ['--color', 'list', '--format', format, '18:30'])
+    assert result.output.startswith('\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n')
+    assert not result.exception
+
+
 def test_search(runner):
     runner = runner(command='calendar', showalldays=False, days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
