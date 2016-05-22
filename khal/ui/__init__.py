@@ -285,7 +285,7 @@ class DListBox(urwid.ListBox):
 
 
 class DayWalker(urwid.SimpleFocusListWalker):
-    """A list Walker that contains a list of DPile objects, each representing
+    """A list Walker that contains a list of DatePile objects, each representing
     one day and associated events"""
 
     def __init__(self, this_date, eventcolumn):
@@ -305,7 +305,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self.weekdays = [weekday for weekday in _calendar.formatweekheader(11).split(' ') if weekday]
 
     def update_by_date(self, day):
-        """make sure a DPile for `day` exists and bring it into focus"""
+        """make sure a DatePile for `day` exists and bring it into focus"""
         item_no = None
         if len(self) == 0:
             pile = self._get_events(day)
@@ -401,11 +401,14 @@ class DatePile(urwid.Pile):
 
     @property
     def current_event(self):
-        import ipdb; ipdb.set_trace()
+        """return the U_Event in focus, if none is, return None"""
+        if self.focus_position == 0:
+            return None
+        else:
+            return self.focus.original_widget
 
 
 class EventColumn(urwid.WidgetWrap):
-
     """contains the eventlist as well as the event viewer"""
 
     def __init__(self, pane):
@@ -448,7 +451,7 @@ class EventColumn(urwid.WidgetWrap):
         self.eventcount = self.container.update_by_date(date)
  #       self.current_event = self.current_event
 
-        # Show first event if show event view is true
+        # Show firast event if show event view is true
         if self.pane.conf['view']['event_view_always_visible']:
             if len(self.events.events) > 0:
                 self.current_event = self.events.events[0]
@@ -493,7 +496,7 @@ class EventColumn(urwid.WidgetWrap):
         assert not self.editor
         self.editor = True
         editor = EventEditor(self.pane, event, update_colors)
-        current_day = self.container.contents[0][0]
+        #current_day = self.container.contents[0][0]  FIXME
 
         ContainerWidget = linebox[self.pane.conf['view']['frame']]
         new_pane = urwid.Columns([
@@ -509,7 +512,7 @@ class EventColumn(urwid.WidgetWrap):
         self.pane.window.open(new_pane, callback=teardown)
 
     def new(self, date, end):
-        """create a new event on date
+        """create a new event on `date`
 
         :param date: default date for new event
         :type date: datetime.date
@@ -587,11 +590,7 @@ class RecurrenceEditor(urwid.WidgetWrap):
 
 
 class EventDisplay(urwid.WidgetWrap):
-
-    """showing events
-
-    widget for displaying one event's details
-    """
+    """A widget showing one Event()'s details """
 
     def __init__(self, conf, event, collection=None):
         self.conf = conf
@@ -640,15 +639,14 @@ class EventDisplay(urwid.WidgetWrap):
         if event.description != '':
             lines.append(urwid.Text(event.description))
 
+
         pile = urwid.Pile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
 
 
-class EventEditor(urwid.WidgetWrap):
 
-    """
-    Widget for event Editing
-    """
+class EventEditor(urwid.WidgetWrap):
+    """Widget that allows Editing one `Event()`"""
 
     def __init__(self, pane, event, save_callback=None):
         """
