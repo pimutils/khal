@@ -19,7 +19,9 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import calendar
 from datetime import date, datetime, timedelta
+from locale import getlocale
 import signal
 import sys
 
@@ -293,6 +295,15 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self._first_day = False
         urwid.SimpleFocusListWalker.__init__(self, [])
 
+        firstweekday = eventcolumn.pane.conf['locale']['firstweekday']
+        calendar.setfirstweekday(firstweekday)
+        try:
+            mylocale = '.'.join(getlocale())
+        except TypeError:  # language code and encoding may be None
+            mylocale = 'C'
+        _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)
+        self.weekdays = [weekday for weekday in _calendar.formatweekheader(11).split(' ') if weekday]
+
     def update_by_date(self, day):
         """make sure a DPile for `day` exists and bring it into focus"""
         item_no = None
@@ -341,12 +352,15 @@ class DayWalker(urwid.SimpleFocusListWalker):
         """
         event_list = list()
         date_text = urwid.Text(
-            day.strftime(self.eventcolumn.pane.conf['locale']['longdateformat']))
+            relative_day(
+                day,
+                self.weekdays[day.weekday()],
+                self.eventcolumn.pane.conf['locale']['longdateformat']),
+        )
         event_list.append(urwid.AttrMap(date_text, 'date', 'date focus'))
         self.events = sorted(self.eventcolumn.pane.collection.get_events_on(day))
         if not self.events:
-            event_list.append(
-                urwid.AttrMap(SelectableText('  no scheduled events'), 'text', 'reveal focus'))
+            event_list.append(urwid.AttrMap(urwid.Text('  no scheduled events'), 'text'))
         event_list.extend([
             urwid.AttrMap(U_Event(event, this_date=day, eventcolumn=self.eventcolumn),
                           'calendar ' + event.calendar, 'reveal focus') for event in self.events])
@@ -367,6 +381,11 @@ class DatePile(urwid.Pile):
     def __init__(self, *args, date, **kwargs):
         self.date = date
         super().__init__(*args, **kwargs)
+
+    def __repr__(self):
+        return '<DatePile Widget {}>'.format(self.date)
+
+    __str__ = __repr__
 
     def keypress(self, size, key):
         return super().keypress(size, key)
@@ -403,12 +422,13 @@ class EventColumn(urwid.WidgetWrap):
         urwid.WidgetWrap.__init__(self, self.container)
 
     @property
-    def current_event(self):
+    def focus_event(self):
         """returns the event currently in focus"""
         return self.events.current_event
 
-    @current_event.setter
-    def current_event(self, event):
+    @focus_event.setter
+    def focus_event(self, event):
+        raise
         while len(self.container.contents) > 1:
             self.container.contents.pop()
         if not event:
@@ -419,11 +439,11 @@ class EventColumn(urwid.WidgetWrap):
              ('weight', self.event_width)))
 
     @property
-    def current_date(self):
+    def focus_date(self):
         return self._current_date
 
-    @current_date.setter
-    def current_date(self, date):
+    @focus_date.setter
+    def focus_date(self, date):
         self._current_date = date
         self.eventcount = self.container.update_by_date(date)
  #       self.current_event = self.current_event
@@ -517,17 +537,16 @@ class EventColumn(urwid.WidgetWrap):
         return True
 
     def keypress(self, size, key):
-        if key in self._conf['keybindings']['view']:
-            event = self.current_event
-            if self.is_viewed:
-                if self.uid in self.eventcolumn.pane.deleted[ALL] or \
-                        self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
-                    self.eventcolumn.pane.window.alert(
+        if key in self._conf['keybindings']['view'] and self.focus_event:
+            #if self.is_viewed:
+                if self.focus_event.uid in self.pane.deleted[ALL] or \
+                        self.focus_event.recuid in self.pane.deleted[INSTANCES]:
+                    self.pane.window.alert(
                         ('light red', 'This event is marked as deleted'))
                     return
-                self.eventcolumn.edit(self.event)
-            else:
-                self.eventcolumn.current_event = self.event
+                self.edit(self.focus_event.event)
+            #else:
+            #    self.eventcolumn.focus_event = self.event
         return super().keypress(size, key)
 
     def render(self, a, focus):
@@ -1083,3 +1102,49 @@ def start_pane(pane, callback, program_info='', quit_keys=['q']):
             pass
         print(tb)
         sys.exit(1)
+
+
+def relative_day(day, weekday, dtformat):
+    """convert day into a string with its weekday and relative distance to today
+
+    :param day: day to be converted
+    :type: day: datetime.day
+    :param weekday: `day`'s weekday
+    :type weekday: str
+    :param dtformat: the format day is to be printed in, passed to strftime
+    :tpye dtformat: str
+    :rtype: str
+    """
+
+    daystr = day.strftime(dtformat)
+    if day == date.today():
+        return 'Today ({}, {})'.format(weekday, daystr)
+    elif day == date.today() + timedelta(days=1):
+        return 'Tomorrow ({}, {})'.format(weekday, daystr)
+    elif day == date.today() - timedelta(days=1):
+        return 'Yesterday ({}, {})'.format(weekday, daystr)
+
+    days = (day - date.today()).days
+    if days < 0:
+        direction = 'ago'
+    else:
+        direction = 'from now'
+    if abs(days) < 7:
+        unit = 'day'
+        count = abs(days)
+    elif abs(days) < 365:
+        unit = 'week'
+        count = int(abs(days) / 7)
+    else:
+        unit = 'year'
+        count = int(abs(days) / 365)
+    if count > 1:
+        unit += 's'
+
+    return '{weekday}, {day} ({count} {unit} {direction})'.format(
+        weekday=weekday,
+        day=daystr,
+        count=count,
+        unit=unit,
+        direction=direction,
+    )
