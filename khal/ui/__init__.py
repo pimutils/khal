@@ -204,31 +204,16 @@ class U_Event(urwid.Text):
             key = 'right'
         elif key in binds['down']:
             key = 'down'
-
         elif key in binds['delete']:
             self.toggle_delete()
             key = 'down'
         elif key in binds['duplicate']:
             self.duplicate()
+            key = None
         elif key in binds['export']:
             self.export_event()
-        elif key in ['left', 'up', 'down']:
-            return key
-            # TODO this really does not belong here, move it one step
-            if not self.conf['view']['event_view_always_visible']:
-                self.eventcolumn.current_event = None
-            else:
-                events = self.eventcolumn.events.events
-                focused = self.eventcolumn.events.list_walker.focus
-                if key == 'down' and focused < len(events) - 1:
-                    self.eventcolumn.current_event = events[focused + 1]
-                if key == 'up' and focused > 0:
-                    self.eventcolumn.current_event = events[focused - 1]
-
-        if key in ['esc'] and self.eventcolumn.current_event:
-            self.eventcolumn.current_event = None
-        else:
-            return key
+            key = None
+        return key
 
 
 class DListBox(urwid.ListBox):
@@ -279,6 +264,8 @@ class DListBox(urwid.ListBox):
             self.parent.pane.calendar.base_widget.set_focus_date(day)  # TODO convert to callback
             DatePile.selected_date = currently_selected_date
 #            self.body[self.focus_position + 1].contents[0][0].set_attr_map({None: 'date focus'})
+        # TODO this really does not belong here, move it one step
+
         rval = super().keypress(size, key)
         self.clean()
         return rval
@@ -291,9 +278,8 @@ class DayWalker(urwid.SimpleFocusListWalker):
     def __init__(self, this_date, eventcolumn):
         self.eventcolumn = eventcolumn
         self._init = True
-        self._last_day = False
-        self._first_day = False
-        urwid.SimpleFocusListWalker.__init__(self, [])
+        self._last_day = this_date
+        self._first_day = this_date
 
         firstweekday = eventcolumn.pane.conf['locale']['firstweekday']
         calendar.setfirstweekday(firstweekday)
@@ -303,6 +289,10 @@ class DayWalker(urwid.SimpleFocusListWalker):
             mylocale = 'C'
         _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)
         self.weekdays = [weekday for weekday in _calendar.formatweekheader(11).split(' ') if weekday]
+
+        super().__init__(list())
+        self.update_by_date(this_date)
+
 
     def update_by_date(self, day):
         """make sure a DatePile for `day` exists and bring it into focus"""
@@ -351,13 +341,13 @@ class DayWalker(urwid.SimpleFocusListWalker):
         :type day: datetime.date
         """
         event_list = list()
-        date_text = urwid.Text(
+        date_text = SelectableText(
             relative_day(
                 day,
                 self.weekdays[day.weekday()],
                 self.eventcolumn.pane.conf['locale']['longdateformat']),
         )
-        event_list.append(urwid.AttrMap(date_text, 'date', 'date focus'))
+        event_list.append(urwid.AttrMap(date_text, 'date'))
         self.events = sorted(self.eventcolumn.pane.collection.get_events_on(day))
         if not self.events:
             event_list.append(urwid.AttrMap(urwid.Text('  no scheduled events'), 'text'))
@@ -387,14 +377,17 @@ class DatePile(urwid.Pile):
 
     __str__ = __repr__
 
+    def selectable(self):
+        return True
+
     def keypress(self, size, key):
         return super().keypress(size, key)
 
     def render(self, a, focus):
-        if DatePile.selected_date == self.date:
-            self.contents[0][0].set_attr_map({None: 'date selected'})
-        elif focus:
+        if focus:
             self.contents[0][0].set_attr_map({None: 'date focused'})
+        elif DatePile.selected_date == self.date:
+            self.contents[0][0].set_attr_map({None: 'date selected'})
         else:
             self.contents[0][0].set_attr_map({None: 'date'})
         return super().render(a, focus)
@@ -416,12 +409,12 @@ class EventColumn(urwid.WidgetWrap):
         self._conf = pane.conf
         self.divider = urwid.Divider('─')
         self.editor = False
-        self.eventcount = 0
         self._current_date = None
+        self._eventshown = False
         self.event_width = int(self.pane.conf['view']['event_view_weighting'])
-
         self.events = DayWalker(date.today(), eventcolumn=self)
-        self.container = DListBox(self.events, parent=self)
+        self.dlistbox = DListBox(self.events, parent=self)
+        self.container = urwid.Pile([self.dlistbox])
         urwid.WidgetWrap.__init__(self, self.container)
 
     @property
@@ -441,6 +434,22 @@ class EventColumn(urwid.WidgetWrap):
             (EventDisplay(self.pane.conf, event, collection=self.pane.collection),
              ('weight', self.event_width)))
 
+    def view(self, event):
+        """show event in the lower part of this column"""
+        self._eventshown = True
+        self.container.contents.append((self.divider, ('pack', None)))
+        self.container.contents.append(
+            (EventDisplay(self.pane.conf, event, collection=self.pane.collection),
+             ('weight', self.event_width)))
+
+    def clear_event_view(self):
+        self._eventshown = False
+        while len(self.container.contents) > 1:
+            self.container.contents.pop()
+
+    def set_focus_date(self, date):
+        self.focus_date = date
+
     @property
     def focus_date(self):
         return self._current_date
@@ -448,7 +457,7 @@ class EventColumn(urwid.WidgetWrap):
     @focus_date.setter
     def focus_date(self, date):
         self._current_date = date
-        self.eventcount = self.container.update_by_date(date)
+        self.dlistbox.update_by_date(date)
  #       self.current_event = self.current_event
 
         # Show firast event if show event view is true
@@ -458,9 +467,6 @@ class EventColumn(urwid.WidgetWrap):
             else:
                 self.current_event = None
 
-    def set_current_date(self, date):
-        self.current_date = date
-
     def edit(self, event):
         """create an EventEditor and display it
 
@@ -469,8 +475,7 @@ class EventColumn(urwid.WidgetWrap):
         """
         if event.readonly:
             self.pane.window.alert(
-                ('light red',
-                 'Calendar {} is read-only.'.format(event.calendar)))
+                ('light red', 'Calendar {} is read-only.'.format(event.calendar)))
             return
 
         if isinstance(event.start_local, datetime):
@@ -500,15 +505,14 @@ class EventColumn(urwid.WidgetWrap):
 
         ContainerWidget = linebox[self.pane.conf['view']['frame']]
         new_pane = urwid.Columns([
-            ('weight', 1.5, ContainerWidget(editor)),
-            ('weight', 1, ContainerWidget(current_day))
+            ('weight', 2, ContainerWidget(editor)),
+            ('weight', 1, ContainerWidget(self.dlistbox))
         ], dividechars=0, focus_column=0)
         new_pane.title = editor.title
         new_pane.get_keys = editor.get_keys
 
         def teardown(data):
             self.editor = False
-            self.current_date = self.current_date
         self.pane.window.open(new_pane, callback=teardown)
 
     def new(self, date, end):
@@ -529,28 +533,30 @@ class EventColumn(urwid.WidgetWrap):
         else:
             event = aux.new_event(dtstart=date, dtend=end, summary="new event",
                                   allday=True, locale=self.pane.conf['locale'])
-
         event = self.pane.collection.new_event(
             event.to_ical(), self.pane.collection.default_calendar_name)
-
         self.edit(event)
-        self.eventcount += 1
 
     def selectable(self):
         return True
 
     def keypress(self, size, key):
         if key in self._conf['keybindings']['view'] and self.focus_event:
-            #if self.is_viewed:
-                if self.focus_event.uid in self.pane.deleted[ALL] or \
+            if not self._eventshown:
+                self.view(self.focus_event.event)
+            elif self.focus_event.uid in self.pane.deleted[ALL] or \
                         self.focus_event.recuid in self.pane.deleted[INSTANCES]:
                     self.pane.window.alert(
                         ('light red', 'This event is marked as deleted'))
-                    return
+            else:
+                self.clear_event_view()
                 self.edit(self.focus_event.event)
-            #else:
-            #    self.eventcolumn.focus_event = self.event
-        return super().keypress(size, key)
+        elif key in ['esc'] and self._eventshown:
+            self.clear_event_view()
+        elif key in self._conf['keybindings']['new']:
+            self.new(self.focus_date, self.focus_date)
+        else:
+            return super().keypress(size, key)
 
     def render(self, a, focus):
         if focus:
@@ -668,10 +674,9 @@ class EventEditor(urwid.WidgetWrap):
         self.description = event.description
         self.location = event.location
         self.categories = event.categories
-
         self.startendeditor = StartEndEditor(
             event.start_local, event.end_local, self.conf,
-            self.pane.eventscolumn.original_widget.set_current_date)
+            self.pane.eventscolumn.original_widget.set_focus_date)
         self.recurrenceeditor = RecurrenceEditor(self.event.recurobject)
         self.summary = Edit(caption='Title: ', edit_text=event.summary)
 
@@ -906,7 +911,7 @@ class ClassicView(Pane):
         ContainerWidget = linebox[self.conf['view']['frame']]
         self.eventscolumn = ContainerWidget(EventColumn(pane=self))
         calendar = CalendarWidget(
-            on_date_change=self.show_date,
+            on_date_change=self.eventscolumn.original_widget.set_focus_date,
             keybindings=self.conf['keybindings'],
             on_press={key: self.new_event for key in self.conf['keybindings']['new']},
             firstweekday=conf['locale']['firstweekday'],
@@ -960,6 +965,7 @@ class ClassicView(Pane):
                 ]
 
     def show_date(self, date):
+        raise
         self.eventscolumn.original_widget.current_date = date
 
     def new_event(self, date, end):

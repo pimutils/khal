@@ -703,6 +703,7 @@ class LocalizedEvent(DatetimeEvent):
         """
         return self.start.astimezone(self._locale['local_timezone'])
 
+
     @property
     def end_local(self):
         """
