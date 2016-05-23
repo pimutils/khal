@@ -70,9 +70,11 @@ Before we will accept your PR, we will ask you to:
 Running the tests
 *****************
 To run tests locally you can use tox_ to run khal's test suite with different
-versions of python (just run `tox` from a local khal repository).  If you open a
-PR, `travis CI`_ will automatically run the test and report in the PR thread on
-github.
+versions of python (run `tox` from a local khal repository), if this doesn't
+work (or you only want to test against your current version of python) try
+pytest_ and run `pytest tests` (the excecutable might be called `py.test`
+depending on how you install it).  If you open a PR, `travis CI`_ will
+automatically run the tests and report back in the PR thread on github.
 
 
 .. _github: https://github.com/pimutils/khal/
@@ -81,3 +83,4 @@ github.
 .. _travis CI: https://travis-ci.org/pimutils/khal
 .. _github pull requests: https://github.com/pimutils/khal/pulls
 .. _tox: https://tox.readthedocs.org/
+.. _pytest: http://pytest.org/

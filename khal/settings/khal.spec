@@ -1,7 +1,7 @@
 [calendars]
 # The *[calendars]* is mandatory and must contain at least one subsection.
 # Every subsection must have a unique name (enclosed by two square brackets).
-# Each subection needs exactly one *path* setting, everything else is optional.
+# Each subsection needs exactly one *path* setting, everything else is optional.
 # Here is a small example:
 #
 # .. literalinclude:: ../../tests/configs/small.conf
@@ -19,9 +19,9 @@ path = expand_path(default=None)
 # cyan*, *light red*.
 # Depending on your terminal emulator's settings, they might look different
 # than what their name implies.
-# In addition to the 16 named colors an index from the 256-color paltte or a
+# In addition to the 16 named colors an index from the 256-color palette or a
 # 24-bit color code can be used, if your terminal supports this.
-# The 256-color paltte index is simply a number between 0 and 255.
+# The 256-color palette index is simply a number between 0 and 255.
 # The 24-bit color must be given as #RRGGBB, where RR, GG, BB is the
 # hexadecimal value of the red, green and blue component, respectively.
 # When using a 24-bit color, make sure to enclose the color value in ' or "!
@@ -47,10 +47,10 @@ type = option('calendar', 'birthdays', 'discover', default='calendar')
 # khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
 path = expand_db_path(default=None)
 
-# The most important options in the the **[locale]** section are probably (long-)time and dateformat.
+# It is mandatory to set long) date-, time-, and datetimeformat options, all others options in the **[locale]**are optional and have (sensible) defaults.
 [locale]
 
-# the day first day of the week, were Monday is 0 and Sunday is 6
+# the first day of the week, were Monday is 0 and Sunday is 6
 firstweekday = integer(0, 6, default=0)
 
 # by default khal uses some unicode symbols (as in 'non-ascii') as indicators for things like repeating events,
@@ -95,7 +95,7 @@ weeknumbers = weeknumbers(default='off')
 
 # keybindings for :command:`ikhal` are set here. You can bind more than one key
 # (combination) to a command by supplying a comma-separated list of keys.
-# For binding key combinations just add concatenate them (with a space in
+# For binding key combinations concatenate them keys (with a space in
 # between), e.g. **ctrl n**.
 [keybindings]
 
@@ -129,7 +129,7 @@ save = force_list(default=list('meta enter'))
 # duplicate the currently selected event
 duplicate = force_list(default=list('p'))
 
-# export event as ICS
+# export event as a .ics file
 export = force_list(default=list('e'))
 
 # go into highlight (visual) mode to choose a date range
@@ -150,17 +150,17 @@ search = force_list(default=list('/'))
 default_command = option('calendar', 'agenda', 'interactive', 'printformats', 'printcalendars', '', default='calendar')
 
 # The calendar to use if none is specified for some operation (e.g. if adding a
-# new event). If this is not set, such operations requre an explicit value.
+# new event). If this is not set, such operations require an explicit value.
 default_calendar = string(default=None)
 
 # By default, khal displays only dates with event in "agenda" view.
 # Setting this to *True* will show all days in "agenda", even
-# when there is no event
+# when there is no event scheduled on that day.
 show_all_days = boolean(default=False)
 
-# By default, khal show events for today and tomorrow.
+# By default, khal shows events for today and tomorrow.
 # Setting this to a different value will show events of that amount of days by
-# defaut.
+# default.
 days = integer(default=2)
 
 # After adding a new event, what should be printed to standard out? The whole
@@ -178,7 +178,7 @@ timedelta = string(default='')
 # when using ikhal
 [view]
 
-# This is the weighting that is applied to the event view window
+# weighting that is applied to the event view window
 event_view_weighting = integer(default=1)
 
 # Set to true to always show the event view window when looking at the event list
@@ -228,7 +228,7 @@ color = color(default='')
 # explicit color or use calendars' colors when set to ''
 multiple = color(default='')
 
-# Default color for calendars without color - when se to '' it
+# Default color for calendars without color - when set to '' it
 # actually disables highlighting for events that should use the
 # default color.
 default_color = color(default='')
