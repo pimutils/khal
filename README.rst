@@ -6,7 +6,7 @@ khal
 .. image:: https://codecov.io/github/pimutils/khal/coverage.svg?branch=master
   :target: https://codecov.io/github/pimutils/khal?branch=master
 
-*Khal* is a standards based CLI (console) calendar program, able to synchronize
+*Khal* is a standards based CLI and terminal calendar program, able to synchronize
 with CalDAV_ servers through vdirsyncer_.
 
 .. image:: http://lostpackets.de/images/khal.png
@@ -21,7 +21,7 @@ Features
 - fast and easy way to add new events
 - ikhal (interactive khal) lets you browse and edit calendars and events
 - only rudimentary support for creating and editing recursion rules
-- you cannot edit the timezones of events
+- no support for editing the timezones of events yet
 - works with python 3.3+
 - khal should run on all major operating systems [1]_
 
