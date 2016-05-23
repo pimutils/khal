@@ -30,7 +30,7 @@ except ImportError:
 __productname__ = 'khal'
 __version__ = version
 __author__ = 'Christian Geier'
-__copyright__ = 'Copyright (c) 2013-2015 Christian Geier et al.'
+__copyright__ = 'Copyright (c) 2013-2016 Christian Geier et al.'
 __author_email__ = 'khal@lostpackets.de'
 __description__ = 'A CalDAV based calendar'
 __license__ = 'Expat/MIT, see COPYING'
