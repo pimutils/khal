@@ -22,6 +22,7 @@
 
 from os.path import expandvars, expanduser, join
 import os
+import glob
 
 import pytz
 import xdg
@@ -147,7 +148,7 @@ def get_all_vdirs(path):
     # TODO take care of links
     vdirs = list()
     contains_only_file = True
-    items = os.listdir(path)
+    items = glob.glob(os.path.join(path, '*'))
     for item in items:
         itempath = os.path.join(path, item)
         if os.path.isdir(itempath):
