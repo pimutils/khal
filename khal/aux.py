@@ -357,8 +357,8 @@ def generate_random_uid():
 
 def construct_event(dtime_list, locale,
                     defaulttimelen=60, defaultdatelen=1, description=None,
-                    location=None, repeat=None, until=None, alarm=None,
-                    **kwargs):
+                    location=None, categories=None, repeat=None, until=None,
+                    alarm=None, **kwargs):
     """takes a list of strings and constructs a vevent from it
 
     the parts of the list can be either of these:
@@ -466,6 +466,8 @@ def construct_event(dtime_list, locale,
         event.add('description', description)
     if location:
         event.add('location', location)
+    if categories:
+        event.add('categories', categories)
     if repeat and repeat != "none":
         if repeat in ["daily", "weekly", "monthly", "yearly"]:
             rrule_settings = {'freq': repeat}

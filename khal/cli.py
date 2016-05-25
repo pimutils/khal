@@ -331,6 +331,8 @@ def _get_cli():
     @calendar_option
     @click.option('--location', '-l',
                   help=('The location of the new event.'))
+    @click.option('--categories', '-g',
+                  help=('The categories of the new event.'))
     @click.option('--repeat', '-r',
                   help=('Repeat event: daily, weekly, monthly or yearly.'))
     @click.option('--until', '-u',
@@ -343,7 +345,7 @@ def _get_cli():
     @click.argument('SUMMARY', metavar='SUMMARY', nargs=1, required=False)
     @click.argument('DESCRIPTION', metavar='[:: DESCRIPTION]', nargs=-1, required=False)
     @click.pass_context
-    def new(ctx, calendar, start, end, timezone, summary, description, location, repeat,
+    def new(ctx, calendar, start, end, timezone, summary, description, location, categories, repeat,
             until, alarm):
         '''Create a new event from arguments.
 
@@ -369,6 +371,7 @@ def _get_cli():
             ctx.obj['conf'],
             eventlist,
             location=location,
+            categories=categories,
             repeat=repeat,
             until=until.split(' ') if until is not None else None,
             alarm=alarm,

@@ -70,6 +70,7 @@ def test_update_simple():
     event.update_summary('A not so simple Event')
     event.update_description('Everything has changed')
     event.update_location('anywhere')
+    event.update_categories('meeting')
     assert normalize_component(event.raw) == normalize_component(event_updated.raw)
 
 

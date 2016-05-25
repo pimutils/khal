@@ -354,6 +354,9 @@ Options
 """""""
 * **-l, --location=LOCATION** specify where this event will be held.
 
+* **-g, --categories=CATEGORIES** specify which categories this event belongs to.
+  Comma separated list of categories. Beware: some servers (e.g. SOGo) do not support multiple categories.
+
 * **-r, --repeat=RRULE** specify if and how this event should be recurring.
   Valid values for *RRULE* are `daily`, `weekly`, `monthly`
   and `yearly`
@@ -388,7 +391,7 @@ additional description
 
 ::
 
-    khal new -a work 26.07. Great Event -r weekly
+    khal new -a work 26.07. Great Event -g meeting -r weekly
 
 adds a new all day event on 26th of July to the calendar *work* which recurs
 every week.
