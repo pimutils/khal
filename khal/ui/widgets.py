@@ -548,3 +548,50 @@ class AlarmsEditor(urwid.WidgetWrap):
             return self.event.alarms != self.get_alarms()
         except ValueError:
             return False
+
+
+class FocusLineBox(urwid.WidgetDecoration, urwid.WidgetWrap):
+    def __init__(self, widget):
+        hline = urwid.Divider('─')
+        hline_focus = urwid.Divider('═')
+        self._vline = urwid.SolidFill('│')
+        self._vline_focus = urwid.SolidFill('║')
+        self._topline = urwid.Columns([
+            ('fixed', 1, urwid.Text('┌')),
+            hline,
+            ('fixed', 1, urwid.Text('┐')),
+        ])
+        self._topline_focus = urwid.Columns([
+            ('fixed', 1, urwid.Text('╔')),
+            hline_focus,
+            ('fixed', 1, urwid.Text('╗')),
+        ])
+        self._bottomline = urwid.Columns([
+            ('fixed', 1, urwid.Text('└')),
+            hline,
+            ('fixed', 1, urwid.Text('┘')),
+        ])
+        self._bottomline_focus = urwid.Columns([
+            ('fixed', 1, urwid.Text('╚')),
+            hline_focus,
+            ('fixed', 1, urwid.Text('╝')),
+        ])
+        self._middle = urwid.Columns([('fixed', 1, self._vline), widget, ('fixed', 1, self._vline)])
+        self._all = urwid.Pile([('flow', self._topline), self._middle, ('flow', self._bottomline)])
+
+        urwid.WidgetDecoration.__init__(self, widget)
+        urwid.WidgetWrap.__init__(self, self._all)
+
+    def render(self, size, focus):
+        inner = self._all.contents[1][0]
+        if focus:
+            self._all.contents[0] = (self._topline_focus, ('pack', None))
+            inner.contents[0] = (self._vline_focus, ('given', 1, False))
+            inner.contents[2] = (self._vline_focus, ('given', 1, False))
+            self._all.contents[2] = (self._bottomline_focus, ('pack', None))
+        else:
+            self._all.contents[0] = (self._topline, ('pack', None))
+            inner.contents[0] = (self._vline, ('given', 1, False))
+            inner.contents[2] = (self._vline, ('given', 1, False))
+            self._all.contents[2] = (self._bottomline, ('pack', None))
+        return super().render(size, focus)
