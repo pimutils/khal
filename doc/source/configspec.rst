@@ -39,11 +39,12 @@ Here is a small example:
 
     The path to an existing directory where this calendar is saved as a *vdir*.
     The directory is searched for events or birthdays (see ``type``). The path
-    also accepts glob expansion via `*` or `?`. The search is also recursive.
-    This allows for paths such as `~/accounts/*/calendars`, where the calendars
-    directory contains vdir directories OR the events themselves. In addition,
-    the following are equivelant (due to the recursion): `~/calendars/*` and
-    `~/calendars`.
+    also accepts glob expansion via `*` or `?` when type is set to discover.
+    This allows for paths such as `~/accounts/*/calendars/*`, where the
+    calendars directory contains vdir directories. In addition, `~/calendars/*`
+    and `~/calendars/default` are valid paths if there exists a vdir in the
+    `default` directory. (The previous behaviour of recursively searching
+    directories has been replaced with globbing).
 
       :type: string
       :default: None

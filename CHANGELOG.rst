@@ -14,7 +14,8 @@ not released yet
 
 * removed configuration variable `encoding` (in section [locale]), the correct
   locale should now be figured out automatically (Markus Unterwaditzer)
-* added command `list`
+* added command `list` (Taylor Money)
+* calendar path is now a glob without recursion for discover (Taylor Money)
 
 0.8.1
 =====
