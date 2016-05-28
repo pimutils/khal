@@ -303,8 +303,9 @@ def test_search(runner):
     runner = runner(command='calendar', showalldays=False, days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
-    result = runner.invoke(main_khal, ['--color', 'search', 'myevent'])
-    assert result.output.startswith('\x1b[34m18:00')
+    format = '{red}{start-end-time-style}{reset} {title} :: {description}'
+    result = runner.invoke(main_khal, ['--color', 'search', '--format', format, 'myevent'])
+    assert result.output.startswith('\x1b[34m\x1b[31m18:00')
     assert not result.exception
 
 

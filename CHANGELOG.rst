@@ -16,6 +16,7 @@ not released yet
   locale should now be figured out automatically (Markus Unterwaditzer)
 * added command `list`
 * support for categories (and add `-g` flag for `khal new`) (Pierre David)
+* search is now sorted and allows for a `--format` (Taylor Money)
 
 0.8.1
 =====

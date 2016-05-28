@@ -23,6 +23,7 @@ import logging
 import sys
 import textwrap
 from shutil import get_terminal_size
+import datetime
 
 try:
     from setproctitle import setproctitle
@@ -455,20 +456,25 @@ def _get_cli():
 
     @cli.command()
     @multi_calendar_option
+    @click.option('--format', '-f',
+                  help=('The format of the events.'))
     @click.argument('search_string')
     @click.pass_context
-    def search(ctx, search_string):
+    def search(ctx, format,  search_string):
         '''Search for events matching SEARCH_STRING.
 
         For repetitive events only one event is currently shown.
         '''
         # TODO support for time ranges, location, description etc
+        if format is None:
+            format = ctx.obj['conf']['view']['event_format']
         collection = build_collection(ctx)
         events = sorted(collection.search(search_string))
         event_column = list()
         term_width, _ = get_terminal_size()
+        now = datetime.datetime.now()
         for event in events:
-            desc = textwrap.wrap(event.event_description, term_width)
+            desc = textwrap.wrap(event.format(format, relative_to=now), term_width)
             event_column.extend(
                 [colored(d, event.color,
                          bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
