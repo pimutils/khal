@@ -913,9 +913,12 @@ def _add_calendar_colors(palette, collection):
     return palette
 
 
-def start_pane(pane, callback, program_info=''):
+def start_pane(pane, callback, program_info='', quit_keys=['q']):
     """Open the user interface with the given initial pane."""
-    frame = Window(footer=program_info + ' | q: quit, ?: help')
+    frame = Window(
+        footer=program_info + ' | {}: quit, ?: help'.format(quit_keys[0]),
+        quit_keys=quit_keys,
+    )
     frame.open(pane, callback)
     palette = _add_calendar_colors(getattr(colors, pane.conf['view']['theme']),
                                    pane.collection)

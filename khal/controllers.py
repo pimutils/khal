@@ -337,7 +337,9 @@ def interactive(collection, conf):
                           description='do something')
     ui.start_pane(
         pane, pane.cleanup,
-        program_info='{0} v{1}'.format(__productname__, __version__)
+        program_info='{0} v{1}'.format(__productname__, __version__),
+        quit_keys=conf['keybindings']['quit'],
+
     )
 
 

@@ -100,7 +100,7 @@ class Window(urwid.Frame):
     to carry data between them.
     """
 
-    def __init__(self, footer=''):
+    def __init__(self, footer='', quit_keys=['q']):
         self._track = []
 
         header = urwid.AttrWrap(urwid.Text(''), 'header')
@@ -110,6 +110,7 @@ class Window(urwid.Frame):
                              footer=footer)
         self.update_header()
         self._original_w = None
+        self.quit_keys = quit_keys
 
         self._alert_daemon = AlertDaemon(self.update_header)
         self._alert_daemon.start()
@@ -145,7 +146,7 @@ class Window(urwid.Frame):
 
     def on_key_press(self, key):
         """Handle application-wide key strokes."""
-        if key in ['esc', 'q']:
+        if key in ['esc'] + self.quit_keys:
             self.backtrack()
         elif key in ['f1', '?']:
             self.open(HelpPane(self._get_current_pane()))

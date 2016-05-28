@@ -141,6 +141,9 @@ other = force_list(default=list('o'))
 # open a text field to start a search for events
 search = force_list(default=list('/'))
 
+# quit
+quit = force_list(default=list('q', 'Q'))
+
 
 # The default section begins with a **[default]** tag. Some default values and
 # behaviours are set here.

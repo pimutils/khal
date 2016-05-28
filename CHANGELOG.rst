@@ -16,6 +16,11 @@ not released yet
 * added command `list`
 * support for categories (and add `-g` flag for `khal new`) (Pierre David)
 
+ikhal
+-----
+* make keybinding for quitting configurable, defaults to *q* and *Q*
+  (Christian Geier)
+
 0.8.2
 =====
 released on 2016-05-16
