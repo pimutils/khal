@@ -142,13 +142,15 @@ def get_unique_name(path, names):
 
 def get_all_vdirs(path):
     """returns (recursively) all directories under `path` that contain
-    only files (not directories).
+    only files (not directories) and are not dotfiles.
     """
     # TODO take care of links
     vdirs = list()
     contains_only_file = True
     items = os.listdir(path)
     for item in items:
+        if item.startswith('.'):
+            continue
         itempath = os.path.join(path, item)
         if os.path.isdir(itempath):
             contains_only_file = False
