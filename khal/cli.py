@@ -464,7 +464,7 @@ def _get_cli():
         '''
         # TODO support for time ranges, location, description etc
         collection = build_collection(ctx)
-        events = collection.search(search_string)
+        events = sorted(collection.search(search_string))
         event_column = list()
         term_width, _ = get_terminal_size()
         for event in events:
