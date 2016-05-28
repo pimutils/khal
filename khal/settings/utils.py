@@ -142,7 +142,7 @@ def get_unique_name(path, names):
 
 def get_all_vdirs(path):
     """returns (recursively) all directories under `path` that contain
-    only files (not directories).
+    only files (not directories). Ignore dotfiles unless explcit.
     """
     # TODO take care of links
     vdirs = list()
