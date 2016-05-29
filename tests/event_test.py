@@ -64,7 +64,6 @@ def test_raw_dt():
     assert event.recurring is False
     assert event.duration == timedelta(hours=1)
     assert event.uid == 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
-    assert event.ident == 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
     assert event.organizer == ''
 
 

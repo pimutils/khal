@@ -33,8 +33,7 @@ from ..log import logger
 from .exceptions import InvalidSettingsError
 
 from ..terminal import COLORS
-from vdirsyncer.storage.filesystem import FilesystemStorage
-from vdirsyncer.exceptions import CollectionNotFound
+from ..khalendar.vdir import Vdir, CollectionNotFoundError
 
 
 def is_timezone(tzstring):
@@ -120,8 +119,8 @@ def test_default_calendar(config):
 
 def get_color_from_vdir(path):
     try:
-        color = FilesystemStorage(path, '.ics').get_meta('color')
-    except CollectionNotFound:
+        color = Vdir(path, '.ics').get_meta('color')
+    except CollectionNotFoundError:
         color = None
     if color is None or color is '':
         logger.debug('Found no or empty file `color` in {}'.format(path))
@@ -131,7 +130,7 @@ def get_color_from_vdir(path):
 
 def get_unique_name(path, names):
     # TODO take care of edge cases, make unique name finding less brain-dead
-    name = FilesystemStorage(path, '.ics').get_meta('displayname')
+    name = Vdir(path, '.ics').get_meta('displayname')
     if name is None or name == '':
         logger.debug('Found no or empty file `displayname` in {}'.format(path))
         name = os.path.split(path)[-1]

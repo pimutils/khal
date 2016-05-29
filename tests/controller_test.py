@@ -1,7 +1,8 @@
 import datetime
 from textwrap import dedent
 
-from vdirsyncer.storage.base import Item
+from khal.khalendar.vdir import Item
+
 from khal.controllers import import_ics, get_list_from_str
 
 from .aux import _get_text

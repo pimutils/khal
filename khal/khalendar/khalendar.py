@@ -29,10 +29,9 @@ import datetime
 import os
 import os.path
 import itertools
-import math
 
-from vdirsyncer.storage.filesystem import FilesystemStorage
-from vdirsyncer.exceptions import AlreadyExistingError, CollectionNotFound
+from .vdir import CollectionNotFoundError, AlreadyExistingError, Vdir, \
+    get_etag_from_file
 
 from . import backend
 from .event import Event
@@ -83,11 +82,11 @@ class CalendarCollection(object):
             else:
                 raise ValueError('ctype must be either `calendar` or `birthdays`')
             try:
-                self._storages[name] = FilesystemStorage(calendar['path'], file_ext)
-            except CollectionNotFound:
+                self._storages[name] = Vdir(calendar['path'], file_ext)
+            except CollectionNotFoundError:
                 os.makedirs(calendar['path'])
                 logger.info('created non-existing vdir {}'.format(calendar['path']))
-                self._storages[name] = FilesystemStorage(calendar['path'], file_ext)
+                self._storages[name] = Vdir(calendar['path'], file_ext)
 
         self.hmethod = hmethod
         self.default_color = default_color
@@ -131,11 +130,7 @@ class CalendarCollection(object):
                 'Calendar "{0}" is read-only and cannot be used as default'.format(default))
 
     def _local_ctag(self, calendar):
-        stat = os.stat(self._calendars[calendar]['path'])
-        mtime = getattr(stat, 'st_mtime_ns', None)
-        if mtime is None:
-            mtime = stat.st_mtime
-        return str(int(math.floor(mtime * 1e9)))
+        return get_etag_from_file(self._calendars[calendar]['path'])
 
     def _cover_event(self, event):
         event.color = self._calendars[event.calendar]['color']

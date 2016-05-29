@@ -22,7 +22,9 @@
 
 import icalendar
 from click import confirm, echo, style, prompt
-from vdirsyncer.utils.vobject import Item
+
+from .khalendar.vdir import Item
+
 import pytz
 
 from collections import defaultdict, OrderedDict
