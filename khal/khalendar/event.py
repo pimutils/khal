@@ -27,7 +27,7 @@ import os
 import icalendar
 import pytz
 
-from ..aux import generate_random_uid
+from ..aux import generate_random_uid, datetime_fillin
 from .aux import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
 from ..log import logger
 from click import style
@@ -486,27 +486,22 @@ class Event(object):
             raise ValueError('`this_date` is of type `{}`, should be '
                              '`datetime.date`'.format(type(relative_to_end)))
 
-        day_start = self._locale['local_timezone'].localize(datetime.combine(relative_to_start.date(), time.min))
-        day_end = self._locale['local_timezone'].localize(datetime.combine(relative_to_end.date(), time.max))
+        day_start = datetime_fillin(relative_to_start.date(), end=False, locale=self._locale)
+        day_end = datetime_fillin(relative_to_end.date(), locale=self._locale)
+        self_start = datetime_fillin(self.start_local, locale=self._locale, end=False)
+        self_end = datetime_fillin(self.end_local, locale=self._locale)
 
-        self_start = self.start_local
-        if isinstance(self_start, date) and not isinstance(self_start, datetime):
-            self_start = self._locale['local_timezone'].localize(datetime.combine(self_start, time.min))
 
-        self_end = self.end_local
-        if isinstance(self_end, date) and not isinstance(self_end, datetime):
-            self_end = self._locale['local_timezone'].localize(datetime.combine(self_end, time.max))
-
-        attributes["start"] = self.start_local.strftime(self._locale['datetimeformat'])
-        attributes["start-long"] = self.start_local.strftime(self._locale['longdatetimeformat'])
-        attributes["start-date"] = self.start_local.strftime(self._locale['dateformat'])
-        attributes["start-date-long"] = self.start_local.strftime(self._locale['longdateformat'])
-        attributes["start-time"] = self.start_local.strftime(self._locale['timeformat'])
-        attributes["end"] = self.end_local.strftime(self._locale['datetimeformat'])
-        attributes["end-long"] = self.end_local.strftime(self._locale['longdatetimeformat'])
-        attributes["end-date"] = self.end_local.strftime(self._locale['dateformat'])
-        attributes["end-date-long"] = self.end_local.strftime(self._locale['longdateformat'])
-        attributes["end-time"] = self.end_local.strftime(self._locale['timeformat'])
+        attributes["start"] = self_start.strftime(self._locale['datetimeformat'])
+        attributes["start-long"] = self_start.strftime(self._locale['longdatetimeformat'])
+        attributes["start-date"] = self_start.strftime(self._locale['dateformat'])
+        attributes["start-date-long"] = self_start.strftime(self._locale['longdateformat'])
+        attributes["start-time"] = self_start.strftime(self._locale['timeformat'])
+        attributes["end"] = self_end.strftime(self._locale['datetimeformat'])
+        attributes["end-long"] = self_end.strftime(self._locale['longdatetimeformat'])
+        attributes["end-date"] = self_end.strftime(self._locale['dateformat'])
+        attributes["end-date-long"] = self_end.strftime(self._locale['longdateformat'])
+        attributes["end-time"] = self_end.strftime(self._locale['timeformat'])
 
         tostr = ""
         if self_start < day_start:
