@@ -22,6 +22,7 @@
 
 from os.path import expandvars, expanduser, join
 import os
+import glob
 
 import pytz
 import xdg
@@ -141,21 +142,10 @@ def get_unique_name(path, names):
 
 
 def get_all_vdirs(path):
-    """returns (recursively) all directories under `path` that contain
-    only files (not directories).
+    """returns a list of paths, expanded using glob
     """
-    # TODO take care of links
-    vdirs = list()
-    contains_only_file = True
-    items = os.listdir(path)
-    for item in items:
-        itempath = os.path.join(path, item)
-        if os.path.isdir(itempath):
-            contains_only_file = False
-            vdirs += get_all_vdirs(itempath)
-    if contains_only_file:
-        vdirs.append(path)
-    return vdirs
+    items = glob.glob(path)
+    return items
 
 
 def get_vdir_type(_):

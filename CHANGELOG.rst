@@ -13,9 +13,10 @@ not released yet
 
 * removed configuration variable `encoding` (in section [locale]), the correct
   locale should now be figured out automatically (Markus Unterwaditzer)
-* added command `list`
+* added command `list` (Taylor Money)
 * support for categories (and add `-g` flag for `khal new`) (Pierre David)
 * search is now sorted and allows for a `--format` (Taylor Money)
+* calendar path is now a glob without recursion for discover (Taylor Money)
 
 ikhal
 -----
