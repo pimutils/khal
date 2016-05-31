@@ -60,9 +60,9 @@ light = [
     ('reveal focus', 'black', 'dark cyan', 'standout'),
     ('today focus', 'white', 'dark cyan', 'standout'),
     ('today', 'light gray', 'black', 'dark cyan'),
-    ('dayname', 'dark gray', ''),
-    ('monthname', 'dark gray', ''),
-    ('weeknumber_right', 'light gray', ''),
+    ('dayname', 'dark gray', 'white'),
+    ('monthname', 'dark gray', 'white'),
+    ('weeknumber_right', 'dark gray', 'white'),
     ('edit', 'white', 'dark blue'),
     ('alert', 'white', 'dark red'),
 
