@@ -491,17 +491,33 @@ class Event(object):
         self_start = datetime_fillin(self.start_local, locale=self._locale, end=False)
         self_end = datetime_fillin(self.end_local, locale=self._locale)
 
+        allday = isinstance(self, AllDayEvent)
 
         attributes["start"] = self_start.strftime(self._locale['datetimeformat'])
         attributes["start-long"] = self_start.strftime(self._locale['longdatetimeformat'])
         attributes["start-date"] = self_start.strftime(self._locale['dateformat'])
         attributes["start-date-long"] = self_start.strftime(self._locale['longdateformat'])
         attributes["start-time"] = self_start.strftime(self._locale['timeformat'])
+
         attributes["end"] = self_end.strftime(self._locale['datetimeformat'])
         attributes["end-long"] = self_end.strftime(self._locale['longdatetimeformat'])
         attributes["end-date"] = self_end.strftime(self._locale['dateformat'])
         attributes["end-date-long"] = self_end.strftime(self._locale['longdateformat'])
         attributes["end-time"] = self_end.strftime(self._locale['timeformat'])
+
+        # should only have time attributes at this point (start/end)
+        full = {}
+        for attr in attributes:
+            full[attr+"-full"] = attributes[attr]
+        attributes.update(full)
+
+        if allday:
+            attributes["start"] = attributes["start-date"]
+            attributes["start-long"] = attributes["start-date-long"]
+            attributes["start-time"] = ""
+            attributes["end"] = attributes["end-date"]
+            attributes["end-long"] = attributes["end-date-long"]
+            attributes["end-time"] = ""
 
         tostr = ""
         if self_start < day_start:
@@ -524,7 +540,7 @@ class Event(object):
         attributes["to-style"] = tostr
         if self_start < day_start and self_end > day_end:
             attributes["start-end-time-style"] = self.symbol_strings["range"]
-        elif self_start == day_start and self_end == day_end:
+        elif allday:
             attributes["start-end-time-style"] = ""
         else:
             attributes["start-end-time-style"] = attributes["start-style"] + attributes["to-style"] + attributes["end-style"]
@@ -533,6 +549,7 @@ class Event(object):
         attributes["title"] = self.summary
         attributes["description"] = self.description.strip()
         attributes["location"] = self.location.strip()
+        attributes["all-day"] = allday
 
         attributes["calendar"] = self.calendar
         attributes["calendar-color"] = ""
