@@ -31,6 +31,7 @@ from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice, Al
 from .base import Pane, Window
 from .startendeditor import StartEndEditor
 from .calendarwidget import CalendarWidget
+from ..khalendar.exceptions import ReadOnlyCalendarError
 
 
 NOREPEAT = 'No'
@@ -170,9 +171,14 @@ class U_Event(urwid.Text):
         """duplicate this event"""
         focused = self.eventcolumn.events.list_walker.focus
         event = self.event.duplicate()
-        event = self.eventcolumn.pane.collection.new(event)
-        self.eventcolumn.set_current_date(self.eventcolumn.current_date)
-        self.eventcolumn.events.list_walker.set_focus(focused)
+        try:
+            event = self.eventcolumn.pane.collection.new(event)
+        except ReadOnlyCalendarError:
+            self.eventcolumn.pane.window.alert(
+                ('light red', 'Read-only calendar'))
+        else:
+            self.eventcolumn.set_current_date(self.eventcolumn.current_date)
+            self.eventcolumn.events.list_walker.set_focus(focused)
 
     def keypress(self, _, key):
         binds = self.conf['keybindings']
