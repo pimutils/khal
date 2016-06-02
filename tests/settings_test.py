@@ -133,9 +133,9 @@ def metavdirs(tmpdir):
         '/cal1/public/',
         '/cal1/private/',
         '/cal2/public/',
-        '/dir/cal3/public/',
-        '/dir/cal3/work/',
-        '/dir/cal3/home/',
+        '/cal3/public/',
+        '/cal3/work/',
+        '/cal3/home/',
     ]
     for one in dirstructure:
         os.makedirs(tmpdir + one)
@@ -153,16 +153,16 @@ def metavdirs(tmpdir):
 
 def test_discover(metavdirs):
     path = metavdirs
-    vdirs = {vdir[len(path):] for vdir in get_all_vdirs(path)}
+    vdirs = {vdir[len(path):] for vdir in get_all_vdirs(path+'/*/*')}
     assert vdirs == {
-        '/cal1/public', '/cal1/private', '/cal2/public', '/dir/cal3/home',
-        '/dir/cal3/public', '/dir/cal3/work'
+        '/cal1/public', '/cal1/private', '/cal2/public',
+        '/cal3/home', '/cal3/public', '/cal3/work'
     }
 
 
 def test_get_unique_name(metavdirs):
     path = metavdirs
-    vdirs = [vdir for vdir in get_all_vdirs(path)]
+    vdirs = [vdir for vdir in get_all_vdirs(path+'/*/*')]
     names = list()
     for vdir in sorted(vdirs):
         names.append(get_unique_name(vdir, names))
@@ -171,7 +171,7 @@ def test_get_unique_name(metavdirs):
 
 def test_config_checks(metavdirs):
     path = metavdirs
-    config = {'calendars': {'default': {'path': path, 'type': 'discover'}},
+    config = {'calendars': {'default': {'path': path+'/*/*', 'type': 'discover'}},
               'sqlite': {'path': '/tmp'},
               'locale': {'default_timezone': 'Europe/Berlin', 'local_timezone': 'Europe/Berlin'},
               'default': {'default_calendar': None},
@@ -183,7 +183,7 @@ def test_config_checks(metavdirs):
         'calendars': {
             'home': {
                 'color': None,
-                'path': '/dir/cal3/home',
+                'path': '/cal3/home',
                 'readonly': False,
                 'type': 'calendar',
             },
@@ -207,13 +207,13 @@ def test_config_checks(metavdirs):
             },
             'public1': {
                 'color': None,
-                'path': '/dir/cal3/public',
+                'path': '/cal3/public',
                 'readonly': False,
                 'type': 'calendar',
             },
             'work': {
                 'color': None,
-                'path': '/dir/cal3/work',
+                'path': '/cal3/work',
                 'readonly': False,
                 'type': 'calendar',
             },
