@@ -34,7 +34,6 @@ from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice, Al
 from .base import Pane, Window
 from .startendeditor import StartEndEditor
 from .calendarwidget import CalendarWidget
-from ..khalendar.exceptions import ReadOnlyCalendarError
 
 
 NOREPEAT = 'No'
@@ -56,8 +55,7 @@ class SelectableText(urwid.Text):
 
 class U_Event(urwid.Text):
     def __init__(self, event, this_date=None, eventcolumn=None, relative=True):
-        """
-        representation of an event in EventList
+        """representation of an event in EventList
 
         :param event: the encapsulated event
         :type event: khal.event.Event
@@ -110,91 +108,7 @@ class U_Event(urwid.Text):
             text = self.event.event_description
         self.set_text(mark + ' ' + text)
 
-    def export_event(self):
-        """
-        export the event as ICS
-        """
-        def export_this(_, user_data):
-            try:
-                self.event.export_ics(user_data.get_edit_text())
-            except Exception as e:
-                self.eventcolumn.pane.window.backtrack()
-                self.eventcolumn.pane.window.alert(
-                    ('light red',
-                     'Failed to save event: %s' % e))
-                return
-
-            self.eventcolumn.pane.window.backtrack()
-            self.eventcolumn.pane.window.alert(
-                ('light green',
-                 'Event successfuly exported'))
-
-        overlay = urwid.Overlay(
-            ExportDialog(
-                export_this,
-                self.eventcolumn.pane.window.backtrack,
-                self.event,
-            ),
-            self.eventcolumn.pane,
-            'center', ('relative', 50), ('relative', 50), None)
-        self.eventcolumn.pane.window.open(overlay)
-
-    def toggle_delete(self):
-        """toggle the delete status of this event"""
-        def delete_this(_):
-            if self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
-                self.eventcolumn.pane.deleted[INSTANCES].remove(self.recuid)
-            else:
-                self.eventcolumn.pane.deleted[INSTANCES].append(self.recuid)
-            self.eventcolumn.pane.window.backtrack()
-            self.set_title()
-
-        def delete_all(_):
-            if self.uid in self.eventcolumn.pane.deleted[ALL]:
-                self.eventcolumn.pane.deleted[ALL].remove(self.uid)
-            else:
-                self.eventcolumn.pane.deleted[ALL].append(self.uid)
-            self.eventcolumn.pane.window.backtrack()
-            self.set_title()
-
-        if self.event.readonly:
-            self.eventcolumn.pane.window.alert(
-                ('light red',
-                 'Calendar {} is read-only.'.format(self.event.calendar)))
-            return
-
-        if self.uid in self.eventcolumn.pane.deleted[ALL]:
-            self.eventcolumn.pane.deleted[ALL].remove(self.uid)
-        elif self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
-            self.eventcolumn.pane.deleted[INSTANCES].remove(self.recuid)
-        elif self.event.recurring:
-            overlay = urwid.Overlay(
-                DeleteDialog(
-                    delete_this,
-                    delete_all,
-                    self.eventcolumn.pane.window.backtrack,
-                ),
-                self.eventcolumn.pane,
-                'center', ('relative', 70), ('relative', 70), None)
-            self.eventcolumn.pane.window.open(overlay)
-        else:
-            self.eventcolumn.pane.deleted[ALL].append(self.uid)
-        self.set_title()
-
-    def duplicate(self):
-        """duplicate this event"""
-        focused = self.eventcolumn.events.list_walker.focus
-        event = self.event.duplicate()
-        try:
-            event = self.eventcolumn.pane.collection.new(event)
-        except ReadOnlyCalendarError:
-            self.eventcolumn.pane.window.alert(
-                ('light red', 'Read-only calendar'))
-        else:
-            self.eventcolumn.set_current_date(self.eventcolumn.current_date)
-            self.eventcolumn.events.list_walker.set_focus(focused)
-
-    def keypress(self, _, key):
+    def keypress(self, size, key):
         binds = self.conf['keybindings']
         if key in binds['left']:
             key = 'left'
@@ -204,22 +118,15 @@ class U_Event(urwid.Text):
             key = 'right'
         elif key in binds['down']:
             key = 'down'
-        elif key in binds['delete']:
-            self.toggle_delete()
-            key = 'down'
-        elif key in binds['duplicate']:
-            self.duplicate()
-            key = None
-        elif key in binds['export']:
-            self.export_event()
-            key = None
         return key
 
 
 class DListBox(urwid.ListBox):
-    def __init__(self, *args, parent, **kwargs):
+    """Container for a DayWalker"""
+    def __init__(self, *args, parent, conf, **kwargs):
         self._init = True
         self.parent = parent
+        self._conf = conf
         self._old_focus = None
         super().__init__(*args, **kwargs)
 
@@ -246,9 +153,91 @@ class DListBox(urwid.ListBox):
         self.clean()
         return rval
 
+    def export_event(self):
+        """export the event in focus as an ICS file"""
+        def export_this(_, user_data):
+            try:
+                self.event.export_ics(user_data.get_edit_text())
+            except Exception as e:
+                self.eventcolumn.pane.window.backtrack()
+                self.eventcolumn.pane.window.alert(
+                    ('light red', 'Failed to save event: %s' % e))
+                return
+
+            self.eventcolumn.pane.window.backtrack()
+            self.eventcolumn.pane.window.alert(
+                ('light green', 'Event successfuly exported'))
+
+        overlay = urwid.Overlay(
+            ExportDialog(
+                export_this,
+                self.eventcolumn.pane.window.backtrack,
+                self.event,
+            ),
+            self.eventcolumn.pane,
+            'center', ('relative', 50), ('relative', 50), None)
+        self.eventcolumn.pane.window.open(overlay)
+
+    def toggle_delete(self):
+        """toggle the delete status of the event in focus"""
+
+        event = self.current_event
+
+        def delete_this(_):
+            if event.recuid in self.parent.pane.deleted[INSTANCES]:
+                self.parent.pane.deleted[INSTANCES].remove(event.recuid)
+            else:
+                self.parent.pane.deleted[INSTANCES].append(event.recuid)
+            self.parent.pane.window.backtrack()
+            event.set_title()
+
+        def delete_all(_):
+            if event.uid in self.parent.pane.deleted[ALL]:
+                self.parent.pane.deleted[ALL].remove(event.uid)
+            else:
+                self.parent.pane.deleted[ALL].append(event.uid)
+            self.parent.pane.window.backtrack()
+            event.set_title()
+
+        if event.event.readonly:
+            self.eventcolumn.pane.window.alert(
+                ('light red',
+                 'Calendar {} is read-only.'.format(self.event.calendar)))
+            return
+
+        if event.uid in self.parent.pane.deleted[ALL]:
+            self.parent.pane.deleted[ALL].remove(event.uid)
+        elif event.recuid in self.parent.pane.deleted[INSTANCES]:
+            self.parent.pane.deleted[INSTANCES].remove(event.recuid)
+        elif event.event.recurring:
+            overlay = urwid.Overlay(
+                DeleteDialog(
+                    delete_this,
+                    delete_all,
+                    self.parent.pane.window.backtrack,
+                ),
+                self.parent.pane,
+                'center', ('relative', 70), ('relative', 70), None)
+            self.parent.pane.window.open(overlay)
+        else:
+            self.parent.pane.deleted[ALL].append(event.uid)
+        event.set_title()
+
+    def duplicate(self):
+        """duplicate the event in focus"""
+        try:
+            event = self.current_event.event
+            event = event.duplicate()
+        except ReadOnlyCalendarError:
+            self.eventcolumn.pane.window.alert(
+                ('light red', 'Read-only calendar'))
+        else:
+            event = self.parent.pane.collection.new(event)
+            self.body.update(self.current_date)
+
     def keypress(self, size, key):
-        movements = self.parent.pane.conf['keybindings']['up'] + \
-            self.parent.pane.conf['keybindings']['down'] + ['tab', 'shift tab']
+        movements = self._conf['keybindings']['up'] + \
+            self._conf['keybindings']['down'] + ['tab', 'shift tab']
         if key in movements:
             try:
                 self._old_focus = self.focus_position
@@ -264,11 +253,31 @@ class DListBox(urwid.ListBox):
             self.parent.pane.calendar.base_widget.set_focus_date(day)  # TODO convert to callback
             DatePile.selected_date = currently_selected_date
 #            self.body[self.focus_position + 1].contents[0][0].set_attr_map({None: 'date focus'})
-        # TODO this really does not belong here, move it one step
+        elif self.body.current_event:
+            if key in self._conf['keybindings']['delete']:
+                self.toggle_delete()
+                key = 'down'
+            elif key in self._conf['keybindings']['duplicate']:
+                self.duplicate()
+                key = None
+            elif key in self._conf['keybindings']['export']:
+                self.export_event()
+                key = None
+                body = self.body[self.body.focus].current_event
+
 
         rval = super().keypress(size, key)
         self.clean()
         return rval
+
+    @property
+    def current_event(self):
+        return self.body.current_event
+
+
+    @property
+    def current_date(self):
+        return self.body.current_day
 
 
 class DayWalker(urwid.SimpleFocusListWalker):
@@ -293,28 +302,38 @@ class DayWalker(urwid.SimpleFocusListWalker):
         super().__init__(list())
         self.update_by_date(this_date)
 
-
     def update_by_date(self, day):
-        """make sure a DatePile for `day` exists and bring it into focus"""
+        """make sure a DatePile for `day` exists, update it and bring it into focus"""
+        # TODO this function gets called much too often, investigate
         item_no = None
+        updated = False
         if len(self) == 0:
             pile = self._get_events(day)
             self.append(pile)
             self._last_day = day
             self._first_day = day
             item_no = 0
+            updated = True
         while day < self[0].date:
             self._autoprepend()
             item_no = 0
+            updated = True
         while day > self[-1].date:
             self._autoextend()
             item_no = len(self) - 1
+            updated = True
         if item_no is None:
             item_no = (day - self[0].date).days
 
         assert self[item_no].date == day
         DatePile.selected_date = day
         self.set_focus(item_no)
+
+    def update(self, day):
+        """refresh the contents of the day's DatePile"""
+        offset = (day - self[0].date).days
+        assert self[offset].date == day
+        self[offset] = self._get_events(day)
 
     def set_focus(self, position):
         """set focus by item number"""
@@ -364,6 +383,10 @@ class DayWalker(urwid.SimpleFocusListWalker):
     def current_event(self):
         return self[self.focus].current_event
 
+    @property
+    def current_day(self):
+        return self[self.focus].date
+
 
 class DatePile(urwid.Pile):
     selected_date = None
@@ -377,12 +400,6 @@ class DatePile(urwid.Pile):
 
     __str__ = __repr__
 
-    def selectable(self):
-        return True
-
-    def keypress(self, size, key):
-        return super().keypress(size, key)
-
     def render(self, a, focus):
         if focus:
             self.contents[0][0].set_attr_map({None: 'date focused'})
@@ -391,6 +408,12 @@ class DatePile(urwid.Pile):
         else:
             self.contents[0][0].set_attr_map({None: 'date'})
         return super().render(a, focus)
+
+    def selectable(self):
+        return True
+
+    def keypress(self, size, key):
+        return super().keypress(size, key)
 
     @property
     def current_event(self):
@@ -413,7 +436,7 @@ class EventColumn(urwid.WidgetWrap):
         self._eventshown = False
         self.event_width = int(self.pane.conf['view']['event_view_weighting'])
         self.events = DayWalker(date.today(), eventcolumn=self)
-        self.dlistbox = DListBox(self.events, parent=self)
+        self.dlistbox = DListBox(self.events, parent=self, conf=pane.conf)
         self.container = urwid.Pile([self.dlistbox])
         urwid.WidgetWrap.__init__(self, self.container)
 
@@ -458,7 +481,6 @@ class EventColumn(urwid.WidgetWrap):
     def focus_date(self, date):
         self._current_date = date
         self.dlistbox.update_by_date(date)
- #       self.current_event = self.current_event
 
         # Show firast event if show event view is true
         if self.pane.conf['view']['event_view_always_visible']:
@@ -501,7 +523,7 @@ class EventColumn(urwid.WidgetWrap):
         assert not self.editor
         self.editor = True
         editor = EventEditor(self.pane, event, update_colors)
-        #current_day = self.container.contents[0][0]  FIXME
+        # current_day = self.container.contents[0][0]  FIXME
 
         ContainerWidget = linebox[self.pane.conf['view']['frame']]
         new_pane = urwid.Columns([
@@ -544,8 +566,8 @@ class EventColumn(urwid.WidgetWrap):
         if key in self._conf['keybindings']['view'] and self.focus_event:
             if not self._eventshown:
                 self.view(self.focus_event.event)
-            elif self.focus_event.uid in self.pane.deleted[ALL] or \
-                        self.focus_event.recuid in self.pane.deleted[INSTANCES]:
+            elif (self.focus_event.uid in self.pane.deleted[ALL] or
+                  self.focus_event.recuid in self.pane.deleted[INSTANCES]):
                     self.pane.window.alert(
                         ('light red', 'This event is marked as deleted'))
             else:
@@ -645,10 +667,8 @@ class EventDisplay(urwid.WidgetWrap):
         if event.description != '':
             lines.append(urwid.Text(event.description))
 
-
         pile = urwid.Pile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
-
 
 
 class EventEditor(urwid.WidgetWrap):
@@ -830,6 +850,7 @@ class EventEditor(urwid.WidgetWrap):
             self._abort_confirmed = False
         if key in self.pane.conf['keybindings']['save']:
             self.save(None)
+            return
         return super().keypress(size, key)
 
 
@@ -913,7 +934,7 @@ class ClassicView(Pane):
         calendar = CalendarWidget(
             on_date_change=self.eventscolumn.original_widget.set_focus_date,
             keybindings=self.conf['keybindings'],
-            on_press={key: self.new_event for key in self.conf['keybindings']['new']},
+            on_press={'n': self.new_event},   # configured keybinding
             firstweekday=conf['locale']['firstweekday'],
             weeknumbers=conf['locale']['weeknumbers'],
             get_styles=collection.get_styles
