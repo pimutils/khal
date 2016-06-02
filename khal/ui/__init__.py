@@ -752,7 +752,7 @@ class ClassicView(Pane):
         calendar = CalendarWidget(
             on_date_change=self.show_date,
             keybindings=self.conf['keybindings'],
-            on_press={'n': self.new_event},
+            on_press={key: self.new_event for key in self.conf['keybindings']['new']},
             firstweekday=conf['locale']['firstweekday'],
             weeknumbers=conf['locale']['weeknumbers'],
             get_styles=collection.get_styles
