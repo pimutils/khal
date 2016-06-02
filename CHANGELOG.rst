@@ -22,6 +22,11 @@ ikhal
 -----
 * make keybinding for quitting configurable, defaults to *q* and *Q*
   (Christian Geier)
+* introduction of three different new frame styles, new allowed values for
+  `[view] frame` are `False`, `width`, `color`, `top` (with default `False`),
+  `True` isn't allowed any more, please provide feedback over the usual channels
+  if and which of those you consider useful as some of those might be removed in
+  future releases (Christian Geier)
 
 0.8.2
 =====
