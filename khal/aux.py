@@ -106,7 +106,7 @@ def calc_day(dayname):
     :returns: date
     :rtype: datetime.datetime
     """
-    today = datetime.today()
+    today = datetime.combine(date.today(), time.min)
     dayname = dayname.lower()
     if dayname == 'today':
         return today
@@ -169,6 +169,12 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
             a_date = datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
         return a_date
 
+    def datetimefwords(dtime_list, _):
+        if len(dtime_list) > 0 and dtime_list[0].lower() == 'now':
+            dtime_list.pop(0)
+            return datetime.now()
+        raise ValueError
+
     def datefstr_year(dtime_list, dateformat):
         """should be used if a date(time) without year is given
 
@@ -201,6 +207,7 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
             (datefstr_year, locale['dateformat'], True),
             (datetimefstr, locale['longdateformat'], True),
             (datefstr_weekday, None, True),
+            (datetimefwords, None, False),
 
     ]:
         try:
