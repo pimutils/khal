@@ -548,10 +548,12 @@ class Event(object):
                 attributes["to-style"] + attributes["end-style"]
 
         attributes["recurse"] = self._recur_str
+        attributes["repeat-pattern"] = self.recurpattern
         attributes["title"] = self.summary
         attributes["description"] = self.description.strip()
         attributes["location"] = self.location.strip()
         attributes["all-day"] = allday
+        attributes["categories"] = self.categories
 
         attributes["calendar"] = self.calendar
         attributes["calendar-color"] = ""

@@ -32,9 +32,8 @@ except ImportError:
         pass
 
 import click
-import pytz
 
-from . import aux, controllers, khalendar, __version__
+from . import controllers, khalendar, __version__
 from .log import logger
 from .settings import get_config, InvalidSettingsError
 from .settings.exceptions import NoConfigFile
@@ -494,49 +493,26 @@ def _get_cli():
 
     @cli.command()
     @multi_calendar_option
-    @click.argument('datetime', required=False, nargs=-1)
+    @click.option('--format', '-f',
+                  help=('The format of the events.'))
+    @click.option('--notstarted', help=('Print only events that have not started'),
+                  is_flag=True)
+    @click.argument('DATETIME', nargs=-1, required=False)
     @click.pass_context
-    def at(ctx, datetime=None):
-        '''Show all events scheduled for DATETIME.
-
-        if DATETIME is given (or the string `now`) all events scheduled
-        for this moment are shown, if only a time is given, the date is assumed
-        to be today
-        '''
-        collection = build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None))
-        locale = ctx.obj['conf']['locale']
-        dtime_list = list(datetime)
-        if dtime_list == [] or dtime_list == ['now']:
-            import datetime
-            dtime = datetime.datetime.now()
-        else:
-            try:
-                dtime, _ = aux.guessdatetimefstr(dtime_list, locale)
-            except ValueError:
-                logger.fatal(
-                    '{} is not a valid datetime (matches neither {} nor {} nor'
-                    ' {})'.format(
-                        ' '.join(dtime_list),
-                        locale['timeformat'],
-                        locale['datetimeformat'],
-                        locale['longdatetimeformat']))
-                sys.exit(1)
-        dtime = locale['local_timezone'].localize(dtime)
-        dtime = dtime.astimezone(pytz.UTC)
-        events = collection.get_events_at(dtime)
-        event_column = list()
-        term_width, _ = get_terminal_size()
-        for event in events:
-            lines = list()
-            items = event.event_description.splitlines()
-            for item in items:
-                lines += textwrap.wrap(item, term_width)
-            event_column.extend(
-                [colored(line, event.color,
-                         bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
-                 for line in lines]
-            )
-        click.echo('\n'.join(event_column))
+    def at(ctx, datetime, notstarted, format):
+        '''Print list.'''
+        if not datetime:
+            datetime = ("now",)
+        controllers.khal_list(
+            build_collection(ctx),
+            format=format,
+            daterange=datetime + ("0m", ),
+            once=True,
+            notstarted=notstarted,
+            locale=ctx.obj['conf']['locale'],
+            conf=ctx.obj['conf'],
+            env={"calendars": ctx.obj['conf']['calendars']}
+        )
 
     @cli.command()
     @click.pass_context

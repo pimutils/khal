@@ -17,6 +17,7 @@ not released yet
 * support for categories (and add `-g` flag for `khal new`) (Pierre David)
 * search is now sorted and allows for a `--format` (Taylor Money)
 * calendar path is now a glob without recursion for discover (Taylor Money)
+* `at` command now works like list with end of `0m` (Taylor Money)
 
 ikhal
 -----
