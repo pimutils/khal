@@ -204,6 +204,11 @@ available templates are:
 
         A newline if start-date-once is not "".
 
+By default all day events will not have times. To see the times anyway simply
+add `-full` to the end of any template with start/end, for instance
+`start-time` becomes `start-time-full` and will always show the time (instead
+of being empty for all day events).
+
 In addtion there are colors: `black`, `red`, `green`, `yellow`, `blue`,
 `magenta`, `cyan`, `white` (and their bold versions: `red-bold`, etc.). There
 is also `reset`, which clears the styling.
