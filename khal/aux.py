@@ -237,6 +237,35 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
     raise ValueError()
 
 
+def timedelta2str(delta):
+    total_seconds = abs(delta).seconds
+
+    seconds = total_seconds % 60
+    total_seconds -= seconds
+    total_minutes = total_seconds//60
+    minutes = total_minutes % 60
+    total_minutes -= minutes
+    total_hours = total_minutes // 60
+    hours = total_hours % 24
+    total_hours -= hours
+    days = total_hours // 24
+
+    s = []
+    if days:
+        s.append(str(days) + "d")
+    if hours:
+        s.append(str(hours) + "h")
+    if minutes:
+        s.append(str(minutes) + "m")
+    if seconds:
+        s.append(str(seconds) + "s")
+
+    if delta != abs(delta):
+        s = ["-"+part for part in s]
+
+    return ' '.join(s)
+
+
 def guesstimedeltafstr(delta_string):
     """parses a timedelta from a string
 
@@ -267,6 +296,9 @@ def guesstimedeltafstr(delta_string):
         elif (ulower == 'm' or ulower == 'minute' or ulower == 'minutes' or
               ulower == 'min'):
             res += timedelta(minutes=numint)
+        elif (ulower == 's' or ulower == 'second' or ulower == 'seconds' or
+              ulower == 'sec'):
+            res += timedelta(seconds=numint)
         else:
             raise ValueError('Invalid unit in timedelta string "%s": "%s"'
                              % (delta_string, unit))

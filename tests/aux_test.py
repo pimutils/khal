@@ -7,8 +7,8 @@ import icalendar
 import pytz
 from freezegun import freeze_time
 
-from khal.aux import construct_event, guessdatetimefstr, guesstimedeltafstr,\
-     guessrangefstr
+from khal.aux import construct_event, guessdatetimefstr, guesstimedeltafstr
+from khal.aux import timedelta2str, guessrangefstr
 from khal import aux
 from khal.exceptions import FatalError
 import pytest
@@ -150,6 +150,19 @@ class TestGuessRangefstr(object):
             guessrangefstr('16:00', locale=locale_de, default_timedelta="1d")
         assert (self.today16, self.today17) == \
             guessrangefstr('16:00 17:00', locale=locale_de, default_timedelta="1d")
+
+
+class TestTimeDelta2Str(object):
+
+    def test_single(self):
+        assert timedelta2str(timedelta(minutes=10)) == '10m'
+
+    def test_negative(self):
+        assert timedelta2str(timedelta(minutes=-10)) == '-10m'
+
+    def test_multi(self):
+        assert timedelta2str(timedelta(days=1, hours=-3, minutes=10, seconds=-3))\
+               == '21h 9m 57s'
 
 
 test_set_format_de = _create_testcases(
