@@ -487,6 +487,25 @@ def _get_cli():
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
+    @click.option('--hide-past', help=('Show events that have already occured as options'),
+                  is_flag=True)
+    @click.argument('search_string', nargs=-1)
+    @click.pass_context
+    def edit(ctx, format, search_string, hide_past):
+        '''Interactively edit (or delete) events matching the search string.'''
+        controllers.edit(
+            build_collection(ctx),
+            ' '.join(search_string),
+            format=format,
+            allow_past=not hide_past,
+            locale=ctx.obj['conf']['locale'],
+            conf=ctx.obj['conf']
+        )
+
+    @cli.command()
+    @multi_calendar_option
+    @click.option('--format', '-f',
+                  help=('The format of the events.'))
     @click.option('--day-format', '-df',
                   help=('The format of the day line.'))
     @click.option('--notstarted', help=('Print only events that have not started'),

@@ -137,18 +137,19 @@ class TestGuessRangefstr(object):
     today17 = datetime.combine(date.today(), time(17, 0))
 
     def test_today(self):
-        assert (self.today13, self.today14) == guessrangefstr('13:00 14:00', locale=locale_de)
-        assert (self.today_start, self.tomorrow_start) == \
+        assert (self.today13, self.today14, False) == \
+            guessrangefstr('13:00 14:00', locale=locale_de)
+        assert (self.today_start, self.tomorrow_start, True) == \
             guessrangefstr('today tomorrow', locale_de)
 
     def test_tomorrow(self):
-        assert (self.today_start, self.tomorrow16) == \
+        assert (self.today_start, self.tomorrow16, True) == \
             guessrangefstr('today tomorrow 16:00', locale=locale_de)
 
     def test_time_tomorrow(self):
-        assert (self.today16, self.tomorrow16) == \
+        assert (self.today16, self.tomorrow16, False) == \
             guessrangefstr('16:00', locale=locale_de, default_timedelta="1d")
-        assert (self.today16, self.today17) == \
+        assert (self.today16, self.today17, False) == \
             guessrangefstr('16:00 17:00', locale=locale_de, default_timedelta="1d")
 
 

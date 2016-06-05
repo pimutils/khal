@@ -328,9 +328,10 @@ def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0):
     except ValueError:
         default_timedelta = None
 
-    for i in range(1, len(range_list) + 1):
+    for i in reversed(range(1, len(range_list) + 1)):
         start = ' '.join(range_list[:i])
         end = ' '.join(range_list[i:])
+        allday = False
         try:
             if start is None:
                 start = datetime_fillin(end=False)
@@ -341,7 +342,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0):
                     end = start + timedelta(days=7)
                 else:
                     split = start.split(" ")
-                    start = guessdatetimefstr(split, locale)[0]
+                    start, allday = guessdatetimefstr(split, locale)
                     if len(split) != 0:
                         continue
 
@@ -365,15 +366,15 @@ def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0):
                         end = start + delta
                     except ValueError:
                         split = end.split(" ")
-                        end = guessdatetimefstr(split, locale, default_day=start.date())[0]
+                        end, end_allday = guessdatetimefstr(split, locale, default_day=start.date())
                         if len(split) != 0:
                             continue
                     end = datetime_fillin(end)
-            return start, end
+            return start, end, allday
         except ValueError:
             pass
 
-    return None, None
+    return None, None, False
 
 
 def datetime_fillin(dt=None, end=True, locale=None, day=None):
@@ -435,7 +436,7 @@ def rrulefstr(repeat, until, locale):
                                  (datetimefstr, locale['dateformat']),
                                  (datetimefstr, locale['longdateformat'])]:
                 try:
-                    until_date = fun(until, dformat)
+                    until_date = fun(until.split(' '), dformat)
                     break
                 except ValueError:
                     pass

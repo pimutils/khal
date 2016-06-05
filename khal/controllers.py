@@ -24,7 +24,7 @@ import icalendar
 from click import confirm, echo, style, prompt
 from vdirsyncer.utils.vobject import Item
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from shutil import get_terminal_size
 
 from datetime import timedelta, datetime
@@ -149,8 +149,8 @@ def get_list_from_str(collection, locale, daterange, notstarted=False,
 
     else:
         try:
-            start, end = aux.guessrangefstr(
-                daterange, locale, default_timedelta=default_timedelta)
+            start, end, allday = aux.guessrangefstr(daterange, locale,
+                                                    default_timedelta=default_timedelta)
 
             if start is None or end is None:
                 raise InvalidDate('Invalid date range: "%s"' % (' '.join(daterange)))
@@ -286,6 +286,117 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None,
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
         echo(path)
+
+
+def present_options(options, prefix="", sep="  ", width=70):
+    option_list = [prefix] if prefix else []
+    chars = {}
+    for option in options:
+        char = options[option]["short"]
+        chars[char] = option
+        option_list.append(option.replace(char, "["+char+"]", 1))
+    option_string = sep.join(option_list)
+    option_string = textwrap.fill(option_string, width)
+    char = prompt(option_string)
+    if char in chars:
+        return chars[char]
+    else:
+        None
+
+
+def edit_event(event, collection, locale, allow_quit=False, width=80):
+    options = OrderedDict()
+    options["no"] = {"short": "n"}
+    options["title"] = {"short": "t", "attr": "summary"}
+    options["description"] = {"short": "d", "attr": "description"}
+    options["datetime range"] = {"short": "r"}
+    options["repeat"] = {"short": "p"}
+    options["location"] = {"short": "l", "attr": "location"}
+    options["categories"] = {"short": "c", "attr": "categories"}
+    options["alarm"] = {"short": "a"}
+    options["Delete"] = {"short": "D"}
+    if allow_quit:
+        options["quit"] = {"short":  "q"}
+
+    now = datetime.now()
+
+    while True:
+        choice = present_options(options, prefix="Edit?", width=width)
+        if choice is None:
+            echo("unknown choice")
+            continue
+        if choice == "no":
+            return True
+        if choice == "quit":
+            return False
+
+        edited = False
+
+        if choice == "Delete":
+            if confirm("Delete all occurances of event?"):
+                collection.delete(event.href, event.etag, event.calendar)
+                break
+        elif choice == "datetime range":
+            current = event.format("{start} {end}", relative_to=now)
+            value = prompt("datetime range", default=current)
+            try:
+                start, end, allday = aux.guessrangefstr(value, locale, default_timedelta="60m")
+                event.update_start_end(start, end)
+                edited = True
+            except:
+                echo("error parsing range")
+        elif choice == "repeat":
+            recur = event.recurobject
+            freq = recur["freq"] if "freq" in recur else ""
+            until = recur["until"] if "until" in recur else ""
+            freq = prompt("frequency", freq)
+            until = prompt("until", until)
+            rrule = aux.rrulefstr(freq, until, locale)
+            event.update_rrule(rrule)
+            edited = True
+        elif choice == "alarm":
+            default_alarms = []
+            for a in event.alarms:
+                s = aux.timedelta2str(-1*a[0])
+                default_alarms.append(s)
+
+            alarm = prompt("alarm", ', '.join(default_alarms))
+            alarm_list = []
+            for a in alarm.split(","):
+                alarm_trig = -1 * aux.guesstimedeltafstr(a.strip())
+                new_alarm = (alarm_trig, event.description)
+                alarm_list += [new_alarm]
+            event.update_alarms(alarm_list)
+            edited = True
+        else:
+            attr = options[choice]["attr"]
+            default = getattr(event, attr)
+            value = prompt(choice, default)
+            getattr(event, "update_"+attr)(value)
+            edited = True
+
+        if edited:
+            event.increment_sequence()
+            collection.update(event)
+
+
+def edit(collection, search_string, locale, format=None, allow_past=False, conf=None):
+    if conf is not None:
+        if format is None:
+            format = conf['view']['event_format']
+
+    term_width, _ = get_terminal_size()
+    now = datetime.now()
+
+    events = sorted(collection.search(search_string))
+    for event in events:
+        end = aux.datetime_fillin(event.end_local, locale).replace(tzinfo=None)
+        if not allow_past and end < now:
+            continue
+        event_text = textwrap.wrap(event.format(format, relative_to=now), term_width)
+        echo(''.join(event_text))
+        if not edit_event(event, collection, locale, allow_quit=True, width=term_width):
+            return
 
 
 def interactive(collection, conf):
