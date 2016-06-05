@@ -392,6 +392,34 @@ def generate_random_uid():
     return ''.join([random.choice(choice) for _ in range(36)])
 
 
+def rrulefstr(repeat, until, locale):
+    if repeat in ["daily", "weekly", "monthly", "yearly"]:
+        rrule_settings = {'freq': repeat}
+        if until:
+            until_date = None
+            for fun, dformat in [(datetimefstr, locale['datetimeformat']),
+                                 (datetimefstr, locale['longdatetimeformat']),
+                                 (timefstr, locale['timeformat']),
+                                 (datetimefstr, locale['dateformat']),
+                                 (datetimefstr, locale['longdateformat'])]:
+                try:
+                    until_date = fun(until, dformat)
+                    break
+                except ValueError:
+                    pass
+            if until_date is None:
+                logger.fatal("Cannot parse until date: '{}'\nPlease have a look "
+                             "at the documentation.".format(until))
+                raise FatalError()
+            rrule_settings['until'] = until_date
+
+        return rrule_settings
+    else:
+        logger.fatal("Invalid value for the repeat option. \
+                Possible values are: daily, weekly, monthly or yearly")
+        raise FatalError()
+
+
 def construct_event(dtime_list, locale,
                     defaulttimelen=60, defaultdatelen=1, description=None,
                     location=None, categories=None, repeat=None, until=None,
@@ -506,31 +534,8 @@ def construct_event(dtime_list, locale,
     if categories:
         event.add('categories', categories)
     if repeat and repeat != "none":
-        if repeat in ["daily", "weekly", "monthly", "yearly"]:
-            rrule_settings = {'freq': repeat}
-            if until:
-                until_date = None
-                for fun, dformat in [(datetimefstr, locale['datetimeformat']),
-                                     (datetimefstr, locale['longdatetimeformat']),
-                                     (timefstr, locale['timeformat']),
-                                     (datetimefstr, locale['dateformat']),
-                                     (datetimefstr, locale['longdateformat'])]:
-                    try:
-                        until_date = fun(until, dformat)
-                        break
-                    except ValueError:
-                        pass
-                if until_date is None:
-                    logger.fatal("Cannot parse until date: '{}'\nPlease have a look "
-                                 "at the documentation.".format(until))
-                    raise FatalError()
-                rrule_settings['until'] = until_date
-
-            event.add('rrule', rrule_settings)
-        else:
-            logger.fatal("Invalid value for the repeat option. \
-                    Possible values are: daily, weekly, monthly or yearly")
-            raise FatalError()
+        rrule = rrulefstr(repeat, until, locale)
+        event.add('rrule', rrule)
     if alarm:
         alarm_trig = -1 * guesstimedeltafstr(alarm)
         new_alarm = icalendar.Alarm()
