@@ -169,45 +169,42 @@ def calendar(collection, dates=None, firstweekday=0, locale=None,
 def agenda(collection, dates=None, show_all_days=False, full=False,
            week=False, bold_for_light_color=True, **kwargs):
     term_width, _ = get_terminal_size()
-    event_column = get_agenda(collection, dates=dates, width=term_width,
-                              show_all_days=show_all_days, full=full, week=week,
-
-                              bold_for_light_color=bold_for_light_color, **kwargs)
-    # XXX: Generate this as a unicode in the first place, rather than
-    # casting it.
+    event_column = get_agenda(
+        collection, dates=dates, width=term_width, show_all_days=show_all_days,
+        full=full, week=week, bold_for_light_color=bold_for_light_color, **kwargs)
     echo('\n'.join(event_column))
 
 
 def get_list_from_str(collection, locale, daterange, notstarted=False,
                       format=None, once=False, default_timedelta=None, env=None):
-    """returns a list of events scheduled between start and end. Start and end
-    are strings or datetimes (of some kind).
+    """returns a list of events scheduled in between `daterange`.
 
     :param collection:
     :type collection: khalendar.CalendarCollection
-
-    :param start: the start datetime, string, date or time
-    :param end: the end datetime, string, date or time
+    :param locale: locale settings
+    :type locale: dict
+    :param daterange: an iterable of strings that describes `daterange`
+    :type daterange: tuple
+    :param notstarted: True if each event should start after start (instead of
+        be active between start and end)
+    :type nostarted: bool
     :param format: a format string that can be used in python string formatting
-    :type  format: str
+    :type format: str
     :param once: True if each event should only appear once
-    :type once: Boolean
-    :param nostarted: True if each event should start after start (instead of
-    be active between start and end)
-    :type nostarted: Boolean
-    :format:
-    :returns: a list to be printed as the agenda for the given days
+    :type once: bool
+    :param default_timedelta: default length of datetimerange that should be
+        reported on
+    :type default_timedelta:
+    :returns: a list to be printed as the agenda for the given datetime range
     :rtype: list(str)
-
     """
     if len(daterange) == 0:
         start = aux.datetime_fillin(end=False)
         end = aux.datetime_fillin(day=start)
-
     else:
         try:
-            start, end = aux.guessrangefstr(daterange, locale,
-                                            default_timedelta=default_timedelta)
+            start, end = aux.guessrangefstr(
+                daterange, locale, default_timedelta=default_timedelta)
 
             if start is None or end is None:
                 raise InvalidDate('Invalid date range: "%s"' % (' '.join(daterange)))
@@ -246,8 +243,8 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
     :param end: the end datetime
     :param format: a format string that can be used in python string formatting
     :type  format: str
-    :param env: a dictionary to be passed to all calls of get_list if in a loop
-    :type end: dict
+    :param env: a collection of "static" values like calendar names and color
+    :type env: dict
     :param nostarted: True if each event should start after start (instead of
     be active between start and end)
     :type nostarted: Boolean
@@ -285,15 +282,16 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
 
 def khal_list(collection, daterange, conf=None, format=None, once=False,
               notstarted=False, **kwargs):
+    """list all events in `daterange`"""
     td = None
     if conf is not None:
         if format is None:
             format = conf['view']['event_format']
         td = conf['default']['timedelta']
 
-    event_column = get_list_from_str(collection, format=format, daterange=daterange,
-                                     once=once, notstarted=notstarted, default_timedelta=td,
-                                     **kwargs)
+    event_column = get_list_from_str(
+        collection, format=format, daterange=daterange, once=once,
+        notstarted=notstarted, default_timedelta=td, **kwargs)
 
     echo('\n'.join(event_column))
 

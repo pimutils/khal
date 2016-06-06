@@ -267,7 +267,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None):
             default_timedelta = None
         else:
             default_timedelta = guesstimedeltafstr(default_timedelta)
-    except:
+    except ValueError:
         default_timedelta = None
 
     for i in range(1, len(range_list) + 1):
@@ -294,14 +294,14 @@ def guessrangefstr(daterange, locale, default_timedelta=None):
                     try:
                         delta = guesstimedeltafstr(end)
                         end = start + delta
-                    except:
+                    except ValueError:
                         split = end.split(" ")
                         end = guessdatetimefstr(split, locale, default_day=start.date())[0]
                         if len(split) != 0:
                             continue
                     end = datetime_fillin(end)
             return start, end
-        except Exception:
+        except Exception:   # XXX FIXME what kind of exceptions do we want to catch here?
             pass
 
     return None, None
