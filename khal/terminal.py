@@ -51,7 +51,21 @@ COLORS = {
 }
 
 
-def colored(string, fg=None, bg=None, bold_for_light_color=True):
+def get_color(fg, bg, bold_for_light_color):
+    """convert foreground and/or background color in ANSI color codes
+
+    colors can be a color name from the ANSI color palette (e.g. 'dark green'),
+    a number between 0 and 255 (still pass them as a string) or an HTML color in
+    the style `#00FF00` or `#ABC`
+
+    :param fg: foreground color
+    :type fg: str
+    :param bg: background color
+    :type bg: str
+    :returns: ANSI color code
+    :rtype: str
+    """
+
     result = ''
     for colorstring, is_bg in ((fg, False), (bg, True)):
         if colorstring:
@@ -97,6 +111,19 @@ def colored(string, fg=None, bg=None, bold_for_light_color=True):
                     color += '48;2;{!s};{!s};{!s}'.format(r, g, b)
             color += 'm'
             result += color
+    return result
+
+
+def colored(string, fg=None, bg=None, bold_for_light_color=True):
+    """colorize `string` with ANSI color codes
+
+     see get_color for description of `fg`, `bg` and `bold_for_light_color`
+    :param string: string to be colorized
+    :type string: str
+    :returns: colorized string
+    :rtype: str
+    """
+    result = get_color(fg, bg, bold_for_light_color)
     result += string
     if fg or bg:
         result += RESET
