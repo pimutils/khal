@@ -96,19 +96,24 @@ formatting
 
 ::
         khal list [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
-        [--once] [--notstarted] [START DATE] [END DATE]
+        [--once] [--notstarted] [START [END | DELTA] ]
 
-if no end date is given, midnight of the start date is assumed. If no start
-date is given the today is assumed. The `--once` option only allows event to
-appear once even if they are on multiple days. The `--notstarted` option only
-shows events that start after `START DATE`. `END DATE` can also be of the form
-`I{m,h,d}` where `I` is an integer and `m` means minutes, `h` means hours, and
-`d` means days, this is the offset from the start date. In addition `eod` can
-be used to specify the end of day of the start date, this is useful if you have
-set a timedelta in the config.
+START and END can both be given as dates, datetimes or times (it is assumed
+today is meant in the case of only a given time) in the formats configured in
+the configuration file.  If END is not given, midnight of the start date is
+assumed. Today is used for START if it is not explicitly given.  If DELTA, a
+(date)time range in the format `I{m,h,d}`, where `I` is an integer and `m` means
+minutes, `h` means hours, and `d` means days, is given, END is assumed to be
+START + DELTA.  A value of `eod` is also accepted as DELTA and means the end of
+day of the start date.
 
-The format is a string that will be used with python's `string.format()`. The
-available templates are:
+The `--once` option only allows events to appear once even if they are on
+multiple days. With the `--notstarted` option only events are shown that start
+after `START`.
+
+FORMAT is a template string that will be expanded with an event's properties (using
+python's `string.format()`) and determines how matching events are printed to
+the terminal.  The available template options are:
 
 .. option:: title
 
@@ -204,12 +209,12 @@ available templates are:
 
         A newline if start-date-once is not "".
 
-By default all day events will not have times. To see the times anyway simply
+By default all-day events have no times. To see a start and end time anyway simply
 add `-full` to the end of any template with start/end, for instance
-`start-time` becomes `start-time-full` and will always show the time (instead
-of being empty for all day events).
+`start-time` becomes `start-time-full` and will always show start and end times (instead
+of being empty for all-day events).
 
-In addtion there are colors: `black`, `red`, `green`, `yellow`, `blue`,
+In addition there are colors: `black`, `red`, `green`, `yellow`, `blue`,
 `magenta`, `cyan`, `white` (and their bold versions: `red-bold`, etc.). There
 is also `reset`, which clears the styling.
 
