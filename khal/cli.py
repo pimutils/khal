@@ -311,7 +311,7 @@ def _get_cli():
                   help=('The format of the events.'))
     @click.option(
         '--once', '-o', is_flag=True,
-       help='Print events only once, even if they span multiple days')
+        help='Print events only once, even if they span multiple days')
     @click.option('--notstarted', help=('Print only events that have not started'),
                   is_flag=True)
     @click.argument('DATERANGE', nargs=-1, required=False)
