@@ -27,7 +27,7 @@ from vdirsyncer.utils.vobject import Item
 from collections import defaultdict
 from shutil import get_terminal_size
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import logging
 import sys
 import textwrap
@@ -315,7 +315,8 @@ def khal_list(collection, daterange, conf=None, format=None, once=False,
 
 
 def new_from_string(collection, calendar_name, conf, date_list, location=None,
-                    categories=None, repeat=None, until=None, alarm=None):
+                    categories=None, repeat=None, until=None, alarm=None,
+                    format=None):
     """construct a new event from a string and add it"""
     try:
         event = aux.construct_event(
@@ -338,7 +339,9 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None,
                      'read-only'.format(calendar_name))
         sys.exit(1)
     if conf['default']['print_new'] == 'event':
-        echo(event.event_description)
+        if format is None:
+            format = conf['view']['event_format']
+        echo(event.format(format, datetime.now()))
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
         echo(path)

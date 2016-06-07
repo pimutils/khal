@@ -341,6 +341,8 @@ def _get_cli():
                   help=('Stop an event repeating on this date.'))
     @click.option('--alarm', '-m',
                   help=('Alarm time for the new event.'))
+    @click.option('--format', '-f',
+                  help=('The format to print the event.'))
     @click.argument('START', nargs=1, required=True)
     @click.argument('END', nargs=1, required=False)
     @click.argument('TIMEZONE', nargs=1, required=False)
@@ -348,7 +350,7 @@ def _get_cli():
     @click.argument('DESCRIPTION', metavar='[:: DESCRIPTION]', nargs=-1, required=False)
     @click.pass_context
     def new(ctx, calendar, start, end, timezone, summary, description, location, categories, repeat,
-            until, alarm):
+            until, alarm, format):
         '''Create a new event from arguments.
 
         START and END can be either dates, times or datetimes, please have a

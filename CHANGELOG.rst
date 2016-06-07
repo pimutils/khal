@@ -19,6 +19,7 @@ not released yet
 * calendar path is now a glob without recursion for discover (Taylor Money)
 * `at` command now works like list with end of `0m` (Taylor Money)
 * `calendar` command uses `list` (Taylor Money)
+* `new` prints using event.format (Taylor Money)
 
 ikhal
 -----
