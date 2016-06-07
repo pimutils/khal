@@ -378,9 +378,9 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         self[self.focus]._set_focus_position(column)
 
     def reset_styles_range(self, min_date, max_date):
-        """reset styles for all dates between min_date and max_date"""
-        minr, minc = self.get_date_pos(min_date)
-        maxr, maxc = self.get_date_pos(max_date)
+        """reset styles for all (displayed) dates between min_date and max_date"""
+        minr, minc = self.get_date_pos(max(min_date, self[0][1].date))
+        maxr, maxc = self.get_date_pos(min(max_date, self[-1][7].date))
         focus_pos = self.focus, self[self.focus].focus_col
 
         for row in range(minr, maxr + 1):
