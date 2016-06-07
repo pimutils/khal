@@ -62,7 +62,7 @@ class Pane(urwid.WidgetWrap):
         """
         return [(['up', 'down', 'pg.up', 'pg.down'],
                  'navigate through the fields.'),
-                (['esc'], 'backtrack to the previous pane or exit.'),
+                (['esc'], 'backtrack to the previous pane.'),
                 (['F1', '?'], 'open this pane help.')]
 
 
@@ -144,9 +144,16 @@ class Window(urwid.Frame):
         else:
             raise urwid.ExitMainLoop()
 
+    def is_top_level(self):
+        """Is the current pane the top-level one?
+        """
+        return len(self._track) == 1
+
     def on_key_press(self, key):
         """Handle application-wide key strokes."""
-        if key in ['esc'] + self.quit_keys:
+        if key in self.quit_keys:
+            self.backtrack()
+        elif key == 'esc' and not self.is_top_level():
             self.backtrack()
         elif key in ['f1', '?']:
             self.open(HelpPane(self._get_current_pane()))
