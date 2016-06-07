@@ -272,6 +272,11 @@ class DListBox(urwid.ListBox):
 
         rval = super().keypress(size, key)
         self.clean()
+        if self.parent._conf['view']['event_view_always_visible'] and self.body.current_event:
+            self.parent.clear_event_view()
+            self.parent.view(self.body.current_event.event)
+        else:
+            self.parent.clear_event_view()
         return rval
 
     @property
@@ -486,7 +491,7 @@ class EventColumn(urwid.WidgetWrap):
         self._current_date = date
         self.dlistbox.update_by_date(date)
 
-        # Show firast event if show event view is true
+        # Show first event if show event view is true
         if self.pane.conf['view']['event_view_always_visible']:
             if len(self.events.events) > 0:
                 self.current_event = self.events.events[0]
