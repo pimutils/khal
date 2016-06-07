@@ -7,7 +7,8 @@ import icalendar
 import pytz
 from freezegun import freeze_time
 
-from khal.aux import construct_event, guessdatetimefstr, guesstimedeltafstr
+from khal.aux import construct_event, guessdatetimefstr, guesstimedeltafstr,\
+     guessrangefstr
 from khal import aux
 from khal.exceptions import FatalError
 import pytest
@@ -123,6 +124,32 @@ class TestGuessTimedeltafstr(object):
     def test_same(self):
         assert timedelta(minutes=20) == \
             guesstimedeltafstr('10min 10minutes')
+
+
+class TestGuessRangefstr(object):
+    td_1d = timedelta(days=1)
+    today_start = datetime.combine(date.today(), time.min)
+    tomorrow_start = today_start + td_1d
+    today13 = datetime.combine(date.today(), time(13, 0))
+    today14 = datetime.combine(date.today(), time(14, 0))
+    tomorrow16 = datetime.combine(tomorrow, time(16, 0))
+    today16 = datetime.combine(date.today(), time(16, 0))
+    today17 = datetime.combine(date.today(), time(17, 0))
+
+    def test_today(self):
+        assert (self.today13, self.today14) == guessrangefstr('13:00 14:00', locale=locale_de)
+        assert (self.today_start, self.tomorrow_start) == \
+            guessrangefstr('today tomorrow', locale_de)
+
+    def test_tomorrow(self):
+        assert (self.today_start, self.tomorrow16) == \
+            guessrangefstr('today tomorrow 16:00', locale=locale_de)
+
+    def test_time_tomorrow(self):
+        assert (self.today16, self.tomorrow16) == \
+            guessrangefstr('16:00', locale=locale_de, default_timedelta="1d")
+        assert (self.today16, self.today17) == \
+            guessrangefstr('16:00 17:00', locale=locale_de, default_timedelta="1d")
 
 
 test_set_format_de = _create_testcases(

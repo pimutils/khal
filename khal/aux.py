@@ -270,7 +270,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None):
         range_list = daterange.split()
 
     try:
-        if len(default_timedelta) == 0:
+        if default_timedelta is None or len(default_timedelta) == 0:
             default_timedelta = None
         else:
             default_timedelta = guesstimedeltafstr(default_timedelta)
@@ -308,7 +308,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None):
                             continue
                     end = datetime_fillin(end)
             return start, end
-        except Exception:   # XXX FIXME what kind of exceptions do we want to catch here?
+        except ValueError:
             pass
 
     return None, None
@@ -347,7 +347,7 @@ def datetime_fillin(dt=None, end=True, locale=None, day=None):
     if locale is not None:
         try:
             dt = locale['local_timezone'].localize(dt)
-        except:
+        except ValueError:
             pass
 
     return dt
