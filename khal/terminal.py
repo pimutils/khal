@@ -51,7 +51,7 @@ COLORS = {
 }
 
 
-def get_color(fg, bg, bold_for_light_color):
+def get_color(fg=None, bg=None, bold_for_light_color=False):
     """convert foreground and/or background color in ANSI color codes
 
     colors can be a color name from the ANSI color palette (e.g. 'dark green'),

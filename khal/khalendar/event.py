@@ -30,6 +30,7 @@ import pytz
 from ..aux import generate_random_uid, datetime_fillin
 from .aux import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
 from ..log import logger
+from ..terminal import get_color
 from click import style
 
 
@@ -543,7 +544,8 @@ class Event(object):
         elif allday:
             attributes["start-end-time-style"] = ""
         else:
-            attributes["start-end-time-style"] = attributes["start-style"] + attributes["to-style"] + attributes["end-style"]
+            attributes["start-end-time-style"] = attributes["start-style"] + \
+                attributes["to-style"] + attributes["end-style"]
 
         attributes["recurse"] = self._recur_str
         attributes["title"] = self.summary
@@ -556,7 +558,7 @@ class Event(object):
         try:
             cal = env["calendars"][self.calendar]
             if "color" in cal and cal["color"] is not None:
-                attributes["calendar-color"] = cal["color"]
+                attributes["calendar-color"] = get_color(cal["color"])
             if "displayname" in cal and cal["displayname"] is not None:
                 attributes["calendar"] = cal["displayname"]
         except:
