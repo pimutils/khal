@@ -175,7 +175,7 @@ print_new = option('event', 'path', 'False', default=False)
 highlight_event_days = boolean(default=False)
 
 # Default timedelta for use with daterange options
-timedelta = string(default='')
+timedelta = string(default='2d')
 
 # The view section contains configuration options that effect the visual appearance
 # when using ikhal

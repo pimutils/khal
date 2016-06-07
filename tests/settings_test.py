@@ -43,7 +43,7 @@ class TestSettings(object):
                 'print_new': 'False',
                 'days': 2,
                 'highlight_event_days': False,
-                'timedelta': ''
+                'timedelta': '2d'
             }
         }
         for key in comp_config:
@@ -83,7 +83,7 @@ class TestSettings(object):
                 'show_all_days': False,
                 'days': 2,
                 'highlight_event_days': False,
-                'timedelta': ''
+                'timedelta': '2d'
             }
         }
         for key in comp_config:

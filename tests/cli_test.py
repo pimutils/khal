@@ -281,8 +281,8 @@ def test_at(runner):
     result = runner.invoke(
         main_khal,
         'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
-    result = runner.invoke(main_khal, ['--color', 'at', '18:30'])
-    assert result.output.startswith('03.06. 18:00')
+    result = runner.invoke(main_khal, ['--color', 'at', '--format', '{start-time}{title}', '18:30'])
+    assert result.output.startswith('18:00')
     assert not result.exception
 
 

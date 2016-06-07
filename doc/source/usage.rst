@@ -95,7 +95,8 @@ assumed. Today is used for START if it is not explicitly given.  If DELTA, a
 (date)time range in the format `I{m,h,d}`, where `I` is an integer and `m` means
 minutes, `h` means hours, and `d` means days, is given, END is assumed to be
 START + DELTA.  A value of `eod` is also accepted as DELTA and means the end of
-day of the start date.
+day of the start date. In addition the DELTA `week` may be used to specify that
+the daterange should actually be the week containing the start date.
 
 The `--once` option only allows events to appear once even if they are on
 multiple days. With the `--notstarted` option only events are shown that start

@@ -200,7 +200,15 @@ def get_list_from_str(collection, locale, daterange, notstarted=False,
     """
     if len(daterange) == 0:
         start = aux.datetime_fillin(end=False)
-        end = aux.datetime_fillin(day=start)
+        if default_timedelta is None:
+            end = aux.datetime_fillin(day=start)
+        else:
+            try:
+                end = start + aux.guesstimedeltafstr(default_timedelta)
+            except ValueError as e:
+                logging.fatal(e)
+                sys.exit(1)
+
     else:
         try:
             start, end = aux.guessrangefstr(
