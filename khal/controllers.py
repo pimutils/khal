@@ -27,7 +27,7 @@ from vdirsyncer.utils.vobject import Item
 from collections import defaultdict
 from shutil import get_terminal_size
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 import logging
 import sys
 import textwrap
@@ -131,27 +131,33 @@ def get_agenda(collection, locale, dates=None, firstweekday=0, days=None, events
     return event_column
 
 
-def calendar(collection, dates=None, firstweekday=0, locale=None,
-             weeknumber=False, show_all_days=False, conf=None,
+def calendar(collection, format=None, notstarted=False, once=False, daterange=None,
+             locale=None,
+             conf=None,
+             firstweekday=0,
+             weeknumber=False,
              hmethod='fg',
              default_color='',
              multiple='',
              color='',
              highlight_event_days=0,
-             week=False,
              full=False,
              bold_for_light_color=True,
              **kwargs):
-    if dates is None:
-        dates = [datetime.today()]
+    td = None
+    if conf is not None:
+        if format is None:
+            format = conf['view']['event_format']
+        td = conf['default']['timedelta']
 
     term_width, _ = get_terminal_size()
     lwidth = 25
     rwidth = term_width - lwidth - 4
-    event_column = get_agenda(
-        collection, locale, dates=dates, width=rwidth,
-        show_all_days=show_all_days, week=week, full=full,
-        bold_for_light_color=bold_for_light_color, **kwargs)
+    event_column = get_list_from_str(collection, format=format,
+                                     daterange=daterange, locale=locale,
+                                     once=once, notstarted=notstarted,
+                                     default_timedelta=td, width=rwidth,
+                                     **kwargs)
     calendar_column = calendar_display.vertical_month(
         firstweekday=firstweekday, weeknumber=weeknumber,
         collection=collection,
@@ -176,7 +182,7 @@ def agenda(collection, dates=None, show_all_days=False, full=False,
 
 
 def get_list_from_str(collection, locale, daterange, notstarted=False,
-                      format=None, once=False, default_timedelta=None, env=None
+                      format=None, once=False, default_timedelta=None, env=None,
                       **kwargs):
     """returns a list of events scheduled in between `daterange`.
 

@@ -230,17 +230,18 @@ start.
 
 calendar
 ********
-shows a calendar (similar to :manpage:`cal(1)`) and agenda. ``khal calendar``
+shows a calendar (similar to :manpage:`cal(1)`) and list. ``khal calendar``
 should understand the following syntax:
 
 ::
 
-        khal calendar [-a CALENDAR ... | -d CALENDAR ...] [--days N] [DATE ...]
+        khal calendar [-a CALENDAR ... | -d CALENDAR ...] [START DATETIME]
+        [END DATETIME]
 
-Date selection works exactly as for ``khal agenda``. The displayed calendar
+Date selection works exactly as for ``khal list``. The displayed calendar
 contains three consecutive months, where the first month is the month
 containing the first given date. If today is included, it is highlighted.
-Have a look at ``khal agenda`` for a description of the options.
+Have a look at ``khal list`` for a description of the options.
 
 configure
 *********

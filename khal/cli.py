@@ -253,32 +253,33 @@ def _get_cli():
                 ctx.exit(1)
 
     @cli.command()
-    @time_args
     @multi_calendar_option
-    @click.pass_context
-    @click.option('--full', '-f', help=('Print description and location with event'),
+    @click.option('--format', '-f',
+                  help=('The format of the events.'))
+    @click.option('--once', '-o', help=('Print event only once'),
                   is_flag=True)
-    def calendar(ctx, days, events, dates, week, full=False):
+    @click.option('--notstarted', help=('Print only events that have not started'),
+                  is_flag=True)
+    @click.argument('DATERANGE', nargs=-1, required=False)
+    @click.pass_context
+    def calendar(ctx, daterange, once, notstarted, format):
         '''Print calendar with agenda.'''
-        if week and days:
-            raise click.UsageError('Cannot use --days and -week at the same time.')
         controllers.calendar(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            dates=dates,
+            build_collection(ctx),
+            format=format,
+            once=once,
+            notstarted=notstarted,
+            daterange=daterange,
+            conf=ctx.obj['conf'],
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
             locale=ctx.obj['conf']['locale'],
             weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
-            show_all_days=ctx.obj['conf']['default']['show_all_days'],
-            days=days or ctx.obj['conf']['default']['days'],
-            events=events,
             hmethod=ctx.obj['conf']['highlight_days']['method'],
             default_color=ctx.obj['conf']['highlight_days']['default_color'],
             multiple=ctx.obj['conf']['highlight_days']['multiple'],
             color=ctx.obj['conf']['highlight_days']['color'],
             highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
             bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
-            full=full,
-            week=week,
         )
 
     @cli.command()
