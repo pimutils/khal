@@ -176,7 +176,8 @@ def agenda(collection, dates=None, show_all_days=False, full=False,
 
 
 def get_list_from_str(collection, locale, daterange, notstarted=False,
-                      format=None, once=False, default_timedelta=None, env=None):
+                      format=None, once=False, default_timedelta=None, env=None
+                      **kwargs):
     """returns a list of events scheduled in between `daterange`.
 
     :param collection:
@@ -230,17 +231,17 @@ def get_list_from_str(collection, locale, daterange, notstarted=False,
             if start.date() == end.date():
                 day_end = end
             event_column.extend(get_list(collection, locale=locale, format=format, start=start,
-                                         end=day_end, notstarted=notstarted, env=env))
+                                         end=day_end, notstarted=notstarted, env=env, **kwargs))
             start = aux.datetime_fillin(start.date(), end=False) + timedelta(days=1)
     else:
         event_column = get_list(collection, locale=locale, format=format, start=start,
-                                end=end, notstarted=notstarted)
+                                end=end, notstarted=notstarted, **kwargs)
     if event_column == []:
         event_column = [style('No events', bold=True)]
     return event_column
 
 
-def get_list(collection, locale, start, end, format=None, notstarted=False, env=None):
+def get_list(collection, locale, start, end, format=None, notstarted=False, env=None, width=None):
     """returns a list of events scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
 
@@ -283,7 +284,10 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
                 logging.fatal(e)
                 sys.exit(1)
 
-            event_list.append(event_string)
+            if width:
+                event_list += textwrap.wrap(event_string, width)
+            else:
+                event_list.append(event_string)
 
     return event_list
 
