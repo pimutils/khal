@@ -28,6 +28,7 @@ import sys
 import urwid
 
 from .. import aux
+from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
 from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice, AlarmsEditor, \
     linebox
@@ -225,15 +226,18 @@ class DListBox(urwid.ListBox):
 
     def duplicate(self):
         """duplicate the event in focus"""
+        # TODO copying from birthday calendars is currently problematic
+        # because their title is determined by X-BIRTHDAY and X-FNAME properties
+        # which are also copied. If the events's summary is edited it will show
+        # up on disk but not be displayed in khal
+        event = self.current_event.event.duplicate()
         try:
-            event = self.current_event.event
-            event = event.duplicate()
+            self.parent.pane.collection.new(event)
         except ReadOnlyCalendarError:
-            self.eventcolumn.pane.window.alert(
-                ('light red', 'Read-only calendar'))
-        else:
-            event = self.parent.pane.collection.new(event)
-            self.body.update(self.current_date)
+            event.calendar = self.parent.pane.collection.default_calendar_name or \
+                self.parent.pane.collection.writable_names[0]
+            self.parent.edit(event, force_save=True)
+        self.body.update(self.current_date)
 
     def keypress(self, size, key):
         movements = self._conf['keybindings']['up'] + \
@@ -489,11 +493,13 @@ class EventColumn(urwid.WidgetWrap):
             else:
                 self.current_event = None
 
-    def edit(self, event):
+    def edit(self, event, force_save=False):
         """create an EventEditor and display it
 
         :param event: event to edit
         :type event: khal.event.Event
+        :param force_save: even save the event if it hasn't changed
+        :type force_save: bool
         """
         if event.readonly:
             self.pane.window.alert(
@@ -506,15 +512,21 @@ class EventColumn(urwid.WidgetWrap):
             original_start = event.start_local
         if isinstance(event.end_local, datetime):
             original_end = event.end_local.date()
+        else:
             original_end = event.end_local
 
-        def update_colors(new_start, new_end):
-            if isinstance(new_start, datetime):
-                new_start = new_start.date()
-            if isinstance(new_end, datetime):
-                new_end = new_end.date()
-            min_date = min(original_start, new_start)
-            max_date = max(original_end, new_end)
+        def update_colors(new_start, new_end, recurring=False):
+            # TODO also reset DatePiles
+            if recurring:
+                min_date = self.pane.calendar.base_widget.walker.earliest_date
+                max_date = self.pane.calendar.base_widget.walker.latest_date
+            else:
+                if isinstance(new_start, datetime):
+                    new_start = new_start.date()
+                if isinstance(new_end, datetime):
+                    new_end = new_end.date()
+                min_date = min(original_start, new_start)
+                max_date = max(original_end, new_end)
             self.pane.calendar.base_widget.reset_styles_range(min_date, max_date)
 
         if self.editor:
@@ -522,7 +534,7 @@ class EventColumn(urwid.WidgetWrap):
 
         assert not self.editor
         self.editor = True
-        editor = EventEditor(self.pane, event, update_colors)
+        editor = EventEditor(self.pane, event, update_colors, force_save=force_save)
         # current_day = self.container.contents[0][0]  FIXME
 
         ContainerWidget = linebox[self.pane.conf['view']['frame']]
@@ -674,12 +686,14 @@ class EventDisplay(urwid.WidgetWrap):
 class EventEditor(urwid.WidgetWrap):
     """Widget that allows Editing one `Event()`"""
 
-    def __init__(self, pane, event, save_callback=None):
+    def __init__(self, pane, event, save_callback=None, force_save=False):
         """
         :type event: khal.event.Event
         :param save_callback: call when saving event with new start and end
-             dates as parameters
+             dates and recursiveness of original and edited event as parameters
         :type save_callback: callable
+        :param force_save: save event even if it has not changed
+        :type force_save: bool
         """
 
         self.pane = pane
@@ -732,8 +746,9 @@ class EventEditor(urwid.WidgetWrap):
             urwid.Button('Save', on_press=self.save),
             urwid.Button('Export', on_press=self.export)
         ]), outermost=True)
-
+        self._force_save = force_save
         urwid.WidgetWrap.__init__(self, self.pile)
+
 
     @property
     def title(self):  # Window title
@@ -813,15 +828,16 @@ class EventEditor(urwid.WidgetWrap):
         self.pane.window.open(overlay)
 
     def save(self, button):
-        """
-        saves the event to the db (only when it has been changed)
+        """saves the event to the db
+
+        (only when it has been changed or force_save is set)
         :param button: not needed, passed via the button press
         """
         if not self.startendeditor.validate():
             self.pane.window.alert(
                 ('light red', "Can't save: end date is before start date!"))
             return
-        if self.changed is True:
+        if self._force_save or self.changed is True:
             self.update_vevent()
             self.event.allday = self.startendeditor.allday
             self.event.increment_sequence()
@@ -836,7 +852,10 @@ class EventEditor(urwid.WidgetWrap):
             else:
                 self.collection.update(self.event)
 
-            self._save_callback(self.event.start_local, self.event.end_local)
+            self._save_callback(
+                self.event.start_local, self.event.end_local,
+                self.event.recurring or self.recurrenceeditor.changed,
+            )
         self._abort_confirmed = False
         self.pane.window.backtrack()
 
