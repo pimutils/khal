@@ -362,7 +362,7 @@ def interactive(collection, conf):
     )
 
 
-def import_ics(collection, conf, ics, batch=False, random_uid=False):
+def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None):
     """
     :param batch: setting this to True will insert without asking for approval,
                   even when an event with the same uid already exists
@@ -374,14 +374,17 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False):
     for event in events:
         events_grouped[event['UID']].append(event)
 
+    if format is None:
+        format = conf['view']['event_format']
+
     vevents = list()
     for uid in events_grouped:
         vevents.append(sorted(events_grouped[uid], key=sort_key))
     for vevent in vevents:
-        import_event(vevent, collection, conf['locale'], batch, random_uid)
+        import_event(vevent, collection, conf['locale'], batch, random_uid, format)
 
 
-def import_event(vevent, collection, locale, batch, random_uid):
+def import_event(vevent, collection, locale, batch, random_uid, format=None):
     """import one event into collection, let user choose the collection"""
 
     # print all sub-events
@@ -389,7 +392,7 @@ def import_event(vevent, collection, locale, batch, random_uid):
         if not batch:
             event = Event.fromVEvents(
                 [sub_event], calendar=collection.default_calendar_name, locale=locale)
-            echo(event.event_description)
+            echo(event.format(format, datetime.now()))
 
     # get the calendar to insert into
     if batch or len(collection.writable_names) == 1:

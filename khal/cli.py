@@ -389,8 +389,10 @@ def _get_cli():
     @click.option('--random_uid', '-r', help=('Select a random uid.'),
                   is_flag=True)
     @click.argument('ics', type=click.File('rb'))
+    @click.option('--format', '-f',
+                  help=('The format to print the event.'))
     @click.pass_context
-    def import_ics(ctx, ics, include_calendar, batch, random_uid):
+    def import_ics(ctx, ics, include_calendar, batch, random_uid, format):
         '''Import events from an .ics file.
 
         If an event with the same UID is already present in the (implicitly)

@@ -57,7 +57,9 @@ class TestGetAgenda(object):
 class TestImport(object):
     def test_import(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        import_ics(coll, {'locale': aux.locale}, _get_text('event_rrule_recuid'),
+        view = {'event_format': '{title}'}
+        conf = {'locale': aux.locale, 'view': view}
+        import_ics(coll, conf, _get_text('event_rrule_recuid'),
                    batch=True)
         start_date = aux.BERLIN.localize(datetime.datetime(2014, 4, 30))
         end_date = aux.BERLIN.localize(datetime.datetime(2014, 9, 26))
@@ -68,7 +70,7 @@ class TestImport(object):
         assert aux.BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) in \
             [ev.start for ev in events]
 
-        import_ics(coll, {'locale': aux.locale}, _get_text('event_rrule_recuid_update'),
+        import_ics(coll, conf, _get_text('event_rrule_recuid_update'),
                    batch=True)
         events = list(coll.get_localized(start_date, end_date))
         for ev in events:
@@ -82,9 +84,10 @@ class TestImport(object):
         Test importing events with mixed tz-aware and tz-naive datetimes.
         """
         coll, vdirs = coll_vdirs
+        view = {'event_format': '{title}'}
         import_ics(
             coll,
-            {'locale': aux.locale},
+            {'locale': aux.locale, 'view': view},
             _get_text('event_dt_mixed_awareness'),
             batch=True
         )
