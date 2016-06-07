@@ -476,7 +476,7 @@ class Event(object):
 
         try:
             relative_to_start, relative_to_end = relative_to
-        except:
+        except (TypeError, ValueError):
             relative_to_start = relative_to
             relative_to_end = relative_to
 
@@ -557,14 +557,12 @@ class Event(object):
 
         attributes["calendar"] = self.calendar
         attributes["calendar-color"] = ""
-        try:
+        if "calendars" in env and self.calendar in env["calendars"]:
             cal = env["calendars"][self.calendar]
             if "color" in cal and cal["color"] is not None:
                 attributes["calendar-color"] = get_color(cal["color"])
             if "displayname" in cal and cal["displayname"] is not None:
                 attributes["calendar"] = cal["displayname"]
-        except:
-            pass
 
         attributes["start-date-once"] = attributes["start-date"]
         if self_start.replace(tzinfo=None) < relative_to_start:
@@ -584,7 +582,7 @@ class Event(object):
         attributes.update(colors)
         try:
             return format_string.format(**attributes) + colors["reset"]
-        except:
+        except (KeyError, IndexError):
             raise KeyError("cannot format event with: %s" % format_string)
 
     @property
