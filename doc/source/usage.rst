@@ -162,6 +162,10 @@ the terminal.  The available template options are:
 
         The event description.
 
+.. option:: description-seperator
+
+        A seperator: " :: " that appears when there is a description.
+
 .. option:: location
 
         The event location.
@@ -196,6 +200,11 @@ the terminal.  The available template options are:
 
         The start date, so long as that date has not yet been printed.
 
+.. option:: start-dayname-once
+
+        The start dayname, so long as that date has not yet been printed. eg
+        Tomorrow, or Wednesday.
+
 .. option:: start-date-once-newline
 
         A newline if start-date-once is not "".
@@ -207,7 +216,8 @@ of being empty for all-day events).
 
 In addition there are colors: `black`, `red`, `green`, `yellow`, `blue`,
 `magenta`, `cyan`, `white` (and their bold versions: `red-bold`, etc.). There
-is also `reset`, which clears the styling.
+is also `reset`, which clears the styling, and `bold`, which is the normal
+bold.
 
 For example the below command with print the title and description of all events today.
 

@@ -218,7 +218,7 @@ frame = option('False', 'width', 'color', 'top', default='False')
 bold_for_light_color = boolean(default=True)
 
 # Default format for events (used in list)
-event_format = string(default='{start}-{end} {title}')
+event_format = string(default='{start-date-once-newline}{bold}{start-dayname-once}{reset}{start-date-once-newline}{calendar-color}{start-end-time-style:16} {title}{recurse}{description-seperator}{description}{calendar-color}')
 
 # When highlight_event_days is enabled, this section specifies how is
 # the highlighting rendered.
