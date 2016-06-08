@@ -40,7 +40,7 @@ from khal.khalendar.event import Event
 from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
 from khal.log import logger
-from .terminal import colored, merge_columns
+from .terminal import merge_columns
 
 
 def construct_daynames(daylist, longdateformat):
@@ -60,75 +60,6 @@ def construct_daynames(daylist, longdateformat):
             yield (day, 'Tomorrow:')
         else:
             yield (day, day.strftime(longdateformat))
-
-
-def get_agenda(collection, locale, dates=None, firstweekday=0, days=None, events=None, width=45,
-               week=False, full=False, show_all_days=False, bold_for_light_color=True,):
-    """returns a list of events scheduled for all days in daylist
-
-    included are header "rows"
-    :param collection:
-    :type collection: khalendar.CalendarCollection
-    :param dates: a list of all dates for which the events should be return,
-                    including what should be printed as a header
-    :type collection: list(str)
-    :param show_all_days: True if all days must be shown, event without event
-    :type show_all_days: Boolean
-    :returns: a list to be printed as the agenda for the given days
-    :rtype: list(str)
-
-    """
-    event_column = list()
-
-    if days is None:
-        days = 2
-
-    if dates is None or len(dates) == 0:
-        dates = [date.today()]
-    else:
-        try:
-            dates = [
-                aux.guessdatetimefstr([day], locale)[0].date()
-                if not isinstance(day, date) else day
-                for day in dates
-            ]
-        except InvalidDate as error:
-            logging.fatal(error)
-            sys.exit(1)
-
-    if week:
-        dates = [d - timedelta((d.weekday() - firstweekday) % 7)
-                 for d in dates]
-        days = 7
-
-    if days is not None:
-        daylist = [day + timedelta(days=one)
-                   for one in range(days) for day in dates]
-        daylist.sort()
-
-    daylist = construct_daynames(daylist, locale['longdateformat'])
-
-    for day, dayname in daylist:
-        events = sorted(collection.get_events_on(day))
-        if not events and not show_all_days:
-            continue
-
-        if event_column:
-            event_column.append('')
-        event_column.append(style(dayname, bold=True))
-        for event in events:
-            lines = list()
-            items = event.relative_to(day, full).splitlines()
-            for item in items:
-                lines += textwrap.wrap(item, width)
-            event_column.extend(
-                [colored(line, event.color, bold_for_light_color=bold_for_light_color)
-                 for line in lines]
-            )
-
-    if event_column == []:
-        event_column = [style('No events', bold=True)]
-    return event_column
 
 
 def calendar(collection, format=None, notstarted=False, once=False, daterange=None,
@@ -170,15 +101,6 @@ def calendar(collection, format=None, notstarted=False, once=False, daterange=No
         bold_for_light_color=bold_for_light_color)
     rows = merge_columns(calendar_column, event_column)
     echo('\n'.join(rows))
-
-
-def agenda(collection, dates=None, show_all_days=False, full=False,
-           week=False, bold_for_light_color=True, **kwargs):
-    term_width, _ = get_terminal_size()
-    event_column = get_agenda(
-        collection, dates=dates, width=term_width, show_all_days=show_all_days,
-        full=full, week=week, bold_for_light_color=bold_for_light_color, **kwargs)
-    echo('\n'.join(event_column))
 
 
 def get_list_from_str(collection, locale, daterange, notstarted=False,

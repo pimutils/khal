@@ -26,7 +26,5 @@ firstweekday = 0
 [default]
 default_command = calendar
 default_calendar = home
-# in agenda/calendar display, shows all days even if there is no event
-show_all_days = False
-days = 30  # the default is 2
+timedelta = 2 # the default timedelta that list uses
 highlight_event_days = True  # the default is False

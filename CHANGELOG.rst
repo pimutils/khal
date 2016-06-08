@@ -20,6 +20,7 @@ not released yet
 * `at` command now works like list with end of `0m` (Taylor Money)
 * `calendar` command uses `list` (Taylor Money)
 * `new` prints using event.format (Taylor Money)
+* remove `agenda` in favor of list (Taylor Money)
 
 ikhal
 -----

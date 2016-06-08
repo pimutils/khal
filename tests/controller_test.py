@@ -2,7 +2,7 @@ import datetime
 from textwrap import dedent
 
 from vdirsyncer.storage.base import Item
-from khal.controllers import get_agenda, import_ics
+from khal.controllers import import_ics, get_list_from_str
 
 from .aux import _get_text
 from . import aux
@@ -26,13 +26,20 @@ event_today = event_allday_template.format(today.strftime('%Y%m%d'),
                                            tomorrow.strftime('%Y%m%d'))
 item_today = Item(event_today)
 
+event_format = '{start-date-once-newline}{bold}{start-dayname-once}{reset}\
+{start-date-once-newline}{calendar-color}{start-end-time-style:16} {title}\
+{recurse}{description-seperator}{description}{calendar-color}'
+
 
 class TestGetAgenda(object):
     def test_new_event(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, aux.cal1)
         coll.new(event)
-        assert ['\x1b[1mToday:\x1b[0m', '\x1b[34ma meeting\x1b[0m'] == get_agenda(coll, aux.locale)
+        assert ['\n'
+                '\x1b[1mToday:\x1b[0m\n'
+                '                 a meeting :: short description\x1b[0m'] == \
+            get_list_from_str(coll, aux.locale, [], format=event_format, default_timedelta='1d')
 
     def test_empty_recurrence(self, coll_vdirs):
         coll, vidrs = coll_vdirs
@@ -47,11 +54,9 @@ class TestGetAgenda(object):
             'DTEND:20110908T170000\r\n'
             'END:VEVENT\r\n'
         ), aux.cal1))
-        assert 'no events' in '\n'.join(get_agenda(
-            coll, aux.locale,
-            dates=[datetime.date(2011, 9, 8),
-                   datetime.date(2011, 9, 9)]
-        )).lower()
+        assert 'no events' in '\n'.join(get_list_from_str(coll, aux.locale, [],
+                                        format=event_format,
+                                        default_timedelta='1d')).lower()
 
 
 class TestImport(object):

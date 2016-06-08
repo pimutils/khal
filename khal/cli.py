@@ -282,29 +282,6 @@ def _get_cli():
             bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
         )
 
-    @cli.command()
-    @time_args
-    @multi_calendar_option
-    @click.pass_context
-    @click.option('--full', '-f', help=('Print description and location with event'),
-                  is_flag=True)
-    def agenda(ctx, days, events, dates, week, full=False):
-        '''Print agenda.'''
-        if week and days:
-            raise click.UsageError('Cannot use --days and -week at the same time.')
-        controllers.agenda(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            dates=dates,
-            firstweekday=ctx.obj['conf']['locale']['firstweekday'],
-            show_all_days=ctx.obj['conf']['default']['show_all_days'],
-            locale=ctx.obj['conf']['locale'],
-            days=days or ctx.obj['conf']['default']['days'],
-            events=events,
-            week=week,
-            full=full,
-            bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color']
-        )
-
     @cli.command("list")
     @multi_calendar_option
     @click.option('--format', '-f',

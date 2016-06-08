@@ -1,6 +1,6 @@
 Usage
 =====
-Khal offers a set of commands, most importantly :command:`agenda`,
+Khal offers a set of commands, most importantly :command:`list`,
 :command:`calendar`, :command:`interactive`, :command:`new`,
 :command:`printcalendars`, :command:`printformats`, and :command:`search`. See
 below for a description of what every command does. Calling :program:`khal`
@@ -61,23 +61,6 @@ interpreted as that date *next* week (i.e. seven days from now).
 
 Commands
 --------
-
-agenda
-******
-shows all events scheduled for given dates. ``khal agenda`` should understand
-the following syntax:
-
-::
-
-    khal agenda [-a CALENDAR ... | -d CALENDAR ...] [--days N] [DATE ...]
-
-If no dates are supplied as arguments, today and tomorrow are used. Dates must
-be given in the format specified in khal's config file as *dateformat* or
-*longdateformat*. If *dateformat* is used, the current year is implied.
-
-.. option:: --days N
-
-        Specify how many days' (following each DATE) events should be shown.
 
 list
 ****

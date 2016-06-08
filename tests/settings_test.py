@@ -39,9 +39,7 @@ class TestSettings(object):
             'default': {
                 'default_command': 'calendar',
                 'default_calendar': None,
-                'show_all_days': False,
                 'print_new': 'False',
-                'days': 2,
                 'highlight_event_days': False,
                 'timedelta': '2d'
             }
@@ -80,8 +78,6 @@ class TestSettings(object):
                 'default_calendar': None,
                 'default_command': 'calendar',
                 'print_new': 'False',
-                'show_all_days': False,
-                'days': 2,
                 'highlight_event_days': False,
                 'timedelta': '2d'
             }

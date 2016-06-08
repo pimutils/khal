@@ -150,21 +150,11 @@ quit = force_list(default=list('q', 'Q'))
 [default]
 
 # command to be executed if no command is given when executing khal
-default_command = option('calendar', 'agenda', 'interactive', 'printformats', 'printcalendars', '', default='calendar')
+default_command = option('calendar', 'list', 'interactive', 'printformats', 'printcalendars', '', default='calendar')
 
 # The calendar to use if none is specified for some operation (e.g. if adding a
 # new event). If this is not set, such operations require an explicit value.
 default_calendar = string(default=None)
-
-# By default, khal displays only dates with event in "agenda" view.
-# Setting this to *True* will show all days in "agenda", even
-# when there is no event scheduled on that day.
-show_all_days = boolean(default=False)
-
-# By default, khal shows events for today and tomorrow.
-# Setting this to a different value will show events of that amount of days by
-# default.
-days = integer(default=2)
 
 # After adding a new event, what should be printed to standard out? The whole
 # event in text form, the path to where the event is now saved or nothing?
