@@ -51,18 +51,18 @@ def write_section(specsection, secname, key, comment):
     print('      :default: {}'.format(default))
 
 
-for secname in spec:
+for secname in sorted(spec):
     print()
     heading = 'The [{}] section'.format(secname)
     print('{}\n{}'.format(heading, len(heading) * '~'))
     comment = spec.comments[secname]
     print('\n'.join([line[2:] for line in comment]))
 
-    for key, comment in spec[secname].comments.items():
+    for key, comment in sorted(spec[secname].comments.items()):
         if key == '__many__':
             comment = spec[secname].comments[key]
             print('\n'.join([line[2:] for line in comment]))
-            for key, comment in spec[secname]['__many__'].comments.items():
+            for key, comment in sorted(spec[secname]['__many__'].comments.items()):
                 write_section(spec[secname]['__many__'][key], secname,
                               key, comment)
         else:

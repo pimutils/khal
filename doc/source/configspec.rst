@@ -17,38 +17,6 @@ Here is a small example:
 .. literalinclude:: ../../tests/configs/small.conf
  :language: ini
 
-.. _calendars-type:
-
-.. object:: type
-
-    
-    Set the type of this collection, the default is ``calendar``.
-    If set to ``birthdays`` khal will expect a VCARD collection and extract
-    birthdays from those VCARDS. ``birthdays`` also implies ``readonly=True``.
-    If set to ``calendar`` only files with the ``.ics`` extension will be used,
-    if set to ``birthdays`` only files with the ``.vcf`` extension will be
-    used, if it is set to ``discover`` khal will use all subdirectories
-    of ``paths``'s that contain only ``.ics`` files.
-
-      :type: option, allowed values are *calendar*, *birthdays* and *discover*
-      :default: calendar
-
-.. _calendars-path:
-
-.. object:: path
-
-    The path to an existing directory where this calendar is saved as a *vdir*.
-    The directory is searched for events or birthdays (see ``type``). The path
-    also accepts glob expansion via `*` or `?` when type is set to discover.
-    This allows for paths such as `~/accounts/*/calendars/*`, where the
-    calendars directory contains vdir directories. In addition, `~/calendars/*`
-    and `~/calendars/default` are valid paths if there exists a vdir in the
-    `default` directory. (The previous behaviour of recursively searching
-    directories has been replaced with globbing).
-
-      :type: string
-      :default: None
-
 .. _calendars-color:
 
 .. object:: color
@@ -74,6 +42,17 @@ Here is a small example:
       :type: color
       :default: auto
 
+.. _calendars-path:
+
+.. object:: path
+
+    The path to an existing directory where this calendar is saved as a *vdir*.
+    The directory is searched for events or birthdays (see ``type``) but the
+    search is not recursive.
+
+      :type: string
+      :default: None
+
 .. _calendars-readonly:
 
 .. object:: readonly
@@ -85,284 +64,21 @@ Here is a small example:
       :type: boolean
       :default: False
 
-The [sqlite] section
-~~~~~~~~~~~~~~~~~~~~
+.. _calendars-type:
 
-
-.. _sqlite-path:
-
-.. object:: path
-
-    khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
-
-      :type: string
-      :default: None
-
-The [locale] section
-~~~~~~~~~~~~~~~~~~~~
-
-It is mandatory to set long) date-, time-, and datetimeformat options, all others options in the **[locale]**are optional and have (sensible) defaults.
-
-.. _locale-firstweekday:
-
-.. object:: firstweekday
+.. object:: type
 
     
-    the first day of the week, were Monday is 0 and Sunday is 6
-
-      :type: integer, allowed values are between 0 and 6
-      :default: 0
-
-.. _locale-default_timezone:
-
-.. object:: default_timezone
-
-    
-    this timezone will be used for new events (when no timezone is specified) and
-    when khal does not understand the timezone specified in the icalendar file.
-    If no timezone is set, the timezone your computer is set to will be used.
-
-      :type: timezone
-      :default: None
-
-.. _locale-local_timezone:
-
-.. object:: local_timezone
-
-    
-    khal will show all times in this timezone
-    If no timezone is set, the timezone your computer is set to will be used.
-
-      :type: timezone
-      :default: None
-
-.. _locale-longdatetimeformat:
-
-.. object:: longdatetimeformat
-
-    
-    khal will display and understand all datetimes in this format, it should
-    contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
-
-      :type: string
-      :default: %d.%m.%Y %H:%M
-
-.. _locale-dateformat:
-
-.. object:: dateformat
-
-    
-    khal will display and understand all dates in this format, see :ref:`timeformat <locale-timeformat>` for the format
-
-      :type: string
-      :default: %d.%m.
-
-.. _locale-weeknumbers:
-
-.. object:: weeknumbers
-
-    
-    
-    Enable weeknumbers in `calendar` and `interactive` (ikhal) mode. As those are
-    iso weeknumbers, they only work properly if `firstweekday` is set to 0
-
-      :type: weeknumbers
-      :default: off
-
-.. _locale-unicode_symbols:
-
-.. object:: unicode_symbols
-
-    
-    by default khal uses some unicode symbols (as in 'non-ascii') as indicators for things like repeating events,
-    if your font, encoding etc. does not support those symbols, set this to *False* (this will enable ascii based replacements).
-
-      :type: boolean
-      :default: True
-
-.. _locale-longdateformat:
-
-.. object:: longdateformat
-
-    
-    khal will display and understand all dates in this format, it should
-    contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
-
-      :type: string
-      :default: %d.%m.%Y
-
-.. _locale-datetimeformat:
-
-.. object:: datetimeformat
-
-    
-    khal will display and understand all datetimes in this format, see
-    :ref:`timeformat <locale-timeformat>` for the format.
-
-      :type: string
-      :default: %d.%m. %H:%M
-
-.. _locale-timeformat:
-
-.. object:: timeformat
-
-    
-    khal will display and understand all times in this format.
-    
-    The formatting string is interpreted as defined by Python's `strftime
-    <https://docs.python.org/2/library/time.html#time.strftime>`_, which is
-    similar to the format specified in ``man strftime``.
-
-      :type: string
-      :default: %H:%M
-
-The [keybindings] section
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-keybindings for :command:`ikhal` are set here. You can bind more than one key
-(combination) to a command by supplying a comma-separated list of keys.
-For binding key combinations concatenate them keys (with a space in
-between), e.g. **ctrl n**.
-
-.. _keybindings-search:
-
-.. object:: search
-
-    
-    open a text field to start a search for events
-
-      :type: list
-      :default: /
-
-.. _keybindings-left:
-
-.. object:: left
-
-    
-    move the cursor left (in the calendar browser)
-
-      :type: list
-      :default: left, h, backspace
-
-.. _keybindings-duplicate:
-
-.. object:: duplicate
-
-    
-    duplicate the currently selected event
-
-      :type: list
-      :default: p
-
-.. _keybindings-view:
-
-.. object:: view
-
-    
-    show details or edit (if details are already shown) the currently selected event
-
-      :type: list
-      :default: enter, tab
-
-.. _keybindings-new:
-
-.. object:: new
-
-    
-    create a new event on the selected date
-
-      :type: list
-      :default: n
-
-.. _keybindings-down:
-
-.. object:: down
-
-    
-    move the cursor down (in the calendar browser)
-
-      :type: list
-      :default: down, j
-
-.. _keybindings-right:
-
-.. object:: right
-
-    
-    move the cursor right (in the calendar browser)
-
-      :type: list
-      :default: right, l, space
-
-.. _keybindings-today:
-
-.. object:: today
-
-    
-    focus the calendar browser on today
-
-      :type: list
-      :default: t
-
-.. _keybindings-other:
-
-.. object:: other
-
-    
-    in highlight mode go to the other end of the highlighted date range
-
-      :type: list
-      :default: o
-
-.. _keybindings-delete:
-
-.. object:: delete
-
-    
-    delete the currently selected event
-
-      :type: list
-      :default: d
-
-.. _keybindings-export:
-
-.. object:: export
-
-    
-    export event as a .ics file
-
-      :type: list
-      :default: e
-
-.. _keybindings-save:
-
-.. object:: save
-
-    
-    save the currently edited event and leave the event editor
-
-      :type: list
-      :default: meta enter
-
-.. _keybindings-mark:
-
-.. object:: mark
-
-    
-    go into highlight (visual) mode to choose a date range
-
-      :type: list
-      :default: v
-
-.. _keybindings-up:
-
-.. object:: up
-
-    
-    move the cursor up (in the calendar browser)
-
-      :type: list
-      :default: up, k
+    Set the type of this collection, the default is ``calendar``.
+    If set to ``birthdays`` khal will expect a VCARD collection and extract
+    birthdays from those VCARDS. ``birthdays`` also implies ``readonly=True``.
+    If set to ``calendar`` only files with the ``.ics`` extension will be used,
+    if set to ``birthdays`` only files with the ``.vcf`` extension will be
+    used, if it is set to ``discover`` khal will use all subdirectories
+    of ``paths``'s that contain only ``.ics`` files.
+
+      :type: option, allowed values are *calendar*, *birthdays* and *discover*
+      :default: calendar
 
 The [default] section
 ~~~~~~~~~~~~~~~~~~~~~
@@ -370,50 +86,6 @@ The [default] section
 
 The default section begins with a **[default]** tag. Some default values and
 behaviours are set here.
-
-.. _default-print_new:
-
-.. object:: print_new
-
-    
-    After adding a new event, what should be printed to standard out? The whole
-    event in text form, the path to where the event is now saved or nothing?
-
-      :type: option, allowed values are *event*, *path* and *False*
-      :default: False
-
-.. _default-highlight_event_days:
-
-.. object:: highlight_event_days
-
-    
-    If true, khal will highlight days with events. Options for
-    highlighting are in [highlight_days] section.
-
-      :type: boolean
-      :default: False
-
-.. _default-default_command:
-
-.. object:: default_command
-
-    
-    command to be executed if no command is given when executing khal
-
-      :type: option, allowed values are *calendar*, *agenda*, *interactive*, *printformats*, *printcalendars* and **
-      :default: calendar
-
-.. _default-show_all_days:
-
-.. object:: show_all_days
-
-    
-    By default, khal displays only dates with event in "agenda" view.
-    Setting this to *True* will show all days in "agenda", even
-    when there is no event scheduled on that day.
-
-      :type: boolean
-      :default: False
 
 .. _default-days:
 
@@ -427,16 +99,6 @@ behaviours are set here.
       :type: integer
       :default: 2
 
-.. _default-timedelta:
-
-.. object:: timedelta
-
-    
-    Default timedelta for use with daterange options
-
-      :type: string
-      :default: 
-
 .. _default-default_calendar:
 
 .. object:: default_calendar
@@ -448,104 +110,65 @@ behaviours are set here.
       :type: string
       :default: None
 
-The [view] section
-~~~~~~~~~~~~~~~~~~
+.. _default-default_command:
 
-The view section contains config options that effect the visual appearance
-when using ikhal
-
-.. _view-theme:
-
-.. object:: theme
+.. object:: default_command
 
     
-    Choose a color theme for khal.
-    
-    This is very much work in progress. Help is really welcome! The two currently
-    available color schemes (*dark* and *light*) are defined in
-    *khal/ui/themes.py*, you can either help improve those or create a new one
-    (see below). As ikhal uses urwid, have a look at `urwid's documentation`__
-    for how to set colors and/or at the existing schemes. If you cannot change
-    the color of an element (or have any other problems) please open an issue on
-    github_.
-    
-    If you want to create your own color scheme, just copy the structure of the
-    existing ones, give it a new and unique name and also add it as an option in
-    `khal/settings/khal.spec` in the section `[default]` of the property `theme`.
-    
-    __ http://urwid.org/manual/displayattributes.html
-    .. _github: # https://github.com/pimutils/khal/issues
+    command to be executed if no command is given when executing khal
 
-      :type: option, allowed values are *dark* and *light*
-      :default: dark
+      :type: option, allowed values are *calendar*, *agenda*, *interactive*, *printformats*, *printcalendars* and **
+      :default: calendar
 
-.. _view-frame:
+.. _default-highlight_event_days:
 
-.. object:: frame
+.. object:: highlight_event_days
 
     
-    Whether to show a visible frame (with *box drawing* characters) around some
-    (groups of) elements.
+    If true, khal will highlight days with events. Options for
+    highlighting are in [highlight_days] section.
 
       :type: boolean
       :default: False
 
-.. _view-event_view_always_visible:
+.. _default-print_new:
 
-.. object:: event_view_always_visible
+.. object:: print_new
 
     
-    Set to true to always show the event view window when looking at the event list
+    After adding a new event, what should be printed to standard out? The whole
+    event in text form, the path to where the event is now saved or nothing?
+
+      :type: option, allowed values are *event*, *path* and *False*
+      :default: False
+
+.. _default-show_all_days:
+
+.. object:: show_all_days
+
+    
+    By default, khal displays only dates with event in "agenda" view.
+    Setting this to *True* will show all days in "agenda", even
+    when there is no event scheduled on that day.
 
       :type: boolean
       :default: False
 
-.. _view-bold_for_light_color:
+.. _default-timedelta:
 
-.. object:: bold_for_light_color
-
-    
-    Whether to use bold text for light colors or not. Non-bold light colors may
-    not work on all terminals but allow using light background colors.
-
-      :type: boolean
-      :default: True
-
-.. _view-event_format:
-
-.. object:: event_format
+.. object:: timedelta
 
     
-    Default format for events (used in list)
+    Default timedelta for use with daterange options
 
       :type: string
-      :default: {start}-{end} {title}
-
-.. _view-event_view_weighting:
-
-.. object:: event_view_weighting
-
-    
-    weighting that is applied to the event view window
-
-      :type: integer
-      :default: 1
+      :default: 
 
 The [highlight_days] section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When highlight_event_days is enabled, this section specifies how is
 the highlighting rendered.
-
-.. _highlight_days-method:
-
-.. object:: method
-
-    
-    Highlighting method to use - foreground or background
-
-      :type: option, allowed values are *foreground*, *fg*, *background* and *bg*
-      :default: fg
 
 .. _highlight_days-color:
 
@@ -570,6 +193,16 @@ the highlighting rendered.
       :type: color
       :default: 
 
+.. _highlight_days-method:
+
+.. object:: method
+
+    
+    Highlighting method to use - foreground or background
+
+      :type: option, allowed values are *foreground*, *fg*, *background* and *bg*
+      :default: fg
+
 .. _highlight_days-multiple:
 
 .. object:: multiple
@@ -580,3 +213,379 @@ the highlighting rendered.
 
       :type: color
       :default: 
+
+The [keybindings] section
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+keybindings for :command:`ikhal` are set here. You can bind more than one key
+(combination) to a command by supplying a comma-separated list of keys.
+For binding key combinations concatenate them keys (with a space in
+between), e.g. **ctrl n**.
+
+.. _keybindings-delete:
+
+.. object:: delete
+
+    
+    delete the currently selected event
+
+      :type: list
+      :default: d
+
+.. _keybindings-down:
+
+.. object:: down
+
+    
+    move the cursor down (in the calendar browser)
+
+      :type: list
+      :default: down, j
+
+.. _keybindings-duplicate:
+
+.. object:: duplicate
+
+    
+    duplicate the currently selected event
+
+      :type: list
+      :default: p
+
+.. _keybindings-export:
+
+.. object:: export
+
+    
+    export event as a .ics file
+
+      :type: list
+      :default: e
+
+.. _keybindings-left:
+
+.. object:: left
+
+    
+    move the cursor left (in the calendar browser)
+
+      :type: list
+      :default: left, h, backspace
+
+.. _keybindings-mark:
+
+.. object:: mark
+
+    
+    go into highlight (visual) mode to choose a date range
+
+      :type: list
+      :default: v
+
+.. _keybindings-new:
+
+.. object:: new
+
+    
+    create a new event on the selected date
+
+      :type: list
+      :default: n
+
+.. _keybindings-other:
+
+.. object:: other
+
+    
+    in highlight mode go to the other end of the highlighted date range
+
+      :type: list
+      :default: o
+
+.. _keybindings-quit:
+
+.. object:: quit
+
+    
+    quit
+
+      :type: list
+      :default: q, Q
+
+.. _keybindings-right:
+
+.. object:: right
+
+    
+    move the cursor right (in the calendar browser)
+
+      :type: list
+      :default: right, l, space
+
+.. _keybindings-save:
+
+.. object:: save
+
+    
+    save the currently edited event and leave the event editor
+
+      :type: list
+      :default: meta enter
+
+.. _keybindings-search:
+
+.. object:: search
+
+    
+    open a text field to start a search for events
+
+      :type: list
+      :default: /
+
+.. _keybindings-today:
+
+.. object:: today
+
+    
+    focus the calendar browser on today
+
+      :type: list
+      :default: t
+
+.. _keybindings-up:
+
+.. object:: up
+
+    
+    move the cursor up (in the calendar browser)
+
+      :type: list
+      :default: up, k
+
+.. _keybindings-view:
+
+.. object:: view
+
+    
+    show details or edit (if details are already shown) the currently selected event
+
+      :type: list
+      :default: enter, tab
+
+The [locale] section
+~~~~~~~~~~~~~~~~~~~~
+
+It is mandatory to set (long)date-, time-, and datetimeformat options, all others options in the **[locale]** section are optional and have (sensible) defaults.
+
+.. _locale-dateformat:
+
+.. object:: dateformat
+
+    
+    khal will display and understand all dates in this format, see :ref:`timeformat <locale-timeformat>` for the format
+
+      :type: string
+      :default: %d.%m.
+
+.. _locale-datetimeformat:
+
+.. object:: datetimeformat
+
+    
+    khal will display and understand all datetimes in this format, see
+    :ref:`timeformat <locale-timeformat>` for the format.
+
+      :type: string
+      :default: %d.%m. %H:%M
+
+.. _locale-default_timezone:
+
+.. object:: default_timezone
+
+    
+    this timezone will be used for new events (when no timezone is specified) and
+    when khal does not understand the timezone specified in the icalendar file.
+    If no timezone is set, the timezone your computer is set to will be used.
+
+      :type: timezone
+      :default: None
+
+.. _locale-firstweekday:
+
+.. object:: firstweekday
+
+    
+    the first day of the week, were Monday is 0 and Sunday is 6
+
+      :type: integer, allowed values are between 0 and 6
+      :default: 0
+
+.. _locale-local_timezone:
+
+.. object:: local_timezone
+
+    
+    khal will show all times in this timezone
+    If no timezone is set, the timezone your computer is set to will be used.
+
+      :type: timezone
+      :default: None
+
+.. _locale-longdateformat:
+
+.. object:: longdateformat
+
+    
+    khal will display and understand all dates in this format, it should
+    contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
+
+      :type: string
+      :default: %d.%m.%Y
+
+.. _locale-longdatetimeformat:
+
+.. object:: longdatetimeformat
+
+    
+    khal will display and understand all datetimes in this format, it should
+    contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
+
+      :type: string
+      :default: %d.%m.%Y %H:%M
+
+.. _locale-timeformat:
+
+.. object:: timeformat
+
+    
+    khal will display and understand all times in this format.
+    
+    The formatting string is interpreted as defined by Python's `strftime
+    <https://docs.python.org/2/library/time.html#time.strftime>`_, which is
+    similar to the format specified in ``man strftime``.
+
+      :type: string
+      :default: %H:%M
+
+.. _locale-unicode_symbols:
+
+.. object:: unicode_symbols
+
+    
+    by default khal uses some unicode symbols (as in 'non-ascii') as indicators for things like repeating events,
+    if your font, encoding etc. does not support those symbols, set this to *False* (this will enable ascii based replacements).
+
+      :type: boolean
+      :default: True
+
+.. _locale-weeknumbers:
+
+.. object:: weeknumbers
+
+    
+    
+    Enable weeknumbers in `calendar` and `interactive` (ikhal) mode. As those are
+    iso weeknumbers, they only work properly if `firstweekday` is set to 0
+
+      :type: weeknumbers
+      :default: off
+
+The [sqlite] section
+~~~~~~~~~~~~~~~~~~~~
+
+
+.. _sqlite-path:
+
+.. object:: path
+
+    khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
+
+      :type: string
+      :default: None
+
+The [view] section
+~~~~~~~~~~~~~~~~~~
+
+The view section contains configuration options that effect the visual appearance
+when using ikhal
+
+.. _view-bold_for_light_color:
+
+.. object:: bold_for_light_color
+
+    
+    Whether to use bold text for light colors or not. Non-bold light colors may
+    not work on all terminals but allow using light background colors.
+
+      :type: boolean
+      :default: True
+
+.. _view-event_format:
+
+.. object:: event_format
+
+    
+    Default format for events (used in list)
+
+      :type: string
+      :default: {start}-{end} {title}
+
+.. _view-event_view_always_visible:
+
+.. object:: event_view_always_visible
+
+    
+    Set to true to always show the event view window when looking at the event list
+
+      :type: boolean
+      :default: False
+
+.. _view-event_view_weighting:
+
+.. object:: event_view_weighting
+
+    
+    weighting that is applied to the event view window
+
+      :type: integer
+      :default: 1
+
+.. _view-frame:
+
+.. object:: frame
+
+    
+    Whether to show a visible frame (with *box drawing* characters) around some
+    (groups of) elements or not. There are currently several different frame
+    options available, that should visually differentiate wether an element is
+    in focus or not. Some of them will probably be removed in future releases of
+    khal, so please try them out and give feedback on which style you prefer (the
+    color of all variants can be defined in the color themes).
+
+      :type: option, allowed values are *False*, *width*, *color* and *top*
+      :default: False
+
+.. _view-theme:
+
+.. object:: theme
+
+    
+    Choose a color theme for khal.
+    
+    This is very much work in progress. Help is really welcome! The two currently
+    available color schemes (*dark* and *light*) are defined in
+    *khal/ui/themes.py*, you can either help improve those or create a new one
+    (see below). As ikhal uses urwid, have a look at `urwid's documentation`__
+    for how to set colors and/or at the existing schemes. If you cannot change
+    the color of an element (or have any other problems) please open an issue on
+    github_.
+    
+    If you want to create your own color scheme, copy the structure of the
+    existing ones, give it a new and unique name and also add it as an option in
+    `khal/settings/khal.spec` in the section `[default]` of the property `theme`.
+    
+    __ http://urwid.org/manual/displayattributes.html
+    .. _github: # https://github.com/pimutils/khal/issues
+
+      :type: option, allowed values are *dark* and *light*
+      :default: dark
