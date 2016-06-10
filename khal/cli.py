@@ -211,6 +211,8 @@ def prepare_context(ctx, config):
     except NoConfigFile:
         conf = _NoConfig()
     except InvalidSettingsError:
+        logger.info('If your configuration file used to work, please have a  '
+                    'look at the Changelog to see what changed.')
         sys.exit(1)
     else:
         logger.debug('Using config:')
