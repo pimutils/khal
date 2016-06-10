@@ -47,7 +47,7 @@ type = option('calendar', 'birthdays', 'discover', default='calendar')
 # khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
 path = expand_db_path(default=None)
 
-# It is mandatory to set long) date-, time-, and datetimeformat options, all others options in the **[locale]**are optional and have (sensible) defaults.
+# It is mandatory to set (long)date-, time-, and datetimeformat options, all others options in the **[locale]** section are optional and have (sensible) defaults.
 [locale]
 
 # the first day of the week, were Monday is 0 and Sunday is 6
@@ -177,7 +177,7 @@ highlight_event_days = boolean(default=False)
 # Default timedelta for use with daterange options
 timedelta = string(default='')
 
-# The view section contains config options that effect the visual appearance
+# The view section contains configuration options that effect the visual appearance
 # when using ikhal
 [view]
 
@@ -197,7 +197,7 @@ event_view_always_visible = boolean(default=False)
 # the color of an element (or have any other problems) please open an issue on
 # github_.
 #
-# If you want to create your own color scheme, just copy the structure of the
+# If you want to create your own color scheme, copy the structure of the
 # existing ones, give it a new and unique name and also add it as an option in
 # `khal/settings/khal.spec` in the section `[default]` of the property `theme`.
 #
