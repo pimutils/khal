@@ -158,26 +158,25 @@ class DListBox(urwid.ListBox):
         """export the event in focus as an ICS file"""
         def export_this(_, user_data):
             try:
-                self.event.export_ics(user_data.get_edit_text())
-            except Exception as e:
-                self.eventcolumn.pane.window.backtrack()
-                self.eventcolumn.pane.window.alert(
-                    ('light red', 'Failed to save event: %s' % e))
-                return
-
-            self.eventcolumn.pane.window.backtrack()
-            self.eventcolumn.pane.window.alert(
-                ('light green', 'Event successfuly exported'))
+                self.current_event.event.export_ics(user_data.get_edit_text())
+            except Exception as error:
+                self.parent.pane.window.backtrack()
+                self.parent.pane.window.alert(
+                    ('light red', 'Failed to save event: %s' % error))
+            else:
+                self.parent.pane.window.backtrack()
+                self.parent.pane.window.alert(
+                    ('light green', 'Event successfuly exported'))
 
         overlay = urwid.Overlay(
             ExportDialog(
                 export_this,
-                self.eventcolumn.pane.window.backtrack,
-                self.event,
+                self.parent.pane.window.backtrack,
+                self.current_event.event,
             ),
-            self.eventcolumn.pane,
+            self.parent.pane,
             'center', ('relative', 50), ('relative', 50), None)
-        self.eventcolumn.pane.window.open(overlay)
+        self.parent.pane.window.open(overlay)
 
     def toggle_delete(self):
         """toggle the delete status of the event in focus"""
@@ -901,8 +900,8 @@ class ExportDialog(urwid.WidgetWrap):
         lines = []
         lines.append(urwid.Text('Export event as ICS file'))
         lines.append(urwid.Text(''))
-        export_location = Edit(caption='Location: ',
-                               edit_text="~/%s.ics" % event.summary.strip())
+        export_location = Edit(
+            caption='Location: ', edit_text="~/%s.ics" % event.summary.strip())
         lines.append(export_location)
         lines.append(urwid.Divider(' '))
         lines.append(
