@@ -357,6 +357,11 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self.append(pile)
 
     def _autoprepend(self):
+        """prepend the day before the first day to ourselves"""
+        # we need to actively reset the last element's attribute, as their
+        # render() method does not get called otherwise, and they would
+        # be indicated as the currently selected date
+        self[self.focus or 0].reset_style()
         self._first_day -= timedelta(days=1)
         pile = self._get_events(self._first_day)
         self.insert(0, pile)
@@ -413,8 +418,11 @@ class DatePile(urwid.Pile):
         elif DatePile.selected_date == self.date:
             self.contents[0][0].set_attr_map({None: 'date selected'})
         else:
-            self.contents[0][0].set_attr_map({None: 'date'})
+            self.reset_style()
         return super().render(a, focus)
+
+    def reset_style(self):
+        self.contents[0][0].set_attr_map({None: 'date'})
 
     def selectable(self):
         return True
