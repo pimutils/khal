@@ -257,6 +257,8 @@ class DListBox(urwid.ListBox):
             self.parent.pane.calendar.base_widget.set_focus_date(day)  # TODO convert to callback
             DatePile.selected_date = currently_selected_date
 #            self.body[self.focus_position + 1].contents[0][0].set_attr_map({None: 'date focus'})
+        elif key in self._conf['keybindings']['today']:
+            self.parent.pane.calendar.base_widget.set_focus_date(date.today())
         elif self.body.current_event:
             if key in self._conf['keybindings']['delete']:
                 self.toggle_delete()
