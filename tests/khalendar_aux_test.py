@@ -351,6 +351,21 @@ class TestExpand(object):
         dtstart = aux.expand(vevent, berlin)
         assert dtstart == self.dstartend
 
+    def test_expand_invalid_exdate(self):
+        """testing if we can expand an event with EXDATEs that do not much
+        its RRULE"""
+        vevent = _get_vevent_file('event_invalid_exdate')
+        dtstartl = aux.expand(vevent, berlin)
+        # TODO test for logging message
+        assert dtstartl == [
+            (new_york.localize(datetime(2011, 11, 12, 15, 50)),
+             new_york.localize(datetime(2011, 11, 12, 17, 0))),
+            (new_york.localize(datetime(2011, 11, 19, 15, 50)),
+             new_york.localize(datetime(2011, 11, 19, 17, 0))),
+            (new_york.localize(datetime(2011, 12, 3, 15, 50)),
+             new_york.localize(datetime(2011, 12, 3, 17, 0))),
+        ]
+
 
 class TestExpandNoRR(object):
     dtstartend_berlin = [

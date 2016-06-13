@@ -103,7 +103,12 @@ def expand(vevent, href=''):
 
     # remove excluded dates
     for date in get_dates(vevent, 'EXDATE') or ():
-        dtstartl.remove(date)
+        try:
+            dtstartl.remove(date)
+        except KeyError:
+            logger.warn(
+                'In event {}, excluded instance starting at {} not found, '
+                'event might be invalid.'.format(href, date))
 
     dtstartend = [(start, start + duration) for start in dtstartl]
     # not necessary, but I prefer deterministic output
