@@ -105,7 +105,7 @@ class U_Event(urwid.Text):
             text = self.event.event_description
         self.set_text(mark + ' ' + text)
 
-    def keypress(self, size, key):
+    def keypress(self, _, key):
         binds = self.conf['keybindings']
         if key in binds['left']:
             key = 'left'
@@ -904,6 +904,7 @@ class ExportDialog(urwid.WidgetWrap):
 
 
 class SearchDialog(urwid.WidgetWrap):
+    """A Search Dialog Widget"""
     def __init__(self, search_func, abort_func):
 
         class Search(Edit):
@@ -970,6 +971,7 @@ class ClassicView(Pane):
         return super().keypress(size, key)
 
     def search(self):
+        """create a search dialog and display it"""
         overlay = urwid.Overlay(
             SearchDialog(self._search, self.window.backtrack), self,
             align='center',
@@ -979,6 +981,7 @@ class ClassicView(Pane):
         self.window.open(overlay)
 
     def _search(self, search_term):
+        """search for events matching `search_term"""
         self.window.backtrack()
         events = list(self.collection.search(search_term))
         self.eventscolumn.original_widget.events.update_events(events)
@@ -993,6 +996,8 @@ class ClassicView(Pane):
         return rval
 
     def get_keys(self):
+        """return all bound keys"""
+        # FIXME
         return [(['arrows'], 'navigate through the calendar'),
                 (['t'], 're-focus on today'),
                 (['enter', 'tab'], 'select a date/event, show/edit event'),
@@ -1003,9 +1008,11 @@ class ClassicView(Pane):
                 ]
 
     def new_event(self, date, end):
+        """create a new event starting on date and ending on end (if given)"""
         self.eventscolumn.original_widget.new(date, end)
 
     def cleanup(self, data):
+        """delete all events marked for deletion"""
         for part in self.deleted[ALL]:
             account, href, etag = part.split('\n', 2)
             self.collection.delete(href, etag, account)
