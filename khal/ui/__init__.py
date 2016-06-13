@@ -81,10 +81,6 @@ class U_Event(urwid.Text):
         super(U_Event, self).__init__(text)
         self.set_title()
 
-    @property
-    def is_viewed(self):
-        return self.event is self.eventcolumn.current_event
-
     @classmethod
     def selectable(cls):
         return True
@@ -269,7 +265,6 @@ class DListBox(urwid.ListBox):
             elif key in self._conf['keybindings']['export']:
                 self.export_event()
                 key = None
-                body = self.body[self.body.focus].current_event
 
         rval = super().keypress(size, key)
         self.clean()
@@ -306,7 +301,9 @@ class DayWalker(urwid.SimpleFocusListWalker):
         except TypeError:  # language code and encoding may be None
             mylocale = 'C'
         _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)
-        self.weekdays = [weekday for weekday in _calendar.formatweekheader(11).split(' ') if weekday]
+        self.weekdays = [weekday for weekday in
+                         _calendar.formatweekheader(11).split(' ')
+                         if weekday]
 
         super().__init__(list())
         self.update_by_date(this_date)
@@ -459,18 +456,6 @@ class EventColumn(urwid.WidgetWrap):
     def focus_event(self):
         """returns the event currently in focus"""
         return self.events.current_event
-
-    @focus_event.setter
-    def focus_event(self, event):
-        raise
-        while len(self.container.contents) > 1:
-            self.container.contents.pop()
-        if not event:
-            return
-        self.container.contents.append((self.divider, ('pack', None)))
-        self.container.contents.append(
-            (EventDisplay(self.pane.conf, event, collection=self.pane.collection),
-             ('weight', self.event_width)))
 
     def view(self, event):
         """show event in the lower part of this column"""
@@ -1016,10 +1001,6 @@ class ClassicView(Pane):
                 (['e'], 'export selected event'),
                 (['q', 'esc'], 'previous pane/quit'),
                 ]
-
-    def show_date(self, date):
-        raise
-        self.eventscolumn.original_widget.current_date = date
 
     def new_event(self, date, end):
         self.eventscolumn.original_widget.new(date, end)
