@@ -161,14 +161,12 @@ def global_options(f):
     return config(verbose(color(version(f))))
 
 
-def build_collection(ctx):
+def build_collection(conf, selection):
+    """build and return a khalendar.CalendarCollection from the configuration"""
     try:
-        conf = ctx.obj['conf']
-        selection = ctx.obj.get('calendar_selection', None)
-
         props = dict()
         for name, cal in conf['calendars'].items():
-            if selection is None or name in ctx.obj['calendar_selection']:
+            if selection is None or name in selection:
                 props[name] = {
                     'name': name,
                     'path': cal['path'],
@@ -178,13 +176,13 @@ def build_collection(ctx):
                 }
         collection = khalendar.CalendarCollection(
             calendars=props,
-            color=ctx.obj['conf']['highlight_days']['color'],
-            locale=ctx.obj['conf']['locale'],
+            color=conf['highlight_days']['color'],
+            locale=conf['locale'],
             dbpath=conf['sqlite']['path'],
-            hmethod=ctx.obj['conf']['highlight_days']['method'],
-            default_color=ctx.obj['conf']['highlight_days']['default_color'],
-            multiple=ctx.obj['conf']['highlight_days']['multiple'],
-            highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
+            hmethod=conf['highlight_days']['method'],
+            default_color=conf['highlight_days']['default_color'],
+            multiple=conf['highlight_days']['multiple'],
+            highlight_event_days=conf['default']['highlight_event_days'],
         )
     except FatalError as error:
         logger.fatal(error)
@@ -266,7 +264,7 @@ def _get_cli():
         if week and days:
             raise click.UsageError('Cannot use --days and -week at the same time.')
         controllers.calendar(
-            build_collection(ctx),
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             dates=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
             locale=ctx.obj['conf']['locale'],
@@ -295,7 +293,7 @@ def _get_cli():
         if week and days:
             raise click.UsageError('Cannot use --days and -week at the same time.')
         controllers.agenda(
-            build_collection(ctx),
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             dates=dates,
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
             show_all_days=ctx.obj['conf']['default']['show_all_days'],
@@ -321,7 +319,7 @@ def _get_cli():
     def klist(ctx, daterange, once, notstarted, format):
         '''Print list.'''
         controllers.khal_list(
-            build_collection(ctx),
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             format=format,
             daterange=daterange,
             once=once,
@@ -370,7 +368,7 @@ def _get_cli():
             )
 
         controllers.new_from_string(
-            build_collection(ctx),
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             calendar,
             ctx.obj['conf'],
             eventlist,
@@ -411,7 +409,7 @@ def _get_cli():
 
         ics_str = ics.read()
         controllers.import_ics(
-            build_collection(ctx),
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             ctx.obj['conf'],
             ics=ics_str,
             batch=batch,
@@ -423,7 +421,10 @@ def _get_cli():
     @click.pass_context
     def interactive(ctx):
         '''Interactive UI. Also launchable via `ikhal`.'''
-        controllers.interactive(build_collection(ctx), ctx.obj['conf'])
+        controllers.interactive(
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+            ctx.obj['conf']
+        )
 
     @click.command()
     @global_options
@@ -431,14 +432,20 @@ def _get_cli():
     @click.pass_context
     def interactive_cli(ctx):
         '''Interactive UI. Also launchable via `khal interactive`.'''
-        controllers.interactive(build_collection(ctx), ctx.obj['conf'])
+        controllers.interactive(
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+            ctx.obj['conf'])
 
     @cli.command()
     @multi_calendar_option
     @click.pass_context
     def printcalendars(ctx):
         '''List all calendars.'''
-        click.echo('\n'.join(build_collection(ctx).names))
+        click.echo(
+            '\n'.join(
+                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)).names
+            )
+        )
 
     @cli.command()
     @click.pass_context
@@ -463,7 +470,7 @@ def _get_cli():
                   help=('The format of the events.'))
     @click.argument('search_string')
     @click.pass_context
-    def search(ctx, format,  search_string):
+    def search(ctx, format, search_string):
         '''Search for events matching SEARCH_STRING.
 
         For repetitive events only one event is currently shown.
@@ -471,7 +478,7 @@ def _get_cli():
         # TODO support for time ranges, location, description etc
         if format is None:
             format = ctx.obj['conf']['view']['event_format']
-        collection = build_collection(ctx)
+        collection = build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None))
         events = sorted(collection.search(search_string))
         event_column = list()
         term_width, _ = get_terminal_size()
@@ -496,7 +503,7 @@ def _get_cli():
         for this moment are shown, if only a time is given, the date is assumed
         to be today
         '''
-        collection = build_collection(ctx)
+        collection = build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None))
         locale = ctx.obj['conf']['locale']
         dtime_list = list(datetime)
         if dtime_list == [] or dtime_list == ['now']:
