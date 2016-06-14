@@ -32,7 +32,7 @@ import itertools
 import math
 
 from vdirsyncer.storage.filesystem import FilesystemStorage
-from vdirsyncer.exceptions import AlreadyExistingError
+from vdirsyncer.exceptions import AlreadyExistingError, CollectionNotFound
 
 from . import backend
 from .event import Event
@@ -82,7 +82,13 @@ class CalendarCollection(object):
                 file_ext = '.vcf'
             else:
                 raise ValueError('ctype must be either `calendar` or `birthdays`')
-            self._storages[name] = FilesystemStorage(calendar['path'], file_ext)
+            try:
+                self._storages[name] = FilesystemStorage(calendar['path'], file_ext)
+            except CollectionNotFound:
+                os.makedirs(calendar['path'])
+                logger.info('created non-existing vdir {}'.format(calendar['path']))
+                self._storages[name] = FilesystemStorage(calendar['path'], file_ext)
+
         self.hmethod = hmethod
         self.default_color = default_color
         self.multiple = multiple
