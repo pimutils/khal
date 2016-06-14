@@ -78,7 +78,7 @@ def calendar(collection, format=None, notstarted=False, once=False, daterange=No
     td = None
     if conf is not None:
         if format is None:
-            format = conf['view']['event_format']
+            format = conf['view']['agenda_event_format']
         td = conf['default']['timedelta']
 
     term_width, _ = get_terminal_size()
@@ -226,7 +226,7 @@ def khal_list(collection, daterange, conf=None, format=None, once=False,
     td = None
     if conf is not None:
         if format is None:
-            format = conf['view']['event_format']
+            format = conf['view']['agenda_event_format']
         td = conf['default']['timedelta']
 
     event_column = get_list_from_str(
