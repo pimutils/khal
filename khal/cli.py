@@ -256,17 +256,20 @@ def _get_cli():
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
+    @click.option('--day-format', '-df',
+                  help=('The format of the day line.'))
     @click.option('--once', '-o', help=('Print event only once'),
                   is_flag=True)
     @click.option('--notstarted', help=('Print only events that have not started'),
                   is_flag=True)
     @click.argument('DATERANGE', nargs=-1, required=False)
     @click.pass_context
-    def calendar(ctx, daterange, once, notstarted, format):
+    def calendar(ctx, daterange, once, notstarted, format, day_format):
         '''Print calendar with agenda.'''
         controllers.calendar(
             build_collection(ctx),
             format=format,
+            day_format=day_format,
             once=once,
             notstarted=notstarted,
             daterange=daterange,
@@ -286,6 +289,8 @@ def _get_cli():
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
+    @click.option('--day-format', '-df',
+                  help=('The format of the day line.'))
     @click.option(
         '--once', '-o', is_flag=True,
         help='Print events only once, even if they span multiple days')
@@ -293,11 +298,12 @@ def _get_cli():
                   is_flag=True)
     @click.argument('DATERANGE', nargs=-1, required=False)
     @click.pass_context
-    def klist(ctx, daterange, once, notstarted, format):
+    def klist(ctx, daterange, once, notstarted, format, day_format):
         '''Print list.'''
         controllers.khal_list(
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             format=format,
+            day_format=day_format,
             daterange=daterange,
             once=once,
             notstarted=notstarted,
@@ -477,17 +483,20 @@ def _get_cli():
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
+    @click.option('--day-format', '-df',
+                  help=('The format of the day line.'))
     @click.option('--notstarted', help=('Print only events that have not started'),
                   is_flag=True)
     @click.argument('DATETIME', nargs=-1, required=False)
     @click.pass_context
-    def at(ctx, datetime, notstarted, format):
+    def at(ctx, datetime, notstarted, format, day_format):
         '''Print list.'''
         if not datetime:
             datetime = ("now",)
         controllers.khal_list(
             build_collection(ctx),
             format=format,
+            day_format=day_format,
             daterange=datetime + ("0m", ),
             once=True,
             notstarted=notstarted,

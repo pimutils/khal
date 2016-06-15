@@ -525,10 +525,33 @@ when using ikhal
 .. object:: event_format
 
     
-    Default format for events (used in list)
+    Default format for events (used when not showing an agenda)
 
       :type: string
-      :default: {start}-{end} {title}
+      :default: {calendar-color}{start}-{end}
+      {title}{recurse}{description-seperator}{description}{reset}
+
+.. _view-agenda_event_format:
+
+.. object:: agenda_event_format
+
+    
+    Default format for events (used in list and calendar)
+
+      :type: string
+      :default: {calendar-color}{start-end-time-style:16}
+      {title}{recurse}{description-seperator}{description}{reset}
+
+
+.. _view-_format:
+
+.. object:: agenda_day_format
+
+    
+    Default format for day headers (used in list and calendar)
+
+      :type: string
+      :default: {name}
 
 .. _view-event_view_always_visible:
 

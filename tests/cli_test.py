@@ -92,10 +92,11 @@ def test_direct_modification(runner):
     cal_dt = _get_text('event_dt_simple')
     event = runner.calendars['one'].join('test.ics')
     event.write(cal_dt)
-    format = '{start-date-once}{start-date-once-newline}{start-end-time-style}: {title}'
-    result = runner.invoke(main_khal, ['list', '--format', format, '09.04.2014'])
+    format = '{start-end-time-style}: {title}'
+    args = ['list', '--format', format, '--day-format', '', '09.04.2014']
+    result = runner.invoke(main_khal, args)
     assert not result.exception
-    assert result.output == '09.04.2014\n09:30-10:30: An Event\n'
+    assert result.output == '\n09:30-10:30: An Event\n'
 
     os.remove(str(event))
     result = runner.invoke(main_khal, ['list'])
@@ -284,8 +285,10 @@ def test_list(runner):
         main_khal,
         'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
     format = '{red}{start-end-time-style}{reset} {title} :: {description}'
-    result = runner.invoke(main_khal, ['--color', 'list', '--format', format, '18:30'])
-    assert result.output.startswith('\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n')
+    args = ['--color', 'list', '--format', format, '--day-format', 'header', '18:30']
+    result = runner.invoke(main_khal, args)
+    expected = 'header\x1b[0m\n\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n'
+    assert result.output.startswith(expected)
     assert not result.exception
 
 

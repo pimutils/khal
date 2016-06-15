@@ -26,9 +26,8 @@ event_today = event_allday_template.format(today.strftime('%Y%m%d'),
                                            tomorrow.strftime('%Y%m%d'))
 item_today = Item(event_today)
 
-event_format = '{start-date-once-newline}{bold}{start-dayname-once}{reset}\
-{start-date-once-newline}{calendar-color}{start-end-time-style:16} {title}\
-{recurse}{description-seperator}{description}{calendar-color}'
+event_format = '{calendar-color}{start-end-time-style:16} {title}'
+event_format += '{recurse}{description-seperator}{description}{calendar-color}'
 
 
 class TestGetAgenda(object):
@@ -36,10 +35,10 @@ class TestGetAgenda(object):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, aux.cal1)
         coll.new(event)
-        assert ['\n'
-                '\x1b[1mToday:\x1b[0m\n'
+        assert ['\x1b[0m',
                 '                 a meeting :: short description\x1b[0m'] == \
-            get_list_from_str(coll, aux.locale, [], format=event_format, default_timedelta='1d')
+            get_list_from_str(coll, aux.locale, [], format=event_format, default_timedelta='1d',
+                              day_format="")
 
     def test_empty_recurrence(self, coll_vdirs):
         coll, vidrs = coll_vdirs

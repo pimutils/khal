@@ -551,7 +551,9 @@ class Event(object):
         attributes["repeat-pattern"] = self.recurpattern
         attributes["title"] = self.summary
         attributes["description"] = self.description.strip()
-        attributes["description-seperator"] = " :: " if attributes["description"] else ""
+        attributes["description-seperator"] = ""
+        if attributes["description"]:
+            attributes["description-seperator"] = " :: "
         attributes["location"] = self.location.strip()
         attributes["all-day"] = allday
         attributes["categories"] = self.categories
@@ -564,21 +566,6 @@ class Event(object):
                 attributes["calendar-color"] = get_color(cal["color"])
             if "displayname" in cal and cal["displayname"] is not None:
                 attributes["calendar"] = cal["displayname"]
-
-        daynames = list(construct_daynames((self_start.date(), relative_to_start.date())))
-        attributes["start-date-once"] = attributes["start-date"]
-        attributes["start-dayname-once"] = daynames[0][1]
-        if self_start.replace(tzinfo=None) < relative_to_start:
-            attributes["start-date-once"] = relative_to_start.strftime(self._locale['dateformat'])
-            attributes["start-dayname-once"] = daynames[1][1]
-        attributes["start-date-once-newline"] = "\n"
-        if "seen-days" not in env:
-            env["seen-days"] = set()
-        if attributes["start-date-once"] in env["seen-days"]:
-            attributes["start-date-once"] = ""
-            attributes["start-dayname-once"] = ""
-            attributes["start-date-once-newline"] = ""
-        env["seen-days"].add(attributes["start-date-once"])
 
         colors = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
         for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:

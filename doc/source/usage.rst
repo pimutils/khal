@@ -69,7 +69,7 @@ formatting
 
 ::
         khal list [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
-        [--once] [--notstarted] [START [END | DELTA] ]
+        [--day-format DAYFORMAT] [--once] [--notstarted] [START [END | DELTA] ]
 
 START and END can both be given as dates, datetimes or times (it is assumed
 today is meant in the case of only a given time) in the formats configured in
@@ -179,19 +179,6 @@ the terminal.  The available template options are:
         A concatenation of start-style, to-style, and end-style OR an
         appropriate symbol.
 
-.. option:: start-date-once
-
-        The start date, so long as that date has not yet been printed.
-
-.. option:: start-dayname-once
-
-        The start dayname, so long as that date has not yet been printed. eg
-        Tomorrow, or Wednesday.
-
-.. option:: start-date-once-newline
-
-        A newline if start-date-once is not "".
-
 By default all-day events have no times. To see a start and end time anyway simply
 add `-full` to the end of any template with start/end, for instance
 `start-time` becomes `start-time-full` and will always show start and end times (instead
@@ -207,6 +194,22 @@ For example the below command with print the title and description of all events
 ::
 
         khal list --format "{title} {description}"
+
+For the day headings, `DAYFORMAT` is similar to event formatting but has only a
+small number of options (in addition to all of the color options).
+
+.. option:: date
+
+        The date in dateformat.
+
+.. option:: date-long
+
+        The date in longdateformat.
+
+.. option:: name
+
+        The date as a name.
+
 
 at
 **
