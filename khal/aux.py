@@ -306,7 +306,8 @@ def guesstimedeltafstr(delta_string):
     return res
 
 
-def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0):
+def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0,
+                   adjust_reasonably=False):
     """parses a range string
 
     :param daterange: date1 [date2 | timedelta]
@@ -370,6 +371,24 @@ def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0):
                         if len(split) != 0:
                             continue
                     end = datetime_fillin(end)
+
+            if adjust_reasonably:
+                if allday:
+                    end += timedelta(days=1)
+                    # test if end's year is this year, but start's year is not
+                    today = datetime.today()
+                    if end.year == today.year and start.year != today.year:
+                        end = datetime(start.year, *end.timetuple()[1:6])
+
+                    if end < start:
+                        end = datetime(end.year + 1, *end.timetuple()[1:6])
+
+                if end < start:
+                    end = datetime(*start.timetuple()[0:3] +
+                                   end.timetuple()[3:5])
+                if end < start:
+                    end = end + timedelta(days=1)
+
             return start, end, allday
         except ValueError:
             pass
@@ -453,140 +472,57 @@ def rrulefstr(repeat, until, locale):
         raise FatalError()
 
 
-def construct_event(dtime_list, locale,
-                    defaulttimelen=60, defaultdatelen=1, description=None,
-                    location=None, categories=None, repeat=None, until=None,
-                    alarm=None, **kwargs):
-    """takes a list of strings and constructs a vevent from it
+def eventinfofstr(info_string, locale, default_timedelta=None,
+                  adjust_reasonably=False, localize=False):
+    description = None
+    if " :: " in info_string:
+        info_string, description = info_string.split(' :: ')
 
-    the parts of the list can be either of these:
-        * datetime datetime description
-            start and end datetime specified, if no year is given, this year
-            is used, if the second datetime has no year, the same year as for
-            the first datetime object will be used, unless that would make
-            the event end before it begins, in which case the next year is
-            used
-        * datetime time description
-            end date will be same as start date, unless that would make the
-            event end before it has started, then the next day is used as
-            end date
-        * datetime description
-            event will last for defaulttime
-        * time time description
-            event starting today at the first time and ending today at the
-            second time, unless that would make the event end before it has
-            started, then the next day is used as end date
-        * time description
-            event starting today at time, lasting for the default length
-        * date date description
-            all day event starting on the first and ending on the last event
-        * date description
-            all day event starting at given date and lasting for default length
+    parts = info_string.split(' ')
+    title = None
+    start = None
+    end = None
+    tz = None
+    allday = False
+    for i in reversed(range(len(parts)+1)):
+        start, end, allday = guessrangefstr(' '.join(parts[0:i]), locale, default_timedelta='60m',
+                                            adjust_reasonably=adjust_reasonably)
+        if start is not None and end is not None:
+            try:
+                # next element is a valid Olson db timezone string
+                tz = pytz.timezone(parts[i])
+                i += 1
+            except (pytz.UnknownTimeZoneError, UnicodeDecodeError, IndexError):
+                tz = None
+            title = ' '.join(parts[i:])
+            break
+        title = ' '.join(parts[i:])
 
-    datetime should match datetimeformat or longdatetimeformat
-    time should match timeformat
+    if start is not None and end is not None:
+        if tz is None:
+            tz = locale['default_timezone']
 
-    where description is the unused part of the list
-    see tests for examples
-
-    """
-    # TODO remove if this survives for some time in the wild without getting any reports
-    first_type = type(dtime_list[0])
-    try:
-        for part in dtime_list:
-            assert first_type == type(part)
-    except AssertionError:
-        logger.error(
-            "An internal error occured, please report the below error message "
-            "to khal's developers at https://github.com/pimutils/khal/issues or "
-            "via email at khal@lostpackets.de")
-        logger.error(' '.join(['{} ({})'.format(part, type(part)) for part in dtime_list]))
-
-    today = datetime.today()
-    try:
-        dtstart, all_day = guessdatetimefstr(dtime_list, locale)
-    except ValueError:
-        logger.fatal("Cannot parse: '{}'\nPlease have a look at "
-                     "the documentation.".format(' '.join(dtime_list)))
-        raise FatalError()
-
-    try:
-        dtend, _ = guessdatetimefstr(dtime_list, locale, dtstart)
-    except ValueError:
-        if all_day:
-            dtend = dtstart + timedelta(days=defaultdatelen - 1)
+        if allday:
+            start = start.date()
+            end = end.date()
         else:
-            dtend = dtstart + timedelta(minutes=defaulttimelen)
+            if localize:
+                start = tz.localize(start)
+                end = tz.localize(end)
 
-    if all_day:
-        dtend += timedelta(days=1)
-        # test if dtend's year is this year, but dtstart's year is not
-        if dtend.year == today.year and dtstart.year != today.year:
-            dtend = datetime(dtstart.year, *dtend.timetuple()[1:6])
-
-        if dtend < dtstart:
-            dtend = datetime(dtend.year + 1, *dtend.timetuple()[1:6])
-
-    if dtend < dtstart:
-        dtend = datetime(*dtstart.timetuple()[0:3] +
-                         dtend.timetuple()[3:5])
-    if dtend < dtstart:
-        dtend = dtend + timedelta(days=1)
-    if all_day:
-        dtstart = dtstart.date()
-        dtend = dtend.date()
-
-    else:
-        if not dtime_list:
-            logger.fatal('No event summary provided, aborting.')
-            raise FatalError
-        try:
-            # next element is a valid Olson db timezone string
-            dtstart = pytz.timezone(dtime_list[0]).localize(dtstart)
-            dtend = pytz.timezone(dtime_list[0]).localize(dtend)
-            dtime_list.pop(0)
-        except (pytz.UnknownTimeZoneError, UnicodeDecodeError):
-            dtstart = locale['default_timezone'].localize(dtstart)
-            dtend = locale['default_timezone'].localize(dtend)
-
-    event = icalendar.Event()
-    text = ' '.join(dtime_list)
-    if not description or not location:
-        summary = text.split(' :: ', 1)[0]
-        try:
-            description = text.split(' :: ', 1)[1]
-        except IndexError:
-            pass
-    else:
-        summary = text
-
-    if description:
-        event.add('description', description)
-    if location:
-        event.add('location', location)
-    if categories:
-        event.add('categories', categories)
-    if repeat and repeat != "none":
-        rrule = rrulefstr(repeat, until, locale)
-        event.add('rrule', rrule)
-    if alarm:
-        alarm_trig = -1 * guesstimedeltafstr(alarm)
-        new_alarm = icalendar.Alarm()
-        new_alarm.add('ACTION', 'DISPLAY')
-        new_alarm.add('TRIGGER', alarm_trig)
-        new_alarm.add('DESCRIPTION', description)
-        event.add_component(new_alarm)
-
-    event.add('dtstart', dtstart)
-    event.add('dtend', dtend)
-    event.add('dtstamp', datetime.now())
-    event.add('summary', summary)
-    event.add('uid', generate_random_uid())  # TODO add proper UID
-    return event
+    info = {}
+    info["dtstart"] = start
+    info["dtend"] = end
+    info["summary"] = title
+    info["description"] = description
+    info["timezone"] = tz if not allday else None
+    info["allday"] = allday
+    return info
 
 
-def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
-              allday=False):
+def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
+              allday=False, description=None, location=None, categories=None,
+              repeat=None, until=None, alarms=None):
     """create a new event
 
     :param dtstart: starttime of that event
@@ -605,31 +541,40 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
     :returns: event
     :rtype: icalendar.Event
     """
-    now = datetime.now().timetuple()
-    now = datetime(now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour)
-    inonehour = now + timedelta(minutes=60)
-    if dtstart is None:
-        dtstart = inonehour
-    elif isinstance(dtstart, date) and not allday:
-        time_start = inonehour.time()
-        dtstart = datetime.combine(dtstart, time_start)
 
-    if dtend is None:
-        dtend = dtstart + timedelta(minutes=60)
-    if allday:
-        dtend += timedelta(days=1)
-    if summary is None:
-        summary = ''
-    if timezone is not None:
+    if dtstart is None or dtend is None or summary is None:
+        raise ValueError
+
+    if not allday and timezone is not None:
         dtstart = timezone.localize(dtstart)
         dtend = timezone.localize(dtend)
+
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
     event.add('dtstamp', datetime.now())
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
-    event.add('sequence', 0)
+    # event.add('sequence', 0)
+
+    if description:
+        event.add('description', description)
+    if location:
+        event.add('location', location)
+    if categories:
+        event.add('categories', categories)
+    if repeat and repeat != "none":
+        rrule = rrulefstr(repeat, until, locale)
+        event.add('rrule', rrule)
+    if alarms:
+        for alarm in alarms.split(","):
+            alarm = alarm.strip()
+            alarm_trig = -1 * guesstimedeltafstr(alarm)
+            new_alarm = icalendar.Alarm()
+            new_alarm.add('ACTION', 'DISPLAY')
+            new_alarm.add('TRIGGER', alarm_trig)
+            new_alarm.add('DESCRIPTION', description)
+            event.add_component(new_alarm)
     return event
 
 

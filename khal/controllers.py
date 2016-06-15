@@ -255,19 +255,19 @@ def khal_list(collection, daterange, conf=None, format=None, day_format=None,
     echo('\n'.join(event_column))
 
 
-def new_from_string(collection, calendar_name, conf, date_list, location=None,
-                    categories=None, repeat=None, until=None, alarm=None,
+def new_from_string(collection, calendar_name, conf, info, location=None,
+                    categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
     """construct a new event from a string and add it"""
     try:
-        event = aux.construct_event(
-            date_list,
-            location=location,
-            categories=categories,
-            repeat=repeat,
-            until=until,
-            alarm=alarm,
-            locale=conf['locale'])
+        info = aux.eventinfofstr(info, conf['locale'], default_timedelta="60m",
+                                 adjust_reasonably=True, localize=False)
+        event = aux.new_event(locale=conf['locale'], location=location,
+                              categories=categories, repeat=repeat, until=until,
+                              alarms=alarms, **info)
+    except ValueError:
+        logger.fatal('ERROR: ')
+        sys.exit(1)
     except FatalError:
         sys.exit(1)
     event = Event.fromVEvents(
@@ -279,6 +279,7 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None,
         logger.fatal('ERROR: Cannot modify calendar "{}" as it is '
                      'read-only'.format(calendar_name))
         sys.exit(1)
+
     if conf['default']['print_new'] == 'event':
         if format is None:
             format = conf['view']['event_format']

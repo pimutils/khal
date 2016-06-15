@@ -323,18 +323,14 @@ def _get_cli():
                   help=('Repeat event: daily, weekly, monthly or yearly.'))
     @click.option('--until', '-u',
                   help=('Stop an event repeating on this date.'))
-    @click.option('--alarm', '-m',
-                  help=('Alarm time for the new event.'))
     @click.option('--format', '-f',
                   help=('The format to print the event.'))
-    @click.argument('START', nargs=1, required=True)
-    @click.argument('END', nargs=1, required=False)
-    @click.argument('TIMEZONE', nargs=1, required=False)
-    @click.argument('SUMMARY', metavar='SUMMARY', nargs=1, required=False)
-    @click.argument('DESCRIPTION', metavar='[:: DESCRIPTION]', nargs=-1, required=False)
+    @click.option('--alarms', '-m',
+                  help=('Alarm times for the new event as DELTAs comma seperated'))
+    @click.argument('info', metavar='[START] [END | DELTA] [TIMEZONE] [SUMMARY] [:: DESCRIPTION]',
+                    nargs=-1)
     @click.pass_context
-    def new(ctx, calendar, start, end, timezone, summary, description, location, categories, repeat,
-            until, alarm, format):
+    def new(ctx, calendar, info, location, categories, repeat, until, alarms, format):
         '''Create a new event from arguments.
 
         START and END can be either dates, times or datetimes, please have a
@@ -344,8 +340,6 @@ def _get_cli():
         everything behind them is taken as the event's description.
         '''
         # ugly hack to change how click presents the help string
-        eventlist = [start, end, timezone, summary] + list(description)
-        eventlist = [element for element in eventlist if element is not None]
         calendar = calendar or ctx.obj['conf']['default']['default_calendar']
         if calendar is None:
             raise click.BadParameter(
@@ -357,13 +351,14 @@ def _get_cli():
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             calendar,
             ctx.obj['conf'],
-            eventlist,
+            info=' '.join(info),
             location=location,
             categories=categories,
             repeat=repeat,
-            until=until.split(' ') if until is not None else None,
-            alarm=alarm,
-            env={"calendars": ctx.obj['conf']['calendars']}
+            env={"calendars": ctx.obj['conf']['calendars']},
+            until=until,
+            alarms=alarms,
+            format=format,
         )
 
     @cli.command('import')

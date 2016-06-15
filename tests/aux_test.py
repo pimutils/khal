@@ -7,10 +7,9 @@ import icalendar
 import pytz
 from freezegun import freeze_time
 
-from khal.aux import construct_event, guessdatetimefstr, guesstimedeltafstr
+from khal.aux import guessdatetimefstr, guesstimedeltafstr, new_event, eventinfofstr
 from khal.aux import timedelta2str, guessrangefstr
 from khal import aux
-from khal.exceptions import FatalError
 import pytest
 
 from .aux import _get_all_vevents_file, _get_text, \
@@ -28,6 +27,20 @@ locale_de = {
     'longdatetimeformat': '%d.%m.%Y %H:%M',
     'default_timezone': pytz.timezone('Europe/Berlin'),
 }
+
+
+def _construct_event(info, locale,
+                     defaulttimelen=60, defaultdatelen=1, description=None,
+                     location=None, categories=None, repeat=None, until=None,
+                     alarm=None, **kwargs):
+    info = eventinfofstr(' '.join(info), locale, default_timedelta=str(defaulttimelen)+'m',
+                         adjust_reasonably=True, localize=False)
+    if description is not None:
+        info["description"] = description
+    event = new_event(locale=locale, location=location,
+                      categories=categories, repeat=repeat, until=until,
+                      alarms=alarm, **info)
+    return event
 
 
 def _create_vevent(*args):
@@ -230,10 +243,10 @@ test_set_format_de = _create_testcases(
 
 
 @freeze_time('20140216T120000')
-def test_construct_event_format_de():
+def test__construct_event_format_de():
     for data_list, vevent in test_set_format_de:
-        event = construct_event(data_list.split(),
-                                locale=locale_de)
+        event = _construct_event(data_list.split(),
+                                 locale=locale_de)
 
         assert _replace_uid(event).to_ical() == vevent
 
@@ -250,7 +263,7 @@ test_set_format_us = _create_testcases(
 )
 
 
-def test_construct_event_format_us():
+def test__construct_event_format_us():
     locale_us = {
         'timeformat': '%H:%M',
         'dateformat': '%m/%d',
@@ -261,7 +274,7 @@ def test_construct_event_format_us():
     }
     for data_list, vevent in test_set_format_us:
         with freeze_time('2014-02-16 12:00:00'):
-            event = construct_event(data_list.split(), locale=locale_us)
+            event = _construct_event(data_list.split(), locale=locale_us)
             assert _replace_uid(event).to_ical() == vevent
 
 
@@ -285,10 +298,10 @@ test_set_format_de_complexer = _create_testcases(
 )
 
 
-def test_construct_event_format_de_complexer():
+def test__construct_event_format_de_complexer():
     for data_list, vevent in test_set_format_de_complexer:
         with freeze_time('2014-02-16 12:00:00'):
-            event = construct_event(data_list.split(), locale=locale_de)
+            event = _construct_event(data_list.split(), locale=locale_de)
             assert _replace_uid(event).to_ical() == vevent
 
 
@@ -304,11 +317,11 @@ test_set_leap_year = _create_testcases(
 def test_leap_year():
     for data_list, vevent in test_set_leap_year:
         with freeze_time('1999-1-1'):
-            with pytest.raises(FatalError):
-                event = construct_event(
+            with pytest.raises(ValueError):
+                event = _construct_event(
                     data_list.split(), locale=locale_de)
         with freeze_time('2016-1-1 20:21:22'):
-            event = construct_event(
+            event = _construct_event(
                 data_list.split(), locale=locale_de)
             assert _replace_uid(event).to_ical() == vevent
 
@@ -339,7 +352,7 @@ test_set_description = _create_testcases(
 def test_description():
     for data_list, vevent in test_set_description:
         with freeze_time('2014-02-16 12:00:00'):
-            event = construct_event(data_list.split(), locale=locale_de)
+            event = _construct_event(data_list.split(), locale=locale_de)
             assert _replace_uid(event).to_ical() == vevent
 
 test_set_repeat = _create_testcases(
@@ -356,11 +369,11 @@ test_set_repeat = _create_testcases(
 def test_repeat():
     for data_list, vevent in test_set_repeat:
         with freeze_time('2014-02-16 12:00:00'):
-            event = construct_event(data_list.split(),
-                                    description='please describe the event',
-                                    repeat='daily',
-                                    until=['05.06.2015'],
-                                    locale=locale_de)
+            event = _construct_event(data_list.split(),
+                                     description='please describe the event',
+                                     repeat='daily',
+                                     until='05.06.2015',
+                                     locale=locale_de)
             assert normalize_component(_replace_uid(event).to_ical()) == \
                 normalize_component(vevent)
 
@@ -385,10 +398,10 @@ test_set_alarm = _create_testcases(
 def test_alarm():
     for data_list, vevent in test_set_alarm:
         with freeze_time('2014-02-16 12:00:00'):
-            event = construct_event(data_list.split(),
-                                    description='please describe the event',
-                                    alarm='23m',
-                                    locale=locale_de)
+            event = _construct_event(data_list.split(),
+                                     description='please describe the event',
+                                     alarm='23m',
+                                     locale=locale_de)
             assert _replace_uid(event).to_ical() == vevent
 
 
@@ -407,11 +420,11 @@ test_set_description_and_location_and_categories = _create_testcases(
 def test_description_and_location_and_categories():
     for data_list, vevent in test_set_description_and_location_and_categories:
         with freeze_time('2014-02-16 12:00:00'):
-            event = construct_event(data_list.split(),
-                                    description='please describe the event',
-                                    location='in the office',
-                                    categories='boring meeting',
-                                    locale=locale_de)
+            event = _construct_event(data_list.split(),
+                                     description='please describe the event',
+                                     location='in the office',
+                                     categories='boring meeting',
+                                     locale=locale_de)
             assert _replace_uid(event).to_ical() == vevent
 
 
