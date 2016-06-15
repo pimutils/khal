@@ -23,6 +23,7 @@
 import icalendar
 from click import confirm, echo, style, prompt
 from vdirsyncer.utils.vobject import Item
+import pytz
 
 from collections import defaultdict, OrderedDict
 from shutil import get_terminal_size
@@ -31,7 +32,6 @@ from datetime import timedelta, datetime
 import logging
 import sys
 import textwrap
-
 
 from khal import aux, calendar_display
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
@@ -257,14 +257,39 @@ def khal_list(collection, daterange, conf=None, format=None, day_format=None,
 
 def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
-                    format=None, env=None):
+                    format=None, env=None, interactive=False):
     """construct a new event from a string and add it"""
     try:
         info = aux.eventinfofstr(info, conf['locale'], default_timedelta="60m",
                                  adjust_reasonably=True, localize=False)
+        if interactive:
+            info['summary'] = prompt("summary", default=info["summary"])
+            range_string = ''
+            if info["dtstart"] and info["dtend"]:
+                start_string = info["dtstart"].strftime(conf['locale']['datetimeformat'])
+                end_string = info["dtend"].strftime(conf['locale']['datetimeformat'])
+                range_string = start_string+' '+end_string
+            daterange = prompt("datetime range", default=range_string)
+            start, end, allday = aux.guessrangefstr(daterange, conf['locale'],
+                                                    default_timedelta='60m',
+                                                    adjust_reasonably=True)
+            info['dtstart'] = start
+            info['dtend'] = end
+            info['allday'] = allday
+            tz = info['timezone']
+            timezone = prompt("timezone", default=tz if tz else '')
+            try:
+                tz = pytz.timezone(timezone)
+            except pytz.UnknownTimeZoneError:
+                tz = None
+            info['timezone'] = tz
+
+            info['description'] = prompt('description', default=info['description'])
+
         event = aux.new_event(locale=conf['locale'], location=location,
                               categories=categories, repeat=repeat, until=until,
                               alarms=alarms, **info)
+
     except ValueError:
         logger.fatal('ERROR: ')
         sys.exit(1)
@@ -287,6 +312,10 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
         echo(path)
+
+    if interactive:
+        term_width, _ = get_terminal_size()
+        edit_event(event, collection, conf['locale'], width=term_width)
 
 
 def present_options(options, prefix="", sep="  ", width=70):

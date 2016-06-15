@@ -26,6 +26,7 @@ not released yet
 * removed `days` configuration option in favor of `timedelta`, see
   documentation for details (Taylor Money)
 * added command `edit` (Taylor Money)
+* `new` has interactive option (Taylor Money)
 
 ikhal
 -----

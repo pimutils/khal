@@ -318,7 +318,8 @@ allows for adding new events. ``khal new`` should understand the following synta
 
 ::
 
-    khal new [-a CALENDAR] [OPTIONS] startdatetime [enddatetime] [timezone] summary [description]
+    khal new [-a CALENDAR] [OPTIONS] [START] [END | DELTA] [TIMEZONE] [SUMMARY]
+    [:: DESCRIPTION]
 
 where start- and enddatetime are either datetimes, times, or keywords and times
 in the formats defined in the config file. If no calendar is given via
@@ -360,6 +361,10 @@ accepted as the end of a given date.
 If the **summary** contains the string `::`, everything after `::` is taken as
 the **description** of the new event, i.e., the "body" of the event (and `::`
 will be removed).
+
+Passing the option `--interactive` (`-i`) makes all arguments optional and
+interactively prompts for required fields, then the event may be edited, the
+same way as in the `edit` command.
 
 Options
 """""""

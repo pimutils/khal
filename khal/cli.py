@@ -315,6 +315,8 @@ def _get_cli():
 
     @cli.command()
     @calendar_option
+    @click.option('--interactive', '-i', help=('Add event interactively'),
+                  is_flag=True)
     @click.option('--location', '-l',
                   help=('The location of the new event.'))
     @click.option('--categories', '-g',
@@ -330,7 +332,7 @@ def _get_cli():
     @click.argument('info', metavar='[START] [END | DELTA] [TIMEZONE] [SUMMARY] [:: DESCRIPTION]',
                     nargs=-1)
     @click.pass_context
-    def new(ctx, calendar, info, location, categories, repeat, until, alarms, format):
+    def new(ctx, calendar, info, location, categories, repeat, until, alarms, format, interactive):
         '''Create a new event from arguments.
 
         START and END can be either dates, times or datetimes, please have a
@@ -342,10 +344,13 @@ def _get_cli():
         # ugly hack to change how click presents the help string
         calendar = calendar or ctx.obj['conf']['default']['default_calendar']
         if calendar is None:
-            raise click.BadParameter(
-                'No default calendar is configured, '
-                'please provide one explicitly.'
-            )
+            if interactive:
+                calendar = click.prompt('calendar')
+            else:
+                raise click.BadParameter(
+                    'No default calendar is configured, '
+                    'please provide one explicitly.'
+                )
 
         controllers.new_from_string(
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
@@ -359,6 +364,7 @@ def _get_cli():
             until=until,
             alarms=alarms,
             format=format,
+            interactive=interactive,
         )
 
     @cli.command('import')
