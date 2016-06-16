@@ -211,7 +211,8 @@ class CalendarCollection(object):
     def new(self, event, collection=None):
         """save a new event to the vdir and the database
 
-        param event: the event that should be updated
+        param event: the event that should be updated, will get a new href and
+            etag properties
         type event: event.Event
         """
         calendar = collection if collection is not None else event.calendar
@@ -223,11 +224,11 @@ class CalendarCollection(object):
         with self._backend.at_once():
 
             try:
-                href, etag = self._storages[calendar].upload(event)
+                event.href, event.etag = self._storages[calendar].upload(event)
             except AlreadyExistingError as Error:
                 href = getattr(Error, 'existing_href', None)
                 raise DuplicateUid(href)
-            self._backend.update(event.raw, href, etag, calendar=calendar)
+            self._backend.update(event.raw, event.href, event.etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
     def delete(self, href, etag, calendar):

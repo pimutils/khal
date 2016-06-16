@@ -95,7 +95,11 @@ class TestVdirsyncerCompat(object):
     def test_list(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         event = Event.fromString(event_d, calendar=cal1, locale=aux.locale)
+        assert event.etag is None
+        assert event.href is None
         coll.new(event)
+        assert event.etag is not None
+        assert event.href == 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU.ics'
         event = Event.fromString(event_today, calendar=cal1, locale=aux.locale)
         coll.new(event)
         hrefs = sorted(href for href, uid in coll._backend.list(cal1))
