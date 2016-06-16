@@ -341,6 +341,17 @@ class DayWalker(urwid.SimpleFocusListWalker):
         assert self[offset].date == day
         self[offset] = self._get_events(day)
 
+    def update_range(self, start, end):
+        """refresh contents of all day between start and end (inclusive)
+
+        :type start: datetime.date
+        :type end: datetime.date
+        """
+        day = start
+        while day <= end:
+            self.update(day)
+            day += timedelta(days=1)
+
     def set_focus(self, position):
         """set focus by item number"""
         while position >= len(self) - 1:
@@ -514,10 +525,16 @@ class EventColumn(urwid.WidgetWrap):
             original_end = event.end_local
 
         def update_colors(new_start, new_end, recurring=False):
-            """reset colors in the calendar widget between min(new_start, original_start)"""
-            # TODO XXX also reset DatePiles
-            # TODO XXX support for recurring events, were more than start and
-            # end dates are affected
+            """reset colors in the calendar widget and dates in DayWalker
+            between min(new_start, original_start)
+
+            :type new_start: datetime.date
+            :type new_end: datetime.date
+            :param recurring: set to True if event is a recurring one, than everything
+                  gets reseted
+            """
+            # TODO cleverer support for recurring events, were more than start and
+            # end dates are affected (complicated)
             if recurring:
                 min_date = self.pane.calendar.base_widget.walker.earliest_date
                 max_date = self.pane.calendar.base_widget.walker.latest_date
@@ -529,6 +546,7 @@ class EventColumn(urwid.WidgetWrap):
                 min_date = min(original_start, new_start)
                 max_date = max(original_end, new_end)
             self.pane.calendar.base_widget.reset_styles_range(min_date, max_date)
+            self.pane.eventscolumn.base_widget.events.update_range(min_date, max_date)
 
         if self.editor:
             self.pane.window.backtrack()
@@ -536,7 +554,6 @@ class EventColumn(urwid.WidgetWrap):
         assert not self.editor
         self.editor = True
         editor = EventEditor(self.pane, event, update_colors, always_save=always_save)
-        # current_day = self.container.contents[0][0]  FIXME
 
         ContainerWidget = linebox[self.pane.conf['view']['frame']]
         new_pane = urwid.Columns([
