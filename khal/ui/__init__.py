@@ -236,9 +236,11 @@ class DListBox(urwid.ListBox):
         self.body.update(self.current_date)
 
     def keypress(self, size, key):
-        movements = self._conf['keybindings']['up'] + \
-            self._conf['keybindings']['down'] + ['tab', 'shift tab']
-#            self.body[self.focus_position + 1].contents[0][0].set_attr_map({None: 'date focus'})
+        if key in self._conf['keybindings']['up']:
+            key = 'up'
+        if key in self._conf['keybindings']['down']:
+            key = 'down'
+
         if key in self._conf['keybindings']['today']:
             self.parent.pane.calendar.base_widget.set_focus_date(date.today())
         elif self.body.current_event:
@@ -254,7 +256,7 @@ class DListBox(urwid.ListBox):
 
         rval = super().keypress(size, key)
         self.clean()
-        if key in movements:
+        if key in ['up', 'down']:
             try:
                 self._old_focus = self.focus_position
             except IndexError:
