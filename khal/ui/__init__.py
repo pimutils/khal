@@ -232,7 +232,7 @@ class DListBox(urwid.ListBox):
         except ReadOnlyCalendarError:
             event.calendar = self.parent.pane.collection.default_calendar_name or \
                 self.parent.pane.collection.writable_names[0]
-            self.parent.edit(event, force_save=True)
+            self.parent.edit(event, always_save=True)
         self.body.update(self.current_date)
 
     def keypress(self, size, key):
@@ -491,13 +491,13 @@ class EventColumn(urwid.WidgetWrap):
             else:
                 self.current_event = None
 
-    def edit(self, event, force_save=False):
+    def edit(self, event, always_save=False):
         """create an EventEditor and display it
 
         :param event: event to edit
         :type event: khal.event.Event
-        :param force_save: even save the event if it hasn't changed
-        :type force_save: bool
+        :param always_save: even save the event if it hasn't changed
+        :type always_save: bool
         """
         if event.readonly:
             self.pane.window.alert(
@@ -535,7 +535,7 @@ class EventColumn(urwid.WidgetWrap):
 
         assert not self.editor
         self.editor = True
-        editor = EventEditor(self.pane, event, update_colors, force_save=force_save)
+        editor = EventEditor(self.pane, event, update_colors, always_save=always_save)
         # current_day = self.container.contents[0][0]  FIXME
 
         ContainerWidget = linebox[self.pane.conf['view']['frame']]
@@ -687,14 +687,14 @@ class EventDisplay(urwid.WidgetWrap):
 class EventEditor(urwid.WidgetWrap):
     """Widget that allows Editing one `Event()`"""
 
-    def __init__(self, pane, event, save_callback=None, force_save=False):
+    def __init__(self, pane, event, save_callback=None, always_save=False):
         """
         :type event: khal.event.Event
         :param save_callback: call when saving event with new start and end
              dates and recursiveness of original and edited event as parameters
         :type save_callback: callable
-        :param force_save: save event even if it has not changed
-        :type force_save: bool
+        :param always_save: save event even if it has not changed
+        :type always_save: bool
         """
 
         self.pane = pane
@@ -747,7 +747,7 @@ class EventEditor(urwid.WidgetWrap):
             urwid.Button('Save', on_press=self.save),
             urwid.Button('Export', on_press=self.export)
         ]), outermost=True)
-        self._force_save = force_save
+        self._always_save = always_save
         urwid.WidgetWrap.__init__(self, self.pile)
 
     @property
@@ -830,14 +830,14 @@ class EventEditor(urwid.WidgetWrap):
     def save(self, button):
         """saves the event to the db
 
-        (only when it has been changed or force_save is set)
+        (only when it has been changed or always_save is set)
         :param button: not needed, passed via the button press
         """
         if not self.startendeditor.validate():
             self.pane.window.alert(
                 ('light red', "Can't save: end date is before start date!"))
             return
-        if self._force_save or self.changed is True:
+        if self._always_save or self.changed is True:
             self.update_vevent()
             self.event.allday = self.startendeditor.allday
             self.event.increment_sequence()
