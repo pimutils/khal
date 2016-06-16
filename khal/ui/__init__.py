@@ -238,22 +238,8 @@ class DListBox(urwid.ListBox):
     def keypress(self, size, key):
         movements = self._conf['keybindings']['up'] + \
             self._conf['keybindings']['down'] + ['tab', 'shift tab']
-        if key in movements:
-            try:
-                self._old_focus = self.focus_position
-            except IndexError:
-                pass
-            day = self.body[self.body.focus].date
-
-            # we need to save DatePile.selected_date and reset it later, because
-            # calling CalendarWalker.set_focus_date() calls back into
-            # DayWalker().update_by_date() which actually set selected_date
-            # that's why it's called callback hell...
-            currently_selected_date = DatePile.selected_date
-            self.parent.pane.calendar.base_widget.set_focus_date(day)  # TODO convert to callback
-            DatePile.selected_date = currently_selected_date
 #            self.body[self.focus_position + 1].contents[0][0].set_attr_map({None: 'date focus'})
-        elif key in self._conf['keybindings']['today']:
+        if key in self._conf['keybindings']['today']:
             self.parent.pane.calendar.base_widget.set_focus_date(date.today())
         elif self.body.current_event:
             if key in self._conf['keybindings']['delete']:
@@ -268,6 +254,20 @@ class DListBox(urwid.ListBox):
 
         rval = super().keypress(size, key)
         self.clean()
+        if key in movements:
+            try:
+                self._old_focus = self.focus_position
+            except IndexError:
+                pass
+            day = self.body[self.body.focus].date
+
+            # we need to save DatePile.selected_date and reset it later, because
+            # calling CalendarWalker.set_focus_date() calls back into
+            # DayWalker().update_by_date() which actually set selected_date
+            # that's why it's called callback hell...
+            currently_selected_date = DatePile.selected_date
+            self.parent.pane.calendar.base_widget.set_focus_date(day)  # TODO convert to callback
+            DatePile.selected_date = currently_selected_date
         if self.parent._conf['view']['event_view_always_visible'] and self.body.current_event:
             self.parent.clear_event_view()
             self.parent.view(self.body.current_event.event)
