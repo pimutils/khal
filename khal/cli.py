@@ -267,7 +267,7 @@ def _get_cli():
     def calendar(ctx, daterange, once, notstarted, format, day_format):
         '''Print calendar with agenda.'''
         controllers.calendar(
-            build_collection(ctx),
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             format=format,
             day_format=day_format,
             once=once,
@@ -498,7 +498,7 @@ def _get_cli():
         if not datetime:
             datetime = ("now",)
         controllers.khal_list(
-            build_collection(ctx),
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             format=format,
             day_format=day_format,
             daterange=datetime + ("1m", ),
