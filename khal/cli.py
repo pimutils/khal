@@ -283,6 +283,7 @@ def _get_cli():
             color=ctx.obj['conf']['highlight_days']['color'],
             highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
             bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
+            env={"calendars": ctx.obj['conf']['calendars']}
         )
 
     @cli.command("list")
@@ -362,6 +363,7 @@ def _get_cli():
             repeat=repeat,
             until=until.split(' ') if until is not None else None,
             alarm=alarm,
+            env={"calendars": ctx.obj['conf']['calendars']}
         )
 
     @cli.command('import')
@@ -400,7 +402,8 @@ def _get_cli():
             ctx.obj['conf'],
             ics=ics_str,
             batch=batch,
-            random_uid=random_uid
+            random_uid=random_uid,
+            env={"calendars": ctx.obj['conf']['calendars']}
         )
 
     @cli.command()
@@ -470,8 +473,9 @@ def _get_cli():
         event_column = list()
         term_width, _ = get_terminal_size()
         now = datetime.datetime.now()
+        env = {"calendars": ctx.obj['conf']['calendars']}
         for event in events:
-            desc = textwrap.wrap(event.format(format, relative_to=now), term_width)
+            desc = textwrap.wrap(event.format(format, relative_to=now, env=env), term_width)
             event_column.extend(
                 [colored(d, event.color,
                          bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
@@ -497,7 +501,7 @@ def _get_cli():
             build_collection(ctx),
             format=format,
             day_format=day_format,
-            daterange=datetime + ("0m", ),
+            daterange=datetime + ("1m", ),
             once=True,
             notstarted=notstarted,
             locale=ctx.obj['conf']['locale'],

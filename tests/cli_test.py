@@ -271,9 +271,11 @@ def test_at(runner):
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
         main_khal,
-        'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
-    result = runner.invoke(main_khal, ['--color', 'at', '--format', '{start-time}{title}', '18:30'])
-    assert result.output.startswith('18:00')
+        'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+    args = ['--color', 'at', '--format', '{start-time}{title}', '--day-format', '', '18:30']
+    result = runner.invoke(main_khal, args)
+    print(result.output)
+    assert result.output.startswith('\x1b[0m\nmyevent')
     assert not result.exception
 
 

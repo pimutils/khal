@@ -269,7 +269,7 @@ def khal_list(collection, daterange, conf=None, format=None, day_format=None,
 
 def new_from_string(collection, calendar_name, conf, date_list, location=None,
                     categories=None, repeat=None, until=None, alarm=None,
-                    format=None):
+                    format=None, env=None):
     """construct a new event from a string and add it"""
     try:
         event = aux.construct_event(
@@ -294,7 +294,7 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None,
     if conf['default']['print_new'] == 'event':
         if format is None:
             format = conf['view']['event_format']
-        echo(event.format(format, datetime.now()))
+        echo(event.format(format, datetime.now(), env=env))
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
         echo(path)
@@ -315,7 +315,8 @@ def interactive(collection, conf):
     )
 
 
-def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None):
+def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None,
+               env=None):
     """
     :param batch: setting this to True will insert without asking for approval,
                   even when an event with the same uid already exists
@@ -334,10 +335,10 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None
     for uid in events_grouped:
         vevents.append(sorted(events_grouped[uid], key=sort_key))
     for vevent in vevents:
-        import_event(vevent, collection, conf['locale'], batch, random_uid, format)
+        import_event(vevent, collection, conf['locale'], batch, random_uid, format, env)
 
 
-def import_event(vevent, collection, locale, batch, random_uid, format=None):
+def import_event(vevent, collection, locale, batch, random_uid, format=None, env=None):
     """import one event into collection, let user choose the collection"""
 
     # print all sub-events
@@ -345,7 +346,7 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None):
         if not batch:
             event = Event.fromVEvents(
                 [sub_event], calendar=collection.default_calendar_name, locale=locale)
-            echo(event.format(format, datetime.now()))
+            echo(event.format(format, datetime.now(), env=env))
 
     # get the calendar to insert into
     if batch or len(collection.writable_names) == 1:
