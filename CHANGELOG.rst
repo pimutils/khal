@@ -37,6 +37,11 @@ ikhal
   `True` isn't allowed any more, please provide feedback over the usual channels
   if and which of those you consider useful as some of those might be removed in
   future releases (Christian Geier)
+* default keybinding changed: `tab` no longer shows details of focused events
+  and does open the event editor either (Christian Geier)
+* right column changed, it will now show as many days/events as fit, if users move
+  to another date (while the event column is in focus), that date should be
+  highlighted in the calendar (Christian Geier)
 
 0.8.2
 =====
