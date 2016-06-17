@@ -529,7 +529,9 @@ class Event(object):
             attributes["start-style"] = attributes["start-time"]
             tostr = "-"
 
-        if self_end == day_end:
+        midnight_end = day_end.time() == time.max and self_end.time() == time.min and\
+                       self_end.date() - timedelta(days=1) == day_end.date()
+        if self_end == day_end or midnight_end:
             attributes["end-style"] = self.symbol_strings["range_end"]
             tostr = ""
         elif self_end > day_end:
