@@ -978,9 +978,12 @@ class ClassicView(Pane):
         )
         self.calendar = ContainerWidget(calendar)
         lwidth = 31 if conf['locale']['weeknumbers'] == 'right' else 28
-        columns = urwid.Columns([(lwidth, self.calendar), self.eventscolumn],
-                                dividechars=0,
-                                box_columns=[0, 1])
+        columns = NColumns(
+            [(lwidth, self.calendar), self.eventscolumn],
+            dividechars=0,
+            box_columns=[0, 1],
+            outermost=True,
+        )
         Pane.__init__(self, columns, title=title, description=description)
 
     def keypress(self, size, key):

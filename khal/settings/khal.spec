@@ -118,7 +118,7 @@ new = force_list(default=list('n'))
 delete = force_list(default=list('d'))
 
 # show details or edit (if details are already shown) the currently selected event
-view = force_list(default=list('enter', 'tab'))
+view = force_list(default=list('enter'))
 
 # focus the calendar browser on today
 today = force_list(default=list('t'))
