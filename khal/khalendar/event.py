@@ -553,9 +553,9 @@ class Event(object):
         attributes["repeat-pattern"] = self.recurpattern
         attributes["title"] = self.summary
         attributes["description"] = self.description.strip()
-        attributes["description-seperator"] = ""
+        attributes["description-separator"] = ""
         if attributes["description"]:
-            attributes["description-seperator"] = " :: "
+            attributes["description-separator"] = " :: "
         attributes["location"] = self.location.strip()
         attributes["all-day"] = allday
         attributes["categories"] = self.categories

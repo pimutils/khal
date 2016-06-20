@@ -87,18 +87,6 @@ The [default] section
 The default section begins with a **[default]** tag. Some default values and
 behaviours are set here.
 
-.. _default-days:
-
-.. object:: days
-
-    
-    By default, khal shows events for today and tomorrow.
-    Setting this to a different value will show events of that amount of days by
-    default.
-
-      :type: integer
-      :default: 2
-
 .. _default-default_calendar:
 
 .. object:: default_calendar
@@ -117,7 +105,7 @@ behaviours are set here.
     
     command to be executed if no command is given when executing khal
 
-      :type: option, allowed values are *calendar*, *agenda*, *interactive*, *printformats*, *printcalendars* and **
+      :type: option, allowed values are *calendar*, *list*, *interactive*, *printformats*, *printcalendars* and **
       :default: calendar
 
 .. _default-highlight_event_days:
@@ -142,18 +130,6 @@ behaviours are set here.
       :type: option, allowed values are *event*, *path* and *False*
       :default: False
 
-.. _default-show_all_days:
-
-.. object:: show_all_days
-
-    
-    By default, khal displays only dates with event in "agenda" view.
-    Setting this to *True* will show all days in "agenda", even
-    when there is no event scheduled on that day.
-
-      :type: boolean
-      :default: False
-
 .. _default-timedelta:
 
 .. object:: timedelta
@@ -162,7 +138,7 @@ behaviours are set here.
     Default timedelta for use with daterange options
 
       :type: string
-      :default: 
+      :default: 2d
 
 The [highlight_days] section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -509,6 +485,25 @@ The [view] section
 The view section contains configuration options that effect the visual appearance
 when using ikhal
 
+.. _view-agenda_day_format:
+
+.. object:: agenda_day_format
+
+    
+
+      :type: string
+      :default: {bold}{name}{reset}
+
+.. _view-agenda_event_format:
+
+.. object:: agenda_event_format
+
+    
+    Default format for events (used in list)
+
+      :type: string
+      :default: {calendar-color}{start-end-time-style:16} {title}{recurse}{description-separator}{description}{reset}
+
 .. _view-bold_for_light_color:
 
 .. object:: bold_for_light_color
@@ -525,33 +520,9 @@ when using ikhal
 .. object:: event_format
 
     
-    Default format for events (used when not showing an agenda)
 
       :type: string
-      :default: {calendar-color}{start}-{end}
-      {title}{recurse}{description-seperator}{description}{reset}
-
-.. _view-agenda_event_format:
-
-.. object:: agenda_event_format
-
-    
-    Default format for events (used in list and calendar)
-
-      :type: string
-      :default: {calendar-color}{start-end-time-style:16}
-      {title}{recurse}{description-seperator}{description}{reset}
-
-
-.. _view-_format:
-
-.. object:: agenda_day_format
-
-    
-    Default format for day headers (used in list and calendar)
-
-      :type: string
-      :default: {name}
+      :default: {calendar-color}{start}-{end} {title}{recurse}{description-separator}{description}{reset}
 
 .. _view-event_view_always_visible:
 

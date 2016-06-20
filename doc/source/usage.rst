@@ -145,9 +145,9 @@ the terminal.  The available template options are:
 
         The event description.
 
-.. option:: description-seperator
+.. option:: description-separator
 
-        A seperator: " :: " that appears when there is a description.
+        A separator: " :: " that appears when there is a description.
 
 .. option:: location
 
