@@ -21,6 +21,10 @@ not released yet
 * `calendar` command uses `list` (Taylor Money)
 * `new` prints using event.format (Taylor Money)
 * remove `agenda` in favor of list (Taylor Money)
+* removed `days` configuration option in favor of `timedelta` (Taylor Money)
+* added `event_format`, `agenda_event_format`, `agenda_day_format` config
+  options for formatting (Taylor Money)
+
 
 ikhal
 -----

@@ -97,12 +97,14 @@ def calendar(collection, format=None, notstarted=False, once=False, daterange=No
              bold_for_light_color=True,
              **kwargs):
     td = None
+    show_all_days = False
     if conf is not None:
         if format is None:
             format = conf['view']['agenda_event_format']
         if day_format is None:
             day_format = conf['view']['agenda_day_format']
         td = conf['default']['timedelta']
+        show_all_days = conf['default']['show_all_days']
 
     term_width, _ = get_terminal_size()
     lwidth = 25
@@ -112,6 +114,7 @@ def calendar(collection, format=None, notstarted=False, once=False, daterange=No
                                      daterange=daterange, locale=locale,
                                      once=once, notstarted=notstarted,
                                      default_timedelta=td, width=rwidth,
+                                     show_all_days=show_all_days,
                                      **kwargs)
     calendar_column = calendar_display.vertical_month(
         firstweekday=firstweekday, weeknumber=weeknumber,
@@ -129,7 +132,8 @@ def calendar(collection, format=None, notstarted=False, once=False, daterange=No
 
 def get_list_from_str(collection, locale, daterange, notstarted=False,
                       format=None, day_format=None, once=False,
-                      default_timedelta=None, env=None, **kwargs):
+                      default_timedelta=None, env=None, show_all_days=False,
+                      **kwargs):
     """returns a list of events scheduled in between `daterange`.
 
     :param collection:
@@ -185,7 +189,7 @@ def get_list_from_str(collection, locale, daterange, notstarted=False,
             day_end = end
         current_events = get_list(collection, locale=locale, format=format, start=start,
                                   end=day_end, notstarted=notstarted, env=env, **kwargs)
-        if current_events:
+        if show_all_days or current_events:
             event_column.append(format_day(start, day_format, locale))
         event_column.extend(current_events)
         start = aux.datetime_fillin(start.date(), end=False) + timedelta(days=1)
@@ -253,16 +257,19 @@ def khal_list(collection, daterange, conf=None, format=None, day_format=None,
               once=False, notstarted=False, **kwargs):
     """list all events in `daterange`"""
     td = None
+    show_all_days = False
     if conf is not None:
         if format is None:
             format = conf['view']['agenda_event_format']
         td = conf['default']['timedelta']
         if day_format is None:
             day_format = conf['view']['agenda_day_format']
+        show_all_days = conf['default']['show_all_days']
 
     event_column = get_list_from_str(
         collection, format=format, day_format=day_format, daterange=daterange,
-        once=once, notstarted=notstarted, default_timedelta=td, **kwargs)
+        once=once, notstarted=notstarted, default_timedelta=td,
+        show_all_days=show_all_days, **kwargs)
 
     echo('\n'.join(event_column))
 

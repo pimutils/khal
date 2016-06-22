@@ -41,7 +41,8 @@ class TestSettings(object):
                 'default_calendar': None,
                 'print_new': 'False',
                 'highlight_event_days': False,
-                'timedelta': '2d'
+                'timedelta': '2d',
+                'show_all_days': False
             }
         }
         for key in comp_config:
@@ -79,7 +80,8 @@ class TestSettings(object):
                 'default_command': 'calendar',
                 'print_new': 'False',
                 'highlight_event_days': False,
-                'timedelta': '2d'
+                'timedelta': '2d',
+                'show_all_days': False
             }
         }
         for key in comp_config:

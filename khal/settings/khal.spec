@@ -156,6 +156,11 @@ default_command = option('calendar', 'list', 'interactive', 'printformats', 'pri
 # new event). If this is not set, such operations require an explicit value.
 default_calendar = string(default=None)
 
+# By default, khal displays only dates with event in "agenda" view.
+# Setting this to *True* will show all days in "agenda", even
+# when there is no event scheduled on that day.
+show_all_days = boolean(default=False)
+
 # After adding a new event, what should be printed to standard out? The whole
 # event in text form, the path to where the event is now saved or nothing?
 print_new = option('event', 'path', 'False', default=False)
