@@ -27,7 +27,7 @@ from vdirsyncer.utils.vobject import Item
 from collections import defaultdict
 from shutil import get_terminal_size
 
-from datetime import date, timedelta, datetime
+from datetime import timedelta, datetime
 import logging
 import sys
 import textwrap
