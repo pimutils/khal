@@ -13,23 +13,24 @@ not released yet
 
 * removed configuration variable `encoding` (in section [locale]), the correct
   locale should now be figured out automatically (Markus Unterwaditzer)
-* added command `list` (Taylor Money)
+* (nearly) all commands allow formatting of how events are printed with
+  `--format`, also see the new configuration options `event_format`,
+  `agenda_event_format`, `agenda_day_format` (Taylor Money)
 * support for categories (and add `-g` flag for `khal new`) (Pierre David)
-* search is now sorted and allows for a `--format` (Taylor Money)
+* search results are now sorted by start date (Taylor Money)
 * calendar path is now a glob without recursion for discover (Taylor Money)
-* `at` command now works like list with end of `0m` (Taylor Money)
-* `calendar` command uses `list` (Taylor Money)
-* `new` prints using event.format (Taylor Money)
-* remove `agenda` in favor of list (Taylor Money)
-* removed `days` configuration option in favor of `timedelta` (Taylor Money)
-* added `event_format`, `agenda_event_format`, `agenda_day_format` config
-  options for formatting (Taylor Money)
+* `at` command now works like `list` with a timedelta of `0m`, this means that
+  `at` will no longer print events that end at exactly the time asked for
+  (Taylor Money)
+* renamed `agenda` to `list` (Taylor Money)
+* removed `days` configuration option in favor of `timedelta`, see
+  documentation for details (Taylor Money)
 
 
 ikhal
 -----
-* make keybinding for quitting configurable, defaults to *q* and *Q*
-  (Christian Geier)
+* make keybinding for quitting configurable, defaults to *q* and *Q*, escape
+  only backtracks to last pane but doesn't exit khal anymore (Christian Geier)
 * introduction of three different new frame styles, new allowed values for
   `[view] frame` are `False`, `width`, `color`, `top` (with default `False`),
   `True` isn't allowed any more, please provide feedback over the usual channels
