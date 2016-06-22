@@ -208,7 +208,7 @@ small number of options (in addition to all of the color options).
 
 .. option:: name
 
-        The date as a name.
+        The date's name (`Monday`, `Tuesday`,…) or `today` or `tomorrow`.
 
 
 at
