@@ -156,8 +156,8 @@ def get_list_from_str(collection, locale, daterange, notstarted=False,
                 raise InvalidDate('Invalid date range: "%s"' % (' '.join(daterange)))
 
         except InvalidDate as error:
-                logging.fatal(error)
-                sys.exit(1)
+            logging.fatal(error)
+            sys.exit(1)
 
     event_column = []
     if once:
