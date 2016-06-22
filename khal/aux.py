@@ -98,8 +98,9 @@ def weekdaypstr(dayname):
     raise ValueError('invalid weekday name `%s`' % dayname)
 
 
-def construct_daynames(daylist):
-    """returns a list of tuples of datetime objects and datenames
+def construct_daynames(date_):
+    """
+    returns weeka list of tuples of datetime objects and datenames
 
     :param daylist: list of dates
     :type daylist: list(datetime.date)
@@ -108,13 +109,12 @@ def construct_daynames(daylist):
     :returns: list of names and dates
     :rtype: list((str, datetime.date))
     """
-    for day in daylist:
-        if day == date.today():
-            yield (day, 'Today:')
-        elif day == date.today() + timedelta(days=1):
-            yield (day, 'Tomorrow:')
-        else:
-            yield (day, day.strftime('%A'))
+    if date_ == date.today():
+        return 'Today'
+    elif date_ == date.today() + timedelta(days=1):
+        return 'Tomorrow'
+    else:
+        return date_.strftime('%A')
 
 
 def calc_day(dayname):

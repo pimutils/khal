@@ -50,7 +50,7 @@ def format_day(day, format_string, locale, attributes=None):
     attributes["date"] = day.strftime(locale['dateformat'])
     attributes["date-long"] = day.strftime(locale['longdateformat'])
 
-    attributes["name"] = list(aux.construct_daynames((day,)))[0][1]
+    attributes["name"] = aux.construct_daynames(day)
 
     colors = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
     for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
@@ -171,7 +171,7 @@ def get_list_from_str(collection, locale, daterange, notstarted=False,
         current_events = get_list(collection, locale=locale, format=format, start=start,
                                   end=day_end, notstarted=notstarted, env=env, **kwargs)
         if show_all_days or current_events:
-            event_column.append(format_day(start, day_format, locale))
+            event_column.append(format_day(start.date(), day_format, locale))
         event_column.extend(current_events)
         start = aux.datetime_fillin(start.date(), end=False) + timedelta(days=1)
     if event_column == []:
