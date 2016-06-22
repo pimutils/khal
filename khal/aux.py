@@ -98,6 +98,25 @@ def weekdaypstr(dayname):
     raise ValueError('invalid weekday name `%s`' % dayname)
 
 
+def construct_daynames(daylist):
+    """returns a list of tuples of datetime objects and datenames
+
+    :param daylist: list of dates
+    :type daylist: list(datetime.date)
+    :param longdateformat: format in which to print dates
+    :param str
+    :returns: list of names and dates
+    :rtype: list((str, datetime.date))
+    """
+    for day in daylist:
+        if day == date.today():
+            yield (day, 'Today:')
+        elif day == date.today() + timedelta(days=1):
+            yield (day, 'Tomorrow:')
+        else:
+            yield (day, day.strftime('%A'))
+
+
 def calc_day(dayname):
     """converts a relative date's description to a datetime object
 
@@ -106,7 +125,7 @@ def calc_day(dayname):
     :returns: date
     :rtype: datetime.datetime
     """
-    today = datetime.today()
+    today = datetime.combine(date.today(), time.min)
     dayname = dayname.lower()
     if dayname == 'today':
         return today
@@ -169,6 +188,12 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
             a_date = datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
         return a_date
 
+    def datetimefwords(dtime_list, _):
+        if len(dtime_list) > 0 and dtime_list[0].lower() == 'now':
+            dtime_list.pop(0)
+            return datetime.now()
+        raise ValueError
+
     def datefstr_year(dtime_list, dateformat):
         """should be used if a date(time) without year is given
 
@@ -201,6 +226,7 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
             (datefstr_year, locale['dateformat'], True),
             (datetimefstr, locale['longdateformat'], True),
             (datefstr_weekday, None, True),
+            (datetimefwords, None, False),
 
     ]:
         try:
@@ -248,7 +274,7 @@ def guesstimedeltafstr(delta_string):
     return res
 
 
-def guessrangefstr(daterange, locale, default_timedelta=None):
+def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0):
     """parses a range string
 
     :param daterange: date1 [date2 | timedelta]
@@ -263,7 +289,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None):
         range_list = daterange.split()
 
     try:
-        if len(default_timedelta) == 0:
+        if default_timedelta is None or len(default_timedelta) == 0:
             default_timedelta = None
         else:
             default_timedelta = guesstimedeltafstr(default_timedelta)
@@ -277,12 +303,20 @@ def guessrangefstr(daterange, locale, default_timedelta=None):
             if start is None:
                 start = datetime_fillin(end=False)
             elif not isinstance(start, date):
-                split = start.split(" ")
-                start = guessdatetimefstr(split, locale)[0]
-                if len(split) != 0:
-                    continue
+                if start.lower() == 'week':
+                    today_weekday = datetime.today().weekday()
+                    start = datetime.today() - timedelta(days=(today_weekday - first_weekday))
+                    end = start + timedelta(days=7)
+                else:
+                    split = start.split(" ")
+                    start = guessdatetimefstr(split, locale)[0]
+                    if len(split) != 0:
+                        continue
 
-            if end is None or len(end) == 0:
+            if isinstance(end, datetime):
+                pass
+
+            elif end is None or len(end) == 0:
                 if default_timedelta is not None:
                     end = start + default_timedelta
                 else:
@@ -290,6 +324,9 @@ def guessrangefstr(daterange, locale, default_timedelta=None):
             else:
                 if end.lower() == 'eod':
                     end = datetime_fillin(day=start)
+                elif end.lower() == 'week':
+                    start -= timedelta(days=(start.weekday() - first_weekday))
+                    end = start + timedelta(days=7)
                 else:
                     try:
                         delta = guesstimedeltafstr(end)
@@ -301,7 +338,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None):
                             continue
                     end = datetime_fillin(end)
             return start, end
-        except Exception:   # XXX FIXME what kind of exceptions do we want to catch here?
+        except ValueError:
             pass
 
     return None, None
@@ -340,7 +377,7 @@ def datetime_fillin(dt=None, end=True, locale=None, day=None):
     if locale is not None:
         try:
             dt = locale['local_timezone'].localize(dt)
-        except:
+        except ValueError:
             pass
 
     return dt

@@ -32,9 +32,8 @@ except ImportError:
         pass
 
 import click
-import pytz
 
-from . import aux, controllers, khalendar, __version__
+from . import controllers, khalendar, __version__
 from .log import logger
 from .settings import get_config, InvalidSettingsError
 from .settings.exceptions import NoConfigFile
@@ -254,61 +253,45 @@ def _get_cli():
                 ctx.exit(1)
 
     @cli.command()
-    @time_args
     @multi_calendar_option
-    @click.pass_context
-    @click.option('--full', '-f', help=('Print description and location with event'),
+    @click.option('--format', '-f',
+                  help=('The format of the events.'))
+    @click.option('--day-format', '-df',
+                  help=('The format of the day line.'))
+    @click.option('--once', '-o', help=('Print event only once'),
                   is_flag=True)
-    def calendar(ctx, days, events, dates, week, full=False):
+    @click.option('--notstarted', help=('Print only events that have not started'),
+                  is_flag=True)
+    @click.argument('DATERANGE', nargs=-1, required=False)
+    @click.pass_context
+    def calendar(ctx, daterange, once, notstarted, format, day_format):
         '''Print calendar with agenda.'''
-        if week and days:
-            raise click.UsageError('Cannot use --days and -week at the same time.')
         controllers.calendar(
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            dates=dates,
+            format=format,
+            day_format=day_format,
+            once=once,
+            notstarted=notstarted,
+            daterange=daterange,
+            conf=ctx.obj['conf'],
             firstweekday=ctx.obj['conf']['locale']['firstweekday'],
             locale=ctx.obj['conf']['locale'],
             weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
-            show_all_days=ctx.obj['conf']['default']['show_all_days'],
-            days=days or ctx.obj['conf']['default']['days'],
-            events=events,
             hmethod=ctx.obj['conf']['highlight_days']['method'],
             default_color=ctx.obj['conf']['highlight_days']['default_color'],
             multiple=ctx.obj['conf']['highlight_days']['multiple'],
             color=ctx.obj['conf']['highlight_days']['color'],
             highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
             bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
-            full=full,
-            week=week,
-        )
-
-    @cli.command()
-    @time_args
-    @multi_calendar_option
-    @click.pass_context
-    @click.option('--full', '-f', help=('Print description and location with event'),
-                  is_flag=True)
-    def agenda(ctx, days, events, dates, week, full=False):
-        '''Print agenda.'''
-        if week and days:
-            raise click.UsageError('Cannot use --days and -week at the same time.')
-        controllers.agenda(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            dates=dates,
-            firstweekday=ctx.obj['conf']['locale']['firstweekday'],
-            show_all_days=ctx.obj['conf']['default']['show_all_days'],
-            locale=ctx.obj['conf']['locale'],
-            days=days or ctx.obj['conf']['default']['days'],
-            events=events,
-            week=week,
-            full=full,
-            bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color']
+            env={"calendars": ctx.obj['conf']['calendars']}
         )
 
     @cli.command("list")
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
+    @click.option('--day-format', '-df',
+                  help=('The format of the day line.'))
     @click.option(
         '--once', '-o', is_flag=True,
         help='Print events only once, even if they span multiple days')
@@ -316,11 +299,12 @@ def _get_cli():
                   is_flag=True)
     @click.argument('DATERANGE', nargs=-1, required=False)
     @click.pass_context
-    def klist(ctx, daterange, once, notstarted, format):
+    def klist(ctx, daterange, once, notstarted, format, day_format):
         '''Print list.'''
         controllers.khal_list(
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             format=format,
+            day_format=day_format,
             daterange=daterange,
             once=once,
             notstarted=notstarted,
@@ -341,6 +325,8 @@ def _get_cli():
                   help=('Stop an event repeating on this date.'))
     @click.option('--alarm', '-m',
                   help=('Alarm time for the new event.'))
+    @click.option('--format', '-f',
+                  help=('The format to print the event.'))
     @click.argument('START', nargs=1, required=True)
     @click.argument('END', nargs=1, required=False)
     @click.argument('TIMEZONE', nargs=1, required=False)
@@ -348,7 +334,7 @@ def _get_cli():
     @click.argument('DESCRIPTION', metavar='[:: DESCRIPTION]', nargs=-1, required=False)
     @click.pass_context
     def new(ctx, calendar, start, end, timezone, summary, description, location, categories, repeat,
-            until, alarm):
+            until, alarm, format):
         '''Create a new event from arguments.
 
         START and END can be either dates, times or datetimes, please have a
@@ -377,6 +363,7 @@ def _get_cli():
             repeat=repeat,
             until=until.split(' ') if until is not None else None,
             alarm=alarm,
+            env={"calendars": ctx.obj['conf']['calendars']}
         )
 
     @cli.command('import')
@@ -387,8 +374,10 @@ def _get_cli():
     @click.option('--random_uid', '-r', help=('Select a random uid.'),
                   is_flag=True)
     @click.argument('ics', type=click.File('rb'))
+    @click.option('--format', '-f',
+                  help=('The format to print the event.'))
     @click.pass_context
-    def import_ics(ctx, ics, include_calendar, batch, random_uid):
+    def import_ics(ctx, ics, include_calendar, batch, random_uid, format):
         '''Import events from an .ics file.
 
         If an event with the same UID is already present in the (implicitly)
@@ -413,7 +402,8 @@ def _get_cli():
             ctx.obj['conf'],
             ics=ics_str,
             batch=batch,
-            random_uid=random_uid
+            random_uid=random_uid,
+            env={"calendars": ctx.obj['conf']['calendars']}
         )
 
     @cli.command()
@@ -483,8 +473,9 @@ def _get_cli():
         event_column = list()
         term_width, _ = get_terminal_size()
         now = datetime.datetime.now()
+        env = {"calendars": ctx.obj['conf']['calendars']}
         for event in events:
-            desc = textwrap.wrap(event.format(format, relative_to=now), term_width)
+            desc = textwrap.wrap(event.format(format, relative_to=now, env=env), term_width)
             event_column.extend(
                 [colored(d, event.color,
                          bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
@@ -494,49 +485,29 @@ def _get_cli():
 
     @cli.command()
     @multi_calendar_option
-    @click.argument('datetime', required=False, nargs=-1)
+    @click.option('--format', '-f',
+                  help=('The format of the events.'))
+    @click.option('--day-format', '-df',
+                  help=('The format of the day line.'))
+    @click.option('--notstarted', help=('Print only events that have not started'),
+                  is_flag=True)
+    @click.argument('DATETIME', nargs=-1, required=False)
     @click.pass_context
-    def at(ctx, datetime=None):
-        '''Show all events scheduled for DATETIME.
-
-        if DATETIME is given (or the string `now`) all events scheduled
-        for this moment are shown, if only a time is given, the date is assumed
-        to be today
-        '''
-        collection = build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None))
-        locale = ctx.obj['conf']['locale']
-        dtime_list = list(datetime)
-        if dtime_list == [] or dtime_list == ['now']:
-            import datetime
-            dtime = datetime.datetime.now()
-        else:
-            try:
-                dtime, _ = aux.guessdatetimefstr(dtime_list, locale)
-            except ValueError:
-                logger.fatal(
-                    '{} is not a valid datetime (matches neither {} nor {} nor'
-                    ' {})'.format(
-                        ' '.join(dtime_list),
-                        locale['timeformat'],
-                        locale['datetimeformat'],
-                        locale['longdatetimeformat']))
-                sys.exit(1)
-        dtime = locale['local_timezone'].localize(dtime)
-        dtime = dtime.astimezone(pytz.UTC)
-        events = collection.get_events_at(dtime)
-        event_column = list()
-        term_width, _ = get_terminal_size()
-        for event in events:
-            lines = list()
-            items = event.event_description.splitlines()
-            for item in items:
-                lines += textwrap.wrap(item, term_width)
-            event_column.extend(
-                [colored(line, event.color,
-                         bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
-                 for line in lines]
-            )
-        click.echo('\n'.join(event_column))
+    def at(ctx, datetime, notstarted, format, day_format):
+        '''Print list.'''
+        if not datetime:
+            datetime = ("now",)
+        controllers.khal_list(
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+            format=format,
+            day_format=day_format,
+            daterange=datetime + ("1m", ),
+            once=True,
+            notstarted=notstarted,
+            locale=ctx.obj['conf']['locale'],
+            conf=ctx.obj['conf'],
+            env={"calendars": ctx.obj['conf']['calendars']}
+        )
 
     @cli.command()
     @click.pass_context

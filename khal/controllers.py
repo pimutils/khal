@@ -27,7 +27,7 @@ from vdirsyncer.utils.vobject import Item
 from collections import defaultdict
 from shutil import get_terminal_size
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta, datetime
 import logging
 import sys
 import textwrap
@@ -40,7 +40,7 @@ from khal.khalendar.event import Event
 from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
 from khal.log import logger
-from .terminal import colored, merge_columns
+from .terminal import merge_columns
 
 
 def construct_daynames(daylist, longdateformat):
@@ -62,96 +62,60 @@ def construct_daynames(daylist, longdateformat):
             yield (day, day.strftime(longdateformat))
 
 
-def get_agenda(collection, locale, dates=None, firstweekday=0, days=None, events=None, width=45,
-               week=False, full=False, show_all_days=False, bold_for_light_color=True,):
-    """returns a list of events scheduled for all days in daylist
+def format_day(day, format_string, locale, attributes=None):
+    if attributes is None:
+        attributes = {}
 
-    included are header "rows"
-    :param collection:
-    :type collection: khalendar.CalendarCollection
-    :param dates: a list of all dates for which the events should be return,
-                    including what should be printed as a header
-    :type collection: list(str)
-    :param show_all_days: True if all days must be shown, event without event
-    :type show_all_days: Boolean
-    :returns: a list to be printed as the agenda for the given days
-    :rtype: list(str)
+    attributes["date"] = day.strftime(locale['dateformat'])
+    attributes["date-long"] = day.strftime(locale['longdateformat'])
 
-    """
-    event_column = list()
+    attributes["name"] = list(aux.construct_daynames((day,)))[0][1]
 
-    if days is None:
-        days = 2
-
-    if dates is None or len(dates) == 0:
-        dates = [date.today()]
-    else:
-        try:
-            dates = [
-                aux.guessdatetimefstr([day], locale)[0].date()
-                if not isinstance(day, date) else day
-                for day in dates
-            ]
-        except InvalidDate as error:
-            logging.fatal(error)
-            sys.exit(1)
-
-    if week:
-        dates = [d - timedelta((d.weekday() - firstweekday) % 7)
-                 for d in dates]
-        days = 7
-
-    if days is not None:
-        daylist = [day + timedelta(days=one)
-                   for one in range(days) for day in dates]
-        daylist.sort()
-
-    daylist = construct_daynames(daylist, locale['longdateformat'])
-
-    for day, dayname in daylist:
-        events = sorted(collection.get_events_on(day))
-        if not events and not show_all_days:
-            continue
-
-        if event_column:
-            event_column.append('')
-        event_column.append(style(dayname, bold=True))
-        for event in events:
-            lines = list()
-            items = event.relative_to(day, full).splitlines()
-            for item in items:
-                lines += textwrap.wrap(item, width)
-            event_column.extend(
-                [colored(line, event.color, bold_for_light_color=bold_for_light_color)
-                 for line in lines]
-            )
-
-    if event_column == []:
-        event_column = [style('No events', bold=True)]
-    return event_column
+    colors = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
+    for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
+        colors[c] = style("", reset=False, fg=c)
+        colors[c + "-bold"] = style("", reset=False, fg=c, bold=True)
+    attributes.update(colors)
+    try:
+        return format_string.format(**attributes) + colors["reset"]
+    except (KeyError, IndexError):
+        raise KeyError("cannot format day with: %s" % format_string)
 
 
-def calendar(collection, dates=None, firstweekday=0, locale=None,
-             weeknumber=False, show_all_days=False, conf=None,
+def calendar(collection, format=None, notstarted=False, once=False, daterange=None,
+             day_format=None,
+             locale=None,
+             conf=None,
+             firstweekday=0,
+             weeknumber=False,
              hmethod='fg',
              default_color='',
              multiple='',
              color='',
              highlight_event_days=0,
-             week=False,
              full=False,
              bold_for_light_color=True,
              **kwargs):
-    if dates is None:
-        dates = [datetime.today()]
+    td = None
+    show_all_days = False
+    if conf is not None:
+        if format is None:
+            format = conf['view']['agenda_event_format']
+        if day_format is None:
+            day_format = conf['view']['agenda_day_format']
+        td = conf['default']['timedelta']
+        show_all_days = conf['default']['show_all_days']
 
     term_width, _ = get_terminal_size()
     lwidth = 25
     rwidth = term_width - lwidth - 4
-    event_column = get_agenda(
-        collection, locale, dates=dates, width=rwidth,
-        show_all_days=show_all_days, week=week, full=full,
-        bold_for_light_color=bold_for_light_color, **kwargs)
+    event_column = get_list_from_str(collection, format=format,
+                                     day_format=day_format,
+                                     daterange=daterange, locale=locale,
+                                     once=once, notstarted=notstarted,
+                                     default_timedelta=td, width=rwidth,
+                                     show_all_days=show_all_days,
+                                     **kwargs)
     calendar_column = calendar_display.vertical_month(
         firstweekday=firstweekday, weeknumber=weeknumber,
         collection=collection,
@@ -166,17 +130,10 @@ def calendar(collection, dates=None, firstweekday=0, locale=None,
     echo('\n'.join(rows))
 
 
-def agenda(collection, dates=None, show_all_days=False, full=False,
-           week=False, bold_for_light_color=True, **kwargs):
-    term_width, _ = get_terminal_size()
-    event_column = get_agenda(
-        collection, dates=dates, width=term_width, show_all_days=show_all_days,
-        full=full, week=week, bold_for_light_color=bold_for_light_color, **kwargs)
-    echo('\n'.join(event_column))
-
-
 def get_list_from_str(collection, locale, daterange, notstarted=False,
-                      format=None, once=False, default_timedelta=None, env=None):
+                      format=None, day_format=None, once=False,
+                      default_timedelta=None, env=None, show_all_days=False,
+                      **kwargs):
     """returns a list of events scheduled in between `daterange`.
 
     :param collection:
@@ -200,7 +157,15 @@ def get_list_from_str(collection, locale, daterange, notstarted=False,
     """
     if len(daterange) == 0:
         start = aux.datetime_fillin(end=False)
-        end = aux.datetime_fillin(day=start)
+        if default_timedelta is None:
+            end = aux.datetime_fillin(day=start)
+        else:
+            try:
+                end = start + aux.guesstimedeltafstr(default_timedelta)
+            except ValueError as e:
+                logging.fatal(e)
+                sys.exit(1)
+
     else:
         try:
             start, end = aux.guessrangefstr(
@@ -214,25 +179,27 @@ def get_list_from_str(collection, locale, daterange, notstarted=False,
                 sys.exit(1)
 
     event_column = []
-    if not once:
-        if env is None:
-            env = {}
-        while start < end:
-            day_end = aux.datetime_fillin(start.date())
-            if start.date() == end.date():
-                day_end = end
-            event_column.extend(get_list(collection, locale=locale, format=format, start=start,
-                                         end=day_end, notstarted=notstarted, env=env))
-            start = aux.datetime_fillin(start.date(), end=False) + timedelta(days=1)
-    else:
-        event_column = get_list(collection, locale=locale, format=format, start=start,
-                                end=end, notstarted=notstarted)
+    if once:
+        kwargs["seen"] = set()
+    if env is None:
+        env = {}
+    while start < end:
+        day_end = aux.datetime_fillin(start.date())
+        if start.date() == end.date():
+            day_end = end
+        current_events = get_list(collection, locale=locale, format=format, start=start,
+                                  end=day_end, notstarted=notstarted, env=env, **kwargs)
+        if show_all_days or current_events:
+            event_column.append(format_day(start, day_format, locale))
+        event_column.extend(current_events)
+        start = aux.datetime_fillin(start.date(), end=False) + timedelta(days=1)
     if event_column == []:
         event_column = [style('No events', bold=True)]
     return event_column
 
 
-def get_list(collection, locale, start, end, format=None, notstarted=False, env=None):
+def get_list(collection, locale, start, end, format=None, notstarted=False, env=None, width=None,
+             seen=None):
     """returns a list of events scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
 
@@ -269,35 +236,47 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
     for event in events:
         event_start = aux.datetime_fillin(event.start, end=False, locale=locale)
         if not (notstarted and event_start.replace(tzinfo=None) < start):
-            try:
-                event_string = event.format(format, relative_to=(start, end), env=env)
-            except KeyError as e:
-                logging.fatal(e)
-                sys.exit(1)
+            if seen is None or event.uid not in seen:
+                try:
+                    event_string = event.format(format, relative_to=(start, end), env=env)
+                except KeyError as e:
+                    logging.fatal(e)
+                    sys.exit(1)
 
-            event_list.append(event_string)
+                if width:
+                    event_list += textwrap.wrap(event_string, width)
+                else:
+                    event_list.append(event_string)
+                if seen is not None:
+                    seen.add(event.uid)
 
     return event_list
 
 
-def khal_list(collection, daterange, conf=None, format=None, once=False,
-              notstarted=False, **kwargs):
+def khal_list(collection, daterange, conf=None, format=None, day_format=None,
+              once=False, notstarted=False, **kwargs):
     """list all events in `daterange`"""
     td = None
+    show_all_days = False
     if conf is not None:
         if format is None:
-            format = conf['view']['event_format']
+            format = conf['view']['agenda_event_format']
         td = conf['default']['timedelta']
+        if day_format is None:
+            day_format = conf['view']['agenda_day_format']
+        show_all_days = conf['default']['show_all_days']
 
     event_column = get_list_from_str(
-        collection, format=format, daterange=daterange, once=once,
-        notstarted=notstarted, default_timedelta=td, **kwargs)
+        collection, format=format, day_format=day_format, daterange=daterange,
+        once=once, notstarted=notstarted, default_timedelta=td,
+        show_all_days=show_all_days, **kwargs)
 
     echo('\n'.join(event_column))
 
 
 def new_from_string(collection, calendar_name, conf, date_list, location=None,
-                    categories=None, repeat=None, until=None, alarm=None):
+                    categories=None, repeat=None, until=None, alarm=None,
+                    format=None, env=None):
     """construct a new event from a string and add it"""
     try:
         event = aux.construct_event(
@@ -320,7 +299,9 @@ def new_from_string(collection, calendar_name, conf, date_list, location=None,
                      'read-only'.format(calendar_name))
         sys.exit(1)
     if conf['default']['print_new'] == 'event':
-        echo(event.event_description)
+        if format is None:
+            format = conf['view']['event_format']
+        echo(event.format(format, datetime.now(), env=env))
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
         echo(path)
@@ -341,7 +322,8 @@ def interactive(collection, conf):
     )
 
 
-def import_ics(collection, conf, ics, batch=False, random_uid=False):
+def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None,
+               env=None):
     """
     :param batch: setting this to True will insert without asking for approval,
                   even when an event with the same uid already exists
@@ -353,14 +335,17 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False):
     for event in events:
         events_grouped[event['UID']].append(event)
 
+    if format is None:
+        format = conf['view']['event_format']
+
     vevents = list()
     for uid in events_grouped:
         vevents.append(sorted(events_grouped[uid], key=sort_key))
     for vevent in vevents:
-        import_event(vevent, collection, conf['locale'], batch, random_uid)
+        import_event(vevent, collection, conf['locale'], batch, random_uid, format, env)
 
 
-def import_event(vevent, collection, locale, batch, random_uid):
+def import_event(vevent, collection, locale, batch, random_uid, format=None, env=None):
     """import one event into collection, let user choose the collection"""
 
     # print all sub-events
@@ -368,7 +353,7 @@ def import_event(vevent, collection, locale, batch, random_uid):
         if not batch:
             event = Event.fromVEvents(
                 [sub_event], calendar=collection.default_calendar_name, locale=locale)
-            echo(event.event_description)
+            echo(event.format(format, datetime.now(), env=env))
 
     # get the calendar to insert into
     if batch or len(collection.writable_names) == 1:

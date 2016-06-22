@@ -17,6 +17,14 @@ not released yet
 * support for categories (and add `-g` flag for `khal new`) (Pierre David)
 * search is now sorted and allows for a `--format` (Taylor Money)
 * calendar path is now a glob without recursion for discover (Taylor Money)
+* `at` command now works like list with end of `0m` (Taylor Money)
+* `calendar` command uses `list` (Taylor Money)
+* `new` prints using event.format (Taylor Money)
+* remove `agenda` in favor of list (Taylor Money)
+* removed `days` configuration option in favor of `timedelta` (Taylor Money)
+* added `event_format`, `agenda_event_format`, `agenda_day_format` config
+  options for formatting (Taylor Money)
+
 
 ikhal
 -----

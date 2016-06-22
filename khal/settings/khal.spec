@@ -150,7 +150,7 @@ quit = force_list(default=list('q', 'Q'))
 [default]
 
 # command to be executed if no command is given when executing khal
-default_command = option('calendar', 'agenda', 'interactive', 'printformats', 'printcalendars', '', default='calendar')
+default_command = option('calendar', 'list', 'interactive', 'printformats', 'printcalendars', '', default='calendar')
 
 # The calendar to use if none is specified for some operation (e.g. if adding a
 # new event). If this is not set, such operations require an explicit value.
@@ -161,11 +161,6 @@ default_calendar = string(default=None)
 # when there is no event scheduled on that day.
 show_all_days = boolean(default=False)
 
-# By default, khal shows events for today and tomorrow.
-# Setting this to a different value will show events of that amount of days by
-# default.
-days = integer(default=2)
-
 # After adding a new event, what should be printed to standard out? The whole
 # event in text form, the path to where the event is now saved or nothing?
 print_new = option('event', 'path', 'False', default=False)
@@ -175,7 +170,7 @@ print_new = option('event', 'path', 'False', default=False)
 highlight_event_days = boolean(default=False)
 
 # Default timedelta for use with daterange options
-timedelta = string(default='')
+timedelta = string(default='2d')
 
 # The view section contains configuration options that effect the visual appearance
 # when using ikhal
@@ -218,7 +213,9 @@ frame = option('False', 'width', 'color', 'top', default='False')
 bold_for_light_color = boolean(default=True)
 
 # Default format for events (used in list)
-event_format = string(default='{start}-{end} {title}')
+agenda_event_format = string(default='{calendar-color}{start-end-time-style:16} {title}{recurse}{description-separator}{description}{reset}')
+agenda_day_format = string(default='{bold}{name}{reset}')
+event_format = string(default='{calendar-color}{start}-{end} {title}{recurse}{description-separator}{description}{reset}')
 
 # When highlight_event_days is enabled, this section specifies how is
 # the highlighting rendered.

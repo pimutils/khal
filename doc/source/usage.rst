@@ -1,6 +1,6 @@
 Usage
 =====
-Khal offers a set of commands, most importantly :command:`agenda`,
+Khal offers a set of commands, most importantly :command:`list`,
 :command:`calendar`, :command:`interactive`, :command:`new`,
 :command:`printcalendars`, :command:`printformats`, and :command:`search`. See
 below for a description of what every command does. Calling :program:`khal`
@@ -62,33 +62,6 @@ interpreted as that date *next* week (i.e. seven days from now).
 Commands
 --------
 
-agenda
-******
-shows all events scheduled for given dates. ``khal agenda`` should understand
-the following syntax:
-
-::
-
-    khal agenda [-a CALENDAR ... | -d CALENDAR ...] [--days N] [DATE ...]
-
-If no dates are supplied as arguments, today and tomorrow are used. Dates must
-be given in the format specified in khal's config file as *dateformat* or
-*longdateformat*. If *dateformat* is used, the current year is implied.
-
-.. option:: --days N
-
-        Specify how many days' (following each DATE) events should be shown.
-
-at
-**
-shows all events scheduled for a given datetime. ``khal at`` should be supplied
-with a date and time, a time (the date is then assumed to be today) or the
-string *now*. ``at`` defaults to *now*.
-
-::
-
-        khal at [-a CALENDAR ... | -d CALENDAR ...] [DATETIME | now]
-
 list
 ****
 shows all events scheduled for a given date (or datetime) range, with custom
@@ -96,7 +69,7 @@ formatting
 
 ::
         khal list [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
-        [--once] [--notstarted] [START [END | DELTA] ]
+        [--day-format DAYFORMAT] [--once] [--notstarted] [START [END | DELTA] ]
 
 START and END can both be given as dates, datetimes or times (it is assumed
 today is meant in the case of only a given time) in the formats configured in
@@ -105,7 +78,8 @@ assumed. Today is used for START if it is not explicitly given.  If DELTA, a
 (date)time range in the format `I{m,h,d}`, where `I` is an integer and `m` means
 minutes, `h` means hours, and `d` means days, is given, END is assumed to be
 START + DELTA.  A value of `eod` is also accepted as DELTA and means the end of
-day of the start date.
+day of the start date. In addition the DELTA `week` may be used to specify that
+the daterange should actually be the week containing the START.
 
 The `--once` option only allows events to appear once even if they are on
 multiple days. With the `--notstarted` option only events are shown that start
@@ -171,6 +145,10 @@ the terminal.  The available template options are:
 
         The event description.
 
+.. option:: description-separator
+
+        A separator: " :: " that appears when there is a description.
+
 .. option:: location
 
         The event location.
@@ -201,14 +179,6 @@ the terminal.  The available template options are:
         A concatenation of start-style, to-style, and end-style OR an
         appropriate symbol.
 
-.. option:: start-date-once
-
-        The start date, so long as that date has not yet been printed.
-
-.. option:: start-date-once-newline
-
-        A newline if start-date-once is not "".
-
 By default all-day events have no times. To see a start and end time anyway simply
 add `-full` to the end of any template with start/end, for instance
 `start-time` becomes `start-time-full` and will always show start and end times (instead
@@ -216,7 +186,8 @@ of being empty for all-day events).
 
 In addition there are colors: `black`, `red`, `green`, `yellow`, `blue`,
 `magenta`, `cyan`, `white` (and their bold versions: `red-bold`, etc.). There
-is also `reset`, which clears the styling.
+is also `reset`, which clears the styling, and `bold`, which is the normal
+bold.
 
 For example the below command with print the title and description of all events today.
 
@@ -224,19 +195,49 @@ For example the below command with print the title and description of all events
 
         khal list --format "{title} {description}"
 
+For the day headings, `DAYFORMAT` is similar to event formatting but has only a
+small number of options (in addition to all of the color options).
+
+.. option:: date
+
+        The date in dateformat.
+
+.. option:: date-long
+
+        The date in longdateformat.
+
+.. option:: name
+
+        The date as a name.
+
+
+at
+**
+shows all events scheduled for a given datetime. ``khal at`` should be supplied
+with a date and time, a time (the date is then assumed to be today) or the
+string *now*. ``at`` defaults to *now*. The ``at`` command works just like the
+``list`` command, except it has an implicit end time of zero minutes after the
+start.
+
+::
+
+        khal list [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
+        [--notstarted] [START DATE]
+
 calendar
 ********
-shows a calendar (similar to :manpage:`cal(1)`) and agenda. ``khal calendar``
+shows a calendar (similar to :manpage:`cal(1)`) and list. ``khal calendar``
 should understand the following syntax:
 
 ::
 
-        khal calendar [-a CALENDAR ... | -d CALENDAR ...] [--days N] [DATE ...]
+        khal calendar [-a CALENDAR ... | -d CALENDAR ...] [START DATETIME]
+        [END DATETIME]
 
-Date selection works exactly as for ``khal agenda``. The displayed calendar
+Date selection works exactly as for ``khal list``. The displayed calendar
 contains three consecutive months, where the first month is the month
 containing the first given date. If today is included, it is highlighted.
-Have a look at ``khal agenda`` for a description of the options.
+Have a look at ``khal list`` for a description of the options.
 
 configure
 *********

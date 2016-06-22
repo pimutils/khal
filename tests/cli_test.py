@@ -32,16 +32,14 @@ def runner(tmpdir):
     calendar2 = tmpdir.mkdir('calendar2')
     calendar3 = tmpdir.mkdir('calendar3')
 
-    def inner(command='agenda', showalldays=False, days=2, default_calendar=True,
-              **kwargs):
+    def inner(command='list', default_calendar=True, days=2, **kwargs):
         if default_calendar:
             default_calendar = 'default_calendar = one'
         else:
             default_calendar = ''
         config.write(config_template.format(
             command=command,
-            showalldays=showalldays,
-            days=days,
+            delta=str(days)+'d',
             calpath=str(calendar), calpath2=str(calendar2), calpath3=str(calendar3),
             default_calendar=default_calendar,
             dbpath=str(db), **kwargs))
@@ -77,8 +75,7 @@ firstweekday = 0
 [default]
 default_command = {command}
 {default_calendar}
-show_all_days = {showalldays}
-days = {days}
+timedelta = {delta}
 
 [sqlite]
 path = {dbpath}
@@ -86,27 +83,29 @@ path = {dbpath}
 
 
 def test_direct_modification(runner):
-    runner = runner(command='agenda', showalldays=False, days=2)
+    runner = runner(command='list')
 
-    result = runner.invoke(main_khal, ['agenda'])
+    result = runner.invoke(main_khal, ['list'])
     assert not result.exception
     assert result.output == 'No events\n'
 
     cal_dt = _get_text('event_dt_simple')
     event = runner.calendars['one'].join('test.ics')
     event.write(cal_dt)
-    result = runner.invoke(main_khal, ['agenda', '09.04.2014'])
+    format = '{start-end-time-style}: {title}'
+    args = ['list', '--format', format, '--day-format', '', '09.04.2014']
+    result = runner.invoke(main_khal, args)
     assert not result.exception
-    assert result.output == '09.04.2014\n09:30-10:30: An Event\n'
+    assert result.output == '\n09:30-10:30: An Event\n'
 
     os.remove(str(event))
-    result = runner.invoke(main_khal, ['agenda'])
+    result = runner.invoke(main_khal, ['list'])
     assert not result.exception
     assert result.output == 'No events\n'
 
 
 def test_simple(runner):
-    runner = runner(command='agenda', showalldays=False, days=2)
+    runner = runner(command='list', days=2)
 
     result = runner.invoke(main_khal)
     assert not result.exception
@@ -127,7 +126,7 @@ def test_simple(runner):
 
 
 def test_simple_color(runner):
-    runner = runner(command='agenda', showalldays=False, days=2)
+    runner = runner(command='list', days=2)
 
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
@@ -140,7 +139,7 @@ def test_simple_color(runner):
 
 
 def test_days(runner):
-    runner = runner(command='agenda', showalldays=False, days=9)
+    runner = runner(command='list', days=9)
 
     when = (datetime.datetime.now() + timedelta(days=7)).strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 nextweek'.format(when).split())
@@ -159,17 +158,9 @@ def test_days(runner):
     assert not result.exception
 
 
-def test_showalldays(runner):
-    runner = runner(command='agenda', showalldays=True, days=2)
-
-    result = runner.invoke(main_khal)
-    assert 'Tomorrow:' in result.output
-    assert not result.exception
-
-
 def test_calendar(runner):
     with freeze_time('2015-6-1'):
-        runner = runner(command='calendar', showalldays=False, days=0)
+        runner = runner(command='calendar', days=0)
         result = runner.invoke(main_khal)
         assert not result.exception
         assert result.exit_code == 0
@@ -195,7 +186,7 @@ def test_calendar(runner):
 
 
 def test_default_command_empty(runner):
-    runner = runner(command='', showalldays=False, days=2)
+    runner = runner(command='', days=2)
 
     result = runner.invoke(main_khal)
     assert result.exception
@@ -204,7 +195,7 @@ def test_default_command_empty(runner):
 
 
 def test_default_command_nonempty(runner):
-    runner = runner(command='agenda', showalldays=False, days=2)
+    runner = runner(command='list', days=2)
 
     result = runner.invoke(main_khal)
     assert not result.exception
@@ -212,7 +203,7 @@ def test_default_command_nonempty(runner):
 
 
 def test_invalid_calendar(runner):
-    runner = runner(command='', showalldays=False, days=2)
+    runner = runner(command='', days=2)
     result = runner.invoke(
         main_khal, ['new'] + '-a one 18:00 myevent'.split())
     assert not result.exception
@@ -224,7 +215,7 @@ def test_invalid_calendar(runner):
 
 
 def test_attach_calendar(runner):
-    runner = runner(command='calendar', showalldays=False, days=2)
+    runner = runner(command='calendar', days=2)
     result = runner.invoke(main_khal, ['printcalendars'])
     assert set(result.output.split('\n')[:3]) == set(['one', 'two', 'three'])
     assert not result.exception
@@ -241,7 +232,7 @@ def test_attach_calendar(runner):
     'BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\nEND:VCALENDAR\n'
 ])
 def test_no_vevent(runner, tmpdir, contents):
-    runner = runner(command='agenda', showalldays=False, days=2)
+    runner = runner(command='list', days=2)
     broken_item = runner.calendars['one'].join('broken_item.ics')
     broken_item.write(contents.encode('utf-8'), mode='wb')
 
@@ -251,7 +242,7 @@ def test_no_vevent(runner, tmpdir, contents):
 
 
 def test_printformats(runner):
-    runner = runner(command='printformats', showalldays=False, days=2)
+    runner = runner(command='printformats', days=2)
 
     result = runner.invoke(main_khal)
     assert '\n'.join(['longdatetimeformat: 21.12.2013 10:09',
@@ -264,7 +255,7 @@ def test_printformats(runner):
 
 
 def test_repeating(runner):
-    runner = runner(command='agenda', showalldays=False, days=2)
+    runner = runner(command='list', days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
@@ -275,32 +266,36 @@ def test_repeating(runner):
 
 
 def test_at(runner):
-    runner = runner(command='calendar', showalldays=False, days=2)
+    runner = runner(command='calendar', days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
         main_khal,
-        'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
-    result = runner.invoke(main_khal, ['--color', 'at', '18:30'])
-    assert result.output.startswith('\x1b[34m18:00')
+        'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+    args = ['--color', 'at', '--format', '{start-time}{title}', '--day-format', '', '18:30']
+    result = runner.invoke(main_khal, args)
+    print(result.output)
+    assert result.output.startswith('\x1b[0m\nmyevent')
     assert not result.exception
 
 
 def test_list(runner):
-    runner = runner(command='calendar', showalldays=False, days=2)
+    runner = runner(command='calendar', days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
         main_khal,
         'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
     format = '{red}{start-end-time-style}{reset} {title} :: {description}'
-    result = runner.invoke(main_khal, ['--color', 'list', '--format', format, '18:30'])
-    assert result.output.startswith('\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n')
+    args = ['--color', 'list', '--format', format, '--day-format', 'header', '18:30']
+    result = runner.invoke(main_khal, args)
+    expected = 'header\x1b[0m\n\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n'
+    assert result.output.startswith(expected)
     assert not result.exception
 
 
 def test_search(runner):
-    runner = runner(command='calendar', showalldays=False, days=2)
+    runner = runner(command='calendar', days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
     format = '{red}{start-end-time-style}{reset} {title} :: {description}'
@@ -351,7 +346,7 @@ def test_import(runner, monkeypatch):
 
 
 def test_interactive_command(runner, monkeypatch):
-    runner = runner(command='agenda', showalldays=False, days=2)
+    runner = runner(command='list', days=2)
     token = "hooray"
 
     def fake_ui(*a, **kw):
@@ -370,7 +365,7 @@ def test_interactive_command(runner, monkeypatch):
 
 
 def test_color_option(runner):
-    runner = runner(command='agenda', showalldays=False, days=2)
+    runner = runner(command='list', days=2)
 
     result = runner.invoke(main_khal, ['--no-color'])
     assert result.output == 'No events\n'
@@ -388,7 +383,7 @@ def test_configure_command(runner, monkeypatch):
 
     monkeypatch.setattr('khal.configwizard.configwizard', hocus_pocus)
 
-    runner = runner(command='agenda', showalldays=False, days=2)
+    runner = runner(command='list', days=2)
     runner.config.remove()
 
     result = runner.invoke(main_khal, ['configure'])

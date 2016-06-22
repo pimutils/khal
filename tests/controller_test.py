@@ -2,7 +2,7 @@ import datetime
 from textwrap import dedent
 
 from vdirsyncer.storage.base import Item
-from khal.controllers import get_agenda, import_ics
+from khal.controllers import import_ics, get_list_from_str
 
 from .aux import _get_text
 from . import aux
@@ -26,13 +26,19 @@ event_today = event_allday_template.format(today.strftime('%Y%m%d'),
                                            tomorrow.strftime('%Y%m%d'))
 item_today = Item(event_today)
 
+event_format = '{calendar-color}{start-end-time-style:16} {title}'
+event_format += '{recurse}{description-separator}{description}{calendar-color}'
+
 
 class TestGetAgenda(object):
     def test_new_event(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, aux.cal1)
         coll.new(event)
-        assert ['\x1b[1mToday:\x1b[0m', '\x1b[34ma meeting\x1b[0m'] == get_agenda(coll, aux.locale)
+        assert ['\x1b[0m',
+                '                 a meeting :: short description\x1b[0m'] == \
+            get_list_from_str(coll, aux.locale, [], format=event_format, default_timedelta='1d',
+                              day_format="")
 
     def test_empty_recurrence(self, coll_vdirs):
         coll, vidrs = coll_vdirs
@@ -47,17 +53,17 @@ class TestGetAgenda(object):
             'DTEND:20110908T170000\r\n'
             'END:VEVENT\r\n'
         ), aux.cal1))
-        assert 'no events' in '\n'.join(get_agenda(
-            coll, aux.locale,
-            dates=[datetime.date(2011, 9, 8),
-                   datetime.date(2011, 9, 9)]
-        )).lower()
+        assert 'no events' in '\n'.join(get_list_from_str(coll, aux.locale, [],
+                                        format=event_format,
+                                        default_timedelta='1d')).lower()
 
 
 class TestImport(object):
     def test_import(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        import_ics(coll, {'locale': aux.locale}, _get_text('event_rrule_recuid'),
+        view = {'event_format': '{title}'}
+        conf = {'locale': aux.locale, 'view': view}
+        import_ics(coll, conf, _get_text('event_rrule_recuid'),
                    batch=True)
         start_date = aux.BERLIN.localize(datetime.datetime(2014, 4, 30))
         end_date = aux.BERLIN.localize(datetime.datetime(2014, 9, 26))
@@ -68,7 +74,7 @@ class TestImport(object):
         assert aux.BERLIN.localize(datetime.datetime(2014, 7, 14, 7, 0)) in \
             [ev.start for ev in events]
 
-        import_ics(coll, {'locale': aux.locale}, _get_text('event_rrule_recuid_update'),
+        import_ics(coll, conf, _get_text('event_rrule_recuid_update'),
                    batch=True)
         events = list(coll.get_localized(start_date, end_date))
         for ev in events:
@@ -82,9 +88,10 @@ class TestImport(object):
         Test importing events with mixed tz-aware and tz-naive datetimes.
         """
         coll, vdirs = coll_vdirs
+        view = {'event_format': '{title}'}
         import_ics(
             coll,
-            {'locale': aux.locale},
+            {'locale': aux.locale, 'view': view},
             _get_text('event_dt_mixed_awareness'),
             batch=True
         )

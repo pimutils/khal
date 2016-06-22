@@ -27,7 +27,7 @@ import os
 import icalendar
 import pytz
 
-from ..aux import generate_random_uid, datetime_fillin
+from ..aux import generate_random_uid, datetime_fillin, construct_daynames
 from .aux import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
 from ..log import logger
 from ..terminal import get_color
@@ -476,7 +476,7 @@ class Event(object):
 
         try:
             relative_to_start, relative_to_end = relative_to
-        except:
+        except (TypeError, ValueError):
             relative_to_start = relative_to
             relative_to_end = relative_to
 
@@ -529,7 +529,9 @@ class Event(object):
             attributes["start-style"] = attributes["start-time"]
             tostr = "-"
 
-        if self_end == day_end:
+        midnight_end = day_end.time() == time.max and self_end.time() == time.min and\
+                       self_end.date() - timedelta(days=1) == day_end.date()
+        if self_end == day_end or midnight_end:
             attributes["end-style"] = self.symbol_strings["range_end"]
             tostr = ""
         elif self_end > day_end:
@@ -548,41 +550,33 @@ class Event(object):
                 attributes["to-style"] + attributes["end-style"]
 
         attributes["recurse"] = self._recur_str
+        attributes["repeat-pattern"] = self.recurpattern
         attributes["title"] = self.summary
         attributes["description"] = self.description.strip()
+        attributes["description-separator"] = ""
+        if attributes["description"]:
+            attributes["description-separator"] = " :: "
         attributes["location"] = self.location.strip()
         attributes["all-day"] = allday
+        attributes["categories"] = self.categories
 
         attributes["calendar"] = self.calendar
         attributes["calendar-color"] = ""
-        try:
+        if "calendars" in env and self.calendar in env["calendars"]:
             cal = env["calendars"][self.calendar]
             if "color" in cal and cal["color"] is not None:
                 attributes["calendar-color"] = get_color(cal["color"])
             if "displayname" in cal and cal["displayname"] is not None:
                 attributes["calendar"] = cal["displayname"]
-        except:
-            pass
 
-        attributes["start-date-once"] = attributes["start-date"]
-        if self_start.replace(tzinfo=None) < relative_to_start:
-            attributes["start-date-once"] = relative_to_start.strftime(self._locale['dateformat'])
-        attributes["start-date-once-newline"] = "\n"
-        if "seen-days" not in env:
-            env["seen-days"] = set()
-        if attributes["start-date-once"] in env["seen-days"]:
-            attributes["start-date-once"] = ""
-            attributes["start-date-once-newline"] = ""
-        env["seen-days"].add(attributes["start-date-once"])
-
-        colors = {"reset": style("", reset=True)}
+        colors = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
         for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
             colors[c] = style("", reset=False, fg=c)
             colors[c + "-bold"] = style("", reset=False, fg=c, bold=True)
         attributes.update(colors)
         try:
             return format_string.format(**attributes) + colors["reset"]
-        except:
+        except (KeyError, IndexError):
             raise KeyError("cannot format event with: %s" % format_string)
 
     @property
