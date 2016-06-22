@@ -43,25 +43,6 @@ from khal.log import logger
 from .terminal import merge_columns
 
 
-def construct_daynames(daylist, longdateformat):
-    """returns a list of tuples of datetime objects and datenames
-
-    :param daylist: list of dates
-    :type daylist: list(datetime.date)
-    :param longdateformat: format in which to print dates
-    :param str
-    :returns: list of names and dates
-    :rtype: list((str, datetime.date))
-    """
-    for day in daylist:
-        if day == date.today():
-            yield (day, 'Today:')
-        elif day == date.today() + timedelta(days=1):
-            yield (day, 'Tomorrow:')
-        else:
-            yield (day, day.strftime(longdateformat))
-
-
 def format_day(day, format_string, locale, attributes=None):
     if attributes is None:
         attributes = {}
