@@ -544,7 +544,14 @@ class Event(object):
         if self_start < day_start and self_end > day_end:
             attributes["start-end-time-style"] = self.symbol_strings["range"]
         elif allday:
-            attributes["start-end-time-style"] = ""
+            if self_start == day_start:
+                attributes["start-end-time-style"] = attributes["start-style"]
+                if self_end == day_end:
+                    attributes["start-end-time-style"] = ''
+            elif self_end == day_end:
+                attributes["start-end-time-style"] = attributes["end-style"]
+            else:
+                attributes["start-end-time-style"] = ""
         else:
             attributes["start-end-time-style"] = attributes["start-style"] + \
                 attributes["to-style"] + attributes["end-style"]
