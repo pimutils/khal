@@ -236,20 +236,33 @@ def test_event_d_long():
     with pytest.raises(ValueError):
         event.relative_to(date(2014, 4, 8))
     assert event.relative_to(date(2014, 4, 9)) == '↦ Another Event'
+    format_ = '{start-end-time-style} {title}{recurse}'
+    assert event.format(format_, datetime(2014, 4, 9, 0, 0)) == '↦ Another Event\x1b[0m'
     assert event.relative_to(date(2014, 4, 10)) == '↔ Another Event'
+    assert event.format(format_, datetime(2014, 4, 10, 0, 0)) == '↔ Another Event\x1b[0m'
     assert event.relative_to(date(2014, 4, 11)) == '⇥ Another Event'
+    assert event.format(format_, datetime(2014, 4, 11, 0, 0)) == '⇥ Another Event\x1b[0m'
     with pytest.raises(ValueError):
         event.relative_to(date(2014, 4, 12))
+    assert event.format(format_, datetime(2014, 4, 12, 0, 0)) == ' Another Event\x1b[0m'
     assert event.event_description == '09.04. - 11.04.2014: Another Event'
 
 
 def test_event_dt_long():
     event_dt_long = _get_text('event_dt_long')
     event = Event.fromString(event_dt_long, **EVENT_KWARGS)
+    format_ = '{start-end-time-style}: {title}{recurse}'
+
     assert event.relative_to(date(2014, 4, 9)) == '09:30→ : An Event'
+    assert event.format(format_, datetime(2014, 4, 9, 0, 0)) == '09:30→: An Event\x1b[0m'
+
     # FIXME ugly! replace with one arrow
     assert event.relative_to(date(2014, 4, 10)) == '→ → : An Event'
+    assert event.format(format_, datetime(2014, 4, 10, 0, 0)) == '↔: An Event\x1b[0m'
+
     assert event.relative_to(date(2014, 4, 12)) == '→ 10:30: An Event'
+    assert event.format(format_, datetime(2014, 4, 12, 0, 0)) == '→10:30: An Event\x1b[0m'
+
     assert event.event_description == '09.04.2014 09:30 - 12.04.2014 10:30: An Event'
 
 
