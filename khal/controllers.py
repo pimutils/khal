@@ -255,43 +255,83 @@ def khal_list(collection, daterange, conf=None, format=None, day_format=None,
     echo('\n'.join(event_column))
 
 
+def new_interactive(collection, calendar_name, conf, info, location=None,
+                    categories=None, repeat=None, until=None, alarms=None,
+                    format=None, env=None):
+    info = aux.eventinfofstr(info, conf['locale'], default_timedelta="60m",
+                             adjust_reasonably=True, localize=False)
+    while True:
+        summary = info["summary"]
+        if not summary:
+            summary = None
+        info['summary'] = prompt("summary", default=summary)
+        if info['summary']:
+            break
+        echo("a summary is required")
+
+    while True:
+        range_string = None
+        if info["dtstart"] and info["dtend"]:
+            start_string = info["dtstart"].strftime(conf['locale']['datetimeformat'])
+            end_string = info["dtend"].strftime(conf['locale']['datetimeformat'])
+            range_string = start_string+' '+end_string
+        daterange = prompt("datetime range", default=range_string)
+        start, end, allday = aux.guessrangefstr(daterange, conf['locale'],
+                                                default_timedelta='60m',
+                                                adjust_reasonably=True)
+        info['dtstart'] = start
+        info['dtend'] = end
+        info['allday'] = allday
+        if info['dtstart'] and info['dtend']:
+            break
+        echo("invalid datetime range")
+
+    while True:
+        tz = info['timezone'] or conf['locale']['default_timezone']
+        timezone = prompt("timezone", default=str(tz))
+        try:
+            tz = pytz.timezone(timezone)
+            info['timezone'] = tz
+            break
+        except pytz.UnknownTimeZoneError:
+            echo('unknown timezone')
+
+    info['description'] = prompt('description (or "None")', default=info['description'])
+    if info['description'] == "None":
+        info['description'] = ''
+
+    event = new_from_args(collection, calendar_name, conf, format=format, env=env,
+                          location=location, categories=categories,
+                          repeat=repeat, until=until, alarms=alarms, **info)
+
+    term_width, _ = get_terminal_size()
+    edit_event(event, collection, conf['locale'], width=term_width)
+
+
 def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
-                    format=None, env=None, interactive=False):
+                    format=None, env=None):
     """construct a new event from a string and add it"""
+    info = aux.eventinfofstr(info, conf['locale'], default_timedelta="60m",
+                             adjust_reasonably=True, localize=False)
+    new_from_args(collection, calendar_name, conf, format=format, env=env,
+                  location=location, categories=categories, repeat=repeat,
+                  until=until, alarms=alarms, **info)
+
+
+def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
+                  summary=None, description=None, allday=None, location=None,
+                  categories=None, repeat=None, until=None, alarms=None,
+                  timezone=None, format=None, env=None):
+
     try:
-        info = aux.eventinfofstr(info, conf['locale'], default_timedelta="60m",
-                                 adjust_reasonably=True, localize=False)
-        if interactive:
-            info['summary'] = prompt("summary", default=info["summary"])
-            range_string = ''
-            if info["dtstart"] and info["dtend"]:
-                start_string = info["dtstart"].strftime(conf['locale']['datetimeformat'])
-                end_string = info["dtend"].strftime(conf['locale']['datetimeformat'])
-                range_string = start_string+' '+end_string
-            daterange = prompt("datetime range", default=range_string)
-            start, end, allday = aux.guessrangefstr(daterange, conf['locale'],
-                                                    default_timedelta='60m',
-                                                    adjust_reasonably=True)
-            info['dtstart'] = start
-            info['dtend'] = end
-            info['allday'] = allday
-            tz = info['timezone']
-            timezone = prompt("timezone", default=tz if tz else '')
-            try:
-                tz = pytz.timezone(timezone)
-            except pytz.UnknownTimeZoneError:
-                tz = None
-            info['timezone'] = tz
-
-            info['description'] = prompt('description', default=info['description'])
-
         event = aux.new_event(locale=conf['locale'], location=location,
                               categories=categories, repeat=repeat, until=until,
-                              alarms=alarms, **info)
-
-    except ValueError:
-        logger.fatal('ERROR: ')
+                              alarms=alarms, dtstart=dtstart, dtend=dtend,
+                              summary=summary, description=description,
+                              timezone=timezone)
+    except ValueError as e:
+        logger.fatal('ERROR: '+str(e))
         sys.exit(1)
     except FatalError:
         sys.exit(1)
@@ -312,10 +352,7 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
     elif conf['default']['print_new'] == 'path':
         path = collection._calnames[event.calendar].path + event.href
         echo(path)
-
-    if interactive:
-        term_width, _ = get_terminal_size()
-        edit_event(event, collection, conf['locale'], width=term_width)
+    return event
 
 
 def present_options(options, prefix="", sep="  ", width=70):
@@ -331,18 +368,18 @@ def present_options(options, prefix="", sep="  ", width=70):
     if char in chars:
         return chars[char]
     else:
-        None
+        return None
 
 
 def edit_event(event, collection, locale, allow_quit=False, width=80):
     options = OrderedDict()
     options["no"] = {"short": "n"}
-    options["title"] = {"short": "t", "attr": "summary"}
-    options["description"] = {"short": "d", "attr": "description"}
-    options["datetime range"] = {"short": "r"}
+    options["summary"] = {"short": "s", "attr": "summary"}
+    options["description"] = {"short": "d", "attr": "description", "none": True}
+    options["datetime range"] = {"short": "t"}
     options["repeat"] = {"short": "p"}
-    options["location"] = {"short": "l", "attr": "location"}
-    options["categories"] = {"short": "c", "attr": "categories"}
+    options["location"] = {"short": "l", "attr": "location", "none": True}
+    options["categories"] = {"short": "c", "attr": "categories", "none": True}
     options["alarm"] = {"short": "a"}
     options["Delete"] = {"short": "D"}
     if allow_quit:
@@ -365,7 +402,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
         if choice == "Delete":
             if confirm("Delete all occurances of event?"):
                 collection.delete(event.href, event.etag, event.calendar)
-                break
+                return True
         elif choice == "datetime range":
             current = event.format("{start} {end}", relative_to=now)
             value = prompt("datetime range", default=current)
@@ -379,10 +416,17 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             recur = event.recurobject
             freq = recur["freq"] if "freq" in recur else ""
             until = recur["until"] if "until" in recur else ""
-            freq = prompt("frequency", freq)
-            until = prompt("until", until)
-            rrule = aux.rrulefstr(freq, until, locale)
-            event.update_rrule(rrule)
+            if not freq:
+                freq = 'None'
+            freq = prompt('frequency (or "None")', freq)
+            if freq == 'None':
+                event.update_rrule(None)
+            else:
+                until = prompt('until (or "None")', until)
+                if until == 'None':
+                    until = None
+                rrule = aux.rrulefstr(freq, until, locale)
+                event.update_rrule(rrule)
             edited = True
         elif choice == "alarm":
             default_alarms = []
@@ -390,7 +434,12 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 s = aux.timedelta2str(-1*a[0])
                 default_alarms.append(s)
 
-            alarm = prompt("alarm", ', '.join(default_alarms))
+            default = ', '.join(default_alarms)
+            if not default:
+                default = 'None'
+            alarm = prompt('alarm (or "None")', default)
+            if alarm == "None":
+                alarm = ""
             alarm_list = []
             for a in alarm.split(","):
                 alarm_trig = -1 * aux.guesstimedeltafstr(a.strip())
@@ -401,7 +450,18 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
         else:
             attr = options[choice]["attr"]
             default = getattr(event, attr)
-            value = prompt(choice, default)
+            question = choice
+
+            allow_none = False
+            if "none" in options[choice] and options[choice]["none"]:
+                question += ' (or "None")'
+                allow_none = True
+                if not default:
+                    default = 'None'
+
+            value = prompt(question, default)
+            if allow_none and value == "None":
+                value = ""
             getattr(event, "update_"+attr)(value)
             edited = True
 

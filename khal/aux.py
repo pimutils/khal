@@ -542,8 +542,12 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     :rtype: icalendar.Event
     """
 
-    if dtstart is None or dtend is None or summary is None:
-        raise ValueError
+    if dtstart is None:
+        raise ValueError("no start given")
+    if dtend is None:
+        raise ValueError("no end given")
+    if summary is None:
+        raise ValueError("no summary given")
 
     if not allday and timezone is not None:
         dtstart = timezone.localize(dtstart)

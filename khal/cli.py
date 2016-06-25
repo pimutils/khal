@@ -328,7 +328,7 @@ def _get_cli():
     @click.option('--format', '-f',
                   help=('The format to print the event.'))
     @click.option('--alarms', '-m',
-                  help=('Alarm times for the new event as DELTAs comma seperated'))
+                  help=('Alarm times for the new event as DELTAs comma separated'))
     @click.argument('info', metavar='[START] [END | DELTA] [TIMEZONE] [SUMMARY] [:: DESCRIPTION]',
                     nargs=-1)
     @click.pass_context
@@ -342,17 +342,34 @@ def _get_cli():
         everything behind them is taken as the event's description.
         '''
         # ugly hack to change how click presents the help string
+        if not info and not interactive:
+                raise click.BadParameter(
+                    'no details provided, '
+                    'did you mean to use --interactive/-i'
+                )
+
         calendar = calendar or ctx.obj['conf']['default']['default_calendar']
         if calendar is None:
             if interactive:
-                calendar = click.prompt('calendar')
+                while calendar is None:
+                    calendar = click.prompt('calendar')
+                    if calendar == '?':
+                        for calendar in ctx.obj['conf']['calendars']:
+                            click.echo(calendar)
+                        calendar = None
+                    elif calendar not in ctx.obj['conf']['calendars']:
+                        click.echo('unknown calendar enter ? for list')
+                        calendar = None
             else:
                 raise click.BadParameter(
                     'No default calendar is configured, '
                     'please provide one explicitly.'
                 )
 
-        controllers.new_from_string(
+        new_func = controllers.new_from_string
+        if interactive:
+            new_func = controllers.new_interactive
+        new_func(
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             calendar,
             ctx.obj['conf'],
@@ -364,7 +381,6 @@ def _get_cli():
             until=until,
             alarms=alarms,
             format=format,
-            interactive=interactive,
         )
 
     @cli.command('import')
@@ -495,7 +511,7 @@ def _get_cli():
     def edit(ctx, format, search_string, hide_past):
         '''Interactively edit (or delete) events matching the search string.'''
         controllers.edit(
-            build_collection(ctx),
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             ' '.join(search_string),
             format=format,
             allow_past=not hide_past,
