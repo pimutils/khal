@@ -21,6 +21,7 @@
 
 """this module cointains the event model, hopefully soon in a cleaned up version"""
 
+from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 
 import os
@@ -471,24 +472,26 @@ class Event(object):
         comps = [startstr + tostr + endstr + ':', body, self._recur_str]
         return ' '.join(filter(bool, comps))
 
-    def format(self, format_string, relative_to, env={}):
-        attributes = {}
-
+    def format(self, format_string, relative_to, env={}, colors=True):
+        """
+        :param colors: determines if colors codes should be printed or not
+        :type colors: bool
+        """
+        attributes = defaultdict(str)
         try:
             relative_to_start, relative_to_end = relative_to
-        except (TypeError, ValueError):
+        except TypeError:
             relative_to_start = relative_to
             relative_to_end = relative_to
 
-        if isinstance(relative_to_start.date(), datetime) or not isinstance(relative_to_start.date(), date):
-            raise ValueError('`this_date` is of type `{}`, should be '
-                             '`datetime.date`'.format(type(relative_to_start)))
-        if isinstance(relative_to_end.date(), datetime) or not isinstance(relative_to_end.date(), date):
-            raise ValueError('`this_date` is of type `{}`, should be '
-                             '`datetime.date`'.format(type(relative_to_end)))
+        # TODO make sure relative_to is always date or (date, date)
+        if isinstance(relative_to_end, datetime):
+            relative_to_end = relative_to_end.date()
+        if isinstance(relative_to_start, datetime):
+            relative_to_start = relative_to_start.date()
 
-        day_start = datetime_fillin(relative_to_start.date(), end=False, locale=self._locale)
-        day_end = datetime_fillin(relative_to_end.date(), locale=self._locale)
+        day_start = datetime_fillin(relative_to_start, end=False, locale=self._locale)
+        day_end = datetime_fillin(relative_to_end, locale=self._locale)
         self_start = datetime_fillin(self.start_local, locale=self._locale, end=False)
         self_end = datetime_fillin(self.end_local, locale=self._locale)
 
@@ -567,22 +570,19 @@ class Event(object):
         attributes["all-day"] = allday
         attributes["categories"] = self.categories
 
-        attributes["calendar"] = self.calendar
-        attributes["calendar-color"] = ""
         if "calendars" in env and self.calendar in env["calendars"]:
             cal = env["calendars"][self.calendar]
-            if "color" in cal and cal["color"] is not None:
-                attributes["calendar-color"] = get_color(cal["color"])
-            if "displayname" in cal and cal["displayname"] is not None:
-                attributes["calendar"] = cal["displayname"]
+            attributes["calendar-color"] = get_color(cal.get('color', ''))
+            attributes["calendar"] = cal.get("displayname", self.calendar)
 
-        colors = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
-        for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
-            colors[c] = style("", reset=False, fg=c)
-            colors[c + "-bold"] = style("", reset=False, fg=c, bold=True)
-        attributes.update(colors)
+        if colors:
+            color_styles = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
+            for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
+                color_styles[c] = style("", reset=False, fg=c)
+                color_styles[c + "-bold"] = style("", reset=False, fg=c, bold=True)
+            attributes.update(color_styles)
         try:
-            return format_string.format(**attributes) + colors["reset"]
+            return format_string.format(**attributes) + attributes["reset"]
         except (KeyError, IndexError):
             raise KeyError("cannot format event with: %s" % format_string)
 

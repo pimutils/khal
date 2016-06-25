@@ -63,7 +63,11 @@ class U_Event(urwid.Text):
         self.conf = eventcolumn.pane.conf
         self.relative = relative
         if self.relative:
-            text = self.event.relative_to(self.this_date)
+            text = self.event.format(
+                self.conf['view']['agenda_event_format'],
+                self.this_date,
+                colors=False,
+            )
         else:
             text = self.event.event_description
         super(U_Event, self).__init__(text)
