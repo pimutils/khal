@@ -213,7 +213,10 @@ frame = option('False', 'width', 'color', 'top', default='False')
 bold_for_light_color = boolean(default=True)
 
 # Default formating for events used when the user asks for all events in a
-# given time range, used for :command:`list` and :command:`calendar`.
+# given time range, used for :command:`list`, :command:`calendar` and in
+# :command:`interactive` (ikhal). Please note, that any color styling will be
+# ignored in `ikhal`, where events will always be shown in the color of the
+# calendar they belong to.
 # The syntax is the same as for :option:`--format`.
 agenda_event_format = string(default='{calendar-color}{start-end-time-style:16} {title}{recurse}{description-separator}{description}{reset}')
 
