@@ -156,9 +156,9 @@ default_command = option('calendar', 'list', 'interactive', 'printformats', 'pri
 # new event). If this is not set, such operations require an explicit value.
 default_calendar = string(default=None)
 
-# By default, khal displays only dates with event in "agenda" view.
-# Setting this to *True* will show all days in "agenda", even
-# when there is no event scheduled on that day.
+# By default, khal displays only dates with events in `list` or `calendar`
+# view.  Setting this to *True* will show all days, even when there is no event
+# scheduled on that day.
 show_all_days = boolean(default=False)
 
 # After adding a new event, what should be printed to standard out? The whole
@@ -212,9 +212,19 @@ frame = option('False', 'width', 'color', 'top', default='False')
 # not work on all terminals but allow using light background colors.
 bold_for_light_color = boolean(default=True)
 
-# Default format for events (used in list)
+# Default formating for events used when the user asks for all events in a
+# given time range, used for :command:`list` and :command:`calendar`.
+# The syntax is the same as for :option:`--format`.
 agenda_event_format = string(default='{calendar-color}{start-end-time-style:16} {title}{recurse}{description-separator}{description}{reset}')
+
+# Specifies how each *day header* is formated.
 agenda_day_format = string(default='{bold}{name}{reset}')
+
+# Default formating for events used when the start- and end-date are not clear
+# through context, e.g. for :command:`search`, used almost everywhere but
+# :command:`list` and :command:`calendar`. It is therefore probably a sensible
+# choice to include the start- and end-date.
+# The syntax is the same as for :option:`--format`.
 event_format = string(default='{calendar-color}{start}-{end} {title}{recurse}{description-separator}{description}{reset}')
 
 # When highlight_event_days is enabled, this section specifies how is

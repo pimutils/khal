@@ -130,6 +130,18 @@ behaviours are set here.
       :type: option, allowed values are *event*, *path* and *False*
       :default: False
 
+.. _default-show_all_days:
+
+.. object:: show_all_days
+
+    
+    By default, khal displays only dates with events in `list` or `calendar`
+    view.  Setting this to *True* will show all days, even when there is no event
+    scheduled on that day.
+
+      :type: boolean
+      :default: False
+
 .. _default-timedelta:
 
 .. object:: timedelta
@@ -490,6 +502,7 @@ when using ikhal
 .. object:: agenda_day_format
 
     
+    Specifies how each *day header* is formated.
 
       :type: string
       :default: {bold}{name}{reset}
@@ -499,7 +512,9 @@ when using ikhal
 .. object:: agenda_event_format
 
     
-    Default format for events (used in list)
+    Default formating for events used when the user asks for all events in a
+    given time range, used for :command:`list` and :command:`calendar`.
+    The syntax is the same as for :option:`--format`.
 
       :type: string
       :default: {calendar-color}{start-end-time-style:16} {title}{recurse}{description-separator}{description}{reset}
@@ -520,6 +535,11 @@ when using ikhal
 .. object:: event_format
 
     
+    Default formating for events used when the start- and end-date are not clear
+    through context, e.g. for :command:`search`, used almost everywhere but
+    :command:`list` and :command:`calendar`. It is therefore probably a sensible
+    choice to include the start- and end-date.
+    The syntax is the same as for :option:`--format`.
 
       :type: string
       :default: {calendar-color}{start}-{end} {title}{recurse}{description-separator}{description}{reset}

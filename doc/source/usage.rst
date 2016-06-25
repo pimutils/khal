@@ -51,6 +51,118 @@ Several options are common to almost all of :program:`khal`'s commands
        to force highlighting/coloring and :option:`--no-color <--color>` if you want
        coloring always removed.
 
+
+.. option:: --format FORMAT
+
+   For all of khal's commands that print events, the formatting of that event
+   can be specfied with this option.  ``FORMAT`` is a template
+   string, in which identifiers delimited by curly braces (`{}`) will be
+   expanded to an event's properties.  ``FORMAT`` supports all formating
+   options offered by python's `str.format()`_ (as it is used internally).
+   The available template options are:
+
+
+   title
+        The title of the event.
+
+   description
+        The description of the event.
+
+   start
+        The start datetime in datetimeformat.
+
+   start-long
+        The start datetime in longdatetimeformat.
+
+   start-date
+        The start date in dateformat.
+
+   start-date-long
+        The start date in longdateformat.
+
+   start-time
+        The start time in timeformat.
+
+   end
+        The end datetime in datetimeformat.
+
+   end-long
+        The end datetime in longdatetimeformat.
+
+   end-date
+        The end date in dateformat.
+
+   end-date-long
+        The end date in longdateformat.
+
+   end-time
+        The end time in timeformat.
+
+   recurse
+        A repeating symbol (loop arrow) if the event is repeating.
+
+   description
+        The event description.
+
+   description-separator
+        A separator: " :: " that appears when there is a description.
+
+   location
+        The event location.
+
+   calendar
+        The calendar name.
+
+   calendar-color
+        Changes the output color to the calendar's color.
+
+   start-style
+        The start time in timeformat OR an appropriate symbol.
+
+   to-style
+        A hyphen "-" or nothing such that it appropriatly fits between
+        start-style and end-style.
+
+   end-style
+        The end time in timeformat OR an appropriate symbol.
+
+   start-end-time-style
+        A concatenation of start-style, to-style, and end-style OR an
+        appropriate symbol.
+
+   By default all-day events have no times. To see a start and end time anyway simply
+   add `-full` to the end of any template with start/end, for instance
+   `start-time` becomes `start-time-full` and will always show start and end times (instead
+   of being empty for all-day events).
+
+   In addition there are colors: `black`, `red`, `green`, `yellow`, `blue`,
+   `magenta`, `cyan`, `white` (and their bold versions: `red-bold`, etc.). There
+   is also `reset`, which clears the styling, and `bold`, which is the normal
+   bold.
+
+   For example the below command with print the title and description of all events today.
+
+   ::
+
+           khal list --format "{title} {description}"
+
+
+.. option:: --day-format DAYFORMAT
+
+   works similar to :option:`--format`, but for day headings. It only has a small
+   number of options (in addition to all of the color options):
+
+   date
+        The date in dateformat.
+
+   date-long
+        The date in longdateformat.
+
+   name
+        The date's name (`Monday`, `Tuesday`,…) or `today` or `tomorrow`.
+
+
+
 dates
 -----
 Almost everywhere khal accepts dates, khal should recognize relative date names
@@ -65,9 +177,9 @@ Commands
 list
 ****
 shows all events scheduled for a given date (or datetime) range, with custom
-formatting
-
+formatting:
 ::
+
         khal list [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
         [--day-format DAYFORMAT] [--once] [--notstarted] [START [END | DELTA] ]
 
@@ -84,131 +196,6 @@ the daterange should actually be the week containing the START.
 The `--once` option only allows events to appear once even if they are on
 multiple days. With the `--notstarted` option only events are shown that start
 after `START`.
-
-FORMAT is a template string that will be expanded with an event's properties (using
-python's `string.format()`) and determines how matching events are printed to
-the terminal.  The available template options are:
-
-.. option:: title
-
-        The title of the event.
-
-.. option:: description
-
-        The description of the event.
-
-.. option:: start
-
-        The start datetime in datetimeformat.
-
-.. option:: start-long
-
-        The start datetime in longdatetimeformat.
-
-.. option:: start-date
-
-        The start date in dateformat.
-
-.. option:: start-date-long
-
-        The start date in longdateformat.
-
-.. option:: start-time
-
-        The start time in timeformat.
-
-.. option:: end
-
-        The end datetime in datetimeformat.
-
-.. option:: end-long
-
-        The end datetime in longdatetimeformat.
-
-.. option:: end-date
-
-        The end date in dateformat.
-
-.. option:: end-date-long
-
-        The end date in longdateformat.
-
-.. option:: end-time
-
-        The end time in timeformat.
-
-.. option:: recurse
-
-        A repeating symbol (loop arrow) if the event is repeating.
-
-.. option:: description
-
-        The event description.
-
-.. option:: description-separator
-
-        A separator: " :: " that appears when there is a description.
-
-.. option:: location
-
-        The event location.
-
-.. option:: calendar
-
-        The calendar name.
-
-.. option:: calendar-color
-
-        Changes the output color to the calendar's color.
-
-.. option:: start-style
-
-        The start time in timeformat OR an appropriate symbol.
-
-.. option:: to-style
-
-        A hyphen "-" or nothing such that it appropriatly fits between
-        start-style and end-style.
-
-.. option:: end-style
-
-        The end time in timeformat OR an appropriate symbol.
-
-.. option:: start-end-time-style
-
-        A concatenation of start-style, to-style, and end-style OR an
-        appropriate symbol.
-
-By default all-day events have no times. To see a start and end time anyway simply
-add `-full` to the end of any template with start/end, for instance
-`start-time` becomes `start-time-full` and will always show start and end times (instead
-of being empty for all-day events).
-
-In addition there are colors: `black`, `red`, `green`, `yellow`, `blue`,
-`magenta`, `cyan`, `white` (and their bold versions: `red-bold`, etc.). There
-is also `reset`, which clears the styling, and `bold`, which is the normal
-bold.
-
-For example the below command with print the title and description of all events today.
-
-::
-
-        khal list --format "{title} {description}"
-
-For the day headings, `DAYFORMAT` is similar to event formatting but has only a
-small number of options (in addition to all of the color options).
-
-.. option:: date
-
-        The date in dateformat.
-
-.. option:: date-long
-
-        The date in longdateformat.
-
-.. option:: name
-
-        The date's name (`Monday`, `Tuesday`,…) or `today` or `tomorrow`.
 
 
 at
@@ -430,3 +417,5 @@ The command
     khal search party
 
 prints all events matching `party`.
+
+.. _str.format(): https://docs.python.org/3/library/string.html#formatstrings
