@@ -509,7 +509,7 @@ class Event(object):
         # should only have time attributes at this point (start/end)
         full = {}
         for attr in attributes:
-            full[attr+"-full"] = attributes[attr]
+            full[attr + "-full"] = attributes[attr]
         attributes.update(full)
 
         if allday:
