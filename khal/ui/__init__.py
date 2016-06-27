@@ -208,15 +208,16 @@ class DayWalker(urwid.SimpleFocusListWalker):
     """A list Walker that contains a list of DatePile objects, each representing
     one day and associated events"""
 
-    def __init__(self, this_date, eventcolumn, delete_status):
+    def __init__(self, this_date, eventcolumn, conf, collection, delete_status):
         self.eventcolumn = eventcolumn
-        self._conf = self.eventcolumn.pane._conf
+        self._conf = conf
         self.delete_status = delete_status
         self._init = True
         self._last_day = this_date
         self._first_day = this_date
+        self._collection = collection
 
-        firstweekday = eventcolumn.pane._conf['locale']['firstweekday']
+        firstweekday = self._conf['locale']['firstweekday']
         calendar.setfirstweekday(firstweekday)
         try:
             mylocale = '.'.join(getlocale())
@@ -306,10 +307,10 @@ class DayWalker(urwid.SimpleFocusListWalker):
             relative_day(
                 day,
                 self.weekdays[day.weekday()],
-                self.eventcolumn.pane._conf['locale']['longdateformat']),
+                self._conf['locale']['longdateformat']),
         )
         event_list.append(urwid.AttrMap(date_text, 'date'))
-        self.events = sorted(self.eventcolumn.pane.collection.get_events_on(day))
+        self.events = sorted(self._collection.get_events_on(day))
         if not self.events:
             event_list.append(urwid.AttrMap(urwid.Text('  no scheduled events'), 'text'))
         event_list.extend([
@@ -370,9 +371,12 @@ class DatePile(urwid.Pile):
 
 
 class EventColumn(urwid.WidgetWrap):
-    """contains the eventlist as well as the event viewer"""
+    """Container for list of events
 
-    def __init__(self, pane):
+    Handles modifying events, showing events' details and editing them
+    """
+
+    def __init__(self, events, pane):
         self.pane = pane
         self._conf = pane._conf
         self.divider = urwid.Divider('─')
@@ -383,7 +387,7 @@ class EventColumn(urwid.WidgetWrap):
         self.delete_status = pane.delete_status
         self.toggle_delete_all = pane.toggle_delete_all
         self.toggle_delete_instance = pane.toggle_delete_instance
-        self.events = DayWalker(date.today(), eventcolumn=self, delete_status=pane.delete_status)
+        self.events = events
         self.dlistbox = DListBox(
             self.events, parent=self, conf=pane._conf,
             delete_status=pane.delete_status,
@@ -983,7 +987,11 @@ class ClassicView(Pane):
         self._deleted = {ALL: [], INSTANCES: []}
 
         ContainerWidget = linebox[self._conf['view']['frame']]
-        self.eventscolumn = ContainerWidget(EventColumn(pane=self))
+        daywalker = DayWalker(
+            date.today(), eventcolumn=self, conf=self._conf, delete_status=self.delete_status,
+            collection=self.collection,
+        )
+        self.eventscolumn = ContainerWidget(EventColumn(pane=self, events=daywalker))
         calendar = CalendarWidget(
             on_date_change=self.eventscolumn.original_widget.set_focus_date,
             keybindings=self._conf['keybindings'],
@@ -1066,8 +1074,9 @@ class ClassicView(Pane):
             toggle_delete_all=self.toggle_delete_all,
             toggle_delete_instance=self.toggle_delete_instance
         )
+        ContainerWidget = linebox[self._conf['view']['frame']]
         columns = NColumns(
-            [(self.lwidth, self.calendar), events],
+            [(self.lwidth, self.calendar), ContainerWidget(events)],
             dividechars=0,
             box_columns=[0, 0],
             outermost=True,
