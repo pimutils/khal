@@ -132,7 +132,7 @@ class EventListBox(urwid.ListBox):
         return super().keypress(size, key)
 
     @property
-    def current_event(self):
+    def focus_event(self):
         return self.focus.original_widget
 
 
@@ -188,16 +188,16 @@ class DListBox(EventListBox):
             currently_selected_date = DatePile.selected_date
             self.parent.pane.calendar.base_widget.set_focus_date(day)  # TODO convert to callback
             DatePile.selected_date = currently_selected_date
-        if self.parent._conf['view']['event_view_always_visible'] and self.body.current_event:
+        if self.parent._conf['view']['event_view_always_visible'] and self.body.focus_event:
             self.parent.clear_event_view()
-            self.parent.view(self.body.current_event.event)
+            self.parent.view(self.body.focus_event.event)
         else:
             self.parent.clear_event_view()
         return rval
 
     @property
-    def current_event(self):
-        return self.body.current_event
+    def focus_event(self):
+        return self.body.focus_event
 
     @property
     def current_date(self):
@@ -323,8 +323,8 @@ class DayWalker(urwid.SimpleFocusListWalker):
         return True
 
     @property
-    def current_event(self):
-        return self[self.focus].current_event
+    def focus_event(self):
+        return self[self.focus].focus_event
 
     @property
     def current_day(self):
@@ -362,7 +362,7 @@ class DatePile(urwid.Pile):
         return super().keypress(size, key)
 
     @property
-    def current_event(self):
+    def focus_event(self):
         """return the U_Event in focus, if none is, return None"""
         if self.focus_position == 0:
             return None
@@ -400,7 +400,7 @@ class EventColumn(urwid.WidgetWrap):
     @property
     def focus_event(self):
         """returns the event currently in focus"""
-        return self.events.current_event
+        return self.events.focus_event
 
     def view(self, event):
         """show event in the lower part of this column"""
@@ -431,9 +431,9 @@ class EventColumn(urwid.WidgetWrap):
         # Show first event if show event view is true
         if self.pane._conf['view']['event_view_always_visible']:
             if len(self.events.events) > 0:
-                self.current_event = self.events.events[0]
+                self.focus_event = self.events.events[0]
             else:
-                self.current_event = None
+                self.focus_event = None
 
     def edit(self, event, always_save=False):
         """create an EventEditor and display it
