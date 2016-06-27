@@ -129,99 +129,11 @@ class EventListBox(urwid.ListBox):
         super().__init__(*args, **kwargs)
 
     def keypress(self, size, key):
-        if self.current_event:
-            if key in self._conf['keybindings']['delete']:
-                self.toggle_delete()
-                key = 'down'
-            elif key in self._conf['keybindings']['duplicate']:
-                self.duplicate()
-                key = None
-            elif key in self._conf['keybindings']['export']:
-                self.export_event()
-                key = None
         return super().keypress(size, key)
 
     @property
     def current_event(self):
         return self.focus.original_widget
-
-    def export_event(self):
-        """export the event in focus as an ICS file"""
-        def export_this(_, user_data):
-            try:
-                self.current_event.event.export_ics(user_data.get_edit_text())
-            except Exception as error:
-                self.parent.pane.window.backtrack()
-                self.parent.pane.window.alert(
-                    ('light red', 'Failed to save event: %s' % error))
-            else:
-                self.parent.pane.window.backtrack()
-                self.parent.pane.window.alert(
-                    ('light green', 'Event successfuly exported'))
-
-        overlay = urwid.Overlay(
-            ExportDialog(
-                export_this,
-                self.parent.pane.window.backtrack,
-                self.current_event.event,
-            ),
-            self.parent.pane,
-            'center', ('relative', 50), ('relative', 50), None)
-        self.parent.pane.window.open(overlay)
-
-    def toggle_delete(self):
-        """toggle the delete status of the event in focus"""
-
-        event = self.current_event
-
-        def delete_this(_):
-            self.toggle_delete_instance(event.recuid)
-            self.parent.pane.window.backtrack()
-            event.set_title()
-
-        def delete_all(_):
-            self.toggle_delete_all(event.recuid)
-            self.parent.pane.window.backtrack()
-            event.set_title()
-
-        if event.event.readonly:
-            self.eventcolumn.pane.window.alert(
-                ('light red',
-                 'Calendar {} is read-only.'.format(self.event.calendar)))
-            return
-        status = self.delete_status(event.recuid)
-        if status == ALL:
-            self.toggle_delete_all(event.recuid)
-        elif status == INSTANCES:
-            self.toggle_delete_all(event.recuid)
-        elif event.event.recurring:
-            overlay = urwid.Overlay(
-                DeleteDialog(
-                    delete_this,
-                    delete_all,
-                    self.parent.pane.window.backtrack,
-                ),
-                self.parent.pane,
-                'center', ('relative', 70), ('relative', 70), None)
-            self.parent.pane.window.open(overlay)
-        else:
-            self.toggle_delete_all(event.recuid)
-        event.set_title()
-
-    def duplicate(self):
-        """duplicate the event in focus"""
-        # TODO copying from birthday calendars is currently problematic
-        # because their title is determined by X-BIRTHDAY and X-FNAME properties
-        # which are also copied. If the events's summary is edited it will show
-        # up on disk but not be displayed in khal
-        event = self.current_event.event.duplicate()
-        try:
-            self.parent.pane.collection.new(event)
-        except ReadOnlyCalendarError:
-            event.calendar = self.parent.pane.collection.default_calendar_name or \
-                self.parent.pane.collection.writable_names[0]
-            self.parent.edit(event, always_save=True)
-        self.body.update(self.current_date)
 
 
 class DListBox(EventListBox):
@@ -469,6 +381,8 @@ class EventColumn(urwid.WidgetWrap):
         self._eventshown = False
         self.event_width = int(self.pane._conf['view']['event_view_weighting'])
         self.delete_status = pane.delete_status
+        self.toggle_delete_all = pane.toggle_delete_all
+        self.toggle_delete_instance = pane.toggle_delete_instance
         self.events = DayWalker(date.today(), eventcolumn=self, delete_status=pane.delete_status)
         self.dlistbox = DListBox(
             self.events, parent=self, conf=pane._conf,
@@ -581,6 +495,83 @@ class EventColumn(urwid.WidgetWrap):
             self.editor = False
         self.pane.window.open(new_pane, callback=teardown)
 
+    def export_event(self):
+        """export the event in focus as an ICS file"""
+        def export_this(_, user_data):
+            try:
+                self.focus_event.event.export_ics(user_data.get_edit_text())
+            except Exception as error:
+                self.pane.window.backtrack()
+                self.pane.window.alert(
+                    ('light red', 'Failed to save event: %s' % error))
+            else:
+                self.pane.window.backtrack()
+                self.pane.window.alert(
+                    ('light green', 'Event successfuly exported'))
+
+        overlay = urwid.Overlay(
+            ExportDialog(
+                export_this,
+                self.pane.window.backtrack,
+                self.focus_event.event,
+            ),
+            self.pane,
+            'center', ('relative', 50), ('relative', 50), None)
+        self.pane.window.open(overlay)
+
+    def toggle_delete(self):
+        """toggle the delete status of the event in focus"""
+        event = self.focus_event
+
+        def delete_this(_):
+            self.toggle_delete_instance(event.recuid)
+            self.pane.window.backtrack()
+            event.set_title()
+
+        def delete_all(_):
+            self.toggle_delete_all(event.recuid)
+            self.pane.window.backtrack()
+            event.set_title()
+
+        if event.event.readonly:
+            self.eventcolumn.pane.window.alert(
+                ('light red',
+                 'Calendar {} is read-only.'.format(self.event.calendar)))
+            return
+        status = self.delete_status(event.recuid)
+        if status == ALL:
+            self.toggle_delete_all(event.recuid)
+        elif status == INSTANCES:
+            self.toggle_delete_all(event.recuid)
+        elif event.event.recurring:
+            overlay = urwid.Overlay(
+                DeleteDialog(
+                    delete_this,
+                    delete_all,
+                    self.pane.window.backtrack,
+                ),
+                self.pane,
+                'center', ('relative', 70), ('relative', 70), None)
+            self.pane.window.open(overlay)
+        else:
+            self.toggle_delete_all(event.recuid)
+        event.set_title()
+
+    def duplicate(self):
+        """duplicate the event in focus"""
+        # TODO copying from birthday calendars is currently problematic
+        # because their title is determined by X-BIRTHDAY and X-FNAME properties
+        # which are also copied. If the events's summary is edited it will show
+        # up on disk but not be displayed in khal
+        event = self.focus_event.event.duplicate()
+        try:
+            self.pane.collection.new(event)
+        except ReadOnlyCalendarError:
+            event.calendar = self.pane.collection.default_calendar_name or \
+                self.pane.collection.writable_names[0]
+            self.edit(event, always_save=True)
+        self.events.update(self.focus_date)
+
     def new(self, date, end):
         """create a new event on `date`
 
@@ -615,12 +606,25 @@ class EventColumn(urwid.WidgetWrap):
             else:
                 self.clear_event_view()
                 self.edit(self.focus_event.event)
+            key = None
         elif key in ['esc'] and self._eventshown:
             self.clear_event_view()
+            key = None
         elif key in self._conf['keybindings']['new']:
             self.new(self.focus_date, self.focus_date)
-        else:
-            return super().keypress(size, key)
+            key = None
+
+        if self.focus_event:
+            if key in self._conf['keybindings']['delete']:
+                self.toggle_delete()
+                key = 'down'
+            elif key in self._conf['keybindings']['duplicate']:
+                self.duplicate()
+                key = None
+            elif key in self._conf['keybindings']['export']:
+                self.export_event()
+                key = None
+        return super().keypress(size, key)
 
     def render(self, a, focus):
         if focus:
