@@ -31,12 +31,15 @@ dark = [
     ('edit focused', 'white', 'light blue', 'bold'),
     ('button', 'black', 'dark cyan'),
     ('button focused', 'white', 'light blue', 'bold'),
-    ('reveal focus', 'black', 'dark cyan', 'standout'),
-    ('today focus', 'white', 'dark cyan', 'standout'),
-    ('today', 'black', 'light gray', 'dark cyan'),
+
+    ('reveal focus', 'black', 'light gray', 'standout'),
+    ('today focus', 'white', 'dark magenta', 'standout'),
+    ('today', 'black', 'light gray',),
+
     ('date', 'light gray', ''),
-    ('date focused', 'black', 'dark cyan'),
-    ('date selected', 'black', 'dark magenta'),
+    ('date focused', 'dark gray', 'light gray', ('bold', 'standout')),
+    ('date selected', 'dark gray', 'yellow'),
+
     ('dayname', 'light gray', ''),
     ('monthname', 'light gray', ''),
     ('weeknumber_right', 'light gray', ''),
