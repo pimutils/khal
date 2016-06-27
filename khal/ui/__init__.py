@@ -70,7 +70,6 @@ class U_Event(urwid.Text):
         self.this_date = this_date
         self._conf = conf
         self.relative = relative
-        self
         if self.relative:
             text = self.event.format(
                 self._conf['view']['agenda_event_format'],
@@ -118,7 +117,11 @@ class U_Event(urwid.Text):
 
 class EventListBox(urwid.ListBox):
     """Container for list of U_Events"""
-    def __init__(self, *args, parent, conf, delete_status, toggle_delete_instance, toggle_delete_all, **kwargs):
+    def __init__(
+            self, *args, parent, conf,
+            delete_status, toggle_delete_instance, toggle_delete_all,
+            set_focus_date_callback=None,
+            **kwargs):
         self._init = True
         self.parent = parent
         self.delete_status = delete_status
@@ -126,6 +129,7 @@ class EventListBox(urwid.ListBox):
         self.toggle_delete_all = toggle_delete_all
         self._conf = conf
         self._old_focus = None
+        self.set_focus_date_callback = set_focus_date_callback
         super().__init__(*args, **kwargs)
 
     def keypress(self, size, key):
@@ -186,13 +190,8 @@ class DListBox(EventListBox):
             # DayWalker().update_by_date() which actually set selected_date
             # that's why it's called callback hell...
             currently_selected_date = DatePile.selected_date
-            self.parent.pane.calendar.base_widget.set_focus_date(day)  # TODO convert to callback
+            self.set_focus_date_callback(day)  # TODO convert to callback
             DatePile.selected_date = currently_selected_date
-        if self.parent._conf['view']['event_view_always_visible'] and self.body.focus_event:
-            self.parent.clear_event_view()
-            self.parent.view(self.body.focus_event.event)
-        else:
-            self.parent.clear_event_view()
         return rval
 
     @property
@@ -376,7 +375,7 @@ class EventColumn(urwid.WidgetWrap):
     Handles modifying events, showing events' details and editing them
     """
 
-    def __init__(self, events, pane):
+    def __init__(self, elistbox, pane):
         self.pane = pane
         self._conf = pane._conf
         self.divider = urwid.Divider('─')
@@ -387,20 +386,14 @@ class EventColumn(urwid.WidgetWrap):
         self.delete_status = pane.delete_status
         self.toggle_delete_all = pane.toggle_delete_all
         self.toggle_delete_instance = pane.toggle_delete_instance
-        self.events = events
-        self.dlistbox = DListBox(
-            self.events, parent=self, conf=pane._conf,
-            delete_status=pane.delete_status,
-            toggle_delete_all=pane.toggle_delete_all,
-            toggle_delete_instance=pane.toggle_delete_instance
-        )
+        self.dlistbox = elistbox
         self.container = urwid.Pile([self.dlistbox])
         urwid.WidgetWrap.__init__(self, self.container)
 
     @property
     def focus_event(self):
         """returns the event currently in focus"""
-        return self.events.focus_event
+        return self.dlistbox.focus_event
 
     def view(self, event):
         """show event in the lower part of this column"""
@@ -429,11 +422,12 @@ class EventColumn(urwid.WidgetWrap):
         self.dlistbox.update_by_date(date)
 
         # Show first event if show event view is true
-        if self.pane._conf['view']['event_view_always_visible']:
-            if len(self.events.events) > 0:
-                self.focus_event = self.events.events[0]
-            else:
-                self.focus_event = None
+        # FIXME
+        # if self.pane._conf['view']['event_view_always_visible']:
+            # if len(self.dlistbox) > 0:
+                # self.focus_event = self.events.events[0]
+            # else:
+                # self.focus_event = none
 
     def edit(self, event, always_save=False):
         """create an EventEditor and display it
@@ -629,6 +623,12 @@ class EventColumn(urwid.WidgetWrap):
             elif key in self._conf['keybindings']['export']:
                 self.export_event()
                 key = None
+        # FIXME
+        # if self._conf['view']['event_view_always_visible'] and self.focus_event:
+            # self.clear_event_view()
+            # self.view(self.body.focus_event.event)
+        # else:
+            # self.clear_event_view()
         return super().keypress(size, key)
 
     def render(self, a, focus):
@@ -992,7 +992,13 @@ class ClassicView(Pane):
             date.today(), eventcolumn=self, conf=self._conf, delete_status=self.delete_status,
             collection=self.collection,
         )
-        self.eventscolumn = ContainerWidget(EventColumn(pane=self, events=daywalker))
+        elistbox = DListBox(
+            daywalker, parent=self, conf=self._conf,
+            delete_status=self.delete_status,
+            toggle_delete_all=self.toggle_delete_all,
+            toggle_delete_instance=self.toggle_delete_instance
+        )
+        self.eventscolumn = ContainerWidget(EventColumn(pane=self, elistbox=elistbox))
         calendar = CalendarWidget(
             on_date_change=self.eventscolumn.original_widget.set_focus_date,
             keybindings=self._conf['keybindings'],
@@ -1001,6 +1007,7 @@ class ClassicView(Pane):
             weeknumbers=self._conf['locale']['weeknumbers'],
             get_styles=collection.get_styles
         )
+        elistbox.set_focus_date_callback = calendar.set_focus_date
         self.calendar = ContainerWidget(calendar)
         self.lwidth = 31 if self._conf['locale']['weeknumbers'] == 'right' else 28
         columns = NColumns(
@@ -1075,6 +1082,7 @@ class ClassicView(Pane):
             toggle_delete_all=self.toggle_delete_all,
             toggle_delete_instance=self.toggle_delete_instance
         )
+        events = EventColumn(pane=self, elistbox=events)
         ContainerWidget = linebox[self._conf['view']['frame']]
         columns = NColumns(
             [(self.lwidth, self.calendar), ContainerWidget(events)],
