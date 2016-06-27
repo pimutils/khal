@@ -416,6 +416,7 @@ class EventColumn(urwid.WidgetWrap):
             self.container.contents.pop()
 
     def set_focus_date(self, date):
+        """We need this, so we can use it as a callback"""
         self.focus_date = date
 
     @property
@@ -1097,7 +1098,7 @@ class ClassicView(Pane):
 
     def get_keys(self):
         """return all bound keys"""
-        # FIXME
+        # FIXME show current bindings
         return [(['arrows'], 'navigate through the calendar'),
                 (['t'], 're-focus on today'),
                 (['enter', 'tab'], 'select a date/event, show/edit event'),
