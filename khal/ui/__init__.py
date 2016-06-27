@@ -38,8 +38,8 @@ from .calendarwidget import CalendarWidget
 
 
 NOREPEAT = 'No'
-ALL = 0
-INSTANCES = 1
+ALL = 1
+INSTANCES = 2
 
 
 class DateConversionError(Exception):
@@ -55,7 +55,7 @@ class SelectableText(urwid.Text):
 
 
 class U_Event(urwid.Text):
-    def __init__(self, event, this_date=None, eventcolumn=None, relative=True):
+    def __init__(self, event, conf, delete_status, this_date=None, relative=True):
         """representation of an event in EventList
 
         :param event: the encapsulated event
@@ -66,10 +66,11 @@ class U_Event(urwid.Text):
                 raise ValueError('`this_date` is of type `{}`, sould be '
                                  '`datetime.date`'.format(type(this_date)))
         self.event = event
+        self.delete_status = delete_status
         self.this_date = this_date
-        self.eventcolumn = eventcolumn
-        self.conf = eventcolumn.pane.conf
+        self.conf = conf
         self.relative = relative
+        self
         if self.relative:
             text = self.event.format(
                 self.conf['view']['agenda_event_format'],
@@ -95,10 +96,7 @@ class U_Event(urwid.Text):
         return (self.uid, self.event.recurrence_id)
 
     def set_title(self, mark=' '):
-        if self.uid in self.eventcolumn.pane.deleted[ALL]:
-            mark = 'D'
-        elif self.recuid in self.eventcolumn.pane.deleted[INSTANCES]:
-            mark = 'd'
+        mark = {ALL: 'D', INSTANCES: 'd', False: ''}[self.delete_status(self.recuid)]
         if self.relative:
             text = self.event.relative_to(self.this_date)
         else:
@@ -118,38 +116,34 @@ class U_Event(urwid.Text):
         return key
 
 
-class DListBox(urwid.ListBox):
-    """Container for a DayWalker"""
-    def __init__(self, *args, parent, conf, **kwargs):
+class EventListBox(urwid.ListBox):
+    """Container for list of U_Events"""
+    def __init__(self, *args, parent, conf, delete_status, toggle_delete_instance, toggle_delete_all, **kwargs):
         self._init = True
         self.parent = parent
+        self.delete_status = delete_status
+        self.toggle_delete_instance = toggle_delete_instance
+        self.toggle_delete_all = toggle_delete_all
         self._conf = conf
         self._old_focus = None
         super().__init__(*args, **kwargs)
 
-    def render(self, size, focus=False):
-        if self._init:
-            while 'bottom' in self.ends_visible(size):
-                self.body._autoextend()
-            self._init = False
-        return super().render(size, focus)
+    def keypress(self, size, key):
+        if self.current_event:
+            if key in self._conf['keybindings']['delete']:
+                self.toggle_delete()
+                key = 'down'
+            elif key in self._conf['keybindings']['duplicate']:
+                self.duplicate()
+                key = None
+            elif key in self._conf['keybindings']['export']:
+                self.export_event()
+                key = None
+        return super().keypress(size, key)
 
-    def clean(self):
-        """reset event most recently in focus"""
-        if self._old_focus is not None:
-            self.body[self._old_focus].contents[0][0].set_attr_map({None: 'date'})
-
-    def update_by_date(self, day):
-        """update the entry for `day` and bring it into focus"""
-        try:
-            self._old_focus = self.focus_position
-        except IndexError:
-            pass
-        rval = self.body.update_by_date(day)
-        self.body[self.focus_position].contents[0][0].set_attr_map({None: 'green'})
-        self.set_focus_valign('top')  # FIXME does not always work as expected
-        self.clean()
-        return rval
+    @property
+    def current_event(self):
+        return self.focus.original_widget
 
     def export_event(self):
         """export the event in focus as an ICS file"""
@@ -181,18 +175,12 @@ class DListBox(urwid.ListBox):
         event = self.current_event
 
         def delete_this(_):
-            if event.recuid in self.parent.pane.deleted[INSTANCES]:
-                self.parent.pane.deleted[INSTANCES].remove(event.recuid)
-            else:
-                self.parent.pane.deleted[INSTANCES].append(event.recuid)
+            self.toggle_delete_instance(event.recuid)
             self.parent.pane.window.backtrack()
             event.set_title()
 
         def delete_all(_):
-            if event.uid in self.parent.pane.deleted[ALL]:
-                self.parent.pane.deleted[ALL].remove(event.uid)
-            else:
-                self.parent.pane.deleted[ALL].append(event.uid)
+            self.toggle_delete_all(event.recuid)
             self.parent.pane.window.backtrack()
             event.set_title()
 
@@ -201,11 +189,11 @@ class DListBox(urwid.ListBox):
                 ('light red',
                  'Calendar {} is read-only.'.format(self.event.calendar)))
             return
-
-        if event.uid in self.parent.pane.deleted[ALL]:
-            self.parent.pane.deleted[ALL].remove(event.uid)
-        elif event.recuid in self.parent.pane.deleted[INSTANCES]:
-            self.parent.pane.deleted[INSTANCES].remove(event.recuid)
+        status = self.delete_status(event.recuid)
+        if status == ALL:
+            self.toggle_delete_all(event.recuid)
+        elif status == INSTANCES:
+            self.toggle_delete_all(event.recuid)
         elif event.event.recurring:
             overlay = urwid.Overlay(
                 DeleteDialog(
@@ -217,7 +205,7 @@ class DListBox(urwid.ListBox):
                 'center', ('relative', 70), ('relative', 70), None)
             self.parent.pane.window.open(overlay)
         else:
-            self.parent.pane.deleted[ALL].append(event.uid)
+            self.toggle_delete_all(event.recuid)
         event.set_title()
 
     def duplicate(self):
@@ -235,6 +223,34 @@ class DListBox(urwid.ListBox):
             self.parent.edit(event, always_save=True)
         self.body.update(self.current_date)
 
+
+class DListBox(EventListBox):
+    """Container for a DayWalker"""
+
+    def render(self, size, focus=False):
+        if self._init:
+            while 'bottom' in self.ends_visible(size):
+                self.body._autoextend()
+            self._init = False
+        return super().render(size, focus)
+
+    def clean(self):
+        """reset event most recently in focus"""
+        if self._old_focus is not None:
+            self.body[self._old_focus].contents[0][0].set_attr_map({None: 'date'})
+
+    def update_by_date(self, day):
+        """update the entry for `day` and bring it into focus"""
+        try:
+            self._old_focus = self.focus_position
+        except IndexError:
+            pass
+        rval = self.body.update_by_date(day)
+        self.body[self.focus_position].contents[0][0].set_attr_map({None: 'green'})
+        self.set_focus_valign('top')  # FIXME does not always work as expected
+        self.clean()
+        return rval
+
     def keypress(self, size, key):
         if key in self._conf['keybindings']['up']:
             key = 'up'
@@ -243,16 +259,6 @@ class DListBox(urwid.ListBox):
 
         if key in self._conf['keybindings']['today']:
             self.parent.pane.calendar.base_widget.set_focus_date(date.today())
-        elif self.body.current_event:
-            if key in self._conf['keybindings']['delete']:
-                self.toggle_delete()
-                key = 'down'
-            elif key in self._conf['keybindings']['duplicate']:
-                self.duplicate()
-                key = None
-            elif key in self._conf['keybindings']['export']:
-                self.export_event()
-                key = None
 
         rval = super().keypress(size, key)
         self.clean()
@@ -290,8 +296,10 @@ class DayWalker(urwid.SimpleFocusListWalker):
     """A list Walker that contains a list of DatePile objects, each representing
     one day and associated events"""
 
-    def __init__(self, this_date, eventcolumn):
+    def __init__(self, this_date, eventcolumn, delete_status):
         self.eventcolumn = eventcolumn
+        self.conf = self.eventcolumn.pane.conf
+        self.delete_status = delete_status
         self._init = True
         self._last_day = this_date
         self._first_day = this_date
@@ -393,7 +401,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         if not self.events:
             event_list.append(urwid.AttrMap(urwid.Text('  no scheduled events'), 'text'))
         event_list.extend([
-            urwid.AttrMap(U_Event(event, this_date=day, eventcolumn=self.eventcolumn),
+            urwid.AttrMap(U_Event(event, conf=self.conf, this_date=day, delete_status=self.delete_status),
                           'calendar ' + event.calendar, 'reveal focus') for event in self.events])
         return DatePile(event_list, date=day)
 
@@ -460,8 +468,14 @@ class EventColumn(urwid.WidgetWrap):
         self._current_date = None
         self._eventshown = False
         self.event_width = int(self.pane.conf['view']['event_view_weighting'])
-        self.events = DayWalker(date.today(), eventcolumn=self)
-        self.dlistbox = DListBox(self.events, parent=self, conf=pane.conf)
+        self.delete_status = pane.delete_status
+        self.events = DayWalker(date.today(), eventcolumn=self, delete_status=pane.delete_status)
+        self.dlistbox = DListBox(
+            self.events, parent=self, conf=pane.conf,
+            delete_status=pane.delete_status,
+            toggle_delete_all=pane.toggle_delete_all,
+            toggle_delete_instance=pane.toggle_delete_instance
+        )
         self.container = urwid.Pile([self.dlistbox])
         urwid.WidgetWrap.__init__(self, self.container)
 
@@ -596,10 +610,8 @@ class EventColumn(urwid.WidgetWrap):
         if key in self._conf['keybindings']['view'] and self.focus_event:
             if not self._eventshown:
                 self.view(self.focus_event.event)
-            elif (self.focus_event.uid in self.pane.deleted[ALL] or
-                  self.focus_event.recuid in self.pane.deleted[INSTANCES]):
-                    self.pane.window.alert(
-                        ('light red', 'This event is marked as deleted'))
+            elif self.delete_status(self.focus_event.recuid):
+                self.pane.window.alert(('light red', 'This event is marked as deleted'))
             else:
                 self.clear_event_view()
                 self.edit(self.focus_event.event)
@@ -964,7 +976,7 @@ class ClassicView(Pane):
         self.window = None
         self.conf = conf
         self.collection = collection
-        self.deleted = {ALL: [], INSTANCES: []}
+        self._deleted = {ALL: [], INSTANCES: []}
 
         ContainerWidget = linebox[self.conf['view']['frame']]
         self.eventscolumn = ContainerWidget(EventColumn(pane=self))
@@ -977,14 +989,46 @@ class ClassicView(Pane):
             get_styles=collection.get_styles
         )
         self.calendar = ContainerWidget(calendar)
-        lwidth = 31 if conf['locale']['weeknumbers'] == 'right' else 28
+        self.lwidth = 31 if conf['locale']['weeknumbers'] == 'right' else 28
         columns = NColumns(
-            [(lwidth, self.calendar), self.eventscolumn],
+            [(self.lwidth, self.calendar), self.eventscolumn],
             dividechars=0,
             box_columns=[0, 1],
             outermost=True,
         )
         Pane.__init__(self, columns, title=title, description=description)
+
+    def delete_status(self, uid):
+        if uid[0] in self._deleted[ALL]:
+            return ALL
+        elif uid in self._deleted[INSTANCES]:
+            return INSTANCES
+        else:
+            return False
+
+    def toggle_delete_all(self, recuid):
+        uid, _ = recuid
+        if uid in self._deleted[ALL]:
+            self._deleted[ALL].remove(uid)
+        else:
+            self._deleted[ALL].append(uid)
+
+    def toggle_delete_instance(self, uid):
+        if uid in self._deleted[INSTANCES]:
+            self._deleted[INSTANCES].remove(uid)
+        else:
+            self._deleted[INSTANCES].append(uid)
+
+    def cleanup(self, data):
+        """delete all events marked for deletion"""
+        for part in self._deleted[ALL]:
+            account, href, etag = part.split('\n', 2)
+            self.collection.delete(href, etag, account)
+        for part, rec_id in self._deleted[INSTANCES]:
+            account, href, etag = part.split('\n', 2)
+            event = self.collection.get_event(href, account)
+            event.delete_instance(rec_id)
+            self.collection.update(event)
 
     def keypress(self, size, key):
         binds = self.conf['keybindings']
@@ -1006,8 +1050,29 @@ class ClassicView(Pane):
         """search for events matching `search_term"""
         self.window.backtrack()
         events = list(self.collection.search(search_term))
-        self.eventscolumn.original_widget.events.update_events(events)
-        self.widget.set_focus_column(1)
+        event_list = []
+        event_list.extend([
+            urwid.AttrMap(
+                U_Event(event, relative=False, conf=self.conf, delete_status=self.delete_status),
+                'calendar ' + event.calendar, 'reveal focus')
+            for event in events])
+        events = EventListBox(
+            urwid.SimpleFocusListWalker(event_list), parent=self.eventscolumn, conf=self.conf,
+            delete_status=self.delete_status,
+            toggle_delete_all=self.toggle_delete_all,
+            toggle_delete_instance=self.toggle_delete_instance
+        )
+        columns = NColumns(
+            [(self.lwidth, self.calendar), events],
+            dividechars=0,
+            box_columns=[0, 0],
+            outermost=True,
+        )
+        pane = Pane(columns, title="Search results for \"{}\" (Esc for backtrack)".format(search_term))
+        columns.set_focus_column(1)
+        self.window.open(pane)
+#        self.eventscolumn.original_widget.events.update_events(events)
+#        self.widget.set_focus_column(1)
 
     def render(self, size, focus=False):
         rval = super(ClassicView, self).render(size, focus)
@@ -1032,17 +1097,6 @@ class ClassicView(Pane):
     def new_event(self, date, end):
         """create a new event starting on date and ending on end (if given)"""
         self.eventscolumn.original_widget.new(date, end)
-
-    def cleanup(self, data):
-        """delete all events marked for deletion"""
-        for part in self.deleted[ALL]:
-            account, href, etag = part.split('\n', 2)
-            self.collection.delete(href, etag, account)
-        for part, rec_id in self.deleted[INSTANCES]:
-            account, href, etag = part.split('\n', 2)
-            event = self.collection.get_event(href, account)
-            event.delete_instance(rec_id)
-            self.collection.update(event)
 
 
 def _urwid_palette_entry(name, color, hmethod):
