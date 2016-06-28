@@ -318,8 +318,8 @@ allows for adding new events. ``khal new`` should understand the following synta
 
 ::
 
-    khal new [-a CALENDAR] [OPTIONS] [START] [END | DELTA] [TIMEZONE] [SUMMARY]
-    [:: DESCRIPTION]
+    khal new [-a CALENDAR] [OPTIONS] [START [END | DELTA] [TIMEZONE] SUMMARY
+    [:: DESCRIPTION]]
 
 where start- and enddatetime are either datetimes, times, or keywords and times
 in the formats defined in the config file. If no calendar is given via
@@ -419,7 +419,7 @@ an interactive command for editing and deleting events using a search string
 
 ::
 
-    khal edit [--hide-past] event_search_string
+    khal edit [--show-past] event_search_string
 
 the command will loop through all events that match the search string,
 prompting the user to delete, or change attributes.

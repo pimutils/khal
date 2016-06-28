@@ -329,7 +329,7 @@ def _get_cli():
                   help=('The format to print the event.'))
     @click.option('--alarms', '-m',
                   help=('Alarm times for the new event as DELTAs comma separated'))
-    @click.argument('info', metavar='[START] [END | DELTA] [TIMEZONE] [SUMMARY] [:: DESCRIPTION]',
+    @click.argument('info', metavar='[START [END | DELTA] [TIMEZONE] [SUMMARY] [:: DESCRIPTION]]',
                     nargs=-1)
     @click.pass_context
     def new(ctx, calendar, info, location, categories, repeat, until, alarms, format, interactive):
@@ -341,11 +341,10 @@ def _get_cli():
         assumed to be the event's summary, if two colons (::) are present,
         everything behind them is taken as the event's description.
         '''
-        # ugly hack to change how click presents the help string
         if not info and not interactive:
                 raise click.BadParameter(
                     'no details provided, '
-                    'did you mean to use --interactive/-i'
+                    'did you mean to use --interactive/-i?'
                 )
 
         calendar = calendar or ctx.obj['conf']['default']['default_calendar']
@@ -504,17 +503,17 @@ def _get_cli():
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
-    @click.option('--hide-past', help=('Show events that have already occured as options'),
+    @click.option('--show-past', help=('Show events that have already occured as options'),
                   is_flag=True)
     @click.argument('search_string', nargs=-1)
     @click.pass_context
-    def edit(ctx, format, search_string, hide_past):
+    def edit(ctx, format, search_string, show_past):
         '''Interactively edit (or delete) events matching the search string.'''
         controllers.edit(
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             ' '.join(search_string),
             format=format,
-            allow_past=not hide_past,
+            allow_past=show_past,
             locale=ctx.obj['conf']['locale'],
             conf=ctx.obj['conf']
         )

@@ -474,12 +474,29 @@ def rrulefstr(repeat, until, locale):
 
 def eventinfofstr(info_string, locale, default_timedelta=None,
                   adjust_reasonably=False, localize=False):
+    """parses a string of the form [START [END | DELTA]] [SUMMARY] [::
+    DESCRIPTION] into a dictionary with keys: dtstart, dtend, timezone, allday,
+    summary, description
+
+    :param info_string:
+    :type info_string: string fitting the form
+    :param locale:
+    :type locale: locale
+    :param default_timedelta:
+    :type default_timedelta: passed on to guessrangefstr
+    :param adjust_reasonably:
+    :type adjust_reasonably: passed on to guessrangefstr
+    :param localize:
+    :type localize: boolean controls whether dates are localized in the end
+    :rtype: dictionary
+
+    """
     description = None
     if " :: " in info_string:
         info_string, description = info_string.split(' :: ')
 
     parts = info_string.split(' ')
-    title = None
+    summary = None
     start = None
     end = None
     tz = None
@@ -494,9 +511,9 @@ def eventinfofstr(info_string, locale, default_timedelta=None,
                 i += 1
             except (pytz.UnknownTimeZoneError, UnicodeDecodeError, IndexError):
                 tz = None
-            title = ' '.join(parts[i:])
+            summary = ' '.join(parts[i:])
             break
-        title = ' '.join(parts[i:])
+        summary = ' '.join(parts[i:])
 
     if start is not None and end is not None:
         if tz is None:
@@ -513,7 +530,7 @@ def eventinfofstr(info_string, locale, default_timedelta=None,
     info = {}
     info["dtstart"] = start
     info["dtend"] = end
-    info["summary"] = title
+    info["summary"] = summary if summary else None
     info["description"] = description
     info["timezone"] = tz if not allday else None
     info["allday"] = allday

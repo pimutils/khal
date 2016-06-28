@@ -304,6 +304,8 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
                           location=location, categories=categories,
                           repeat=repeat, until=until, alarms=alarms, **info)
 
+    echo("event saved")
+
     term_width, _ = get_terminal_size()
     edit_event(event, collection, conf['locale'], width=term_width)
 
@@ -373,7 +375,10 @@ def present_options(options, prefix="", sep="  ", width=70):
 
 def edit_event(event, collection, locale, allow_quit=False, width=80):
     options = OrderedDict()
-    options["no"] = {"short": "n"}
+    if allow_quit:
+        options["no"] = {"short": "n"}
+    else:
+        options["done"] = {"short": "n"}
     options["summary"] = {"short": "s", "attr": "summary"}
     options["description"] = {"short": "d", "attr": "description", "none": True}
     options["datetime range"] = {"short": "t"}
