@@ -74,6 +74,13 @@ def test_update_simple():
     assert normalize_component(event.raw) == normalize_component(event_updated.raw)
 
 
+def test_update_remove_categories():
+    event = Event.fromString(_get_text('event_dt_simple_updated'), **EVENT_KWARGS)
+    event_nocat = Event.fromString(_get_text('event_dt_simple_nocat'), **EVENT_KWARGS)
+    event.update_categories('    ')
+    assert normalize_component(event.raw) == normalize_component(event_nocat.raw)
+
+
 def test_raw_d():
     event_d = _get_text('event_d')
     event = Event.fromString(event_d, **EVENT_KWARGS)
