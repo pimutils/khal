@@ -19,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import signal
 import sys
 
@@ -386,10 +386,14 @@ class EventColumn(urwid.WidgetWrap):
             self.pane.window.alert(('light red', 'No writable calendar.'))
             return
         if end is None:
-            event = aux.new_event(
-                dtstart=date, timezone=self.pane.conf['locale']['default_timezone'])
+            start = datetime.combine(date, datetime.now().time())
+            end = start + timedelta(minutes=60)
+            event = aux.new_event(dtstart=start, dtend=end, summary="new event",
+                                  timezone=self.pane.conf['locale']['default_timezone'],
+                                  locale=self.pane.conf['locale'])
         else:
-            event = aux.new_event(dtstart=date, dtend=end, allday=True)
+            event = aux.new_event(dtstart=date, dtend=end, summary="new event",
+                                  allday=True, locale=self.pane.conf['locale'])
 
         event = self.pane.collection.new_event(
             event.to_ical(), self.pane.collection.default_calendar_name)
