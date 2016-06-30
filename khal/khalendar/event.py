@@ -405,8 +405,7 @@ class Event(object):
         return self._vevents[self.ref].get('CATEGORIES', '')
 
     def update_categories(self, categories):
-        # self._vevents[self.ref]['CATEGORIES'] = categories
-        if categories.strip () != '':
+        if not categories.strip():
             self._vevents[self.ref]['CATEGORIES'] = categories
         else:
             try:
