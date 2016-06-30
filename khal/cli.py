@@ -315,6 +315,8 @@ def _get_cli():
 
     @cli.command()
     @calendar_option
+    @click.option('--interactive', '-i', help=('Add event interactively'),
+                  is_flag=True)
     @click.option('--location', '-l',
                   help=('The location of the new event.'))
     @click.option('--categories', '-g',
@@ -323,18 +325,14 @@ def _get_cli():
                   help=('Repeat event: daily, weekly, monthly or yearly.'))
     @click.option('--until', '-u',
                   help=('Stop an event repeating on this date.'))
-    @click.option('--alarm', '-m',
-                  help=('Alarm time for the new event.'))
     @click.option('--format', '-f',
                   help=('The format to print the event.'))
-    @click.argument('START', nargs=1, required=True)
-    @click.argument('END', nargs=1, required=False)
-    @click.argument('TIMEZONE', nargs=1, required=False)
-    @click.argument('SUMMARY', metavar='SUMMARY', nargs=1, required=False)
-    @click.argument('DESCRIPTION', metavar='[:: DESCRIPTION]', nargs=-1, required=False)
+    @click.option('--alarms', '-m',
+                  help=('Alarm times for the new event as DELTAs comma separated'))
+    @click.argument('info', metavar='[START [END | DELTA] [TIMEZONE] [SUMMARY] [:: DESCRIPTION]]',
+                    nargs=-1)
     @click.pass_context
-    def new(ctx, calendar, start, end, timezone, summary, description, location, categories, repeat,
-            until, alarm, format):
+    def new(ctx, calendar, info, location, categories, repeat, until, alarms, format, interactive):
         '''Create a new event from arguments.
 
         START and END can be either dates, times or datetimes, please have a
@@ -343,27 +341,45 @@ def _get_cli():
         assumed to be the event's summary, if two colons (::) are present,
         everything behind them is taken as the event's description.
         '''
-        # ugly hack to change how click presents the help string
-        eventlist = [start, end, timezone, summary] + list(description)
-        eventlist = [element for element in eventlist if element is not None]
+        if not info and not interactive:
+                raise click.BadParameter(
+                    'no details provided, '
+                    'did you mean to use --interactive/-i?'
+                )
+
         calendar = calendar or ctx.obj['conf']['default']['default_calendar']
         if calendar is None:
-            raise click.BadParameter(
-                'No default calendar is configured, '
-                'please provide one explicitly.'
-            )
+            if interactive:
+                while calendar is None:
+                    calendar = click.prompt('calendar')
+                    if calendar == '?':
+                        for calendar in ctx.obj['conf']['calendars']:
+                            click.echo(calendar)
+                        calendar = None
+                    elif calendar not in ctx.obj['conf']['calendars']:
+                        click.echo('unknown calendar enter ? for list')
+                        calendar = None
+            else:
+                raise click.BadParameter(
+                    'No default calendar is configured, '
+                    'please provide one explicitly.'
+                )
 
-        controllers.new_from_string(
+        new_func = controllers.new_from_string
+        if interactive:
+            new_func = controllers.new_interactive
+        new_func(
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             calendar,
             ctx.obj['conf'],
-            eventlist,
+            info=' '.join(info),
             location=location,
             categories=categories,
             repeat=repeat,
-            until=until.split(' ') if until is not None else None,
-            alarm=alarm,
-            env={"calendars": ctx.obj['conf']['calendars']}
+            env={"calendars": ctx.obj['conf']['calendars']},
+            until=until,
+            alarms=alarms,
+            format=format,
         )
 
     @cli.command('import')
@@ -482,6 +498,25 @@ def _get_cli():
                  for d in desc]
             )
         click.echo('\n'.join(event_column))
+
+    @cli.command()
+    @multi_calendar_option
+    @click.option('--format', '-f',
+                  help=('The format of the events.'))
+    @click.option('--show-past', help=('Show events that have already occured as options'),
+                  is_flag=True)
+    @click.argument('search_string', nargs=-1)
+    @click.pass_context
+    def edit(ctx, format, search_string, show_past):
+        '''Interactively edit (or delete) events matching the search string.'''
+        controllers.edit(
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+            ' '.join(search_string),
+            format=format,
+            allow_past=show_past,
+            locale=ctx.obj['conf']['locale'],
+            conf=ctx.obj['conf']
+        )
 
     @cli.command()
     @multi_calendar_option
