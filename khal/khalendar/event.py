@@ -636,6 +636,7 @@ class Event(object):
         vevent['SUMMARY'] = icalendar.vText(vevent['SUMMARY'] + ' Copy')
         event = self.fromVEvents([vevent])
         event.calendar = self.calendar
+        event._locale = self._locale
         return event
 
     def delete_instance(self, instance):
