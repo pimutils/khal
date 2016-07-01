@@ -405,13 +405,10 @@ class Event(object):
         return self._vevents[self.ref].get('CATEGORIES', '')
 
     def update_categories(self, categories):
-        if not categories.strip():
+        if categories.strip():
             self._vevents[self.ref]['CATEGORIES'] = categories
         else:
-            try:
-                del self._vevents[self.ref]['CATEGORIES']
-            except:
-                pass
+            self._vevents[self.ref].pop('CATEGORIES', False)
 
     @property
     def description(self):
