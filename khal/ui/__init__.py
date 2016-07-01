@@ -559,7 +559,7 @@ class EventColumn(urwid.WidgetWrap):
             self.pane.window.open(overlay)
         else:
             self.toggle_delete_all(event.recuid)
-        event.set_title()
+        self.update_colors(event.event.start_local, event.event.end_local, event.event.recurring)
 
     def duplicate(self):
         """duplicate the event in focus"""
