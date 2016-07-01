@@ -25,7 +25,8 @@ not released yet
 * renamed `agenda` to `list` (Taylor Money)
 * removed `days` configuration option in favor of `timedelta`, see
   documentation for details (Taylor Money)
-
+* added command `edit` (Taylor Money)
+* `new` has interactive option (Taylor Money)
 
 ikhal
 -----

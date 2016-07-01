@@ -244,7 +244,10 @@ class TestCollection(object):
 
     def test_newevent(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        event = khal.aux.new_event(dtstart=aday, timezone=aux.BERLIN)
+        bday = datetime.combine(aday, time.min)
+        anend = bday + timedelta(hours=1)
+        event = khal.aux.new_event(dtstart=bday, dtend=anend, summary="hi", timezone=aux.BERLIN,
+                                   locale=aux.locale)
         event = coll.new_event(event.to_ical(), coll.default_calendar_name)
         assert event.allday is False
 

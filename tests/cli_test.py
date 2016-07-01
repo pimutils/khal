@@ -118,6 +118,7 @@ def test_simple(runner):
     assert not result.exception
 
     result = runner.invoke(main_khal)
+    print(result.output)
     assert 'myevent' in result.output
     assert '18:00' in result.output
     # test show_all_days default value
