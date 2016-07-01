@@ -600,22 +600,6 @@ class EventColumn(urwid.WidgetWrap):
         return True
 
     def keypress(self, size, key):
-        if key in self._conf['keybindings']['view'] and self.focus_event:
-            if self.delete_status(self.focus_event.recuid):
-                self.pane.window.alert(('light red', 'This event is marked as deleted'))
-            elif self._eventshown == self.focus_event.recuid:
-                self.clear_event_view()
-                self.edit(self.focus_event.event)
-            else:
-                self._eventshown = self.focus_event.recuid
-                self.view(self.focus_event.event)
-            key = None
-        elif key in ['esc'] and self._eventshown:
-            self.clear_event_view()
-            key = None
-        else:
-            self.clear_event_view()
-
         if key in self._conf['keybindings']['new']:
             self.new(self.focus_date, self.focus_date)
             key = None
@@ -624,6 +608,7 @@ class EventColumn(urwid.WidgetWrap):
             if key in self._conf['keybindings']['delete']:
                 self.toggle_delete()
                 key = 'down'
+                # TODO refocus right event after calling toggle_delete
             elif key in self._conf['keybindings']['duplicate']:
                 self.duplicate()
                 key = None
@@ -631,7 +616,26 @@ class EventColumn(urwid.WidgetWrap):
                 self.export_event()
                 key = None
 
-        return super().keypress(size, key)
+        rval = super().keypress(size, key)
+        if self.focus_event:
+            if key in self._conf['keybindings']['view'] or \
+                    self._conf['view']['event_view_always_visible']:
+                if self._eventshown == self.focus_event.recuid:
+                    # the event in focus is already viewed -> edit
+                    self.clear_event_view()  # do not move before the if condition
+                    if self.delete_status(self.focus_event.recuid):
+                        self.pane.window.alert(('light red', 'This event is marked as deleted'))
+                    self.edit(self.focus_event.event)
+                else:
+                    self.clear_event_view()
+                    self._eventshown = self.focus_event.recuid
+                    self.view(self.focus_event.event)
+
+        if key in ['esc'] and self._eventshown:
+            self.clear_event_view()
+            key = None
+        return rval
+
 
     def render(self, a, focus):
         if focus:
