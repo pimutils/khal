@@ -155,14 +155,14 @@ class DListBox(EventListBox):
         if self._old_focus is not None:
             self.body[self._old_focus].contents[0][0].set_attr_map({None: 'date'})
 
-    def update_by_date(self, day):
-        """update the entry for `day` and bring it into focus"""
+    def ensure_date(self, day):
+        """ensure an entry for `day` exists and bring it into focus"""
         try:
             self._old_focus = self.focus_position
         except IndexError:
             pass
-        rval = self.body.update_by_date(day)
-        self.body[self.focus_position].contents[0][0].set_attr_map({None: 'green'})
+        rval = self.body.ensure_date(day)
+        self.body[self.focus_position].contents[0][0].set_attr_map({None: 'green'})  # XXX needed?
         self.set_focus_valign('top')  # FIXME does not always work as expected
         self.clean()
         return rval
@@ -228,9 +228,9 @@ class DayWalker(urwid.SimpleFocusListWalker):
                          if weekday]
 
         super().__init__(list())
-        self.update_by_date(this_date)
+        self.ensure_date(this_date)
 
-    def update_by_date(self, day):
+    def ensure_date(self, day):
         """make sure a DatePile for `day` exists, update it and bring it into focus"""
         # TODO this function gets called twice on every date change, not necessary but
         # isn't very costly either
@@ -255,7 +255,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         DatePile.selected_date = day
         self.set_focus(item_no)
 
-    def update(self, day):
+    def update_date(self, day):
         """refresh the contents of the day's DatePile"""
         offset = (day - self[0].date).days
         assert self[offset].date == day
@@ -269,7 +269,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         """
         day = start
         while day <= end:
-            self.update(day)
+            self.update_date(day)
             day += timedelta(days=1)
 
     def set_focus(self, position):
@@ -419,7 +419,7 @@ class EventColumn(urwid.WidgetWrap):
     @focus_date.setter
     def focus_date(self, date):
         self._current_date = date
-        self.dlistbox.update_by_date(date)
+        self.dlistbox.ensure_date(date)
 
         # Show first event if show event view is true
         # FIXME
@@ -428,6 +428,16 @@ class EventColumn(urwid.WidgetWrap):
                 # self.focus_event = self.events.events[0]
             # else:
                 # self.focus_event = none
+
+    def update_colors(self, min_date, max_date, recurring):
+        # XXX DOCSTRING
+
+        if recurring:
+            min_date = self.calendar.base_widget.walker.earliest_date
+            max_date = self.calendar.base_widget.walker.latest_date
+        else:
+            self.pane.base_widget.calendar.base_widget.reset_styles_range(min_date, max_date)
+            self.dlistbox.body.update_range(min_date, max_date)
 
     def edit(self, event, always_save=False):
         """create an EventEditor and display it
@@ -462,18 +472,13 @@ class EventColumn(urwid.WidgetWrap):
             """
             # TODO cleverer support for recurring events, were more than start and
             # end dates are affected (complicated)
-            if recurring:
-                min_date = self.pane.calendar.base_widget.walker.earliest_date
-                max_date = self.pane.calendar.base_widget.walker.latest_date
-            else:
-                if isinstance(new_start, datetime):
-                    new_start = new_start.date()
-                if isinstance(new_end, datetime):
-                    new_end = new_end.date()
-                min_date = min(original_start, new_start)
-                max_date = max(original_end, new_end)
-            self.pane.calendar.base_widget.reset_styles_range(min_date, max_date)
-            self.pane.eventscolumn.base_widget.events.update_range(min_date, max_date)
+            if isinstance(new_start, datetime):
+                new_start = new_start.date()
+            if isinstance(new_end, datetime):
+                new_end = new_end.date()
+            start = min(original_start, new_start)
+            end = max(original_end, new_end)
+            self.pane.eventscolumn.base_widget.update_colors(start, end, recurring)
 
         if self.editor:
             self.pane.window.backtrack()
@@ -569,7 +574,12 @@ class EventColumn(urwid.WidgetWrap):
             event.calendar = self.pane.collection.default_calendar_name or \
                 self.pane.collection.writable_names[0]
             self.edit(event, always_save=True)
-        self.events.update(self.focus_date)
+        #self.dlistbox.body.update_date(self.focus_date)
+        self.update_colors(event.start_local, event.end_local, event.recurring)
+        try:
+            self._old_focus = self.focus_position
+        except IndexError:
+            pass
 
     def new(self, date, end):
         """create a new event on `date`
@@ -583,12 +593,16 @@ class EventColumn(urwid.WidgetWrap):
         if end is None:
             start = datetime.combine(date, datetime.now().time())
             end = start + timedelta(minutes=60)
-            event = aux.new_event(dtstart=start, dtend=end, summary="new event",
-                                  timezone=self.pane.conf['locale']['default_timezone'],
-                                  locale=self.pane.conf['locale'])
+            event = aux.new_event(
+                dtstart=start, dtend=end, summary="new event",
+                timezone=self._conf['locale']['default_timezone'],
+                locale=self._conf['locale'],
+            )
         else:
-            event = aux.new_event(dtstart=date, dtend=end, summary="new event",
-                                  allday=True, locale=self.pane.conf['locale'])
+            event = aux.new_event(
+                dtstart=date, dtend=end, summary="new event",
+                allday=True, locale=self._conf['locale'],
+            )
         event = self.pane.collection.new_event(
             event.to_ical(), self.pane.collection.default_calendar_name)
         self.edit(event)
