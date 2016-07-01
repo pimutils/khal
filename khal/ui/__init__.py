@@ -162,7 +162,6 @@ class DListBox(EventListBox):
         except IndexError:
             pass
         rval = self.body.ensure_date(day)
-        self.body[self.focus_position].contents[0][0].set_attr_map({None: 'green'})  # XXX needed?
         self.set_focus_valign('top')  # FIXME does not always work as expected
         self.clean()
         return rval
@@ -421,14 +420,6 @@ class EventColumn(urwid.WidgetWrap):
         self._current_date = date
         self.dlistbox.ensure_date(date)
 
-        # Show first event if show event view is true
-        # FIXME
-        # if self.pane._conf['view']['event_view_always_visible']:
-            # if len(self.dlistbox) > 0:
-                # self.focus_event = self.events.events[0]
-            # else:
-                # self.focus_event = none
-
     def update_colors(self, min_date, max_date, recurring):
         # XXX DOCSTRING
 
@@ -574,7 +565,6 @@ class EventColumn(urwid.WidgetWrap):
             event.calendar = self.pane.collection.default_calendar_name or \
                 self.pane.collection.writable_names[0]
             self.edit(event, always_save=True)
-        #self.dlistbox.body.update_date(self.focus_date)
         self.update_colors(event.start_local, event.end_local, event.recurring)
         try:
             self._old_focus = self.focus_position
@@ -637,12 +627,7 @@ class EventColumn(urwid.WidgetWrap):
             elif key in self._conf['keybindings']['export']:
                 self.export_event()
                 key = None
-        # FIXME
-        # if self._conf['view']['event_view_always_visible'] and self.focus_event:
-            # self.clear_event_view()
-            # self.view(self.body.focus_event.event)
-        # else:
-            # self.clear_event_view()
+
         return super().keypress(size, key)
 
     def render(self, a, focus):
@@ -1107,8 +1092,6 @@ class ClassicView(Pane):
         pane = Pane(columns, title="Search results for \"{}\" (Esc for backtrack)".format(search_term))
         columns.set_focus_column(1)
         self.window.open(pane)
-#        self.eventscolumn.original_widget.events.update_events(events)
-#        self.widget.set_focus_column(1)
 
     def render(self, size, focus=False):
         rval = super(ClassicView, self).render(size, focus)
