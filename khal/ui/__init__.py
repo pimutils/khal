@@ -396,7 +396,6 @@ class EventColumn(urwid.WidgetWrap):
 
     def view(self, event):
         """show event in the lower part of this column"""
-        self._eventshown = True
         self.container.contents.append((self.divider, ('pack', None)))
         self.container.contents.append(
             (EventDisplay(self.pane._conf, event, collection=self.pane.collection),
@@ -602,18 +601,22 @@ class EventColumn(urwid.WidgetWrap):
 
     def keypress(self, size, key):
         if key in self._conf['keybindings']['view'] and self.focus_event:
-            if not self._eventshown:
-                self.view(self.focus_event.event)
-            elif self.delete_status(self.focus_event.recuid):
+            if self.delete_status(self.focus_event.recuid):
                 self.pane.window.alert(('light red', 'This event is marked as deleted'))
-            else:
+            elif self._eventshown == self.focus_event.recuid:
                 self.clear_event_view()
                 self.edit(self.focus_event.event)
+            else:
+                self._eventshown = self.focus_event.recuid
+                self.view(self.focus_event.event)
             key = None
         elif key in ['esc'] and self._eventshown:
             self.clear_event_view()
             key = None
-        elif key in self._conf['keybindings']['new']:
+        else:
+            self.clear_event_view()
+
+        if key in self._conf['keybindings']['new']:
             self.new(self.focus_date, self.focus_date)
             key = None
 
