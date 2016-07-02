@@ -312,8 +312,10 @@ class DayWalker(urwid.SimpleFocusListWalker):
         if not self.events:
             event_list.append(urwid.AttrMap(urwid.Text('  no scheduled events'), 'text'))
         event_list.extend([
-            urwid.AttrMap(U_Event(event, conf=self._conf, this_date=day, delete_status=self.delete_status),
-                          'calendar ' + event.calendar, 'reveal focus') for event in self.events])
+            urwid.AttrMap(
+                U_Event(event, conf=self._conf, this_date=day, delete_status=self.delete_status),
+                'calendar ' + event.calendar, 'reveal focus')
+            for event in self.events])
         return DatePile(event_list, date=day)
 
     def selectable(self):
@@ -635,7 +637,6 @@ class EventColumn(urwid.WidgetWrap):
             self.clear_event_view()
             key = None
         return rval
-
 
     def render(self, a, focus):
         if focus:
@@ -1096,7 +1097,10 @@ class ClassicView(Pane):
             box_columns=[0, 0],
             outermost=True,
         )
-        pane = Pane(columns, title="Search results for \"{}\" (Esc for backtrack)".format(search_term))
+        pane = Pane(
+            columns,
+            title="Search results for \"{}\" (Esc for backtrack)".format(search_term),
+        )
         columns.set_focus_column(1)
         self.window.open(pane)
 
