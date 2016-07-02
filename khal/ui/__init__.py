@@ -173,7 +173,7 @@ class DListBox(EventListBox):
             key = 'down'
 
         if key in self._conf['keybindings']['today']:
-            self.parent.pane.calendar.base_widget.set_focus_date(date.today())
+            self.parent.calendar.base_widget.set_focus_date(date.today())
 
         rval = super().keypress(size, key)
         self.clean()
