@@ -140,6 +140,14 @@ class EventListBox(urwid.ListBox):
         return self.focus.original_widget
 
     def refresh_titles(self, min_date, max_date, everything):
+        """Refresh only the currently focused event's title
+
+        as we currently only use `EventListBox` in search and there we can only
+        modify the currently focused event, no real implementation is needad at
+        this time
+
+        ignores all arguments
+        """
         self.focus.original_widget.set_title()
 
 
@@ -267,8 +275,29 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self[offset] = self._get_events(day)
 
     def refresh_titles(self, start, end, everything):
-        # TODO actually implement updating only the titles
-        self.update_range(start, end, everything)
+        """refresh the titles of events
+
+        if `everything` is True, reset all titles, otherwise only
+        those between `start` and `end`
+
+        :type start: datetime.date
+        :type end: datetime.date
+        :type bool: bool
+        """
+        start = start.date() if isinstance(start, datetime) else start
+        end = end.date() if isinstance(end, datetime) else end
+
+        if everything:
+            start = self[0].date
+            end = self[-1].date
+        else:
+            start = max(self[0].date, start)
+            end = min(self[-1].date, end)
+
+        offset = (start - self[0].date).days
+        length = (end - start).days
+        for index in range(offset, offset + length + 1):
+            self[index].refresh_titles()
 
     def update_range(self, start, end, everything=False):
         """refresh contents of all day between start and end (inclusive)
@@ -276,12 +305,15 @@ class DayWalker(urwid.SimpleFocusListWalker):
         :type start: datetime.date
         :type end: datetime.date
         """
-        # TODO take care of everything
         start = start.date() if isinstance(start, datetime) else start
         end = end.date() if isinstance(end, datetime) else end
 
-        start = max(self[0].date, start)
-        end = min(self[-1].date, end)
+        if everything:
+            start = self[0].date
+            end = self[-1].date
+        else:
+            start = max(self[0].date, start)
+            end = min(self[-1].date, end)
 
         day = start
         while day <= end:
@@ -397,6 +429,11 @@ class DatePile(urwid.Pile):
             return None
         else:
             return self.focus.original_widget
+
+    def refresh_titles(self):
+        """refresh the titles of all events"""
+        for uevent, _ in self.contents[1:]:
+            uevent.original_widget.set_title()
 
 
 class EventColumn(urwid.WidgetWrap):
