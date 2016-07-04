@@ -139,6 +139,9 @@ class EventListBox(urwid.ListBox):
     def focus_event(self):
         return self.focus.original_widget
 
+    def refresh_titles(self, min_date, max_date, everything):
+        self.focus.original_widget.set_title()
+
 
 class DListBox(EventListBox):
     """Container for a DayWalker"""
@@ -201,6 +204,9 @@ class DListBox(EventListBox):
     def current_date(self):
         return self.body.current_day
 
+    def refresh_titles(self, start, end, recurring):
+        self.body.refresh_titles(start, end, recurring)
+
 
 class DayWalker(urwid.SimpleFocusListWalker):
     """A list Walker that contains a list of DatePile objects, each representing
@@ -260,12 +266,17 @@ class DayWalker(urwid.SimpleFocusListWalker):
         assert self[offset].date == day
         self[offset] = self._get_events(day)
 
-    def update_range(self, start, end):
+    def refresh_titles(self, start, end, everything):
+        # TODO actually implement updating only the titles
+        self.update_range(start, end, everything)
+
+    def update_range(self, start, end, everything=False):
         """refresh contents of all day between start and end (inclusive)
 
         :type start: datetime.date
         :type end: datetime.date
         """
+        # TODO take care of everything
         start = start.date() if isinstance(start, datetime) else start
         end = end.date() if isinstance(end, datetime) else end
 
@@ -457,8 +468,7 @@ class EventColumn(urwid.WidgetWrap):
         if `everything` is True, reset all displayed dates, else only those between
         min_date and max_date
         """
-        # TODO actually only update the titles, not rebuild from scratch
-        self.dlistbox.body.update_range(min_date, max_date)
+        self.dlistbox.refresh_titles(min_date, max_date, everything)
 
     def edit(self, event, always_save=False):
         """create an EventEditor and display it
@@ -570,6 +580,8 @@ class EventColumn(urwid.WidgetWrap):
         elif status == INSTANCES:
             self.toggle_delete_instance(event.recuid)
         elif event.event.recurring:
+            # FIXME if in search results, original pane is used for overlay, not search results
+            # also see issue of reseting titles below, probably related
             overlay = urwid.Overlay(
                 DeleteDialog(
                     delete_this,
@@ -584,6 +596,7 @@ class EventColumn(urwid.WidgetWrap):
             self.toggle_delete_all(event.recuid)
         if refresh:
             self.refresh_titles(event.event.start_local, event.event.end_local, event.event.recurring)
+            event.set_title()  # if we are in search results, refersh_titles doesn't work properly
 
     def duplicate(self):
         """duplicate the event in focus"""
