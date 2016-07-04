@@ -161,6 +161,9 @@ Several options are common to almost all of :program:`khal`'s commands
    name
         The date's name (`Monday`, `Tuesday`,…) or `today` or `tomorrow`.
 
+   If the `--day-format` is passed an empty string then it will not print the
+   day headers (for an empty line pass in a whitespace character).
+
 
 
 dates

@@ -170,7 +170,7 @@ def get_list_from_str(collection, locale, daterange, notstarted=False,
             day_end = end
         current_events = get_list(collection, locale=locale, format=format, start=start,
                                   end=day_end, notstarted=notstarted, env=env, **kwargs)
-        if show_all_days or current_events:
+        if day_format and (show_all_days or current_events):
             event_column.append(format_day(start.date(), day_format, locale))
         event_column.extend(current_events)
         start = aux.datetime_fillin(start.date(), end=False) + timedelta(days=1)
