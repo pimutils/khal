@@ -451,6 +451,15 @@ class EventColumn(urwid.WidgetWrap):
         self.pane.base_widget.calendar.base_widget.reset_styles_range(min_date, max_date)
         self.dlistbox.body.update_range(min_date, max_date)
 
+    def refresh_titles(self, min_date, max_date, everything):
+        """refresh titles in DatePiles
+
+        if `everything` is True, reset all displayed dates, else only those between
+        min_date and max_date
+        """
+        # TODO actually only update the titles, not rebuild from scratch
+        self.dlistbox.body.update_range(min_date, max_date)
+
     def edit(self, event, always_save=False):
         """create an EventEditor and display it
 
@@ -542,12 +551,12 @@ class EventColumn(urwid.WidgetWrap):
         def delete_this(_):
             self.toggle_delete_instance(event.recuid)
             self.pane.window.backtrack()
-            event.set_title()
+            self.refresh_titles(event.event.start_local, event.event.end_local, event.event.recurring)
 
         def delete_all(_):
             self.toggle_delete_all(event.recuid)
             self.pane.window.backtrack()
-            event.set_title()
+            self.refresh_titles(event.event.start_local, event.event.end_local, event.event.recurring)
 
         if event.event.readonly:
             self.eventcolumn.pane.window.alert(
@@ -555,10 +564,11 @@ class EventColumn(urwid.WidgetWrap):
                  'Calendar {} is read-only.'.format(self.event.calendar)))
             return
         status = self.delete_status(event.recuid)
+        refresh = True
         if status == ALL:
             self.toggle_delete_all(event.recuid)
         elif status == INSTANCES:
-            self.toggle_delete_all(event.recuid)
+            self.toggle_delete_instance(event.recuid)
         elif event.event.recurring:
             overlay = urwid.Overlay(
                 DeleteDialog(
@@ -569,9 +579,11 @@ class EventColumn(urwid.WidgetWrap):
                 self.pane,
                 'center', ('relative', 70), ('relative', 70), None)
             self.pane.window.open(overlay)
+            refresh = False
         else:
             self.toggle_delete_all(event.recuid)
-        self.update(event.event.start_local, event.event.end_local, event.event.recurring)
+        if refresh:
+            self.refresh_titles(event.event.start_local, event.event.end_local, event.event.recurring)
 
     def duplicate(self):
         """duplicate the event in focus"""
