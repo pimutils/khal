@@ -1292,20 +1292,26 @@ def relative_day(day, weekday, dtformat):
         direction = 'ago'
     else:
         direction = 'from now'
+    approx = ''
     if abs(days) < 7:
         unit = 'day'
         count = abs(days)
     elif abs(days) < 365:
         unit = 'week'
         count = int(abs(days) / 7)
+        if abs(days) % 7 != 0:
+            approx = '~'
     else:
         unit = 'year'
         count = int(abs(days) / 365)
+        if abs(days) % 365 != 0:
+            approx = '~'
     if count > 1:
         unit += 's'
 
-    return '{weekday}, {day} ({count} {unit} {direction})'.format(
+    return '{weekday}, {day} ({approx}{count} {unit} {direction})'.format(
         weekday=weekday,
+        approx=approx,
         day=daystr,
         count=count,
         unit=unit,
