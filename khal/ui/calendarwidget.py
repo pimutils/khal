@@ -19,7 +19,10 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""contains a re-usable CalendarWidget for urwid"""
+"""contains a re-usable CalendarWidget for urwid
+
+if anything doesn't work as expected, please open an issue for khal
+"""
 
 import calendar
 from collections import defaultdict
@@ -80,8 +83,8 @@ class Date(urwid.WidgetWrap):
         else:
             self.halves[0].set_attr_map({None: styles})
             self.halves[1].set_attr_map({None: styles})
-            self.halves[1].set_focus_map({None: styles})
             self.halves[0].set_focus_map({None: styles})
+            self.halves[1].set_focus_map({None: styles})
 
     def reset_styles(self, focus=False):
         self.set_styles(self._get_styles(self.date, focus))
@@ -120,10 +123,6 @@ class DateCColumns(urwid.Columns):
         self.on_press = on_press
         self.keybindings = keybindings
         self.get_styles = get_styles
-        # we need the next two attributes for attribute resetting when a
-        # cell regains focus after having lost it
-        self._old_attr_map = False
-        self._old_pos = 0
         self._init = True
         super(DateCColumns, self).__init__(widget_list, **kwargs)
 
@@ -547,9 +546,9 @@ class CalendarWidget(urwid.WidgetWrap):
                  weeknumbers=False, get_styles=None, initial=None):
 
         """
-        :param on_date_change: a function that is called every time the selected date
-                        is changed with the newly selected date as a first (and
-                        only argument)
+        :param on_date_change: a function that is called every time the selected
+            date is changed with the newly selected date as a first (and only
+            argument)
         :type on_date_change: function
         :param keybindings: bind keys to specific functions, keys are
             commands (e.g. movement commands, values are lists of keys
@@ -567,7 +566,7 @@ class CalendarWidget(urwid.WidgetWrap):
             selected, the first argument is the earlier and the second argument
             is the later date. The function's return values are interpreted as
             pressed keys.
-        :type on_pres: dict
+        :type on_press: dict
         """
         if initial is None:
             self._initial = date.today()
