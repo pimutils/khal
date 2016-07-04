@@ -32,9 +32,9 @@ dark = [
     ('button', 'black', 'dark cyan'),
     ('button focused', 'white', 'light blue', 'bold'),
 
-    ('reveal focus', 'black', 'light gray', 'standout'),
-    ('today focus', 'white', 'dark magenta', 'standout'),
-    ('today', 'black', 'light gray',),
+    ('reveal focus', 'black', 'light gray'),
+    ('today focus', 'white', 'dark magenta'),
+    ('today', 'dark gray', 'dark green',),
 
     ('date', 'light gray', ''),
     ('date focused', 'dark gray', 'light gray', ('bold', 'standout')),
