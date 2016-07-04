@@ -266,6 +266,12 @@ class DayWalker(urwid.SimpleFocusListWalker):
         :type start: datetime.date
         :type end: datetime.date
         """
+        start = start.date() if isinstance(start, datetime) else start
+        end = end.date() if isinstance(end, datetime) else end
+
+        start = max(self[0].date, start)
+        end = min(self[-1].date, end)
+
         day = start
         while day <= end:
             self.update_date(day)
@@ -433,15 +439,17 @@ class EventColumn(urwid.WidgetWrap):
         self._current_date = date
         self.dlistbox.ensure_date(date)
 
-    def update_colors(self, min_date, max_date, recurring):
-        # XXX DOCSTRING
+    def update(self, min_date, max_date, everything):
+        """update DatePiles
 
-        if recurring:
-            min_date = self.calendar.base_widget.walker.earliest_date
-            max_date = self.calendar.base_widget.walker.latest_date
-        else:
-            self.pane.base_widget.calendar.base_widget.reset_styles_range(min_date, max_date)
-            self.dlistbox.body.update_range(min_date, max_date)
+        if `everything` is True, reset all displayed dates, else only those between
+        min_date and max_date
+        """
+        if everything:
+            min_date = self.pane.calendar.base_widget.walker.earliest_date
+            max_date = self.pane.calendar.base_widget.walker.latest_date
+        self.pane.base_widget.calendar.base_widget.reset_styles_range(min_date, max_date)
+        self.dlistbox.body.update_range(min_date, max_date)
 
     def edit(self, event, always_save=False):
         """create an EventEditor and display it
@@ -465,13 +473,13 @@ class EventColumn(urwid.WidgetWrap):
         else:
             original_end = event.end_local
 
-        def update_colors(new_start, new_end, recurring=False):
+        def update_colors(new_start, new_end, everything=False):
             """reset colors in the calendar widget and dates in DayWalker
             between min(new_start, original_start)
 
             :type new_start: datetime.date
             :type new_end: datetime.date
-            :param recurring: set to True if event is a recurring one, than everything
+            :param everything: set to True if event is a recurring one, than everything
                   gets reseted
             """
             # TODO cleverer support for recurring events, were more than start and
@@ -482,7 +490,7 @@ class EventColumn(urwid.WidgetWrap):
                 new_end = new_end.date()
             start = min(original_start, new_start)
             end = max(original_end, new_end)
-            self.pane.eventscolumn.base_widget.update_colors(start, end, recurring)
+            self.pane.eventscolumn.base_widget.update(start, end, everything)
 
         if self.editor:
             self.pane.window.backtrack()
@@ -563,7 +571,7 @@ class EventColumn(urwid.WidgetWrap):
             self.pane.window.open(overlay)
         else:
             self.toggle_delete_all(event.recuid)
-        self.update_colors(event.event.start_local, event.event.end_local, event.event.recurring)
+        self.update(event.event.start_local, event.event.end_local, event.event.recurring)
 
     def duplicate(self):
         """duplicate the event in focus"""
