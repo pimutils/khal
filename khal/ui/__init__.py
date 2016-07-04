@@ -251,7 +251,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
             item_no = (day - self[0].date).days
 
         assert self[item_no].date == day
-        DatePile.selected_date = day
+        self[item_no].set_selected_date(day)
         self.set_focus(item_no)
 
     def update_date(self, day):
@@ -342,6 +342,18 @@ class DatePile(urwid.Pile):
         return '<DatePile Widget {}>'.format(self.date)
 
     __str__ = __repr__
+
+    def set_selected_date(self, day):
+        """Mark `day` as "selected
+
+        :param day: day to mark as selected
+        :type day: datetime.date
+        """
+        DatePile.selected_date = day
+        # we need to touch the title's content to make sure
+        # that urwid re-renders the title
+        title = self.contents[0][0].original_widget
+        title.set_text(title.get_text()[0])
 
     def render(self, a, focus):
         if focus:
