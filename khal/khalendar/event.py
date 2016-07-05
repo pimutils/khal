@@ -480,6 +480,7 @@ class Event(object):
         :param colors: determines if colors codes should be printed or not
         :type colors: bool
         """
+        # TODO raise ValueError if relative_to is outside of this event
         attributes = defaultdict(str)
         try:
             relative_to_start, relative_to_end = relative_to
