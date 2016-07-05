@@ -130,6 +130,14 @@ Several options are common to almost all of :program:`khal`'s commands
         A concatenation of start-style, to-style, and end-style OR an
         appropriate symbol.
 
+   end-necessary
+        For an allday event this is an empty string unless the end date and
+        start date are different. For a non-allday event this will show the
+        time or the datetime if the event start and end date are different.
+
+   end-necessary-long
+        Same as end-necessary but uses datelong and datetimelong.
+
    By default all-day events have no times. To see a start and end time anyway simply
    add `-full` to the end of any template with start/end, for instance
    `start-time` becomes `start-time-full` and will always show start and end times (instead

@@ -562,6 +562,19 @@ class Event(object):
             attributes["start-end-time-style"] = attributes["start-style"] + \
                 attributes["to-style"] + attributes["end-style"]
 
+        if allday:
+            attributes['end-necessary'] = ''
+            attributes['end-necessary-long'] = ''
+            if self_start.date() != self_end.date():
+                attributes['end-necessary'] = attributes['end-date']
+                attributes['end-necessary-long'] = attributes['end-date-long']
+        else:
+            attributes['end-necessary'] = attributes['end-time']
+            attributes['end-necessary-long'] = attributes['end-time']
+            if self_start.date() != self_end.date():
+                attributes['end-necessary'] = attributes['end']
+                attributes['end-necessary-long'] = attributes['end-long']
+
         attributes["recurse"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
         attributes["title"] = self.summary
