@@ -128,8 +128,10 @@ def test_update_event_d():
     event_d = _get_text('event_d')
     event = Event.fromString(event_d, **EVENT_KWARGS)
     event.update_start_end(date(2014, 4, 20), date(2014, 4, 22))
-    assert event.format(LIST_FORMAT, date(2014, 4, 9)) == ' An Event \x1b[0m'
-    assert event.format(SEARCH_FORMAT, date(2014, 4, 9)) == '20.04.2014-22.04.2014 An Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 20)) == '↦ An Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 21)) == '↔ An Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 22)) == '⇥ An Event \x1b[0m'
+    assert event.format(SEARCH_FORMAT, date(2014, 4, 20)) == '20.04.2014-22.04.2014 An Event \x1b[0m'
     assert 'DTSTART;VALUE=DATE:20140420' in event.raw.split('\r\n')
     assert 'DTEND;VALUE=DATE:20140423' in event.raw.split('\r\n')
 
@@ -246,13 +248,13 @@ def test_event_rd():
 def test_event_d_long():
     event_d_long = _get_text('event_d_long')
     event = Event.fromString(event_d_long, **EVENT_KWARGS)
-#    with pytest.raises(ValueError): # FIXME
-#        event.relative_to(date(2014, 4, 8))
+    with pytest.raises(ValueError):
+        event.relative_to(date(2014, 4, 8))
     assert event.format(LIST_FORMAT, datetime(2014, 4, 9, 0, 0)) == '↦ Another Event \x1b[0m'
     assert event.format(LIST_FORMAT, datetime(2014, 4, 10, 0, 0)) == '↔ Another Event \x1b[0m'
     assert event.format(LIST_FORMAT, datetime(2014, 4, 11, 0, 0)) == '⇥ Another Event \x1b[0m'
-#    with pytest.raises(ValueError):  # FIXME
-#        event.format('', date(2014, 4, 12))
+    with pytest.raises(ValueError):
+        event.format('', date(2014, 4, 12))
     assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
         '09.04.2014-11.04.2014 Another Event \x1b[0m'
 

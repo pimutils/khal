@@ -494,24 +494,25 @@ class Event(object):
         if isinstance(relative_to_start, datetime):
             relative_to_start = relative_to_start.date()
 
-        day_start = datetime_fillin(relative_to_start, end=False, locale=self._locale)
-        day_end = datetime_fillin(relative_to_end, locale=self._locale)
         self_start = datetime_fillin(self.start_local, locale=self._locale, end=False)
         self_end = datetime_fillin(self.end_local, locale=self._locale)
 
+        day_start = self._locale['local_timezone'].localize(datetime.combine(relative_to_start, time.min))
+        day_end = self._locale['local_timezone'].localize(datetime.combine(relative_to_end, time.max))
+
         allday = isinstance(self, AllDayEvent)
 
-        attributes["start"] = self_start.strftime(self._locale['datetimeformat'])
-        attributes["start-long"] = self_start.strftime(self._locale['longdatetimeformat'])
-        attributes["start-date"] = self_start.strftime(self._locale['dateformat'])
-        attributes["start-date-long"] = self_start.strftime(self._locale['longdateformat'])
-        attributes["start-time"] = self_start.strftime(self._locale['timeformat'])
+        attributes["start"] = self.start_local.strftime(self._locale['datetimeformat'])
+        attributes["start-long"] = self.start_local.strftime(self._locale['longdatetimeformat'])
+        attributes["start-date"] = self.start_local.strftime(self._locale['dateformat'])
+        attributes["start-date-long"] = self.start_local.strftime(self._locale['longdateformat'])
+        attributes["start-time"] = self.start_local.strftime(self._locale['timeformat'])
 
-        attributes["end"] = self_end.strftime(self._locale['datetimeformat'])
-        attributes["end-long"] = self_end.strftime(self._locale['longdatetimeformat'])
-        attributes["end-date"] = self_end.strftime(self._locale['dateformat'])
-        attributes["end-date-long"] = self_end.strftime(self._locale['longdateformat'])
-        attributes["end-time"] = self_end.strftime(self._locale['timeformat'])
+        attributes["end"] = self.end_local.strftime(self._locale['datetimeformat'])
+        attributes["end-long"] = self.end_local.strftime(self._locale['longdatetimeformat'])
+        attributes["end-date"] = self.end_local.strftime(self._locale['dateformat'])
+        attributes["end-date-long"] = self.end_local.strftime(self._locale['longdateformat'])
+        attributes["end-time"] = self.end_local.strftime(self._locale['timeformat'])
 
         # should only have time attributes at this point (start/end)
         full = {}
@@ -528,16 +529,16 @@ class Event(object):
             attributes["end-time"] = ""
 
         tostr = ""
-        if self_start < day_start:
+        if self.start_local.timetuple() < relative_to_start.timetuple():
             attributes["start-style"] = self.symbol_strings["right_arrow"]
-        elif self_start == day_start:
+        elif self.start_local.timetuple() == relative_to_start.timetuple():
             attributes["start-style"] = self.symbol_strings['range_start']
         else:
             attributes["start-style"] = attributes["start-time"]
             tostr = "-"
 
-        midnight_end = day_end.time() == time.max and self_end.time() == time.min and\
-                       self_end.date() - timedelta(days=1) == day_end.date()
+        midnight_end = day_end.time() == time.max and self_end.time() == time.min and \
+            self_end.date() - timedelta(days=1) == day_end.date()
         if self_end == day_end or midnight_end:
             attributes["end-style"] = self.symbol_strings["range_end"]
             tostr = ""
@@ -550,29 +551,32 @@ class Event(object):
         attributes["to-style"] = tostr
         if self_start < day_start and self_end > day_end:
             attributes["start-end-time-style"] = self.symbol_strings["range"]
-        elif allday:
-            if self_start == day_start:
-                attributes["start-end-time-style"] = attributes["start-style"]
-                if self_end == day_end:
-                    attributes["start-end-time-style"] = ''
-            elif self_end == day_end:
-                attributes["start-end-time-style"] = attributes["end-style"]
-            else:
-                attributes["start-end-time-style"] = ""
         else:
             attributes["start-end-time-style"] = attributes["start-style"] + \
                 attributes["to-style"] + attributes["end-style"]
 
         if allday:
+            if self.start == self.end:
+                attributes['start-end-time-style'] = ''
+            elif self.start == relative_to_start and self.end > relative_to_end:
+                attributes['start-end-time-style'] = self.symbol_strings['range_start']
+            elif self.start < relative_to_start and self.end > relative_to_end:
+                attributes['start-end-time-style'] = self.symbol_strings['range']
+            elif self.start < relative_to_start and self.end == relative_to_end:
+                attributes['start-end-time-style'] = self.symbol_strings['range_end']
+            else:
+                raise ValueError("something is wrong here")
+
+        if allday:
             attributes['end-necessary'] = ''
             attributes['end-necessary-long'] = ''
-            if self_start.date() != self_end.date():
+            if self.start_local != self.end_local:
                 attributes['end-necessary'] = attributes['end-date']
                 attributes['end-necessary-long'] = attributes['end-date-long']
         else:
             attributes['end-necessary'] = attributes['end-time']
             attributes['end-necessary-long'] = attributes['end-time']
-            if self_start.date() != self_end.date():
+            if self.start_local.date() != self.end_local.date():
                 attributes['end-necessary'] = attributes['end']
                 attributes['end-necessary-long'] = attributes['end-long']
 
@@ -610,7 +614,6 @@ class Event(object):
         :rtype: str
         :returns: event description
         """
-
         location = '\nLocation: ' + self.location if self.location != '' else ''
         description = '\nDescription: ' + self.description if \
             self.description != '' else ''
