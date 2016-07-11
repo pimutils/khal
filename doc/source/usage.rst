@@ -98,7 +98,7 @@ Several options are common to almost all of :program:`khal`'s commands
    end-time
         The end time in timeformat.
 
-   recurse
+   repeat-symbol
         A repeating symbol (loop arrow) if the event is repeating.
 
    description

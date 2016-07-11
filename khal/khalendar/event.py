@@ -580,7 +580,7 @@ class Event(object):
                 attributes['end-necessary'] = attributes['end']
                 attributes['end-necessary-long'] = attributes['end-long']
 
-        attributes["recurse"] = self._recur_str
+        attributes["repeat-symbol"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
         attributes["title"] = self.summary
         attributes["description"] = self.description.strip()

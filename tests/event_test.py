@@ -34,8 +34,8 @@ MIXED_LOCALE['local_timezone'] = BOGOTA
 EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE}
 
 
-LIST_FORMAT = '{calendar-color}{start-end-time-style} {title} {recurse}'
-SEARCH_FORMAT = '{calendar-color}{start-long}-{end-necessary-long} {title} {recurse}'
+LIST_FORMAT = '{calendar-color}{start-end-time-style} {title} {repeat-symbol}'
+SEARCH_FORMAT = '{calendar-color}{start-long}-{end-necessary-long} {title} {repeat-symbol}'
 
 
 def test_no_initialization():
