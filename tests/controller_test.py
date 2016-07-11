@@ -35,10 +35,18 @@ class TestGetAgenda(object):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, aux.cal1)
         coll.new(event)
-        assert ['\x1b[0m',
-                '                 a meeting :: short description\x1b[0m'] == \
+        assert ['                 a meeting :: short description\x1b[0m'] == \
             get_list_from_str(coll, aux.locale, [], format=event_format, default_timedelta='1d',
                               day_format="")
+
+    def test_new_event_day_format(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        event = coll.new_event(event_today, aux.cal1)
+        coll.new(event)
+        assert ['Today\x1b[0m',
+                '                 a meeting :: short description\x1b[0m'] == \
+            get_list_from_str(coll, aux.locale, [], format=event_format, default_timedelta='1d',
+                              day_format="{name}")
 
     def test_empty_recurrence(self, coll_vdirs):
         coll, vidrs = coll_vdirs

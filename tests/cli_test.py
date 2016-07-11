@@ -96,7 +96,7 @@ def test_direct_modification(runner):
     args = ['list', '--format', format, '--day-format', '', '09.04.2014']
     result = runner.invoke(main_khal, args)
     assert not result.exception
-    assert result.output == '\n09:30-10:30: An Event\n'
+    assert result.output == '09:30-10:30: An Event\n'
 
     os.remove(str(event))
     result = runner.invoke(main_khal, ['list'])
@@ -275,8 +275,20 @@ def test_at(runner):
         'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
     args = ['--color', 'at', '--format', '{start-time}{title}', '--day-format', '', '18:30']
     result = runner.invoke(main_khal, args)
-    print(result.output)
-    assert result.output.startswith('\x1b[0m\nmyevent')
+    assert result.output.startswith('myevent')
+    assert not result.exception
+
+
+def test_at_day_format(runner):
+    runner = runner(command='calendar', days=2)
+    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    result = runner.invoke(
+        main_khal,
+        'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+    args = ['--color', 'at', '--format', '{start-time}{title}', '--day-format', '{name}', '18:30']
+    result = runner.invoke(main_khal, args)
+    assert result.output.startswith('Today\x1b[0m\nmyevent')
     assert not result.exception
 
 
