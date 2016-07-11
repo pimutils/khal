@@ -39,31 +39,37 @@ from .calendarwidget import CalendarWidget
 
 #  Overview of how this all meant to fit together:
 #
-#   +--ClassicView(Pane)-------------------------------------+
-#   |                                                        |
-#   | +-CalendarWidget--+ +----EventColumn-----------------+ |
-#   | |                 | |                                | |
-#   | |                 | | +-DListBox------------------+  | |
-#   | |                 | | |                           |  | |
-#   | |                 | | |  +-DayWalker------------+ |  | |
-#   | |                 | | |  |                      | |  | |
-#   | |                 | | |  | +-DatePile---------+ | |  | |
-#   | |                 | | |  | | SelectableText   | | |  | |
-#   | |                 | | |  | | U_Event          | | |  | |
-#   | |                 | | |  | |  ...             | | |  | |
-#   | |                 | | |  | | U_Event          | | |  | |
-#   | |                 | | |  | +------------------+ | |  | |
-#   | |                 | | |  |     ...              | |  | |
-#   | |                 | | |  | +-DatePile---------+ | |  | |
-#   | |                 | | |  | | SelectableText   | | |  | |
-#   | |                 | | |  | | U_Event          | | |  | |
-#   | |                 | | |  | |  ...             | | |  | |
-#   | |                 | | |  | | U_Event          | | |  | |
-#   | |                 | | |  | +------------------+ | |  | |
-#   | |                 | | |  +----------------------+ |  | |
-#   | |                 | | +---------------------------+  | |
-#   | +-----------------+ +--------------------------------+ |
-#   +--------------------------------------------------------+
+#   +--ClassicView(Pane)---------------------------------------+
+#   |                                                          |
+#   | +-CalendarWidget--+ +----EventColumn-------------------+ |
+#   | |                 | |                                  | |
+#   | |                 | | +-DListBox---------------------+ | |
+#   | |                 | | |                              | | |
+#   | |                 | | | +-DayWalker----------------+ | | |
+#   | |                 | | | |                          | | | |
+#   | |                 | | | | +-MyBoxAdapter---------+ | | | |
+#   | |                 | | | | |                      | | | | |
+#   | |                 | | | | | +-DateListbox------+ | | | | |
+#   | |                 | | | | | | SelectableText   | | | | | |
+#   | |                 | | | | | | U_Event          | | | | | |
+#   | |                 | | | | | |  ...             | | | | | |
+#   | |                 | | | | | | U_Event          | | | | | |
+#   | |                 | | | | | +------------------+ | | | | |
+#   | |                 | | | | +----------------------+ | | | |
+#   | |                 | | | |       ...                | | | |
+#   | |                 | | | | +-MyBoxAdapter---------+ | | | |
+#   | |                 | | | | |                      | | | | |
+#   | |                 | | | | | +-DateListbox------+ | | | | |
+#   | |                 | | | | | | SelectableText   | | | | | |
+#   | |                 | | | | | | U_Event          | | | | | |
+#   | |                 | | | | | |  ...             | | | | | |
+#   | |                 | | | | | | U_Event          | | | | | |
+#   | |                 | | | | | +------------------+ | | | | |
+#   | |                 | | | | +----------------------+ | | | |
+#   | |                 | | | +--------------------------+ | | |
+#   | |                 | | +------------------------------+ | |
+#   | +-----------------+ +----------------------------------+ |
+#   +----------------------------------------------------------+
 
 NOREPEAT = 'No'
 ALL = 1
@@ -187,12 +193,13 @@ class DListBox(EventListBox):
             while 'bottom' in self.ends_visible(size):
                 self.body._autoextend()
             self._init = False
+        MyBoxAdapter.maxheight = size[1]  # the height
         return super().render(size, focus)
 
     def clean(self):
         """reset event most recently in focus"""
         if self._old_focus is not None:
-            self.body[self._old_focus].contents[0][0].set_attr_map({None: 'date'})
+            self.body[self._old_focus].body[0].set_attr_map({None: 'date'})
 
     def ensure_date(self, day):
         """ensure an entry for `day` exists and bring it into focus"""
@@ -201,7 +208,7 @@ class DListBox(EventListBox):
         except IndexError:
             pass
         rval = self.body.ensure_date(day)
-        self.set_focus_valign('top')  # FIXME does not always work as expected
+        self.set_focus_valign('top')
         self.clean()
         return rval
 
@@ -223,13 +230,13 @@ class DListBox(EventListBox):
                 pass
             day = self.body[self.body.focus].date
 
-            # we need to save DatePile.selected_date and reset it later, because
+            # we need to save DateListBox.selected_date and reset it later, because
             # calling CalendarWalker.set_focus_date() calls back into
             # DayWalker().update_by_date() which actually set selected_date
             # that's why it's called callback hell...
-            currently_selected_date = DatePile.selected_date
+            currently_selected_date = DateListBox.selected_date
             self.set_focus_date_callback(day)  # TODO convert to callback
-            DatePile.selected_date = currently_selected_date
+            DateListBox.selected_date = currently_selected_date
         return rval
 
     @property
@@ -245,7 +252,7 @@ class DListBox(EventListBox):
 
 
 class DayWalker(urwid.SimpleFocusListWalker):
-    """A list Walker that contains a list of DatePile objects, each representing
+    """A list Walker that contains a list of DateListBox objects, each representing
     one day and associated events"""
 
     def __init__(self, this_date, eventcolumn, conf, collection, delete_status):
@@ -272,7 +279,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self.ensure_date(this_date)
 
     def ensure_date(self, day):
-        """make sure a DatePile for `day` exists, update it and bring it into focus"""
+        """make sure a DateListBox for `day` exists, update it and bring it into focus"""
         # TODO this function gets called twice on every date change, not necessary but
         # isn't very costly either
         item_no = None
@@ -297,7 +304,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self.set_focus(item_no)
 
     def update_date(self, day):
-        """refresh the contents of the day's DatePile"""
+        """refresh the contents of the day's DateListBox"""
         offset = (day - self[0].date).days
         assert self[offset].date == day
         self[offset] = self._get_events(day)
@@ -393,7 +400,10 @@ class DayWalker(urwid.SimpleFocusListWalker):
                 U_Event(event, conf=self._conf, this_date=day, delete_status=self.delete_status),
                 'calendar ' + event.calendar, 'reveal focus')
             for event in self.events])
-        return DatePile(event_list, date=day)
+        return MyBoxAdapter(
+            DateListBox(urwid.SimpleFocusListWalker(event_list), date=day),
+            len(self.events)
+        )
 
     def selectable(self):
         """mark this widget as selectable"""
@@ -401,24 +411,35 @@ class DayWalker(urwid.SimpleFocusListWalker):
 
     @property
     def focus_event(self):
-        return self[self.focus].focus_event
+        return self[self.focus].original_widget.focus_event
 
     @property
     def current_day(self):
-        return self[self.focus].date
+        return self[self.focus].original_widget.date
 
 
-class DatePile(urwid.Pile):
-    selected_date = None
-
-    def __init__(self, *args, date, **kwargs):
+class DateListBox(NListBox):
+    """A ListBox container for a SimpleFocusListWalker"""
+    def __init__(self, content, date):
         self.date = date
-        super().__init__(*args, **kwargs)
+        super().__init__(content)
 
     def __repr__(self):
-        return '<DatePile Widget {}>'.format(self.date)
+        return '<DateListBox {}>'.format(self.date)
 
     __str__ = __repr__
+
+    def render(self, size, focus):
+        if focus:
+            self.body[0].set_attr_map({None: 'date focused'})
+        elif DateListBox.selected_date == self.date:
+            self.body[0].set_attr_map({None: 'date selected'})
+        else:
+            self.reset_style()
+        return super().render(size, focus)
+
+    def reset_style(self):
+        self.body[0].set_attr_map({None: 'date'})
 
     def set_selected_date(self, day):
         """Mark `day` as "selected
@@ -426,42 +447,35 @@ class DatePile(urwid.Pile):
         :param day: day to mark as selected
         :type day: datetime.date
         """
-        DatePile.selected_date = day
+        DateListBox.selected_date = day
         # we need to touch the title's content to make sure
         # that urwid re-renders the title
-        title = self.contents[0][0].original_widget
+        title = self.body[0].original_widget
         title.set_text(title.get_text()[0])
-
-    def render(self, a, focus):
-        if focus:
-            self.contents[0][0].set_attr_map({None: 'date focused'})
-        elif DatePile.selected_date == self.date:
-            self.contents[0][0].set_attr_map({None: 'date selected'})
-        else:
-            self.reset_style()
-        return super().render(a, focus)
-
-    def reset_style(self):
-        self.contents[0][0].set_attr_map({None: 'date'})
-
-    def selectable(self):
-        return True
-
-    def keypress(self, size, key):
-        return super().keypress(size, key)
 
     @property
     def focus_event(self):
-        """return the U_Event in focus, if none is, return None"""
-        if self.focus_position == 0:
+        if self.focus == 0:
             return None
         else:
             return self.focus.original_widget
 
     def refresh_titles(self):
         """refresh the titles of all events"""
-        for uevent, _ in self.contents[1:]:
+        for uevent in self.body[1:]:
             uevent.original_widget.set_title()
+
+
+class MyBoxAdapter(urwid.BoxAdapter):
+    maxheight = 0
+
+    def __init__(self, box_widget, height):
+        urwid.WidgetDecoration.__init__(self, box_widget)
+        MyBoxAdapter.maxheight = height
+
+    @property
+    def height(self):
+        return min(MyBoxAdapter.maxheight, len(self.original_widget.body))
 
 
 class EventColumn(urwid.WidgetWrap):
@@ -516,7 +530,7 @@ class EventColumn(urwid.WidgetWrap):
         self.dlistbox.ensure_date(date)
 
     def update(self, min_date, max_date, everything):
-        """update DatePiles
+        """update DateListBox
 
         if `everything` is True, reset all displayed dates, else only those between
         min_date and max_date
@@ -528,7 +542,7 @@ class EventColumn(urwid.WidgetWrap):
         self.dlistbox.body.update_range(min_date, max_date)
 
     def refresh_titles(self, min_date, max_date, everything):
-        """refresh titles in DatePiles
+        """refresh titles in DateListBoxes
 
         if `everything` is True, reset all displayed dates, else only those between
         min_date and max_date
@@ -566,7 +580,7 @@ class EventColumn(urwid.WidgetWrap):
             :param everything: set to True if event is a recurring one, than everything
                   gets reseted
             """
-            # TODO cleverer support for recurring events, were more than start and
+            # TODO cleverer support for recurring events, where more than start and
             # end dates are affected (complicated)
             if isinstance(new_start, datetime):
                 new_start = new_start.date()
@@ -626,12 +640,14 @@ class EventColumn(urwid.WidgetWrap):
         def delete_this(_):
             self.toggle_delete_instance(event.recuid)
             self.pane.window.backtrack()
-            self.refresh_titles(event.event.start_local, event.event.end_local, event.event.recurring)
+            self.refresh_titles(
+                event.event.start_local, event.event.end_local, event.event.recurring)
 
         def delete_all(_):
             self.toggle_delete_all(event.recuid)
             self.pane.window.backtrack()
-            self.refresh_titles(event.event.start_local, event.event.end_local, event.event.recurring)
+            self.refresh_titles(
+                event.event.start_local, event.event.end_local, event.event.recurring)
 
         if event.event.readonly:
             self.eventcolumn.pane.window.alert(
@@ -660,7 +676,8 @@ class EventColumn(urwid.WidgetWrap):
         else:
             self.toggle_delete_all(event.recuid)
         if refresh:
-            self.refresh_titles(event.event.start_local, event.event.end_local, event.event.recurring)
+            self.refresh_titles(
+                event.event.start_local, event.event.end_local, event.event.recurring)
             event.set_title()  # if we are in search results, refersh_titles doesn't work properly
 
     def duplicate(self):
@@ -676,7 +693,9 @@ class EventColumn(urwid.WidgetWrap):
             event.calendar = self.pane.collection.default_calendar_name or \
                 self.pane.collection.writable_names[0]
             self.edit(event, always_save=True)
-        self.update_colors(event.start_local, event.end_local, event.recurring)
+        # XXX fix duplicating for datetime events
+        self.pane.eventscolumn.base_widget.update(
+            event.start_local, event.end_local, event.recurring)
         try:
             self._old_focus = self.focus_position
         except IndexError:
@@ -750,7 +769,7 @@ class EventColumn(urwid.WidgetWrap):
 
     def render(self, a, focus):
         if focus:
-            DatePile.selected_date = None
+            DateListBox.selected_date = None
         return super().render(a, focus)
 
 
