@@ -678,7 +678,7 @@ class EventColumn(urwid.WidgetWrap):
         if refresh:
             self.refresh_titles(
                 event.event.start_local, event.event.end_local, event.event.recurring)
-            event.set_title()  # if we are in search results, refersh_titles doesn't work properly
+            event.set_title()  # if we are in search results, refresh_titles doesn't work properly
 
     def duplicate(self):
         """duplicate the event in focus"""
@@ -693,9 +693,12 @@ class EventColumn(urwid.WidgetWrap):
             event.calendar = self.pane.collection.default_calendar_name or \
                 self.pane.collection.writable_names[0]
             self.edit(event, always_save=True)
-        # XXX fix duplicating for datetime events
-        self.pane.eventscolumn.base_widget.update(
-            event.start_local, event.end_local, event.recurring)
+        start_date, end_date = event.start_local, event.end_local
+        if isinstance(start_date, datetime):
+            start_date = start_date.date()
+        if isinstance(end_date, datetime):
+            end_date = end_date.date()
+        self.pane.eventscolumn.base_widget.update(start_date, end_date, event.recurring)
         try:
             self._old_focus = self.focus_position
         except IndexError:
