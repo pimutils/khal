@@ -232,7 +232,7 @@ class DListBox(EventListBox):
 
             # we need to save DateListBox.selected_date and reset it later, because
             # calling CalendarWalker.set_focus_date() calls back into
-            # DayWalker().update_by_date() which actually set selected_date
+            # DayWalker().update_by_date() which actually sets selected_date
             # that's why it's called callback hell...
             currently_selected_date = DateListBox.selected_date
             self.set_focus_date_callback(day)  # TODO convert to callback
@@ -310,7 +310,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self[offset] = self._get_events(day)
 
     def refresh_titles(self, start, end, everything):
-        """refresh the titles of events
+        """refresh events' titles
 
         if `everything` is True, reset all titles, otherwise only
         those between `start` and `end`
@@ -335,7 +335,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
             self[index].refresh_titles()
 
     def update_range(self, start, end, everything=False):
-        """refresh contents of all day between start and end (inclusive)
+        """refresh contents of all days between start and end (inclusive)
 
         :type start: datetime.date
         :type end: datetime.date
@@ -370,7 +370,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self.append(pile)
 
     def _autoprepend(self):
-        """prepend the day before the first day to ourselves"""
+        """prepend the day before the first day to ourself"""
         # we need to actively reset the last element's attribute, as their
         # render() method does not get called otherwise, and they would
         # be indicated as the currently selected date
@@ -380,7 +380,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self.insert(0, pile)
 
     def _get_events(self, day):
-        """get all events on day, return a Pile of `U_Event()`s
+        """get all events on day, return a DateListBox of `U_Event()`s
 
         :type day: datetime.date
         """
@@ -442,7 +442,7 @@ class DateListBox(NListBox):
         self.body[0].set_attr_map({None: 'date'})
 
     def set_selected_date(self, day):
-        """Mark `day` as "selected
+        """Mark `day` as selected
 
         :param day: day to mark as selected
         :type day: datetime.date
