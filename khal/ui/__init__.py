@@ -467,6 +467,8 @@ class DateListBox(NListBox):
 
 
 class MyBoxAdapter(urwid.BoxAdapter):
+    no_cache = ['rows', 'render']
+    # FIXME invalidate render cache if maxheight changes
     maxheight = 0
 
     def __init__(self, box_widget, height):
@@ -476,6 +478,19 @@ class MyBoxAdapter(urwid.BoxAdapter):
     @property
     def height(self):
         return min(MyBoxAdapter.maxheight, len(self.original_widget.body))
+
+    def render(self, size, focus=False):
+        """for whatever reason having this copey of urwid.BoxAdapter.render()
+        in here, ensures that the height is correctly calculated. Before, if an
+        event was viewed which was on a day with more events than fit into the
+        viewport, urwid raised an Exception when closing the event viewer
+        because of miscalculated heights. Making sure render() is not cached is
+        needed as well."""
+
+        (maxcol,) = size
+        canv = self._original_widget.render((maxcol, self.height), focus)
+        canv = urwid.CompositeCanvas(canv)
+        return canv
 
 
 class EventColumn(urwid.WidgetWrap):
