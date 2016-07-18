@@ -455,7 +455,7 @@ class DateListBox(NListBox):
 
     @property
     def focus_event(self):
-        if self.focus == 0:
+        if self.body.focus == 0:
             return None
         else:
             return self.focus.original_widget
@@ -734,6 +734,7 @@ class EventColumn(urwid.WidgetWrap):
         return True
 
     def keypress(self, size, key):
+        self.clear_event_view()
         if key in self._conf['keybindings']['new']:
             self.new(self.focus_date, self.focus_date)
             key = None
@@ -742,7 +743,6 @@ class EventColumn(urwid.WidgetWrap):
             if key in self._conf['keybindings']['delete']:
                 self.toggle_delete()
                 key = 'down'
-                # TODO refocus right event after calling toggle_delete
             elif key in self._conf['keybindings']['duplicate']:
                 self.duplicate()
                 key = None
