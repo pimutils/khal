@@ -467,6 +467,10 @@ class DateListBox(NListBox):
 
 
 class MyBoxAdapter(urwid.BoxAdapter):
+    """A BoxAdapter which trys to adapt to the height of its content
+
+    up until MyBoxAdapter.maxheight is hit
+    """
     no_cache = ['rows', 'render']
     # FIXME invalidate render cache if maxheight changes
     maxheight = 0
