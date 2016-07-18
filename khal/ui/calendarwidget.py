@@ -19,9 +19,13 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""contains a re-usable CalendarWidget for urwid"""
+"""contains a re-usable CalendarWidget for urwid
+
+if anything doesn't work as expected, please open an issue for khal
+"""
 
 import calendar
+from collections import defaultdict
 from datetime import date
 from locale import getlocale, setlocale, LC_ALL
 
@@ -79,8 +83,8 @@ class Date(urwid.WidgetWrap):
         else:
             self.halves[0].set_attr_map({None: styles})
             self.halves[1].set_attr_map({None: styles})
-            self.halves[1].set_focus_map({None: styles})
             self.halves[0].set_focus_map({None: styles})
+            self.halves[1].set_focus_map({None: styles})
 
     def reset_styles(self, focus=False):
         self.set_styles(self._get_styles(self.date, focus))
@@ -110,6 +114,8 @@ class DateCColumns(urwid.Columns):
     focus can only move away by pressing 'TAB',
     calls 'on_date_change' on every focus change (see below for details)
     """
+    # TODO only call on_date_change when we change our date ourselves,
+    # not if it gets changed by an (external) call to set_focus_date()
 
     def __init__(self, widget_list, on_date_change, on_press, keybindings,
                  get_styles=None, **kwargs):
@@ -117,10 +123,6 @@ class DateCColumns(urwid.Columns):
         self.on_press = on_press
         self.keybindings = keybindings
         self.get_styles = get_styles
-        # we need the next two attributes for attribute resetting when a
-        # cell regains focus after having lost it
-        self._old_attr_map = False
-        self._old_pos = 0
         self._init = True
         super(DateCColumns, self).__init__(widget_list, **kwargs)
 
@@ -291,6 +293,7 @@ class CListBox(urwid.ListBox):
                 self._unmark_one(row, col)
 
     def set_focus_date(self, a_day):
+        self.focus.focus.set_styles(self.focus.get_styles(self.body.focus_date, False))
         if self._marked:
             self._unmark_all()
             self._mark(a_day)
@@ -373,10 +376,20 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         self.set_focus(row)
         self[self.focus]._set_focus_position(column)
 
+    @property
+    def earliest_date(self):
+        """return earliest day that is already loaded into the CalendarWidget"""
+        return self[0][1].date
+
+    @property
+    def latest_date(self):
+        """return latest day that is already loaded into the CalendarWidget"""
+        return self[-1][7].date
+
     def reset_styles_range(self, min_date, max_date):
-        """reset styles for all dates between min_date and max_date"""
-        minr, minc = self.get_date_pos(min_date)
-        maxr, maxc = self.get_date_pos(max_date)
+        """reset styles for all (displayed) dates between min_date and max_date"""
+        minr, minc = self.get_date_pos(max(min_date, self.earliest_date))
+        maxr, maxc = self.get_date_pos(min(max_date, self.latest_date))
         focus_pos = self.focus, self[self.focus].focus_col
 
         for row in range(minr, maxr + 1):
@@ -533,9 +546,9 @@ class CalendarWidget(urwid.WidgetWrap):
                  weeknumbers=False, get_styles=None, initial=None):
 
         """
-        :param on_date_change: a function that is called every time the selected date
-                        is changed with the newly selected date as a first (and
-                        only argument)
+        :param on_date_change: a function that is called every time the selected
+            date is changed with the newly selected date as a first (and only
+            argument)
         :type on_date_change: function
         :param keybindings: bind keys to specific functions, keys are
             commands (e.g. movement commands, values are lists of keys
@@ -553,7 +566,7 @@ class CalendarWidget(urwid.WidgetWrap):
             selected, the first argument is the earlier and the second argument
             is the later date. The function's return values are interpreted as
             pressed keys.
-        :type on_pres: dict
+        :type on_press: dict
         """
         if initial is None:
             self._initial = date.today()
@@ -566,9 +579,7 @@ class CalendarWidget(urwid.WidgetWrap):
             'view': [],
             'mark': ['v'],
         }
-        from collections import defaultdict
         on_press = defaultdict(lambda: lambda x: x, on_press)
-
         default_keybindings.update(keybindings)
         calendar.setfirstweekday(firstweekday)
 
