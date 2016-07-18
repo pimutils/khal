@@ -67,15 +67,21 @@ light = [
     ('edit focused', 'white', 'light blue', 'bold'),
     ('button', 'black', 'dark cyan'),
     ('button focused', 'white', 'light blue', 'bold'),
+
     ('reveal focus', 'black', 'dark cyan', 'standout'),
     ('today focus', 'white', 'dark cyan', 'standout'),
     ('today', 'light gray', 'black', 'dark cyan'),
+
+    ('date', 'light gray', 'white'),
+    ('date focused', 'white', 'dark gray', ('bold', 'standout')),
+    ('date selected', 'dark gray', 'yellow'),
+
     ('dayname', 'dark gray', 'white'),
     ('monthname', 'dark gray', 'white'),
     ('weeknumber_right', 'dark gray', 'white'),
-    ('date', 'dark gray', 'white'),
     ('edit', 'white', 'dark blue'),
     ('alert', 'white', 'dark red'),
+    ('mark', 'white', 'dark green'),
     ('frame', 'dark gray', 'white'),
     ('frame focus', 'light red', 'white'),
     ('frame focus color', 'dark blue', 'white'),
