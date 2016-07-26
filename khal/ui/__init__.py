@@ -531,7 +531,6 @@ class EventColumn(urwid.WidgetWrap):
              ('weight', self.event_width)))
 
     def clear_event_view(self):
-        self._eventshown = False
         while len(self.container.contents) > 1:
             self.container.contents.pop()
 
