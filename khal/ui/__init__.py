@@ -208,7 +208,6 @@ class DListBox(EventListBox):
         except IndexError:
             pass
         rval = self.body.ensure_date(day)
-        self.set_focus_valign('top')
         self.clean()
         return rval
 
