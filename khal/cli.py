@@ -297,10 +297,12 @@ def _get_cli():
         help='Print events only once, even if they span multiple days')
     @click.option('--notstarted', help=('Print only events that have not started'),
                   is_flag=True)
-    @click.argument('DATERANGE', nargs=-1, required=False)
+    @click.argument('DATERANGE', nargs=-1, required=False,
+                    metavar='[DATETIME [DATETIME | RANGE]]')
     @click.pass_context
     def klist(ctx, daterange, once, notstarted, format, day_format):
-        '''Print list.'''
+        """List all events between a start (default: today) and (optional)
+        end datetime."""
         controllers.khal_list(
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
             format=format,
@@ -526,10 +528,10 @@ def _get_cli():
                   help=('The format of the day line.'))
     @click.option('--notstarted', help=('Print only events that have not started'),
                   is_flag=True)
-    @click.argument('DATETIME', nargs=-1, required=False)
+    @click.argument('DATETIME', nargs=-1, required=False, metavar='[DATETIME]')
     @click.pass_context
     def at(ctx, datetime, notstarted, format, day_format):
-        '''Print list.'''
+        '''Print all events at a specific (date-)time (defaults to now).'''
         if not datetime:
             datetime = ("now",)
         controllers.khal_list(
