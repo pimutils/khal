@@ -65,7 +65,7 @@ You want to contribute to *khal*? Awesome!
 
 The most appreciated way of contributing is by supplying code or documentation,
 reporting bugs, creating packages for your favorite operating system, making
-khal better know by telling your friends about it, etc. If you don't have
+khal better known by telling your friends about it, etc. If you don't have
 the time or the means to contribute in any of the above mentioned ways,
 donations are appreciated, too.
 
