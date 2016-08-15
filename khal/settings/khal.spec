@@ -1,5 +1,5 @@
 [calendars]
-# The *[calendars]* is mandatory and must contain at least one subsection.
+# The *[calendars]* section is mandatory and must contain at least one subsection.
 # Every subsection must have a unique name (enclosed by two square brackets).
 # Each subsection needs exactly one *path* setting, everything else is optional.
 # Here is a small example:
@@ -145,8 +145,7 @@ search = force_list(default=list('/'))
 quit = force_list(default=list('q', 'Q'))
 
 
-# The default section begins with a **[default]** tag. Some default values and
-# behaviours are set here.
+# Some default values and behaviours are set here.
 [default]
 
 # command to be executed if no command is given when executing khal
@@ -173,7 +172,7 @@ highlight_event_days = boolean(default=False)
 timedelta = string(default='2d')
 
 # The view section contains configuration options that effect the visual appearance
-# when using ikhal
+# when using ikhal.
 [view]
 
 # weighting that is applied to the event view window
@@ -230,8 +229,8 @@ agenda_day_format = string(default='{bold}{name}{reset}')
 # The syntax is the same as for :option:`--format`.
 event_format = string(default='{calendar-color}{start}-{end} {title}{recurse}{description-separator}{description}{reset}')
 
-# When highlight_event_days is enabled, this section specifies how is
-# the highlighting rendered.
+# When highlight_event_days is enabled, this section specifies how
+# the highlighting/coloring of days is handled.
 [highlight_days]
 
 # Highlighting method to use - foreground or background

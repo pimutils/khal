@@ -9,7 +9,7 @@
 The [calendars] section
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The *[calendars]* is mandatory and must contain at least one subsection.
+The *[calendars]* section is mandatory and must contain at least one subsection.
 Every subsection must have a unique name (enclosed by two square brackets).
 Each subsection needs exactly one *path* setting, everything else is optional.
 Here is a small example:
@@ -84,8 +84,7 @@ The [default] section
 ~~~~~~~~~~~~~~~~~~~~~
 
 
-The default section begins with a **[default]** tag. Some default values and
-behaviours are set here.
+Some default values and behaviours are set here.
 
 .. _default-default_calendar:
 
@@ -155,8 +154,8 @@ behaviours are set here.
 The [highlight_days] section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When highlight_event_days is enabled, this section specifies how is
-the highlighting rendered.
+When highlight_event_days is enabled, this section specifies how
+the highlighting/coloring of days is handled.
 
 .. _highlight_days-color:
 
@@ -358,7 +357,7 @@ between), e.g. **ctrl n**.
     show details or edit (if details are already shown) the currently selected event
 
       :type: list
-      :default: enter, tab
+      :default: enter
 
 The [locale] section
 ~~~~~~~~~~~~~~~~~~~~
@@ -495,7 +494,7 @@ The [view] section
 ~~~~~~~~~~~~~~~~~~
 
 The view section contains configuration options that effect the visual appearance
-when using ikhal
+when using ikhal.
 
 .. _view-agenda_day_format:
 
@@ -513,7 +512,10 @@ when using ikhal
 
     
     Default formating for events used when the user asks for all events in a
-    given time range, used for :command:`list` and :command:`calendar`.
+    given time range, used for :command:`list`, :command:`calendar` and in
+    :command:`interactive` (ikhal). Please note, that any color styling will be
+    ignored in `ikhal`, where events will always be shown in the color of the
+    calendar they belong to.
     The syntax is the same as for :option:`--format`.
 
       :type: string
