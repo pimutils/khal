@@ -320,7 +320,7 @@ def test_repeat():
                                     repeat='daily',
                                     until=['05.06.2015'],
                                     locale=locale_de)
-            assert _replace_uid(event).to_ical() == vevent
+            assert normalize_component(_replace_uid(event).to_ical()) == normalize_component(vevent)
 
 
 test_set_alarm = _create_testcases(
