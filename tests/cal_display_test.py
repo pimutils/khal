@@ -139,7 +139,7 @@ example_de = [
 
 
 def test_vertical_month():
-    locale.setlocale(locale.LC_ALL, 'en_US.utf-8')
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     vert_str = vertical_month(month=12, year=2011,
                               today=datetime.date(2011, 12, 12))
     assert vert_str == example1
@@ -158,7 +158,7 @@ def test_vertical_month():
 
 def test_vertical_month_unicode():
     try:
-        locale.setlocale(locale.LC_ALL, 'de_DE.utf-8')
+        locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
     except locale.Error as error:
         if str(error) == 'unsupported locale setting':
             pytest.xfail(
