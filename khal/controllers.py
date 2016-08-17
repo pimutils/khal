@@ -92,14 +92,20 @@ def calendar(collection, format=None, notstarted=False, once=False, daterange=No
     term_width, _ = get_terminal_size()
     lwidth = 25
     rwidth = term_width - lwidth - 4
+    start, end = start_end_from_daterange(daterange, locale, td)
     event_column = get_list_from_str(collection, format=format,
                                      day_format=day_format,
-                                     daterange=daterange, locale=locale,
+                                     start=start,
+                                     end=end,
+                                     locale=locale,
                                      once=once, notstarted=notstarted,
                                      default_timedelta=td, width=rwidth,
                                      show_all_days=show_all_days,
                                      **kwargs)
     calendar_column = calendar_display.vertical_month(
+        month=start.month,
+        year=start.year,
+        count=max(3, (end.year - start.year) * 12 + end.month - start.month + 1),
         firstweekday=firstweekday, weeknumber=weeknumber,
         collection=collection,
         hmethod=hmethod,
@@ -113,18 +119,45 @@ def calendar(collection, format=None, notstarted=False, once=False, daterange=No
     echo('\n'.join(rows))
 
 
-def get_list_from_str(collection, locale, daterange, notstarted=False,
+def start_end_from_daterange(daterange, locale, default_timedelta=None):
+    """
+    convert a string description of a daterange into start and end datetime
+    :param daterange: an iterable of strings that describes `daterange`
+    :type daterange: tuple
+    :param locale: locale settings
+    :type locale: dict
+    :param default_timedelta: default timedelta, if None is given and no end is
+        specified, we assume start = end, in the form of '2d' for 2 days
+    :type default_timedelta: str
+    """
+    if len(daterange) == 0:
+        start = aux.datetime_fillin(end=False)
+        if default_timedelta is None:
+            end = aux.datetime_fillin(day=start)
+        else:
+            try:
+                end = start + aux.guesstimedeltafstr(default_timedelta)
+            except ValueError as e:
+                raise InvalidDate(e)
+    else:
+        start, end, allday = aux.guessrangefstr(
+            daterange, locale, default_timedelta=default_timedelta)
+        if start is None or end is None:
+            raise InvalidDate('Invalid date range: "%s"' % (' '.join(daterange)))
+
+    return start, end
+
+
+def get_list_from_str(collection, locale, start, end, notstarted=False,
                       format=None, day_format=None, once=False,
                       default_timedelta=None, env=None, show_all_days=False,
                       **kwargs):
-    """returns a list of events scheduled in between `daterange`.
+    """returns a list of events scheduled in between `start` and `end`.
 
     :param collection:
     :type collection: khalendar.CalendarCollection
     :param locale: locale settings
     :type locale: dict
-    :param daterange: an iterable of strings that describes `daterange`
-    :type daterange: tuple
     :param notstarted: True if each event should start after start (instead of
         be active between start and end)
     :type nostarted: bool
@@ -138,28 +171,6 @@ def get_list_from_str(collection, locale, daterange, notstarted=False,
     :returns: a list to be printed as the agenda for the given datetime range
     :rtype: list(str)
     """
-    if len(daterange) == 0:
-        start = aux.datetime_fillin(end=False)
-        if default_timedelta is None:
-            end = aux.datetime_fillin(day=start)
-        else:
-            try:
-                end = start + aux.guesstimedeltafstr(default_timedelta)
-            except ValueError as e:
-                logging.fatal(e)
-                sys.exit(1)
-
-    else:
-        try:
-            start, end, allday = aux.guessrangefstr(daterange, locale,
-                                                    default_timedelta=default_timedelta)
-
-            if start is None or end is None:
-                raise InvalidDate('Invalid date range: "%s"' % (' '.join(daterange)))
-
-        except InvalidDate as error:
-            logging.fatal(error)
-            sys.exit(1)
 
     event_column = []
     if once:
@@ -248,9 +259,9 @@ def khal_list(collection, daterange, conf=None, format=None, day_format=None,
         if day_format is None:
             day_format = conf['view']['agenda_day_format']
         show_all_days = conf['default']['show_all_days']
-
+    start, end = start_end_from_daterange(daterange, conf['locale'], td)
     event_column = get_list_from_str(
-        collection, format=format, day_format=day_format, daterange=daterange,
+        collection, format=format, start=start, end=end, day_format=day_format,
         once=once, notstarted=notstarted, default_timedelta=td,
         show_all_days=show_all_days, **kwargs)
 
