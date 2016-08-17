@@ -576,3 +576,25 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None, env
                     Item(ics.to_ical().decode('utf-8')), collection=calendar_name)
             else:
                 logger.warn(u"Not importing event with UID `{}`".format(event.uid))
+
+
+def print_ics(conf, name, ics, format):
+    if format is None:
+        format = conf['view']['agenda_event_format']
+    cal = icalendar.Calendar.from_ical(ics)
+    events = [item for item in cal.walk() if item.name == 'VEVENT']
+    events_grouped = defaultdict(list)
+    for event in events:
+        events_grouped[event['UID']].append(event)
+
+    if format is None:
+        format = conf['view']['event_format']
+
+    vevents = list()
+    for uid in events_grouped:
+        vevents.append(sorted(events_grouped[uid], key=sort_key))
+
+    echo('{} events found in {}'.format(len(vevents), name))
+    for sub_event in vevents:
+        event = Event.fromVEvents(sub_event, locale=conf['locale'])
+        echo(event.format(format, datetime.now()))
