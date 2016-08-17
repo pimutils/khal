@@ -577,6 +577,7 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None, env
             else:
                 logger.warn(u"Not importing event with UID `{}`".format(event.uid))
 
+
 def print_ics(conf, name, ics, format):
     if format is None:
         format = conf['view']['agenda_event_format']
