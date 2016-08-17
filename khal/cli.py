@@ -396,7 +396,7 @@ def _get_cli():
                   help=('The format to print the event.'))
     @click.pass_context
     def import_ics(ctx, ics, include_calendar, batch, random_uid, format):
-        '''Import events from an .ics file.
+        '''Import events from an .ics file or stdin.
 
         If an event with the same UID is already present in the (implicitly)
         selected calendar import will ask before updating (i.e. overwriting)
@@ -471,6 +471,18 @@ def _get_cli():
                 'dateformat', 'timeformat']:
             dt_str = time.strftime(ctx.obj['conf']['locale'][strftime_format])
             click.echo('{}: {}'.format(strftime_format, dt_str))
+
+    @cli.command()
+    @click.argument('ics', type=click.File('rb'))
+    @click.option('--format', '-f',
+                  help=('The format to print the event.'))
+    @click.pass_context
+    def printics(ctx, ics, format):
+        '''Print an ics file without importing it.
+
+        Just print the ics file, do nothing else.'''
+        ics_str = ics.read()
+        controllers.print_ics(ctx.obj['conf'], ics.name, ics_str, format)
 
     @cli.command()
     @multi_calendar_option
