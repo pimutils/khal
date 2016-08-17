@@ -40,7 +40,7 @@ Several options are common to almost all of :program:`khal`'s commands
 
 .. option:: -d CALENDAR
 
-        Specifiy a calendar which will be disregarded for this run, can be used
+        Specify a calendar which will be disregarded for this run, can be used
         several times.
 
 .. option:: --color/--no-color
