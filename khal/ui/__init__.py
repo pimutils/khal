@@ -462,7 +462,8 @@ class DateListBox(NListBox):
     def refresh_titles(self):
         """refresh the titles of all events"""
         for uevent in self.body[1:]:
-            uevent.original_widget.set_title()
+            if isinstance(uevent._original_widget, U_Event):
+                uevent.original_widget.set_title()
 
 
 class MyBoxAdapter(urwid.BoxAdapter):
