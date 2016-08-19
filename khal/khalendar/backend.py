@@ -527,7 +527,7 @@ def check_support(vevent, href, calendar):
             .format(href, calendar)
         )
     rdate = vevent.get('RDATE')
-    if rdate is not None and rdate.params.get('VALUE') == 'PERIOD':
+    if rdate is not None and hasattr(rdate, 'params') and rdate.params.get('VALUE') == 'PERIOD':
         raise UpdateFailed(
             u'`RDATE;VALUE=PERIOD` is currently not supported by khal. '
             u'Therefore event {} from calendar {} will not be shown in khal.\n'

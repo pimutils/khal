@@ -569,6 +569,13 @@ def test_check_support():
         [backend.check_support(event, '', '') for event in ical.walk()]
 
 
+def test_check_support_rdate_no_values():
+    """check if `check_support` doesn't choke on events with an RDATE property
+    without a VALUE parameter"""
+    ical = icalendar.Calendar.from_ical(_get_text('event_rdate_no_value'))
+    [backend.check_support(event, '', '') for event in ical.walk()]
+
+
 card = """BEGIN:VCARD
 VERSION:3.0
 FN:Unix
