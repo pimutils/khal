@@ -165,6 +165,22 @@ class TestGuessRangefstr(object):
         assert (self.today16, self.today17, False) == \
             guessrangefstr('16:00 17:00', locale=locale_de, default_timedelta="1d")
 
+    def test_start_and_end_date(self):
+        assert (datetime(2016, 1, 1), datetime(2017, 1, 1), True) == \
+            guessrangefstr('1.1.2016 1.1.2017', locale=locale_de, default_timedelta="1d")
+
+    def test_start_and_end_date_time(self):
+        assert (datetime(2016, 1, 1, 10), datetime(2017, 1, 1, 22), False) == \
+            guessrangefstr('1.1.2016 10:00 1.1.2017 22:00', locale=locale_de, default_timedelta="1d")
+
+    def test_start_and_eod(self):
+        assert (datetime(2016, 1, 1, 10), datetime(2016, 1, 1, 23, 59, 59, 999999), False) == \
+            guessrangefstr('1.1.2016 10:00 eod', locale=locale_de, default_timedelta="1d")
+
+    def test_start_and_week(self):
+        assert (datetime(2015, 12, 28), datetime(2016, 1, 4), True) == \
+            guessrangefstr('1.1.2016 week', locale=locale_de, default_timedelta="1d")
+
 
 class TestTimeDelta2Str(object):
 
