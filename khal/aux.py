@@ -242,7 +242,7 @@ def timedelta2str(delta):
 
     seconds = total_seconds % 60
     total_seconds -= seconds
-    total_minutes = total_seconds//60
+    total_minutes = total_seconds // 60
     minutes = total_minutes % 60
     total_minutes -= minutes
     total_hours = total_minutes // 60
@@ -261,7 +261,7 @@ def timedelta2str(delta):
         s.append(str(seconds) + "s")
 
     if delta != abs(delta):
-        s = ["-"+part for part in s]
+        s = ["-" + part for part in s]
 
     return ' '.join(s)
 
@@ -384,8 +384,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0,
                         end = datetime(end.year + 1, *end.timetuple()[1:6])
 
                 if end < start:
-                    end = datetime(*start.timetuple()[0:3] +
-                                   end.timetuple()[3:5])
+                    end = datetime(*start.timetuple()[0:3] + end.timetuple()[3:5])
                 if end < start:
                     end = end + timedelta(days=1)
 
