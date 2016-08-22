@@ -13,9 +13,11 @@ BERLIN = pytz.timezone('Europe/Berlin')
 
 locale = {'default_timezone': BERLIN,
           'local_timezone': BERLIN,
-          'dateformat': '%d.%m.%Y',
+          'dateformat': '%d.%m.',
+          'longdateformat': '%d.%m.%Y',
           'timeformat': '%H:%M',
-          'longdateformat': '%d.%m.%Y %H:%M',
+          'datetimeformat': '%d.%m. %H:%M',
+          'longdatetimeformat': '%d.%m.%Y %H:%M',
           'unicode_symbols': True,
           'firstweekday': 0,
           'weeknumbers': False,

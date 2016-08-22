@@ -306,20 +306,18 @@ def guesstimedeltafstr(delta_string):
     return res
 
 
-def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0,
-                   adjust_reasonably=False):
+def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=False):
     """parses a range string
 
     :param daterange: date1 [date2 | timedelta]
     :type daterange: str or list
     :param locale:
-    :rtype: (datetime, datetime)
+    :rtype: (datetime, datetime, bool)
 
     """
-
     range_list = daterange
     if isinstance(daterange, str):
-        range_list = daterange.split()
+        range_list = daterange.split(' ')
 
     try:
         if default_timedelta is None or len(default_timedelta) == 0:
@@ -339,7 +337,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0,
                 start = datetime_fillin(end=False)
             elif start.lower() == 'week':
                     today_weekday = datetime.today().weekday()
-                    start = datetime.today() - timedelta(days=(today_weekday - first_weekday))
+                    start = datetime.today() - timedelta(days=(today_weekday - locale['firstweekday']))
                     end = start + timedelta(days=7)
             else:
                 split = start.split(" ")
@@ -356,7 +354,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0,
             elif end.lower() == 'eod':
                     end = datetime_fillin(day=start)
             elif end.lower() == 'week':
-                start -= timedelta(days=(start.weekday() - first_weekday))
+                start -= timedelta(days=(start.weekday() - locale['firstweekday']))
                 end = start + timedelta(days=7)
             else:
 

@@ -25,6 +25,7 @@ locale_de = {
     'longdateformat': '%d.%m.%Y',
     'datetimeformat': '%d.%m. %H:%M',
     'longdatetimeformat': '%d.%m.%Y %H:%M',
+    'firstweekday': 0,
     'default_timezone': pytz.timezone('Europe/Berlin'),
 }
 
