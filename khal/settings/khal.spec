@@ -185,7 +185,7 @@ event_view_always_visible = boolean(default=False)
 #
 # This is very much work in progress. Help is really welcome! The two currently
 # available color schemes (*dark* and *light*) are defined in
-# *khal/ui/themes.py*, you can either help improve those or create a new one
+# *khal/ui/colors.py*, you can either help improve those or create a new one
 # (see below). As ikhal uses urwid, have a look at `urwid's documentation`__
 # for how to set colors and/or at the existing schemes. If you cannot change
 # the color of an element (or have any other problems) please open an issue on
