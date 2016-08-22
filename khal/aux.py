@@ -334,47 +334,46 @@ def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0,
         end = ' '.join(range_list[i:])
         allday = False
         try:
-            if start is None:
+            # figuring out start
+            if len(start) == 0:
                 start = datetime_fillin(end=False)
-            elif not isinstance(start, date):
-                if start.lower() == 'week':
+            elif start.lower() == 'week':
                     today_weekday = datetime.today().weekday()
                     start = datetime.today() - timedelta(days=(today_weekday - first_weekday))
                     end = start + timedelta(days=7)
-                else:
-                    split = start.split(" ")
-                    start, allday = guessdatetimefstr(split, locale)
-                    if len(split) != 0:
-                        continue
+            else:
+                split = start.split(" ")
+                start, allday = guessdatetimefstr(split, locale)
+                if len(split) != 0:
+                    continue
 
-            if isinstance(end, datetime):
-                pass
-
-            elif end is None or len(end) == 0:
+            # and end
+            if len(end) == 0:
                 if default_timedelta is not None:
                     end = start + default_timedelta
                 else:
                     end = datetime_fillin(day=start)
-            else:
-                if end.lower() == 'eod':
+            elif end.lower() == 'eod':
                     end = datetime_fillin(day=start)
-                elif end.lower() == 'week':
-                    start -= timedelta(days=(start.weekday() - first_weekday))
-                    end = start + timedelta(days=7)
-                else:
-                    try:
-                        delta = guesstimedeltafstr(end)
-                        end = start + delta
-                    except ValueError:
-                        split = end.split(" ")
-                        end, end_allday = guessdatetimefstr(split, locale, default_day=start.date())
-                        if len(split) != 0:
-                            continue
-                    end = datetime_fillin(end)
+            elif end.lower() == 'week':
+                start -= timedelta(days=(start.weekday() - first_weekday))
+                end = start + timedelta(days=7)
+            else:
+
+                try:
+                    delta = guesstimedeltafstr(end)
+                    end = start + delta
+                except ValueError:
+                    split = end.split(" ")
+                    end, end_allday = guessdatetimefstr(split, locale, default_day=start.date())
+                    if len(split) != 0:
+                        continue
+                end = datetime_fillin(end)
+
 
             if adjust_reasonably:
                 if allday:
-                    end += timedelta(days=1)
+                    end += timedelta(days=1)  # TODO move this out of here, this is an icalendar peculiarity
                     # test if end's year is this year, but start's year is not
                     today = datetime.today()
                     if end.year == today.year and start.year != today.year:
@@ -387,12 +386,11 @@ def guessrangefstr(daterange, locale, default_timedelta=None, first_weekday=0,
                     end = datetime(*start.timetuple()[0:3] + end.timetuple()[3:5])
                 if end < start:
                     end = end + timedelta(days=1)
-
             return start, end, allday
         except ValueError:
             pass
 
-    return None, None, False
+    raise ValueError('Could not parse `{}` as a daterange'.format(daterange))
 
 
 def datetime_fillin(dt=None, end=True, locale=None, day=None):
