@@ -496,9 +496,14 @@ def eventinfofstr(info_string, locale, default_timedelta=None,
     end = None
     tz = None
     allday = False
-    for i in reversed(range(len(parts)+1)):
-        start, end, allday = guessrangefstr(' '.join(parts[0:i]), locale, default_timedelta='60m',
-                                            adjust_reasonably=adjust_reasonably)
+    for i in reversed(range(len(parts) + 1)):
+        try:
+            start, end, allday = guessrangefstr(
+                ' '.join(parts[0:i]), locale, default_timedelta='60m',
+                adjust_reasonably=adjust_reasonably,
+            )
+        except ValueError:
+            continue
         if start is not None and end is not None:
             try:
                 # next element is a valid Olson db timezone string
