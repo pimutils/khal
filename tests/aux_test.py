@@ -182,6 +182,18 @@ class TestGuessRangefstr(object):
         assert (datetime(2015, 12, 28), datetime(2016, 1, 4), True) == \
             guessrangefstr('1.1.2016 week', locale=locale_de, default_timedelta="1d")
 
+    def test_invalid(self):
+        with pytest.raises(ValueError):
+            guessrangefstr('3d', locale=locale_de, default_timedelta="1d")
+        with pytest.raises(ValueError):
+            guessrangefstr('35.1.2016', locale=locale_de, default_timedelta="1d")
+        with pytest.raises(ValueError):
+            guessrangefstr('1.1.2016 2x', locale=locale_de, default_timedelta="1d")
+        with pytest.raises(ValueError):
+            guessrangefstr('1.1.2016x', locale=locale_de, default_timedelta="1d")
+        with pytest.raises(ValueError):
+            guessrangefstr('xxx yyy zzz', locale=locale_de, default_timedelta="1d")
+
 
 class TestTimeDelta2Str(object):
 

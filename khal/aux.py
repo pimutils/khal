@@ -496,7 +496,7 @@ def eventinfofstr(info_string, locale, default_timedelta=None,
     end = None
     tz = None
     allday = False
-    for i in reversed(range(len(parts) + 1)):
+    for i in reversed(range(1, len(parts) + 1)):
         try:
             start, end, allday = guessrangefstr(
                 ' '.join(parts[0:i]), locale, default_timedelta='60m',
@@ -514,6 +514,9 @@ def eventinfofstr(info_string, locale, default_timedelta=None,
             summary = ' '.join(parts[i:])
             break
         summary = ' '.join(parts[i:])
+
+    if start is None and end is None:
+        raise ValueError('Could not parse `{}`'.format(info_string))
 
     if start is not None and end is not None:
         if tz is None:
