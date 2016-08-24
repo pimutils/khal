@@ -37,8 +37,8 @@ dark = [
     ('today', 'dark gray', 'dark green',),
 
     ('date', 'light gray', ''),
-    ('date focused', 'dark gray', 'light gray', ('bold', 'standout')),
-    ('date selected', 'dark gray', 'yellow'),
+    ('date focused', 'black', 'light gray', ('bold', 'standout')),
+    ('date selected', 'white', 'yellow'),
 
     ('dayname', 'light gray', ''),
     ('monthname', 'light gray', ''),
