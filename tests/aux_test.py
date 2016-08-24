@@ -34,7 +34,7 @@ def _construct_event(info, locale,
                      defaulttimelen=60, defaultdatelen=1, description=None,
                      location=None, categories=None, repeat=None, until=None,
                      alarm=None, **kwargs):
-    info = eventinfofstr(' '.join(info), locale, default_timedelta=str(defaulttimelen)+'m',
+    info = eventinfofstr(' '.join(info), locale, default_timedelta=str(defaulttimelen) + 'm',
                          adjust_reasonably=True, localize=False)
     if description is not None:
         info["description"] = description
@@ -274,9 +274,7 @@ test_set_format_de = _create_testcases(
 @freeze_time('20140216T120000')
 def test__construct_event_format_de():
     for data_list, vevent in test_set_format_de:
-        event = _construct_event(data_list.split(),
-                                 locale=locale_de)
-
+        event = _construct_event(data_list.split(), locale=locale_de)
         assert _replace_uid(event).to_ical() == vevent
 
 
@@ -347,11 +345,9 @@ def test_leap_year():
     for data_list, vevent in test_set_leap_year:
         with freeze_time('1999-1-1'):
             with pytest.raises(ValueError):
-                event = _construct_event(
-                    data_list.split(), locale=locale_de)
+                event = _construct_event(data_list.split(), locale=locale_de)
         with freeze_time('2016-1-1 20:21:22'):
-            event = _construct_event(
-                data_list.split(), locale=locale_de)
+            event = _construct_event(data_list.split(), locale=locale_de)
             assert _replace_uid(event).to_ical() == vevent
 
 
