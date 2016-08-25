@@ -135,7 +135,7 @@ example_de = [
     '     6  7  8  9 10 11 12 ',
     '    13 14 15 16 17 18 19 ',
     '    20 21 22 23 24 25 26 ',
-    '\x1b[1mM\xe4r \x1b[0m27 28 29  1  2  3  4 ']
+    '\x1b[1mMär \x1b[0m27 28 29  1  2  3  4 ']
 
 example_de_bsd = [
     '\x1b[1m    Mo Di Mi Do Fr Sa So \x1b[0m',
@@ -152,7 +152,7 @@ example_de_bsd = [
     '     6  7  8  9 10 11 12 ',
     '    13 14 15 16 17 18 19 ',
     '    20 21 22 23 24 25 26 ',
-    '\x1b[1mM\xe4rz\x1b[0m27 28 29  1  2  3  4 ']
+    '\x1b[1mMärz\x1b[0m27 28 29  1  2  3  4 ']
 
 
 def test_vertical_month():
