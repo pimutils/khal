@@ -31,12 +31,6 @@ from .terminal import colored
 setlocale(LC_ALL, '')
 
 
-def month_abbr(month_no):
-    """calendar.month_abbr[] are str (text) in python3 and str (bytes) in
-    python2 """
-    return calendar.month_abbr[month_no]
-
-
 def get_weekheader(firstweekday):
     try:
         mylocale = '.'.join(getlocale())
@@ -176,7 +170,7 @@ def vertical_month(month=datetime.date.today().month,
             strweek = str_week(week, today, collection, hmethod, default_color,
                                multiple, color, highlight_event_days, locale, bold_for_light_color)
             if new_month:
-                m_name = style(month_abbr(week[6].month).ljust(4), bold=True)
+                m_name = style(calendar.month_abbr[week[6].month].ljust(4), bold=True)
             elif weeknumber == 'left':
                 m_name = style(' {:2} '.format(getweeknumber(week[0])), bold=True)
             else:
