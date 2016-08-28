@@ -342,11 +342,6 @@ class Event(object):
             fh.write(self.raw)
 
     @property
-    def ident(self):
-        """neeeded for vdirsyncer compat"""
-        return self._vevents[self.ref]['UID']
-
-    @property
     def summary(self):
         bday = self._vevents[self.ref].get('x-birthday', None)
         if bday:

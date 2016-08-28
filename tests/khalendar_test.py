@@ -5,7 +5,7 @@ from textwrap import dedent
 
 import pytest
 
-from vdirsyncer.storage.base import Item
+from khal.khalendar.vdir import Item
 
 import khal.aux
 from khal.khalendar import CalendarCollection
@@ -59,7 +59,7 @@ class TestCalendar(object):
         mtimes = dict()
         for i in range(100):
             for cal in coll._calendars:
-                mtime = os.path.getmtime(coll._calendars[cal]['path'])
+                mtime = coll._local_ctag(cal)
                 if mtimes.get(cal):
                     assert mtimes[cal] == mtime
                 else:
