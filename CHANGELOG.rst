@@ -7,6 +7,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.8.3
+=====
+released 2016-08-28
+
+* fixed some bugs in the test suite on different operating systems
+* fixed a check for icalendar files containing RDATEs
+
 0.8.2
 =====
 released on 2016-05-16

@@ -25,12 +25,38 @@ Here is a small example:
     Set the type of this collection, the default is ``calendar``.
     If set to ``birthdays`` khal will expect a VCARD collection and extract
     birthdays from those VCARDS. ``birthdays`` also implies ``readonly=True``.
-    If set to ``calendar`` only files with the ``.ics`` extension will be used
-    and if set to ``birthdays`` only files with the ``.vcf`` extension will be
-    used.
+    If set to ``calendar`` only files with the ``.ics`` extension will be used,
+    if set to ``birthdays`` only files with the ``.vcf`` extension will be
+    used, if it is set to ``discover`` khal will use all subdirectories
+    of ``paths``'s that contain only ``.ics`` files.
 
-      :type: option, allowed values are *calendar* and *birthdays*
+      :type: option, allowed values are *calendar*, *birthdays* and *discover*
       :default: calendar
+
+.. _calendars-color:
+
+.. object:: color
+
+    
+    khal will use this color for coloring this calendar's event.
+    The following color names are supported: *black*, *white*, *brown*, *yellow*,
+    *dark gray*, *dark green*, *dark blue*, *light gray*, *light green*, *light
+    blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light
+    cyan*, *light red*.
+    Depending on your terminal emulator's settings, they might look different
+    than what their name implies.
+    In addition to the 16 named colors an index from the 256-color paltte or a
+    24-bit color code can be used, if your terminal supports this.
+    The 256-color paltte index is simply a number between 0 and 255.
+    The 24-bit color must be given as #RRGGBB, where RR, GG, BB is the
+    hexadecimal value of the red, green and blue component, respectively.
+    When using a 24-bit color, make sure to enclose the color value in ' or "!
+    If the color is set to *auto* (the default), khal tries to read the file
+    *color* from this calendar's vdir, if this fails the default_color (see
+    below) is used. If color is set to '', the default_color is always used.
+
+      :type: color
+      :default: auto
 
 .. _calendars-path:
 
@@ -54,30 +80,6 @@ Here is a small example:
       :type: boolean
       :default: False
 
-.. _calendars-color:
-
-.. object:: color
-
-    
-    khal will use this color for coloring this calendar's event.
-    The following color names are supported: *black*, *white*, *brown*, *yellow*,
-    *dark gray*, *dark green*, *dark blue*, *light gray*, *light green*, *light
-    blue*, *dark magenta*, *dark cyan*, *dark red*, *light magenta*, *light
-    cyan*, *light red*
-    Depending on your terminal emulator's settings, they might look different
-    than what their name implies.
-    In addition to the 16 named colors an index from the 256-color paltte or a
-    24-bit color code can be used, if your terminal supports this.
-    The 256-color paltte index is simply a number between 0 and 255.
-    The 24-bit color must be given as #RRGGBB, where RR, GG, BB is the
-    hexadecimal value of the red, green and blue component, respectively.
-    When using a 24-bit color, make sure to enclose the color value in ' or "!
-    If the color is set to '' (the default), the default_color (see below) is
-    used.
-
-      :type: color
-      :default: 
-
 The [sqlite] section
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -96,60 +98,16 @@ The [locale] section
 
 The most important options in the the **[locale]** section are probably (long-)time and dateformat.
 
-.. _locale-unicode_symbols:
+.. _locale-longdateformat:
 
-.. object:: unicode_symbols
-
-    
-    by default khal uses some unicode symbols (as in 'non-ascii') as indicators for things like repeating events,
-    if your font, encoding etc. does not support those symbols, set this to *False* (this will enable ascii based replacements).
-
-      :type: boolean
-      :default: True
-
-.. _locale-longdatetimeformat:
-
-.. object:: longdatetimeformat
+.. object:: longdateformat
 
     
-    khal will display and understand all datetimes in this format, it should
+    khal will display and understand all dates in this format, it should
     contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
 
       :type: string
-      :default: %d.%m.%Y %H:%M
-
-.. _locale-weeknumbers:
-
-.. object:: weeknumbers
-
-    
-    
-    Enable weeknumbers in `calendar` and `interactive` (ikhal) mode. As those are
-    iso weeknumbers, they only work properly if `firstweekday` is set to 0
-
-      :type: weeknumbers
-      :default: off
-
-.. _locale-datetimeformat:
-
-.. object:: datetimeformat
-
-    
-    khal will display and understand all datetimes in this format, see
-    :ref:`timeformat <locale-timeformat>` for the format.
-
-      :type: string
-      :default: %d.%m. %H:%M
-
-.. _locale-dateformat:
-
-.. object:: dateformat
-
-    
-    khal will display and understand all dates in this format, see :ref:`timeformat <locale-timeformat>` for the format
-
-      :type: string
-      :default: %d.%m.
+      :default: %d.%m.%Y
 
 .. _locale-default_timezone:
 
@@ -174,16 +132,80 @@ The most important options in the the **[locale]** section are probably (long-)t
       :type: timezone
       :default: None
 
-.. _locale-longdateformat:
+.. _locale-encoding:
 
-.. object:: longdateformat
+.. object:: encoding
 
     
-    khal will display and understand all dates in this format, it should
+    set this to the encoding of your terminal emulator
+
+      :type: string
+      :default: utf-8
+
+.. _locale-unicode_symbols:
+
+.. object:: unicode_symbols
+
+    
+    by default khal uses some unicode symbols (as in 'non-ascii') as indicators for things like repeating events,
+    if your font, encoding etc. does not support those symbols, set this to *False* (this will enable ascii based replacements).
+
+      :type: boolean
+      :default: True
+
+.. _locale-datetimeformat:
+
+.. object:: datetimeformat
+
+    
+    khal will display and understand all datetimes in this format, see
+    :ref:`timeformat <locale-timeformat>` for the format.
+
+      :type: string
+      :default: %d.%m. %H:%M
+
+.. _locale-weeknumbers:
+
+.. object:: weeknumbers
+
+    
+    
+    Enable weeknumbers in `calendar` and `interactive` (ikhal) mode. As those are
+    iso weeknumbers, they only work properly if `firstweekday` is set to 0
+
+      :type: weeknumbers
+      :default: off
+
+.. _locale-dateformat:
+
+.. object:: dateformat
+
+    
+    khal will display and understand all dates in this format, see :ref:`timeformat <locale-timeformat>` for the format
+
+      :type: string
+      :default: %d.%m.
+
+.. _locale-longdatetimeformat:
+
+.. object:: longdatetimeformat
+
+    
+    khal will display and understand all datetimes in this format, it should
     contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
 
       :type: string
-      :default: %d.%m.%Y
+      :default: %d.%m.%Y %H:%M
+
+.. _locale-firstweekday:
+
+.. object:: firstweekday
+
+    
+    the day first day of the week, were Monday is 0 and Sunday is 6
+
+      :type: integer, allowed values are between 0 and 6
+      :default: 0
 
 .. _locale-timeformat:
 
@@ -199,26 +221,6 @@ The most important options in the the **[locale]** section are probably (long-)t
       :type: string
       :default: %H:%M
 
-.. _locale-encoding:
-
-.. object:: encoding
-
-    
-    set this to the encoding of your terminal emulator
-
-      :type: string
-      :default: utf-8
-
-.. _locale-firstweekday:
-
-.. object:: firstweekday
-
-    
-    the day first day of the week, were Monday is 0 and Sunday is 6
-
-      :type: integer, allowed values are between 0 and 6
-      :default: 0
-
 The [keybindings] section
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -226,26 +228,6 @@ keybindings for :command:`ikhal` are set here. You can bind more than one key
 (combination) to a command by supplying a comma-separated list of keys.
 For binding key combinations just add concatenate them (with a space in
 between), e.g. **ctrl n**.
-
-.. _keybindings-right:
-
-.. object:: right
-
-    
-    move the cursor right (in the calendar browser)
-
-      :type: list
-      :default: right, l, space
-
-.. _keybindings-search:
-
-.. object:: search
-
-    
-    open a text field to start a search for events
-
-      :type: list
-      :default: /
 
 .. _keybindings-mark:
 
@@ -257,16 +239,6 @@ between), e.g. **ctrl n**.
       :type: list
       :default: v
 
-.. _keybindings-up:
-
-.. object:: up
-
-    
-    move the cursor up (in the calendar browser)
-
-      :type: list
-      :default: up, k
-
 .. _keybindings-duplicate:
 
 .. object:: duplicate
@@ -276,26 +248,6 @@ between), e.g. **ctrl n**.
 
       :type: list
       :default: p
-
-.. _keybindings-other:
-
-.. object:: other
-
-    
-    in highlight mode go to the other end of the highlighted date range
-
-      :type: list
-      :default: o
-
-.. _keybindings-export:
-
-.. object:: export
-
-    
-    export event as ICS
-
-      :type: list
-      :default: e
 
 .. _keybindings-new:
 
@@ -307,25 +259,15 @@ between), e.g. **ctrl n**.
       :type: list
       :default: n
 
-.. _keybindings-view:
+.. _keybindings-export:
 
-.. object:: view
-
-    
-    show details or edit (if details are already shown) the currently selected event
-
-      :type: list
-      :default: enter, tab
-
-.. _keybindings-today:
-
-.. object:: today
+.. object:: export
 
     
-    focus the calendar browser on today
+    export event as ICS
 
       :type: list
-      :default: t
+      :default: e
 
 .. _keybindings-left:
 
@@ -337,6 +279,36 @@ between), e.g. **ctrl n**.
       :type: list
       :default: left, h, backspace
 
+.. _keybindings-search:
+
+.. object:: search
+
+    
+    open a text field to start a search for events
+
+      :type: list
+      :default: /
+
+.. _keybindings-today:
+
+.. object:: today
+
+    
+    focus the calendar browser on today
+
+      :type: list
+      :default: t
+
+.. _keybindings-other:
+
+.. object:: other
+
+    
+    in highlight mode go to the other end of the highlighted date range
+
+      :type: list
+      :default: o
+
 .. _keybindings-delete:
 
 .. object:: delete
@@ -347,15 +319,35 @@ between), e.g. **ctrl n**.
       :type: list
       :default: d
 
-.. _keybindings-down:
+.. _keybindings-view:
 
-.. object:: down
+.. object:: view
 
     
-    move the cursor down (in the calendar browser)
+    show details or edit (if details are already shown) the currently selected event
 
       :type: list
-      :default: down, j
+      :default: enter, tab
+
+.. _keybindings-up:
+
+.. object:: up
+
+    
+    move the cursor up (in the calendar browser)
+
+      :type: list
+      :default: up, k
+
+.. _keybindings-right:
+
+.. object:: right
+
+    
+    move the cursor right (in the calendar browser)
+
+      :type: list
+      :default: right, l, space
 
 .. _keybindings-save:
 
@@ -367,22 +359,22 @@ between), e.g. **ctrl n**.
       :type: list
       :default: meta enter
 
+.. _keybindings-down:
+
+.. object:: down
+
+    
+    move the cursor down (in the calendar browser)
+
+      :type: list
+      :default: down, j
+
 The [default] section
 ~~~~~~~~~~~~~~~~~~~~~
 
 
 The default section begins with a **[default]** tag. Some default values and
 behaviours are set here.
-
-.. _default-default_command:
-
-.. object:: default_command
-
-    
-    command to be executed if no command is given when executing khal
-
-      :type: option, allowed values are *calendar*, *agenda*, *interactive*, *printformats*, *printcalendars* and **
-      :default: calendar
 
 .. _default-show_all_days:
 
@@ -395,17 +387,6 @@ behaviours are set here.
 
       :type: boolean
       :default: False
-
-.. _default-default_calendar:
-
-.. object:: default_calendar
-
-    
-    The calendar to use if none is specified for some operation (e.g. if adding a
-    new event). If this is not set, such operations requre an explicit value.
-
-      :type: string
-      :default: None
 
 .. _default-highlight_event_days:
 
@@ -430,6 +411,27 @@ behaviours are set here.
       :type: integer
       :default: 2
 
+.. _default-default_calendar:
+
+.. object:: default_calendar
+
+    
+    The calendar to use if none is specified for some operation (e.g. if adding a
+    new event). If this is not set, such operations requre an explicit value.
+
+      :type: string
+      :default: None
+
+.. _default-default_command:
+
+.. object:: default_command
+
+    
+    command to be executed if no command is given when executing khal
+
+      :type: option, allowed values are *calendar*, *agenda*, *interactive*, *printformats*, *printcalendars* and **
+      :default: calendar
+
 .. _default-print_new:
 
 .. object:: print_new
@@ -446,6 +448,16 @@ The [view] section
 
 The view section contains config options that effect the visual appearance
 when using ikhal
+
+.. _view-event_view_always_visible:
+
+.. object:: event_view_always_visible
+
+    
+    Set to true to always show the event view window when looking at the event list
+
+      :type: boolean
+      :default: False
 
 .. _view-event_view_weighting:
 
@@ -468,15 +480,16 @@ when using ikhal
       :type: boolean
       :default: False
 
-.. _view-event_view_always_visible:
+.. _view-bold_for_light_color:
 
-.. object:: event_view_always_visible
+.. object:: bold_for_light_color
 
     
-    Set to true to always show the event view window when looking at the event list
+    Whether to use bold text for light colors or not. Non-bold light colors may
+    not work on all terminals but allow using light background colors.
 
       :type: boolean
-      :default: False
+      :default: True
 
 .. _view-theme:
 
@@ -498,21 +511,10 @@ when using ikhal
     `khal/settings/khal.spec` in the section `[default]` of the property `theme`.
     
     __ http://urwid.org/manual/displayattributes.html
-    .. _github: # https://github.com/geier/khal/issues
+    .. _github: # https://github.com/pimutils/khal/issues
 
       :type: option, allowed values are *dark* and *light*
       :default: dark
-
-.. _view-bold_for_light_color:
-
-.. object:: bold_for_light_color
-
-    
-    Whether to use bold text for light colors or not. Non-bold light colors may
-    not work on all terminals but allow using light background colors.
-
-      :type: boolean
-      :default: True
 
 The [highlight_days] section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -520,13 +522,14 @@ The [highlight_days] section
 When highlight_event_days is enabled, this section specifies how is
 the highlighting rendered.
 
-.. _highlight_days-multiple:
+.. _highlight_days-default_color:
 
-.. object:: multiple
+.. object:: default_color
 
     
-    How to color days with events from multiple calendars - either
-    explicit color or use calendars' colors when set to ''
+    Default color for calendars without color - when se to '' it
+    actually disables highlighting for events that should use the
+    default color.
 
       :type: color
       :default: 
@@ -541,6 +544,17 @@ the highlighting rendered.
       :type: option, allowed values are *foreground*, *fg*, *background* and *bg*
       :default: fg
 
+.. _highlight_days-multiple:
+
+.. object:: multiple
+
+    
+    How to color days with events from multiple calendars - either
+    explicit color or use calendars' colors when set to ''
+
+      :type: color
+      :default: 
+
 .. _highlight_days-color:
 
 .. object:: color
@@ -548,18 +562,6 @@ the highlighting rendered.
     
     What color to use when highlighting - explicit color or use calendar
     color when set to ''
-
-      :type: color
-      :default: 
-
-.. _highlight_days-default_color:
-
-.. object:: default_color
-
-    
-    Default color for calendars without color - when se to '' it
-    actually disables highlighting for events that should use the
-    default color.
 
       :type: color
       :default: 
