@@ -337,7 +337,8 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
                 start = datetime_fillin(end=False)
             elif start.lower() == 'week':
                     today_weekday = datetime.today().weekday()
-                    start = datetime.today() - timedelta(days=(today_weekday - locale['firstweekday']))
+                    start = datetime.today() - \
+                        timedelta(days=(today_weekday - locale['firstweekday']))
                     end = start + timedelta(days=7)
             else:
                 split = start.split(" ")
@@ -368,10 +369,10 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
                         continue
                 end = datetime_fillin(end)
 
-
             if adjust_reasonably:
                 if allday:
-                    end += timedelta(days=1)  # TODO move this out of here, this is an icalendar peculiarity
+                    # TODO move out of here, this is an icalendar peculiarity
+                    end += timedelta(days=1)
                     # test if end's year is this year, but start's year is not
                     today = datetime.today()
                     if end.year == today.year and start.year != today.year:

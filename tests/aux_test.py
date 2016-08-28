@@ -172,7 +172,8 @@ class TestGuessRangefstr(object):
 
     def test_start_and_end_date_time(self):
         assert (datetime(2016, 1, 1, 10), datetime(2017, 1, 1, 22), False) == \
-            guessrangefstr('1.1.2016 10:00 1.1.2017 22:00', locale=locale_de, default_timedelta="1d")
+            guessrangefstr(
+                '1.1.2016 10:00 1.1.2017 22:00', locale=locale_de, default_timedelta="1d")
 
     def test_start_and_eod(self):
         assert (datetime(2016, 1, 1, 10), datetime(2016, 1, 1, 23, 59, 59, 999999), False) == \
