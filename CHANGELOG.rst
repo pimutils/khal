@@ -43,6 +43,13 @@ ikhal
   to another date (while the event column is in focus), that date should be
   highlighted in the calendar (Christian Geier)
 
+0.8.3
+=====
+released 2016-08-28
+
+* fixed some bugs in the test suite on different operating systems
+* fixed a check for icalendar files containing RDATEs
+
 0.8.2
 =====
 released on 2016-05-16
