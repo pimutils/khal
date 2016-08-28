@@ -165,3 +165,9 @@ def test_start_end_invalid_default():
     with freeze_time('2016-04-10'):
         with pytest.raises(exceptions.InvalidDate):
             start_end_from_daterange([], aux.locale, '3x')
+
+
+def test_start_end_invalid_value():
+    with freeze_time('2016-04-10'):
+        with pytest.raises(ValueError):  # TODO make sure this raises a InvalidDate as well
+            start_end_from_daterange(['xxx'], aux.locale, '3x')
