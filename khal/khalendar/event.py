@@ -543,12 +543,16 @@ class Event(object):
         else:
             attributes["end-style"] = attributes["end-time"]
 
-        attributes["to-style"] = tostr
+        if self.start < self.end:
+            attributes["to-style"] = '-'
+        else:
+            attributes["to-style"] = ''
+
         if self_start < day_start and self_end > day_end:
             attributes["start-end-time-style"] = self.symbol_strings["range"]
         else:
             attributes["start-end-time-style"] = attributes["start-style"] + \
-                attributes["to-style"] + attributes["end-style"]
+                tostr + attributes["end-style"]
 
         if allday:
             if self.start == self.end:

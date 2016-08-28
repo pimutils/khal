@@ -35,7 +35,7 @@ EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE}
 
 
 LIST_FORMAT = '{calendar-color}{start-end-time-style} {title} {repeat-symbol}'
-SEARCH_FORMAT = '{calendar-color}{start-long}-{end-necessary-long} {title} {repeat-symbol}'
+SEARCH_FORMAT = '{calendar-color}{start-long}{to-style}{end-necessary-long} {title} {repeat-symbol}'
 
 
 def test_no_initialization():
@@ -89,7 +89,7 @@ def test_raw_d():
     event = Event.fromString(event_d, **EVENT_KWARGS)
     assert event.raw.split('\r\n') == _get_text('cal_d').split('\n')
     assert event.format(LIST_FORMAT, date(2014, 4, 9)) == ' An Event \x1b[0m'
-    assert event.format(SEARCH_FORMAT, date(2014, 4, 9)) == '09.04.2014- An Event \x1b[0m'  # XXX
+    assert event.format(SEARCH_FORMAT, date(2014, 4, 9)) == '09.04.2014 An Event \x1b[0m'
 
 
 def test_update_sequence():
@@ -233,7 +233,7 @@ def test_event_d_rr():
     assert event.recurring is True
     assert event.format(LIST_FORMAT, date(2014, 4, 9)) == ' Another Event ⟳\x1b[0m'
     assert event.format(SEARCH_FORMAT, date(2014, 4, 9)) == \
-        '09.04.2014- Another Event ⟳\x1b[0m'  # XXX ugly, dangling 'to' sign
+        '09.04.2014 Another Event ⟳\x1b[0m'
     assert event.format('{repeat-pattern}', date(2014, 4, 9)) == 'FREQ=DAILY;COUNT=10\x1b[0m'
 
     start = date(2014, 4, 10)
@@ -242,7 +242,7 @@ def test_event_d_rr():
     assert event.recurring is True
     assert event.format(LIST_FORMAT, date(2014, 4, 10)) == ' Another Event ⟳\x1b[0m'
     assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
-        '10.04.2014- Another Event ⟳\x1b[0m'  # XXX ugly, dangling 'to' sign
+        '10.04.2014 Another Event ⟳\x1b[0m'
 
 
 def test_event_rd():
@@ -263,6 +263,18 @@ def test_event_d_long():
         event.format('', date(2014, 4, 12))
     assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
         '09.04.2014-11.04.2014 Another Event \x1b[0m'
+
+
+def test_event_d_two_days():
+    event_d_long = _get_text('event_d_long')
+    event = Event.fromString(event_d_long, **EVENT_KWARGS)
+    event.update_start_end(date(2014, 4, 9), date(2014, 4, 10))
+    assert event.format(LIST_FORMAT, datetime(2014, 4, 9, 0, 0)) == '↦ Another Event \x1b[0m'
+    assert event.format(LIST_FORMAT, datetime(2014, 4, 10, 0, 0)) == '⇥ Another Event \x1b[0m'
+    with pytest.raises(ValueError):
+        event.format('', date(2014, 4, 12))
+    assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
+        '09.04.2014-10.04.2014 Another Event \x1b[0m'
 
 
 def test_event_dt_long():
