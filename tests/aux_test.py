@@ -183,6 +183,11 @@ class TestGuessRangefstr(object):
         assert (datetime(2015, 12, 28), datetime(2016, 1, 4), True) == \
             guessrangefstr('1.1.2016 week', locale=locale_de, default_timedelta="1d")
 
+    @freeze_time('20160216')
+    def test_week(self):
+        assert (datetime(2016, 2, 15), datetime(2016, 2, 22), True) == \
+            guessrangefstr('week', locale=locale_de, default_timedelta="1d")
+
     def test_invalid(self):
         with pytest.raises(ValueError):
             guessrangefstr('3d', locale=locale_de, default_timedelta="1d")

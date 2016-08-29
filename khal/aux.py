@@ -340,6 +340,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
                     start = datetime.today() - \
                         timedelta(days=(today_weekday - locale['firstweekday']))
                     end = start + timedelta(days=7)
+                    return start, end, True
             else:
                 split = start.split(" ")
                 start, allday = guessdatetimefstr(split, locale)
@@ -358,7 +359,6 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
                 start -= timedelta(days=(start.weekday() - locale['firstweekday']))
                 end = start + timedelta(days=7)
             else:
-
                 try:
                     delta = guesstimedeltafstr(end)
                     end = start + delta
