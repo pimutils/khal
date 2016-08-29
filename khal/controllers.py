@@ -26,6 +26,7 @@ from click import confirm, echo, style, prompt
 from .khalendar.vdir import Item
 
 import pytz
+import parsedatetime
 
 from collections import defaultdict, OrderedDict
 from shutil import get_terminal_size
@@ -247,8 +248,8 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
     return event_list
 
 
-def khal_list(collection, daterange, conf=None, format=None, day_format=None,
-              once=False, notstarted=False, **kwargs):
+def khal_list(collection, start=None, end=None, conf=None, format=None,
+              day_format=None, once=False, notstarted=False, **kwargs):
     """list all events in `daterange`"""
     td = None
     show_all_days = False
@@ -259,13 +260,37 @@ def khal_list(collection, daterange, conf=None, format=None, day_format=None,
         if day_format is None:
             day_format = conf['view']['agenda_day_format']
         show_all_days = conf['default']['show_all_days']
-    start, end = start_end_from_daterange(daterange, conf['locale'], td)
+
+    start, end = _parse_start_and_end(start, end)
     event_column = get_list_from_str(
         collection, format=format, start=start, end=end, day_format=day_format,
         once=once, notstarted=notstarted, default_timedelta=td,
         show_all_days=show_all_days, **kwargs)
 
     echo('\n'.join(event_column))
+
+
+def _parse_start_and_end(start, end):
+    calendar = parsedatetime.Calendar()
+
+    def _parse_dt(x, *a, **kw):
+        rv, certainty = calendar.parse(x, *a, **kw)
+        if not certainty:
+            raise ValueError('Time description not recognized: {}'
+                             .format(x))
+        return datetime(*rv[:6])
+
+    if start:
+        start = _parse_dt(start)
+    else:
+        start = datetime.today()
+
+    if end:
+        end = _parse_dt(end, sourceTime=start)
+    else:
+        end = start + timedelta(days=1)
+
+    return start, end
 
 
 def new_interactive(collection, calendar_name, conf, info, location=None,
