@@ -15,7 +15,11 @@ PATH = __file__.rsplit('/', 1)[0] + '/configs/'
 
 class TestSettings(object):
     def test_simple_config(self):
-        config = get_config(PATH + 'simple.conf')
+        config = get_config(
+            PATH + 'simple.conf',
+            _get_color_from_vdir=lambda x: None,
+            _get_vdir_type=lambda x: 'calendar',
+        )
         comp_config = {
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'),
@@ -53,7 +57,11 @@ class TestSettings(object):
             get_config(PATH + 'nocalendars.conf')
 
     def test_small(self):
-        config = get_config(PATH + 'small.conf')
+        config = get_config(
+            PATH + 'small.conf',
+            _get_color_from_vdir=lambda x: None,
+            _get_vdir_type=lambda x: 'calendar',
+        )
         comp_config = {
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'),

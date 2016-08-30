@@ -31,7 +31,7 @@ from .exceptions import InvalidSettingsError, CannotParseConfigFileError, NoConf
 from khal import __productname__
 from ..log import logger
 from .utils import is_timezone, weeknumber_option, config_checks, \
-    expand_path, expand_db_path, is_color
+    expand_path, expand_db_path, is_color, get_vdir_type, get_color_from_vdir
 
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
 
@@ -66,12 +66,17 @@ def find_configuration_file():
     return None
 
 
-def get_config(config_path=None):
+def get_config(
+        config_path=None,
+        _get_color_from_vdir=get_color_from_vdir,
+        _get_vdir_type=get_vdir_type):
     """reads the config file, validates it and return a config dict
 
     :param config_path: path to a custom config file, if none is given the
                         default locations will be searched
     :type config_path: str
+    :param _get_color_from_vdir: override get_color_from_vdir for testing purposes
+    :param _get_vdir_type: override get_vdir_type for testing purposes
     :returns: configuration
     :rtype: dict
     """
@@ -124,7 +129,7 @@ def get_config(config_path=None):
     if abort or not results:
         raise InvalidSettingsError()
 
-    config_checks(user_config)
+    config_checks(user_config, _get_color_from_vdir, _get_vdir_type)
 
     extras = get_extra_values(user_config)
     for section, value in extras:

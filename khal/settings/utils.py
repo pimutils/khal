@@ -152,7 +152,10 @@ def get_vdir_type(_):
     return 'calendar'
 
 
-def config_checks(config):
+def config_checks(
+        config,
+        _get_color_from_vdir=get_color_from_vdir,
+        _get_vdir_type=get_vdir_type):
     """do some tests on the config we cannot do with configobj's validator"""
     if len(config['calendars'].keys()) < 1:
         logger.fatal('Found no calendar section in the config file')
@@ -173,8 +176,8 @@ def config_checks(config):
             config['calendars'].pop(calendar)
     for vdir in sorted(vdirs):
         calendar = {'path': vdir,
-                    'color': get_color_from_vdir(vdir),
-                    'type': get_vdir_type(vdir),
+                    'color': _get_color_from_vdir(vdir),
+                    'type': _get_vdir_type(vdir),
                     'readonly': False
                     }
         name = get_unique_name(vdir, config['calendars'].keys())
@@ -186,4 +189,4 @@ def config_checks(config):
             config['calendars'][calendar]['readonly'] = True
         if config['calendars'][calendar]['color'] == 'auto':
             config['calendars'][calendar]['color'] = \
-                get_color_from_vdir(config['calendars'][calendar]['path'])
+                _get_color_from_vdir(config['calendars'][calendar]['path'])
