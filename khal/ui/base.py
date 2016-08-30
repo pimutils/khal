@@ -115,6 +115,7 @@ class Window(urwid.Frame):
         self._alert_daemon = AlertDaemon(self.update_header)
         self._alert_daemon.start()
         self.alert = self._alert_daemon.alert
+        self.loop = None
 
     def open(self, pane, callback=None):
         """Open a new pane.

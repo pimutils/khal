@@ -1379,11 +1379,22 @@ def start_pane(pane, callback, program_info='', quit_keys=['q']):
         quit_keys=quit_keys,
     )
     frame.open(pane, callback)
-    palette = _add_calendar_colors(getattr(colors, pane._conf['view']['theme']),
-                                   pane.collection)
-    loop = urwid.MainLoop(frame, palette,
-                          unhandled_input=frame.on_key_press,
-                          pop_ups=True)
+    palette = _add_calendar_colors(
+        getattr(colors, pane._conf['view']['theme']), pane.collection)
+    loop = urwid.MainLoop(
+        frame, palette, unhandled_input=frame.on_key_press, pop_ups=True)
+    frame.loop = loop
+
+    def redraw_today(loop, pane, meta={'last_today': None}):
+        # TODO calculate how many seconds the new day is away and set timer
+        # to that
+        today = date.today()
+        if meta['last_today'] != today:
+            meta['last_today'] = today
+            pane.calendar.original_widget.reset_styles_range(today - timedelta(days=1), today)
+        loop.set_alarm_in(60, redraw_today, pane)
+
+    redraw_today(frame.loop, pane)
     # Make urwid use 256 color mode.
     loop.screen.set_terminal_properties(
         colors=256, bright_is_bold=pane._conf['view']['bold_for_light_color'])
