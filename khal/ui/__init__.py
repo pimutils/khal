@@ -391,8 +391,6 @@ class DayWalker(urwid.SimpleFocusListWalker):
         )
         event_list.append(urwid.AttrMap(date_text, 'date'))
         self.events = sorted(self._collection.get_events_on(day))
-        if not self.events:
-            event_list.append(urwid.AttrMap(urwid.Text('  no scheduled events'), 'text'))
         event_list.extend([
             urwid.AttrMap(
                 U_Event(event, conf=self._conf, this_date=day, delete_status=self.delete_status),
@@ -400,7 +398,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
             for event in self.events])
         return urwid.BoxAdapter(
             DateListBox(urwid.SimpleFocusListWalker(event_list), date=day),
-            len(event_list)
+            (len(event_list) + 1) if self.events else 1
         )
 
     def selectable(self):
