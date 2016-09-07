@@ -21,7 +21,7 @@
 
 import calendar
 import datetime
-from locale import getlocale, setlocale, LC_ALL
+from locale import getlocale, setlocale, LC_ALL, LC_TIME
 
 from click import style
 
@@ -33,7 +33,7 @@ setlocale(LC_ALL, '')
 
 def get_weekheader(firstweekday):
     try:
-        mylocale = '.'.join(getlocale())
+        mylocale = '.'.join(getlocale(LC_TIME))
     except TypeError:
         mylocale = 'C'
 

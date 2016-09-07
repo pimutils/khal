@@ -21,7 +21,7 @@
 
 import calendar
 from datetime import date, datetime, timedelta
-from locale import getlocale
+from locale import getlocale, LC_TIME
 import signal
 import sys
 
@@ -264,7 +264,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         firstweekday = self._conf['locale']['firstweekday']
         calendar.setfirstweekday(firstweekday)
         try:
-            mylocale = '.'.join(getlocale())
+            mylocale = '.'.join(getlocale(LC_TIME))
         except TypeError:  # language code and encoding may be None
             mylocale = 'C'
         _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)

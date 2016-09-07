@@ -27,7 +27,7 @@ if anything doesn't work as expected, please open an issue for khal
 import calendar
 from collections import defaultdict
 from datetime import date
-from locale import getlocale, setlocale, LC_ALL
+from locale import getlocale, setlocale, LC_ALL, LC_TIME
 
 import urwid
 
@@ -584,7 +584,7 @@ class CalendarWidget(urwid.WidgetWrap):
         calendar.setfirstweekday(firstweekday)
 
         try:
-            mylocale = '.'.join(getlocale())
+            mylocale = '.'.join(getlocale(LC_TIME))
         except TypeError:  # language code and encoding may be None
             mylocale = 'C'
 
