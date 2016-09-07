@@ -77,6 +77,22 @@ def test_update_simple():
     assert normalize_component(event.raw) == normalize_component(event_updated.raw)
 
 
+def test_update_empty_location():
+    event_orig = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    event.update_location('')
+    assert normalize_component(event_orig.raw) ==\
+        normalize_component(event.raw), "Empty location should not be saved"
+
+
+def test_update_empty_description():
+    event_orig = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    event.update_description('')
+    assert normalize_component(event_orig.raw) ==\
+        normalize_component(event.raw), "Empty description should not be saved"
+
+
 def test_update_remove_categories():
     event = Event.fromString(_get_text('event_dt_simple_updated'), **EVENT_KWARGS)
     event_nocat = Event.fromString(_get_text('event_dt_simple_nocat'), **EVENT_KWARGS)
