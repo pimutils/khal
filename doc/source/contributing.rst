@@ -1,6 +1,11 @@
 Feedback and Contributing
 =========================
 
+.. note::
+
+    All participants must follow the `pimutils Code of Conduct
+    <http://pimutils.org/coc>`_.
+
 Feedback
 --------
 Please do provide feedback if *khal* works for you or even more importantly
