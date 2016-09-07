@@ -47,7 +47,7 @@ from .calendarwidget import CalendarWidget
 #   | |                 | | |                              | | |
 #   | |                 | | | +-DayWalker----------------+ | | |
 #   | |                 | | | |                          | | | |
-#   | |                 | | | | +-MyBoxAdapter---------+ | | | |
+#   | |                 | | | | +-BoxAdapter-----------+ | | | |
 #   | |                 | | | | |                      | | | | |
 #   | |                 | | | | | +-DateListbox------+ | | | | |
 #   | |                 | | | | | | SelectableText   | | | | | |
@@ -57,7 +57,7 @@ from .calendarwidget import CalendarWidget
 #   | |                 | | | | | +------------------+ | | | | |
 #   | |                 | | | | +----------------------+ | | | |
 #   | |                 | | | |       ...                | | | |
-#   | |                 | | | | +-MyBoxAdapter---------+ | | | |
+#   | |                 | | | | +-BoxAdapter-----------+ | | | |
 #   | |                 | | | | |                      | | | | |
 #   | |                 | | | | | +-DateListbox------+ | | | | |
 #   | |                 | | | | | | SelectableText   | | | | | |
@@ -193,7 +193,6 @@ class DListBox(EventListBox):
             while 'bottom' in self.ends_visible(size):
                 self.body._autoextend()
             self._init = False
-        MyBoxAdapter.maxheight = size[1]  # the height
         return super().render(size, focus)
 
     def clean(self):
@@ -392,16 +391,14 @@ class DayWalker(urwid.SimpleFocusListWalker):
         )
         event_list.append(urwid.AttrMap(date_text, 'date'))
         self.events = sorted(self._collection.get_events_on(day))
-        if not self.events:
-            event_list.append(urwid.AttrMap(urwid.Text('  no scheduled events'), 'text'))
         event_list.extend([
             urwid.AttrMap(
                 U_Event(event, conf=self._conf, this_date=day, delete_status=self.delete_status),
                 'calendar ' + event.calendar, 'reveal focus')
             for event in self.events])
-        return MyBoxAdapter(
+        return urwid.BoxAdapter(
             DateListBox(urwid.SimpleFocusListWalker(event_list), date=day),
-            len(self.events)
+            (len(event_list) + 1) if self.events else 1
         )
 
     def selectable(self):
@@ -464,37 +461,6 @@ class DateListBox(NListBox):
         for uevent in self.body[1:]:
             if isinstance(uevent._original_widget, U_Event):
                 uevent.original_widget.set_title()
-
-
-class MyBoxAdapter(urwid.BoxAdapter):
-    """A BoxAdapter which trys to adapt to the height of its content
-
-    up until MyBoxAdapter.maxheight is hit
-    """
-    no_cache = ['rows', 'render']
-    # FIXME invalidate render cache if maxheight changes
-    maxheight = 0
-
-    def __init__(self, box_widget, height):
-        urwid.WidgetDecoration.__init__(self, box_widget)
-        MyBoxAdapter.maxheight = height
-
-    @property
-    def height(self):
-        return min(MyBoxAdapter.maxheight, len(self.original_widget.body))
-
-    def render(self, size, focus=False):
-        """for whatever reason having this copey of urwid.BoxAdapter.render()
-        in here, ensures that the height is correctly calculated. Before, if an
-        event was viewed which was on a day with more events than fit into the
-        viewport, urwid raised an Exception when closing the event viewer
-        because of miscalculated heights. Making sure render() is not cached is
-        needed as well."""
-
-        (maxcol,) = size
-        canv = self._original_widget.render((maxcol, self.height), focus)
-        canv = urwid.CompositeCanvas(canv)
-        return canv
 
 
 class EventColumn(urwid.WidgetWrap):
