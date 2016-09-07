@@ -393,7 +393,8 @@ class Event(object):
         return self._vevents[self.ref].get('LOCATION', '')
 
     def update_location(self, location):
-        self._vevents[self.ref]['LOCATION'] = location
+        if location:
+            self._vevents[self.ref]['LOCATION'] = location
 
     @property
     def categories(self):
@@ -410,7 +411,8 @@ class Event(object):
         return self._vevents[self.ref].get('DESCRIPTION', '')
 
     def update_description(self, description):
-        self._vevents[self.ref]['DESCRIPTION'] = description
+        if description:
+            self._vevents[self.ref]['DESCRIPTION'] = description
 
     @property
     def _recur_str(self):
