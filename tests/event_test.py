@@ -77,20 +77,28 @@ def test_update_simple():
     assert normalize_component(event.raw) == normalize_component(event_updated.raw)
 
 
-def test_update_empty_location():
-    event_orig = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+def test_do_not_save_empty_location():
     event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
     event.update_location('')
-    assert normalize_component(event_orig.raw) ==\
-        normalize_component(event.raw), "Empty location should not be saved"
+    assert 'LOCATION' not in event.raw
 
 
-def test_update_empty_description():
-    event_orig = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+def test_do_not_save_empty_description():
     event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
     event.update_description('')
-    assert normalize_component(event_orig.raw) ==\
-        normalize_component(event.raw), "Empty description should not be saved"
+    assert 'DESCRIPTION' not in event.raw
+
+
+def test_remove_existing_location_if_set_to_empty():
+    event = Event.fromString(_get_text('event_dt_simple_updated'), **EVENT_KWARGS)
+    event.update_location('')
+    assert 'LOCATION' not in event.raw
+
+
+def test_remove_existing_description_if_set_to_empty():
+    event = Event.fromString(_get_text('event_dt_simple_updated'), **EVENT_KWARGS)
+    event.update_description('')
+    assert 'DESCRIPTION' not in event.raw
 
 
 def test_update_remove_categories():
