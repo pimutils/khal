@@ -160,23 +160,6 @@ class CalendarCollection(object):
 
         return itertools.chain(floating_events, localized_events)
 
-    def get_events_at(self, dtime=datetime.datetime.now()):
-        """get all events at datetime `dtime`
-
-        :type dtime: datetime.datetime
-        """
-        if dtime.tzinfo is None:
-            naive_dtime = dtime
-            local_dtime = self._locale['local_timezone'].localize(dtime)
-        else:
-            naive_dtime = dtime.replace(tzinfo=None)
-            local_dtime = dtime
-
-        floating_events = self._backend.get_floating_at(naive_dtime)
-        localized_events = self._backend.get_localized_at(local_dtime)
-        return (self._cover_event(event) for event in
-                itertools.chain(floating_events, localized_events))
-
     def update(self, event):
         """update `event` in vdir and db"""
         assert event.etag

@@ -271,16 +271,6 @@ class TestCollection(object):
         coll.new(event, cal1)
         assert len(list(coll.search('Event'))) == 1
 
-    def test_get_events_at(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
-        a_time = aux.BERLIN.localize(datetime(2014, 4, 9, 10))
-        b_time = aux.BERLIN.localize(datetime(2014, 4, 9, 11))
-        assert len(list(coll.get_events_at(a_time))) == 0
-        event = Event.fromString(
-            _get_text('event_dt_simple'), calendar=cal1, locale=aux.locale)
-        coll.new(event, cal1)
-        assert len(list(coll.get_events_at(a_time))) == 1
-        assert len(list(coll.get_events_at(b_time))) == 0
 
     def test_delete_two_events(self, coll_vdirs):
             """testing if we can delete any of two events in two different
