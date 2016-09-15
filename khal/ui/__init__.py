@@ -104,15 +104,7 @@ class U_Event(urwid.Text):
         self.this_date = this_date
         self._conf = conf
         self.relative = relative
-        if self.relative:
-            text = self.event.format(
-                self._conf['view']['agenda_event_format'],
-                self.this_date,
-                colors=False,
-            )
-        else:
-            text = self.event.event_description
-        super(U_Event, self).__init__(text)
+        super(U_Event, self).__init__('')
         self.set_title()
 
     @classmethod
@@ -131,13 +123,16 @@ class U_Event(urwid.Text):
     def set_title(self, mark=' '):
         mark = {ALL: 'D', INSTANCES: 'd', False: ''}[self.delete_status(self.recuid)]
         if self.relative:
-            text = self.event.format(
-                self._conf['view']['agenda_event_format'],
-                self.this_date,
-                colors=False,
-            )
+            format_ = self._conf['view']['agenda_event_format']
         else:
-            text = self.event.event_description
+            format_ = self._conf['view']['event_format']
+        if self.this_date:
+            date_ = self.this_date
+        elif self.event.allday:
+            date_ = self.event.start
+        else:
+            date_ = self.event.start.date()
+        text = self.event.format(format_, date_, colors=False)
         self.set_text(mark + ' ' + text)
 
     def keypress(self, _, key):

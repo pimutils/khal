@@ -566,23 +566,6 @@ class Event(object):
                 attributes[c] = attributes[c + '-bold'] = ''
         return format_string.format(**dict(attributes)) + attributes["reset"]
 
-    @property
-    def event_description(self):   # XXX rename me
-        """complete description of this event in text form
-
-        :rtype: str
-        :returns: event description
-        """
-        location = '\nLocation: ' + self.location if self.location != '' else ''
-        description = '\nDescription: ' + self.description if \
-            self.description != '' else ''
-        categories = '\nCategories: ' + self.categories if self.categories != '' else ''
-        repitition = '\nRepeat: ' + self.recurpattern if \
-            self.recurpattern != '' else ''
-
-        return '{}: {}{}{}{}'.format(
-            self._rangestr, self.summary, location, categories, repitition, description)
-
     def duplicate(self):
         """duplicate this event's PROTO event
 
