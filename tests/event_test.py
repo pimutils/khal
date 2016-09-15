@@ -278,8 +278,6 @@ def test_event_rd():
 def test_event_d_long():
     event_d_long = _get_text('event_d_long')
     event = Event.fromString(event_d_long, **EVENT_KWARGS)
-    with pytest.raises(ValueError):
-        event.relative_to(date(2014, 4, 8))
     assert event.format(LIST_FORMAT, date(2014, 4, 9)) == '↦ Another Event \x1b[0m'
     assert event.format(LIST_FORMAT, date(2014, 4, 10)) == '↔ Another Event \x1b[0m'
     assert event.format(LIST_FORMAT, date(2014, 4, 11)) == '⇥ Another Event \x1b[0m'

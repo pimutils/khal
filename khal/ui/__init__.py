@@ -131,7 +131,11 @@ class U_Event(urwid.Text):
     def set_title(self, mark=' '):
         mark = {ALL: 'D', INSTANCES: 'd', False: ''}[self.delete_status(self.recuid)]
         if self.relative:
-            text = self.event.relative_to(self.this_date)
+            text = self.event.format(
+                self._conf['view']['agenda_event_format'],
+                self.this_date,
+                colors=False,
+            )
         else:
             text = self.event.event_description
         self.set_text(mark + ' ' + text)

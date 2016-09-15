@@ -426,55 +426,6 @@ class Event(object):
             recurstr = ''
         return recurstr
 
-    def relative_to(self, day, full=False):
-        """
-        returns a short description of the event, with start and end
-        relative to `day`
-
-        print information in regards to this day, if the event starts and ends
-        on this day, the start and end time will be given (only the description
-        for all day events), otherwise arrows will indicate if the events
-        started before `day` and/or lasts longer.
-
-        :param day: the date the description is relative to
-        :type day: datetime.date
-        :return: compact description of Event
-        :rtype: unicode()
-        """
-        if isinstance(day, datetime) or not isinstance(day, date):
-            raise ValueError('`this_date` is of type `{}`, should be '
-                             '`datetime.date`'.format(type(day)))
-
-        day_start = self._locale['local_timezone'].localize(datetime.combine(day, time.min))
-        day_end = self._locale['local_timezone'].localize(datetime.combine(day, time.max))
-
-        tostr = '-'
-        if self.start_local < day_start:
-            startstr = self.symbol_strings['right_arrow'] + ' '
-            tostr = ''
-        else:
-            startstr = self.start_local.strftime(self._locale['timeformat'])
-
-        start_of_next_day = day_start + timedelta(days=1)
-        if (self.end_local == start_of_next_day and self._locale['timeformat'] == '%H:%M'):
-            endstr = '24:00'
-        elif self.end_local > day_end:
-            endstr = self.symbol_strings['right_arrow'] + ' '
-            tostr = ''
-        else:
-            endstr = self.end_local.strftime(self._locale['timeformat'])
-
-        body = self.summary
-        if full:
-            if self.description.strip() != '':
-                body += ', ' + self.description.strip()
-            if self.location.strip() != '':
-                body += ', ' + self.location.strip()
-            if self.categories.strip() != '':
-                body += ', ' + self.categories.strip()
-
-        comps = [startstr + tostr + endstr + ':', body, self._recur_str]
-        return ' '.join(filter(bool, comps))
 
     def format(self, format_string, relative_to, env={}, colors=True):
         """
@@ -668,19 +619,7 @@ class Event(object):
 
 
 class DatetimeEvent(Event):
-    @property
-    def _rangestr(self):
-        # same day
-        if self.start_local.utctimetuple()[:3] == self.end_local.utctimetuple()[:3]:
-            starttime = self.start_local.strftime(self._locale['timeformat'])
-            endtime = self.end_local.strftime(self._locale['timeformat'])
-            datestr = self.end_local.strftime(self._locale['longdateformat'])
-            rangestr = starttime + '-' + endtime + ' ' + datestr
-        else:
-            startstr = self.start_local.strftime(self._locale['longdatetimeformat'])
-            endstr = self.end_local.strftime(self._locale['longdatetimeformat'])
-            rangestr = startstr + ' - ' + endstr
-        return rangestr
+    pass
 
 
 class LocalizedEvent(DatetimeEvent):
@@ -750,48 +689,6 @@ class AllDayEvent(Event):
                            'on {}'.format(self.href, self.summary, self.start))
             end += timedelta(days=1)
         return end - timedelta(days=1)
-
-    def relative_to(self, day, full=False):
-        if self.start > day or self.end < day:
-            raise ValueError('Day out of range: {}'
-                             .format(dict(day=day, start=self.start,
-                                          end=self.end)))
-        elif self.start < day and self.end > day:
-            # event starts before and goes on longer than `day`:
-            rangestr = self.symbol_strings['range']
-        elif self.start < day:
-            # event started before `day`
-            rangestr = self.symbol_strings['range_end']
-        elif self.end > day:
-            # event goes on longer than `day`
-            rangestr = self.symbol_strings['range_start']
-        elif self.start == self.end == day:
-            # only on `day`
-            rangestr = ''
-
-        body = self.summary
-        if full:
-            if self.description.strip() != '':
-                body += ', ' + self.description.strip()
-            if self.categories.strip() != '':
-                body += ', ' + self.categories.strip()
-            if self.location.strip() != '':
-                body += ', ' + self.location.strip()
-
-        return ' '.join(filter(bool, (rangestr, body, self._recur_str)))
-
-    @property
-    def _rangestr(self):
-        if self.start_local == self.end_local:
-            rangestr = self.start_local.strftime(self._locale['longdateformat'])
-        else:
-            if self.start_local.year == self.end_local.year:
-                startstr = self.start_local.strftime(self._locale['dateformat'])
-            else:
-                startstr = self.start_local.strftime(self._locale['longdateformat'])
-            endstr = self.end_local.strftime(self._locale['longdateformat'])
-            rangestr = startstr + ' - ' + endstr
-        return rangestr
 
 
 def create_timezone(tz, first_date=None, last_date=None):
