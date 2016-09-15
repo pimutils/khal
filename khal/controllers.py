@@ -559,16 +559,16 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None, env
     if batch or len(collection.writable_names) == 1:
         calendar_name = collection.writable_names[0]
     else:
-        choice = list()
-        for num, name in enumerate(collection.writable_names):
-            choice.append('{}({})'.format(name, num))
-        choice = ', '.join(choice)
+        calendar_names = sorted(collection.writable_names)
+        choices = ', '.join(
+            ['{}({})'.format(name, num) for num, name in enumerate(calendar_names)])
         while True:
-            value = prompt('Which calendar do you want to import to? \n'
-                           '{}'.format(choice), default=collection.default_calendar_name)
+            value = prompt(
+                'Which calendar do you want to import to? \n{}'.format(choices),
+                default=collection.default_calendar_name,
+            )
             try:
-                number = int(value)
-                calendar_name = collection.writable_names[number]
+                calendar_name = calendar_names[int(value)]
                 break
             except (ValueError, IndexError):
                 matches = [x for x in collection.writable_names if x.startswith(value)]
@@ -577,8 +577,7 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None, env
                     break
             echo('invalid choice')
 
-    if batch or confirm(u"Do you want to import this event into `{}`?"
-                        u"".format(calendar_name)):
+    if batch or confirm("Do you want to import this event into `{}`?".format(calendar_name)):
         ics = aux.ics_from_list(vevent, random_uid)
         try:
             collection.new(Item(ics.to_ical().decode('utf-8')), collection=calendar_name)
