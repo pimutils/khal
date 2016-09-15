@@ -391,9 +391,8 @@ def _get_cli():
                   is_flag=True)
     @click.option('--random_uid', '-r', help=('Select a random uid.'),
                   is_flag=True)
-    @click.argument('ics', type=click.File('rb'))
-    @click.option('--format', '-f',
-                  help=('The format to print the event.'))
+    @click.argument('ics', type=click.File('rb'), nargs=-1)
+    @click.option('--format', '-f', help=('The format to print the event.'))
     @click.pass_context
     def import_ics(ctx, ics, include_calendar, batch, random_uid, format):
         '''Import events from an .ics file.
@@ -410,19 +409,23 @@ def _get_cli():
         '''
         if include_calendar:
             ctx.obj['calendar_selection'] = {include_calendar, }
+        collection = build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None))
+        if batch and len(collection.names) > 1 and \
+                ctx.obj['conf']['default']['default_calendar'] is None:
+            raise click.UsageError(
+                'When using batch import, please specify a calendar to import '
+                'into or set the `default_calendar` in the config file.')
 
-        # TODO --batch: make sure either calendar selected with -a or
-        # default_calendar set in conf file
-
-        ics_str = ics.read()
-        controllers.import_ics(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            ctx.obj['conf'],
-            ics=ics_str,
-            batch=batch,
-            random_uid=random_uid,
-            env={"calendars": ctx.obj['conf']['calendars']}
-        )
+        for ics_file in ics:
+            ics_str = ics_file.read()
+            controllers.import_ics(
+                collection,
+                ctx.obj['conf'],
+                ics=ics_str,
+                batch=batch,
+                random_uid=random_uid,
+                env={"calendars": ctx.obj['conf']['calendars']},
+            )
 
     @cli.command()
     @multi_calendar_option
