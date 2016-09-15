@@ -27,6 +27,7 @@ not released yet
   documentation for details (Taylor Money)
 * added command `edit` (Taylor Money)
 * `new` has interactive option (Taylor Money)
+* `import` can now import multiple files at once (Christian Geier)
 
 ikhal
 -----
