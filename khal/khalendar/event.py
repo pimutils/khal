@@ -500,6 +500,7 @@ class Event(object):
 
         day_start = self._locale['local_timezone'].localize(datetime.combine(relative_to_start, time.min))
         day_end = self._locale['local_timezone'].localize(datetime.combine(relative_to_end, time.max))
+        next_day_start = day_start + timedelta(days=1)
 
         allday = isinstance(self, AllDayEvent)
 
@@ -538,11 +539,13 @@ class Event(object):
             attributes["start-style"] = attributes["start-time"]
             tostr = "-"
 
-        midnight_end = day_end.time() == time.max and self_end.time() == time.min and \
-            self_end.date() - timedelta(days=1) == day_end.date()
-        if self_end == day_end or midnight_end:
-            attributes["end-style"] = self.symbol_strings["range_end"]
-            tostr = ""
+        if self_end == day_end or self_end == next_day_start:
+            if self._locale["timeformat"] == '%H:%M':
+                attributes["end-style"] = '24:00'
+                tostr = '-'
+            else:
+                attributes["end-style"] = self.symbol_strings["range_end"]
+                tostr = ""
         elif self_end > day_end:
             attributes["end-style"] = self.symbol_strings["right_arrow"]
             tostr = ""

@@ -420,6 +420,4 @@ def test_format_24():
     event = Event.fromString(event_dt, **EVENT_KWARGS)
     event.update_start_end(start, end)
     format_ = '{start-end-time-style} {title}{recurse}'
-    # TODO actually fix this
-    assert event.format(format_, date(2014, 4, 9)) == '19:30⇥ An Event\x1b[0m'
-    assert event.format(format_, date(2014, 4, 10)) == '19:30⇥ An Event\x1b[0m'
+    assert event.format(format_, date(2014, 4, 9)) == '19:30-24:00 An Event\x1b[0m'
