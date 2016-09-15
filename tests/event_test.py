@@ -280,9 +280,9 @@ def test_event_d_long():
     event = Event.fromString(event_d_long, **EVENT_KWARGS)
     with pytest.raises(ValueError):
         event.relative_to(date(2014, 4, 8))
-    assert event.format(LIST_FORMAT, datetime(2014, 4, 9, 0, 0)) == '↦ Another Event \x1b[0m'
-    assert event.format(LIST_FORMAT, datetime(2014, 4, 10, 0, 0)) == '↔ Another Event \x1b[0m'
-    assert event.format(LIST_FORMAT, datetime(2014, 4, 11, 0, 0)) == '⇥ Another Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 9)) == '↦ Another Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 10)) == '↔ Another Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 11)) == '⇥ Another Event \x1b[0m'
     with pytest.raises(ValueError):
         event.format('', date(2014, 4, 12))
     assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
@@ -293,8 +293,8 @@ def test_event_d_two_days():
     event_d_long = _get_text('event_d_long')
     event = Event.fromString(event_d_long, **EVENT_KWARGS)
     event.update_start_end(date(2014, 4, 9), date(2014, 4, 10))
-    assert event.format(LIST_FORMAT, datetime(2014, 4, 9, 0, 0)) == '↦ Another Event \x1b[0m'
-    assert event.format(LIST_FORMAT, datetime(2014, 4, 10, 0, 0)) == '⇥ Another Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 9)) == '↦ Another Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 10)) == '⇥ Another Event \x1b[0m'
     with pytest.raises(ValueError):
         event.format('', date(2014, 4, 12))
     assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
@@ -305,9 +305,9 @@ def test_event_dt_long():
     event_dt_long = _get_text('event_dt_long')
     event = Event.fromString(event_dt_long, **EVENT_KWARGS)
 
-    assert event.format(LIST_FORMAT, datetime(2014, 4, 9, 0, 0)) == '09:30→ An Event \x1b[0m'
-    assert event.format(LIST_FORMAT, datetime(2014, 4, 10, 0, 0)) == '↔ An Event \x1b[0m'
-    assert event.format(LIST_FORMAT, datetime(2014, 4, 12, 0, 0)) == '→10:30 An Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 9)) == '09:30→ An Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 10)) == '↔ An Event \x1b[0m'
+    assert event.format(LIST_FORMAT, date(2014, 4, 12)) == '→10:30 An Event \x1b[0m'
     assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
         '09.04.2014 09:30-12.04.2014 10:30 An Event \x1b[0m'
 
@@ -416,9 +416,10 @@ def test_format_24():
     before"""
     event_dt = _get_text('event_dt_simple')
     start = BERLIN.localize(datetime(2014, 4, 9, 19, 30))
-    end = BERLIN.localize(datetime(2014, 4, 10, 0, 0))
+    end = BERLIN.localize(datetime(2014, 4, 10))
     event = Event.fromString(event_dt, **EVENT_KWARGS)
     event.update_start_end(start, end)
     format_ = '{start-end-time-style} {title}{recurse}'
     # TODO actually fix this
-    assert event.format(format_, datetime(2014, 4, 9, 0, 0)) == '19:30⇥ An Event\x1b[0m'
+    assert event.format(format_, date(2014, 4, 9)) == '19:30⇥ An Event\x1b[0m'
+    assert event.format(format_, date(2014, 4, 10)) == '19:30⇥ An Event\x1b[0m'
