@@ -419,5 +419,13 @@ def test_format_24():
     end = BERLIN.localize(datetime(2014, 4, 10))
     event = Event.fromString(event_dt, **EVENT_KWARGS)
     event.update_start_end(start, end)
-    format_ = '{start-end-time-style} {title}{recurse}'
+    format_ = '{start-end-time-style} {title}{repeat-symbol}'
     assert event.format(format_, date(2014, 4, 9)) == '19:30-24:00 An Event\x1b[0m'
+
+
+def test_invalid_format_string():
+    event_dt = _get_text('event_dt_simple')
+    event = Event.fromString(event_dt, **EVENT_KWARGS)
+    format_ = '{start-end-time-style} {title}{foo}'
+    with pytest.raises(KeyError):
+        event.format(format_, date(2014, 4, 9))

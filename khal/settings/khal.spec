@@ -217,7 +217,7 @@ bold_for_light_color = boolean(default=True)
 # ignored in `ikhal`, where events will always be shown in the color of the
 # calendar they belong to.
 # The syntax is the same as for :option:`--format`.
-agenda_event_format = string(default='{calendar-color}{start-end-time-style:16} {title}{recurse}{description-separator}{description}{reset}')
+agenda_event_format = string(default='{calendar-color}{start-end-time-style:16} {title}{repeat-symbol}{description-separator}{description}{reset}')
 
 # Specifies how each *day header* is formated.
 agenda_day_format = string(default='{bold}{name}{reset}')
@@ -227,7 +227,7 @@ agenda_day_format = string(default='{bold}{name}{reset}')
 # :command:`list` and :command:`calendar`. It is therefore probably a sensible
 # choice to include the start- and end-date.
 # The syntax is the same as for :option:`--format`.
-event_format = string(default='{calendar-color}{start}-{end} {title}{recurse}{description-separator}{description}{reset}')
+event_format = string(default='{calendar-color}{start}-{end} {title}{repeat-symbol}{description-separator}{description}{reset}')
 
 # When highlight_event_days is enabled, this section specifies how
 # the highlighting/coloring of days is handled.

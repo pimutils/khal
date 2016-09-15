@@ -481,15 +481,12 @@ class Event(object):
         :param colors: determines if colors codes should be printed or not
         :type colors: bool
         """
-        # TODO raise ValueError if relative_to is outside of this event
-        attributes = defaultdict(str)
+        attributes = dict()
         try:
             relative_to_start, relative_to_end = relative_to
         except TypeError:
-            relative_to_start = relative_to
-            relative_to_end = relative_to
+            relative_to_start = relative_to_end = relative_to
 
-        # TODO make sure relative_to is always date or (date, date)
         if isinstance(relative_to_end, datetime):
             relative_to_end = relative_to_end.date()
         if isinstance(relative_to_start, datetime):
@@ -603,6 +600,8 @@ class Event(object):
             cal = env["calendars"][self.calendar]
             attributes["calendar-color"] = get_color(cal.get('color', ''))
             attributes["calendar"] = cal.get("displayname", self.calendar)
+        else:
+            attributes["calendar-color"] = attributes["calendar"] = ''
 
         if colors:
             color_styles = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
@@ -610,10 +609,7 @@ class Event(object):
                 color_styles[c] = style("", reset=False, fg=c)
                 color_styles[c + "-bold"] = style("", reset=False, fg=c, bold=True)
             attributes.update(color_styles)
-        try:
-            return format_string.format(**attributes) + attributes["reset"]
-        except (KeyError, IndexError):
-            raise KeyError("cannot format event with: %s" % format_string)
+        return format_string.format(**dict(attributes)) + attributes["reset"]
 
     @property
     def event_description(self):   # XXX rename me

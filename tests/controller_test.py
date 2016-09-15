@@ -31,7 +31,7 @@ event_today = event_allday_template.format(today.strftime('%Y%m%d'),
 item_today = Item(event_today)
 
 event_format = '{calendar-color}{start-end-time-style:16} {title}'
-event_format += '{recurse}{description-separator}{description}{calendar-color}'
+event_format += '{repeat-symbol}{description-separator}{description}{calendar-color}'
 
 
 class TestGetAgenda(object):

@@ -519,7 +519,7 @@ when using ikhal.
     The syntax is the same as for :option:`--format`.
 
       :type: string
-      :default: {calendar-color}{start-end-time-style:16} {title}{recurse}{description-separator}{description}{reset}
+      :default: {calendar-color}{start-end-time-style:16} {title}{repeat-symbol}{description-separator}{description}{reset}
 
 .. _view-bold_for_light_color:
 
@@ -544,7 +544,7 @@ when using ikhal.
     The syntax is the same as for :option:`--format`.
 
       :type: string
-      :default: {calendar-color}{start}-{end} {title}{recurse}{description-separator}{description}{reset}
+      :default: {calendar-color}{start}-{end} {title}{repeat-symbol}{description-separator}{description}{reset}
 
 .. _view-event_view_always_visible:
 
