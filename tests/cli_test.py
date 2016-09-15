@@ -293,8 +293,8 @@ def test_repeating(runner):
     result = runner.invoke(
         main_khal, 'new {} 18:00 myevent -r weekly -u {}'.format(
             now, end_date.strftime('%d.%m.%Y')).split())
-    assert result.output == ''
     assert not result.exception
+    assert result.output == ''
 
 
 def test_at(runner):
@@ -306,8 +306,8 @@ def test_at(runner):
         'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
     args = ['--color', 'at', '--format', '{start-time}{title}', '--day-format', '', '18:30']
     result = runner.invoke(main_khal, args)
-    assert result.output.startswith('myevent')
     assert not result.exception
+    assert result.output.startswith('myevent')
 
 
 def test_at_day_format(runner):
@@ -319,8 +319,8 @@ def test_at_day_format(runner):
         'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
     args = ['--color', 'at', '--format', '{start-time}{title}', '--day-format', '{name}', '18:30']
     result = runner.invoke(main_khal, args)
-    assert result.output.startswith('Today\x1b[0m\nmyevent')
     assert not result.exception
+    assert result.output.startswith('Today\x1b[0m\nmyevent')
 
 
 def test_list(runner):
@@ -334,8 +334,8 @@ def test_list(runner):
     args = ['--color', 'list', '--format', format, '--day-format', 'header', '18:30']
     result = runner.invoke(main_khal, args)
     expected = 'header\x1b[0m\n\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n'
-    assert result.output.startswith(expected)
     assert not result.exception
+    assert result.output.startswith(expected)
 
 
 def test_search(runner):
@@ -344,8 +344,8 @@ def test_search(runner):
     result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
     format = '{red}{start-end-time-style}{reset} {title} :: {description}'
     result = runner.invoke(main_khal, ['--color', 'search', '--format', format, 'myevent'])
-    assert result.output.startswith('\x1b[34m\x1b[31m18:00')
     assert not result.exception
+    assert result.output.startswith('\x1b[34m\x1b[31m18:00')
 
 
 def test_no_default_new(runner):
