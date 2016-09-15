@@ -604,11 +604,15 @@ class Event(object):
             attributes["calendar-color"] = attributes["calendar"] = ''
 
         if colors:
-            color_styles = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
+            attributes['reset'] = style('', reset=True)
+            attributes['bold'] = style('', bold=True, reset=False)
             for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
-                color_styles[c] = style("", reset=False, fg=c)
-                color_styles[c + "-bold"] = style("", reset=False, fg=c, bold=True)
-            attributes.update(color_styles)
+                attributes[c] = style("", reset=False, fg=c)
+                attributes[c + "-bold"] = style("", reset=False, fg=c, bold=True)
+        else:
+            attributes['reset'] = attributes['bold'] = ''
+            for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
+                attributes[c] = attributes[c + '-bold'] = ''
         return format_string.format(**dict(attributes)) + attributes["reset"]
 
     @property
