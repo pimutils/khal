@@ -217,7 +217,7 @@ bold_for_light_color = boolean(default=True)
 # ignored in `ikhal`, where events will always be shown in the color of the
 # calendar they belong to.
 # The syntax is the same as for :option:`--format`.
-agenda_event_format = string(default='{calendar-color}{start-end-time-style:16} {title}{repeat-symbol}{description-separator}{description}{reset}')
+agenda_event_format = string(default='{calendar-color}{start-end-time-style} {title}{repeat-symbol}{description-separator}{description}{reset}')
 
 # Specifies how each *day header* is formated.
 agenda_day_format = string(default='{bold}{name}{reset}')
