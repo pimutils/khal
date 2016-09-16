@@ -271,7 +271,6 @@ class TestCollection(object):
         coll.new(event, cal1)
         assert len(list(coll.search('Event'))) == 1
 
-
     def test_delete_two_events(self, coll_vdirs):
             """testing if we can delete any of two events in two different
             calendars with the same filename"""
