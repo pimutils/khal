@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta, time
 import icalendar
 
 from khal.khalendar import backend
-from khal.khalendar.event import LocalizedEvent
+from khal.khalendar.event import LocalizedEvent, EventStandIn
 from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 
 from .aux import _get_text
@@ -50,6 +50,16 @@ def test_event_rrule_recurrence_id():
     assert events[3].start == BERLIN.localize(datetime(2014, 7, 21, 7, 0))
     assert events[4].start == BERLIN.localize(datetime(2014, 7, 28, 7, 0))
     assert events[5].start == BERLIN.localize(datetime(2014, 8, 4, 7, 0))
+
+    events = dbi.get_localized(
+        BERLIN.localize(datetime(2014, 6, 30, 0, 0)),
+        BERLIN.localize(datetime(2014, 8, 26, 0, 0)),
+        minimal=True,
+    )
+    events = list(events)
+    assert len(events) == 6
+    for event in events:
+        assert isinstance(event, EventStandIn)
 
 
 def test_event_different_timezones():
@@ -365,6 +375,15 @@ def test_event_rrule_this_and_future_allday():
     assert str(events[0].summary) == 'Arbeit'
     for event in events[1:]:
         assert str(event.summary) == 'Arbeit (lang)'
+
+    events = list(dbi.get_floating(
+        datetime(2014, 4, 30, 0, 0),
+        datetime(2014, 9, 27, 0, 0),
+        minimal=True,
+    ))
+    assert len(events) == 6
+    for event in events:
+        assert isinstance(event, EventStandIn)
 
 
 def test_event_rrule_this_and_future_allday_prior():

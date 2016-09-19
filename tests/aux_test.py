@@ -8,7 +8,7 @@ import pytz
 from freezegun import freeze_time
 
 from khal.aux import guessdatetimefstr, guesstimedeltafstr, new_event, eventinfofstr
-from khal.aux import timedelta2str, guessrangefstr
+from khal.aux import timedelta2str, guessrangefstr, weekdaypstr, construct_daynames
 from khal import aux
 import pytest
 
@@ -109,6 +109,19 @@ class TestGuessDatetimefstr(object):
     def test_time_tomorrow(self):
         assert (self.tomorrow16, False) == \
             guessdatetimefstr('16:00'.split(), locale=locale_de, default_day=tomorrow)
+
+    def test_time_weekday(self):
+        with freeze_time('2016-9-19'):
+            assert (datetime(2016, 9, 23, 16), False) == \
+                guessdatetimefstr(
+                    'Friday 16:00'.split(),
+                    locale=locale_de,
+                    default_day=datetime.today())
+
+    def test_time_now(self):
+        with freeze_time('2016-9-19 17:53'):
+            assert (datetime(2016, 9, 19, 17, 53), False) == \
+                guessdatetimefstr('now'.split(), locale=locale_de, default_day=datetime.today())
 
 
 class TestGuessTimedeltafstr(object):
@@ -217,6 +230,31 @@ class TestTimeDelta2Str(object):
 
     def test_multi(self):
         assert timedelta2str(timedelta(days=6, hours=-3, minutes=10, seconds=-3)) == '5d 21h 9m 57s'
+
+
+def test_weekdaypstr():
+    for string, weekdayno in [
+            ('monday', 0),
+            ('tue', 1),
+            ('wednesday', 2),
+            ('thursday', 3),
+            ('fri', 4),
+            ('saturday', 5),
+            ('sun', 6),
+    ]:
+        assert weekdaypstr(string) == weekdayno
+
+
+def test_weekdaypstr_invalid():
+    with pytest.raises(ValueError):
+        weekdaypstr('foobar')
+
+
+def test_construct_daynames():
+    with freeze_time('2016-9-19'):
+        assert construct_daynames(date(2016, 9, 19)) == 'Today'
+        assert construct_daynames(date(2016, 9, 20)) == 'Tomorrow'
+        assert construct_daynames(date(2016, 9, 21)) == 'Wednesday'
 
 
 test_set_format_de = _create_testcases(
@@ -329,6 +367,12 @@ test_set_format_de_complexer = _create_testcases(
      _create_vevent(
         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T220000',
         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140217T010000')),
+
+    # other timezone
+    ('22:00 1:00 Europe/London Äwesöme Event',
+     _create_vevent(
+        'DTSTART;TZID=Europe/London;VALUE=DATE-TIME:20140216T220000',
+        'DTEND;TZID=Europe/London;VALUE=DATE-TIME:20140217T010000')),
 
     ('15.06. Äwesöme Event',
      _create_vevent('DTSTART;VALUE=DATE:20140615',

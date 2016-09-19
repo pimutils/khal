@@ -4,7 +4,7 @@ import pytest
 import pytz
 from freezegun import freeze_time
 
-from icalendar import vRecur
+from icalendar import vRecur, vText
 
 from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent, FloatingEvent
 
@@ -434,3 +434,10 @@ def test_format_colors():
     format_ = '{red}{title}{reset}'
     assert event.format(format_, date(2014, 4, 9)) == '\x1b[31mAn Event\x1b[0m\x1b[0m'
     assert event.format(format_, date(2014, 4, 9), colors=False) == 'An Event'
+
+
+def test_event_alarm():
+    event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    assert event.alarms == []
+    event.update_alarms([(timedelta(-1, 82800), 'new event')])
+    assert event.alarms == [(timedelta(-1, 82800), vText('new event'))]

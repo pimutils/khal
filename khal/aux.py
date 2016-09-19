@@ -99,15 +99,9 @@ def weekdaypstr(dayname):
 
 
 def construct_daynames(date_):
-    """
-    returns weeka list of tuples of datetime objects and datenames
+    """converts datetime.date into a string description
 
-    :param daylist: list of dates
-    :type daylist: list(datetime.date)
-    :param longdateformat: format in which to print dates
-    :param str
-    :returns: list of names and dates
-    :rtype: list((str, datetime.date))
+    either `Today`, `Tomorrow` or name of weekday.
     """
     if date_ == date.today():
         return 'Today'
@@ -471,7 +465,7 @@ def rrulefstr(repeat, until, locale):
 
 def eventinfofstr(info_string, locale, default_timedelta=None,
                   adjust_reasonably=False, localize=False):
-    """parses a string of the form [START [END | DELTA]] [SUMMARY] [::
+    """parses a string of the form START [END | DELTA] [TIMEZONE] [SUMMARY] [::
     DESCRIPTION] into a dictionary with keys: dtstart, dtend, timezone, allday,
     summary, description
 
@@ -483,8 +477,6 @@ def eventinfofstr(info_string, locale, default_timedelta=None,
     :type default_timedelta: passed on to guessrangefstr
     :param adjust_reasonably:
     :type adjust_reasonably: passed on to guessrangefstr
-    :param localize:
-    :type localize: boolean controls whether dates are localized in the end
     :rtype: dictionary
 
     """
@@ -515,22 +507,16 @@ def eventinfofstr(info_string, locale, default_timedelta=None,
                 tz = None
             summary = ' '.join(parts[i:])
             break
-        summary = ' '.join(parts[i:])
 
-    if start is None and end is None:
+    if start is None or end is None:
         raise ValueError('Could not parse `{}`'.format(info_string))
 
-    if start is not None and end is not None:
-        if tz is None:
-            tz = locale['default_timezone']
+    if tz is None:
+        tz = locale['default_timezone']
 
-        if allday:
-            start = start.date()
-            end = end.date()
-        else:
-            if localize:
-                start = tz.localize(start)
-                end = tz.localize(end)
+    if allday:
+        start = start.date()
+        end = end.date()
 
     info = {}
     info["dtstart"] = start
