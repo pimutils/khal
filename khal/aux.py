@@ -238,7 +238,8 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
 
 
 def timedelta2str(delta):
-    total_seconds = abs(delta).seconds
+    # we deliberately ignore any subsecond deltas
+    total_seconds = int(abs(delta).total_seconds())
 
     seconds = total_seconds % 60
     total_seconds -= seconds

@@ -116,6 +116,9 @@ class TestGuessTimedeltafstr(object):
     def test_single(self):
         assert timedelta(minutes=10) == guesstimedeltafstr('10m')
 
+    def test_seconds(self):
+        assert timedelta(seconds=10) == guesstimedeltafstr('10s')
+
     def test_negative(self):
         assert timedelta(minutes=-10) == guesstimedeltafstr('-10m')
 
@@ -209,9 +212,11 @@ class TestTimeDelta2Str(object):
     def test_negative(self):
         assert timedelta2str(timedelta(minutes=-10)) == '-10m'
 
+    def test_days(self):
+        assert timedelta2str(timedelta(days=2)) == '2d'
+
     def test_multi(self):
-        assert timedelta2str(timedelta(days=1, hours=-3, minutes=10, seconds=-3))\
-               == '21h 9m 57s'
+        assert timedelta2str(timedelta(days=6, hours=-3, minutes=10, seconds=-3)) == '5d 21h 9m 57s'
 
 
 test_set_format_de = _create_testcases(
