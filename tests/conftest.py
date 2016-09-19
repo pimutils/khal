@@ -5,7 +5,7 @@ import pytest
 from khal.khalendar import CalendarCollection
 from khal.khalendar.vdir import Vdir
 
-from .aux import locale, example_cals, cal1
+from .utils import locale, example_cals, cal1
 
 
 @pytest.fixture

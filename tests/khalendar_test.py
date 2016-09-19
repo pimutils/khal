@@ -7,13 +7,13 @@ import pytest
 
 from khal.khalendar.vdir import Item
 
-import khal.aux
+import khal.utils
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
 from khal.khalendar.backend import CouldNotCreateDbDir
 import khal.khalendar.exceptions
-from .aux import _get_text, cal1, cal2, cal3, normalize_component
-from . import aux
+from .utils import _get_text, cal1, cal2, cal3, normalize_component
+from . import utils
 
 from freezegun import freeze_time
 
@@ -94,13 +94,13 @@ class TestCalendar(object):
 class TestVdirsyncerCompat(object):
     def test_list(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        event = Event.fromString(event_d, calendar=cal1, locale=aux.locale)
+        event = Event.fromString(event_d, calendar=cal1, locale=utils.locale)
         assert event.etag is None
         assert event.href is None
         coll.new(event)
         assert event.etag is not None
         assert event.href == 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU.ics'
-        event = Event.fromString(event_today, calendar=cal1, locale=aux.locale)
+        event = Event.fromString(event_today, calendar=cal1, locale=utils.locale)
         coll.new(event)
         hrefs = sorted(href for href, uid in coll._backend.list(cal1))
         assert set(str(coll._backend.get(href, calendar=cal1).uid) for href in hrefs) == set((
@@ -123,10 +123,10 @@ class TestCollection(object):
     aend = datetime.combine(aday, time.max)
     bstart = datetime.combine(bday, time.min)
     bend = datetime.combine(bday, time.max)
-    astart_berlin = aux.BERLIN.localize(astart)
-    aend_berlin = aux.BERLIN.localize(aend)
-    bstart_berlin = aux.BERLIN.localize(bstart)
-    bend_berlin = aux.BERLIN.localize(bend)
+    astart_berlin = utils.BERLIN.localize(astart)
+    aend_berlin = utils.BERLIN.localize(aend)
+    bstart_berlin = utils.BERLIN.localize(bstart)
+    bend_berlin = utils.BERLIN.localize(bend)
 
     def test_default_calendar(self, tmpdir):
         calendars = {
@@ -134,7 +134,7 @@ class TestCollection(object):
             'home': {'name': 'home', 'path': str(tmpdir)},
             'work': {'name': 'work', 'path': str(tmpdir), 'readonly': True},
         }
-        coll = CalendarCollection(calendars=calendars, locale=aux.locale, dbpath=':memory:')
+        coll = CalendarCollection(calendars=calendars, locale=utils.locale, dbpath=':memory:')
         assert coll.default_calendar_name is None
         with pytest.raises(ValueError):
             coll.default_calendar_name = 'work'
@@ -151,13 +151,13 @@ class TestCollection(object):
         start = datetime.combine(today, time.min)
         end = datetime.combine(today, time.max)
         assert list(coll.get_floating(start, end)) == list()
-        assert list(coll.get_localized(aux.BERLIN.localize(start),
-                                       aux.BERLIN.localize(end))) == list()
+        assert list(coll.get_localized(utils.BERLIN.localize(start),
+                                       utils.BERLIN.localize(end))) == list()
 
     def test_insert(self, coll_vdirs):
         """insert a localized event"""
         coll, vdirs = coll_vdirs
-        event = Event.fromString(event_dt, calendar=cal1, locale=aux.locale)
+        event = Event.fromString(event_dt, calendar=cal1, locale=utils.locale)
         coll.new(event, cal1)
         events = list(coll.get_localized(self.astart_berlin, self.aend_berlin))
         assert len(events) == 1
@@ -177,7 +177,7 @@ class TestCollection(object):
     def test_insert_d(self, coll_vdirs):
         """insert a floating event"""
         coll, vdirs = coll_vdirs
-        event = Event.fromString(event_d, calendar=cal1, locale=aux.locale)
+        event = Event.fromString(event_d, calendar=cal1, locale=utils.locale)
         coll.new(event, cal1)
         events = list(coll.get_events_on(aday))
         assert len(events) == 1
@@ -192,7 +192,7 @@ class TestCollection(object):
         """insert a date event with no VALUE=DATE option"""
         coll, vdirs = coll_vdirs
 
-        event = Event.fromString(event_d_no_value, calendar=cal1, locale=aux.locale)
+        event = Event.fromString(event_d_no_value, calendar=cal1, locale=utils.locale)
         coll.new(event, cal1)
         events = list(coll.get_events_on(aday))
         assert len(events) == 1
@@ -205,7 +205,7 @@ class TestCollection(object):
     def test_get(self, coll_vdirs):
         """test getting an event by its href"""
         coll, vdirs = coll_vdirs
-        event = Event.fromString(event_dt, href='xyz.ics', calendar=cal1, locale=aux.locale)
+        event = Event.fromString(event_dt, href='xyz.ics', calendar=cal1, locale=utils.locale)
         coll.new(event, cal1)
         event_from_db = coll.get_event(SIMPLE_EVENT_UID + '.ics', cal1)
         with freeze_time('2016-1-1'):
@@ -215,7 +215,7 @@ class TestCollection(object):
     def test_change(self, coll_vdirs):
         """moving an event from one calendar to another"""
         coll, vdirs = coll_vdirs
-        event = Event.fromString(event_dt, calendar=cal1, locale=aux.locale)
+        event = Event.fromString(event_dt, calendar=cal1, locale=utils.locale)
         coll.new(event, cal1)
         event = list(coll.get_events_on(aday))[0]
         assert event.calendar == cal1
@@ -229,7 +229,7 @@ class TestCollection(object):
         """updating one event"""
         coll, vdirs = coll_vdirs
         event = Event.fromString(
-            _get_text('event_dt_simple'), calendar=cal1, locale=aux.locale)
+            _get_text('event_dt_simple'), calendar=cal1, locale=utils.locale)
         coll.new(event, cal1)
         events = coll.get_events_on(aday)
         event = list(events)[0]
@@ -246,8 +246,8 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         bday = datetime.combine(aday, time.min)
         anend = bday + timedelta(hours=1)
-        event = khal.aux.new_event(dtstart=bday, dtend=anend, summary="hi", timezone=aux.BERLIN,
-                                   locale=aux.locale)
+        event = khal.utils.new_event(
+            dtstart=bday, dtend=anend, summary="hi", timezone=utils.BERLIN, locale=utils.locale)
         event = coll.new_event(event.to_ical(), coll.default_calendar_name)
         assert event.allday is False
 
@@ -255,7 +255,7 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         coll._calendars[cal1]['readonly'] = True
         coll._calendars[cal3]['readonly'] = True
-        event = Event.fromString(event_dt, calendar=cal1, locale=aux.locale)
+        event = Event.fromString(event_dt, calendar=cal1, locale=utils.locale)
 
         with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
             coll.new(event, cal1)
@@ -267,7 +267,7 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         assert len(list(coll.search('Event'))) == 0
         event = Event.fromString(
-            _get_text('event_dt_simple'), calendar=cal1, locale=aux.locale)
+            _get_text('event_dt_simple'), calendar=cal1, locale=utils.locale)
         coll.new(event, cal1)
         assert len(list(coll.search('Event'))) == 1
 
@@ -276,9 +276,9 @@ class TestCollection(object):
             calendars with the same filename"""
             coll, vdirs = coll_vdirs
             event1 = Event.fromString(_get_text('event_dt_simple'),
-                                      calendar=cal1, locale=aux.locale)
+                                      calendar=cal1, locale=utils.locale)
             event2 = Event.fromString(_get_text('event_dt_simple'),
-                                      calendar=cal2, locale=aux.locale)
+                                      calendar=cal2, locale=utils.locale)
             coll.new(event1, cal1)
             sleep(0.1)  # make sure the etags are different
             coll.new(event2, cal2)
@@ -304,7 +304,7 @@ class TestDbCreation(object):
 
         assert not os.path.isdir(dbdir)
         calendars = {cal1: {'name': cal1, 'path': vdirpath}}
-        CalendarCollection(calendars, dbpath=dbpath, locale=aux.locale)
+        CalendarCollection(calendars, dbpath=dbpath, locale=utils.locale)
         assert os.path.isdir(dbdir)
 
     def test_failed_create_db(self, tmpdir):
@@ -314,7 +314,7 @@ class TestDbCreation(object):
 
         calendars = {cal1: {'name': cal1, 'path': str(tmpdir)}}
         with pytest.raises(CouldNotCreateDbDir):
-            CalendarCollection(calendars, dbpath=dbpath, locale=aux.locale)
+            CalendarCollection(calendars, dbpath=dbpath, locale=utils.locale)
 
 
 def test_default_calendar(coll_vdirs):

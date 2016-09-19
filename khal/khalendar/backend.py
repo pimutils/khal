@@ -41,7 +41,7 @@ import icalendar
 import pytz
 
 from .event import Event, EventStandIn
-from . import aux
+from . import utils
 from .. import log
 from .exceptions import CouldNotCreateDbDir, OutdatedDbVersionError, UpdateFailed
 
@@ -69,7 +69,7 @@ def sort_key(vevent):
         return uid, 0
     rrange = rec_id.params.get('RANGE')
     if rrange == THISANDFUTURE:
-        return uid, aux.to_unix_time(rec_id.dt)
+        return uid, utils.to_unix_time(rec_id.dt)
     else:
         return uid, 1
 
@@ -78,7 +78,7 @@ class SQLiteDb(object):
     """
     This class should provide a caching database for a calendar, keeping raw
     vevents in one table but allowing to retrieve events by dates (via the help
-    of some auxiliary tables)
+    of some utilsiliary tables)
 
     :param calendar: the `name` of this calendar, if the same *name* and
                      *dbpath* is given on next creation of an SQLiteDb object
@@ -243,7 +243,7 @@ class SQLiteDb(object):
         assert href is not None
         ical = icalendar.Event.from_ical(vevent_str)
         check_for_errors(ical, calendar, href)
-        vevents = (aux.sanitize(c, self.locale['default_timezone'], href, calendar) for
+        vevents = (utils.sanitize(c, self.locale['default_timezone'], href, calendar) for
                    c in ical.walk() if c.name == 'VEVENT')
         # Need to delete the whole event in case we are updating a
         # recurring event with an event which is either not recurring any
@@ -341,7 +341,7 @@ class SQLiteDb(object):
             start_shift = start_shift.days * 3600 * 24 + start_shift.seconds
             duration = duration.days * 3600 * 24 + duration.seconds
 
-        dtstartend = aux.expand(vevent, href)
+        dtstartend = utils.expand(vevent, href)
         if not dtstartend:
             # Does this event even have dates? Technically it is possible for
             # events to be empty/non-existent by deleting all their recurrences
@@ -350,20 +350,20 @@ class SQLiteDb(object):
 
         for dtstart, dtend in dtstartend:
             if dtype == DATE:
-                dbstart = aux.to_unix_time(dtstart)
-                dbend = aux.to_unix_time(dtend)
+                dbstart = utils.to_unix_time(dtstart)
+                dbend = utils.to_unix_time(dtend)
                 if rec_id is not None:
-                    rec_inst = aux.to_unix_time(rec_id.dt)
+                    rec_inst = utils.to_unix_time(rec_id.dt)
                     ref = rec_inst
                 else:
                     rec_inst = dbstart
                     ref = PROTO
             else:
-                dbstart = aux.to_unix_time(dtstart)
-                dbend = aux.to_unix_time(dtend)
+                dbstart = utils.to_unix_time(dtstart)
+                dbend = utils.to_unix_time(dtend)
 
                 if rec_id is not None:
-                    ref = rec_inst = str(aux.to_unix_time(rec_id.dt))
+                    ref = rec_inst = str(utils.to_unix_time(rec_id.dt))
                 else:
                     rec_inst = dbstart
                     ref = PROTO
@@ -444,8 +444,8 @@ class SQLiteDb(object):
         """
         assert start.tzinfo is not None
         assert end.tzinfo is not None
-        start = aux.to_unix_time(start)
-        end = aux.to_unix_time(end)
+        start = utils.to_unix_time(start)
+        end = utils.to_unix_time(end)
         if minimal:
             sql_s = (
                 'SELECT events.calendar FROM '
@@ -487,8 +487,8 @@ class SQLiteDb(object):
         """
         assert start.tzinfo is None
         assert end.tzinfo is None
-        strstart = aux.to_unix_time(start)
-        strend = aux.to_unix_time(end)
+        strstart = utils.to_unix_time(start)
+        strend = utils.to_unix_time(end)
         if minimal:
             sql_s = (
                 'SELECT events.calendar FROM '

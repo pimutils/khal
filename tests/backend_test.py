@@ -11,7 +11,7 @@ from khal.khalendar import backend
 from khal.khalendar.event import LocalizedEvent, EventStandIn
 from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 
-from .aux import _get_text
+from .utils import _get_text
 
 BERLIN = pytz.timezone('Europe/Berlin')
 LONDON = pytz.timezone('Europe/London')

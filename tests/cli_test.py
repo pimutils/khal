@@ -9,7 +9,7 @@ from click.testing import CliRunner
 
 from khal.cli import main_khal, main_ikhal
 
-from .aux import _get_text
+from .utils import _get_text
 
 
 class CustomCliRunner(CliRunner):

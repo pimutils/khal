@@ -28,8 +28,8 @@ import os
 import icalendar
 import pytz
 
-from ..aux import generate_random_uid, datetime_fillin
-from .aux import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
+from ..utils import generate_random_uid, datetime_fillin
+from .utils import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
 from ..log import logger
 from ..terminal import get_color
 from click import style

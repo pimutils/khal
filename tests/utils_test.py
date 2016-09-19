@@ -1,4 +1,4 @@
-"""testing functions from the khal.aux"""
+"""testing functions from the khal.utils"""
 from datetime import date, datetime, time, timedelta
 from collections import OrderedDict
 import textwrap
@@ -7,12 +7,12 @@ import icalendar
 import pytz
 from freezegun import freeze_time
 
-from khal.aux import guessdatetimefstr, guesstimedeltafstr, new_event, eventinfofstr
-from khal.aux import timedelta2str, guessrangefstr, weekdaypstr, construct_daynames
-from khal import aux
+from khal.utils import guessdatetimefstr, guesstimedeltafstr, new_event, eventinfofstr
+from khal.utils import timedelta2str, guessrangefstr, weekdaypstr, construct_daynames
+from khal import utils
 import pytest
 
-from .aux import _get_all_vevents_file, _get_text, \
+from .utils import _get_all_vevents_file, _get_text, \
     normalize_component
 
 
@@ -512,13 +512,13 @@ class TestIcsFromList(object):
 
     def test_ics_from_list(self):
         vevents = _get_all_vevents_file('event_rrule_recuid')
-        cal = aux.ics_from_list(list(vevents))
+        cal = utils.ics_from_list(list(vevents))
         assert normalize_component(cal.to_ical()) == \
             normalize_component(_get_text('event_rrule_recuid'))
 
     def test_ics_from_list_random_uid(self):
         vevents = _get_all_vevents_file('event_rrule_recuid')
-        cal = aux.ics_from_list(list(vevents), random_uid=True)
+        cal = utils.ics_from_list(list(vevents), random_uid=True)
         normalize_component(cal.to_ical())
         vevents = [item for item in cal.walk() if item.name == 'VEVENT']
         uids = set()

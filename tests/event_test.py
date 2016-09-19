@@ -8,7 +8,7 @@ from icalendar import vRecur, vText
 
 from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent, FloatingEvent
 
-from .aux import normalize_component, _get_text
+from .utils import normalize_component, _get_text
 
 
 BERLIN = pytz.timezone('Europe/Berlin')

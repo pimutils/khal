@@ -35,7 +35,7 @@ import logging
 import sys
 import textwrap
 
-from khal import aux, calendar_display
+from khal import utils, calendar_display
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
 from khal.exceptions import InvalidDate, FatalError
 from khal.khalendar.event import Event
@@ -52,7 +52,7 @@ def format_day(day, format_string, locale, attributes=None):
     attributes["date"] = day.strftime(locale['dateformat'])
     attributes["date-long"] = day.strftime(locale['longdateformat'])
 
-    attributes["name"] = aux.construct_daynames(day)
+    attributes["name"] = utils.construct_daynames(day)
 
     colors = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
     for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
@@ -131,16 +131,16 @@ def start_end_from_daterange(daterange, locale, default_timedelta=None):
     :type default_timedelta: str
     """
     if len(daterange) == 0:
-        start = aux.datetime_fillin(end=False)
+        start = utils.datetime_fillin(end=False)
         if default_timedelta is None:
-            end = aux.datetime_fillin(day=start)
+            end = utils.datetime_fillin(day=start)
         else:
             try:
-                end = start + aux.guesstimedeltafstr(default_timedelta)
+                end = start + utils.guesstimedeltafstr(default_timedelta)
             except ValueError as e:
                 raise InvalidDate(e)
     else:
-        start, end, allday = aux.guessrangefstr(
+        start, end, allday = utils.guessrangefstr(
             daterange, locale, default_timedelta=default_timedelta)
         if start is None or end is None:
             raise InvalidDate('Invalid date range: "%s"' % (' '.join(daterange)))
@@ -178,7 +178,7 @@ def get_list_from_str(collection, locale, start, end, notstarted=False,
     if env is None:
         env = {}
     while start < end:
-        day_end = aux.datetime_fillin(start.date())
+        day_end = utils.datetime_fillin(start.date())
         if start.date() == end.date():
             day_end = end
         current_events = get_list(collection, locale=locale, format=format, start=start,
@@ -186,7 +186,7 @@ def get_list_from_str(collection, locale, start, end, notstarted=False,
         if day_format and (show_all_days or current_events):
             event_column.append(format_day(start.date(), day_format, locale))
         event_column.extend(current_events)
-        start = aux.datetime_fillin(start.date(), end=False) + timedelta(days=1)
+        start = utils.datetime_fillin(start.date(), end=False) + timedelta(days=1)
     if event_column == []:
         event_column = [style('No events', bold=True)]
     return event_column
@@ -218,8 +218,8 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
     if env is None:
         env = {}
 
-    start_local = aux.datetime_fillin(start, end=False, locale=locale)
-    end_local = aux.datetime_fillin(end, locale=locale)
+    start_local = utils.datetime_fillin(start, end=False, locale=locale)
+    end_local = utils.datetime_fillin(end, locale=locale)
 
     start = start_local.replace(tzinfo=None)
     end = end_local.replace(tzinfo=None)
@@ -228,7 +228,7 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
     events_float = sorted(collection.get_floating(start, end))
     events = sorted(events + events_float)
     for event in events:
-        event_start = aux.datetime_fillin(event.start, end=False, locale=locale)
+        event_start = utils.datetime_fillin(event.start, end=False, locale=locale)
         if not (notstarted and event_start.replace(tzinfo=None) < start):
             if seen is None or event.uid not in seen:
                 try:
@@ -271,8 +271,8 @@ def khal_list(collection, daterange, conf=None, format=None, day_format=None,
 def new_interactive(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
-    info = aux.eventinfofstr(info, conf['locale'], default_timedelta="60m",
-                             adjust_reasonably=True, localize=False)
+    info = utils.eventinfofstr(
+        info, conf['locale'], default_timedelta="60m", adjust_reasonably=True, localize=False)
     while True:
         summary = info["summary"]
         if not summary:
@@ -287,11 +287,10 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         if info["dtstart"] and info["dtend"]:
             start_string = info["dtstart"].strftime(conf['locale']['datetimeformat'])
             end_string = info["dtend"].strftime(conf['locale']['datetimeformat'])
-            range_string = start_string+' '+end_string
+            range_string = start_string + ' ' + end_string
         daterange = prompt("datetime range", default=range_string)
-        start, end, allday = aux.guessrangefstr(daterange, conf['locale'],
-                                                default_timedelta='60m',
-                                                adjust_reasonably=True)
+        start, end, allday = utils.guessrangefstr(
+            daterange, conf['locale'], default_timedelta='60m', adjust_reasonably=True)
         info['dtstart'] = start
         info['dtend'] = end
         info['allday'] = allday
@@ -327,8 +326,8 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
     """construct a new event from a string and add it"""
-    info = aux.eventinfofstr(info, conf['locale'], default_timedelta="60m",
-                             adjust_reasonably=True, localize=False)
+    info = utils.eventinfofstr(
+        info, conf['locale'], default_timedelta="60m", adjust_reasonably=True, localize=False)
     new_from_args(collection, calendar_name, conf, format=format, env=env,
                   location=location, categories=categories, repeat=repeat,
                   until=until, alarms=alarms, **info)
@@ -340,13 +339,13 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
                   timezone=None, format=None, env=None):
 
     try:
-        event = aux.new_event(locale=conf['locale'], location=location,
-                              categories=categories, repeat=repeat, until=until,
-                              alarms=alarms, dtstart=dtstart, dtend=dtend,
-                              summary=summary, description=description,
-                              timezone=timezone)
+        event = utils.new_event(
+            locale=conf['locale'], location=location, categories=categories,
+            repeat=repeat, until=until, alarms=alarms, dtstart=dtstart,
+            dtend=dtend, summary=summary, description=description, timezone=timezone,
+        )
     except ValueError as e:
-        logger.fatal('ERROR: '+str(e))
+        logger.fatal('ERROR: ' + str(e))
         sys.exit(1)
     except FatalError:
         sys.exit(1)
@@ -356,8 +355,8 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
     try:
         collection.new(event)
     except ReadOnlyCalendarError:
-        logger.fatal('ERROR: Cannot modify calendar "{}" as it is '
-                     'read-only'.format(calendar_name))
+        logger.fatal(
+            'ERROR: Cannot modify calendar "{}" as it is read-only'.format(calendar_name))
         sys.exit(1)
 
     if conf['default']['print_new'] == 'event':
@@ -376,7 +375,7 @@ def present_options(options, prefix="", sep="  ", width=70):
     for option in options:
         char = options[option]["short"]
         chars[char] = option
-        option_list.append(option.replace(char, "["+char+"]", 1))
+        option_list.append(option.replace(char, '[' + char + ']', 1))
     option_string = sep.join(option_list)
     option_string = textwrap.fill(option_string, width)
     char = prompt(option_string)
@@ -425,7 +424,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             current = event.format("{start} {end}", relative_to=now)
             value = prompt("datetime range", default=current)
             try:
-                start, end, allday = aux.guessrangefstr(value, locale, default_timedelta="60m")
+                start, end, allday = utils.guessrangefstr(value, locale, default_timedelta="60m")
                 event.update_start_end(start, end)
                 edited = True
             except:
@@ -443,13 +442,13 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 until = prompt('until (or "None")', until)
                 if until == 'None':
                     until = None
-                rrule = aux.rrulefstr(freq, until, locale)
+                rrule = utils.rrulefstr(freq, until, locale)
                 event.update_rrule(rrule)
             edited = True
         elif choice == "alarm":
             default_alarms = []
             for a in event.alarms:
-                s = aux.timedelta2str(-1*a[0])
+                s = utils.timedelta2str(-1 * a[0])
                 default_alarms.append(s)
 
             default = ', '.join(default_alarms)
@@ -460,7 +459,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 alarm = ""
             alarm_list = []
             for a in alarm.split(","):
-                alarm_trig = -1 * aux.guesstimedeltafstr(a.strip())
+                alarm_trig = -1 * utils.guesstimedeltafstr(a.strip())
                 new_alarm = (alarm_trig, event.description)
                 alarm_list += [new_alarm]
             event.update_alarms(alarm_list)
@@ -480,7 +479,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             value = prompt(question, default)
             if allow_none and value == "None":
                 value = ""
-            getattr(event, "update_"+attr)(value)
+            getattr(event, "update_" + attr)(value)
             edited = True
 
         if edited:
@@ -498,7 +497,7 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
 
     events = sorted(collection.search(search_string))
     for event in events:
-        end = aux.datetime_fillin(event.end_local, locale).replace(tzinfo=None)
+        end = utils.datetime_fillin(event.end_local, locale).replace(tzinfo=None)
         if not allow_past and end < now:
             continue
         event_text = textwrap.wrap(event.format(format, relative_to=now), term_width)
@@ -578,7 +577,7 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None, env
             echo('invalid choice')
 
     if batch or confirm("Do you want to import this event into `{}`?".format(calendar_name)):
-        ics = aux.ics_from_list(vevent, random_uid)
+        ics = utils.ics_from_list(vevent, random_uid)
         try:
             collection.new(Item(ics.to_ical().decode('utf-8')), collection=calendar_name)
         except DuplicateUid:

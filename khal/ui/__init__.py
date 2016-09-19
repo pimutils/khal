@@ -27,7 +27,7 @@ import sys
 
 import urwid
 
-from .. import aux
+from .. import utils
 from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
 from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice, AlarmsEditor, \
@@ -699,13 +699,13 @@ class EventColumn(urwid.WidgetWrap):
         if end is None:
             start = datetime.combine(date, datetime.now().time())
             end = start + timedelta(minutes=60)
-            event = aux.new_event(
+            event = utils.new_event(
                 dtstart=start, dtend=end, summary="new event",
                 timezone=self._conf['locale']['default_timezone'],
                 locale=self._conf['locale'],
             )
         else:
-            event = aux.new_event(
+            event = utils.new_event(
                 dtstart=date, dtend=end, summary="new event",
                 allday=True, locale=self._conf['locale'],
             )

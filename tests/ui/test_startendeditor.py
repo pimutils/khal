@@ -3,7 +3,7 @@ import pytz
 
 from khal.ui.startendeditor import StartEndEditor
 
-from ..aux import locale
+from ..utils import locale
 
 BERLIN = pytz.timezone('Europe/Berlin')
 
