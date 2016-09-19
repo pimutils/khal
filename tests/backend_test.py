@@ -574,7 +574,7 @@ def test_update_one_should_not_affect_others():
     assert len(events) == 1
 
 
-def test_zuluv_events():
+def test_zulu_events():
     """test if events in Zulu time are correctly recognized as locaized events"""
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     db.update(_get_text('event_dt_simple_zulu'), href='event_zulu', calendar=calname)

@@ -39,7 +39,6 @@ import sqlite3
 from dateutil import parser
 import icalendar
 import pytz
-import xdg.BaseDirectory
 
 from .event import Event, EventStandIn
 from . import aux
@@ -92,8 +91,7 @@ class SQLiteDb(object):
     """
 
     def __init__(self, calendars, db_path, locale):
-        if db_path is None:
-            db_path = xdg.BaseDirectory.save_data_path('khal') + '/khal.db'
+        assert db_path is not None
         self.calendars = calendars
         self.db_path = path.expanduser(db_path)
         self._create_dbdir()
@@ -242,8 +240,7 @@ class SQLiteDb(object):
         :type etag: str()
         """
         assert calendar is not None
-        if href is None:
-            raise ValueError('href may not be None')
+        assert href is not None
         ical = icalendar.Event.from_ical(vevent_str)
         check_for_errors(ical, calendar, href)
         vevents = (aux.sanitize(c, self.locale['default_timezone'], href, calendar) for
@@ -270,9 +267,7 @@ class SQLiteDb(object):
         XXX write docstring
         """
         assert calendar is not None
-
-        if href is None:
-            raise ValueError('href may not be None')
+        assert href is not None
         ical = icalendar.Event.from_ical(vevent)
         vcard = ical.walk()[0]
         if 'BDAY' in vcard.keys():
