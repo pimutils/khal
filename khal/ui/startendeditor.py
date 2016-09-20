@@ -23,12 +23,9 @@ from datetime import datetime, time
 
 import urwid
 
-from .widgets import DateWidget, TimeWidget, NColumns, NPile, ValidatedEdit
+from .widgets import DateWidget, TimeWidget, NColumns, NPile, ValidatedEdit, \
+    DateConversionError
 from .calendarwidget import CalendarWidget
-
-
-class DateConversionError(Exception):
-    pass
 
 
 class StartEnd(object):
@@ -61,13 +58,18 @@ class CalendarPopUp(urwid.PopUpLauncher):
         keybindings = self._conf['keybindings']
         on_press = {'enter': lambda _, __: self.close_pop_up(),
                     'esc': lambda _, __: self.close_pop_up()}
-        pop_up = CalendarWidget(
-            on_change, keybindings, on_press,
-            firstweekday=self._conf['locale']['firstweekday'],
-            weeknumbers=self._conf['locale']['weeknumbers'],
-            initial=self.base_widget._get_current_value())
-        pop_up = urwid.LineBox(pop_up)
-        return pop_up
+        try:
+            initial_date = self.base_widget._get_current_value()
+        except DateConversionError:
+            return None
+        else:
+            pop_up = CalendarWidget(
+                on_change, keybindings, on_press,
+                firstweekday=self._conf['locale']['firstweekday'],
+                weeknumbers=self._conf['locale']['weeknumbers'],
+                initial=initial_date)
+            pop_up = urwid.LineBox(pop_up)
+            return pop_up
 
     def get_pop_up_parameters(self):
         width = 31 if self._conf['locale']['weeknumbers'] == 'right' else 28

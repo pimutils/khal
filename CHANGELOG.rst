@@ -31,6 +31,7 @@ not released yet
 
 ikhal
 -----
+* BUGFIX no more crashing if invalid date is entered and mini-calendar displayed
 * make keybinding for quitting configurable, defaults to *q* and *Q*, escape
   only backtracks to last pane but doesn't exit khal anymore (Christian Geier)
 * introduction of three different new frame styles, new allowed values for
