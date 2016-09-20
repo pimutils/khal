@@ -23,6 +23,7 @@
 strings to date(time) or event objects"""
 
 from calendar import isleap
+from collections import defaultdict
 from datetime import date, datetime, timedelta, time
 import random
 import string
@@ -590,19 +591,62 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     return event
 
 
-def ics_from_list(vevent, random_uid=False):
-    """convert an iterable of icalendar.Event to an icalendar.Calendar
+def split_ics(ics):
+    """split an ics string into several according to VEVENT's UIDs
 
-    :param random_uid: asign the same random UID to all events
-    :type random_uid: bool
+    and sort the right VTIMEZONEs accordingly
+    ignores all other ics components
+    :type ics: str
+    :rtype list:
+    """
+    cal = icalendar.Calendar.from_ical(ics)
+    vevents = [item for item in cal.walk() if item.name == 'VEVENT']
+    tzs = {item['TZID']: item for item in cal.walk() if item.name == 'VTIMEZONE'}
+
+    events_grouped = defaultdict(list)
+    for event in vevents:
+        events_grouped[event['UID']].append(event)
+    return [ics_from_list(events, tzs) for uid, events in sorted(events_grouped.items())]
+
+
+def ics_from_list(events, tzs):
+    """convert an iterable of icalendar.Events to an icalendar.Calendar
+
+    :params events: list of events all with the same uid
+    :type events: list(icalendar.cal.Event)
+    :param tzs: collection of timezones
+    :type tzs: dict(icalendar.cal.Vtimzone
     """
     calendar = icalendar.Calendar()
     calendar.add('version', '2.0')
     calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
-    if random_uid:
-        new_uid = icalendar.vText(generate_random_uid())
-    for sub_event in vevent:
-        if random_uid:
-            sub_event['uid'] = new_uid
+
+    needed_tz = set()
+    for sub_event in events:
+        # RRULE-UNTIL XXX
+        # icalendar roundrip converts `TZID=a b` to `TZID="a b"` investigate, file bug XXX
+        for prop in ['DTSTART', 'DTEND', 'DUE', 'EXDATE', 'RDATE', 'RECURRENCE-ID', 'DUE']:
+            if isinstance(sub_event.get(prop), list):
+                items = sub_event.get(prop)
+            else:
+                items = [sub_event.get(prop)]
+            for item in items:
+                try:
+                    # if prop is a list, they all have the same parameters
+                    if hasattr(item, 'dts'):
+                        datetime_ = item.dts[0].dt
+                    else:
+                        datetime_ = item.dt
+                    needed_tz.add(datetime_.tzinfo)
+                except AttributeError:
+                    continue
+
+    for tzid in needed_tz:
+        if str(tzid) in tzs:
+            calendar.add_component(tzs[str(tzid)])
+        else:
+            logger.warn(
+                'Cannot find timezone `{}` in .ics file'.format(tzid))  # XXX
+    for sub_event in events:
         calendar.add_component(sub_event)
-    return calendar
+    return calendar.to_ical().decode('utf-8')
