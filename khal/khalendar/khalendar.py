@@ -67,6 +67,7 @@ class CalendarCollection(object):
                  highlight_event_days=0,
                  locale=None,
                  dbpath=None,
+                 **kwargs
                  ):
         assert dbpath is not None
         assert calendars is not None
@@ -95,7 +96,7 @@ class CalendarCollection(object):
         self.highlight_event_days = highlight_event_days
         self._locale = locale
         self._backend = backend.SQLiteDb(
-            calendars=self.names, db_path=dbpath, locale=self._locale)
+            calendars=self.names, db_path=dbpath, locale=self._locale, **kwargs)
         self.update_db()
 
     @property
