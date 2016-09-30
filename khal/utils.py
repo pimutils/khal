@@ -602,12 +602,14 @@ def split_ics(ics):
     :rtype list:
     """
     cal = icalendar.Calendar.from_ical(ics)
-    vevents = [item for item in cal.walk() if item.name == 'VEVENT']
     tzs = {item['TZID']: item for item in cal.walk() if item.name == 'VTIMEZONE'}
 
     events_grouped = defaultdict(list)
-    for event in vevents:
-        events_grouped[event['UID']].append(event)
+    for item in cal.walk():
+        if item.name == 'VEVENT':
+            events_grouped[item['UID']].append(item)
+        else:
+            continue
     return [ics_from_list(events, tzs) for uid, events in sorted(events_grouped.items())]
 
 
@@ -623,32 +625,44 @@ def ics_from_list(events, tzs):
     calendar.add('version', '2.0')
     calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
 
-    needed_tz = set()
+    needed_tz, missing_tz = set(), set()
     for sub_event in events:
-        # RRULE-UNTIL XXX can that even be anything but UTC?
+        # take care of RRULE-UNTIL XXX can that even be anything but UTC?
         # icalendar round-trip converts `TZID=a b` to `TZID="a b"` investigate, file bug XXX
         for prop in ['DTSTART', 'DTEND', 'DUE', 'EXDATE', 'RDATE', 'RECURRENCE-ID', 'DUE']:
             if isinstance(sub_event.get(prop), list):
                 items = sub_event.get(prop)
             else:
                 items = [sub_event.get(prop)]
+
             for item in items:
-                try:
-                    # if prop is a list, all items have the same parameters
-                    if hasattr(item, 'dts'):
-                        datetime_ = item.dts[0].dt
-                    else:
-                        datetime_ = item.dt
-                    needed_tz.add(datetime_.tzinfo)
-                except AttributeError:
+                if not (hasattr(item, 'dt') or hasattr(item, 'dts')):
                     continue
+                # if prop is a list, all items have the same parameters
+                datetime_ = item.dts[0].dt if hasattr(item, 'dts') else item.dt
+
+                if not hasattr(datetime_, 'tzinfo'):
+                    continue
+
+                # check for datetimes' timezones which are not understood by
+                # icalendar
+                if datetime_.tzinfo is None and 'TZID' in item.params and \
+                        item.params['TZID'] not in missing_tz:
+                    logger.warn(
+                        'Cannot find timezone `{}` in .ics file, using default timezone. '
+                        'This can lead to erroneous time shifts'.format(item.params['TZID'])
+                    )
+                    missing_tz.add(item.params['TZID'])
+                elif datetime_.tzinfo != pytz.UTC:
+                    needed_tz.add(datetime_.tzinfo)
 
     for tzid in needed_tz:
         if str(tzid) in tzs:
             calendar.add_component(tzs[str(tzid)])
         else:
             logger.warn(
-                'Cannot find timezone `{}` in .ics file'.format(tzid))  # XXX
+                'Cannot find timezone `{}` in .ics file, this could be a bug, '
+                'please report this issue at http://github.com/pimutils/khal/.'.format(tzid))
     for sub_event in events:
         calendar.add_component(sub_event)
     return calendar.to_ical().decode('utf-8')

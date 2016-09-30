@@ -548,12 +548,12 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None, env
     """
     # TODO re-enable random_uid
     # print all sub-events
-    cal = icalendar.Calendar.from_ical(vevent)
-    for sub_event in [item for item in cal.walk() if item.name == 'VEVENT']:
-        if not batch:
-            event = Event.fromVEvents(
-                [sub_event], calendar=collection.default_calendar_name, locale=locale)
-            echo(event.format(format, datetime.now(), env=env))
+    if not batch:
+        for item in icalendar.Calendar.from_ical(vevent).walk():
+            if item.name == 'VEVENT':
+                event = Event.fromVEvents(
+                    [item], calendar=collection.default_calendar_name, locale=locale)
+                echo(event.format(format, datetime.now(), env=env))
 
     # get the calendar to insert into
     if batch or len(collection.writable_names) == 1:
