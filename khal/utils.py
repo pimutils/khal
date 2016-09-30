@@ -625,8 +625,8 @@ def ics_from_list(events, tzs):
 
     needed_tz = set()
     for sub_event in events:
-        # RRULE-UNTIL XXX
-        # icalendar roundrip converts `TZID=a b` to `TZID="a b"` investigate, file bug XXX
+        # RRULE-UNTIL XXX can that even be anything but UTC?
+        # icalendar round-trip converts `TZID=a b` to `TZID="a b"` investigate, file bug XXX
         for prop in ['DTSTART', 'DTEND', 'DUE', 'EXDATE', 'RDATE', 'RECURRENCE-ID', 'DUE']:
             if isinstance(sub_event.get(prop), list):
                 items = sub_event.get(prop)
@@ -634,7 +634,7 @@ def ics_from_list(events, tzs):
                 items = [sub_event.get(prop)]
             for item in items:
                 try:
-                    # if prop is a list, they all have the same parameters
+                    # if prop is a list, all items have the same parameters
                     if hasattr(item, 'dts'):
                         datetime_ = item.dts[0].dt
                     else:

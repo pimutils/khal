@@ -546,7 +546,7 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None, env
         same UID, i.e., one "master" event and (optionally) 1+ RECURRENCE-ID events
     :type vevent: list(str)
     """
-    # TODO reenbale random_uid
+    # TODO re-enable random_uid
     # print all sub-events
     cal = icalendar.Calendar.from_ical(vevent)
     for sub_event in [item for item in cal.walk() if item.name == 'VEVENT']:
@@ -564,8 +564,8 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None, env
             ['{}({})'.format(name, num) for num, name in enumerate(calendar_names)])
         while True:
             value = prompt(
-                'Which calendar do you want to import to? (unique prefixes are fine)\n'
-                '{}'.format(choices),
+                "Which calendar do you want to import to? (unique prefixes are fine)\n"
+                "{}".format(choices),
                 default=collection.default_calendar_name,
             )
             try:
@@ -586,4 +586,4 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None, env
                     "An event with the same UID already exists. Do you want to update it?"):
                 collection.force_update(Item(vevent), collection=calendar_name)
             else:
-                logger.warn(u"Not importing event with UID `{}`".format(event.uid))
+                logger.warn("Not importing event with UID `{}`".format(event.uid))
