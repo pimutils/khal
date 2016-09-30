@@ -564,7 +564,8 @@ def import_event(vevent, collection, locale, batch, random_uid, format=None, env
             ['{}({})'.format(name, num) for num, name in enumerate(calendar_names)])
         while True:
             value = prompt(
-                'Which calendar do you want to import to? \n{}'.format(choices),
+                'Which calendar do you want to import to? (unique prefixes are fine)\n'
+                '{}'.format(choices),
                 default=collection.default_calendar_name,
             )
             try:

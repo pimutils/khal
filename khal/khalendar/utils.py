@@ -121,8 +121,8 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     clean up vevents we do not understand
 
     :param vevent: the vevent that needs to be cleaned
-    :type vevent: icalendar.cal.event
-    :param default_timezone: timezone to apply to stard and/or end dates which
+    :type vevent: icalendar.cal.Event
+    :param default_timezone: timezone to apply to start and/or end dates which
          were supposed to be localized but which timezone was not understood
          by icalendar
     :type timezone: pytz.timezone
@@ -133,7 +133,7 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
         problematic
     :type calendar: str
     :returns: clean vevent
-    :rtype: icalendar.cal.event
+    :rtype: icalendar.cal.Event
     """
     # convert localized datetimes with timezone information we don't
     # understand to the default timezone
@@ -143,8 +143,9 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
         if prop in vevent and invalid_timezone(vevent[prop]):
             value = default_timezone.localize(vevent.pop(prop).dt)
             vevent.add(prop, value)
-            logger.warn('{} has invalid or incomprehensible timezone '
-                        'information in {} in {}'.format(prop, href, calendar))
+            logger.warn(
+                '{} has invalid or incomprehensible timezone '
+                'information in {} in {}'.format(prop, href, calendar))
 
     vdtstart = vevent.pop('DTSTART', None)
     vdtend = vevent.pop('DTEND', None)
@@ -236,7 +237,7 @@ def to_naive_utc(dtime):
 
 
 def invalid_timezone(prop):
-    """check if a icalendar property has a timezone attached we don't understand"""
+    """check if an icalendar property has a timezone attached we don't understand"""
     if hasattr(prop.dt, 'tzinfo') and prop.dt.tzinfo is None and 'TZID' in prop.params:
         return True
     else:

@@ -38,12 +38,14 @@ from khal.exceptions import FatalError
 
 
 def timefstr(dtime_list, timeformat):
-    """converts a time (as a string) to a datetimeobject
+    """converts the first item of a list (a time as a string) to a datetimeobject
 
-    the date is today
+    where the date is today and the time is given by the a string
     removes "used" elements of list
 
-    :returns: datetimeobject
+    :type dtime_list: list(str)
+    :type timeformat: str
+    :rtype: datetime.datetime
     """
     if len(dtime_list) == 0:
         raise ValueError()
