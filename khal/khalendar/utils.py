@@ -166,7 +166,7 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
             vevent.add(prop, value)
             logger.warn(
                 "{} localized in invalid or incomprehensible timezone `{}` in {}/{}. "
-                "This could lead to this event being wronlgy displayed."
+                "This could lead to this event being wrongly displayed."
                 "".format(prop, timezone, calendar, href)
             )
 
