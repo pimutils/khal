@@ -27,7 +27,7 @@ from .khalendar.vdir import Item
 
 import pytz
 
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 from shutil import get_terminal_size
 
 from datetime import timedelta, datetime
@@ -39,7 +39,6 @@ from khal import utils, calendar_display
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
 from khal.exceptions import InvalidDate, FatalError
 from khal.khalendar.event import Event
-from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
 from khal.log import logger
 from .terminal import merge_columns

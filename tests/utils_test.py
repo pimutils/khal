@@ -3,7 +3,6 @@ from datetime import date, datetime, time, timedelta
 from collections import OrderedDict
 import textwrap
 
-import icalendar
 import pytz
 from freezegun import freeze_time
 
@@ -12,8 +11,7 @@ from khal.utils import timedelta2str, guessrangefstr, weekdaypstr, construct_day
 from khal import utils
 import pytest
 
-from .utils import _get_all_vevents_file, _get_text, \
-    normalize_component
+from .utils import _get_text, normalize_component
 
 
 today = date.today()
