@@ -60,9 +60,14 @@ PROTO = 'PROTO'
 
 
 def sort_key(vevent):
-    # insert the (sub) events in the right order, e.g. recurrence-id events
-    # after the corresponding rrule event
-    assert isinstance(vevent, icalendar.Event)  # REMOVE ME
+    """helper function to determine order of VEVENTS
+
+    so that recurrence-id events come after the corresponding rrule event, etc
+
+    :param vevent: icalendar.Event
+    :rtype: tuple(str, int)
+    """
+    assert isinstance(vevent, icalendar.Event)
     uid = str(vevent['UID'])
     rec_id = vevent.get(RECURRENCE_ID)
     if rec_id is None:
