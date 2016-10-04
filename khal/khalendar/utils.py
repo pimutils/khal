@@ -141,11 +141,14 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     # RRULE:UNTIL)
     for prop in ['DTSTART', 'DTEND', 'DUE', 'RECURRENCE-ID']:
         if prop in vevent and invalid_timezone(vevent[prop]):
+            timezone = vevent[prop].params.get('TZID')
             value = default_timezone.localize(vevent.pop(prop).dt)
             vevent.add(prop, value)
             logger.warn(
-                '{} has invalid or incomprehensible timezone '
-                'information in {} in {}'.format(prop, href, calendar))
+                "{} localized in invalid or incomprehensible timezone `{}` in {}/{}. "
+                "This could lead to this event being wronlgy displayed."
+                "".format(prop, timezone, calendar, href)
+            )
 
     vdtstart = vevent.pop('DTSTART', None)
     vdtend = vevent.pop('DTEND', None)
