@@ -627,7 +627,6 @@ def ics_from_list(events, tzs):
 
     needed_tz, missing_tz = set(), set()
     for sub_event in events:
-        # take care of RRULE-UNTIL XXX can that even be anything but UTC?
         # icalendar round-trip converts `TZID=a b` to `TZID="a b"` investigate, file bug XXX
         for prop in ['DTSTART', 'DTEND', 'DUE', 'EXDATE', 'RDATE', 'RECURRENCE-ID', 'DUE']:
             if isinstance(sub_event.get(prop), list):

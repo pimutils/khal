@@ -137,8 +137,7 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     """
     # convert localized datetimes with timezone information we don't
     # understand to the default timezone
-    # TODO do this for everything where a TZID can appear (RDATE, EXDATE,
-    # RRULE:UNTIL)
+    # TODO do this for everything where a TZID can appear (RDATE, EXDATE)
     for prop in ['DTSTART', 'DTEND', 'DUE', 'RECURRENCE-ID']:
         if prop in vevent and invalid_timezone(vevent[prop]):
             timezone = vevent[prop].params.get('TZID')
