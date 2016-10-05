@@ -52,7 +52,7 @@ setup(
     install_requires=requirements,
     extras_require=extra_requirements,
     tests_require=test_requirements,
-    setup_requires=['setuptools_scm'],  # not needed when using packages from PyPI
+    setup_requires=['setuptools_scm != 1.12.0'],  # not needed when using packages from PyPI
     use_scm_version={'write_to': 'khal/version.py'},
     classifiers=[
         "Development Status :: 4 - Beta",
