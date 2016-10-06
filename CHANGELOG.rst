@@ -28,6 +28,8 @@ not released yet
 * added command `edit` (Taylor Money)
 * `new` has interactive option (Taylor Money)
 * `import` can now import multiple files at once (Christian Geier)
+* configuration file path $XDG_CONFIG_HOME/khal/config is now supported and
+  $XDG_CONFIG_HOME/khal/khal.conf deprecated
 
 ikhal
 -----
