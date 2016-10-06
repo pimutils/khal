@@ -526,26 +526,25 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None
     :param batch: setting this to True will insert without asking for approval,
                   even when an event with the same uid already exists
     :type batch: bool
+    :param random_uid: whether to assign a random UID to imported events or not
+    :type random_uid: bool
+    :param format: the format string to print events with
+    :type format: str
     """
     if format is None:
         format = conf['view']['event_format']
-
-    vevents = utils.split_ics(ics)
-
+    vevents = utils.split_ics(ics, random_uid)
     for vevent in vevents:
-        import_event(
-            vevent, collection, conf['locale'], batch, random_uid, format, env,
-        )
+        import_event(vevent, collection, conf['locale'], batch, format, env)
 
 
-def import_event(vevent, collection, locale, batch, random_uid, format=None, env=None):
+def import_event(vevent, collection, locale, batch, format=None, env=None):
     """import one event into collection, let user choose the collection
 
     :type vevent: list of vevents, which can be more than one VEVENT, i.e., the
         same UID, i.e., one "master" event and (optionally) 1+ RECURRENCE-ID events
     :type vevent: list(str)
     """
-    # TODO re-enable random_uid
     # print all sub-events
     if not batch:
         for item in icalendar.Calendar.from_ical(vevent).walk():

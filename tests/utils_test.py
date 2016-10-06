@@ -2,7 +2,9 @@
 from datetime import date, datetime, time, timedelta
 from collections import OrderedDict
 import textwrap
+import random
 
+import icalendar
 import pytz
 from freezegun import freeze_time
 
@@ -78,6 +80,11 @@ def _replace_uid(event):
     event.pop('uid')
     event.add('uid', 'E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA')
     return event
+
+
+def _get_TZIDs(lines):
+    """from a list of strings, get all unique strings that start with TZID"""
+    return sorted((line for line in lines if line.startswith('TZID')))
 
 
 def test_normalize_component():
@@ -513,13 +520,37 @@ def test_split_ics():
     vevents0 = vevents[0].split('\r\n')
     vevents1 = vevents[1].split('\r\n')
 
-    part0 = _get_text('part1').split('\n')
-    part1 = _get_text('part0').split('\n')
+    part0 = _get_text('part0').split('\n')
+    part1 = _get_text('part1').split('\n')
 
-    assert sorted([line for line in vevents1 if line.startswith('TZID')]) == \
-        sorted([line for line in part1 if line.startswith('TZID')])
-    assert sorted([line for line in vevents0 if line.startswith('TZID')]) == \
-        sorted([line for line in part0 if line.startswith('TZID')])
+    assert _get_TZIDs(vevents0) == _get_TZIDs(part0)
+    assert _get_TZIDs(vevents1) == _get_TZIDs(part1)
+
+    assert sorted(vevents0) == sorted(part0)
+    assert sorted(vevents1) == sorted(part1)
+
+
+def test_split_ics_random_uid():
+    random.seed(123)
+    cal = _get_text('cal_lots_of_timezones')
+    vevents = utils.split_ics(cal, random_uid=True)
+
+    part0 = _get_text('part0').split('\n')
+    part1 = _get_text('part1').split('\n')
+
+    for item in icalendar.Calendar.from_ical(vevents[0]).walk():
+        if item.name == 'VEVENT':
+            assert item['UID'] == 'DRF0RGCY89VVDKIV9VPKA1FYEAU2GCFJIBS1'
+    for item in icalendar.Calendar.from_ical(vevents[1]).walk():
+        if item.name == 'VEVENT':
+            assert item['UID'] == '4Q4CTV74N7UAZ618570X6CLF5QKVV9ZE3YVB'
+
+    # after replacing the UIDs, everything should be as above
+    vevents0 = vevents[0].replace('DRF0RGCY89VVDKIV9VPKA1FYEAU2GCFJIBS1', '123').split('\r\n')
+    vevents1 = vevents[1].replace('4Q4CTV74N7UAZ618570X6CLF5QKVV9ZE3YVB', 'abcde').split('\r\n')
+
+    assert _get_TZIDs(vevents0) == _get_TZIDs(part0)
+    assert _get_TZIDs(vevents1) == _get_TZIDs(part1)
 
     assert sorted(vevents0) == sorted(part0)
     assert sorted(vevents1) == sorted(part1)

@@ -593,12 +593,14 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     return event
 
 
-def split_ics(ics):
+def split_ics(ics, random_uid=False):
     """split an ics string into several according to VEVENT's UIDs
 
     and sort the right VTIMEZONEs accordingly
     ignores all other ics components
     :type ics: str
+    :param random_uid: assign random uids to all events
+    :type random_uid: bool
     :rtype list:
     """
     cal = icalendar.Calendar.from_ical(ics)
@@ -610,14 +612,17 @@ def split_ics(ics):
             events_grouped[item['UID']].append(item)
         else:
             continue
-    return [ics_from_list(events, tzs) for uid, events in sorted(events_grouped.items())]
+    return [ics_from_list(events, tzs, random_uid) for uid, events in
+            sorted(events_grouped.items())]
 
 
-def ics_from_list(events, tzs):
+def ics_from_list(events, tzs, random_uid=False):
     """convert an iterable of icalendar.Events to an icalendar.Calendar
 
     :params events: list of events all with the same uid
     :type events: list(icalendar.cal.Event)
+    :param random_uid: assign random uids to all events
+    :type random_uid: bool
     :param tzs: collection of timezones
     :type tzs: dict(icalendar.cal.Vtimzone
     """
@@ -625,8 +630,13 @@ def ics_from_list(events, tzs):
     calendar.add('version', '2.0')
     calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
 
+    if random_uid:
+        new_uid = generate_random_uid()
+
     needed_tz, missing_tz = set(), set()
     for sub_event in events:
+        if random_uid:
+            sub_event['UID'] = new_uid
         # icalendar round-trip converts `TZID=a b` to `TZID="a b"` investigate, file bug XXX
         for prop in ['DTSTART', 'DTEND', 'DUE', 'EXDATE', 'RDATE', 'RECURRENCE-ID', 'DUE']:
             if isinstance(sub_event.get(prop), list):
