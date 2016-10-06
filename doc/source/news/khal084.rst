@@ -2,10 +2,10 @@ khal v0.8.4 released
 ====================
 
 .. feed-entry::
-        :date: 2016-10-XX
+        :date: 2016-10-06
 
-`khal v0.8.4`_ (pypi_) is a bugfix release that fixes a critical bug in `khal
-import`. All users are advised to upgrade as soon as possible.
+`khal v0.8.4`_ (pypi_) is a bugfix release that fixes a **critical bug** in `khal
+import`. **All users are advised to upgrade as soon as possible**.
 
 Details
 ~~~~~~~
