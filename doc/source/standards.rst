@@ -1,8 +1,8 @@
-Standard Compliance
-===================
+Standards
+=========
 
 *khal* tries to follow standards and RFCs (most importantly :rfc:`5545`
-*iCalendar*) where ever possible. Known intentional and unintentional deviations
+*iCalendar*) wherever possible. Known intentional and unintentional deviations
 are listed below.
 
 RDATE;VALUE=PERIOD
@@ -48,7 +48,7 @@ information that was associated with the start date gets discarded.
   Calendar and Evolution).
 
 Timezones
-=========
+---------
 Getting localized time right, seems to be the most difficult part about
 calendaring (and messing it up ends in missing the one important meeting of the
 week). So I'll briefly describe here, how khal tries to handle timezone

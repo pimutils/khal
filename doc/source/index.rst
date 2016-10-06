@@ -40,10 +40,9 @@ Table of Contents
    configure
    usage
    standards
-   contributing
-   developer
+   feedback
+   hacking
    changelog
    faq
    license
    news
-   contact

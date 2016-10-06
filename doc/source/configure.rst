@@ -1,5 +1,5 @@
-Configuring
-===========
+Configuration
+=============
 :command:`khal` reads configuration files in the *ini* syntax, meaning it understands
 keys separated from values by a **=**, while section and subsection names are
 enclosed by single or double square brackets (like **[sectionname]** and

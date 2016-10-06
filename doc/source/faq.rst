@@ -1,5 +1,7 @@
-Frequently Asked Questions (FAQ)
-================================
+FAQ
+===
+
+Frequently asked questions:
 
 * **start up of khal and ikhal is very slow**
       In some case the pytz (python timezone) is only available as a zip file,

@@ -1,5 +1,5 @@
-Installing
-==========
+Installation
+============
 
 If khal is packaged for your OS/distribution, using your system's
 standard package manager is probably the easiest way to install khal.
