@@ -7,6 +7,18 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.8.4
+=====
+released 2016-10-06
+
+* **IMPORTANT BUGFIX** fixed a bug that lead to imported events being
+  erroneously shifted if they had a timezone identifier that wasn't an Olson
+  database identifier. All users are advised to upgrade as soon as possible. To
+  see if you are affected by this and how to resolve any issues, please see the
+  release announcement (khal/doc/source/news/khal084.rst or
+  http://lostpackets.de/khal/news/khal084.html).
+
+
 0.8.3
 =====
 released 2016-08-28
