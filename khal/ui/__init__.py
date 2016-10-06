@@ -186,6 +186,7 @@ class EventListBox(urwid.ListBox):
 
 class DListBox(EventListBox):
     """Container for a DayWalker"""
+    # XXX unfortunate naming, there is also DateListBox
 
     def render(self, size, focus=False):
         if self._init:
@@ -414,7 +415,9 @@ class DayWalker(urwid.SimpleFocusListWalker):
 
 
 class DateListBox(NListBox):
-    """A ListBox container for a SimpleFocusListWalker"""
+    """A ListBox container for a SimpleFocusListWalker, that contains one day
+    worth of events"""
+
     def __init__(self, content, date):
         self.date = date
         super().__init__(content)
