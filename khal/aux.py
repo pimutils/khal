@@ -22,6 +22,7 @@
 """this module contains some helper functions converting strings or list of
 strings to date(time) or event objects"""
 
+from collections import defaultdict
 from calendar import isleap
 from datetime import date, datetime, timedelta, time
 import random
@@ -461,19 +462,85 @@ def new_event(dtstart=None, dtend=None, summary=None, timezone=None,
     return event
 
 
-def ics_from_list(vevent, random_uid=False):
-    """convert an iterable of icalendar.Event to an icalendar.Calendar
+def split_ics(ics, random_uid=False):
+    """split an ics string into several according to VEVENT's UIDs
 
-    :param random_uid: asign the same random UID to all events
+    and sort the right VTIMEZONEs accordingly
+    ignores all other ics components
+    :type ics: str
+    :param random_uid: assign random uids to all events
     :type random_uid: bool
+    :rtype list:
+    """
+    cal = icalendar.Calendar.from_ical(ics)
+    tzs = {item['TZID']: item for item in cal.walk() if item.name == 'VTIMEZONE'}
+
+    events_grouped = defaultdict(list)
+    for item in cal.walk():
+        if item.name == 'VEVENT':
+            events_grouped[item['UID']].append(item)
+        else:
+            continue
+    return [ics_from_list(events, tzs, random_uid) for uid, events in
+            sorted(events_grouped.items())]
+
+
+def ics_from_list(events, tzs, random_uid=False):
+    """convert an iterable of icalendar.Events to an icalendar.Calendar
+
+    :params events: list of events all with the same uid
+    :type events: list(icalendar.cal.Event)
+    :param random_uid: assign random uids to all events
+    :type random_uid: bool
+    :param tzs: collection of timezones
+    :type tzs: dict(icalendar.cal.Vtimzone
     """
     calendar = icalendar.Calendar()
     calendar.add('version', '2.0')
     calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
+
     if random_uid:
-        new_uid = icalendar.vText(generate_random_uid())
-    for sub_event in vevent:
+        new_uid = generate_random_uid()
+
+    needed_tz, missing_tz = set(), set()
+    for sub_event in events:
         if random_uid:
-            sub_event['uid'] = new_uid
+            sub_event['UID'] = new_uid
+        # icalendar round-trip converts `TZID=a b` to `TZID="a b"` investigate, file bug XXX
+        for prop in ['DTSTART', 'DTEND', 'DUE', 'EXDATE', 'RDATE', 'RECURRENCE-ID', 'DUE']:
+            if isinstance(sub_event.get(prop), list):
+                items = sub_event.get(prop)
+            else:
+                items = [sub_event.get(prop)]
+
+            for item in items:
+                if not (hasattr(item, 'dt') or hasattr(item, 'dts')):
+                    continue
+                # if prop is a list, all items have the same parameters
+                datetime_ = item.dts[0].dt if hasattr(item, 'dts') else item.dt
+
+                if not hasattr(datetime_, 'tzinfo'):
+                    continue
+
+                # check for datetimes' timezones which are not understood by
+                # icalendar
+                if datetime_.tzinfo is None and 'TZID' in item.params and \
+                        item.params['TZID'] not in missing_tz:
+                    logger.warn(
+                        'Cannot find timezone `{}` in .ics file, using default timezone. '
+                        'This can lead to erroneous time shifts'.format(item.params['TZID'])
+                    )
+                    missing_tz.add(item.params['TZID'])
+                elif datetime_.tzinfo != pytz.UTC:
+                    needed_tz.add(datetime_.tzinfo)
+
+    for tzid in needed_tz:
+        if str(tzid) in tzs:
+            calendar.add_component(tzs[str(tzid)])
+        else:
+            logger.warn(
+                'Cannot find timezone `{}` in .ics file, this could be a bug, '
+                'please report this issue at http://github.com/pimutils/khal/.'.format(tzid))
+    for sub_event in events:
         calendar.add_component(sub_event)
-    return calendar
+    return calendar.to_ical().decode('utf-8')
