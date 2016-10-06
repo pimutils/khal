@@ -1,4 +1,25 @@
+# Copyright (c) 2013-2016 Christian Geier et al.
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+"""collection of utility functions"""
 from datetime import datetime, timedelta
 import calendar
 
@@ -121,8 +142,8 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     clean up vevents we do not understand
 
     :param vevent: the vevent that needs to be cleaned
-    :type vevent: icalendar.cal.event
-    :param default_timezone: timezone to apply to stard and/or end dates which
+    :type vevent: icalendar.cal.Event
+    :param default_timezone: timezone to apply to start and/or end dates which
          were supposed to be localized but which timezone was not understood
          by icalendar
     :type timezone: pytz.timezone
@@ -133,18 +154,21 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
         problematic
     :type calendar: str
     :returns: clean vevent
-    :rtype: icalendar.cal.event
+    :rtype: icalendar.cal.Event
     """
     # convert localized datetimes with timezone information we don't
     # understand to the default timezone
-    # TODO do this for everything where a TZID can appear (RDATE, EXDATE,
-    # RRULE:UNTIL)
+    # TODO do this for everything where a TZID can appear (RDATE, EXDATE)
     for prop in ['DTSTART', 'DTEND', 'DUE', 'RECURRENCE-ID']:
         if prop in vevent and invalid_timezone(vevent[prop]):
+            timezone = vevent[prop].params.get('TZID')
             value = default_timezone.localize(vevent.pop(prop).dt)
             vevent.add(prop, value)
-            logger.warn('{} has invalid or incomprehensible timezone '
-                        'information in {} in {}'.format(prop, href, calendar))
+            logger.warn(
+                "{} localized in invalid or incomprehensible timezone `{}` in {}/{}. "
+                "This could lead to this event being wrongly displayed."
+                "".format(prop, timezone, calendar, href)
+            )
 
     vdtstart = vevent.pop('DTSTART', None)
     vdtend = vevent.pop('DTEND', None)
@@ -236,7 +260,7 @@ def to_naive_utc(dtime):
 
 
 def invalid_timezone(prop):
-    """check if a icalendar property has a timezone attached we don't understand"""
+    """check if an icalendar property has a timezone attached we don't understand"""
     if hasattr(prop.dt, 'tzinfo') and prop.dt.tzinfo is None and 'TZID' in prop.params:
         return True
     else:

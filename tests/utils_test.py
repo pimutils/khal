@@ -2,6 +2,7 @@
 from datetime import date, datetime, time, timedelta
 from collections import OrderedDict
 import textwrap
+import random
 
 import icalendar
 import pytz
@@ -12,8 +13,7 @@ from khal.utils import timedelta2str, guessrangefstr, weekdaypstr, construct_day
 from khal import utils
 import pytest
 
-from .utils import _get_all_vevents_file, _get_text, \
-    normalize_component
+from .utils import _get_text, normalize_component
 
 
 today = date.today()
@@ -80,6 +80,11 @@ def _replace_uid(event):
     event.pop('uid')
     event.add('uid', 'E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA')
     return event
+
+
+def _get_TZIDs(lines):
+    """from a list of strings, get all unique strings that start with TZID"""
+    return sorted((line for line in lines if line.startswith('TZID')))
 
 
 def test_normalize_component():
@@ -508,21 +513,44 @@ def test_description_and_location_and_categories():
             assert _replace_uid(event).to_ical() == vevent
 
 
-class TestIcsFromList(object):
+def test_split_ics():
+    cal = _get_text('cal_lots_of_timezones')
+    vevents = utils.split_ics(cal)
 
-    def test_ics_from_list(self):
-        vevents = _get_all_vevents_file('event_rrule_recuid')
-        cal = utils.ics_from_list(list(vevents))
-        assert normalize_component(cal.to_ical()) == \
-            normalize_component(_get_text('event_rrule_recuid'))
+    vevents0 = vevents[0].split('\r\n')
+    vevents1 = vevents[1].split('\r\n')
 
-    def test_ics_from_list_random_uid(self):
-        vevents = _get_all_vevents_file('event_rrule_recuid')
-        cal = utils.ics_from_list(list(vevents), random_uid=True)
-        normalize_component(cal.to_ical())
-        vevents = [item for item in cal.walk() if item.name == 'VEVENT']
-        uids = set()
-        for event in vevents:
-            uids.add(event['UID'])
-        assert len(uids) == 1
-        assert event['UID'] != icalendar.vText('event_rrule_recurrence_id')
+    part0 = _get_text('part0').split('\n')
+    part1 = _get_text('part1').split('\n')
+
+    assert _get_TZIDs(vevents0) == _get_TZIDs(part0)
+    assert _get_TZIDs(vevents1) == _get_TZIDs(part1)
+
+    assert sorted(vevents0) == sorted(part0)
+    assert sorted(vevents1) == sorted(part1)
+
+
+def test_split_ics_random_uid():
+    random.seed(123)
+    cal = _get_text('cal_lots_of_timezones')
+    vevents = utils.split_ics(cal, random_uid=True)
+
+    part0 = _get_text('part0').split('\n')
+    part1 = _get_text('part1').split('\n')
+
+    for item in icalendar.Calendar.from_ical(vevents[0]).walk():
+        if item.name == 'VEVENT':
+            assert item['UID'] == 'DRF0RGCY89VVDKIV9VPKA1FYEAU2GCFJIBS1'
+    for item in icalendar.Calendar.from_ical(vevents[1]).walk():
+        if item.name == 'VEVENT':
+            assert item['UID'] == '4Q4CTV74N7UAZ618570X6CLF5QKVV9ZE3YVB'
+
+    # after replacing the UIDs, everything should be as above
+    vevents0 = vevents[0].replace('DRF0RGCY89VVDKIV9VPKA1FYEAU2GCFJIBS1', '123').split('\r\n')
+    vevents1 = vevents[1].replace('4Q4CTV74N7UAZ618570X6CLF5QKVV9ZE3YVB', 'abcde').split('\r\n')
+
+    assert _get_TZIDs(vevents0) == _get_TZIDs(part0)
+    assert _get_TZIDs(vevents1) == _get_TZIDs(part1)
+
+    assert sorted(vevents0) == sorted(part0)
+    assert sorted(vevents1) == sorted(part1)

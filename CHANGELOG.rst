@@ -45,6 +45,18 @@ ikhal
   to another date (while the event column is in focus), that date should be
   highlighted in the calendar (Christian Geier)
 
+0.8.4
+=====
+released 2016-10-06
+
+* **IMPORTANT BUGFIX** fixed a bug that lead to imported events being
+  erroneously shifted if they had a timezone identifier that wasn't an Olson
+  database identifier. All users are advised to upgrade as soon as possible. To
+  see if you are affected by this and how to resolve any issues, please see the
+  release announcement (khal/doc/source/news/khal084.rst or
+  http://lostpackets.de/khal/news/khal084.html). Thanks to Wayne Werner for
+  finding and reporting this bug.
+
 0.8.3
 =====
 released 2016-08-28
