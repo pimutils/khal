@@ -54,7 +54,8 @@ released 2016-10-06
   database identifier. All users are advised to upgrade as soon as possible. To
   see if you are affected by this and how to resolve any issues, please see the
   release announcement (khal/doc/source/news/khal084.rst or
-  http://lostpackets.de/khal/news/khal084.html).
+  http://lostpackets.de/khal/news/khal084.html). Thanks to Wayne Werner for
+  finding and reporting this bug.
 
 0.8.3
 =====
