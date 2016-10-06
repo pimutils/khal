@@ -3,15 +3,16 @@ Installation
 
 If khal is packaged for your OS/distribution, using your system's
 standard package manager is probably the easiest way to install khal.
-khal has been packaged for, among others: Archlinux (stable_ and development_
-versions), Fedora_, guix_, freebsd_ and pkgsrc_.
+khal has been packaged for, among others: Arch Linux (stable_ and development_
+versions), Debian_, Fedora_, FreeBSD_, Guix_, and pkgsrc_.
 
-.. _fedora: https://admin.fedoraproject.org/pkgdb/package/rpms/khal/
-.. _FreeBSD: https://www.freshports.org/deskutils/py-khal/
-.. _guix: http://www.gnu.org/software/guix/packages/
-.. _pkgsrc: http://pkgsrc.se/wip/khal-git
 .. _stable: https://aur.archlinux.org/packages/khal/
 .. _development: https://aur.archlinux.org/packages/khal-git/
+.. _Debian: https://packages.debian.org/search?keywords=khal&searchon=names
+.. _Fedora: https://admin.fedoraproject.org/pkgdb/package/rpms/khal/
+.. _FreeBSD: https://www.freshports.org/deskutils/py-khal/
+.. _Guix: http://www.gnu.org/software/guix/packages/
+.. _pkgsrc: http://pkgsrc.se/wip/khal-git
 
 If a package isn't available (or it is outdated) you need to fall back to one
 of the methods mentioned below.
