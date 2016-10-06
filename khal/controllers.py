@@ -584,4 +584,4 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
                     "An event with the same UID already exists. Do you want to update it?"):
                 collection.force_update(Item(vevent), collection=calendar_name)
             else:
-                logger.warn("Not importing event with UID `{}`".format(event.uid))
+                logger.warning("Not importing event with UID `{}`".format(event.uid))

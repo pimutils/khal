@@ -278,9 +278,11 @@ class SQLiteDb(object):
         if 'BDAY' in vcard.keys():
             bday = vcard['BDAY']
             if isinstance(bday, list):
-                logger.warn('Vcard {0} in collection {1} has more than one '
-                            'BIRTHDAY, will be skippend and not be available '
-                            'in khal.'.format(href, calendar))
+                logger.warning(
+                    'Vcard {0} in collection {1} has more than one '
+                    'BIRTHDAY, will be skippend and not be available '
+                    'in khal.'.format(href, calendar)
+                )
                 return
             try:
                 if bday[0:2] == '--' and bday[3] != '-':
@@ -290,8 +292,8 @@ class SQLiteDb(object):
                     orig_bday = True
                 bday = parser.parse(bday).date()
             except ValueError:
-                logger.warn('cannot parse BIRTHDAY in {0} in collection '
-                            '{1}'.format(href, calendar))
+                logger.warning(
+                    'cannot parse BIRTHDAY in {0} in collection {1}'.format(href, calendar))
                 return
             if 'FN' in vcard:
                 name = vcard['FN']

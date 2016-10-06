@@ -134,11 +134,11 @@ def get_config(
     extras = get_extra_values(user_config)
     for section, value in extras:
         if section == ():
-            logger.warn('unknown section "{}" in config file'.format(value))
+            logger.warning('unknown section "{}" in config file'.format(value))
         else:
             section = sectionize(section)
-            logger.warn('unknown key or subsection "{}" in '
-                        'section "{}"'.format(value, section))
+            logger.warning(
+                'unknown key or subsection "{}" in section "{}"'.format(value, section))
     return user_config
 
 

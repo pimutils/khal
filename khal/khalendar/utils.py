@@ -127,7 +127,7 @@ def expand(vevent, href=''):
         try:
             dtstartl.remove(date)
         except KeyError:
-            logger.warn(
+            logger.warning(
                 'In event {}, excluded instance starting at {} not found, '
                 'event might be invalid.'.format(href, date))
 
@@ -164,7 +164,7 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
             timezone = vevent[prop].params.get('TZID')
             value = default_timezone.localize(vevent.pop(prop).dt)
             vevent.add(prop, value)
-            logger.warn(
+            logger.warning(
                 "{} localized in invalid or incomprehensible timezone `{}` in {}/{}. "
                 "This could lead to this event being wrongly displayed."
                 "".format(prop, timezone, calendar, href)

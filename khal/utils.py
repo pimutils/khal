@@ -657,7 +657,7 @@ def ics_from_list(events, tzs, random_uid=False):
                 # icalendar
                 if datetime_.tzinfo is None and 'TZID' in item.params and \
                         item.params['TZID'] not in missing_tz:
-                    logger.warn(
+                    logger.warning(
                         'Cannot find timezone `{}` in .ics file, using default timezone. '
                         'This can lead to erroneous time shifts'.format(item.params['TZID'])
                     )
@@ -669,7 +669,7 @@ def ics_from_list(events, tzs, random_uid=False):
         if str(tzid) in tzs:
             calendar.add_component(tzs[str(tzid)])
         else:
-            logger.warn(
+            logger.warning(
                 'Cannot find timezone `{}` in .ics file, this could be a bug, '
                 'please report this issue at http://github.com/pimutils/khal/.'.format(tzid))
     for sub_event in events:
