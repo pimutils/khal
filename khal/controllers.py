@@ -25,8 +25,6 @@ import icalendar
 from click import confirm, echo, style, prompt
 from vdirsyncer.utils.vobject import Item
 
-from collections import defaultdict
-
 import datetime
 import itertools
 import logging
@@ -38,7 +36,6 @@ from khal.compat import to_unicode
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
 from khal.exceptions import InvalidDate, FatalError
 from khal.khalendar.event import Event
-from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
 from khal.log import logger
 from .terminal import colored, get_terminal_size, merge_columns
@@ -219,63 +216,55 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False):
                   even when an event with the same uid already exists
     :type batch: bool
     """
-    cal = icalendar.Calendar.from_ical(ics)
-    events = [item for item in cal.walk() if item.name == 'VEVENT']
-    events_grouped = defaultdict(list)
-    for event in events:
-        events_grouped[event['UID']].append(event)
-
-    vevents = list()
-    for uid in events_grouped:
-        vevents.append(sorted(events_grouped[uid], key=sort_key))
+    vevents = aux.split_ics(ics, random_uid)
     for vevent in vevents:
-        import_event(vevent, collection, conf['locale'], batch, random_uid)
+        import_event(vevent, collection, conf['locale'], batch)
 
 
-def import_event(vevent, collection, locale, batch, random_uid):
-    """import one event into collection, let user choose the collection"""
+def import_event(vevent, collection, locale, batch, format=None, env=None):
+    """import one event into collection, let user choose the collection
 
+    :type vevent: list of vevents, which can be more than one VEVENT, i.e., the
+        same UID, i.e., one "master" event and (optionally) 1+ RECURRENCE-ID events
+    :type vevent: list(str)
+    """
     # print all sub-events
-    for sub_event in vevent:
-        if not batch:
-            event = Event.fromVEvents(
-                [sub_event], calendar=collection.default_calendar_name, locale=locale)
-            echo(event.event_description)
+    if not batch:
+        for item in icalendar.Calendar.from_ical(vevent).walk():
+            if item.name == 'VEVENT':
+                event = Event.fromVEvents(
+                    [item], calendar=collection.default_calendar_name, locale=locale)
+                echo(event.event_description)
 
     # get the calendar to insert into
     if batch or len(collection.writable_names) == 1:
         calendar_name = collection.writable_names[0]
     else:
-        choice = list()
-        for num, name in enumerate(collection.writable_names):
-            choice.append(u'{}({})'.format(name, num))
-        choice = u', '.join(choice)
+        calendar_names = sorted(collection.writable_names)
+        choices = ', '.join(
+            ['{}({})'.format(name, num) for num, name in enumerate(calendar_names)])
         while True:
-            value = prompt(u'Which calendar do you want to import to? \n'
-                           u'{}'.format(choice), default=collection.default_calendar_name)
+            value = prompt(
+                u"Which calendar do you want to import to? (unique prefixes are fine)\n"
+                u"{}".format(choices),
+                default=collection.default_calendar_name,
+            )
             try:
-                number = int(value)
-                calendar_name = collection.writable_names[number]
+                calendar_name = calendar_names[int(value)]
                 break
             except (ValueError, IndexError):
-                matches = filter(lambda x: x.startswith(value), collection.writable_names)
+                matches = [x for x in collection.writable_names if x.startswith(value)]
                 if len(matches) == 1:
                     calendar_name = matches[0]
                     break
             echo(u'invalid choice')
 
-    if batch or confirm(u"Do you want to import this event into `{}`?"
-                        u"".format(calendar_name)):
-        ics = aux.ics_from_list(vevent, random_uid)
+    if batch or confirm(u"Do you want to import this event into `{}`?".format(calendar_name)):
         try:
-            collection.new(
-                Item(ics.to_ical().decode('utf-8')),
-                collection=calendar_name)
+            collection.new(Item(vevent), collection=calendar_name)
         except DuplicateUid:
-            if batch or confirm(u"An event with the same UID already exists. "
-                                u"Do you want to update it?"):
-                collection.force_update(
-                    Item(ics.to_ical().decode('utf-8')),
-                    collection=calendar_name)
+            if batch or confirm(
+                    u"An event with the same UID already exists. Do you want to update it?"):
+                collection.force_update(Item(vevent), collection=calendar_name)
             else:
                 logger.warn(u"Not importing event with UID `{}`".format(event.uid))
