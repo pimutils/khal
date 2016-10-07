@@ -104,7 +104,7 @@ class U_Event(urwid.Text):
         self.this_date = this_date
         self._conf = conf
         self.relative = relative
-        super(U_Event, self).__init__('')
+        super().__init__('', wrap='clip')
         self.set_title()
 
     @classmethod
@@ -133,7 +133,12 @@ class U_Event(urwid.Text):
         else:
             date_ = self.event.start.date()
         text = self.event.format(format_, date_, colors=False)
-        self.set_text(mark + ' ' + text)
+        if self._conf['locale']['unicode_symbols']:
+            newline = ' \N{LEFTWARDS ARROW WITH HOOK} '
+        else:
+            newline = ' -- '
+
+        self.set_text(mark + ' ' + text.replace('\n', newline))
 
     def keypress(self, _, key):
         binds = self._conf['keybindings']
