@@ -373,7 +373,7 @@ def test_split_ics_random_uid():
     part0 = _get_text('part0').split('\n')
     part1 = _get_text('part1').split('\n')
 
-    if sys.version < (3, 0, 0):
+    if sys.version_info < (3, 0, 0):
         for item in icalendar.Calendar.from_ical(vevents[0]).walk():
             if item.name == 'VEVENT':
                 assert item['UID'] == 'BDOD6BTL4FMMIAPDVCLQ6DF2A6UJ41M2HVS3'
@@ -389,7 +389,7 @@ def test_split_ics_random_uid():
                 assert item['UID'] == '4Q4CTV74N7UAZ618570X6CLF5QKVV9ZE3YVB'
 
     # after replacing the UIDs, everything should be as above
-    if sys.version < (3, 0, 0):
+    if sys.version_info < (3, 0, 0):
         vevents0 = vevents[0].replace('BDOD6BTL4FMMIAPDVCLQ6DF2A6UJ41M2HVS3', '123').split('\r\n')
         vevents1 = vevents[1].replace('LO1SYWX6RYNB1G36XGMOCQUMGDWAMIT06W98', 'abcde').split('\r\n')
     else:
