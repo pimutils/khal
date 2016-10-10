@@ -35,6 +35,14 @@ import pytz
 from khal.log import logger
 from khal.exceptions import FatalError
 
+def intersperse(iterable, element):
+    """ intersperse an iterable with element
+    """
+    it = iter(iterable)
+    yield next(it)
+    for x in it:
+        yield element
+        yield x
 
 def timefstr(dtime_list, timeformat):
     """converts a time (as a string) to a datetimeobject
