@@ -76,6 +76,7 @@ def get_event_color(event, default_color):
 def str_highlight_day(day, devents, hmethod, default_color, multiple, color):
     """returns a string with day highlighted according to configuration
     """
+    dcolor = ''
     dstr = str(day.day).rjust(2)
     if color == '':
         dcolors = list(set(map(lambda x: get_event_color(x, default_color), devents)))
