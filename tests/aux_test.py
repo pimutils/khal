@@ -3,6 +3,7 @@
 from datetime import date, datetime, time, timedelta
 import textwrap
 import random
+import sys
 
 import icalendar
 import pytz
@@ -372,16 +373,28 @@ def test_split_ics_random_uid():
     part0 = _get_text('part0').split('\n')
     part1 = _get_text('part1').split('\n')
 
-    for item in icalendar.Calendar.from_ical(vevents[0]).walk():
-        if item.name == 'VEVENT':
-            assert item['UID'] == 'DRF0RGCY89VVDKIV9VPKA1FYEAU2GCFJIBS1'
-    for item in icalendar.Calendar.from_ical(vevents[1]).walk():
-        if item.name == 'VEVENT':
-            assert item['UID'] == '4Q4CTV74N7UAZ618570X6CLF5QKVV9ZE3YVB'
+    if sys.version < (3, 0, 0):
+        for item in icalendar.Calendar.from_ical(vevents[0]).walk():
+            if item.name == 'VEVENT':
+                assert item['UID'] == 'BDOD6BTL4FMMIAPDVCLQ6DF2A6UJ41M2HVS3'
+        for item in icalendar.Calendar.from_ical(vevents[1]).walk():
+            if item.name == 'VEVENT':
+                assert item['UID'] == 'LO1SYWX6RYNB1G36XGMOCQUMGDWAMIT06W98'
+    else:
+        for item in icalendar.Calendar.from_ical(vevents[0]).walk():
+            if item.name == 'VEVENT':
+                assert item['UID'] == 'DRF0RGCY89VVDKIV9VPKA1FYEAU2GCFJIBS1'
+        for item in icalendar.Calendar.from_ical(vevents[1]).walk():
+            if item.name == 'VEVENT':
+                assert item['UID'] == '4Q4CTV74N7UAZ618570X6CLF5QKVV9ZE3YVB'
 
     # after replacing the UIDs, everything should be as above
-    vevents0 = vevents[0].replace('DRF0RGCY89VVDKIV9VPKA1FYEAU2GCFJIBS1', '123').split('\r\n')
-    vevents1 = vevents[1].replace('4Q4CTV74N7UAZ618570X6CLF5QKVV9ZE3YVB', 'abcde').split('\r\n')
+    if sys.version < (3, 0, 0):
+        vevents0 = vevents[0].replace('BDOD6BTL4FMMIAPDVCLQ6DF2A6UJ41M2HVS3', '123').split('\r\n')
+        vevents1 = vevents[1].replace('LO1SYWX6RYNB1G36XGMOCQUMGDWAMIT06W98', 'abcde').split('\r\n')
+    else:
+        vevents0 = vevents[0].replace('DRF0RGCY89VVDKIV9VPKA1FYEAU2GCFJIBS1', '123').split('\r\n')
+        vevents1 = vevents[1].replace('4Q4CTV74N7UAZ618570X6CLF5QKVV9ZE3YVB', 'abcde').split('\r\n')
 
     assert _get_TZIDs(vevents0) == _get_TZIDs(part0)
     assert _get_TZIDs(vevents1) == _get_TZIDs(part1)
