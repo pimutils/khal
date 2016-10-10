@@ -9,7 +9,7 @@ requirements = [
     'urwid',
     'pyxdg',
     'pytz',
-    'vdirsyncer',
+    'vdirsyncer<0.13',
     'python-dateutil',
     'configobj',
     'tzlocal>=1.0',
