@@ -254,10 +254,10 @@ def khal_list(collection, daterange, conf=None, format=None, day_format=None,
     show_all_days = False
     if conf is not None:
         if format is None:
-            format = conf['view']['agenda_event_format']
+            format = conf['view']['agenda_event_format'] + '\n'
         td = conf['default']['timedelta']
         if day_format is None:
-            day_format = conf['view']['agenda_day_format']
+            day_format = conf['view']['agenda_day_format'] + '\n'
         show_all_days = conf['default']['show_all_days']
     start, end = start_end_from_daterange(daterange, conf['locale'], td)
     event_column = get_list_from_str(
@@ -265,7 +265,7 @@ def khal_list(collection, daterange, conf=None, format=None, day_format=None,
         once=once, notstarted=notstarted, default_timedelta=td,
         show_all_days=show_all_days, **kwargs)
 
-    echo('\n'.join(event_column))
+    echo(''.join(event_column))
 
 
 def new_interactive(collection, calendar_name, conf, info, location=None,
