@@ -700,6 +700,8 @@ class EventColumn(urwid.WidgetWrap):
 
         :param date: default date for new event
         :type date: datetime.date
+        :param end: optional, date the event ends on (inclusive)
+        :type end: datetime.date
         """
         if not self.pane.collection.writable_names:
             self.pane.window.alert(('light red', 'No writable calendar.'))
@@ -714,7 +716,7 @@ class EventColumn(urwid.WidgetWrap):
             )
         else:
             event = utils.new_event(
-                dtstart=date, dtend=end, summary="new event",
+                dtstart=date, dtend=end + timedelta(days=1), summary="new event",
                 allday=True, locale=self._conf['locale'],
             )
         event = self.pane.collection.new_event(
