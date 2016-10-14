@@ -20,7 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import calendar
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from locale import getlocale, LC_TIME
 import signal
 import sys
@@ -695,8 +695,8 @@ class EventColumn(urwid.WidgetWrap):
         except IndexError:
             pass
 
-    def new(self, date, end):
-        """create a new event on `date`
+    def new(self, date, end=None):
+        """create a new event on `date` at the next full hour and edit it
 
         :param date: default date for new event
         :type date: datetime.date
@@ -705,7 +705,7 @@ class EventColumn(urwid.WidgetWrap):
             self.pane.window.alert(('light red', 'No writable calendar.'))
             return
         if end is None:
-            start = datetime.combine(date, datetime.now().time())
+            start = datetime.combine(date, time(datetime.now().hour))
             end = start + timedelta(minutes=60)
             event = utils.new_event(
                 dtstart=start, dtend=end, summary="new event",
@@ -727,7 +727,7 @@ class EventColumn(urwid.WidgetWrap):
     def keypress(self, size, key):
         self.clear_event_view()
         if key in self._conf['keybindings']['new']:
-            self.new(self.focus_date, self.focus_date)
+            self.new(self.focus_date, None)
             key = None
 
         if self.focus_event:
