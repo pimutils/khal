@@ -87,6 +87,16 @@ class SelectableText(urwid.Text):
     def keypress(self, size, key):
         return key
 
+    def get_cursor_coords(self, size):
+        return 0, 0
+
+    def render(self, size, focus=False):
+        canv = super().render(size, focus)
+        if focus:
+            canv = urwid.CompositeCanvas(canv)
+            canv.cursor = 0, 0
+        return canv
+
 
 class U_Event(urwid.Text):
     def __init__(self, event, conf, delete_status, this_date=None, relative=True):
@@ -106,6 +116,16 @@ class U_Event(urwid.Text):
         self.relative = relative
         super().__init__('', wrap='clip')
         self.set_title()
+
+    def get_cursor_coords(self, size):
+        return 0, 0
+
+    def render(self, size, focus=False):
+        canv = super().render(size, focus)
+        if focus:
+            canv = urwid.CompositeCanvas(canv)
+            canv.cursor = 0, 0
+        return canv
 
     @classmethod
     def selectable(cls):

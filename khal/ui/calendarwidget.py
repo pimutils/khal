@@ -58,6 +58,16 @@ class DatePart(urwid.Text):
     def keypress(self, _, key):
         return key
 
+    def get_cursor_coords(self, size):
+        return 1, 0
+
+    def render(self, size, focus=False):
+        canv = super().render(size, focus)
+        if focus:
+            canv = urwid.CompositeCanvas(canv)
+            canv.cursor = 1, 0
+        return canv
+
 
 class Date(urwid.WidgetWrap):
 
