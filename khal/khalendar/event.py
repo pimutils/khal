@@ -25,6 +25,7 @@ from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 
 import os
+import codecs
 import icalendar
 import pytz
 
@@ -432,6 +433,7 @@ class Event(object):
         :param colors: determines if colors codes should be printed or not
         :type colors: bool
         """
+        format_string = codecs.decode(format_string, 'unicode_escape')
         attributes = dict()
         try:
             relative_to_start, relative_to_end = relative_to
