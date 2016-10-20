@@ -43,7 +43,7 @@ from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
 from khal.log import logger
 from .terminal import merge_columns
-
+from khal.aux import intersperse
 
 def format_day(day, format_string, locale, attributes=None):
     if attributes is None:
@@ -151,6 +151,7 @@ def start_end_from_daterange(daterange, locale, default_timedelta=None):
 def get_list_from_str(collection, locale, start, end, notstarted=False,
                       format=None, day_format=None, once=False,
                       default_timedelta=None, env=None, show_all_days=False,
+                      event_separator=None,
                       **kwargs):
     """returns a list of events scheduled in between `start` and `end`.
 
@@ -184,6 +185,8 @@ def get_list_from_str(collection, locale, start, end, notstarted=False,
         current_events = get_list(collection, locale=locale, format=format, start=start,
                                   end=day_end, notstarted=notstarted, env=env, **kwargs)
         if day_format and (show_all_days or current_events):
+            if event_separator:
+                current_events = intersperse(current_events, event_separator)
             event_column.append(format_day(start.date(), day_format, locale))
         event_column.extend(current_events)
         start = aux.datetime_fillin(start.date(), end=False) + timedelta(days=1)

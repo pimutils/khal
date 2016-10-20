@@ -295,12 +295,14 @@ def _get_cli():
     @click.option(
         '--once', '-o', is_flag=True,
         help='Print events only once, even if they span multiple days')
+    @click.option('--event-separator', '-e',
+        help='inserts separator between calendar events')
     @click.option('--notstarted', help=('Print only events that have not started'),
                   is_flag=True)
     @click.argument('DATERANGE', nargs=-1, required=False,
                     metavar='[DATETIME [DATETIME | RANGE]]')
     @click.pass_context
-    def klist(ctx, daterange, once, notstarted, format, day_format):
+    def klist(ctx, daterange, once, notstarted, format, day_format, event_separator):
         """List all events between a start (default: today) and (optional)
         end datetime."""
         controllers.khal_list(
@@ -312,6 +314,7 @@ def _get_cli():
             notstarted=notstarted,
             locale=ctx.obj['conf']['locale'],
             conf=ctx.obj['conf'],
+            event_separator=event_separator,
             env={"calendars": ctx.obj['conf']['calendars']}
         )
 
@@ -531,9 +534,11 @@ def _get_cli():
                   help=('The format of the day line.'))
     @click.option('--notstarted', help=('Print only events that have not started'),
                   is_flag=True)
+    @click.option('--event-separator', '-e',
+        help='inserts separator between calendar events')
     @click.argument('DATETIME', nargs=-1, required=False, metavar='[DATETIME]')
     @click.pass_context
-    def at(ctx, datetime, notstarted, format, day_format):
+    def at(ctx, datetime, notstarted, format, day_format, event_separator):
         '''Print all events at a specific (date-)time (defaults to now).'''
         if not datetime:
             datetime = ("now",)
@@ -546,6 +551,7 @@ def _get_cli():
             notstarted=notstarted,
             locale=ctx.obj['conf']['locale'],
             conf=ctx.obj['conf'],
+            event_separator=event_separator,
             env={"calendars": ctx.obj['conf']['calendars']}
         )
 
