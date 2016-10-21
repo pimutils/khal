@@ -34,6 +34,7 @@ from datetime import timedelta, datetime
 import logging
 import sys
 import textwrap
+import codecs
 
 from khal import aux, calendar_display
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
@@ -45,9 +46,13 @@ from khal.log import logger
 from .terminal import merge_columns
 from khal.aux import intersperse
 
+
 def format_day(day, format_string, locale, attributes=None):
+
     if attributes is None:
         attributes = {}
+
+    format_string = codecs.decode(format_string, 'unicode_escape')
 
     attributes["date"] = day.strftime(locale['dateformat'])
     attributes["date-long"] = day.strftime(locale['longdateformat'])
