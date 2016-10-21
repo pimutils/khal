@@ -320,7 +320,7 @@ def test_at_day_format(runner):
     args = ['--color', 'at', '--format', '{start-time}{title}', '--day-format', '{name}', '18:30']
     result = runner.invoke(main_khal, args)
     assert not result.exception
-    assert result.output.startswith('Today\x1b[0m\nmyevent')
+    assert result.output.startswith('Today\x1b[0mmyevent\x1b[0m')
 
 
 def test_list(runner):
@@ -333,7 +333,7 @@ def test_list(runner):
     format = '{red}{start-end-time-style}{reset} {title} :: {description}'
     args = ['--color', 'list', '--format', format, '--day-format', 'header', '18:30']
     result = runner.invoke(main_khal, args)
-    expected = 'header\x1b[0m\n\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n'
+    expected = 'header\x1b[0m\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m'
     assert not result.exception
     assert result.output.startswith(expected)
 
