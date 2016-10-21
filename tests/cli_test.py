@@ -337,6 +337,26 @@ def test_list(runner):
     assert not result.exception
     assert result.output.startswith(expected)
 
+def test_list_event_sep(runner):
+    runner = runner(command='calendar', days=2)
+    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    result = runner.invoke(
+        main_khal,
+        'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+    result = runner.invoke(
+        main_khal,
+        'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+    format = '{title}'
+    header = 'header'
+    evs = '|'
+    args = ['--color', 'list', '--format', format, '--event-separator', evs, '--day-format', header, '18:30']
+    result = runner.invoke(main_khal, args)
+    reset = '\x1b[0m'
+    expected = 'myevent' + reset
+    expected = header + reset + expected + evs + expected
+    assert not result.exception
+    assert result.output.startswith(expected)
 
 def test_search(runner):
     runner = runner(command='calendar', days=2)
