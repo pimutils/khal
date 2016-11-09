@@ -46,6 +46,7 @@ ikhal
 * right column changed, it will now show as many days/events as fit, if users move
   to another date (while the event column is in focus), that date should be
   highlighted in the calendar (Christian Geier)
+* cursor indicates which element is selected
 
 0.8.4
 =====
