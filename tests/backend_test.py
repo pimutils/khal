@@ -243,6 +243,7 @@ def test_this_and_prior():
     with pytest.raises(UpdateFailed):
         dbi.update(event_rrule_this_and_prior, href='12345.ics', etag='abcd', calendar=calname)
 
+
 event_rrule_this_and_future_temp = """
 BEGIN:VCALENDAR
 BEGIN:VEVENT
@@ -326,6 +327,7 @@ def test_event_rrule_this_and_future_multi_day_shift():
     assert str(events[0].summary) == 'Arbeit'
     for event in events[1:]:
         assert str(event.summary) == 'Arbeit (lang)'
+
 
 event_rrule_this_and_future_allday_temp = """
 BEGIN:VCALENDAR
@@ -500,6 +502,7 @@ def test_calc_shift_deltas():
         backend.calc_shift_deltas(recuid_this_future)
     assert (timedelta(hours=2), timedelta(hours=4, minutes=30)) == \
         backend.calc_shift_deltas(recuid_this_future_duration)
+
 
 event_a = """BEGIN:VEVENT
 UID:123

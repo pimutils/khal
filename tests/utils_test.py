@@ -440,6 +440,7 @@ def test_description():
             event = _construct_event(data_list.split(), locale=locale_de)
             assert _replace_uid(event).to_ical() == vevent
 
+
 test_set_repeat = _create_testcases(
     # now events where the start date has to be inferred, too
     # today

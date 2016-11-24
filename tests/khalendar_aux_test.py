@@ -473,6 +473,7 @@ class TestExpandNoRR(object):
             new_york.localize(datetime(2012, 10, 18, 13, 0)),
         ]
 
+
 vevent_until_notz = """BEGIN:VEVENT
 SUMMARY:until 20. Februar
 DTSTART;TZID=Europe/Berlin:20140203T070000
@@ -664,6 +665,7 @@ class TestSpecial(object):
         assert dtstart[-1] == (berlin.localize(datetime(2014, 12, 3, 9, 30)),
                                berlin.localize(datetime(2014, 12, 3, 10, 30)))
 
+
 simple_rdate = """BEGIN:VEVENT
 SUMMARY:Simple Rdate
 DTSTART;TZID=Europe/Berlin:20131113T190000
@@ -712,6 +714,7 @@ class TestRDate(object):
                             (date(2015, 8, 13), date(2015, 8, 14)),
                             (date(2015, 8, 14), date(2015, 8, 15)),
                             (date(2015, 8, 15), date(2015, 8, 16))]
+
 
 noend_date = """
 BEGIN:VCALENDAR

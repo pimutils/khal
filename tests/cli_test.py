@@ -48,6 +48,7 @@ def runner(tmpdir):
         return runner
     return inner
 
+
 config_template = '''
 [calendars]
 [[one]]
