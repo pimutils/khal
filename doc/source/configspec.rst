@@ -47,8 +47,13 @@ Here is a small example:
 .. object:: path
 
     The path to an existing directory where this calendar is saved as a *vdir*.
-    The directory is searched for events or birthdays (see ``type``) but the
-    search is not recursive.
+    The directory is searched for events or birthdays (see ``type``). The path
+    also accepts glob expansion via `*` or `?` when type is set to discover.
+    This allows for paths such as `~/accounts/*/calendars/*`, where the
+    calendars directory contains vdir directories. In addition, `~/calendars/*`
+    and `~/calendars/default` are valid paths if there exists a vdir in the
+    `default` directory. (The previous behaviour of recursively searching
+    directories has been replaced with globbing).
 
       :type: string
       :default: None
@@ -519,7 +524,7 @@ when using ikhal.
     The syntax is the same as for :option:`--format`.
 
       :type: string
-      :default: {calendar-color}{start-end-time-style:16} {title}{repeat-symbol}{description-separator}{description}{reset}
+      :default: {calendar-color}{start-end-time-style} {title}{repeat-symbol}{description-separator}{description}{reset}
 
 .. _view-bold_for_light_color:
 
