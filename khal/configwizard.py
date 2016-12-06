@@ -148,7 +148,7 @@ def create_vdir(names=[]):
         print("Could not create directory {} because of {}".format(path, error))
         return None
     else:
-        return [(name, path, 'calendar')]
+        return (name, path, 'calendar')
 
 
 def configwizard(dry_run=False):
@@ -166,27 +166,28 @@ def configwizard(dry_run=False):
     vdirs = get_vdirs_from_vdirsyncer_config()
     print()
     if not vdirs:
-        vdirs = create_vdir()
+        new_vdir = create_vdir()
+        if new_vdir:
+            vdirs.append(new_vdir)
         print()
 
-    calendars = '[calendars]\n'
+    config = ['[calendars]']
     for name, path, type_ in vdirs or ():
-        calendars += '''[[{name}]]
-path = {path}
-type = {type}
-'''.format(name=name, path=path, type=type_)
-    locale = '''[locale]
-timeformat = {timeformat}
-dateformat = {dateformat}
-longdateformat = {longdateformat}
-datetimeformat = {dateformat} {timeformat}
-longdatetimeformat = {longdateformat} {timeformat}
-'''.format(
-        timeformat=timeformat,
-        dateformat=dateformat,
-        longdateformat=dateformat,
-    )
-    config = '\n'.join([calendars, locale])
+        config.append('[[{name}]]'.format(name=name))
+        config.append('path = {path}'.format(path=path))
+        config.append('type = {type}'.format(type=type_))
+
+    config.append('[locale]')
+    config.append('timeformat = {timeformat}\n'
+                  'dateformat = {dateformat}\n'
+                  'longdateformat = {longdateformat}\n'
+                  'datetimeformat = {dateformat} {timeformat}\n'
+                  'longdatetimeformat = {longdateformat} {timeformat}'
+                  .format(timeformat=timeformat,
+                          dateformat=dateformat,
+                          longdateformat=dateformat))
+
+    config = '\n'.join(config)
     config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'khal.conf')
 
     if not confirm(
