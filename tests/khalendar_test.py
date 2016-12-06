@@ -108,6 +108,7 @@ class TestVdirsyncerCompat(object):
             'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU',
         ))
 
+
 aday = date(2014, 4, 9)
 bday = date(2014, 4, 10)
 
