@@ -170,7 +170,7 @@ def configwizard(dry_run=False):
         print()
 
     calendars = '[calendars]\n'
-    for name, path, type_ in vdirs:
+    for name, path, type_ in vdirs or ():
         calendars += '''[[{name}]]
 path = {path}
 type = {type}
