@@ -170,9 +170,13 @@ def config_checks(
 
     # expand calendars with type = discover
     vdirs = list()
+    vdir_colors_from_config = {}
     for calendar in list(config['calendars'].keys()):
         if config['calendars'][calendar]['type'] == 'discover':
-            vdirs += get_all_vdirs(config['calendars'][calendar]['path'])
+            vdir = get_all_vdirs(config['calendars'][calendar]['path'])
+            vdirs += vdir
+            if len(vdir) >= 1 and 'color' in config['calendars'][calendar]:
+                vdir_colors_from_config[vdir[0]] = config['calendars'][calendar]['color']
             config['calendars'].pop(calendar)
     for vdir in sorted(vdirs):
         calendar = {'path': vdir,
@@ -180,6 +184,11 @@ def config_checks(
                     'type': _get_vdir_type(vdir),
                     'readonly': False
                     }
+
+        # get color from config if not defined in vdir
+        if calendar['color'] is None and vdir in vdir_colors_from_config:
+            calendar['color'] = vdir_colors_from_config[vdir]
+
         name = get_unique_name(vdir, config['calendars'].keys())
         config['calendars'][name] = calendar
 

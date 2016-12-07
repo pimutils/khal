@@ -142,6 +142,8 @@ def metavdirs(tmpdir):
         '/cal3/public/',
         '/cal3/work/',
         '/cal3/home/',
+        '/cal4/cfgcolor/',
+        '/cal4/dircolor/',
     ]
     for one in dirstructure:
         os.makedirs(tmpdir + one)
@@ -150,6 +152,7 @@ def metavdirs(tmpdir):
         ('/cal1/public/color', 'red'),
         ('/cal1/private/displayname', 'my private calendar'),
         ('/cal1/private/color', '#FF00FF'),
+        ('/cal4/dircolor/color', 'red'),
     ]
     for filename, content in filestructure:
         with open(tmpdir + filename, 'w') as metafile:
@@ -162,7 +165,8 @@ def test_discover(metavdirs):
     vdirs = {vdir[len(path):] for vdir in get_all_vdirs(path+'/*/*')}
     assert vdirs == {
         '/cal1/public', '/cal1/private', '/cal2/public',
-        '/cal3/home', '/cal3/public', '/cal3/work'
+        '/cal3/home', '/cal3/public', '/cal3/work',
+        '/cal4/cfgcolor', '/cal4/dircolor'
     }
 
 
@@ -172,18 +176,26 @@ def test_get_unique_name(metavdirs):
     names = list()
     for vdir in sorted(vdirs):
         names.append(get_unique_name(vdir, names))
-    assert names == ['my private calendar', 'my calendar', 'public', 'home', 'public1', 'work']
+    assert names == ['my private calendar', 'my calendar', 'public', 'home', 'public1', 'work',
+                     'cfgcolor', 'dircolor']
 
 
 def test_config_checks(metavdirs):
     path = metavdirs
-    config = {'calendars': {'default': {'path': path+'/*/*', 'type': 'discover'}},
+    config = {'calendars': {
+                  'default': {'path': path+'/cal[1-3]/*', 'type': 'discover'},
+                  'discover_with_cfgcolor': {'path': path+'/cal4/cfgcolor', 'type': 'discover',
+                                             'color': 'dark blue'},
+                  'discover_with_dircolor': {'path': path+'/cal4/dircolor', 'type': 'discover',
+                                             'color': 'dark blue'},
+              },
               'sqlite': {'path': '/tmp'},
               'locale': {'default_timezone': 'Europe/Berlin', 'local_timezone': 'Europe/Berlin'},
               'default': {'default_calendar': None},
               }
     config_checks(config)
-    for cal in ['home', 'my calendar', 'my private calendar', 'work', 'public1', 'public']:
+    for cal in ['home', 'my calendar', 'my private calendar', 'work', 'public1', 'public',
+                'cfgcolor', 'dircolor']:
         config['calendars'][cal]['path'] = config['calendars'][cal]['path'][len(metavdirs):]
     assert config == {
         'calendars': {
@@ -223,6 +235,18 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
             },
+            'cfgcolor': {
+                'color': 'dark blue',
+                'path': '/cal4/cfgcolor',
+                'readonly': False,
+                'type': 'calendar',
+            },
+            'dircolor': {
+                'color': 'red',
+                'path': '/cal4/dircolor',
+                'readonly': False,
+                'type': 'calendar',
+            }
         },
         'default': {'default_calendar': None},
         'locale': {'default_timezone': 'Europe/Berlin', 'local_timezone': 'Europe/Berlin'},
