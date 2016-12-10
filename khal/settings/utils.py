@@ -169,16 +169,18 @@ def config_checks(
             config['locale']['local_timezone'])
 
     # expand calendars with type = discover
-    vdirs = list()
+    vdirs_complete = list()
     vdir_colors_from_config = {}
     for calendar in list(config['calendars'].keys()):
         if config['calendars'][calendar]['type'] == 'discover':
-            vdir = get_all_vdirs(config['calendars'][calendar]['path'])
-            vdirs += vdir
-            if len(vdir) >= 1 and 'color' in config['calendars'][calendar]:
-                vdir_colors_from_config[vdir[0]] = config['calendars'][calendar]['color']
+            logger.debug('discovering calendars in {}'.format(config['calendars'][calendar]['path']))
+            vdirs = get_all_vdirs(config['calendars'][calendar]['path'])
+            vdirs_complete += vdirs
+            if 'color' in config['calendars'][calendar]:
+                for vdir in vdirs:
+                    vdir_colors_from_config[vdir] = config['calendars'][calendar]['color']
             config['calendars'].pop(calendar)
-    for vdir in sorted(vdirs):
+    for vdir in sorted(vdirs_complete):
         calendar = {'path': vdir,
                     'color': _get_color_from_vdir(vdir),
                     'type': _get_vdir_type(vdir),
@@ -186,7 +188,9 @@ def config_checks(
                     }
 
         # get color from config if not defined in vdir
+
         if calendar['color'] is None and vdir in vdir_colors_from_config:
+            logger.debug("using collection's color for {}".format(vdir))
             calendar['color'] = vdir_colors_from_config[vdir]
 
         name = get_unique_name(vdir, config['calendars'].keys())
