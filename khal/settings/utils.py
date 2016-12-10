@@ -173,7 +173,9 @@ def config_checks(
     vdir_colors_from_config = {}
     for calendar in list(config['calendars'].keys()):
         if config['calendars'][calendar]['type'] == 'discover':
-            logger.debug('discovering calendars in {}'.format(config['calendars'][calendar]['path']))
+            logger.debug(
+                'discovering calendars in {}'.format(config['calendars'][calendar]['path'])
+            )
             vdirs = get_all_vdirs(config['calendars'][calendar]['path'])
             vdirs_complete += vdirs
             if 'color' in config['calendars'][calendar]:

@@ -164,7 +164,7 @@ def metavdirs(tmpdir):
 
 def test_discover(metavdirs):
     path = metavdirs
-    vdirs = {vdir[len(path):] for vdir in get_all_vdirs(path+'/*/*')}
+    vdirs = {vdir[len(path):] for vdir in get_all_vdirs(path + '/*/*')}
     assert vdirs == {
         '/cal1/public', '/cal1/private', '/cal2/public',
         '/cal3/home', '/cal3/public', '/cal3/work',
@@ -174,7 +174,7 @@ def test_discover(metavdirs):
 
 def test_get_unique_name(metavdirs):
     path = metavdirs
-    vdirs = [vdir for vdir in get_all_vdirs(path+'/*/*')]
+    vdirs = [vdir for vdir in get_all_vdirs(path + '/*/*')]
     names = list()
     for vdir in sorted(vdirs):
         names.append(get_unique_name(vdir, names))
