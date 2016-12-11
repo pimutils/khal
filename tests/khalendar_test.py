@@ -323,16 +323,22 @@ def test_default_calendar(coll_vdirs):
     coll, vdirs = coll_vdirs
     vdir = vdirs['foobar']
     event = coll.new_event(event_today, 'foobar')
+
+    assert len(list(coll.get_events_on(today))) == 0
+
     vdir.upload(event)
     sleep(0.01)
     href, etag = list(vdir.list())[0]
     assert len(list(coll.get_events_on(today))) == 0
+
     coll.update_db()
     sleep(0.01)
     assert len(list(coll.get_events_on(today))) == 1
+
     vdir.delete(href, etag)
     sleep(0.01)
     assert len(list(coll.get_events_on(today))) == 1
+
     coll.update_db()
     sleep(0.01)
     assert len(list(coll.get_events_on(today))) == 0
