@@ -61,14 +61,23 @@ def get_etag_from_file(f):
     This function will flush/sync the file as much as necessary to obtain a
     correct mtime.
     '''
-    if hasattr(f, 'read'):
-        # assure that all internal buffers associated with this file are
-        # written to disk
+    # assure that all internal buffers associated with this file are
+    # written to disk
+    if isinstance(f, str):
+        if os.path.isdir(f):
+            dir_ = os.open(f, os.O_DIRECTORY)
+            os.fsync(dir_)
+            os.close(dir_)
+            stat = os.stat(f)
+        elif os.path.isfile(f):
+            with open(f) as file_:
+                return get_etag_from_file(file_)
+    elif hasattr(f, 'read'):
         f.flush()
         os.fsync(f.fileno())
         stat = os.fstat(f.fileno())
     else:
-        stat = os.stat(f)
+        raise ValueError('Please debug me')
 
     mtime = getattr(stat, 'st_mtime_ns', None)
     if mtime is None:
