@@ -22,9 +22,11 @@
 import os
 import time
 
+import pytest
 from khal.khalendar import vdir
 
 
+@pytest.mark.xfail
 def test_etag(tmpdir):
     fpath = os.path.join(str(tmpdir), 'foo')
 
@@ -61,15 +63,16 @@ def test_etag_sync(tmpdir):
 
     assert old_etag != new_etag
 
+
 def test_etag_sleep(tmpdir):
     fpath = os.path.join(str(tmpdir), 'foo')
 
     file_ = open(fpath, 'w')
     file_.write('foo')
     file_.close()
-    time.sleep(0.1)
 
     old_etag = vdir.get_etag_from_file(fpath)
+    time.sleep(0.1)
 
     file_ = open(fpath, 'w')
     file_.write('foo')
