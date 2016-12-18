@@ -4,7 +4,6 @@ vdirsyncer.
 '''
 
 import os
-import sys
 import errno
 import uuid
 
@@ -63,9 +62,10 @@ def get_etag_from_file(f):
     correct mtime.
     '''
     if hasattr(f, 'read'):
-        f.flush()  # Only this is necessary on Linux
-        if sys.platform == 'win32':
-            os.fsync(f.fileno())  # Apparently necessary on Windows
+        # assure that all internal buffers associated with this file are
+        # written to disk
+        f.flush()
+        os.fsync(f.fileno())
         stat = os.fstat(f.fileno())
     else:
         stat = os.stat(f)
