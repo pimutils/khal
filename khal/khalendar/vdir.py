@@ -56,28 +56,31 @@ def _generate_href(uid=None, safe=SAFE_UID_CHARS):
 
 
 def get_etag_from_file(f):
-    '''Get mtime-based etag from a filepath or file-like object.
+    '''Get mtime-based etag from a filepath, file-like object or raw file
+    descriptor.
 
     This function will flush/sync the file as much as necessary to obtain a
     correct mtime.
     '''
+    close_f = False
+    if hasattr(f, 'read'):
+        f.flush()
+        f = f.fileno()
+    elif isinstance(f, str):
+        flags = 0
+        if os.path.isdir(f):
+            flags = os.O_DIRECTORY
+        f = os.open(f, flags)
+        close_f = True
+
     # assure that all internal buffers associated with this file are
     # written to disk
-    if isinstance(f, str):
-        if os.path.isdir(f):
-            dir_ = os.open(f, os.O_DIRECTORY)
-            os.fsync(dir_)
-            os.close(dir_)
-            stat = os.stat(f)
-        elif os.path.isfile(f):
-            with open(f) as file_:
-                return get_etag_from_file(file_)
-    elif hasattr(f, 'read'):
-        f.flush()
-        os.fsync(f.fileno())
-        stat = os.fstat(f.fileno())
-    else:
-        raise ValueError('Please debug me')
+    try:
+        os.fsync(f)
+        stat = os.fstat(f)
+    finally:
+        if close_f:
+            os.close(f)
 
     mtime = getattr(stat, 'st_mtime_ns', None)
     if mtime is None:
