@@ -39,13 +39,26 @@ color = color(default='auto')
 # calendar
 readonly = boolean(default=False)
 
-# Set the type of this collection, the default is ``calendar``.
+# Setting the type of this collection (default ``calendar``).
+#
+# If set to ``calendar`` (the default), this collection will be used as a
+# standard calendar, that is, only files with the ``.ics`` extension will be
+# considered, all other files are ignored (except for a possible `color` file).
+#
 # If set to ``birthdays`` khal will expect a VCARD collection and extract
-# birthdays from those VCARDS. ``birthdays`` also implies ``readonly=True``.
-# If set to ``calendar`` only files with the ``.ics`` extension will be used,
-# if set to ``birthdays`` only files with the ``.vcf`` extension will be
-# used, if it is set to ``discover`` khal will use all subdirectories
-# of ``paths``'s that contain only ``.ics`` files.
+# birthdays from those VCARDS, that is only files with ``.ics`` extension will
+# be considered, all other files will be ignored.  ``birthdays`` also implies
+# ``readonly=True``.
+# 
+# If set to ``discover``, khal will use
+# `globbing <https://en.wikipedia.org/wiki/Glob_(programming)>`_ to expand this
+# calendar's `path` to (possibly) several paths and use those as individual
+# calendars (this cannot be used with `birthday` collections`). See `Examplary
+# discover usage`_ for an example.
+#
+# If an individual calendar vdir has a `color` file, the calendar's color will
+# be set to the one specified in the `color` file, otherwise the color from the
+# *calendars* subsection will be used.
 type = option('calendar', 'birthdays', 'discover', default='calendar')
 
 [sqlite]

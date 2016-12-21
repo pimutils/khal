@@ -28,6 +28,28 @@ Example
 .. literalinclude:: ../../tests/configs/simple.conf
   :language: ini
 
+Examplary discover usage
+-------------------------
+If you have the following directory layout::
+
+  ~/calendars
+  ├- work/
+  ├- home/
+  └─ family/
+
+where `work`, `home` and `family` are all different vdirs, each containg one
+calendar, a matching calendar section could look like this:
+
+.. highlight:: ini
+
+::
+
+  [[calendars]]
+  path = ~/calendars/*
+  type = discover
+  color = dark green
+
+
 Syncing
 -------
 To get :command:`khal` working with CalDAV you will first need to setup
