@@ -612,7 +612,7 @@ def check_for_errors(component, calendar, href):
             'reasons:'.format(calendar, href))
         for error in component.errors:
             logger.error(error)
-        logger.error('This might lead to this event being show wrongly or not at all.')
+        logger.error('This might lead to this event being shown wrongly or not at all.')
 
 
 def calc_shift_deltas(vevent):
