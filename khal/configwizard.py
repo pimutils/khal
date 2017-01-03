@@ -151,7 +151,28 @@ def create_vdir(names=[]):
         return (name, path, 'calendar')
 
 
-def configwizard(dry_run=False):
+def create_config(vdirs, dateformat, timeformat):
+    config = ['[calendars]']
+    for name, path, type_ in vdirs or ():
+        config.append('\n[[{name}]]'.format(name=name))
+        config.append('path = {path}'.format(path=path))
+        config.append('type = {type}'.format(type=type_))
+
+    config.append('\n[locale]')
+    config.append('timeformat = {timeformat}\n'
+                  'dateformat = {dateformat}\n'
+                  'longdateformat = {longdateformat}\n'
+                  'datetimeformat = {dateformat} {timeformat}\n'
+                  'longdatetimeformat = {longdateformat} {timeformat}\n'
+                  .format(timeformat=timeformat,
+                          dateformat=dateformat,
+                          longdateformat=dateformat))
+
+    config = '\n'.join(config)
+    return config
+
+
+def configwizard(dry_run=False, config_home=xdg.BaseDirectory.xdg_config_home):
     config_file = settings.find_configuration_file()
     if not dry_run and config_file is not None:
         logger.fatal("Found an existing config file at {}.".format(config_file))
@@ -171,24 +192,8 @@ def configwizard(dry_run=False):
             vdirs = [new_vdir]
         print()
 
-    config = ['[calendars]']
-    for name, path, type_ in vdirs or ():
-        config.append('\n[[{name}]]'.format(name=name))
-        config.append('path = {path}'.format(path=path))
-        config.append('type = {type}'.format(type=type_))
-
-    config.append('\n[locale]')
-    config.append('timeformat = {timeformat}\n'
-                  'dateformat = {dateformat}\n'
-                  'longdateformat = {longdateformat}\n'
-                  'datetimeformat = {dateformat} {timeformat}\n'
-                  'longdatetimeformat = {longdateformat} {timeformat}\n'
-                  .format(timeformat=timeformat,
-                          dateformat=dateformat,
-                          longdateformat=dateformat))
-
-    config = '\n'.join(config)
-    config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
+    config = create_config(vdirs, dateformat=dateformat, timeformat=timeformat)
+    config_path = join(config_home, 'khal', 'config')
 
     if not confirm(
             "Do you want to write the config to {}? "
@@ -198,7 +203,7 @@ def configwizard(dry_run=False):
     if dry_run:
         print(config)
         sys.exit(0)
-    config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
+    config_dir = join(config_home, 'khal')
     if not exists(config_dir) and not isdir(config_dir):
         makedirs(config_dir)
         print('created directory {}'.format(config_dir))
