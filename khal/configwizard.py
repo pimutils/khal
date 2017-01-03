@@ -141,14 +141,12 @@ def create_vdir(names=[]):
         else:
             name += '1'
     try:
-        if not exists(path) and not isdir(path):
-            makedirs(path)
-            print("Created new vdir at {}".format(path))
+        makedirs(path)
     except OSError as error:
-        print("Could not create directory {} because of {}".format(path, error))
-        return None
-    else:
-        return (name, path, 'calendar')
+        print("Could not create directory {} because of {}. Exiting".format(path, error))
+        raise
+    print("Created new vdir at {}".format(path))
+    return (name, path, 'calendar')
 
 
 def create_config(vdirs, dateformat, timeformat):
@@ -187,10 +185,10 @@ def configwizard():
     vdirs = get_vdirs_from_vdirsyncer_config()
     print()
     if not vdirs:
-        new_vdir = create_vdir()
-        if new_vdir:
-            vdirs = [new_vdir]
-        print()
+        try:
+            vdirs = [create_vdir()]
+        except OSError as error:
+            sys.exit(1)
 
     config = create_config(vdirs, dateformat=dateformat, timeformat=timeformat)
     config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
@@ -201,8 +199,16 @@ def configwizard():
         sys.exit(1)
     config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
     if not exists(config_dir) and not isdir(config_dir):
-        makedirs(config_dir)
-        print('created directory {}'.format(config_dir))
+        try:
+            makedirs(config_dir)
+        except OSError as error:
+            print(
+                "Could not write config file at {} because of {}. "
+                "Aborting".format(config_dir, error)
+            )
+            sys.exit(1)
+        else:
+            print('created directory {}'.format(config_dir))
     with open(config_path, 'w') as config_file:
         config_file.write(config)
     print("Successfully wrote configuration to {}".format(config_path))
