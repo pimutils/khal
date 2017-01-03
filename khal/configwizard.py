@@ -188,7 +188,7 @@ def configwizard(dry_run=False):
                           longdateformat=dateformat))
 
     config = '\n'.join(config)
-    config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'khal.conf')
+    config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
 
     if not confirm(
             "Do you want to write the config to {}? "
