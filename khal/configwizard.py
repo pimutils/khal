@@ -172,7 +172,7 @@ def create_config(vdirs, dateformat, timeformat):
     return config
 
 
-def configwizard(config_home=xdg.BaseDirectory.xdg_config_home):
+def configwizard():
     config_file = settings.find_configuration_file()
     if config_file is not None:
         logger.fatal("Found an existing config file at {}.".format(config_file))
@@ -193,14 +193,13 @@ def configwizard(config_home=xdg.BaseDirectory.xdg_config_home):
         print()
 
     config = create_config(vdirs, dateformat=dateformat, timeformat=timeformat)
-    config_path = join(config_home, 'khal', 'config')
-
+    config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
     if not confirm(
             "Do you want to write the config to {}? "
             "(Choosing `No` will abort)".format(config_path)):
         print('Aborting...')
         sys.exit(1)
-    config_dir = join(config_home, 'khal')
+    config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
     if not exists(config_dir) and not isdir(config_dir):
         makedirs(config_dir)
         print('created directory {}'.format(config_dir))
