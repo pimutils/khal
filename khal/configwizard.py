@@ -173,16 +173,16 @@ def configwizard(dry_run=False):
 
     config = ['[calendars]']
     for name, path, type_ in vdirs or ():
-        config.append('[[{name}]]'.format(name=name))
+        config.append('\n[[{name}]]'.format(name=name))
         config.append('path = {path}'.format(path=path))
         config.append('type = {type}'.format(type=type_))
 
-    config.append('[locale]')
+    config.append('\n[locale]')
     config.append('timeformat = {timeformat}\n'
                   'dateformat = {dateformat}\n'
                   'longdateformat = {longdateformat}\n'
                   'datetimeformat = {dateformat} {timeformat}\n'
-                  'longdatetimeformat = {longdateformat} {timeformat}'
+                  'longdatetimeformat = {longdateformat} {timeformat}\n'
                   .format(timeformat=timeformat,
                           dateformat=dateformat,
                           longdateformat=dateformat))
