@@ -168,7 +168,7 @@ def configwizard(dry_run=False):
     if not vdirs:
         new_vdir = create_vdir()
         if new_vdir:
-            vdirs.append(new_vdir)
+            vdirs = [new_vdir]
         print()
 
     config = ['[calendars]']
