@@ -30,6 +30,7 @@ not released yet
 * `import` can now import multiple files at once (Christian Geier)
 * configuration file path $XDG_CONFIG_HOME/khal/config is now supported and
   $XDG_CONFIG_HOME/khal/khal.conf deprecated
+* python 3.6 is now officially supported
 
 ikhal
 -----
