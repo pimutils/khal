@@ -153,7 +153,7 @@ def create_vdir(names=[]):
 
 def create_config(vdirs, dateformat, timeformat):
     config = ['[calendars]']
-    for name, path, type_ in vdirs or ():
+    for name, path, type_ in sorted(vdirs) or ():
         config.append('\n[[{name}]]'.format(name=name))
         config.append('path = {path}'.format(path=path))
         config.append('type = {type}'.format(type=type_))
