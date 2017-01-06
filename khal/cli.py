@@ -416,16 +416,20 @@ def _get_cli():
                 'When using batch import, please specify a calendar to import '
                 'into or set the `default_calendar` in the config file.')
 
-        for ics_file in ics:
-            ics_str = ics_file.read()
-            controllers.import_ics(
-                collection,
-                ctx.obj['conf'],
-                ics=ics_str,
-                batch=batch,
-                random_uid=random_uid,
-                env={"calendars": ctx.obj['conf']['calendars']},
-            )
+        try:
+            for ics_file in ics:
+                ics_str = ics_file.read()
+                controllers.import_ics(
+                    collection,
+                    ctx.obj['conf'],
+                    ics=ics_str,
+                    batch=batch,
+                    random_uid=random_uid,
+                    env={"calendars": ctx.obj['conf']['calendars']},
+                )
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command()
     @multi_calendar_option

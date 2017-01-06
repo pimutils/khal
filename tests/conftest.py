@@ -14,8 +14,9 @@ def coll_vdirs(tmpdir):
     for name in example_cals:
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
+        readonly = True if name == 'a_calendar' else False
         calendars[name] = {'name': name, 'path': path, 'color': 'dark blue',
-                           'readonly': False, 'unicode_symbols': True}
+                           'readonly': readonly, 'unicode_symbols': True}
         vdirs[name] = Vdir(path, '.ics')
     coll = CalendarCollection(calendars=calendars, dbpath=':memory:', locale=locale)
     coll.default_calendar_name = cal1

@@ -32,6 +32,10 @@ class FatalError(Error):
     pass
 
 
+class ConfigurationError(FatalError):
+    pass
+
+
 class UnsupportedFeatureError(Error):
 
     """something Failed but we know why"""

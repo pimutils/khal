@@ -24,6 +24,7 @@ import icalendar
 from click import confirm, echo, style, prompt
 
 from .khalendar.vdir import Item
+from .exceptions import ConfigurationError
 
 import pytz
 
@@ -554,8 +555,12 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
                 echo(event.format(format, datetime.now(), env=env))
 
     # get the calendar to insert into
-    if batch or len(collection.writable_names) == 1:
+    if not collection.writable_names:
+        raise ConfigurationError('No writable calendars found, aborting import.')
+    if len(collection.writable_names) == 1:
         calendar_name = collection.writable_names[0]
+    elif batch:
+        calendar_name = collection.default_calendar_name
     else:
         calendar_names = sorted(collection.writable_names)
         choices = ', '.join(
@@ -575,6 +580,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
                     calendar_name = matches[0]
                     break
             echo('invalid choice')
+    assert calendar_name in collection.writable_names
 
     if batch or confirm("Do you want to import this event into `{}`?".format(calendar_name)):
         try:

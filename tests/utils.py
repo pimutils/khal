@@ -3,11 +3,12 @@ import os
 
 import pytz
 
+cal0 = 'a_calendar'
 cal1 = 'foobar'
 cal2 = 'work'
 cal3 = 'private'
 
-example_cals = [cal1, cal2, cal3]
+example_cals = [cal0, cal1, cal2, cal3]
 
 BERLIN = pytz.timezone('Europe/Berlin')
 

@@ -131,6 +131,22 @@ foo = bar
         get_config(conf_path)
         # FIXME test for log entries
 
+    def test_default_calendar_readonly(self, tmpdir):
+        config = """
+[calendars]
+[[home]]
+path = ~/.khal/calendars/home/
+color = dark blue
+readonly = True
+[default]
+default_calendar = home
+"""
+        conf_path = str(tmpdir.join('old.conf'))
+        with open(conf_path, 'w+') as conf:
+            conf.write(config)
+        with pytest.raises(InvalidSettingsError):
+            config_checks(get_config(conf_path))
+
 
 @pytest.fixture
 def metavdirs(tmpdir):

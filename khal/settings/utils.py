@@ -115,6 +115,9 @@ def test_default_calendar(config):
                                        config['calendars'].keys())
         )
         raise InvalidSettingsError()
+    elif config['calendars'][config['default']['default_calendar']]['readonly']:
+        logger.fatal('default_calendar may not be read_only!')
+        raise InvalidSettingsError()
 
 
 def get_color_from_vdir(path):

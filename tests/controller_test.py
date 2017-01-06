@@ -80,8 +80,7 @@ class TestImport(object):
         coll, vdirs = coll_vdirs
         view = {'event_format': '{title}'}
         conf = {'locale': utils.locale, 'view': view}
-        import_ics(coll, conf, _get_text('event_rrule_recuid'),
-                   batch=True)
+        import_ics(coll, conf, _get_text('event_rrule_recuid'), batch=True)
         start_date = utils.BERLIN.localize(dt.datetime(2014, 4, 30))
         end_date = utils.BERLIN.localize(dt.datetime(2014, 9, 26))
         events = list(coll.get_localized(start_date, end_date))
@@ -91,11 +90,11 @@ class TestImport(object):
         assert utils.BERLIN.localize(dt.datetime(2014, 7, 14, 7, 0)) in \
             [ev.start for ev in events]
 
-        import_ics(coll, conf, _get_text('event_rrule_recuid_update'),
-                   batch=True)
+        import_ics(coll, conf, _get_text('event_rrule_recuid_update'), batch=True)
         events = list(coll.get_localized(start_date, end_date))
         for ev in events:
             print(ev.start)
+            assert ev.calendar == 'foobar'
         assert len(events) == 5
         assert utils.BERLIN.localize(dt.datetime(2014, 7, 14, 7, 0)) not in \
             [ev.start_local for ev in events]
