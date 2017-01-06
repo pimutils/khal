@@ -613,3 +613,22 @@ def test_configure_command_cannot_create_vdir(runner):
     )
     assert 'Exiting' in result.output
     assert result.exit_code == 1
+
+
+def test_edit(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['list'])
+    assert not result.exception
+    assert result.output == 'No events\n'
+
+    cal_dt = _get_text('event_dt_simple')
+    event = runner.calendars['one'].join('test.ics')
+    event.write(cal_dt)
+
+    format = '{start-end-time-style}: {title}'
+    result = runner.invoke(main_khal, ['edit', '--show-past', 'Event'], input='s\nGreat Event\nq\n')
+    assert not result.exception
+
+    args = ['list', '--format', format, '--day-format', '', '09.04.2014']
+    result = runner.invoke(main_khal, args)
+    assert result.output == '09:30-10:30: Great Event\n'
