@@ -13,38 +13,55 @@ from .utils import _get_text
 
 
 class CustomCliRunner(CliRunner):
-    def __init__(self, config, db=None, calendars=None, **kwargs):
-        self.config = config
+    def __init__(self, config_file, db=None, calendars=None,
+                 xdg_data_home=None, xdg_config_home=None, **kwargs):
+        self.config_file = config_file
         self.db = db
         self.calendars = calendars
+        self.xdg_data_home = xdg_data_home
+        self.xdg_config_home = xdg_config_home
+
         super(CustomCliRunner, self).__init__(**kwargs)
 
     def invoke(self, cli, args=None, *a, **kw):
-        args = ['-c', str(self.config)] + (args or [])
+        args = ['-c', str(self.config_file)] + (args or [])
         return super(CustomCliRunner, self).invoke(cli, args, *a, **kw)
 
 
 @pytest.fixture
-def runner(tmpdir):
-    config = tmpdir.join('config.ini')
+def runner(tmpdir, monkeypatch):
     db = tmpdir.join('khal.db')
     calendar = tmpdir.mkdir('calendar')
     calendar2 = tmpdir.mkdir('calendar2')
     calendar3 = tmpdir.mkdir('calendar3')
 
-    def inner(command='list', default_calendar=True, days=2, **kwargs):
+    xdg_data_home = tmpdir.join('vdirs')
+    xdg_config_home = tmpdir.join('.config')
+    config_file = xdg_config_home.join('khal').join('config')
+
+    # TODO crate a vdir config on disk and let vdirsyncer actually read it
+    monkeypatch.setattr('vdirsyncer.cli.config.load_config', lambda: Config())
+    monkeypatch.setattr('xdg.BaseDirectory.xdg_data_home', str(xdg_data_home))
+    monkeypatch.setattr('xdg.BaseDirectory.xdg_config_home', str(xdg_config_home))
+    monkeypatch.setattr('xdg.BaseDirectory.xdg_config_dirs', [str(xdg_config_home)])
+
+    def inner(default_command='list', default_calendar=True, days=2, **kwargs):
         if default_calendar:
             default_calendar = 'default_calendar = one'
         else:
             default_calendar = ''
-        config.write(config_template.format(
-            command=command,
+        if not os.path.exists(str(xdg_config_home.join('khal'))):
+            os.makedirs(str(xdg_config_home.join('khal')))
+        config_file.write(config_template.format(
+            default_command=default_command,
             delta=str(days)+'d',
             calpath=str(calendar), calpath2=str(calendar2), calpath3=str(calendar3),
             default_calendar=default_calendar,
             dbpath=str(db), **kwargs))
-        runner = CustomCliRunner(config=config, db=db,
-                                 calendars=dict(one=calendar))
+        runner = CustomCliRunner(
+            config_file=config_file, db=db, calendars=dict(one=calendar),
+            xdg_data_home=xdg_data_home, xdg_config_home=xdg_config_home,
+        )
         return runner
     return inner
 
@@ -74,7 +91,7 @@ longdatetimeformat = %d.%m.%Y %H:%M
 firstweekday = 0
 
 [default]
-default_command = {command}
+default_command = {default_command}
 {default_calendar}
 timedelta = {delta}
 
@@ -84,7 +101,7 @@ path = {dbpath}
 
 
 def test_direct_modification(runner):
-    runner = runner(command='list')
+    runner = runner(default_command='list')
 
     result = runner.invoke(main_khal, ['list'])
     assert not result.exception
@@ -106,7 +123,7 @@ def test_direct_modification(runner):
 
 
 def test_simple(runner):
-    runner = runner(command='list', days=2)
+    runner = runner(default_command='list', days=2)
 
     result = runner.invoke(main_khal)
     assert not result.exception
@@ -128,7 +145,7 @@ def test_simple(runner):
 
 
 def test_simple_color(runner):
-    runner = runner(command='list', days=2)
+    runner = runner(default_command='list', days=2)
 
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
@@ -141,7 +158,7 @@ def test_simple_color(runner):
 
 
 def test_days(runner):
-    runner = runner(command='list', days=9)
+    runner = runner(default_command='list', days=9)
 
     when = (datetime.datetime.now() + timedelta(days=7)).strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 nextweek'.format(when).split())
@@ -162,7 +179,7 @@ def test_days(runner):
 
 def test_calendar(runner):
     with freeze_time('2015-6-1'):
-        runner = runner(command='calendar', days=0)
+        runner = runner(default_command='calendar', days=0)
         result = runner.invoke(main_khal)
         assert not result.exception
         assert result.exit_code == 0
@@ -189,7 +206,7 @@ def test_calendar(runner):
 
 def test_long_calendar(runner):
     with freeze_time('2015-6-1'):
-        runner = runner(command='calendar', days=100)
+        runner = runner(default_command='calendar', days=100)
         result = runner.invoke(main_khal)
         assert not result.exception
         assert result.exit_code == 0
@@ -219,7 +236,7 @@ def test_long_calendar(runner):
 
 
 def test_default_command_empty(runner):
-    runner = runner(command='', days=2)
+    runner = runner(default_command='', days=2)
 
     result = runner.invoke(main_khal)
     assert result.exception
@@ -228,7 +245,7 @@ def test_default_command_empty(runner):
 
 
 def test_default_command_nonempty(runner):
-    runner = runner(command='list', days=2)
+    runner = runner(default_command='list', days=2)
 
     result = runner.invoke(main_khal)
     assert not result.exception
@@ -236,7 +253,7 @@ def test_default_command_nonempty(runner):
 
 
 def test_invalid_calendar(runner):
-    runner = runner(command='', days=2)
+    runner = runner(default_command='', days=2)
     result = runner.invoke(
         main_khal, ['new'] + '-a one 18:00 myevent'.split())
     assert not result.exception
@@ -248,7 +265,7 @@ def test_invalid_calendar(runner):
 
 
 def test_attach_calendar(runner):
-    runner = runner(command='calendar', days=2)
+    runner = runner(default_command='calendar', days=2)
     result = runner.invoke(main_khal, ['printcalendars'])
     assert set(result.output.split('\n')[:3]) == set(['one', 'two', 'three'])
     assert not result.exception
@@ -265,7 +282,7 @@ def test_attach_calendar(runner):
     'BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\nEND:VCALENDAR\n'
 ])
 def test_no_vevent(runner, tmpdir, contents):
-    runner = runner(command='list', days=2)
+    runner = runner(default_command='list', days=2)
     broken_item = runner.calendars['one'].join('broken_item.ics')
     broken_item.write(contents.encode('utf-8'), mode='wb')
 
@@ -275,7 +292,7 @@ def test_no_vevent(runner, tmpdir, contents):
 
 
 def test_printformats(runner):
-    runner = runner(command='printformats', days=2)
+    runner = runner(default_command='printformats', days=2)
 
     result = runner.invoke(main_khal)
     assert '\n'.join(['longdatetimeformat: 21.12.2013 10:09',
@@ -288,7 +305,7 @@ def test_printformats(runner):
 
 
 def test_repeating(runner):
-    runner = runner(command='list', days=2)
+    runner = runner(default_command='list', days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
@@ -299,7 +316,7 @@ def test_repeating(runner):
 
 
 def test_at(runner):
-    runner = runner(command='calendar', days=2)
+    runner = runner(default_command='calendar', days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
@@ -312,7 +329,7 @@ def test_at(runner):
 
 
 def test_at_day_format(runner):
-    runner = runner(command='calendar', days=2)
+    runner = runner(default_command='calendar', days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
@@ -325,7 +342,7 @@ def test_at_day_format(runner):
 
 
 def test_list(runner):
-    runner = runner(command='calendar', days=2)
+    runner = runner(default_command='calendar', days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
@@ -340,7 +357,7 @@ def test_list(runner):
 
 
 def test_search(runner):
-    runner = runner(command='calendar', days=2)
+    runner = runner(default_command='calendar', days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
     format = '{red}{start-end-time-style}{reset} {title} :: {description}'
@@ -380,18 +397,18 @@ def test_import(runner, monkeypatch):
     monkeypatch.setattr('khal.controllers.import_ics', fake.import_ics)
     # as we are not actually parsing the file we want to import, we can use
     # any readable file at all, therefore re-using the configuration file
-    result = runner.invoke(main_khal, 'import -a one {}'.format(runner.config).split())
+    result = runner.invoke(main_khal, 'import -a one {}'.format(runner.config_file).split())
     assert not result.exception
     assert {cal['name'] for cal in fake.args[0].calendars} == {'one'}
 
     fake.clean()
-    result = runner.invoke(main_khal, 'import {}'.format(runner.config).split())
+    result = runner.invoke(main_khal, 'import {}'.format(runner.config_file).split())
     assert not result.exception
     assert {cal['name'] for cal in fake.args[0].calendars} == {'one', 'two', 'three'}
 
 
 def test_interactive_command(runner, monkeypatch):
-    runner = runner(command='list', days=2)
+    runner = runner(default_command='list', days=2)
     token = "hooray"
 
     def fake_ui(*a, **kw):
@@ -410,7 +427,7 @@ def test_interactive_command(runner, monkeypatch):
 
 
 def test_color_option(runner):
-    runner = runner(command='list', days=2)
+    runner = runner(default_command='list', days=2)
 
     result = runner.invoke(main_khal, ['--no-color'])
     assert result.output == 'No events\n'
@@ -420,16 +437,179 @@ def test_color_option(runner):
     assert result.output != 'No events\n'
 
 
-def test_configure_command(runner, monkeypatch):
-    e = Exception('Hocus pocus!')
+def choices(ordering=0, separator=0, dateconfirm=True,
+            timeformat=0, timeconfirm=True,
+            parse_vdirsyncer_conf=True,
+            create_vdir=False,
+            write_config=True):
+    """helper function to generate input for testing `configure`"""
+    assert parse_vdirsyncer_conf != create_vdir
+    confirm = {True: 'y', False: 'n'}
 
-    def hocus_pocus(*a, **kw):
-        raise e
+    out = [
+        str(ordering), str(separator), confirm[dateconfirm],
+        str(timeformat), confirm[timeconfirm],
+        confirm[parse_vdirsyncer_conf],
+    ]
+    if not parse_vdirsyncer_conf:
+        out.append(confirm[create_vdir])
+    out.append(confirm[write_config])
+    return '\n'.join(out)
 
-    monkeypatch.setattr('khal.configwizard.configwizard', hocus_pocus)
 
-    runner = runner(command='list', days=2)
-    runner.config.remove()
+class Config():
+    """helper class for mocking vdirsyncer's config objects"""
+    # TODO crate a vdir config on disk and let vdirsyncer actually read it
+    storages = {
+        'home_calendar_local': {
+            'type': 'filesystem',
+            'instance_name': 'home_calendar_local',
+            'path': '~/.local/share/calendars/home/',
+            'fileext': '.ics',
+        },
+        'events_local': {
+            'type': 'filesystem',
+            'instance_name': 'events_local',
+            'path': '~/.local/share/calendars/events/',
+            'fileext': '.ics',
+        },
+        'home_calendar_remote': {
+            'type': 'caldav',
+            'url': 'https://some.url/caldav',
+            'username': 'foo',
+            'password.fetch': ['command', 'get_secret'],
+            'instance_name': 'home_calendar_remote',
+        },
+        'home_contacts_remote': {
+            'type': 'carddav',
+            'url': 'https://another.url/caldav',
+            'username': 'bar',
+            'password.fetch': ['command', 'get_secret'],
+            'instance_name': 'home_contacts_remote',
+        },
+        'home_contacts_local': {
+            'type': 'filesystem',
+            'instance_name': 'home_contacts_local',
+            'path': '~/.local/share/contacts/',
+            'fileext': '.vcf',
+        },
+        'events_remote': {
+            'type': 'http',
+            'instance_name': 'events_remote',
+            'url': 'http://list.of/events/',
+        },
+    }
 
-    result = runner.invoke(main_khal, ['configure'])
-    assert result.exception is e
+
+def test_configure_command(runner):
+    runner_factory = runner
+    runner = runner()
+    runner.config_file.remove()
+
+    result = runner.invoke(main_khal, ['configure'], input=choices())
+    assert 'Successfully wrote configuration to {}'.format(runner.config_file) in result.output
+    assert result.exit_code == 0
+    with open(str(runner.config_file)) as f:
+        actual_config = ''.join(f.readlines())
+
+    assert actual_config == '''[calendars]
+
+[[events_local]]
+path = ~/.local/share/calendars/events/
+type = discover
+
+[[home_calendar_local]]
+path = ~/.local/share/calendars/home/
+type = discover
+
+[[home_contacts_local]]
+path = ~/.local/share/contacts/
+type = discover
+
+[locale]
+timeformat = %H:%M
+dateformat = %Y-%m-%d
+longdateformat = %Y-%m-%d
+datetimeformat = %Y-%m-%d %H:%M
+longdatetimeformat = %Y-%m-%d %H:%M
+'''
+
+    # if aborting, no config file should be written
+    runner = runner_factory()
+    assert os.path.exists(str(runner.config_file))
+    runner.config_file.remove()
+    assert not os.path.exists(str(runner.config_file))
+
+    result = runner.invoke(main_khal, ['configure'], input=choices(write_config=False))
+    assert 'Aborting' in result.output
+    assert result.exit_code == 1
+
+
+def test_configure_command_config_exists(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['configure'], input=choices())
+    assert 'Found an existing' in result.output
+    assert result.exit_code == 1
+
+
+def test_configure_command_create_vdir(runner):
+    runner = runner()
+    runner.config_file.remove()
+    runner.xdg_config_home.remove()
+
+    result = runner.invoke(
+        main_khal, ['configure'],
+        input=choices(parse_vdirsyncer_conf=False, create_vdir=True),
+    )
+    assert 'Successfully wrote configuration to {}'.format(str(runner.config_file)) in result.output
+    assert result.exit_code == 0
+    with open(str(runner.config_file)) as f:
+        actual_config = ''.join(f.readlines())
+
+    assert actual_config == '''[calendars]
+
+[[private]]
+path = {}/khal/calendars/private
+type = calendar
+
+[locale]
+timeformat = %H:%M
+dateformat = %Y-%m-%d
+longdateformat = %Y-%m-%d
+datetimeformat = %Y-%m-%d %H:%M
+longdatetimeformat = %Y-%m-%d %H:%M
+'''.format(runner.xdg_data_home)
+
+    # running configure again, should yield another vdir path, as the old
+    # one still exists
+    runner.config_file.remove()
+    result = runner.invoke(
+        main_khal, ['configure'],
+        input=choices(parse_vdirsyncer_conf=False, create_vdir=True),
+    )
+    assert 'Successfully wrote configuration to {}'.format(str(runner.config_file)) in result.output
+    assert result.exit_code == 0
+    with open(str(runner.config_file)) as f:
+        actual_config = ''.join(f.readlines())
+
+    assert '{}/khal/calendars/private1' .format(runner.xdg_data_home) in actual_config
+
+
+def test_configure_command_cannot_write_config_file(runner):
+    runner = runner()
+    runner.config_file.remove()
+    os.chmod(str(runner.xdg_config_home), 555)
+    result = runner.invoke(main_khal, ['configure'], input=choices())
+    assert result.exit_code == 1
+
+
+def test_configure_command_cannot_create_vdir(runner):
+    runner = runner()
+    runner.config_file.remove()
+    os.mkdir(str(runner.xdg_data_home), mode=555)
+    result = runner.invoke(
+        main_khal, ['configure'],
+        input=choices(parse_vdirsyncer_conf=False, create_vdir=True),
+    )
+    assert 'Exiting' in result.output
+    assert result.exit_code == 1

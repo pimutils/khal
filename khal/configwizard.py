@@ -141,19 +141,38 @@ def create_vdir(names=[]):
         else:
             name += '1'
     try:
-        if not exists(path) and not isdir(path):
-            makedirs(path)
-            print("Created new vdir at {}".format(path))
+        makedirs(path)
     except OSError as error:
-        print("Could not create directory {} because of {}".format(path, error))
-        return None
-    else:
-        return (name, path, 'calendar')
+        print("Could not create directory {} because of {}. Exiting".format(path, error))
+        raise
+    print("Created new vdir at {}".format(path))
+    return (name, path, 'calendar')
 
 
-def configwizard(dry_run=False):
+def create_config(vdirs, dateformat, timeformat):
+    config = ['[calendars]']
+    for name, path, type_ in sorted(vdirs) or ():
+        config.append('\n[[{name}]]'.format(name=name))
+        config.append('path = {path}'.format(path=path))
+        config.append('type = {type}'.format(type=type_))
+
+    config.append('\n[locale]')
+    config.append('timeformat = {timeformat}\n'
+                  'dateformat = {dateformat}\n'
+                  'longdateformat = {longdateformat}\n'
+                  'datetimeformat = {dateformat} {timeformat}\n'
+                  'longdatetimeformat = {longdateformat} {timeformat}\n'
+                  .format(timeformat=timeformat,
+                          dateformat=dateformat,
+                          longdateformat=dateformat))
+
+    config = '\n'.join(config)
+    return config
+
+
+def configwizard():
     config_file = settings.find_configuration_file()
-    if not dry_run and config_file is not None:
+    if config_file is not None:
         logger.fatal("Found an existing config file at {}.".format(config_file))
         logger.fatal(
             "If you want to create a new configuration file, "
@@ -166,42 +185,30 @@ def configwizard(dry_run=False):
     vdirs = get_vdirs_from_vdirsyncer_config()
     print()
     if not vdirs:
-        new_vdir = create_vdir()
-        if new_vdir:
-            vdirs.append(new_vdir)
-        print()
+        try:
+            vdirs = [create_vdir()]
+        except OSError as error:
+            sys.exit(1)
 
-    config = ['[calendars]']
-    for name, path, type_ in vdirs or ():
-        config.append('[[{name}]]'.format(name=name))
-        config.append('path = {path}'.format(path=path))
-        config.append('type = {type}'.format(type=type_))
-
-    config.append('[locale]')
-    config.append('timeformat = {timeformat}\n'
-                  'dateformat = {dateformat}\n'
-                  'longdateformat = {longdateformat}\n'
-                  'datetimeformat = {dateformat} {timeformat}\n'
-                  'longdatetimeformat = {longdateformat} {timeformat}'
-                  .format(timeformat=timeformat,
-                          dateformat=dateformat,
-                          longdateformat=dateformat))
-
-    config = '\n'.join(config)
-    config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'khal.conf')
-
+    config = create_config(vdirs, dateformat=dateformat, timeformat=timeformat)
+    config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
     if not confirm(
             "Do you want to write the config to {}? "
             "(Choosing `No` will abort)".format(config_path)):
         print('Aborting...')
         sys.exit(1)
-    if dry_run:
-        print(config)
-        sys.exit(0)
     config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
     if not exists(config_dir) and not isdir(config_dir):
-        makedirs(config_dir)
-        print('created directory {}'.format(config_dir))
+        try:
+            makedirs(config_dir)
+        except OSError as error:
+            print(
+                "Could not write config file at {} because of {}. "
+                "Aborting".format(config_dir, error)
+            )
+            sys.exit(1)
+        else:
+            print('created directory {}'.format(config_dir))
     with open(config_path, 'w') as config_file:
         config_file.write(config)
     print("Successfully wrote configuration to {}".format(config_path))

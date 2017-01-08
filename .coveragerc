@@ -1,2 +1,2 @@
 [run]
-omit=khal/ui/*,khal/configwizard.py
+omit=khal/ui/*
