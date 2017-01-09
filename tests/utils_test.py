@@ -128,6 +128,25 @@ class TestGuessDatetimefstr(object):
             assert (datetime(2016, 9, 19, 17, 53), False) == \
                 guessdatetimefstr('now'.split(), locale=locale_de, default_day=datetime.today())
 
+    def test_short_format_contains_year(self):
+        """if the non long versions of date(time)format contained a year, the
+        current year would be used instead of the given one, see #545"""
+        locale = {
+            'timeformat': '%H:%M',
+            'dateformat': '%Y-%m-%d',
+            'longdateformat': '%Y-%m-%d',
+            'datetimeformat': '%Y-%m-%d %H:%M',
+            'longdatetimeformat': '%Y-%m-%d %H:%M',
+        }
+        with freeze_time('2016-12-30 17:53'):
+            assert (datetime(2017, 1, 1), True) == \
+                guessdatetimefstr('2017-1-1'.split(), locale=locale, default_day=datetime.today())
+
+        with freeze_time('2016-12-30 17:53'):
+            assert (datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
+                '2017-1-1 16:30'.split(), locale=locale, default_day=datetime.today(),
+            )
+
 
 class TestGuessTimedeltafstr(object):
 
@@ -220,6 +239,23 @@ class TestGuessRangefstr(object):
             guessrangefstr('1.1.2016x', locale=locale_de, default_timedelta="1d")
         with pytest.raises(ValueError):
             guessrangefstr('xxx yyy zzz', locale=locale_de, default_timedelta="1d")
+
+    def test_short_format_contains_year(self):
+        """if the non long versions of date(time)format contained a year, the
+        current year would be used instead of the given one, see #545
+
+        same as above, but for guessrangefstr
+        """
+        locale = {
+            'timeformat': '%H:%M',
+            'dateformat': '%Y-%m-%d',
+            'longdateformat': '%Y-%m-%d',
+            'datetimeformat': '%Y-%m-%d %H:%M',
+            'longdatetimeformat': '%Y-%m-%d %H:%M',
+        }
+        with freeze_time('2016-12-30 17:53'):
+            assert (datetime(2017, 1, 1), datetime(2017, 1, 1), True) == \
+                guessrangefstr('2017-1-1 2017-1-1', locale=locale, default_timedelta="1d")
 
 
 class TestTimeDelta2Str(object):
