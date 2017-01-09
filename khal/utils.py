@@ -215,22 +215,24 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
         return a_date
 
     dtstart = None
-    for fun, dtformat, all_day in [
-            (datefstr_year, locale['datetimeformat'], False),
-            (datetimefstr, locale['longdatetimeformat'], False),
-            (timefstr_day, locale['timeformat'], False),
-            (datetimefstr_weekday, locale['timeformat'], False),
-            (datefstr_year, locale['dateformat'], True),
-            (datetimefstr, locale['longdateformat'], True),
-            (datefstr_weekday, None, True),
-            (datetimefwords, None, False),
-
+    for fun, dtformat, all_day, shortformat in [
+            (datefstr_year, locale['datetimeformat'], False, True),
+            (datetimefstr, locale['longdatetimeformat'], False, False),
+            (timefstr_day, locale['timeformat'], False, False),
+            (datetimefstr_weekday, locale['timeformat'], False, False),
+            (datefstr_year, locale['dateformat'], True, True),
+            (datetimefstr, locale['longdateformat'], True, False),
+            (datefstr_weekday, None, True, False),
+            (datetimefwords, None, False, False),
     ]:
+        if shortformat and ('%Y' in dtformat or '%y' in dtformat):
+            continue
         try:
             dtstart = fun(dtime_list, dtformat)
-            return dtstart, all_day
         except ValueError:
             pass
+        else:
+            return dtstart, all_day
     raise ValueError()
 
 
