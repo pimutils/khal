@@ -480,6 +480,18 @@ def _get_cli():
             click.echo('{}: {}'.format(strftime_format, dt_str))
 
     @cli.command()
+    @click.argument('ics', type=click.File('rb'))
+    @click.option('--format', '-f',
+                  help=('The format to print the event.'))
+    @click.pass_context
+    def printics(ctx, ics, format):
+        '''Print an ics file without importing it.
+
+        Just print the ics file, do nothing else.'''
+        ics_str = ics.read()
+        controllers.print_ics(ctx.obj['conf'], ics.name, ics_str, format)
+
+    @cli.command()
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))

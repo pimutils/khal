@@ -67,6 +67,13 @@ def _get_vevent_file(event_path):
             return component
 
 
+def _get_ics_filepath(event_name):
+    directory = '/'.join(__file__.split('/')[:-1]) + '/ics/'
+    if directory == '/ics/':
+        directory = './ics/'
+    return os.path.join(directory, event_name + '.ics')
+
+
 def _get_all_vevents_file(event_path):
     directory = '/'.join(__file__.split('/')[:-1]) + '/ics/'
     ical = icalendar.Calendar.from_ical(

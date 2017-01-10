@@ -9,7 +9,7 @@ from click.testing import CliRunner
 
 from khal.cli import main_khal, main_ikhal
 
-from .utils import _get_text
+from .utils import _get_text, _get_ics_filepath
 
 
 class CustomCliRunner(CliRunner):
@@ -543,6 +543,41 @@ longdatetimeformat = %Y-%m-%d %H:%M
     result = runner.invoke(main_khal, ['configure'], input=choices(write_config=False))
     assert 'Aborting' in result.output
     assert result.exit_code == 1
+
+
+def test_print_ics_command(runner):
+    runner = runner(command='printics', days=2)
+    # Input is empty and loading from stdin
+    result = runner.invoke(main_khal, ['-'])
+    assert result.exception
+
+    # Non existing file
+    result = runner.invoke(main_khal, ['printics', 'nonexisting_file'])
+    assert result.exception
+    assert 'Error: Invalid value for "ics": Could not open file: ' \
+        in result.output
+
+    # Run on test files
+    result = runner.invoke(main_khal, ['printics', _get_ics_filepath('cal_d')])
+    assert not result.exception
+    result = runner.invoke(main_khal, ['printics', _get_ics_filepath('cal_dt_two_tz')])
+    assert not result.exception
+
+    # Test with some nice format strings
+    form = '{title}\t{description}\t{start}\t{start-long}\t{start-date}' \
+           '\t{start-date-long}\t{start-time}\t{end}\t{end-long}\t{end-date}' \
+           '\t{end-date-long}\t{end-time}\t{repeat-symbol}\t{description}' \
+           '\t{description-separator}\t{location}\t{calendar}' \
+           '\t{calendar-color}\t{start-style}\t{to-style}\t{end-style}' \
+           '\t{start-end-time-style}\t{end-necessary}\t{end-necessary-long}'
+    result = runner.invoke(main_khal, [
+        'printics',  '-f', form, _get_ics_filepath('cal_dt_two_tz')])
+    assert not result.exception
+    assert 24 == len(result.output.split('\t'))
+    result = runner.invoke(main_khal, [
+        'printics', '-f', form, _get_ics_filepath('cal_dt_two_tz')])
+    assert not result.exception
+    assert 24 == len(result.output.split('\t'))
 
 
 def test_configure_command_config_exists(runner):
