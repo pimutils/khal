@@ -109,7 +109,7 @@ Some default values and behaviours are set here.
     
     command to be executed if no command is given when executing khal
 
-      :type: option, allowed values are *calendar*, *list*, *interactive*, *printformats*, *printcalendars* and **
+      :type: option, allowed values are *calendar*, *list*, *interactive*, *printformats*, *printcalendars*, *printics* and **
       :default: calendar
 
 .. _default-highlight_event_days:
