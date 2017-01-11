@@ -360,9 +360,9 @@ If the **summary** contains the string `::`, everything after `::` is taken as
 the **description** of the new event, i.e., the "body" of the event (and `::`
 will be removed).
 
-Passing the option `--interactive` (`-i`) makes all arguments optional and
-interactively prompts for required fields, then the event may be edited, the
-same way as in the `edit` command.
+Passing the option :option:`--interactive` (:option:`-i`) makes all arguments
+optional and interactively prompts for required fields, then the event may be
+edited, the same way as in the `edit` command.
 
 Options
 """""""

@@ -43,8 +43,8 @@ written to the vdir (and with that to the CalDAV server). Any timezone
 information that was associated with the start date gets discarded.
 
 .. note::
-  While the main rationale for this behaviour was laziness on part of the main
-  author of khal, other calendar software shows the same behaviour (e.g. Google
+  While the main rationale for this behaviour was laziness on part of khal's
+  main author, other calendar software shows the same behaviour (e.g. Google
   Calendar and Evolution).
 
 Timezones
@@ -71,7 +71,7 @@ localized events.
 
 If you want to look up which events take place at a specified datetime, khal
 always expects that you want to know what events take place at that *local*
-datetime. Therefore, the datetime you asked for gets converted to UTC, the
+datetime. Therefore, the (local) datetime you asked for gets converted to UTC, the
 appropriate *localized* events get selected and presented with their start and
 end datetimes *converted* to *your local datetime*. For floating events no
 conversion is necessary.

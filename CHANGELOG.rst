@@ -18,7 +18,8 @@ not released yet
   `agenda_event_format`, `agenda_day_format` (Taylor Money)
 * support for categories (and add `-g` flag for `khal new`) (Pierre David)
 * search results are now sorted by start date (Taylor Money)
-* calendar path is now a glob without recursion for discover (Taylor Money)
+* calendar path is now a glob without recursion for discover, if your calendars
+  are no longer found, please consult the documentation (Taylor Money)
 * `at` command now works like `list` with a timedelta of `0m`, this means that
   `at` will no longer print events that end at exactly the time asked for
   (Taylor Money)
