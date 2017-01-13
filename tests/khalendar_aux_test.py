@@ -736,6 +736,17 @@ END:VEVENT
 END:VCALENDAR
 """
 
+instant = """
+BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:instant123
+DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20170113T010000
+DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20170113T010000
+SUMMARY:Really fast event
+END:VEVENT
+END:VCALENDAR
+"""
+
 
 class TestSanitize(object):
 
@@ -754,3 +765,9 @@ class TestSanitize(object):
     def test_duration(self):
         vevent = _get_vevent_file('event_dtr_exdatez')
         vevent = utils.sanitize(vevent, berlin, '', '')
+
+    def test_instant(self):
+        vevent = _get_vevent(instant)
+        assert vevent['DTEND'].dt - vevent['DTSTART'].dt == timedelta()
+        vevent = utils.sanitize(vevent, berlin, '', '')
+        assert vevent['DTEND'].dt - vevent['DTSTART'].dt == timedelta(hours=1)
