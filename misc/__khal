@@ -52,7 +52,7 @@ case $state in
       agenda | calendar)
         args+=(
           "($hlp)--days=[specify how many days to include]:days:_dates -f d -F"
-          "($hlp)--events=[specify how many events so include]:events"
+          "($hlp)--events=[specify how many events to include]:events"
         )
       ;|
       at | agenda) args+=( '*:date/time' ) ;;
