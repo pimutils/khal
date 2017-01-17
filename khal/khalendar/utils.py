@@ -214,6 +214,10 @@ def sanitize_timerange(dtstart, dtend, duration=None):
             raise ValueError('The event\'s end time (DTEND) is older than '
                              'the event\'s start time (DTSTART).')
         elif dtend == dtstart:
+            logger.warning(
+                "Event start time and end time are the same. "
+                "Assuming the event's duration is one hour."
+            )
             dtend += timedelta(hours=1)
 
     return dtstart, dtend
