@@ -31,6 +31,8 @@ not released yet
 * `import` can now import multiple files at once (Christian Geier)
 * configuration file path $XDG_CONFIG_HOME/khal/config is now supported and
   $XDG_CONFIG_HOME/khal/khal.conf deprecated
+* events that start and end at the same time are now displayed as if their
+  duration was one hour instead of one day (Guilhem Saurel)
 
 ikhal
 -----

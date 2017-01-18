@@ -189,7 +189,7 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
 
 def sanitize_timerange(dtstart, dtend, duration=None):
     '''return sensible dtstart and end for events that have an invalid or
-    missing DTEND, assuming the event just lasts one day.'''
+    missing DTEND, assuming the event just lasts one hour.'''
 
     if isinstance(dtstart, datetime) and isinstance(dtend, datetime):
         if dtstart.tzinfo and not dtend.tzinfo:
@@ -214,7 +214,11 @@ def sanitize_timerange(dtstart, dtend, duration=None):
             raise ValueError('The event\'s end time (DTEND) is older than '
                              'the event\'s start time (DTSTART).')
         elif dtend == dtstart:
-            dtend += timedelta(days=1)
+            logger.warning(
+                "Event start time and end time are the same. "
+                "Assuming the event's duration is one hour."
+            )
+            dtend += timedelta(hours=1)
 
     return dtstart, dtend
 
