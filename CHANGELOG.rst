@@ -11,13 +11,19 @@ may want to subscribe to `GitHub's tag feed
 =====
 not released yet
 
-* removed configuration variable `encoding` (in section [locale]), the correct
-  locale should now be figured out automatically (Markus Unterwaditzer)
-* (nearly) all commands allow formatting of how events are printed with
-  `--format`, also see the new configuration options `event_format`,
-  `agenda_event_format`, `agenda_day_format` (Taylor Money)
-* support for categories (and add `-g` flag for `khal new`) (Pierre David)
-* search results are now sorted by start date (Taylor Money)
+Dependency Changes
+------------------
+* vdirsyncer isn't a hard dependency any more
+
+Bug Fixes
+---------
+* fixed various bugs in `configure`
+* fix bug in `new` that surfaces when date(time)format does contain a year
+* fix bug in `import` that allows importing into read-only and/or non-default calendar
+* fix color is discoverd calendars
+
+Backwards Incompatibilities
+---------------------------
 * calendar path is now a glob without recursion for discover, if your calendars
   are no longer found, please consult the documentation (Taylor Money)
 * `at` command now works like `list` with a timedelta of `0m`, this means that
@@ -26,11 +32,27 @@ not released yet
 * renamed `agenda` to `list` (Taylor Money)
 * removed `days` configuration option in favor of `timedelta`, see
   documentation for details (Taylor Money)
+* configuration file path $XDG_CONFIG_HOME/khal/config is now supported and
+  $XDG_CONFIG_HOME/khal/khal.conf deprecated
+* ikhal: introduction of three different new frame styles, new allowed values for
+  `[view] frame` are `False`, `width`, `color`, `top` (with default `False`),
+  `True` isn't allowed any more, please provide feedback over the usual channels
+  if and which of those you consider useful as some of those might be removed in
+  future releases (Christian Geier)
+* removed configuration variable `encoding` (in section [locale]), the correct
+  locale should now be figured out automatically (Markus Unterwaditzer)
+* DTSTART == DTEND, infer event is 1h instead of 1d (Guilhem Saurel)
+
+Enhancements
+------------
+* (nearly) all commands allow formatting of how events are printed with
+  `--format`, also see the new configuration options `event_format`,
+  `agenda_event_format`, `agenda_day_format` (Taylor Money)
+* support for categories (and add `-g` flag for `khal new`) (Pierre David)
+* search results are now sorted by start date (Taylor Money)
 * added command `edit` (Taylor Money)
 * `new` has interactive option (Taylor Money)
 * `import` can now import multiple files at once (Christian Geier)
-* configuration file path $XDG_CONFIG_HOME/khal/config is now supported and
-  $XDG_CONFIG_HOME/khal/khal.conf deprecated
 * events that start and end at the same time are now displayed as if their
   duration was one hour instead of one day (Guilhem Saurel)
 
@@ -39,11 +61,6 @@ ikhal
 * BUGFIX no more crashing if invalid date is entered and mini-calendar displayed
 * make keybinding for quitting configurable, defaults to *q* and *Q*, escape
   only backtracks to last pane but doesn't exit khal anymore (Christian Geier)
-* introduction of three different new frame styles, new allowed values for
-  `[view] frame` are `False`, `width`, `color`, `top` (with default `False`),
-  `True` isn't allowed any more, please provide feedback over the usual channels
-  if and which of those you consider useful as some of those might be removed in
-  future releases (Christian Geier)
 * default keybinding changed: `tab` no longer shows details of focused events
   and does not open the event editor either (Christian Geier)
 * right column changed, it will now show as many days/events as fit, if users move
