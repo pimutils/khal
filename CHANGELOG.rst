@@ -9,7 +9,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.9.0
 =====
-not released yet
+released 2017-01-24
 
 Dependency Changes
 ------------------
@@ -20,7 +20,7 @@ Bug Fixes
 * fixed various bugs in `configure`
 * fix bug in `new` that surfaces when date(time)format does contain a year
 * fix bug in `import` that allows importing into read-only and/or non-default calendar
-* fix color is discoverd calendars
+* fix how color discovered in calendars
 
 Backwards Incompatibilities
 ---------------------------
@@ -41,7 +41,8 @@ Backwards Incompatibilities
   future releases (Christian Geier)
 * removed configuration variable `encoding` (in section [locale]), the correct
   locale should now be figured out automatically (Markus Unterwaditzer)
-* DTSTART == DTEND, infer event is 1h instead of 1d (Guilhem Saurel)
+* events that start and end at the same time are now displayed as if their
+  duration was one hour instead of one day (Guilhem Saurel)
 
 Enhancements
 ------------
@@ -50,11 +51,9 @@ Enhancements
   `agenda_event_format`, `agenda_day_format` (Taylor Money)
 * support for categories (and add `-g` flag for `khal new`) (Pierre David)
 * search results are now sorted by start date (Taylor Money)
-* added command `edit` (Taylor Money)
+* added command `edit`, which also allows deletion of events (Taylor Money)
 * `new` has interactive option (Taylor Money)
 * `import` can now import multiple files at once (Christian Geier)
-* events that start and end at the same time are now displayed as if their
-  duration was one hour instead of one day (Guilhem Saurel)
 
 ikhal
 -----
