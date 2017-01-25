@@ -7,6 +7,15 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.9.1
+=====
+released 2017-01-25
+
+* FIX detecting not understood timezone information failed on python 3.6, this may lead to
+  erroneous offsets in start and end times for those events, as those datetimes
+  were treated as if they were in the system's local time, not as if they are in
+  the (possibly) configured default_timezone.
+
 0.9.0
 =====
 released 2017-01-24
