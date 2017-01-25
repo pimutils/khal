@@ -16,6 +16,8 @@ released 2017-01-25
   were treated as if they were in the system's local time, not as if they are in
   the (possibly) configured default_timezone.
 
+* python 3.6 is now officially supported
+
 0.9.0
 =====
 released 2017-01-24
