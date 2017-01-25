@@ -29,7 +29,8 @@ import icalendar
 import pytz
 
 from ..utils import generate_random_uid, datetime_fillin
-from .utils import to_naive_utc, to_unix_time, invalid_timezone, delete_instance
+from .utils import to_naive_utc, to_unix_time, invalid_timezone, delete_instance, \
+    is_aware
 from ..log import logger
 from ..terminal import get_color
 from click import style
@@ -620,11 +621,15 @@ class LocalizedEvent(DatetimeEvent):
             endtz = starttz
         if endtz is None:
             endtz = self._locale['default_timezone']
-        try:
+
+        if is_aware(self._start):
             self._start = self._start.astimezone(starttz)
-            self._end = self._end.astimezone(endtz)
-        except ValueError:
+        else:
             self._start = starttz.localize(self._start)
+
+        if is_aware(self._end):
+            self._end = self._end.astimezone(endtz)
+        else:
             self._end = endtz.localize(self._end)
 
     @property
@@ -633,7 +638,6 @@ class LocalizedEvent(DatetimeEvent):
         see parent
         """
         return self.start.astimezone(self._locale['local_timezone'])
-
 
     @property
     def end_local(self):

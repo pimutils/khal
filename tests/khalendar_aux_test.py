@@ -8,6 +8,9 @@ from .utils import _get_text, _get_vevent_file
 
 # FIXME this file is in urgent need of a clean up
 
+BERLIN = pytz.timezone('Europe/Berlin')
+BOGOTA = pytz.timezone('America/Bogota')
+
 # datetime
 event_dt = """BEGIN:VCALENDAR
 CALSCALE:GREGORIAN
@@ -771,3 +774,17 @@ class TestSanitize(object):
         assert vevent['DTEND'].dt - vevent['DTSTART'].dt == timedelta()
         vevent = utils.sanitize(vevent, berlin, '', '')
         assert vevent['DTEND'].dt - vevent['DTSTART'].dt == timedelta(hours=1)
+
+
+class TestIsAware():
+    def test_naive(self):
+        assert utils.is_aware(datetime.now()) is False
+
+    def test_berlin(self):
+        assert utils.is_aware(BERLIN.localize(datetime.now())) is True
+
+    def test_bogota(self):
+        assert utils.is_aware(BOGOTA.localize(datetime.now())) is True
+
+    def test_utc(self):
+        assert utils.is_aware(pytz.UTC.localize(datetime.now())) is True
