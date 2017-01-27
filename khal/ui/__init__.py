@@ -49,8 +49,8 @@ from .calendarwidget import CalendarWidget
 #   | |                 | | | |                          | | | |
 #   | |                 | | | | +-BoxAdapter-----------+ | | | |
 #   | |                 | | | | |                      | | | | |
-#   | |                 | | | | | +-DateListbox------+ | | | | |
-#   | |                 | | | | | | SelectableText   | | | | | |
+#   | |                 | | | | | +-DateListBox------+ | | | | |
+#   | |                 | | | | | | DateHeader       | | | | | |
 #   | |                 | | | | | | U_Event          | | | | | |
 #   | |                 | | | | | |  ...             | | | | | |
 #   | |                 | | | | | | U_Event          | | | | | |
@@ -59,8 +59,8 @@ from .calendarwidget import CalendarWidget
 #   | |                 | | | |       ...                | | | |
 #   | |                 | | | | +-BoxAdapter-----------+ | | | |
 #   | |                 | | | | |                      | | | | |
-#   | |                 | | | | | +-DateListbox------+ | | | | |
-#   | |                 | | | | | | SelectableText   | | | | | |
+#   | |                 | | | | | +-DateListBox------+ | | | | |
+#   | |                 | | | | | | DateHeader       | | | | | |
 #   | |                 | | | | | | U_Event          | | | | | |
 #   | |                 | | | | | |  ...             | | | | | |
 #   | |                 | | | | | | U_Event          | | | | | |
@@ -96,6 +96,50 @@ class SelectableText(urwid.Text):
             canv = urwid.CompositeCanvas(canv)
             canv.cursor = 0, 0
         return canv
+
+
+class DateHeader(SelectableText):
+    def __init__(self, day, weekday, dateformat):
+        self._day = day
+        self._weekday = weekday
+        self._dateformat = dateformat
+        super().__init__('')
+        self.update_date_line()
+
+    def update_date_line(self):
+        """update self, so that the timedelta is accurate
+
+        to be called after a date change
+        """
+        self.set_text(self.relative_day(self._day, self._weekday, self._dateformat))
+
+    def relative_day(self, day, weekday, dtformat):
+        """convert day into a string with its weekday and relative distance to today
+
+        :param day: day to be converted
+        :type: day: datetime.day
+        :param weekday: `day`'s weekday
+        :type weekday: str
+        :param dtformat: the format day is to be printed in, passed to strftime
+        :tpye dtformat: str
+        :rtype: str
+        """
+
+        daystr = day.strftime(dtformat)
+        if day == date.today():
+            return 'Today ({}, {})'.format(weekday, daystr)
+        elif day == date.today() + timedelta(days=1):
+            return 'Tomorrow ({}, {})'.format(weekday, daystr)
+        elif day == date.today() - timedelta(days=1):
+            return 'Yesterday ({}, {})'.format(weekday, daystr)
+
+        approx_delta = utils.relative_timedelta_str(day)
+
+        return '{weekday}, {day} ({approx_delta})'.format(
+            weekday=weekday,
+            approx_delta=approx_delta,
+            day=daystr,
+        )
 
 
 class U_Event(urwid.Text):
@@ -273,6 +317,9 @@ class DListBox(EventListBox):
     def refresh_titles(self, start, end, recurring):
         self.body.refresh_titles(start, end, recurring)
 
+    def update_date_line(self):
+        self.body.update_date_line()
+
 
 class DayWalker(urwid.SimpleFocusListWalker):
     """A list Walker that contains a list of DateListBox objects, each representing
@@ -326,7 +373,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self[item_no].set_selected_date(day)
         self.set_focus(item_no)
 
-    def update_date(self, day):
+    def update_events_ondate(self, day):
         """refresh the contents of the day's DateListBox"""
         offset = (day - self[0].date).days
         assert self[offset].date == day
@@ -375,8 +422,12 @@ class DayWalker(urwid.SimpleFocusListWalker):
 
         day = start
         while day <= end:
-            self.update_date(day)
+            self.update_events_ondate(day)
             day += timedelta(days=1)
+
+    def update_date_line(self):
+        for one in self:
+            one.update_date_line()
 
     def set_focus(self, position):
         """set focus by item number"""
@@ -408,13 +459,12 @@ class DayWalker(urwid.SimpleFocusListWalker):
         :type day: datetime.date
         """
         event_list = list()
-        date_text = SelectableText(
-            relative_day(
-                day,
-                self.weekdays[day.weekday()],
-                self._conf['locale']['longdateformat']),
+        date_header = DateHeader(
+            day=day,
+            weekday=self.weekdays[day.weekday()],
+            dateformat=self._conf['locale']['longdateformat'],
         )
-        event_list.append(urwid.AttrMap(date_text, 'date'))
+        event_list.append(urwid.AttrMap(date_header, 'date'))
         self.events = sorted(self._collection.get_events_on(day))
         event_list.extend([
             urwid.AttrMap(
@@ -489,6 +539,10 @@ class DateListBox(NListBox):
             if isinstance(uevent._original_widget, U_Event):
                 uevent.original_widget.set_title()
 
+    def update_date_line(self):
+        """update the date text in the first line, e.g., if the current date changed"""
+        self.body[0].original_widget.update_date_line()
+
 
 class EventColumn(urwid.WidgetWrap):
     """Container for list of events
@@ -559,6 +613,10 @@ class EventColumn(urwid.WidgetWrap):
         min_date and max_date
         """
         self.dlistbox.refresh_titles(min_date, max_date, everything)
+
+    def update_date_line(self):
+        """refresh titles in DateListBoxes"""
+        self.dlistbox.update_date_line()
 
     def edit(self, event, always_save=False):
         """create an EventEditor and display it
@@ -1383,10 +1441,14 @@ def start_pane(pane, callback, program_info='', quit_keys=['q']):
     def redraw_today(loop, pane, meta={'last_today': None}):
         # TODO calculate how many seconds the new day is away and set timer
         # to that
+        # XXX TODO this currently assumes, today moves forward by exactly one
+        # day, but it could either move forward more (suspend-to-disk/ram) or
+        # even move backwards
         today = date.today()
         if meta['last_today'] != today:
             meta['last_today'] = today
             pane.calendar.original_widget.reset_styles_range(today - timedelta(days=1), today)
+            pane.eventscolumn.original_widget.update_date_line()
         loop.set_alarm_in(60, redraw_today, pane)
 
     redraw_today(frame.loop, pane)
@@ -1409,55 +1471,3 @@ def start_pane(pane, callback, program_info='', quit_keys=['q']):
             pass
         print(tb)
         sys.exit(1)
-
-
-def relative_day(day, weekday, dtformat):
-    """convert day into a string with its weekday and relative distance to today
-
-    :param day: day to be converted
-    :type: day: datetime.day
-    :param weekday: `day`'s weekday
-    :type weekday: str
-    :param dtformat: the format day is to be printed in, passed to strftime
-    :tpye dtformat: str
-    :rtype: str
-    """
-
-    daystr = day.strftime(dtformat)
-    if day == date.today():
-        return 'Today ({}, {})'.format(weekday, daystr)
-    elif day == date.today() + timedelta(days=1):
-        return 'Tomorrow ({}, {})'.format(weekday, daystr)
-    elif day == date.today() - timedelta(days=1):
-        return 'Yesterday ({}, {})'.format(weekday, daystr)
-
-    days = (day - date.today()).days
-    if days < 0:
-        direction = 'ago'
-    else:
-        direction = 'from now'
-    approx = ''
-    if abs(days) < 7:
-        unit = 'day'
-        count = abs(days)
-    elif abs(days) < 365:
-        unit = 'week'
-        count = int(abs(days) / 7)
-        if abs(days) % 7 != 0:
-            approx = '~'
-    else:
-        unit = 'year'
-        count = int(abs(days) / 365)
-        if abs(days) % 365 != 0:
-            approx = '~'
-    if count > 1:
-        unit += 's'
-
-    return '{weekday}, {day} ({approx}{count} {unit} {direction})'.format(
-        weekday=weekday,
-        approx=approx,
-        day=daystr,
-        count=count,
-        unit=unit,
-        direction=direction,
-    )

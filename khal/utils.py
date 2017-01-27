@@ -114,6 +114,42 @@ def construct_daynames(date_):
         return date_.strftime('%A')
 
 
+def relative_timedelta_str(day):
+    """converts relative timedelta from day to day into a human readable string
+
+    :type day: datetime.date
+    :rtype: str
+    """
+    days = (day - date.today()).days
+    if days < 0:
+        direction = 'ago'
+    else:
+        direction = 'from now'
+    approx = ''
+    if abs(days) < 7:
+        unit = 'day'
+        count = abs(days)
+    elif abs(days) < 365:
+        unit = 'week'
+        count = int(abs(days) / 7)
+        if abs(days) % 7 != 0:
+            approx = '~'
+    else:
+        unit = 'year'
+        count = int(abs(days) / 365)
+        if abs(days) % 365 != 0:
+            approx = '~'
+    if count > 1:
+        unit += 's'
+
+    return '{approx}{count} {unit} {direction}'.format(
+        approx=approx,
+        count=count,
+        unit=unit,
+        direction=direction,
+    )
+
+
 def calc_day(dayname):
     """converts a relative date's description to a datetime object
 
