@@ -591,3 +591,11 @@ def test_split_ics_random_uid():
 
     assert sorted(vevents0) == sorted(part0)
     assert sorted(vevents1) == sorted(part1)
+
+
+def test_relative_timedelta_str():
+    with freeze_time('2016-9-19'):
+        assert utils.relative_timedelta_str(date(2016, 9, 24)) == '5 days from now'
+        assert utils.relative_timedelta_str(date(2016, 9, 29)) == '~1 week from now'
+        assert utils.relative_timedelta_str(date(2017, 9, 29)) == '~1 year from now'
+        assert utils.relative_timedelta_str(date(2016, 7, 29)) == '~7 weeks ago'
