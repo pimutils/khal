@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 =====
 not released yet
 
+* FIX no more crashes when using timezones that have a constant UTC offset (like
+  UTC itself)
 
 0.9.1
 =====

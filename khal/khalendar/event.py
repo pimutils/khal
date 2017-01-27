@@ -680,7 +680,7 @@ class AllDayEvent(Event):
 
 def create_timezone(tz, first_date=None, last_date=None):
     """
-    create an icalendar vtimezone from a pytz.tzinfo
+    create an icalendar vtimezone from a pytz.tzinfo object
 
     :param tz: the timezone
     :type tz: pytz.tzinfo
@@ -707,6 +707,8 @@ def create_timezone(tz, first_date=None, last_date=None):
     easy solution, we'd really need to ship another version of the OLSON DB.
 
     """
+    if isinstance(tz, pytz.tzinfo.StaticTzInfo):
+        return _create_timezone_static(tz)
 
     # TODO last_date = None, recurring to infinity
 
@@ -764,6 +766,26 @@ def create_timezone(tz, first_date=None, last_date=None):
     for subcomp in timezones.values():
         timezone.add_component(subcomp)
 
+    return timezone
+
+
+def _create_timezone_static(tz):
+    """create an icalendar vtimezone from a pytz.tzinfo.StaticTzInfo
+
+    :param tz: the timezone
+    :type tz: pytz.tzinfo.StaticTzInfo
+    :returns: timezone information
+    :rtype: icalendar.Timezone()
+    """
+    timezone = icalendar.Timezone()
+    timezone.add('TZID', tz)
+    subcomp = icalendar.TimezoneStandard()
+    subcomp.add('TZNAME', tz)
+    subcomp.add('DTSTART', datetime(1601, 1, 1))
+    subcomp.add('RDATE', datetime(1601, 1, 1))
+    subcomp.add('TZOFFSETTO', tz._utcoffset)
+    subcomp.add('TZOFFSETFROM', tz._utcoffset)
+    timezone.add_component(subcomp)
     return timezone
 
 

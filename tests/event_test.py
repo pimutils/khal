@@ -6,7 +6,8 @@ from freezegun import freeze_time
 
 from icalendar import vRecur, vText
 
-from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent, FloatingEvent
+from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent, FloatingEvent, \
+    create_timezone
 
 from .utils import normalize_component, _get_text
 
@@ -15,6 +16,7 @@ BERLIN = pytz.timezone('Europe/Berlin')
 NEW_YORK = pytz.timezone('America/New_York')
 # the lucky people in Bogota don't know the pain that is DST
 BOGOTA = pytz.timezone('America/Bogota')
+GMTPLUS3 = pytz.timezone('Etc/GMT+3')
 
 LOCALE = {
     'default_timezone': BERLIN,
@@ -441,3 +443,48 @@ def test_event_alarm():
     assert event.alarms == []
     event.update_alarms([(timedelta(-1, 82800), 'new event')])
     assert event.alarms == [(timedelta(-1, 82800), vText('new event'))]
+
+
+def test_create_timezone_static():
+    gmt = pytz.timezone('Etc/GMT-8')
+    assert create_timezone(gmt).to_ical().split() == [
+        b'BEGIN:VTIMEZONE',
+        b'TZID:Etc/GMT-8',
+        b'BEGIN:STANDARD',
+        b'DTSTART;VALUE=DATE-TIME:16010101T000000',
+        b'RDATE:16010101T000000',
+        b'TZNAME:Etc/GMT-8',
+        b'TZOFFSETFROM:+0800',
+        b'TZOFFSETTO:+0800',
+        b'END:STANDARD',
+        b'END:VTIMEZONE',
+    ]
+    event_dt = _get_text('event_dt_simple')
+    start = GMTPLUS3.localize(datetime(2014, 4, 9, 9, 30))
+    end = GMTPLUS3.localize(datetime(2014, 4, 9, 10, 30))
+    event = Event.fromString(event_dt, **EVENT_KWARGS)
+    event.update_start_end(start, end)
+    with freeze_time('2016-1-1'):
+        assert normalize_component(event.raw) == normalize_component(
+            """BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//CALENDARSERVER.ORG//NONSGML Version 1//EN
+BEGIN:VTIMEZONE
+TZID:Etc/GMT+3
+BEGIN:STANDARD
+DTSTART;VALUE=DATE-TIME:16010101T000000
+RDATE:16010101T000000
+TZNAME:Etc/GMT+3
+TZOFFSETFROM:-0300
+TZOFFSETTO:-0300
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+SUMMARY:An Event
+DTSTART;TZID=Etc/GMT+3;VALUE=DATE-TIME:20140409T093000
+DTEND;TZID=Etc/GMT+3;VALUE=DATE-TIME:20140409T103000
+DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
+UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
+END:VEVENT
+END:VCALENDAR"""
+        )
