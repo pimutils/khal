@@ -19,9 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import calendar
 from datetime import date, datetime, time, timedelta
-from locale import getlocale, LC_TIME
 import signal
 import sys
 
@@ -99,9 +97,13 @@ class SelectableText(urwid.Text):
 
 
 class DateHeader(SelectableText):
-    def __init__(self, day, weekday, dateformat):
+    def __init__(self, day, dateformat):
+        """
+        :type day: datetime.date
+        :type dateformat: format to print `day` in
+        :type dateformat: str
+        """
         self._day = day
-        self._weekday = weekday
         self._dateformat = dateformat
         super().__init__('')
         self.update_date_line()
@@ -111,20 +113,19 @@ class DateHeader(SelectableText):
 
         to be called after a date change
         """
-        self.set_text(self.relative_day(self._day, self._weekday, self._dateformat))
+        self.set_text(self.relative_day(self._day, self._dateformat))
 
-    def relative_day(self, day, weekday, dtformat):
+    def relative_day(self, day, dtformat):
         """convert day into a string with its weekday and relative distance to today
 
         :param day: day to be converted
         :type: day: datetime.day
-        :param weekday: `day`'s weekday
-        :type weekday: str
         :param dtformat: the format day is to be printed in, passed to strftime
         :tpye dtformat: str
         :rtype: str
         """
 
+        weekday = day.strftime('%A')
         daystr = day.strftime(dtformat)
         if day == date.today():
             return 'Today ({}, {})'.format(weekday, daystr)
@@ -138,7 +139,7 @@ class DateHeader(SelectableText):
         return '{weekday}, {day} ({approx_delta})'.format(
             weekday=weekday,
             approx_delta=approx_delta,
-            day=daystr,
+            day=day.strftime('%A'),
         )
 
 
@@ -334,17 +335,6 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self._first_day = this_date
         self._collection = collection
 
-        firstweekday = self._conf['locale']['firstweekday']
-        calendar.setfirstweekday(firstweekday)
-        try:
-            mylocale = '.'.join(getlocale(LC_TIME))
-        except TypeError:  # language code and encoding may be None
-            mylocale = 'C'
-        _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)
-        self.weekdays = [weekday for weekday in
-                         _calendar.formatweekheader(11).split(' ')
-                         if weekday]
-
         super().__init__(list())
         self.ensure_date(this_date)
 
@@ -461,7 +451,6 @@ class DayWalker(urwid.SimpleFocusListWalker):
         event_list = list()
         date_header = DateHeader(
             day=day,
-            weekday=self.weekdays[day.weekday()],
             dateformat=self._conf['locale']['longdateformat'],
         )
         event_list.append(urwid.AttrMap(date_header, 'date'))

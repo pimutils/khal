@@ -11,6 +11,7 @@ cal3 = 'private'
 example_cals = [cal0, cal1, cal2, cal3]
 
 BERLIN = pytz.timezone('Europe/Berlin')
+NEW_YORK = pytz.timezone('America/New_York')
 
 locale = {'default_timezone': BERLIN,
           'local_timezone': BERLIN,
@@ -23,6 +24,19 @@ locale = {'default_timezone': BERLIN,
           'firstweekday': 0,
           'weeknumbers': False,
           }
+
+LOCALE_NEW_YORK = {
+    'default_timezone': NEW_YORK,
+    'local_timezone': NEW_YORK,
+    'timeformat': '%H:%M',
+    'dateformat': '%Y/%m/%d',
+    'longdateformat': '%Y/%m/%d',
+    'datetimeformat': '%Y/%m/%d-%H:%M',
+    'longdatetimeformat': '%Y/%m/%d-%H:%M',
+    'firstweekday': 6,
+    'unicode_symbols': True,
+    'weeknumbers': False,
+}
 
 locale['longdatetimeformat'] = locale['longdateformat']
 locale['datetimeformat'] = locale['longdateformat']
