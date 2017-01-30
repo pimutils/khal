@@ -522,7 +522,7 @@ class Event(object):
             elif self.start < relative_to_start and self.end == relative_to_end:
                 attributes['start-end-time-style'] = self.symbol_strings['range_end']
             else:
-                raise ValueError("something is wrong here")
+                attributes['start-end-time-style'] = ''
 
         if allday:
             attributes['end-necessary'] = ''

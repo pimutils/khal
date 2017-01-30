@@ -262,9 +262,8 @@ def test_event_d_long():
     assert event.format(LIST_FORMAT, date(2014, 4, 9)) == '↦ Another Event \x1b[0m'
     assert event.format(LIST_FORMAT, date(2014, 4, 10)) == '↔ Another Event \x1b[0m'
     assert event.format(LIST_FORMAT, date(2014, 4, 11)) == '⇥ Another Event \x1b[0m'
-    with pytest.raises(ValueError):
-        event.format('', date(2014, 4, 12))
-    assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
+    assert event.format(LIST_FORMAT, date(2014, 4, 12)) == ' Another Event \x1b[0m'
+    assert event.format(SEARCH_FORMAT, date(2014, 4, 16)) == \
         '09.04.2014-11.04.2014 Another Event \x1b[0m'
 
 
@@ -274,8 +273,7 @@ def test_event_d_two_days():
     event.update_start_end(date(2014, 4, 9), date(2014, 4, 10))
     assert event.format(LIST_FORMAT, date(2014, 4, 9)) == '↦ Another Event \x1b[0m'
     assert event.format(LIST_FORMAT, date(2014, 4, 10)) == '⇥ Another Event \x1b[0m'
-    with pytest.raises(ValueError):
-        event.format('', date(2014, 4, 12))
+    assert event.format(LIST_FORMAT, date(2014, 4, 12)) == ' Another Event \x1b[0m'
     assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
         '09.04.2014-10.04.2014 Another Event \x1b[0m'
 
