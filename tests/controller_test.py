@@ -39,20 +39,20 @@ class TestGetAgenda(object):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, utils.cal1)
         coll.new(event)
-        start, end = start_end_from_daterange([], utils.locale)
+        start, end = start_end_from_daterange([], utils.LOCALE_BERLIN)
         assert ['                 a meeting :: short description\x1b[0m'] == \
             get_list_from_str(
-                coll, utils.locale, start, end, format=event_format,
+                coll, utils.LOCALE_BERLIN, start, end, format=event_format,
                 default_timedelta='1d', day_format="")
 
     def test_new_event_day_format(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, utils.cal1)
         coll.new(event)
-        start, end = start_end_from_daterange([], utils.locale)
+        start, end = start_end_from_daterange([], utils.LOCALE_BERLIN)
         assert ['Today\x1b[0m',
                 '                 a meeting :: short description\x1b[0m'] == \
-            get_list_from_str(coll, utils.locale, start, end, format=event_format,
+            get_list_from_str(coll, utils.LOCALE_BERLIN, start, end, format=event_format,
                               default_timedelta='1d', day_format="{name}")
 
     def test_empty_recurrence(self, coll_vdirs):
@@ -68,10 +68,10 @@ class TestGetAgenda(object):
             'DTEND:20110908T170000\r\n'
             'END:VEVENT\r\n'
         ), utils.cal1))
-        start, end = start_end_from_daterange([], utils.locale)
+        start, end = start_end_from_daterange([], utils.LOCALE_BERLIN)
         assert 'no events' in '\n'.join(
             get_list_from_str(
-                coll, utils.locale, start, end, format=event_format, default_timedelta='1d')
+                coll, utils.LOCALE_BERLIN, start, end, format=event_format, default_timedelta='1d')
         ).lower()
 
 
@@ -79,7 +79,7 @@ class TestImport(object):
     def test_import(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         view = {'event_format': '{title}'}
-        conf = {'locale': utils.locale, 'view': view}
+        conf = {'locale': utils.LOCALE_BERLIN, 'view': view}
         import_ics(coll, conf, _get_text('event_rrule_recuid'), batch=True)
         start_date = utils.BERLIN.localize(dt.datetime(2014, 4, 30))
         end_date = utils.BERLIN.localize(dt.datetime(2014, 9, 26))
@@ -107,7 +107,7 @@ class TestImport(object):
         view = {'event_format': '{title}'}
         import_ics(
             coll,
-            {'locale': utils.locale, 'view': view},
+            {'locale': utils.LOCALE_BERLIN, 'view': view},
             _get_text('event_dt_mixed_awareness'),
             batch=True
         )
@@ -130,44 +130,44 @@ def test_start_end():
     with freeze_time('2016-04-10'):
         start = dt.datetime(2016, 4, 10, 0, 0)
         end = dt.datetime(2016, 4, 10, 23, 59, 59, 999999)
-        assert (start, end) == start_end_from_daterange(('today',), locale=utils.locale)
+        assert (start, end) == start_end_from_daterange(('today',), locale=utils.LOCALE_BERLIN)
 
 
 def test_start_end_default_delta():
     with freeze_time('2016-04-10'):
         start = dt.datetime(2016, 4, 10, 0, 0)
         end = dt.datetime(2016, 4, 12, 0, 0)
-        assert (start, end) == start_end_from_daterange(('today',), utils.locale, '2d')
+        assert (start, end) == start_end_from_daterange(('today',), utils.LOCALE_BERLIN, '2d')
 
 
 def test_start_end_delta():
     with freeze_time('2016-04-10'):
         start = dt.datetime(2016, 4, 10, 0, 0)
         end = dt.datetime(2016, 4, 12, 0, 0)
-        assert (start, end) == start_end_from_daterange(('today', '2d'), utils.locale)
+        assert (start, end) == start_end_from_daterange(('today', '2d'), utils.LOCALE_BERLIN)
 
 
 def test_start_end_empty():
     with freeze_time('2016-04-10'):
         start = dt.datetime(2016, 4, 10, 0, 0)
         end = dt.datetime(2016, 4, 10, 23, 59, 59, 999999)
-        assert (start, end) == start_end_from_daterange([], utils.locale)
+        assert (start, end) == start_end_from_daterange([], utils.LOCALE_BERLIN)
 
 
 def test_start_end_empty_default():
     with freeze_time('2016-04-10'):
         start = dt.datetime(2016, 4, 10, 0, 0)
         end = dt.datetime(2016, 4, 13, 0, 0)
-        assert (start, end) == start_end_from_daterange([], utils.locale, '3d')
+        assert (start, end) == start_end_from_daterange([], utils.LOCALE_BERLIN, '3d')
 
 
 def test_start_end_invalid_default():
     with freeze_time('2016-04-10'):
         with pytest.raises(exceptions.InvalidDate):
-            start_end_from_daterange([], utils.locale, '3x')
+            start_end_from_daterange([], utils.LOCALE_BERLIN, '3x')
 
 
 def test_start_end_invalid_value():
     with freeze_time('2016-04-10'):
         with pytest.raises(ValueError):  # TODO make sure this raises a InvalidDate as well
-            start_end_from_daterange(['xxx'], utils.locale, '3x')
+            start_end_from_daterange(['xxx'], utils.LOCALE_BERLIN, '3x')

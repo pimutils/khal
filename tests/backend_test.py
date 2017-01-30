@@ -1,6 +1,5 @@
 
 import pytest
-import pytz
 
 import pkg_resources
 
@@ -11,15 +10,9 @@ from khal.khalendar import backend
 from khal.khalendar.event import LocalizedEvent, EventStandIn
 from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 
-from .utils import _get_text
-
-BERLIN = pytz.timezone('Europe/Berlin')
-LONDON = pytz.timezone('Europe/London')
-SAMOA = pytz.timezone('Pacific/Samoa')
-SYDNEY = pytz.timezone('Australia/Sydney')
-LOCALE_BERLIN = {'local_timezone': BERLIN, 'default_timezone': BERLIN}
-LOCALE_SAMOA = {'local_timezone': SAMOA, 'default_timezone': SAMOA}
-LOCALE_SYDNEY = {'local_timezone': SYDNEY, 'default_timezone': SYDNEY}
+from .utils import _get_text, \
+    BERLIN, LONDON, SYDNEY, \
+    LOCALE_BERLIN, LOCALE_SYDNEY
 
 calname = 'home'
 

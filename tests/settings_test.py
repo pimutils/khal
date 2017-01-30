@@ -1,9 +1,9 @@
 import os.path
 
-import pytz
 import pytest
-
 from tzlocal import get_localzone
+
+from .utils import LOCALE_BERLIN
 
 from khal.settings import get_config
 from khal.settings.exceptions import InvalidSettingsError, \
@@ -28,18 +28,7 @@ class TestSettings(object):
                          'readonly': False, 'color': None, 'type': 'calendar'},
             },
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
-            'locale': {
-                'local_timezone': pytz.timezone('Europe/Berlin'),
-                'default_timezone': pytz.timezone('Europe/Berlin'),
-                'timeformat': '%H:%M',
-                'dateformat': '%d.%m.',
-                'longdateformat': '%d.%m.%Y',
-                'datetimeformat': '%d.%m. %H:%M',
-                'longdatetimeformat': '%d.%m.%Y %H:%M',
-                'firstweekday': 0,
-                'unicode_symbols': True,
-                'weeknumbers': False,
-            },
+            'locale': LOCALE_BERLIN,
             'default': {
                 'default_command': 'calendar',
                 'default_calendar': None,

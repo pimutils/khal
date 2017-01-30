@@ -1,13 +1,10 @@
 from datetime import datetime, date
-import pytz
 
 from khal.ui.startendeditor import StartEndEditor
 
-from ..utils import locale
+from ..utils import LOCALE_BERLIN, BERLIN
 
-BERLIN = pytz.timezone('Europe/Berlin')
-
-CONF = {'locale': locale, 'keybindings': {}}
+CONF = {'locale': LOCALE_BERLIN, 'keybindings': {}}
 
 START = BERLIN.localize(datetime(2015, 4, 26, 22, 23))
 END = BERLIN.localize(datetime(2015, 4, 27, 23, 23))

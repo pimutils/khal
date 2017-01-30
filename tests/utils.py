@@ -12,18 +12,26 @@ example_cals = [cal0, cal1, cal2, cal3]
 
 BERLIN = pytz.timezone('Europe/Berlin')
 NEW_YORK = pytz.timezone('America/New_York')
+LONDON = pytz.timezone('Europe/London')
+SAMOA = pytz.timezone('Pacific/Samoa')
+SYDNEY = pytz.timezone('Australia/Sydney')
+GMTPLUS3 = pytz.timezone('Etc/GMT+3')
+# the lucky people in Bogota don't know the pain that is DST
+BOGOTA = pytz.timezone('America/Bogota')
 
-locale = {'default_timezone': BERLIN,
-          'local_timezone': BERLIN,
-          'dateformat': '%d.%m.',
-          'longdateformat': '%d.%m.%Y',
-          'timeformat': '%H:%M',
-          'datetimeformat': '%d.%m. %H:%M',
-          'longdatetimeformat': '%d.%m.%Y %H:%M',
-          'unicode_symbols': True,
-          'firstweekday': 0,
-          'weeknumbers': False,
-          }
+
+LOCALE_BERLIN = {
+    'default_timezone': BERLIN,
+    'local_timezone': BERLIN,
+    'dateformat': '%d.%m.',
+    'longdateformat': '%d.%m.%Y',
+    'timeformat': '%H:%M',
+    'datetimeformat': '%d.%m. %H:%M',
+    'longdatetimeformat': '%d.%m.%Y %H:%M',
+    'unicode_symbols': True,
+    'firstweekday': 0,
+    'weeknumbers': False,
+}
 
 LOCALE_NEW_YORK = {
     'default_timezone': NEW_YORK,
@@ -38,14 +46,19 @@ LOCALE_NEW_YORK = {
     'weeknumbers': False,
 }
 
-locale['longdatetimeformat'] = locale['longdateformat']
-locale['datetimeformat'] = locale['longdateformat']
+LOCALE_SAMOA = {
+    'local_timezone': SAMOA,
+    'default_timezone': SAMOA,
+    'unicode_symbols': True,
+}
+LOCALE_SYDNEY = {'local_timezone': SYDNEY, 'default_timezone': SYDNEY}
 
-SAMOA = pytz.timezone('Pacific/Samoa')
-LOCALE_SAMOA = {'default_timezone': SAMOA,
-                'local_timezone': SAMOA,
-                'unicode_symbols': True,
-                }
+LOCALE_BOGOTA = LOCALE_BERLIN.copy()
+LOCALE_BOGOTA['local_timezone'] = BOGOTA
+LOCALE_BOGOTA['default_timezone'] = BOGOTA
+
+LOCALE_MIXED = LOCALE_BERLIN.copy()
+LOCALE_MIXED['local_timezone'] = BOGOTA
 
 
 def normalize_component(x):

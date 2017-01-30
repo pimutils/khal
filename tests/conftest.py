@@ -5,7 +5,7 @@ import pytest
 from khal.khalendar import CalendarCollection
 from khal.khalendar.vdir import Vdir
 
-from .utils import locale, example_cals, cal1
+from .utils import LOCALE_BERLIN, example_cals, cal1
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def coll_vdirs(tmpdir):
         calendars[name] = {'name': name, 'path': path, 'color': 'dark blue',
                            'readonly': readonly, 'unicode_symbols': True}
         vdirs[name] = Vdir(path, '.ics')
-    coll = CalendarCollection(calendars=calendars, dbpath=':memory:', locale=locale)
+    coll = CalendarCollection(calendars=calendars, dbpath=':memory:', locale=LOCALE_BERLIN)
     coll.default_calendar_name = cal1
     return coll, vdirs
 

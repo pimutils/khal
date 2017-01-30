@@ -5,7 +5,6 @@ import textwrap
 import random
 
 import icalendar
-import pytz
 from freezegun import freeze_time
 
 from khal.utils import guessdatetimefstr, guesstimedeltafstr, new_event, eventinfofstr
@@ -13,21 +12,11 @@ from khal.utils import timedelta2str, guessrangefstr, weekdaypstr, construct_day
 from khal import utils
 import pytest
 
-from .utils import _get_text, normalize_component
-
+from .utils import _get_text, normalize_component, \
+    LOCALE_BERLIN, LOCALE_NEW_YORK
 
 today = date.today()
 tomorrow = today + timedelta(days=1)
-
-locale_de = {
-    'timeformat': '%H:%M',
-    'dateformat': '%d.%m.',
-    'longdateformat': '%d.%m.%Y',
-    'datetimeformat': '%d.%m. %H:%M',
-    'longdatetimeformat': '%d.%m.%Y %H:%M',
-    'firstweekday': 0,
-    'default_timezone': pytz.timezone('Europe/Berlin'),
-}
 
 
 def _construct_event(info, locale,
@@ -104,29 +93,29 @@ class TestGuessDatetimefstr(object):
 
     def test_today(self):
         today13 = datetime.combine(date.today(), time(13, 0))
-        assert (today13, False) == guessdatetimefstr(['today', '13:00'], locale_de)
-        assert today == guessdatetimefstr(['today'], locale_de)[0].date()
+        assert (today13, False) == guessdatetimefstr(['today', '13:00'], LOCALE_BERLIN)
+        assert today == guessdatetimefstr(['today'], LOCALE_BERLIN)[0].date()
 
     def test_tomorrow(self):
         assert (self.tomorrow16, False) == \
-            guessdatetimefstr('tomorrow 16:00 16:00'.split(), locale=locale_de)
+            guessdatetimefstr('tomorrow 16:00 16:00'.split(), locale=LOCALE_BERLIN)
 
     def test_time_tomorrow(self):
         assert (self.tomorrow16, False) == \
-            guessdatetimefstr('16:00'.split(), locale=locale_de, default_day=tomorrow)
+            guessdatetimefstr('16:00'.split(), locale=LOCALE_BERLIN, default_day=tomorrow)
 
     def test_time_weekday(self):
         with freeze_time('2016-9-19'):
             assert (datetime(2016, 9, 23, 16), False) == \
                 guessdatetimefstr(
                     'Friday 16:00'.split(),
-                    locale=locale_de,
+                    locale=LOCALE_BERLIN,
                     default_day=datetime.today())
 
     def test_time_now(self):
         with freeze_time('2016-9-19 17:53'):
             assert (datetime(2016, 9, 19, 17, 53), False) == \
-                guessdatetimefstr('now'.split(), locale=locale_de, default_day=datetime.today())
+                guessdatetimefstr('now'.split(), locale=LOCALE_BERLIN, default_day=datetime.today())
 
     def test_short_format_contains_year(self):
         """if the non long versions of date(time)format contained a year, the
@@ -192,53 +181,53 @@ class TestGuessRangefstr(object):
 
     def test_today(self):
         assert (self.today13, self.today14, False) == \
-            guessrangefstr('13:00 14:00', locale=locale_de)
+            guessrangefstr('13:00 14:00', locale=LOCALE_BERLIN)
         assert (self.today_start, self.tomorrow_start, True) == \
-            guessrangefstr('today tomorrow', locale_de)
+            guessrangefstr('today tomorrow', LOCALE_BERLIN)
 
     def test_tomorrow(self):
         assert (self.today_start, self.tomorrow16, True) == \
-            guessrangefstr('today tomorrow 16:00', locale=locale_de)
+            guessrangefstr('today tomorrow 16:00', locale=LOCALE_BERLIN)
 
     def test_time_tomorrow(self):
         assert (self.today16, self.tomorrow16, False) == \
-            guessrangefstr('16:00', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('16:00', locale=LOCALE_BERLIN, default_timedelta="1d")
         assert (self.today16, self.today17, False) == \
-            guessrangefstr('16:00 17:00', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('16:00 17:00', locale=LOCALE_BERLIN, default_timedelta="1d")
 
     def test_start_and_end_date(self):
         assert (datetime(2016, 1, 1), datetime(2017, 1, 1), True) == \
-            guessrangefstr('1.1.2016 1.1.2017', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('1.1.2016 1.1.2017', locale=LOCALE_BERLIN, default_timedelta="1d")
 
     def test_start_and_end_date_time(self):
         assert (datetime(2016, 1, 1, 10), datetime(2017, 1, 1, 22), False) == \
             guessrangefstr(
-                '1.1.2016 10:00 1.1.2017 22:00', locale=locale_de, default_timedelta="1d")
+                '1.1.2016 10:00 1.1.2017 22:00', locale=LOCALE_BERLIN, default_timedelta="1d")
 
     def test_start_and_eod(self):
         assert (datetime(2016, 1, 1, 10), datetime(2016, 1, 1, 23, 59, 59, 999999), False) == \
-            guessrangefstr('1.1.2016 10:00 eod', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('1.1.2016 10:00 eod', locale=LOCALE_BERLIN, default_timedelta="1d")
 
     def test_start_and_week(self):
         assert (datetime(2015, 12, 28), datetime(2016, 1, 4), True) == \
-            guessrangefstr('1.1.2016 week', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('1.1.2016 week', locale=LOCALE_BERLIN, default_timedelta="1d")
 
     @freeze_time('20160216')
     def test_week(self):
         assert (datetime(2016, 2, 15), datetime(2016, 2, 22), True) == \
-            guessrangefstr('week', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('week', locale=LOCALE_BERLIN, default_timedelta="1d")
 
     def test_invalid(self):
         with pytest.raises(ValueError):
-            guessrangefstr('3d', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('3d', locale=LOCALE_BERLIN, default_timedelta="1d")
         with pytest.raises(ValueError):
-            guessrangefstr('35.1.2016', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('35.1.2016', locale=LOCALE_BERLIN, default_timedelta="1d")
         with pytest.raises(ValueError):
-            guessrangefstr('1.1.2016 2x', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('1.1.2016 2x', locale=LOCALE_BERLIN, default_timedelta="1d")
         with pytest.raises(ValueError):
-            guessrangefstr('1.1.2016x', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('1.1.2016x', locale=LOCALE_BERLIN, default_timedelta="1d")
         with pytest.raises(ValueError):
-            guessrangefstr('xxx yyy zzz', locale=locale_de, default_timedelta="1d")
+            guessrangefstr('xxx yyy zzz', locale=LOCALE_BERLIN, default_timedelta="1d")
 
     def test_short_format_contains_year(self):
         """if the non long versions of date(time)format contained a year, the
@@ -364,34 +353,26 @@ test_set_format_de = _create_testcases(
 @freeze_time('20140216T120000')
 def test__construct_event_format_de():
     for data_list, vevent in test_set_format_de:
-        event = _construct_event(data_list.split(), locale=locale_de)
+        event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
         assert _replace_uid(event).to_ical() == vevent
 
 
 test_set_format_us = _create_testcases(
-    ('12/31/1999 06:00 Äwesöme Event',
+    ('1999/12/31-06:00 Äwesöme Event',
      _create_vevent(
         'DTSTART;TZID=America/New_York;VALUE=DATE-TIME:19991231T060000',
         'DTEND;TZID=America/New_York;VALUE=DATE-TIME:19991231T070000')),
 
-    ('12/18 12/20 Äwesöme Event',
+    ('2014/12/18 2014/12/20 Äwesöme Event',
      _create_vevent('DTSTART;VALUE=DATE:20141218',
                     'DTEND;VALUE=DATE:20141221')),
 )
 
 
 def test__construct_event_format_us():
-    locale_us = {
-        'timeformat': '%H:%M',
-        'dateformat': '%m/%d',
-        'longdateformat': '%m/%d/%Y',
-        'datetimeformat': '%m/%d %H:%M',
-        'longdatetimeformat': '%m/%d/%Y %H:%M',
-        'default_timezone': pytz.timezone('America/New_York'),
-    }
     for data_list, vevent in test_set_format_us:
         with freeze_time('2014-02-16 12:00:00'):
-            event = _construct_event(data_list.split(), locale=locale_us)
+            event = _construct_event(data_list.split(), locale=LOCALE_NEW_YORK)
             assert _replace_uid(event).to_ical() == vevent
 
 
@@ -424,7 +405,7 @@ test_set_format_de_complexer = _create_testcases(
 def test__construct_event_format_de_complexer():
     for data_list, vevent in test_set_format_de_complexer:
         with freeze_time('2014-02-16 12:00:00'):
-            event = _construct_event(data_list.split(), locale=locale_de)
+            event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
             assert _replace_uid(event).to_ical() == vevent
 
 
@@ -441,9 +422,9 @@ def test_leap_year():
     for data_list, vevent in test_set_leap_year:
         with freeze_time('1999-1-1'):
             with pytest.raises(ValueError):
-                event = _construct_event(data_list.split(), locale=locale_de)
+                event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
         with freeze_time('2016-1-1 20:21:22'):
-            event = _construct_event(data_list.split(), locale=locale_de)
+            event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
             assert _replace_uid(event).to_ical() == vevent
 
 
@@ -473,7 +454,7 @@ test_set_description = _create_testcases(
 def test_description():
     for data_list, vevent in test_set_description:
         with freeze_time('2014-02-16 12:00:00'):
-            event = _construct_event(data_list.split(), locale=locale_de)
+            event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
             assert _replace_uid(event).to_ical() == vevent
 
 
@@ -495,7 +476,7 @@ def test_repeat():
                                      description='please describe the event',
                                      repeat='daily',
                                      until='05.06.2015',
-                                     locale=locale_de)
+                                     locale=LOCALE_BERLIN)
             assert normalize_component(_replace_uid(event).to_ical()) == \
                 normalize_component(vevent)
 
@@ -523,7 +504,7 @@ def test_alarm():
             event = _construct_event(data_list.split(),
                                      description='please describe the event',
                                      alarm='23m',
-                                     locale=locale_de)
+                                     locale=LOCALE_BERLIN)
             assert _replace_uid(event).to_ical() == vevent
 
 
@@ -546,7 +527,7 @@ def test_description_and_location_and_categories():
                                      description='please describe the event',
                                      location='in the office',
                                      categories='boring meeting',
-                                     locale=locale_de)
+                                     locale=LOCALE_BERLIN)
             assert _replace_uid(event).to_ical() == vevent
 
 

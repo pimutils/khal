@@ -1,7 +1,7 @@
 from datetime import datetime, date, timedelta
+import pytz
 
 import pytest
-import pytz
 from freezegun import freeze_time
 
 from icalendar import vRecur, vText
@@ -9,32 +9,11 @@ from icalendar import vRecur, vText
 from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent, FloatingEvent, \
     create_timezone
 
-from .utils import normalize_component, _get_text
+from .utils import normalize_component, _get_text, \
+    LOCALE_BERLIN, LOCALE_MIXED, LOCALE_BOGOTA, \
+    BERLIN, NEW_YORK, BOGOTA, GMTPLUS3
 
-
-BERLIN = pytz.timezone('Europe/Berlin')
-NEW_YORK = pytz.timezone('America/New_York')
-# the lucky people in Bogota don't know the pain that is DST
-BOGOTA = pytz.timezone('America/Bogota')
-GMTPLUS3 = pytz.timezone('Etc/GMT+3')
-
-LOCALE = {
-    'default_timezone': BERLIN,
-    'local_timezone': BERLIN,
-    'dateformat': '%d.%m.',
-    'timeformat': '%H:%M',
-    'longdateformat': '%d.%m.%Y',
-    'datetimeformat': '%d.%m. %H:%M',
-    'longdatetimeformat': '%d.%m.%Y %H:%M',
-    'unicode_symbols': True,
-}
-BOGOTA_LOCALE = LOCALE.copy()
-BOGOTA_LOCALE['local_timezone'] = BOGOTA
-BOGOTA_LOCALE['default_timezone'] = BOGOTA
-MIXED_LOCALE = LOCALE.copy()
-MIXED_LOCALE['local_timezone'] = BOGOTA
-EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE}
-
+EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE_BERLIN}
 
 LIST_FORMAT = '{calendar-color}{start-end-time-style} {title} {repeat-symbol}'
 SEARCH_FORMAT = '{calendar-color}{start-long}{to-style}{end-necessary-long} {title} {repeat-symbol}'
@@ -219,7 +198,7 @@ def test_event_dt_floating():
     assert event.start_local == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
     assert event.end_local == BERLIN.localize(datetime(2014, 4, 9, 10, 30))
 
-    event = Event.fromString(event_str, calendar='foobar', locale=MIXED_LOCALE)
+    event = Event.fromString(event_str, calendar='foobar', locale=LOCALE_MIXED)
     assert event.start == datetime(2014, 4, 9, 9, 30)
     assert event.end == datetime(2014, 4, 9, 10, 30)
     assert event.start_local == BOGOTA.localize(datetime(2014, 4, 9, 9, 30))
@@ -235,7 +214,7 @@ def test_event_dt_tz_missing():
     assert event.start_local == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
     assert event.end_local == BERLIN.localize(datetime(2014, 4, 9, 10, 30))
 
-    event = Event.fromString(event_str, calendar='foobar', locale=MIXED_LOCALE)
+    event = Event.fromString(event_str, calendar='foobar', locale=LOCALE_MIXED)
     assert event.start == BERLIN.localize(datetime(2014, 4, 9, 9, 30))
     assert event.end == BERLIN.localize(datetime(2014, 4, 9, 10, 30))
     assert event.start_local == BOGOTA.localize(datetime(2014, 4, 9, 2, 30))
@@ -316,7 +295,7 @@ def test_event_no_dst():
     """test the creation of a corect VTIMEZONE for timezones with no dst"""
     event_no_dst = _get_text('event_no_dst')
     cal_no_dst = _get_text('cal_no_dst')
-    event = Event.fromString(event_no_dst, calendar='foobar', locale=BOGOTA_LOCALE)
+    event = Event.fromString(event_no_dst, calendar='foobar', locale=LOCALE_BOGOTA)
     assert normalize_component(event.raw) == normalize_component(cal_no_dst)
     assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
         '09.04.2014 09:30-10:30 An Event \x1b[0m'
@@ -342,7 +321,7 @@ def test_event_raw_UTC():
 
 def test_dtend_equals_dtstart():
     event = Event.fromString(_get_text('event_d_same_start_end'),
-                             calendar='foobar', locale=LOCALE)
+                             calendar='foobar', locale=LOCALE_BERLIN)
     assert event.end == event.start
 
 
