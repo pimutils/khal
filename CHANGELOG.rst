@@ -14,6 +14,10 @@ not released yet
 
 * FIX no more crashes when using timezones that have a constant UTC offset (like
   UTC itself)
+* FIX no more wrong weekday names in ikhal if weekstart != 0
+* FIX updated outdated zsh completion file
+* FIX display search results for events with neither DTEND nor DURATION
+* FIX display search results that are all-day events
 * in ikhal, update the date-titles on date change
 
 0.9.1
