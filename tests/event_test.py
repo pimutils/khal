@@ -58,6 +58,15 @@ def test_update_simple():
     assert normalize_component(event.raw) == normalize_component(event_updated.raw)
 
 
+def test_no_end():
+    """reading an event with neither DTEND nor DURATION"""
+    event = Event.fromString(_get_text('event_dt_no_end'), **EVENT_KWARGS)
+    # TODO make sure the event also gets converted to an all day event, as we
+    # usually do
+    assert event.format(SEARCH_FORMAT, date(2014, 4, 12)) == \
+        '16.01.2016 08:00-17.01.2016 08:00 Test'
+
+
 def test_do_not_save_empty_location():
     event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
     event.update_location('')
