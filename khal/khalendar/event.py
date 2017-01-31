@@ -78,7 +78,11 @@ class Event(object):
             try:
                 self._end = self._vevents[self.ref]['DTEND'].dt
             except KeyError:
-                self._end = self._start + self._vevents[self.ref]['DURATION'].dt
+                try:
+                    self._end = self._start + self._vevents[self.ref]['DURATION'].dt
+                except KeyError:
+                    self._end = self._start + timedelta(days=1)
+
         else:
             self._end = end
         if kwargs:

@@ -64,7 +64,7 @@ def test_no_end():
     # TODO make sure the event also gets converted to an all day event, as we
     # usually do
     assert event.format(SEARCH_FORMAT, date(2014, 4, 12)) == \
-        '16.01.2016 08:00-17.01.2016 08:00 Test'
+        '16.01.2016 08:00-17.01.2016 08:00 Test \x1b[0m'
 
 
 def test_do_not_save_empty_location():
