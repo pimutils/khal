@@ -193,6 +193,9 @@ timedelta = string(default='2d')
 # when using ikhal.
 [view]
 
+# only show events for the currently in focus date
+single_day_events = boolean(default=False)
+
 # weighting that is applied to the event view window
 event_view_weighting = integer(default=1)
 

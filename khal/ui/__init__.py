@@ -257,6 +257,10 @@ class EventListBox(urwid.ListBox):
 class DListBox(EventListBox):
     """Container for a DayWalker"""
     # XXX unfortunate naming, there is also DateListBox
+    def __init__(self, *args, **kwargs):
+        single_day = kwargs.pop('single_day', False)
+        super().__init__(*args, **kwargs)
+        self._init = not single_day
 
     def render(self, size, focus=False):
         if self._init:
@@ -478,9 +482,60 @@ class DayWalker(urwid.SimpleFocusListWalker):
         return self[self.focus].original_widget.date
 
 
+class SingleDayWalker(DayWalker):
+    """Simplified version of DayWalker that only shows events for one date"""
+
+    def ensure_date(self, day):
+        """make sure a DateListBox for `day` exists, update it and bring it into focus"""
+        # TODO this function gets called twice on every date change, not necessary but
+        # isn't very costly either
+        if len(self) > 0 and self[0].date == day:
+            return
+        pile = self._get_events(day)
+        if len(self) == 0:
+            self.append(pile)
+        else:
+            self[0] = pile
+        assert self[0].date == day
+
+    def update_events_ondate(self, day):
+        """refresh the contents of the day's DateListBox"""
+        self.ensure_date(day)
+
+    def refresh_titles(self, start, end, everything):
+        """refresh events' titles
+
+        if `everything` is True, reset all titles, otherwise only
+        those between `start` and `end`
+
+        :type start: datetime.date
+        :type end: datetime.date
+        :type bool: bool
+        """
+        self[0].refresh_titles()
+
+    def update_range(self, start, end, everything=False):
+        """refresh contents of all days between start and end (inclusive)
+
+        :type start: datetime.date
+        :type end: datetime.date
+        """
+        start = start.date() if isinstance(start, datetime) else start
+        end = end.date() if isinstance(end, datetime) else end
+
+        if (start <= self[0].date <= end) or everything:
+            self.ensure_date(self[0].date)
+
+    def set_focus(self, position):
+        """set focus by item number"""
+        return urwid.SimpleFocusListWalker.set_focus(self, position)
+
+
 class DateListBox(NListBox):
     """A ListBox container for a SimpleFocusListWalker, that contains one day
     worth of events"""
+
+    selected_date = None
 
     def __init__(self, content, date):
         self.date = date
@@ -1187,7 +1242,11 @@ class ClassicView(Pane):
         self._deleted = {ALL: [], INSTANCES: []}
 
         ContainerWidget = linebox[self._conf['view']['frame']]
-        daywalker = DayWalker(
+        if self._conf['view']['single_day_events']:
+            Walker = SingleDayWalker
+        else:
+            Walker = DayWalker
+        daywalker = Walker(
             date.today(), eventcolumn=self, conf=self._conf, delete_status=self.delete_status,
             collection=self.collection,
         )
@@ -1195,7 +1254,8 @@ class ClassicView(Pane):
             daywalker, parent=self, conf=self._conf,
             delete_status=self.delete_status,
             toggle_delete_all=self.toggle_delete_all,
-            toggle_delete_instance=self.toggle_delete_instance
+            toggle_delete_instance=self.toggle_delete_instance,
+            single_day=self._conf['view']['single_day_events'],
         )
         self.eventscolumn = ContainerWidget(EventColumn(pane=self, elistbox=elistbox))
         calendar = CalendarWidget(
