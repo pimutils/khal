@@ -87,7 +87,7 @@ local_timezone = timezone(default=None)
 # khal will display and understand all times in this format.
 
 # The formatting string is interpreted as defined by Python's `strftime
-# <https://docs.python.org/2/library/time.html#time.strftime>`_, which is
+# <https://docs.python.org/3/library/time.html#time.strftime>`_, which is
 # similar to the format specified in ``man strftime``.
 timeformat = string(default='%H:%M')
 
