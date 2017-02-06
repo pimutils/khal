@@ -12,6 +12,7 @@ may want to subscribe to `GitHub's tag feed
 not released yet
 
 * CHANGE removed default command
+* CHANGE default date/time formats to be the system's locale's formats.
 
 0.9.6
 =====
