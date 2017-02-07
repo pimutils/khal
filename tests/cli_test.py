@@ -45,7 +45,8 @@ def runner(tmpdir, monkeypatch):
     monkeypatch.setattr('xdg.BaseDirectory.xdg_config_home', str(xdg_config_home))
     monkeypatch.setattr('xdg.BaseDirectory.xdg_config_dirs', [str(xdg_config_home)])
 
-    def inner(default_command='list', default_calendar=True, days=2, **kwargs):
+    def inner(default_command='list', print_new=False, default_calendar=True, days=2,
+              **kwargs):
         if default_calendar:
             default_calendar = 'default_calendar = one'
         else:
@@ -54,9 +55,10 @@ def runner(tmpdir, monkeypatch):
             os.makedirs(str(xdg_config_home.join('khal')))
         config_file.write(config_template.format(
             default_command=default_command,
-            delta=str(days)+'d',
+            delta=str(days) + 'd',
             calpath=str(calendar), calpath2=str(calendar2), calpath3=str(calendar3),
             default_calendar=default_calendar,
+            print_new=print_new,
             dbpath=str(db), **kwargs))
         runner = CustomCliRunner(
             config_file=config_file, db=db, calendars=dict(one=calendar),
@@ -94,6 +96,7 @@ firstweekday = 0
 default_command = {default_command}
 {default_calendar}
 timedelta = {delta}
+print_new = {print_new}
 
 [sqlite]
 path = {dbpath}
@@ -667,3 +670,12 @@ def test_edit(runner):
     args = ['list', '--format', format, '--day-format', '', '09.04.2014']
     result = runner.invoke(main_khal, args)
     assert result.output == '09:30-10:30: Great Event\n'
+
+
+def test_new(runner):
+    runner = runner(print_new='path')
+
+    result = runner.invoke(main_khal, 'new 13.03.2016 3d Visit'.split())
+    assert not result.exception
+    assert result.output.endswith('.ics\n')
+    assert result.output.startswith('/tmp/')

@@ -19,6 +19,7 @@ not released yet
 * FIX display search results for events with neither DTEND nor DURATION
 * FIX display search results that are all-day events
 * in ikhal, update the date-titles on date change
+* FIX printing a new event's path if [default] print_new = path
 
 0.9.1
 =====

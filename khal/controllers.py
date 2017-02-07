@@ -33,6 +33,7 @@ from shutil import get_terminal_size
 
 from datetime import timedelta, datetime
 import logging
+import os
 import sys
 import textwrap
 
@@ -365,7 +366,10 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
             format = conf['view']['event_format']
         echo(event.format(format, datetime.now(), env=env))
     elif conf['default']['print_new'] == 'path':
-        path = collection._calnames[event.calendar].path + event.href
+        path = os.path.join(
+            collection._calendars[event.calendar]['path'],
+            event.href
+        )
         echo(path)
     return event
 
