@@ -32,9 +32,9 @@ extra_requirements = {
 
 setup(
     name='khal',
-    description='A CalDAV based calendar',
+    description='A standards based terminal calendar',
     long_description=open('README.rst').read(),
-    author='Christian Geier',
+    author='Christian Geier et. al.',
     author_email='khal@lostpackets.de',
     url='http://lostpackets.de/khal/',
     license='Expat/MIT',
@@ -46,7 +46,7 @@ setup(
     entry_points={
         'console_scripts': [
             'khal = khal.cli:main_khal',
-            'ikhal = khal.cli:main_ikhal'
+            'ikhal = khal.cli:main_ikhal',
         ]
     },
     install_requires=requirements,
