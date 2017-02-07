@@ -328,11 +328,16 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
     """construct a new event from a string and add it"""
-    info = utils.eventinfofstr(
-        info, conf['locale'], default_timedelta="60m", adjust_reasonably=True, localize=False)
-    new_from_args(collection, calendar_name, conf, format=format, env=env,
-                  location=location, categories=categories, repeat=repeat,
-                  until=until, alarms=alarms, **info)
+    try:
+        info = utils.eventinfofstr(
+            info, conf['locale'], default_timedelta="60m", adjust_reasonably=True, localize=False)
+        new_from_args(
+            collection, calendar_name, conf, format=format, env=env,
+            location=location, categories=categories, repeat=repeat,
+            until=until, alarms=alarms, **info
+        )
+    except FatalError:
+        sys.exit(1)
 
 
 def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,

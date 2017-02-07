@@ -10,6 +10,7 @@ from freezegun import freeze_time
 from khal.utils import guessdatetimefstr, guesstimedeltafstr, new_event, eventinfofstr
 from khal.utils import timedelta2str, guessrangefstr, weekdaypstr, construct_daynames
 from khal import utils
+from khal.exceptions import FatalError
 import pytest
 
 from .utils import _get_text, normalize_component, \
@@ -199,6 +200,14 @@ class TestGuessRangefstr(object):
         assert (datetime(2016, 1, 1), datetime(2017, 1, 1), True) == \
             guessrangefstr('1.1.2016 1.1.2017', locale=LOCALE_BERLIN, default_timedelta="1d")
 
+    def test_start_and_no_end_date(self):
+        assert (datetime(2016, 1, 1), datetime(2016, 1, 1), True) == \
+            guessrangefstr('1.1.2016', locale=LOCALE_BERLIN, default_timedelta="1d")
+
+    def test_start_and_no_end_date_default_3d(self):
+        assert (datetime(2016, 1, 1), datetime(2016, 1, 3), True) == \
+            guessrangefstr('1.1.2016', locale=LOCALE_BERLIN, default_timedelta="3d")
+
     def test_start_and_end_date_time(self):
         assert (datetime(2016, 1, 1, 10), datetime(2017, 1, 1, 22), False) == \
             guessrangefstr(
@@ -211,6 +220,26 @@ class TestGuessRangefstr(object):
     def test_start_and_week(self):
         assert (datetime(2015, 12, 28), datetime(2016, 1, 4), True) == \
             guessrangefstr('1.1.2016 week', locale=LOCALE_BERLIN, default_timedelta="1d")
+
+    def test_start_and_delta_1d(self):
+        assert (datetime(2016, 1, 1), datetime(2016, 1, 1), True) == \
+            guessrangefstr('1.1.2016 1d', locale=LOCALE_BERLIN, default_timedelta="1d")
+
+    def test_start_and_delta_3d(self):
+        assert (datetime(2016, 1, 1), datetime(2016, 1, 3), True) == \
+            guessrangefstr('1.1.2016 3d', locale=LOCALE_BERLIN, default_timedelta="1d")
+
+    def test_start_dt_and_delta(self):
+        assert (datetime(2016, 1, 1, 10), datetime(2016, 1, 4, 10), False) == \
+            guessrangefstr('1.1.2016 10:00 3d', locale=LOCALE_BERLIN, default_timedelta="1d")
+
+    def test_start_allday_and_delta_datetime(self):
+        with pytest.raises(FatalError):
+            guessrangefstr('1.1.2016 3d3m', locale=LOCALE_BERLIN, default_timedelta="1d")
+
+    def test_start_zero_day_delta(self):
+        with pytest.raises(FatalError):
+            guessrangefstr('1.1.2016 0d', locale=LOCALE_BERLIN, default_timedelta="1d")
 
     @freeze_time('20160216')
     def test_week(self):

@@ -397,6 +397,21 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
             else:
                 try:
                     delta = guesstimedeltafstr(end)
+                    if allday and delta.total_seconds() % (3600 * 24):
+                        # TODO better error class, no logging in here
+                        logger.fatal(
+                            "Cannot give delta containing anything but whole days for allday events"
+                        )
+                        raise FatalError()
+                    elif delta.total_seconds() == 0:
+                        logger.fatal(
+                            "Events that last no time are not allowed"
+                        )
+                        raise FatalError()
+
+                    if allday:
+                        delta = delta - timedelta(days=1)
+
                     end = start + delta
                 except ValueError:
                     split = end.split(" ")
