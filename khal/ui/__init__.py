@@ -500,7 +500,7 @@ class SingleDayWalker(DayWalker):
 
     def update_events_ondate(self, day):
         """refresh the contents of the day's DateListBox"""
-        self.ensure_date(day)
+        self[0] = self._get_events(day)
 
     def refresh_titles(self, start, end, everything):
         """refresh events' titles
@@ -524,7 +524,7 @@ class SingleDayWalker(DayWalker):
         end = end.date() if isinstance(end, datetime) else end
 
         if (start <= self[0].date <= end) or everything:
-            self.ensure_date(self[0].date)
+            self.update_events_ondate(self[0].date)
 
     def set_focus(self, position):
         """set focus by item number"""
@@ -1232,8 +1232,7 @@ class ClassicView(Pane):
     on the right
     """
 
-    def __init__(self, collection, conf=None, title='',
-                 description=''):
+    def __init__(self, collection, conf=None, title='', description=''):
         self.init = True
         # Will be set when opening the view inside a Window
         self.window = None
