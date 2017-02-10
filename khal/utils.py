@@ -115,7 +115,7 @@ def construct_daynames(date_):
 
 
 def relative_timedelta_str(day):
-    """converts relative timedelta from day to day into a human readable string
+    """Converts the timespan from `day` to today into a human readable string.
 
     :type day: datetime.date
     :rtype: str
