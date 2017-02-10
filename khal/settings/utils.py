@@ -34,6 +34,7 @@ from .exceptions import InvalidSettingsError
 
 from ..terminal import COLORS
 from ..khalendar.vdir import Vdir, CollectionNotFoundError
+from ..utils import guesstimedeltafstr
 
 
 def is_timezone(tzstring):
@@ -47,6 +48,13 @@ def is_timezone(tzstring):
         return pytz.timezone(tzstring)
     except pytz.UnknownTimeZoneError:
         raise VdtValueError("Unknown timezone {}".format(tzstring))
+
+
+def is_timedelta(string):
+    try:
+        return guesstimedeltafstr(string)
+    except ValueError:
+        raise VdtValueError("Invalid timedelta: {}".format(string))
 
 
 def weeknumber_option(option):
