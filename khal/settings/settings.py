@@ -30,7 +30,7 @@ import xdg.BaseDirectory
 from .exceptions import InvalidSettingsError, CannotParseConfigFileError, NoConfigFile
 from khal import __productname__
 from ..log import logger
-from .utils import is_timezone, weeknumber_option, config_checks, \
+from .utils import is_timezone, is_timedelta, weeknumber_option, config_checks, \
     expand_path, expand_db_path, is_color, get_vdir_type, get_color_from_vdir
 
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
@@ -117,6 +117,7 @@ def get_config(
         raise CannotParseConfigFileError()
 
     fdict = {'timezone': is_timezone,
+             'timedelta': is_timedelta,
              'expand_path': expand_path,
              'expand_db_path': expand_db_path,
              'weeknumbers': weeknumber_option,

@@ -166,7 +166,7 @@ Some default values and behaviours are set here.
     
     Default timedelta for use with daterange options
 
-      :type: string
+      :type: timedelta
       :default: 2d
 
 The [highlight_days] section

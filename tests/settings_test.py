@@ -1,4 +1,5 @@
 import os.path
+import datetime as dt
 
 import pytest
 from tzlocal import get_localzone
@@ -34,7 +35,7 @@ class TestSettings(object):
                 'default_calendar': None,
                 'print_new': 'False',
                 'highlight_event_days': False,
-                'timedelta': '2d',
+                'timedelta': dt.timedelta(days=2),
                 'show_all_days': False
             }
         }
@@ -77,7 +78,7 @@ class TestSettings(object):
                 'default_command': 'calendar',
                 'print_new': 'False',
                 'highlight_event_days': False,
-                'timedelta': '2d',
+                'timedelta': dt.timedelta(days=2),
                 'show_all_days': False
             }
         }
