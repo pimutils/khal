@@ -355,6 +355,12 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
     if isinstance(daterange, str):
         range_list = daterange.split(' ')
 
+    if range_list == ['week']:
+        today_weekday = datetime.today().weekday()
+        start = datetime.today() - timedelta(days=(today_weekday - locale['firstweekday']))
+        end = start + timedelta(days=8)
+        return start, end, True
+
     try:
         if default_timedelta is None or len(default_timedelta) == 0:
             default_timedelta = None
@@ -370,15 +376,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
         try:
             # figuring out start
             if len(start) == 0:
-                raise
-                #start = datetime_fillin(end=False)
-
-            elif start.lower() == 'week':
-                    today_weekday = datetime.today().weekday()
-                    start = datetime.today() - \
-                        timedelta(days=(today_weekday - locale['firstweekday']))
-                    end = start + timedelta(days=7)
-                    return start, end, True
+                raise  #  used to be: start = datetime_fillin(end=False)
             else:
                 split = start.split(" ")
                 start, allday = guessdatetimefstr(split, locale)
