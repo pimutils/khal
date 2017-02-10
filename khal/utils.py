@@ -370,7 +370,9 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
         try:
             # figuring out start
             if len(start) == 0:
-                start = datetime_fillin(end=False)
+                raise
+                #start = datetime_fillin(end=False)
+
             elif start.lower() == 'week':
                     today_weekday = datetime.today().weekday()
                     start = datetime.today() - \
@@ -390,7 +392,7 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
                 else:
                     end = datetime_fillin(day=start)
             elif end.lower() == 'eod':
-                    end = datetime_fillin(day=start)
+                    end = datetime.combine(start.date(), time.max)
             elif end.lower() == 'week':
                 start -= timedelta(days=(start.weekday() - locale['firstweekday']))
                 end = start + timedelta(days=7)
@@ -418,7 +420,8 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
                     end, end_allday = guessdatetimefstr(split, locale, default_day=start.date())
                     if len(split) != 0:
                         continue
-                end = datetime_fillin(end)
+                    if allday:
+                        end += timedelta(days=1)
 
             if adjust_reasonably:
                 if allday:
@@ -441,45 +444,6 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
             pass
 
     raise ValueError('Could not parse `{}` as a daterange'.format(daterange))
-
-
-def datetime_fillin(dt=None, end=True, locale=None, day=None):
-    """returns a datetime that is filled in (with time etc)
-
-    :param dt:
-    :type dt: datetime or date or time if None then day is used
-    :param end:
-    :type end: boolean set True if time.max should be used (else min)
-    :param locale:
-    :type locale: if set the time will be in this locale
-    :param day:
-    :type day: the day to be used if just a time is passed in (else today)
-    :rtype: datetime
-
-    """
-    if day is None:
-        day = datetime.today()
-
-    if isinstance(day, datetime):
-        day = day.date()
-
-    if dt is None:
-        dt = day
-
-    if isinstance(dt, time) and not isinstance(dt, datetime):
-        dt = datetime.combine(day, dt)
-
-    if isinstance(dt, date) and not isinstance(dt, datetime):
-        t = time.max if end else time.min
-        dt = datetime.combine(dt, t)
-
-    if locale is not None:
-        try:
-            dt = locale['local_timezone'].localize(dt)
-        except ValueError:
-            pass
-
-    return dt
 
 
 def generate_random_uid():

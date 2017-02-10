@@ -132,15 +132,9 @@ def start_end_from_daterange(daterange, locale, default_timedelta=None):
         specified, we assume start = end, in the form of '2d' for 2 days
     :type default_timedelta: str
     """
-    if len(daterange) == 0:
-        start = utils.datetime_fillin(end=False)
-        if default_timedelta is None:
-            end = utils.datetime_fillin(day=start)
-        else:
-            try:
-                end = start + utils.guesstimedeltafstr(default_timedelta)
-            except ValueError as e:
-                raise InvalidDate(e)
+    if not daterange:
+        start = datetime(*date.today().timetuple()[:3])
+        end = start + default_timedelta_datetime
     else:
         start, end, allday = utils.guessrangefstr(
             daterange, locale, default_timedelta=default_timedelta)
@@ -180,15 +174,17 @@ def get_list_from_str(collection, locale, start, end, notstarted=False,
     if env is None:
         env = {}
     while start < end:
-        day_end = utils.datetime_fillin(start.date())
         if start.date() == end.date():
             day_end = end
+        else:
+            day_end = datetime.combine(start.date(), time.max)
         current_events = get_list(collection, locale=locale, format=format, start=start,
                                   end=day_end, notstarted=notstarted, env=env, **kwargs)
         if day_format and (show_all_days or current_events):
             event_column.append(format_day(start.date(), day_format, locale))
         event_column.extend(current_events)
-        start = utils.datetime_fillin(start.date(), end=False) + timedelta(days=1)
+        start = datetime(*start.date().timetuple()[:3]) + timedelta(days=1)
+
     if event_column == []:
         event_column = [style('No events', bold=True)]
     return event_column
@@ -219,9 +215,10 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
     event_list = []
     if env is None:
         env = {}
-
-    start_local = utils.datetime_fillin(start, end=False, locale=locale)
-    end_local = utils.datetime_fillin(end, locale=locale)
+    assert start
+    assert end
+    start_local = locale['local_timezone'].localize(start)
+    end_local = locale['local_timezone'].localize(end)
 
     start = start_local.replace(tzinfo=None)
     end = end_local.replace(tzinfo=None)
@@ -230,8 +227,7 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
     events_float = sorted(collection.get_floating(start, end))
     events = sorted(events + events_float)
     for event in events:
-        event_start = utils.datetime_fillin(event.start, end=False, locale=locale)
-        if not (notstarted and event_start.replace(tzinfo=None) < start):
+        if not (notstarted and event.event_start.replace(tzinfo=None) < start):
             if seen is None or event.uid not in seen:
                 try:
                     event_string = event.format(format, relative_to=(start, end), env=env)
@@ -507,7 +503,7 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
 
     events = sorted(collection.search(search_string))
     for event in events:
-        end = utils.datetime_fillin(event.end_local, locale).replace(tzinfo=None)
+        end = event.end_local.replace(tzinfo=None)
         if not allow_past and end < now:
             continue
         event_text = textwrap.wrap(event.format(format, relative_to=now), term_width)
