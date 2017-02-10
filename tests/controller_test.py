@@ -159,15 +159,3 @@ def test_start_end_empty_default():
         start = dt.datetime(2016, 4, 10, 0, 0)
         end = dt.datetime(2016, 4, 13, 0, 0)
         assert (start, end) == start_end_from_daterange([], utils.LOCALE_BERLIN, '3d')
-
-
-def test_start_end_invalid_default():
-    with freeze_time('2016-04-10'):
-        with pytest.raises(exceptions.InvalidDate):
-            start_end_from_daterange([], utils.LOCALE_BERLIN, '3x')
-
-
-def test_start_end_invalid_value():
-    with freeze_time('2016-04-10'):
-        with pytest.raises(ValueError):  # TODO make sure this raises a InvalidDate as well
-            start_end_from_daterange(['xxx'], utils.LOCALE_BERLIN, '3x')
