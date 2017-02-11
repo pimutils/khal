@@ -367,7 +367,6 @@ def guessrangefstr(daterange, locale, adjust_reasonably=False,
         end = start + timedelta(days=8)
         return start, end, True
 
-
     for i in reversed(range(1, len(range_list) + 1)):
         start = ' '.join(range_list[:i])
         end = ' '.join(range_list[i:])
@@ -375,7 +374,7 @@ def guessrangefstr(daterange, locale, adjust_reasonably=False,
         try:
             # figuring out start
             if len(start) == 0:
-                raise  #  used to be: start = datetime_fillin(end=False)
+                raise  # used to be: start = datetime_fillin(end=False)
             else:
                 split = start.split(" ")
                 start, allday = guessdatetimefstr(split, locale)
