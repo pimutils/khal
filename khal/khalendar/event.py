@@ -28,7 +28,7 @@ import os
 import icalendar
 import pytz
 
-from ..utils import generate_random_uid, datetime_fillin
+from ..utils import generate_random_uid
 from .utils import to_naive_utc, to_unix_time, invalid_timezone, delete_instance, \
     is_aware
 from ..log import logger
@@ -448,8 +448,14 @@ class Event(object):
         if isinstance(relative_to_start, datetime):
             relative_to_start = relative_to_start.date()
 
-        self_start = datetime_fillin(self.start_local, locale=self._locale, end=False)
-        self_end = datetime_fillin(self.end_local, locale=self._locale)
+        if isinstance(self.start_local, datetime):
+            start_local_datetime = self.start_local
+            end_local_datetime = self.end_local
+        else:
+            start_local_datetime = self._locale['local_timezone'].localize(
+                datetime.combine(self.start, time.min))
+            end_local_datetime = self._locale['local_timezone'].localize(
+                datetime.combine(self.end, time.min))
 
         day_start = self._locale['local_timezone'].localize(datetime.combine(relative_to_start, time.min))
         day_end = self._locale['local_timezone'].localize(datetime.combine(relative_to_end, time.max))
@@ -492,14 +498,14 @@ class Event(object):
             attributes["start-style"] = attributes["start-time"]
             tostr = "-"
 
-        if self_end == day_end or self_end == next_day_start:
+        if end_local_datetime in [day_end, next_day_start]:
             if self._locale["timeformat"] == '%H:%M':
                 attributes["end-style"] = '24:00'
                 tostr = '-'
             else:
                 attributes["end-style"] = self.symbol_strings["range_end"]
                 tostr = ""
-        elif self_end > day_end:
+        elif end_local_datetime > day_end:
             attributes["end-style"] = self.symbol_strings["right_arrow"]
             tostr = ""
         else:
@@ -510,7 +516,7 @@ class Event(object):
         else:
             attributes["to-style"] = ''
 
-        if self_start < day_start and self_end > day_end:
+        if start_local_datetime < day_start and end_local_datetime > day_end:
             attributes["start-end-time-style"] = self.symbol_strings["range"]
         else:
             attributes["start-end-time-style"] = attributes["start-style"] + \

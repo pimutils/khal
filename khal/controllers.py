@@ -31,7 +31,7 @@ import pytz
 from collections import defaultdict, OrderedDict
 from shutil import get_terminal_size
 
-from datetime import timedelta, datetime
+from datetime import time, timedelta, datetime, date
 import logging
 import os
 import sys
@@ -39,7 +39,7 @@ import textwrap
 
 from khal import utils, calendar_display
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
-from khal.exceptions import InvalidDate, FatalError
+from khal.exceptions import FatalError
 from khal.khalendar.event import Event
 from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
@@ -67,7 +67,7 @@ def format_day(day, format_string, locale, attributes=None):
         raise KeyError("cannot format day with: %s" % format_string)
 
 
-def calendar(collection, format=None, notstarted=False, once=False, daterange=None,
+def calendar(collection, agenda_format=None, notstarted=False, once=False, daterange=None,
              day_format=None,
              locale=None,
              conf=None,
@@ -81,29 +81,33 @@ def calendar(collection, format=None, notstarted=False, once=False, daterange=No
              full=False,
              bold_for_light_color=True,
              **kwargs):
-    td = None
-    show_all_days = False
-    if conf is not None:
-        if format is None:
-            format = conf['view']['agenda_event_format']
-        if day_format is None:
-            day_format = conf['view']['agenda_day_format']
-        td = conf['default']['timedelta']
-        show_all_days = conf['default']['show_all_days']
+    # because empty strings are also Falsish
+    if agenda_format is None:
+        agenda_format = conf['view']['agenda_event_format']
+    if day_format is None:
+        day_format = conf['view']['agenda_day_format']
 
     term_width, _ = get_terminal_size()
-    lwidth = 25
+    lwidth = 25  # TODO add two if weeknumbers = right
     rwidth = term_width - lwidth - 4
-    start, end = start_end_from_daterange(daterange, locale, td)
-    event_column = get_list_from_str(collection, format=format,
-                                     day_format=day_format,
-                                     start=start,
-                                     end=end,
-                                     locale=locale,
-                                     once=once, notstarted=notstarted,
-                                     default_timedelta=td, width=rwidth,
-                                     show_all_days=show_all_days,
-                                     **kwargs)
+
+    start, end = start_end_from_daterange(
+        daterange, locale,
+        default_timedelta_date=conf['default']['timedelta'],
+        default_timedelta_datetime=conf['default']['timedelta'],
+    )
+
+    event_column = get_list_from_str(
+        collection,
+        agenda_format=agenda_format,
+        day_format=day_format,
+        start=start,
+        end=end,
+        locale=locale,
+        once=once, notstarted=notstarted,
+        width=rwidth,
+        show_all_days=conf['default']['show_all_days'],
+        **kwargs)
     calendar_column = calendar_display.vertical_month(
         month=start.month,
         year=start.year,
@@ -121,38 +125,33 @@ def calendar(collection, format=None, notstarted=False, once=False, daterange=No
     echo('\n'.join(rows))
 
 
-def start_end_from_daterange(daterange, locale, default_timedelta=None):
+def start_end_from_daterange(daterange, locale,
+                             default_timedelta_date=timedelta(days=1),
+                             default_timedelta_datetime=timedelta(hours=1)):
     """
     convert a string description of a daterange into start and end datetime
+
+    if no description is given, return (today, today + default_timedelta_date)
+
     :param daterange: an iterable of strings that describes `daterange`
     :type daterange: tuple
     :param locale: locale settings
     :type locale: dict
-    :param default_timedelta: default timedelta, if None is given and no end is
-        specified, we assume start = end, in the form of '2d' for 2 days
-    :type default_timedelta: str
     """
-    if len(daterange) == 0:
-        start = utils.datetime_fillin(end=False)
-        if default_timedelta is None:
-            end = utils.datetime_fillin(day=start)
-        else:
-            try:
-                end = start + utils.guesstimedeltafstr(default_timedelta)
-            except ValueError as e:
-                raise InvalidDate(e)
+    if not daterange:
+        start = datetime(*date.today().timetuple()[:3])
+        end = start + default_timedelta_date
     else:
         start, end, allday = utils.guessrangefstr(
-            daterange, locale, default_timedelta=default_timedelta)
-        if start is None or end is None:
-            raise InvalidDate('Invalid date range: "%s"' % (' '.join(daterange)))
-
+            daterange, locale, default_timedelta_date=default_timedelta_date,
+            default_timedelta_datetime=default_timedelta_datetime,
+        )
     return start, end
 
 
 def get_list_from_str(collection, locale, start, end, notstarted=False,
-                      format=None, day_format=None, once=False,
-                      default_timedelta=None, env=None, show_all_days=False,
+                      agenda_format=None, day_format=None, once=False,
+                      env=None, show_all_days=False,
                       **kwargs):
     """returns a list of events scheduled in between `start` and `end`.
 
@@ -163,13 +162,10 @@ def get_list_from_str(collection, locale, start, end, notstarted=False,
     :param notstarted: True if each event should start after start (instead of
         be active between start and end)
     :type nostarted: bool
-    :param format: a format string that can be used in python string formatting
-    :type format: str
+    :param agenda_format: a format string that can be used in python string formatting
+    :type agenda_format: str
     :param once: True if each event should only appear once
     :type once: bool
-    :param default_timedelta: default length of datetimerange that should be
-        reported on
-    :type default_timedelta:
     :returns: a list to be printed as the agenda for the given datetime range
     :rtype: list(str)
     """
@@ -180,22 +176,26 @@ def get_list_from_str(collection, locale, start, end, notstarted=False,
     if env is None:
         env = {}
     while start < end:
-        day_end = utils.datetime_fillin(start.date())
         if start.date() == end.date():
             day_end = end
-        current_events = get_list(collection, locale=locale, format=format, start=start,
-                                  end=day_end, notstarted=notstarted, env=env, **kwargs)
+        else:
+            day_end = datetime.combine(start.date(), time.max)
+        current_events = get_list(
+            collection, locale=locale, agenda_format=agenda_format, start=start,
+            end=day_end, notstarted=notstarted, env=env,
+            **kwargs)
         if day_format and (show_all_days or current_events):
             event_column.append(format_day(start.date(), day_format, locale))
         event_column.extend(current_events)
-        start = utils.datetime_fillin(start.date(), end=False) + timedelta(days=1)
+        start = datetime(*start.date().timetuple()[:3]) + timedelta(days=1)
+
     if event_column == []:
         event_column = [style('No events', bold=True)]
     return event_column
 
 
-def get_list(collection, locale, start, end, format=None, notstarted=False, env=None, width=None,
-             seen=None):
+def get_list(collection, locale, start, end, agenda_format=None, notstarted=False,
+             env=None, width=None, seen=None):
     """returns a list of events scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
 
@@ -204,14 +204,13 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
 
     :param start: the start datetime
     :param end: the end datetime
-    :param format: a format string that can be used in python string formatting
-    :type  format: str
+    :param agenda_format: a format string that can be used in python string formatting
+    :type  agenda_format: str
     :param env: a collection of "static" values like calendar names and color
     :type env: dict
     :param nostarted: True if each event should start after start (instead of
     be active between start and end)
     :type nostarted: Boolean
-    :format:
     :returns: a list to be printed as the agenda for the given days
     :rtype: list(str)
 
@@ -219,9 +218,10 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
     event_list = []
     if env is None:
         env = {}
-
-    start_local = utils.datetime_fillin(start, end=False, locale=locale)
-    end_local = utils.datetime_fillin(end, locale=locale)
+    assert start
+    assert end
+    start_local = locale['local_timezone'].localize(start)
+    end_local = locale['local_timezone'].localize(end)
 
     start = start_local.replace(tzinfo=None)
     end = end_local.replace(tzinfo=None)
@@ -230,11 +230,10 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
     events_float = sorted(collection.get_floating(start, end))
     events = sorted(events + events_float)
     for event in events:
-        event_start = utils.datetime_fillin(event.start, end=False, locale=locale)
-        if not (notstarted and event_start.replace(tzinfo=None) < start):
+        if not (notstarted and event.event_start.replace(tzinfo=None) < start):
             if seen is None or event.uid not in seen:
                 try:
-                    event_string = event.format(format, relative_to=(start, end), env=env)
+                    event_string = event.format(agenda_format, relative_to=(start, end), env=env)
                 except KeyError as e:
                     logging.fatal(e)
                     sys.exit(1)
@@ -249,23 +248,25 @@ def get_list(collection, locale, start, end, format=None, notstarted=False, env=
     return event_list
 
 
-def khal_list(collection, daterange, conf=None, format=None, day_format=None,
+def khal_list(collection, daterange, conf=None, agenda_format=None, day_format=None,
               once=False, notstarted=False, **kwargs):
     """list all events in `daterange`"""
-    td = None
-    show_all_days = False
-    if conf is not None:
-        if format is None:
-            format = conf['view']['agenda_event_format']
-        td = conf['default']['timedelta']
-        if day_format is None:
-            day_format = conf['view']['agenda_day_format']
-        show_all_days = conf['default']['show_all_days']
-    start, end = start_end_from_daterange(daterange, conf['locale'], td)
+    # because empty strings are also Falsish
+    if agenda_format is None:
+        agenda_format = conf['view']['agenda_event_format']
+    if day_format is None:
+        day_format = conf['view']['agenda_day_format']
+
+    start, end = start_end_from_daterange(
+        daterange, conf['locale'],
+        default_timedelta_date=conf['default']['timedelta'],
+        default_timedelta_datetime=conf['default']['timedelta'],
+    )
     event_column = get_list_from_str(
-        collection, format=format, start=start, end=end, day_format=day_format,
-        once=once, notstarted=notstarted, default_timedelta=td,
-        show_all_days=show_all_days, **kwargs)
+        collection, agenda_format=agenda_format, start=start, end=end, day_format=day_format,
+        once=once, notstarted=notstarted,
+        show_all_days=conf['default']['show_all_days'],
+        **kwargs)
 
     echo('\n'.join(event_column))
 
@@ -292,7 +293,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
             range_string = start_string + ' ' + end_string
         daterange = prompt("datetime range", default=range_string)
         start, end, allday = utils.guessrangefstr(
-            daterange, conf['locale'], default_timedelta='60m', adjust_reasonably=True)
+            daterange, conf['locale'], adjust_reasonably=True)
         info['dtstart'] = start
         info['dtend'] = end
         info['allday'] = allday
@@ -328,11 +329,15 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
     """construct a new event from a string and add it"""
-    info = utils.eventinfofstr(
-        info, conf['locale'], default_timedelta="60m", adjust_reasonably=True, localize=False)
-    new_from_args(collection, calendar_name, conf, format=format, env=env,
-                  location=location, categories=categories, repeat=repeat,
-                  until=until, alarms=alarms, **info)
+    try:
+        info = utils.eventinfofstr(info, conf['locale'], adjust_reasonably=True, localize=False)
+        new_from_args(
+            collection, calendar_name, conf, format=format, env=env,
+            location=location, categories=categories, repeat=repeat,
+            until=until, alarms=alarms, **info
+        )
+    except FatalError:
+        sys.exit(1)
 
 
 def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
@@ -405,7 +410,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
     options["alarm"] = {"short": "a"}
     options["Delete"] = {"short": "D"}
     if allow_quit:
-        options["quit"] = {"short":  "q"}
+        options["quit"] = {"short": "q"}
 
     now = datetime.now()
 
@@ -429,7 +434,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             current = event.format("{start} {end}", relative_to=now)
             value = prompt("datetime range", default=current)
             try:
-                start, end, allday = utils.guessrangefstr(value, locale, default_timedelta="60m")
+                start, end, allday = utils.guessrangefstr(value, locale)
                 event.update_start_end(start, end)
                 edited = True
             except:
@@ -502,7 +507,7 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
 
     events = sorted(collection.search(search_string))
     for event in events:
-        end = utils.datetime_fillin(event.end_local, locale).replace(tzinfo=None)
+        end = event.end_local.replace(tzinfo=None)
         if not allow_past and end < now:
             continue
         event_text = textwrap.wrap(event.format(format, relative_to=now), term_width)

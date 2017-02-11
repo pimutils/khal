@@ -10,6 +10,7 @@ from freezegun import freeze_time
 from khal.utils import guessdatetimefstr, guesstimedeltafstr, new_event, eventinfofstr
 from khal.utils import timedelta2str, guessrangefstr, weekdaypstr, construct_daynames
 from khal import utils
+from khal.exceptions import FatalError
 import pytest
 
 from .utils import _get_text, normalize_component, \
@@ -23,8 +24,7 @@ def _construct_event(info, locale,
                      defaulttimelen=60, defaultdatelen=1, description=None,
                      location=None, categories=None, repeat=None, until=None,
                      alarm=None, **kwargs):
-    info = eventinfofstr(' '.join(info), locale, default_timedelta=str(defaulttimelen) + 'm',
-                         adjust_reasonably=True, localize=False)
+    info = eventinfofstr(' '.join(info), locale, adjust_reasonably=True, localize=False)
     if description is not None:
         info["description"] = description
     event = new_event(locale=locale, location=location,
@@ -180,54 +180,82 @@ class TestGuessRangefstr(object):
     today17 = datetime.combine(date.today(), time(17, 0))
 
     def test_today(self):
-        assert (self.today13, self.today14, False) == \
-            guessrangefstr('13:00 14:00', locale=LOCALE_BERLIN)
-        assert (self.today_start, self.tomorrow_start, True) == \
-            guessrangefstr('today tomorrow', LOCALE_BERLIN)
+        with freeze_time('2016-9-19'):
+            assert (datetime(2016, 9, 19, 13), datetime(2016, 9, 19, 14), False) == \
+                guessrangefstr('13:00 14:00', locale=LOCALE_BERLIN)
+            assert (datetime(2016, 9, 19), datetime(2016, 9, 21), True) == \
+                guessrangefstr('today tomorrow', LOCALE_BERLIN)
 
     def test_tomorrow(self):
-        assert (self.today_start, self.tomorrow16, True) == \
-            guessrangefstr('today tomorrow 16:00', locale=LOCALE_BERLIN)
+        # XXX remove me, we shouldn't support this anyway
+        with freeze_time('2016-9-19 16:34'):
+            assert (datetime(2016, 9, 19), datetime(2016, 9, 21, 16), True) == \
+                guessrangefstr('today tomorrow 16:00', locale=LOCALE_BERLIN)
 
     def test_time_tomorrow(self):
-        assert (self.today16, self.tomorrow16, False) == \
-            guessrangefstr('16:00', locale=LOCALE_BERLIN, default_timedelta="1d")
-        assert (self.today16, self.today17, False) == \
-            guessrangefstr('16:00 17:00', locale=LOCALE_BERLIN, default_timedelta="1d")
+        with freeze_time('2016-9-19 13:34'):
+            assert (datetime(2016, 9, 19, 16), datetime(2016, 9, 19, 17), False) == \
+                guessrangefstr('16:00', locale=LOCALE_BERLIN)
+            assert (datetime(2016, 9, 19, 16), datetime(2016, 9, 19, 17), False) == \
+                guessrangefstr('16:00 17:00', locale=LOCALE_BERLIN)
 
     def test_start_and_end_date(self):
-        assert (datetime(2016, 1, 1), datetime(2017, 1, 1), True) == \
-            guessrangefstr('1.1.2016 1.1.2017', locale=LOCALE_BERLIN, default_timedelta="1d")
+        assert (datetime(2016, 1, 1), datetime(2017, 1, 2), True) == \
+            guessrangefstr('1.1.2016 1.1.2017', locale=LOCALE_BERLIN)
+
+    def test_start_and_no_end_date(self):
+        assert (datetime(2016, 1, 1), datetime(2016, 1, 2), True) == \
+            guessrangefstr('1.1.2016', locale=LOCALE_BERLIN)
 
     def test_start_and_end_date_time(self):
         assert (datetime(2016, 1, 1, 10), datetime(2017, 1, 1, 22), False) == \
             guessrangefstr(
-                '1.1.2016 10:00 1.1.2017 22:00', locale=LOCALE_BERLIN, default_timedelta="1d")
+                '1.1.2016 10:00 1.1.2017 22:00', locale=LOCALE_BERLIN)
 
     def test_start_and_eod(self):
         assert (datetime(2016, 1, 1, 10), datetime(2016, 1, 1, 23, 59, 59, 999999), False) == \
-            guessrangefstr('1.1.2016 10:00 eod', locale=LOCALE_BERLIN, default_timedelta="1d")
+            guessrangefstr('1.1.2016 10:00 eod', locale=LOCALE_BERLIN)
 
     def test_start_and_week(self):
-        assert (datetime(2015, 12, 28), datetime(2016, 1, 4), True) == \
-            guessrangefstr('1.1.2016 week', locale=LOCALE_BERLIN, default_timedelta="1d")
+        assert (datetime(2015, 12, 28), datetime(2016, 1, 5), True) == \
+            guessrangefstr('1.1.2016 week', locale=LOCALE_BERLIN)
+
+    def test_start_and_delta_1d(self):
+        assert (datetime(2016, 1, 1), datetime(2016, 1, 2), True) == \
+            guessrangefstr('1.1.2016 1d', locale=LOCALE_BERLIN)
+
+    def test_start_and_delta_3d(self):
+        assert (datetime(2016, 1, 1), datetime(2016, 1, 4), True) == \
+            guessrangefstr('1.1.2016 3d', locale=LOCALE_BERLIN)
+
+    def test_start_dt_and_delta(self):
+        assert (datetime(2016, 1, 1, 10), datetime(2016, 1, 4, 10), False) == \
+            guessrangefstr('1.1.2016 10:00 3d', locale=LOCALE_BERLIN)
+
+    def test_start_allday_and_delta_datetime(self):
+        with pytest.raises(FatalError):
+            guessrangefstr('1.1.2016 3d3m', locale=LOCALE_BERLIN)
+
+    def test_start_zero_day_delta(self):
+        with pytest.raises(FatalError):
+            guessrangefstr('1.1.2016 0d', locale=LOCALE_BERLIN)
 
     @freeze_time('20160216')
     def test_week(self):
-        assert (datetime(2016, 2, 15), datetime(2016, 2, 22), True) == \
-            guessrangefstr('week', locale=LOCALE_BERLIN, default_timedelta="1d")
+        assert (datetime(2016, 2, 15), datetime(2016, 2, 23), True) == \
+            guessrangefstr('week', locale=LOCALE_BERLIN)
 
     def test_invalid(self):
         with pytest.raises(ValueError):
-            guessrangefstr('3d', locale=LOCALE_BERLIN, default_timedelta="1d")
+            guessrangefstr('3d', locale=LOCALE_BERLIN)
         with pytest.raises(ValueError):
-            guessrangefstr('35.1.2016', locale=LOCALE_BERLIN, default_timedelta="1d")
+            guessrangefstr('35.1.2016', locale=LOCALE_BERLIN)
         with pytest.raises(ValueError):
-            guessrangefstr('1.1.2016 2x', locale=LOCALE_BERLIN, default_timedelta="1d")
+            guessrangefstr('1.1.2016 2x', locale=LOCALE_BERLIN)
         with pytest.raises(ValueError):
-            guessrangefstr('1.1.2016x', locale=LOCALE_BERLIN, default_timedelta="1d")
+            guessrangefstr('1.1.2016x', locale=LOCALE_BERLIN)
         with pytest.raises(ValueError):
-            guessrangefstr('xxx yyy zzz', locale=LOCALE_BERLIN, default_timedelta="1d")
+            guessrangefstr('xxx yyy zzz', locale=LOCALE_BERLIN)
 
     def test_short_format_contains_year(self):
         """if the non long versions of date(time)format contained a year, the
@@ -243,8 +271,8 @@ class TestGuessRangefstr(object):
             'longdatetimeformat': '%Y-%m-%d %H:%M',
         }
         with freeze_time('2016-12-30 17:53'):
-            assert (datetime(2017, 1, 1), datetime(2017, 1, 1), True) == \
-                guessrangefstr('2017-1-1 2017-1-1', locale=locale, default_timedelta="1d")
+            assert (datetime(2017, 1, 1), datetime(2017, 1, 2), True) == \
+                guessrangefstr('2017-1-1 2017-1-1', locale=locale)
 
 
 class TestTimeDelta2Str(object):
@@ -351,10 +379,10 @@ test_set_format_de = _create_testcases(
 
 
 @freeze_time('20140216T120000')
-def test__construct_event_format_de():
-    for data_list, vevent in test_set_format_de:
-        event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
-        assert _replace_uid(event).to_ical() == vevent
+def test_construct_event_format_de():
+    for data_list, vevent_expected in test_set_format_de:
+        vevent = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
+        assert _replace_uid(vevent).to_ical() == vevent_expected
 
 
 test_set_format_us = _create_testcases(
