@@ -42,8 +42,7 @@ class TestGetAgenda(object):
         start, end = start_end_from_daterange([], utils.LOCALE_BERLIN)
         assert ['                 a meeting :: short description\x1b[0m'] == \
             get_list_from_str(
-                coll, utils.LOCALE_BERLIN, start, end, format=event_format,
-                default_timedelta='1d', day_format="")
+                coll, utils.LOCALE_BERLIN, start, end, agenda_format=event_format, day_format="")
 
     def test_new_event_day_format(self, coll_vdirs):
         coll, vdirs = coll_vdirs
@@ -52,8 +51,8 @@ class TestGetAgenda(object):
         start, end = start_end_from_daterange([], utils.LOCALE_BERLIN)
         assert ['Today\x1b[0m',
                 '                 a meeting :: short description\x1b[0m'] == \
-            get_list_from_str(coll, utils.LOCALE_BERLIN, start, end, format=event_format,
-                              default_timedelta='1d', day_format="{name}")
+            get_list_from_str(
+                coll, utils.LOCALE_BERLIN, start, end, agenda_format=event_format, day_format="{name}")
 
     def test_empty_recurrence(self, coll_vdirs):
         coll, vidrs = coll_vdirs
@@ -70,8 +69,7 @@ class TestGetAgenda(object):
         ), utils.cal1))
         start, end = start_end_from_daterange([], utils.LOCALE_BERLIN)
         assert 'no events' in '\n'.join(
-            get_list_from_str(
-                coll, utils.LOCALE_BERLIN, start, end, format=event_format, default_timedelta='1d')
+            get_list_from_str(coll, utils.LOCALE_BERLIN, start, end, agenda_format=event_format)
         ).lower()
 
 
@@ -129,15 +127,15 @@ class TestImport(object):
 def test_start_end():
     with freeze_time('2016-04-10'):
         start = dt.datetime(2016, 4, 10, 0, 0)
-        end = dt.datetime(2016, 4, 10, 23, 59, 59, 999999)
+        end = dt.datetime(2016, 4, 11, 0, 0)
         assert (start, end) == start_end_from_daterange(('today',), locale=utils.LOCALE_BERLIN)
 
 
 def test_start_end_default_delta():
     with freeze_time('2016-04-10'):
         start = dt.datetime(2016, 4, 10, 0, 0)
-        end = dt.datetime(2016, 4, 12, 0, 0)
-        assert (start, end) == start_end_from_daterange(('today',), utils.LOCALE_BERLIN, '2d')
+        end = dt.datetime(2016, 4, 11, 0, 0)
+        assert (start, end) == start_end_from_daterange(('today',), utils.LOCALE_BERLIN)
 
 
 def test_start_end_delta():
@@ -150,7 +148,7 @@ def test_start_end_delta():
 def test_start_end_empty():
     with freeze_time('2016-04-10'):
         start = dt.datetime(2016, 4, 10, 0, 0)
-        end = dt.datetime(2016, 4, 10, 23, 59, 59, 999999)
+        end = dt.datetime(2016, 4, 11, 0, 0)
         assert (start, end) == start_end_from_daterange([], utils.LOCALE_BERLIN)
 
 
@@ -158,4 +156,8 @@ def test_start_end_empty_default():
     with freeze_time('2016-04-10'):
         start = dt.datetime(2016, 4, 10, 0, 0)
         end = dt.datetime(2016, 4, 13, 0, 0)
-        assert (start, end) == start_end_from_daterange([], utils.LOCALE_BERLIN, '3d')
+        assert (start, end) == start_end_from_daterange(
+            [], utils.LOCALE_BERLIN,
+            default_timedelta_date=dt.timedelta(days=3),
+            default_timedelta_datetime=dt.timedelta(hours=1),
+        )

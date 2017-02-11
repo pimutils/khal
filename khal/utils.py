@@ -342,12 +342,18 @@ def guesstimedeltafstr(delta_string):
     return res
 
 
-def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=False):
+def guessrangefstr(daterange, locale, adjust_reasonably=False,
+                   default_timedelta_date=timedelta(days=1),
+                   default_timedelta_datetime=timedelta(hours=1),
+                   ):
     """parses a range string
 
     :param daterange: date1 [date2 | timedelta]
     :type daterange: str or list
     :param locale:
+    :returns: start and end of the date(time) range  and if
+        this is an all-day time range or not,
+        **NOTE**: the end is *exclusive* if this is an allday event
     :rtype: (datetime, datetime, bool)
 
     """
@@ -361,13 +367,6 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
         end = start + timedelta(days=8)
         return start, end, True
 
-    try:
-        if default_timedelta is None or len(default_timedelta) == 0:
-            default_timedelta = None
-        else:
-            default_timedelta = guesstimedeltafstr(default_timedelta)
-    except ValueError:
-        default_timedelta = None
 
     for i in reversed(range(1, len(range_list) + 1)):
         start = ' '.join(range_list[:i])
@@ -385,15 +384,15 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
 
             # and end
             if len(end) == 0:
-                if default_timedelta is not None:
-                    end = start + default_timedelta
+                if allday:
+                    end = start + default_timedelta_date
                 else:
-                    end = datetime_fillin(day=start)
+                    end = start + default_timedelta_datetime
             elif end.lower() == 'eod':
                     end = datetime.combine(start.date(), time.max)
             elif end.lower() == 'week':
                 start -= timedelta(days=(start.weekday() - locale['firstweekday']))
-                end = start + timedelta(days=7)
+                end = start + timedelta(days=8)
             else:
                 try:
                     delta = guesstimedeltafstr(end)
@@ -409,9 +408,6 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
                         )
                         raise FatalError()
 
-                    if allday:
-                        delta = delta - timedelta(days=1)
-
                     end = start + delta
                 except ValueError:
                     split = end.split(" ")
@@ -423,8 +419,6 @@ def guessrangefstr(daterange, locale, default_timedelta=None, adjust_reasonably=
 
             if adjust_reasonably:
                 if allday:
-                    # TODO move out of here, this is an icalendar peculiarity
-                    end += timedelta(days=1)
                     # test if end's year is this year, but start's year is not
                     today = datetime.today()
                     if end.year == today.year and start.year != today.year:
@@ -481,8 +475,7 @@ def rrulefstr(repeat, until, locale):
         raise FatalError()
 
 
-def eventinfofstr(info_string, locale, default_timedelta=None,
-                  adjust_reasonably=False, localize=False):
+def eventinfofstr(info_string, locale, adjust_reasonably=False, localize=False):
     """parses a string of the form START [END | DELTA] [TIMEZONE] [SUMMARY] [::
     DESCRIPTION] into a dictionary with keys: dtstart, dtend, timezone, allday,
     summary, description
@@ -491,8 +484,6 @@ def eventinfofstr(info_string, locale, default_timedelta=None,
     :type info_string: string fitting the form
     :param locale:
     :type locale: locale
-    :param default_timedelta:
-    :type default_timedelta: passed on to guessrangefstr
     :param adjust_reasonably:
     :type adjust_reasonably: passed on to guessrangefstr
     :rtype: dictionary
@@ -511,7 +502,7 @@ def eventinfofstr(info_string, locale, default_timedelta=None,
     for i in reversed(range(1, len(parts) + 1)):
         try:
             start, end, allday = guessrangefstr(
-                ' '.join(parts[0:i]), locale, default_timedelta='60m',
+                ' '.join(parts[0:i]), locale,
                 adjust_reasonably=adjust_reasonably,
             )
         except ValueError:
