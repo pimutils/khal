@@ -39,7 +39,7 @@ import textwrap
 
 from khal import utils, calendar_display
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
-from khal.exceptions import InvalidDate, FatalError
+from khal.exceptions import FatalError
 from khal.khalendar.event import Event
 from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
@@ -88,7 +88,7 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
         day_format = conf['view']['agenda_day_format']
 
     term_width, _ = get_terminal_size()
-    lwidth = 25
+    lwidth = 25  # TODO add two if weeknumbers = right
     rwidth = term_width - lwidth - 4
 
     start, end = start_end_from_daterange(
@@ -194,8 +194,8 @@ def get_list_from_str(collection, locale, start, end, notstarted=False,
     return event_column
 
 
-def get_list(collection, locale, start, end, agenda_format=None, notstarted=False, env=None, width=None,
-             seen=None):
+def get_list(collection, locale, start, end, agenda_format=None, notstarted=False,
+             env=None, width=None, seen=None):
     """returns a list of events scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
 
@@ -410,7 +410,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
     options["alarm"] = {"short": "a"}
     options["Delete"] = {"short": "D"}
     if allow_quit:
-        options["quit"] = {"short":  "q"}
+        options["quit"] = {"short": "q"}
 
     now = datetime.now()
 

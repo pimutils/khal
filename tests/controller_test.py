@@ -2,11 +2,9 @@ import datetime as dt
 from textwrap import dedent
 
 from freezegun import freeze_time
-import pytest
 
 from khal.khalendar.vdir import Item
 from khal.controllers import import_ics, get_list_from_str, start_end_from_daterange
-from khal import exceptions
 
 from .utils import _get_text
 from . import utils
@@ -52,7 +50,9 @@ class TestGetAgenda(object):
         assert ['Today\x1b[0m',
                 '                 a meeting :: short description\x1b[0m'] == \
             get_list_from_str(
-                coll, utils.LOCALE_BERLIN, start, end, agenda_format=event_format, day_format="{name}")
+                coll, utils.LOCALE_BERLIN, start, end,
+                agenda_format=event_format, day_format="{name}",
+            )
 
     def test_empty_recurrence(self, coll_vdirs):
         coll, vidrs = coll_vdirs
