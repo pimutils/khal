@@ -186,7 +186,7 @@ print_new = option('event', 'path', 'False', default=False)
 # highlighting are in [highlight_days] section.
 highlight_event_days = boolean(default=False)
 
-# Default timedelta for use with daterange options
+# Default timedelta to use for reporting, for example in `list`
 timedelta = timedelta(default='2d')
 
 # The view section contains configuration options that effect the visual appearance

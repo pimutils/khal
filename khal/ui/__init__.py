@@ -487,15 +487,15 @@ class SingleDayWalker(DayWalker):
 
     def ensure_date(self, day):
         """make sure a DateListBox for `day` exists, update it and bring it into focus"""
-        # TODO this function gets called twice on every date change, not necessary but
-        # isn't very costly either
-        if len(self) > 0 and self[0].date == day:
-            return
-        pile = self._get_events(day)
-        if len(self) == 0:
-            self.append(pile)
-        else:
-            self[0] = pile
+        # TODO cache events for each day and update as needed
+        num_days = max(1, self._conf['default']['timedelta'].days)
+
+        for delta in range(num_days):
+            pile = self._get_events(day + timedelta(days=delta))
+            if len(self) <= delta:
+                self.append(pile)
+            else:
+                self[delta] = pile
         assert self[0].date == day
 
     def update_events_ondate(self, day):
@@ -512,7 +512,8 @@ class SingleDayWalker(DayWalker):
         :type end: datetime.date
         :type bool: bool
         """
-        self[0].refresh_titles()
+        for one in self:
+            one.refresh_titles()
 
     def update_range(self, start, end, everything=False):
         """refresh contents of all days between start and end (inclusive)
@@ -523,8 +524,12 @@ class SingleDayWalker(DayWalker):
         start = start.date() if isinstance(start, datetime) else start
         end = end.date() if isinstance(end, datetime) else end
 
-        if (start <= self[0].date <= end) or everything:
-            self.update_events_ondate(self[0].date)
+        update = everything
+        for one in self:
+            if (start <= one.date <= end):
+                update = True
+        if update:
+            self.ensure_date(self[0].date)
 
     def set_focus(self, position):
         """set focus by item number"""
@@ -1265,7 +1270,10 @@ class ClassicView(Pane):
             weeknumbers=self._conf['locale']['weeknumbers'],
             get_styles=collection.get_styles
         )
-        elistbox.set_focus_date_callback = calendar.set_focus_date
+        if self._conf['view']['single_day_events']:
+            elistbox.set_focus_date_callback = lambda _: None
+        else:
+            elistbox.set_focus_date_callback = calendar.set_focus_date
         self.calendar = ContainerWidget(calendar)
         self.lwidth = 31 if self._conf['locale']['weeknumbers'] == 'right' else 28
         columns = NColumns(
