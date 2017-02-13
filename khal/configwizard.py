@@ -28,9 +28,9 @@ from os.path import expanduser, expandvars, join, normpath, exists, isdir
 from os import makedirs
 
 from datetime import date, datetime
-import sys
 
 from khal.log import logger
+from .exceptions import FatalError
 from .settings import settings
 
 
@@ -177,7 +177,7 @@ def configwizard():
         logger.fatal(
             "If you want to create a new configuration file, "
             "please remove the old one first. Exiting.")
-        sys.exit(1)
+        raise FatalError()
     dateformat = choose_datetime_format()
     print()
     timeformat = choose_time_format()
@@ -188,15 +188,14 @@ def configwizard():
         try:
             vdirs = [create_vdir()]
         except OSError as error:
-            sys.exit(1)
+            raise FatalError(error)
 
     config = create_config(vdirs, dateformat=dateformat, timeformat=timeformat)
     config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
     if not confirm(
             "Do you want to write the config to {}? "
             "(Choosing `No` will abort)".format(config_path)):
-        print('Aborting...')
-        sys.exit(1)
+        raise FatalError('User aborted...')
     config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
     if not exists(config_dir) and not isdir(config_dir):
         try:
@@ -206,7 +205,7 @@ def configwizard():
                 "Could not write config file at {} because of {}. "
                 "Aborting".format(config_dir, error)
             )
-            sys.exit(1)
+            raise FatalError(error)
         else:
             print('created directory {}'.format(config_dir))
     with open(config_path, 'w') as config_file:

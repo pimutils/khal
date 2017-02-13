@@ -32,9 +32,7 @@ from collections import defaultdict, OrderedDict
 from shutil import get_terminal_size
 
 from datetime import time, timedelta, datetime, date
-import logging
 import os
-import sys
 import textwrap
 
 from khal import utils, calendar_display
@@ -91,11 +89,14 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
     lwidth = 25  # TODO add two if weeknumbers = right
     rwidth = term_width - lwidth - 4
 
-    start, end = start_end_from_daterange(
-        daterange, locale,
-        default_timedelta_date=conf['default']['timedelta'],
-        default_timedelta_datetime=conf['default']['timedelta'],
-    )
+    try:
+        start, end = start_end_from_daterange(
+            daterange, locale,
+            default_timedelta_date=conf['default']['timedelta'],
+            default_timedelta_datetime=conf['default']['timedelta'],
+        )
+    except ValueError as error:
+        raise FatalError(error)
 
     event_column = get_list_from_str(
         collection,
@@ -234,9 +235,8 @@ def get_list(collection, locale, start, end, agenda_format=None, notstarted=Fals
             if seen is None or event.uid not in seen:
                 try:
                     event_string = event.format(agenda_format, relative_to=(start, end), env=env)
-                except KeyError as e:
-                    logging.fatal(e)
-                    sys.exit(1)
+                except KeyError as error:
+                    raise FatalError(error)
 
                 if width:
                     event_list += textwrap.wrap(event_string, width)
@@ -329,15 +329,12 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
     """construct a new event from a string and add it"""
-    try:
-        info = utils.eventinfofstr(info, conf['locale'], adjust_reasonably=True, localize=False)
-        new_from_args(
-            collection, calendar_name, conf, format=format, env=env,
-            location=location, categories=categories, repeat=repeat,
-            until=until, alarms=alarms, **info
-        )
-    except FatalError:
-        sys.exit(1)
+    info = utils.eventinfofstr(info, conf['locale'], adjust_reasonably=True, localize=False)
+    new_from_args(
+        collection, calendar_name, conf, format=format, env=env,
+        location=location, categories=categories, repeat=repeat,
+        until=until, alarms=alarms, **info
+    )
 
 
 def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
@@ -351,20 +348,17 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
             repeat=repeat, until=until, alarms=alarms, dtstart=dtstart,
             dtend=dtend, summary=summary, description=description, timezone=timezone,
         )
-    except ValueError as e:
-        logger.fatal('ERROR: ' + str(e))
-        sys.exit(1)
-    except FatalError:
-        sys.exit(1)
+    except ValueError as error:
+        raise FatalError(error)
     event = Event.fromVEvents(
         [event], calendar=calendar_name, locale=conf['locale'])
 
     try:
         collection.new(event)
     except ReadOnlyCalendarError:
-        logger.fatal(
-            'ERROR: Cannot modify calendar "{}" as it is read-only'.format(calendar_name))
-        sys.exit(1)
+        raise FatalError(
+            'ERROR: Cannot modify calendar "{}" as it is read-only'.format(calendar_name)
+        )
 
     if conf['default']['print_new'] == 'event':
         if format is None:

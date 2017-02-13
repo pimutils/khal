@@ -266,25 +266,29 @@ def _get_cli():
     @click.pass_context
     def calendar(ctx, daterange, once, notstarted, format, day_format):
         '''Print calendar with agenda.'''
-        controllers.calendar(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            agenda_format=format,
-            day_format=day_format,
-            once=once,
-            notstarted=notstarted,
-            daterange=daterange,
-            conf=ctx.obj['conf'],
-            firstweekday=ctx.obj['conf']['locale']['firstweekday'],
-            locale=ctx.obj['conf']['locale'],
-            weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
-            hmethod=ctx.obj['conf']['highlight_days']['method'],
-            default_color=ctx.obj['conf']['highlight_days']['default_color'],
-            multiple=ctx.obj['conf']['highlight_days']['multiple'],
-            color=ctx.obj['conf']['highlight_days']['color'],
-            highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
-            bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
-            env={"calendars": ctx.obj['conf']['calendars']}
-        )
+        try:
+            controllers.calendar(
+                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+                agenda_format=format,
+                day_format=day_format,
+                once=once,
+                notstarted=notstarted,
+                daterange=daterange,
+                conf=ctx.obj['conf'],
+                firstweekday=ctx.obj['conf']['locale']['firstweekday'],
+                locale=ctx.obj['conf']['locale'],
+                weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
+                hmethod=ctx.obj['conf']['highlight_days']['method'],
+                default_color=ctx.obj['conf']['highlight_days']['default_color'],
+                multiple=ctx.obj['conf']['highlight_days']['multiple'],
+                color=ctx.obj['conf']['highlight_days']['color'],
+                highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
+                bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
+                env={"calendars": ctx.obj['conf']['calendars']}
+            )
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command("list")
     @multi_calendar_option
@@ -303,17 +307,21 @@ def _get_cli():
     def klist(ctx, daterange, once, notstarted, format, day_format):
         """List all events between a start (default: today) and (optional)
         end datetime."""
-        controllers.khal_list(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            agenda_format=format,
-            day_format=day_format,
-            daterange=daterange,
-            once=once,
-            notstarted=notstarted,
-            locale=ctx.obj['conf']['locale'],
-            conf=ctx.obj['conf'],
-            env={"calendars": ctx.obj['conf']['calendars']}
-        )
+        try:
+            controllers.khal_list(
+                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+                agenda_format=format,
+                day_format=day_format,
+                daterange=daterange,
+                once=once,
+                notstarted=notstarted,
+                locale=ctx.obj['conf']['locale'],
+                conf=ctx.obj['conf'],
+                env={"calendars": ctx.obj['conf']['calendars']}
+            )
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command()
     @calendar_option
@@ -366,23 +374,26 @@ def _get_cli():
                     'No default calendar is configured, '
                     'please provide one explicitly.'
                 )
-
-        new_func = controllers.new_from_string
-        if interactive:
-            new_func = controllers.new_interactive
-        new_func(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            calendar,
-            ctx.obj['conf'],
-            info=' '.join(info),
-            location=location,
-            categories=categories,
-            repeat=repeat,
-            env={"calendars": ctx.obj['conf']['calendars']},
-            until=until,
-            alarms=alarms,
-            format=format,
-        )
+        try:
+            new_func = controllers.new_from_string
+            if interactive:
+                new_func = controllers.new_interactive
+            new_func(
+                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+                calendar,
+                ctx.obj['conf'],
+                info=' '.join(info),
+                location=location,
+                categories=categories,
+                repeat=repeat,
+                env={"calendars": ctx.obj['conf']['calendars']},
+                until=until,
+                alarms=alarms,
+                format=format,
+            )
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command('import')
     @click.option('--include-calendar', '-a', help=('The calendar to use.'),
@@ -456,11 +467,15 @@ def _get_cli():
     @click.pass_context
     def printcalendars(ctx):
         '''List all calendars.'''
-        click.echo(
-            '\n'.join(
-                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)).names
+        try:
+            click.echo(
+                '\n'.join(
+                    build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)).names
+                )
             )
-        )
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command()
     @click.pass_context
@@ -472,12 +487,15 @@ def _get_cli():
         liking.'''
         from datetime import datetime
         time = datetime(2013, 12, 21, 10, 9)
-
-        for strftime_format in [
-                'longdatetimeformat', 'datetimeformat', 'longdateformat',
-                'dateformat', 'timeformat']:
-            dt_str = time.strftime(ctx.obj['conf']['locale'][strftime_format])
-            click.echo('{}: {}'.format(strftime_format, dt_str))
+        try:
+            for strftime_format in [
+                    'longdatetimeformat', 'datetimeformat', 'longdateformat',
+                    'dateformat', 'timeformat']:
+                dt_str = time.strftime(ctx.obj['conf']['locale'][strftime_format])
+                click.echo('{}: {}'.format(strftime_format, dt_str))
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command()
     @click.argument('ics', type=click.File('rb'))
@@ -488,8 +506,12 @@ def _get_cli():
         '''Print an ics file without importing it.
 
         Just print the ics file, do nothing else.'''
-        ics_str = ics.read()
-        controllers.print_ics(ctx.obj['conf'], ics.name, ics_str, format)
+        try:
+            ics_str = ics.read()
+            controllers.print_ics(ctx.obj['conf'], ics.name, ics_str, format)
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command()
     @multi_calendar_option
@@ -505,20 +527,24 @@ def _get_cli():
         # TODO support for time ranges, location, description etc
         if format is None:
             format = ctx.obj['conf']['view']['event_format']
-        collection = build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None))
-        events = sorted(collection.search(search_string))
-        event_column = list()
-        term_width, _ = get_terminal_size()
-        now = datetime.datetime.now()
-        env = {"calendars": ctx.obj['conf']['calendars']}
-        for event in events:
-            desc = textwrap.wrap(event.format(format, relative_to=now, env=env), term_width)
-            event_column.extend(
-                [colored(d, event.color,
-                         bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
-                 for d in desc]
-            )
-        click.echo('\n'.join(event_column))
+        try:
+            collection = build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None))
+            events = sorted(collection.search(search_string))
+            event_column = list()
+            term_width, _ = get_terminal_size()
+            now = datetime.datetime.now()
+            env = {"calendars": ctx.obj['conf']['calendars']}
+            for event in events:
+                desc = textwrap.wrap(event.format(format, relative_to=now, env=env), term_width)
+                event_column.extend(
+                    [colored(d, event.color,
+                             bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
+                     for d in desc]
+                )
+            click.echo('\n'.join(event_column))
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command()
     @multi_calendar_option
@@ -530,14 +556,18 @@ def _get_cli():
     @click.pass_context
     def edit(ctx, format, search_string, show_past):
         '''Interactively edit (or delete) events matching the search string.'''
-        controllers.edit(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            ' '.join(search_string),
-            format=format,
-            allow_past=show_past,
-            locale=ctx.obj['conf']['locale'],
-            conf=ctx.obj['conf']
-        )
+        try:
+            controllers.edit(
+                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+                ' '.join(search_string),
+                format=format,
+                allow_past=show_past,
+                locale=ctx.obj['conf']['locale'],
+                conf=ctx.obj['conf']
+            )
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command()
     @multi_calendar_option
@@ -553,24 +583,32 @@ def _get_cli():
         '''Print all events at a specific (date-)time (defaults to now).'''
         if not datetime:
             datetime = ("now",)
-        controllers.khal_list(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            agenda_format=format,
-            day_format=day_format,
-            daterange=datetime + ("1m", ),
-            once=True,
-            notstarted=notstarted,
-            locale=ctx.obj['conf']['locale'],
-            conf=ctx.obj['conf'],
-            env={"calendars": ctx.obj['conf']['calendars']}
-        )
+        try:
+            controllers.khal_list(
+                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+                agenda_format=format,
+                day_format=day_format,
+                daterange=datetime + ("1m", ),
+                once=True,
+                notstarted=notstarted,
+                locale=ctx.obj['conf']['locale'],
+                conf=ctx.obj['conf'],
+                env={"calendars": ctx.obj['conf']['calendars']}
+            )
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command()
     @click.pass_context
     def configure(ctx):
         """Helper for initial configuration of khal."""
         from . import configwizard
-        configwizard.configwizard()
+        try:
+            configwizard.configwizard()
+        except FatalError as error:
+            logger.fatal(error)
+            sys.exit(1)
 
     return cli, interactive_cli
 

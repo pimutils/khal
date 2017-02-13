@@ -544,7 +544,7 @@ longdatetimeformat = %Y-%m-%d %H:%M
     assert not os.path.exists(str(runner.config_file))
 
     result = runner.invoke(main_khal, ['configure'], input=choices(write_config=False))
-    assert 'Aborting' in result.output
+    assert 'aborted' in result.output
     assert result.exit_code == 1
 
 
