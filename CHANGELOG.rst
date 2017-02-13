@@ -25,6 +25,8 @@ not released yet
 * FIX width of calendar in `khal calendar` was off by two if locale.weeknumbers
   was set to "right"
 
+* changed default `agenda_day_format` to include the actual date of the day
+
 0.9.1
 =====
 released 2017-01-25

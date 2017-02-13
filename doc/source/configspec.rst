@@ -522,7 +522,7 @@ when using ikhal.
     Specifies how each *day header* is formated.
 
       :type: string
-      :default: {bold}{name}{reset}
+      :default: {bold}{name}, {date-long}{reset}
 
 .. _view-agenda_event_format:
 

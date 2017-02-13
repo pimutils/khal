@@ -241,7 +241,7 @@ bold_for_light_color = boolean(default=True)
 agenda_event_format = string(default='{calendar-color}{start-end-time-style} {title}{repeat-symbol}{description-separator}{description}{reset}')
 
 # Specifies how each *day header* is formated.
-agenda_day_format = string(default='{bold}{name}{reset}')
+agenda_day_format = string(default='{bold}{name}, {date-long}{reset}')
 
 # Default formating for events used when the start- and end-date are not clear
 # through context, e.g. for :command:`search`, used almost everywhere but
