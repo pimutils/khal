@@ -10,7 +10,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.9.2
 =====
-not released yet
+released 2017-02-13
 
 * FIX if weekstart != 0 ikhal would show wrong weekday names
 * FIX allday events added with `khal new DATE TIMEDELTA` (e.g., 2017-01-18 3d)
