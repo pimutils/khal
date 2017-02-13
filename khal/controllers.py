@@ -80,7 +80,7 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
              bold_for_light_color=True,
              **kwargs):
     term_width, _ = get_terminal_size()
-    lwidth = 25  # TODO add two if weeknumbers = right
+    lwidth = 27 if conf['locale']['weeknumbers'] == 'right' else 25
     rwidth = term_width - lwidth - 4
 
     try:
@@ -115,7 +115,7 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
         highlight_event_days=highlight_event_days,
         locale=locale,
         bold_for_light_color=bold_for_light_color)
-    return merge_columns(calendar_column, event_column)
+    return merge_columns(calendar_column, event_column, width=lwidth)
 
 
 def start_end_from_daterange(daterange, locale,
