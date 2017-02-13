@@ -199,7 +199,7 @@ def get_events_between(
             raise FatalError(error)
 
         if width:
-            event_list += textwrap.wrap(event_string, width)
+            event_list += utils.color_wrap(event_string, width)
         else:
             event_list.append(event_string)
         if seen is not None:

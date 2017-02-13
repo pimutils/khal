@@ -29,6 +29,7 @@ import random
 import string
 import re
 from time import strptime
+from textwrap import wrap
 
 import icalendar
 import pytz
@@ -681,3 +682,57 @@ def ics_from_list(events, tzs, random_uid=False):
     for sub_event in events:
         calendar.add_component(sub_event)
     return calendar.to_ical().decode('utf-8')
+
+
+RESET = '\x1b[0m'
+
+ansi_reset = re.compile(r'\x1b\[0m')
+ansi_sgr = re.compile(r'\x1b\['
+                      '(?!0m)'  # negative lookahead, don't match 0m
+                      '([0-9]+;?)+'
+                      'm')
+
+
+def find_last_reset(string):
+    for match in re.finditer(ansi_reset, string):
+        pass
+    try:
+        return match.start(), match.end(), match.group(0)
+    except UnboundLocalError:
+        return -2, -1, ''
+
+
+def find_last_sgr(string):
+    for match in re.finditer(ansi_sgr, string):
+        pass
+    try:
+        return match.start(), match.end(), match.group(0)
+    except UnboundLocalError:
+        return -2, -1, ''
+
+
+def find_unmatched_sgr(string):
+    reset_pos, _, _ = find_last_reset(string)
+    sgr_pos, _, sgr = find_last_sgr(string)
+    if sgr_pos > reset_pos:
+        return sgr
+    else:
+        return False
+
+
+def color_wrap(text, width=70):
+    """A variant of wrap that takes SGR codes (somewhat) into account.
+
+    This doesn't actually adjust the length, but makes sure that
+    lines that enable some attribues also contain a RESET, and also adds
+    that code to the next line
+    """
+    # TODO we really want to ignore all SGR codes when measuring the width
+    lines = wrap(text, width)
+    for num, _ in enumerate(lines):
+        sgr = find_unmatched_sgr(lines[num])
+        if sgr:
+            lines[num] += RESET
+            if num != len(lines):
+                lines[num + 1] = sgr + lines[num + 1]
+    return lines

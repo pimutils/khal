@@ -608,3 +608,64 @@ def test_relative_timedelta_str():
         assert utils.relative_timedelta_str(date(2016, 9, 29)) == '~1 week from now'
         assert utils.relative_timedelta_str(date(2017, 9, 29)) == '~1 year from now'
         assert utils.relative_timedelta_str(date(2016, 7, 29)) == '~7 weeks ago'
+
+
+weekheader = """[1m    Mo Tu We Th Fr Sa Su   [0m"""
+today_line = """[1mToday[0m[0m"""
+calendarline = (
+    "[1mNov [0m[1;33m31[0m [32m 1[0m [1;33m 2[0m "
+    "[1;33m 3[0m [1;33m 4[0m [32m 5[0m [32m 6[0m"
+)
+
+
+def test_last_reset():
+    assert utils.find_last_reset(weekheader) == (31, 35, '\x1b[0m')
+    assert utils.find_last_reset(today_line) == (13, 17, '\x1b[0m')
+    assert utils.find_last_reset(calendarline) == (99, 103, '\x1b[0m')
+    assert utils.find_last_reset('Hello World') == (-2, -1, '')
+
+
+def test_last_sgr():
+    assert utils.find_last_sgr(weekheader) == (0, 4, '\x1b[1m')
+    assert utils.find_last_sgr(today_line) == (0, 4, '\x1b[1m')
+    assert utils.find_last_sgr(calendarline) == (92, 97, '\x1b[32m')
+    assert utils.find_last_sgr('Hello World') == (-2, -1, '')
+
+
+def test_find_unmatched_sgr():
+    assert utils.find_unmatched_sgr(weekheader) is False
+    assert utils.find_unmatched_sgr(today_line) is False
+    assert utils.find_unmatched_sgr(calendarline) is False
+    assert utils.find_unmatched_sgr('\x1b[31mHello World') == '\x1b[31m'
+    assert utils.find_unmatched_sgr('\x1b[31mHello\x1b[0m \x1b[32mWorld') == '\x1b[32m'
+    assert utils.find_unmatched_sgr('foo\x1b[1;31mbar') == '\x1b[1;31m'
+    assert utils.find_unmatched_sgr('\x1b[0mfoo\x1b[1;31m') == '\x1b[1;31m'
+
+
+def test_color_wrap():
+    text = (
+        "Lorem ipsum \x1b[31mdolor sit amet, consetetur sadipscing "
+        "elitr, sed diam nonumy\x1b[0m eirmod tempor"
+    )
+    expected = [
+        "Lorem ipsum \x1b[31mdolor sit amet,\x1b[0m",
+        "\x1b[31mconsetetur sadipscing elitr, sed\x1b[0m",
+        "\x1b[31mdiam nonumy\x1b[0m eirmod tempor",
+    ]
+
+    assert utils.color_wrap(text, 35) == expected
+
+
+def test_color_wrap_256():
+    text = (
+        "\x1b[38;2;17;255;0mLorem ipsum dolor sit amet, consetetur sadipscing "
+        "elitr, sed diam nonumy\x1b[0m"
+    )
+    expected = [
+        "\x1b[38;2;17;255;0mLorem ipsum\x1b[0m",
+        "\x1b[38;2;17;255;0mdolor sit amet, consetetur\x1b[0m",
+        "\x1b[38;2;17;255;0msadipscing elitr, sed diam\x1b[0m",
+        "\x1b[38;2;17;255;0mnonumy\x1b[0m"
+    ]
+
+    assert utils.color_wrap(text, 30) == expected
