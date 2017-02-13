@@ -258,9 +258,9 @@ class DListBox(EventListBox):
     """Container for a DayWalker"""
     # XXX unfortunate naming, there is also DateListBox
     def __init__(self, *args, **kwargs):
-        single_day = kwargs.pop('single_day', False)
+        dynamic_days = kwargs.pop('dynamic_days', True)
         super().__init__(*args, **kwargs)
-        self._init = not single_day
+        self._init = dynamic_days
 
     def render(self, size, focus=False):
         if self._init:
@@ -482,8 +482,8 @@ class DayWalker(urwid.SimpleFocusListWalker):
         return self[self.focus].original_widget.date
 
 
-class SingleDayWalker(DayWalker):
-    """Simplified version of DayWalker that only shows events for one date"""
+class StaticDayWalker(DayWalker):
+    """Only show events for a fixed number of days."""
 
     def ensure_date(self, day):
         """make sure a DateListBox for `day` exists, update it and bring it into focus"""
@@ -1246,10 +1246,10 @@ class ClassicView(Pane):
         self._deleted = {ALL: [], INSTANCES: []}
 
         ContainerWidget = linebox[self._conf['view']['frame']]
-        if self._conf['view']['single_day_events']:
-            Walker = SingleDayWalker
-        else:
+        if self._conf['view']['dynamic_days']:
             Walker = DayWalker
+        else:
+            Walker = StaticDayWalker
         daywalker = Walker(
             date.today(), eventcolumn=self, conf=self._conf, delete_status=self.delete_status,
             collection=self.collection,
@@ -1259,7 +1259,7 @@ class ClassicView(Pane):
             delete_status=self.delete_status,
             toggle_delete_all=self.toggle_delete_all,
             toggle_delete_instance=self.toggle_delete_instance,
-            single_day=self._conf['view']['single_day_events'],
+            dynamic_days=self._conf['view']['dynamic_days'],
         )
         self.eventscolumn = ContainerWidget(EventColumn(pane=self, elistbox=elistbox))
         calendar = CalendarWidget(
@@ -1270,10 +1270,10 @@ class ClassicView(Pane):
             weeknumbers=self._conf['locale']['weeknumbers'],
             get_styles=collection.get_styles
         )
-        if self._conf['view']['single_day_events']:
-            elistbox.set_focus_date_callback = lambda _: None
-        else:
+        if self._conf['view']['dynamic_days']:
             elistbox.set_focus_date_callback = calendar.set_focus_date
+        else:
+            elistbox.set_focus_date_callback = lambda _: None
         self.calendar = ContainerWidget(calendar)
         self.lwidth = 31 if self._conf['locale']['weeknumbers'] == 'right' else 28
         columns = NColumns(

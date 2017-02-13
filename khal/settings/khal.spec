@@ -193,8 +193,12 @@ timedelta = timedelta(default='2d')
 # when using ikhal.
 [view]
 
-# only show events for the currently in focus date
-single_day_events = boolean(default=False)
+# Defines the behaviour of ikhal's right column. If `True`, the right column
+# will show events for as many days as fit, moving the cursor through the list
+# will also select the appropriate day in the calendar column on the left. If
+# `False`, only a fixed ([default] timedelta) amount of days' events will be
+# shown, moving through events will not change the focus in the left column.
+dynamic_days = boolean(default=True)
 
 # weighting that is applied to the event view window
 event_view_weighting = integer(default=1)

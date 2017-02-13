@@ -25,7 +25,10 @@ not released yet
 * FIX width of calendar in `khal calendar` was off by two if locale.weeknumbers
   was set to "right"
 
-* changed default `agenda_day_format` to include the actual date of the day
+* CHANGED default `agenda_day_format` to include the actual date of the day
+
+* NEW configuration option: [view]dynamic_days = True, if set to False, ikhal's
+  right column behaves similar as it did in 0.8.x
 
 0.9.1
 =====

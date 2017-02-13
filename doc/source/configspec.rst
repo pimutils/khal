@@ -164,7 +164,7 @@ Some default values and behaviours are set here.
 .. object:: timedelta
 
     
-    Default timedelta for use with daterange options
+    Default timedelta to use for reporting, for example in `list`
 
       :type: timedelta
       :default: 2d
@@ -546,6 +546,20 @@ when using ikhal.
     
     Whether to use bold text for light colors or not. Non-bold light colors may
     not work on all terminals but allow using light background colors.
+
+      :type: boolean
+      :default: True
+
+.. _view-dynamic_days:
+
+.. object:: dynamic_days
+
+    
+    Defines the behaviour of ikhal's right column. If `True`, the right column
+    will show events for as many days as fit, moving the cursor through the list
+    will also select the appropriate day in the calendar column on the left. If
+    `False`, only a fixed ([default] timedelta) amount of days' events will be
+    shown, moving through events will not change the focus in the left column.
 
       :type: boolean
       :default: True
