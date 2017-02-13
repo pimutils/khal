@@ -12,9 +12,11 @@ may want to subscribe to `GitHub's tag feed
 =====
 not released yet
 
+* FIX if weekstart != 0 ikhal would show wrong weekday names
+* FIX allday events added with `khal new DATE TIMEDELTA` (e.g., 2017-01-18 3d)
+  were lasting one day too long
 * FIX no more crashes when using timezones that have a constant UTC offset (like
   UTC itself)
-* FIX no more wrong weekday names in ikhal if weekstart != 0
 * FIX updated outdated zsh completion file
 * FIX display search results for events with neither DTEND nor DURATION
 * FIX display search results that are all-day events
