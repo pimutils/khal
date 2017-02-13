@@ -267,7 +267,7 @@ def _get_cli():
     def calendar(ctx, daterange, once, notstarted, format, day_format):
         '''Print calendar with agenda.'''
         try:
-            controllers.calendar(
+            rows = controllers.calendar(
                 build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
                 agenda_format=format,
                 day_format=day_format,
@@ -286,6 +286,7 @@ def _get_cli():
                 bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
                 env={"calendars": ctx.obj['conf']['calendars']}
             )
+            click.echo('\n'.join(rows))
         except FatalError as error:
             logger.fatal(error)
             sys.exit(1)
@@ -308,17 +309,17 @@ def _get_cli():
         """List all events between a start (default: today) and (optional)
         end datetime."""
         try:
-            controllers.khal_list(
+            event_column = controllers.khal_list(
                 build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
                 agenda_format=format,
                 day_format=day_format,
                 daterange=daterange,
                 once=once,
                 notstarted=notstarted,
-                locale=ctx.obj['conf']['locale'],
                 conf=ctx.obj['conf'],
                 env={"calendars": ctx.obj['conf']['calendars']}
             )
+            click.echo('\n'.join(event_column))
         except FatalError as error:
             logger.fatal(error)
             sys.exit(1)
@@ -584,17 +585,17 @@ def _get_cli():
         if not datetime:
             datetime = ("now",)
         try:
-            controllers.khal_list(
+            rows = controllers.khal_list(
                 build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
                 agenda_format=format,
                 day_format=day_format,
                 daterange=datetime + ("1m", ),
                 once=True,
                 notstarted=notstarted,
-                locale=ctx.obj['conf']['locale'],
                 conf=ctx.obj['conf'],
                 env={"calendars": ctx.obj['conf']['calendars']}
             )
+            click.echo('\n'.join(rows))
         except FatalError as error:
             logger.fatal(error)
             sys.exit(1)

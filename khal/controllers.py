@@ -79,12 +79,6 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
              full=False,
              bold_for_light_color=True,
              **kwargs):
-    # because empty strings are also Falsish
-    if agenda_format is None:
-        agenda_format = conf['view']['agenda_event_format']
-    if day_format is None:
-        day_format = conf['view']['agenda_day_format']
-
     term_width, _ = get_terminal_size()
     lwidth = 25  # TODO add two if weeknumbers = right
     rwidth = term_width - lwidth - 4
@@ -98,16 +92,15 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
     except ValueError as error:
         raise FatalError(error)
 
-    event_column = get_list_from_str(
+    event_column = khal_list(
         collection,
+        daterange,
+        conf=conf,
         agenda_format=agenda_format,
         day_format=day_format,
-        start=start,
-        end=end,
-        locale=locale,
-        once=once, notstarted=notstarted,
+        once=once,
+        notstarted=notstarted,
         width=rwidth,
-        show_all_days=conf['default']['show_all_days'],
         **kwargs)
     calendar_column = calendar_display.vertical_month(
         month=start.month,
@@ -122,8 +115,7 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
         highlight_event_days=highlight_event_days,
         locale=locale,
         bold_for_light_color=bold_for_light_color)
-    rows = merge_columns(calendar_column, event_column)
-    echo('\n'.join(rows))
+    return merge_columns(calendar_column, event_column)
 
 
 def start_end_from_daterange(daterange, locale,
@@ -249,8 +241,8 @@ def get_list(collection, locale, start, end, agenda_format=None, notstarted=Fals
 
 
 def khal_list(collection, daterange, conf=None, agenda_format=None, day_format=None,
-              once=False, notstarted=False, **kwargs):
-    """list all events in `daterange`"""
+              once=False, notstarted=False, width=False, **kwargs):
+    """returns a list of all events in `daterange`"""
     # because empty strings are also Falsish
     if agenda_format is None:
         agenda_format = conf['view']['agenda_event_format']
@@ -266,9 +258,10 @@ def khal_list(collection, daterange, conf=None, agenda_format=None, day_format=N
         collection, agenda_format=agenda_format, start=start, end=end, day_format=day_format,
         once=once, notstarted=notstarted,
         show_all_days=conf['default']['show_all_days'],
+        locale=conf['locale'],
+        width=width,
         **kwargs)
-
-    echo('\n'.join(event_column))
+    return event_column
 
 
 def new_interactive(collection, calendar_name, conf, info, location=None,
