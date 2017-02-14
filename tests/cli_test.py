@@ -14,12 +14,13 @@ from .utils import _get_text, _get_ics_filepath
 
 class CustomCliRunner(CliRunner):
     def __init__(self, config_file, db=None, calendars=None,
-                 xdg_data_home=None, xdg_config_home=None, **kwargs):
+                 xdg_data_home=None, xdg_config_home=None, tmpdir=None, **kwargs):
         self.config_file = config_file
         self.db = db
         self.calendars = calendars
         self.xdg_data_home = xdg_data_home
         self.xdg_config_home = xdg_config_home
+        self.tmpdir = tmpdir
 
         super(CustomCliRunner, self).__init__(**kwargs)
 
@@ -63,6 +64,7 @@ def runner(tmpdir, monkeypatch):
         runner = CustomCliRunner(
             config_file=config_file, db=db, calendars=dict(one=calendar),
             xdg_data_home=xdg_data_home, xdg_config_home=xdg_config_home,
+            tmpdir=tmpdir,
         )
         return runner
     return inner
@@ -678,4 +680,4 @@ def test_new(runner):
     result = runner.invoke(main_khal, 'new 13.03.2016 3d Visit'.split())
     assert not result.exception
     assert result.output.endswith('.ics\n')
-    assert result.output.startswith('/tmp/')
+    assert result.output.startswith(str(runner.tmpdir))
