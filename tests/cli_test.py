@@ -40,7 +40,7 @@ def runner(tmpdir, monkeypatch):
     xdg_config_home = tmpdir.join('.config')
     config_file = xdg_config_home.join('khal').join('config')
 
-    # TODO crate a vdir config on disk and let vdirsyncer actually read it
+    # TODO create a vdir config on disk and let vdirsyncer actually read it
     monkeypatch.setattr('vdirsyncer.cli.config.load_config', lambda: Config())
     monkeypatch.setattr('xdg.BaseDirectory.xdg_data_home', str(xdg_data_home))
     monkeypatch.setattr('xdg.BaseDirectory.xdg_config_home', str(xdg_config_home))
