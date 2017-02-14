@@ -42,7 +42,7 @@ class TestCalendar(object):
     def test_create(self, coll_vdirs):
         assert True
 
-    def test_new_event(self, coll_vdirs):
+    def test_new_event(self, coll_vdirs, sleep_time):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, cal1)
         assert event.calendar == cal1
@@ -65,7 +65,7 @@ class TestCalendar(object):
                 else:
                     mtimes[cal] = mtime
 
-    def test_db_needs_update(self, coll_vdirs):
+    def test_db_needs_update(self, coll_vdirs, sleep_time):
         coll, vdirs = coll_vdirs
 
         print('init')
@@ -74,7 +74,7 @@ class TestCalendar(object):
                 calendar, coll._local_ctag(calendar), coll._backend.get_ctag(calendar)))
         assert len(list(vdirs[cal1].list())) == 0
         assert coll._needs_update(cal1) is False
-        sleep(0.01)
+        sleep(sleep_time)
 
         vdirs[cal1].upload(item_today)
         print('upload')
@@ -278,7 +278,7 @@ class TestCollection(object):
         coll.new(event, cal1)
         assert len(list(coll.search('Event'))) == 1
 
-    def test_delete_two_events(self, coll_vdirs):
+    def test_delete_two_events(self, coll_vdirs, sleep_time):
             """testing if we can delete any of two events in two different
             calendars with the same filename"""
             coll, vdirs = coll_vdirs
@@ -287,7 +287,7 @@ class TestCollection(object):
             event2 = Event.fromString(_get_text('event_dt_simple'),
                                       calendar=cal2, locale=utils.LOCALE_BERLIN)
             coll.new(event1, cal1)
-            sleep(0.1)  # make sure the etags are different
+            sleep(sleep_time)  # make sure the etags are different
             coll.new(event2, cal2)
             etag1 = list(vdirs[cal1].list())[0][1]
             etag2 = list(vdirs[cal2].list())[0][1]
@@ -324,7 +324,7 @@ class TestDbCreation(object):
             CalendarCollection(calendars, dbpath=dbpath, locale=utils.LOCALE_BERLIN)
 
 
-def test_default_calendar(coll_vdirs):
+def test_default_calendar(coll_vdirs, sleep_time):
     """test if an update to the vdir is detected by the CalendarCollection"""
     coll, vdirs = coll_vdirs
     vdir = vdirs['foobar']
@@ -333,24 +333,24 @@ def test_default_calendar(coll_vdirs):
     assert len(list(coll.get_events_on(today))) == 0
 
     vdir.upload(event)
-    sleep(0.01)
+    sleep(sleep_time)
     href, etag = list(vdir.list())[0]
     assert len(list(coll.get_events_on(today))) == 0
 
     coll.update_db()
-    sleep(0.01)
+    sleep(sleep_time)
     assert len(list(coll.get_events_on(today))) == 1
 
     vdir.delete(href, etag)
-    sleep(0.01)
+    sleep(sleep_time)
     assert len(list(coll.get_events_on(today))) == 1
 
     coll.update_db()
-    sleep(0.01)
+    sleep(sleep_time)
     assert len(list(coll.get_events_on(today))) == 0
 
 
-def test_only_update_old_event(coll_vdirs, monkeypatch):
+def test_only_update_old_event(coll_vdirs, monkeypatch, sleep_time):
     coll, vdirs = coll_vdirs
 
     href_one, etag_one = vdirs[cal1].upload(coll.new_event(dedent("""
@@ -371,9 +371,9 @@ def test_only_update_old_event(coll_vdirs, monkeypatch):
     END:VEVENT
     """), cal1))
 
-    sleep(0.01)
+    sleep(sleep_time)
     coll.update_db()
-    sleep(0.01)
+    sleep(sleep_time)
     assert not coll._needs_update(cal1)
 
     old_update_vevent = coll._update_vevent
@@ -392,9 +392,9 @@ def test_only_update_old_event(coll_vdirs, monkeypatch):
     SUMMARY:third meeting
     END:VEVENT
     """), cal1))
-    sleep(0.01)
+    sleep(sleep_time)
 
     assert coll._needs_update(cal1)
     coll.update_db()
-    sleep(0.01)
+    sleep(sleep_time)
     assert updated_hrefs == [href_three]
