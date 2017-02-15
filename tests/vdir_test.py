@@ -69,7 +69,7 @@ def test_etag_sync(tmpdir):
     assert old_etag != new_etag
 
 
-def test_etag_sleep(tmpdir):
+def test_etag_sleep(tmpdir, sleep_time):
     fpath = os.path.join(str(tmpdir), 'foo')
 
     file_ = open(fpath, 'w')
@@ -77,7 +77,7 @@ def test_etag_sleep(tmpdir):
     file_.close()
 
     old_etag = vdir.get_etag_from_file(fpath)
-    time.sleep(0.1)
+    time.sleep(sleep_time)
 
     file_ = open(fpath, 'w')
     file_.write('foo')

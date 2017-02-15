@@ -1,4 +1,5 @@
 import os
+from time import sleep
 
 import pytest
 
@@ -48,3 +49,28 @@ def never_echo_bytes(monkeypatch):
             monkeypatch.setattr('click.echo', old_echo)
 
     return Result
+
+
+@pytest.fixture(scope='session')
+def sleep_time(tmpdir_factory):
+    """
+    Returns how long we need to sleep for the filesystem's mtime precision to
+    pick up differences.
+
+    This keeps test fast on systems with high precisions, but makes them pass
+    on those that don't.
+    """
+    tmpfile = tmpdir_factory.mktemp('sleep').join('touch_me')
+
+    def touch_and_mtime():
+        tmpfile.open('w').close()
+        stat = os.stat(str(tmpfile))
+        return getattr(stat, 'st_mtime_ns', stat.st_mtime)
+
+    first = touch_and_mtime()
+    sleep(0.1)
+    second = touch_and_mtime()
+
+    if first < second:
+        return 0.01
+    return 1.1
