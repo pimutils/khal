@@ -18,6 +18,9 @@ not released yet
 * FIX `configure` would crash if neither "import config from vdirsyncer" nor
   "create locale vdir" was selected
 
+* NEW khal will now show cancelled events with a big CANCELLED in front (can be
+  configured via event formatting)
+
 0.9.2
 =====
 released 2017-02-13

@@ -575,6 +575,9 @@ class Event(object):
             attributes['reset'] = attributes['bold'] = ''
             for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
                 attributes[c] = attributes[c + '-bold'] = ''
+
+        attributes['status'] = self.status
+        attributes['cancelled'] = 'CANCELLED ' if self.status == 'CANCELLED' else ''
         return format_string.format(**dict(attributes)) + attributes["reset"]
 
     def duplicate(self):
@@ -610,6 +613,10 @@ class Event(object):
                 continue
         for key in to_pop:
             self._vevents.pop(key)
+
+    @property
+    def status(self):
+        return self._vevents[self.ref].get('STATUS', '')
 
 
 class DatetimeEvent(Event):

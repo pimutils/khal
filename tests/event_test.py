@@ -15,8 +15,8 @@ from .utils import normalize_component, _get_text, \
 
 EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE_BERLIN}
 
-LIST_FORMAT = '{calendar-color}{start-end-time-style} {title} {repeat-symbol}'
-SEARCH_FORMAT = '{calendar-color}{start-long}{to-style}{end-necessary-long} {title} {repeat-symbol}'
+LIST_FORMAT = '{calendar-color}{cancelled}{start-end-time-style} {title} {repeat-symbol}'
+SEARCH_FORMAT = '{calendar-color}{cancelled}{start-long}{to-style}{end-necessary-long} {title} {repeat-symbol}'
 
 
 def test_no_initialization():
@@ -339,6 +339,16 @@ def test_multi_uid():
     event = Event.fromString(orig_event_str, **EVENT_KWARGS)
     for line in orig_event_str.split('\n'):
         assert line in event.raw.split('\r\n')
+
+
+def test_cancelled_instance():
+    orig_event_str = _get_text('event_rrule_recuid_cancelled')
+    event = Event.fromString(orig_event_str, ref='1405314000', **EVENT_KWARGS)
+    assert event.format(SEARCH_FORMAT, date(2014, 7, 14)) == \
+        'CANCELLED 14.07.2014 07:00-12:00 Arbeit ⟳\x1b[0m'
+    event = Event.fromString(orig_event_str, **EVENT_KWARGS)
+    assert event.format(SEARCH_FORMAT, date(2014, 7, 14)) == \
+        '30.06.2014 07:00-12:00 Arbeit ⟳\x1b[0m'
 
 
 def test_recur():
