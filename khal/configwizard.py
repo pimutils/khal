@@ -146,12 +146,12 @@ def create_vdir(names=[]):
         print("Could not create directory {} because of {}. Exiting".format(path, error))
         raise
     print("Created new vdir at {}".format(path))
-    return (name, path, 'calendar')
+    return [(name, path, 'calendar')]
 
 
 def create_config(vdirs, dateformat, timeformat):
     config = ['[calendars]']
-    for name, path, type_ in sorted(vdirs) or ():
+    for name, path, type_ in sorted(vdirs or ()):
         config.append('\n[[{name}]]'.format(name=name))
         config.append('path = {path}'.format(path=path))
         config.append('type = {type}'.format(type=type_))
@@ -186,9 +186,12 @@ def configwizard():
     print()
     if not vdirs:
         try:
-            vdirs = [create_vdir()]
+            vdirs = create_vdir()
         except OSError as error:
             raise FatalError(error)
+
+    if not vdirs:
+        print("\nWARNING: no vdir configured, khal will not be usable like this!\n")
 
     config = create_config(vdirs, dateformat=dateformat, timeformat=timeformat)
     config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')

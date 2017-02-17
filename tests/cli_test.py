@@ -448,7 +448,6 @@ def choices(ordering=0, separator=0, dateconfirm=True,
             create_vdir=False,
             write_config=True):
     """helper function to generate input for testing `configure`"""
-    assert parse_vdirsyncer_conf != create_vdir
     confirm = {True: 'y', False: 'n'}
 
     out = [
@@ -653,6 +652,18 @@ def test_configure_command_cannot_create_vdir(runner):
     )
     assert 'Exiting' in result.output
     assert result.exit_code == 1
+
+
+def test_configure_no_vdir(runner):
+    runner = runner()
+    runner.config_file.remove()
+    result = runner.invoke(
+        main_khal, ['configure'],
+        input=choices(parse_vdirsyncer_conf=False, create_vdir=False),
+    )
+    assert 'khal will not be usable like this' in result.output
+    assert result.exit_code == 0
+    assert not result.exception
 
 
 def test_edit(runner):
