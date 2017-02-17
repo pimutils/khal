@@ -182,6 +182,69 @@ def test_days(runner):
     assert not result.exception
 
 
+def test_notstarted(runner):
+    with freeze_time('2015-6-1 15:00'):
+        runner = runner(default_command='calendar', days=2)
+        for command in [
+                'new 30.5.2015 5.6.2015 long event',
+                'new 2.6.2015 4.6.2015 two day event',
+                'new 1.6.2015 14:00 18:00 four hour event',
+                'new 1.6.2015 16:00 17:00 one hour event',
+                'new 2.6.2015 10:00 13:00 three hour event',
+        ]:
+            result = runner.invoke(main_khal, command.split())
+            assert not result.exception
+
+        result = runner.invoke(main_khal, 'list now'.split())
+        assert result.output == \
+            """Today, 01.06.2015
+↔ long event
+14:00-18:00 four hour event
+16:00-17:00 one hour event
+Tomorrow, 02.06.2015
+↔ long event
+↦ two day event
+10:00-13:00 three hour event
+Wednesday, 03.06.2015
+↔ long event
+↔ two day event
+"""
+        assert not result.exception
+        result = runner.invoke(main_khal, 'list now --notstarted'.split())
+        assert result.output == \
+            """Today, 01.06.2015
+16:00-17:00 one hour event
+Tomorrow, 02.06.2015
+↦ two day event
+10:00-13:00 three hour event
+Wednesday, 03.06.2015
+↔ two day event
+"""
+        assert not result.exception
+
+        result = runner.invoke(main_khal, 'list now --once'.split())
+        assert result.output == \
+            """Today, 01.06.2015
+↔ long event
+14:00-18:00 four hour event
+16:00-17:00 one hour event
+Tomorrow, 02.06.2015
+↦ two day event
+10:00-13:00 three hour event
+"""
+        assert not result.exception
+
+        result = runner.invoke(main_khal, 'list now --once --notstarted'.split())
+        assert result.output == \
+            """Today, 01.06.2015
+16:00-17:00 one hour event
+Tomorrow, 02.06.2015
+↦ two day event
+10:00-13:00 three hour event
+"""
+        assert not result.exception
+
+
 def test_calendar(runner):
     with freeze_time('2015-6-1'):
         runner = runner(default_command='calendar', days=0)

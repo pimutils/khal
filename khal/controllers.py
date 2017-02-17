@@ -168,6 +168,8 @@ def get_list_from_str(collection, locale, start, end, notstarted=False,
         kwargs["seen"] = set()
     if env is None:
         env = {}
+
+    original_start = locale['local_timezone'].localize(start)
     while start < end:
         if start.date() == end.date():
             day_end = end
@@ -175,7 +177,7 @@ def get_list_from_str(collection, locale, start, end, notstarted=False,
             day_end = datetime.combine(start.date(), time.max)
         current_events = get_list(
             collection, locale=locale, agenda_format=agenda_format, start=start,
-            end=day_end, notstarted=notstarted, env=env,
+            end=day_end, notstarted=notstarted, env=env, original_start=original_start,
             **kwargs)
         if day_format and (show_all_days or current_events):
             event_column.append(format_day(start.date(), day_format, locale))
@@ -188,7 +190,7 @@ def get_list_from_str(collection, locale, start, end, notstarted=False,
 
 
 def get_list(collection, locale, start, end, agenda_format=None, notstarted=False,
-             env=None, width=None, seen=None):
+             env=None, width=None, seen=None, original_start=None):
     """returns a list of events scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
 
@@ -208,6 +210,8 @@ def get_list(collection, locale, start, end, agenda_format=None, notstarted=Fals
     :rtype: list(str)
 
     """
+    assert not (notstarted and not original_start)
+
     event_list = []
     if env is None:
         env = {}
@@ -223,19 +227,27 @@ def get_list(collection, locale, start, end, agenda_format=None, notstarted=Fals
     events_float = sorted(collection.get_floating(start, end))
     events = sorted(events + events_float)
     for event in events:
-        if not (notstarted and event.event_start.replace(tzinfo=None) < start):
-            if seen is None or event.uid not in seen:
-                try:
-                    event_string = event.format(agenda_format, relative_to=(start, end), env=env)
-                except KeyError as error:
-                    raise FatalError(error)
+        # yes the the logic could be simplified, but I believe it's easier
+        # to understand what's going on here this way
+        if notstarted:
+            if event.allday and event.start < original_start.date():
+                    continue
+            elif not event.allday and event.start_local < original_start:
+                    continue
+        if seen is not None and event.uid in seen:
+            continue
 
-                if width:
-                    event_list += textwrap.wrap(event_string, width)
-                else:
-                    event_list.append(event_string)
-                if seen is not None:
-                    seen.add(event.uid)
+        try:
+            event_string = event.format(agenda_format, relative_to=(start, end), env=env)
+        except KeyError as error:
+            raise FatalError(error)
+
+        if width:
+            event_list += textwrap.wrap(event_string, width)
+        else:
+            event_list.append(event_string)
+        if seen is not None:
+            seen.add(event.uid)
 
     return event_list
 
