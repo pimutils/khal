@@ -78,7 +78,8 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
              highlight_event_days=0,
              full=False,
              bold_for_light_color=True,
-             **kwargs):
+             env=None,
+             ):
     term_width, _ = get_terminal_size()
     lwidth = 27 if conf['locale']['weeknumbers'] == 'right' else 25
     rwidth = term_width - lwidth - 4
@@ -101,7 +102,8 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
         once=once,
         notstarted=notstarted,
         width=rwidth,
-        **kwargs)
+        env=env,
+    )
     calendar_column = calendar_display.vertical_month(
         month=start.month,
         year=start.year,
@@ -142,61 +144,14 @@ def start_end_from_daterange(daterange, locale,
     return start, end
 
 
-def get_list_from_str(collection, locale, start, end, notstarted=False,
-                      agenda_format=None, day_format=None, once=False,
-                      env=None, show_all_days=False,
-                      **kwargs):
-    """returns a list of events scheduled in between `start` and `end`.
-
-    :param collection:
-    :type collection: khalendar.CalendarCollection
-    :param locale: locale settings
-    :type locale: dict
-    :param notstarted: True if each event should start after start (instead of
-        be active between start and end)
-    :type nostarted: bool
-    :param agenda_format: a format string that can be used in python string formatting
-    :type agenda_format: str
-    :param once: True if each event should only appear once
-    :type once: bool
-    :returns: a list to be printed as the agenda for the given datetime range
-    :rtype: list(str)
-    """
-
-    event_column = []
-    if once:
-        kwargs["seen"] = set()
-    if env is None:
-        env = {}
-
-    original_start = locale['local_timezone'].localize(start)
-    while start < end:
-        if start.date() == end.date():
-            day_end = end
-        else:
-            day_end = datetime.combine(start.date(), time.max)
-        current_events = get_list(
-            collection, locale=locale, agenda_format=agenda_format, start=start,
-            end=day_end, notstarted=notstarted, env=env, original_start=original_start,
-            **kwargs)
-        if day_format and (show_all_days or current_events):
-            event_column.append(format_day(start.date(), day_format, locale))
-        event_column.extend(current_events)
-        start = datetime(*start.date().timetuple()[:3]) + timedelta(days=1)
-
-    if event_column == []:
-        event_column = [style('No events', bold=True)]
-    return event_column
-
-
-def get_list(collection, locale, start, end, agenda_format=None, notstarted=False,
-             env=None, width=None, seen=None, original_start=None):
+def get_events_between(
+        collection, locale, start, end, agenda_format=None, notstarted=False,
+        env=None, width=None, seen=None, original_start=None):
     """returns a list of events scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
 
     :param collection:
     :type collection: khalendar.CalendarCollection
-
     :param start: the start datetime
     :param end: the end datetime
     :param agenda_format: a format string that can be used in python string formatting
@@ -205,10 +160,11 @@ def get_list(collection, locale, start, end, agenda_format=None, notstarted=Fals
     :type env: dict
     :param nostarted: True if each event should start after start (instead of
     be active between start and end)
-    :type nostarted: Boolean
+    :type nostarted: bool
+    :param original_start: start datetime to compare against of notstarted is set
+    :type original_start: datetime.datetime
     :returns: a list to be printed as the agenda for the given days
     :rtype: list(str)
-
     """
     assert not (notstarted and not original_start)
 
@@ -253,7 +209,7 @@ def get_list(collection, locale, start, end, agenda_format=None, notstarted=Fals
 
 
 def khal_list(collection, daterange, conf=None, agenda_format=None, day_format=None,
-              once=False, notstarted=False, width=False, **kwargs):
+              once=False, notstarted=False, width=False, env=None):
     """returns a list of all events in `daterange`"""
     # because empty strings are also Falsish
     if agenda_format is None:
@@ -266,13 +222,31 @@ def khal_list(collection, daterange, conf=None, agenda_format=None, day_format=N
         default_timedelta_date=conf['default']['timedelta'],
         default_timedelta_datetime=conf['default']['timedelta'],
     )
-    event_column = get_list_from_str(
-        collection, agenda_format=agenda_format, start=start, end=end, day_format=day_format,
-        once=once, notstarted=notstarted,
-        show_all_days=conf['default']['show_all_days'],
-        locale=conf['locale'],
-        width=width,
-        **kwargs)
+
+    event_column = []
+    once = set() if once else None
+    if env is None:
+        env = {}
+
+    original_start = conf['locale']['local_timezone'].localize(start)
+    while start < end:
+        if start.date() == end.date():
+            day_end = end
+        else:
+            day_end = datetime.combine(start.date(), time.max)
+        current_events = get_events_between(
+            collection, locale=conf['locale'], agenda_format=agenda_format, start=start,
+            end=day_end, notstarted=notstarted, original_start=original_start,
+            env=env,
+            seen=once,
+        )
+        if day_format and (conf['default']['show_all_days'] or current_events):
+            event_column.append(format_day(start.date(), day_format, conf['locale']))
+        event_column.extend(current_events)
+        start = datetime(*start.date().timetuple()[:3]) + timedelta(days=1)
+
+    if event_column == []:
+        event_column = [style('No events', bold=True)]
     return event_column
 
 
