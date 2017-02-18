@@ -70,7 +70,7 @@ def sleep_time(tmpdir_factory):
         return getattr(stat, 'st_mtime_ns', stat.st_mtime)
 
     i = 0.00001
-    while True:
+    while i < 100:
         # Measure three times to avoid things like 12::18:11.9994 [mis]passing
         first = touch_and_mtime()
         sleep(i)
@@ -81,3 +81,9 @@ def sleep_time(tmpdir_factory):
         if first != second != third:
             return i * 1.1
         i = i * 10
+
+    # This should never happen, but oh, well:
+    raise Exception(
+        'Filesystem does not seem to save modified times of files. \n'
+        'Cannot run tests that depend on this.'
+    )
