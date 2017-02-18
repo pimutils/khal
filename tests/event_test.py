@@ -16,7 +16,8 @@ from .utils import normalize_component, _get_text, \
 EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE_BERLIN}
 
 LIST_FORMAT = '{calendar-color}{cancelled}{start-end-time-style} {title} {repeat-symbol}'
-SEARCH_FORMAT = '{calendar-color}{cancelled}{start-long}{to-style}{end-necessary-long} {title} {repeat-symbol}'
+SEARCH_FORMAT = '{calendar-color}{cancelled}{start-long}{to-style}' + \
+    '{end-necessary-long} {title} {repeat-symbol}'
 
 
 def test_no_initialization():
