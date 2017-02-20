@@ -191,7 +191,7 @@ highlight_event_days = boolean(default=False)
 timedelta = timedelta(default='2d')
 
 # The view section contains configuration options that effect the visual appearance
-# when using ikhal.
+# when using khal and ikhal.
 [view]
 
 # Defines the behaviour of ikhal's right column. If `True`, the right column
