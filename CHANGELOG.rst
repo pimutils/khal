@@ -18,6 +18,10 @@ not released yet
   the first day of their occurrence and not on all further days
 * FIX `configure` would crash if neither "import config from vdirsyncer" nor
   "create locale vdir" was selected
+* FIX `at` will now show an error message if a date instead of a datetime is
+  given
+* FIX `at`'s default header will now show the datetime quried for (instead of
+  just the date)
 
 * NEW khal will now show cancelled events with a big CANCELLED in front (can be
   configured via event formatting)

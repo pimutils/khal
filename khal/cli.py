@@ -584,7 +584,7 @@ def _get_cli():
     @click.argument('DATETIME', nargs=-1, required=False, metavar='[DATETIME]')
     @click.pass_context
     def at(ctx, datetime, notstarted, format, day_format):
-        '''Print all events at a specific (date-)time (defaults to now).'''
+        '''Print all events at a specific datetime (defaults to now).'''
         if not datetime:
             datetime = ("now",)
         try:
@@ -592,7 +592,7 @@ def _get_cli():
                 build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
                 agenda_format=format,
                 day_format=day_format,
-                daterange=datetime + ("1m", ),
+                datepoint=list(datetime),
                 once=True,
                 notstarted=notstarted,
                 conf=ctx.obj['conf'],

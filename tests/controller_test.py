@@ -2,9 +2,11 @@ import datetime as dt
 from textwrap import dedent
 
 from freezegun import freeze_time
+import pytest
 
 from khal.khalendar.vdir import Item
 from khal.controllers import import_ics, khal_list, start_end_from_daterange
+from khal import exceptions
 
 from .utils import _get_text
 from . import utils
@@ -51,6 +53,28 @@ class TestGetAgenda(object):
         assert ['Today\x1b[0m',
                 '                 a meeting :: short description\x1b[0m'] == \
             khal_list(coll, [], conf, agenda_format=event_format, day_format="{name}")
+
+    def test_agenda_default_day_format(self, coll_vdirs):
+        with freeze_time('2016-04-10 12:33'):
+            today = dt.date.today()
+            event_today = event_allday_template.format(
+                today.strftime('%Y%m%d'), tomorrow.strftime('%Y%m%d'))
+            coll, vdirs = coll_vdirs
+            event = coll.new_event(event_today, utils.cal1)
+            coll.new(event)
+            out = khal_list(
+                coll, conf=conf, agenda_format=event_format, datepoint=[])
+            assert [
+                '\x1b[1m10.04.2016 12:33\x1b[0m\x1b[0m',
+                '↦                a meeting :: short description\x1b[0m'] == out
+
+    def test_agenda_fail(self, coll_vdirs):
+        with freeze_time('2016-04-10 12:33'):
+            coll, vdirs = coll_vdirs
+            with pytest.raises(exceptions.FatalError):
+                khal_list(coll, conf=conf, agenda_format=event_format, datepoint=['xyz'])
+            with pytest.raises(exceptions.FatalError):
+                khal_list(coll, conf=conf, agenda_format=event_format, datepoint=['today'])
 
     def test_empty_recurrence(self, coll_vdirs):
         coll, vidrs = coll_vdirs

@@ -208,20 +208,42 @@ def get_events_between(
     return event_list
 
 
-def khal_list(collection, daterange, conf=None, agenda_format=None, day_format=None,
-              once=False, notstarted=False, width=False, env=None):
+def khal_list(collection, daterange=None, conf=None, agenda_format=None,
+              day_format=None, once=False, notstarted=False, width=False,
+              env=None, datepoint=None):
+    assert daterange is not None or datepoint is not None
     """returns a list of all events in `daterange`"""
     # because empty strings are also Falsish
     if agenda_format is None:
         agenda_format = conf['view']['agenda_event_format']
-    if day_format is None:
-        day_format = conf['view']['agenda_day_format']
 
-    start, end = start_end_from_daterange(
-        daterange, conf['locale'],
-        default_timedelta_date=conf['default']['timedelta'],
-        default_timedelta_datetime=conf['default']['timedelta'],
-    )
+    if daterange is not None:
+        if day_format is None:
+            day_format = conf['view']['agenda_day_format']
+        start, end = start_end_from_daterange(
+            daterange, conf['locale'],
+            default_timedelta_date=conf['default']['timedelta'],
+            default_timedelta_datetime=conf['default']['timedelta'],
+        )
+        logger.debug('Getting all events between {} and {}'.format(start, end))
+
+    elif datepoint is not None:
+        if not datepoint:
+            datepoint = ['now']
+        try:
+            start, allday = utils.guessdatetimefstr(datepoint, conf['locale'], date.today())
+        except ValueError:
+            raise FatalError('Invalid value of `{}` for a datetime'.format(' '.join(datepoint)))
+        if allday:
+            logger.debug('Got date {}'.format(start))
+            raise FatalError('Please supply a datetime, not a date.')
+        end = start + timedelta(seconds=1)
+        if day_format is None:
+            day_format = style(
+                start.strftime(conf['locale']['longdatetimeformat']),
+                bold=True,
+            )
+        logger.debug('Getting all events between {} and {}'.format(start, end))
 
     event_column = []
     once = set() if once else None
