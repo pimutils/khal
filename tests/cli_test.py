@@ -735,17 +735,25 @@ def test_edit(runner):
     assert not result.exception
     assert result.output == 'No events\n'
 
-    cal_dt = _get_text('event_dt_simple')
-    event = runner.calendars['one'].join('test.ics')
-    event.write(cal_dt)
+    for name in ['event_dt_simple', 'event_d_15']:
+        cal_dt = _get_text(name)
+        event = runner.calendars['one'].join('{}.ics'.format(name))
+        event.write(cal_dt)
 
     format = '{start-end-time-style}: {title}'
-    result = runner.invoke(main_khal, ['edit', '--show-past', 'Event'], input='s\nGreat Event\nq\n')
+    result = runner.invoke(
+        main_khal, ['edit', '--show-past', 'Event'], input='s\nGreat Event\nn\nn\n')
     assert not result.exception
 
     args = ['list', '--format', format, '--day-format', '', '09.04.2014']
     result = runner.invoke(main_khal, args)
-    assert result.output == '09:30-10:30: Great Event\n'
+    assert '09:30-10:30: Great Event' in result.output
+    assert not result.exception
+
+    args = ['list', '--format', format, '--day-format', '', '09.04.2015']
+    result = runner.invoke(main_khal, args)
+    assert ': An Event' in result.output
+    assert not result.exception
 
 
 def test_new(runner):
