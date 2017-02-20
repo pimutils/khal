@@ -166,7 +166,7 @@ quit = force_list(default=list('q', 'Q'))
 # Some default values and behaviours are set here.
 [default]
 
-# command to be executed if no command is given when executing khal
+# Command to be executed if no command is given when executing khal.
 default_command = option('calendar', 'list', 'interactive', 'printformats', 'printcalendars', 'printics', '', default='calendar')
 
 # The calendar to use if none is specified for some operation (e.g. if adding a
@@ -186,11 +186,12 @@ print_new = option('event', 'path', 'False', default=False)
 # highlighting are in [highlight_days] section.
 highlight_event_days = boolean(default=False)
 
-# Default timedelta to use for reporting, for example in `list`
+# Controls for how many days into the future we show events (for example, in
+# `khal agenda`.
 timedelta = timedelta(default='2d')
 
 # The view section contains configuration options that effect the visual appearance
-# when using ikhal.
+# when using khal and ikhal.
 [view]
 
 # Defines the behaviour of ikhal's right column. If `True`, the right column
