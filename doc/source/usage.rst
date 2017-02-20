@@ -26,7 +26,7 @@ Several options are common to almost all of :program:`khal`'s commands
 
 .. option:: -v
 
-        Be more verbose (e.g. print debugging information)
+        Configure verbosity (e.g. print debugging information)
 
 .. option:: -c CONFIGFILE
 

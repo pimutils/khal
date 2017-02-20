@@ -11,6 +11,7 @@ may want to subscribe to `GitHub's tag feed
 =====
 not released yet
 
+* CHANGED ``--verbose`` flag to ``--verbosity``, allowing finer granularity.
 * FIX `list` (and commands based on it like `calendar`, `at`, and `search`)
   crashed if `--notstarted` was given and allday events were found (introduced
   in 0.9.2)
