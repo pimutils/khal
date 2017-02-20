@@ -11,8 +11,11 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released yet
 
+* NEW DEPENDENCY added click_log  >= 0.1.3
+
 * CHANGE removed default command
-* CHANGE default date/time formats to be the system's locale's formats.
+* CHANGE default date/time formats to be the system's locale's formats
+* CHANGE ``--verbose`` flag to ``--verbosity``, allowing finer granularity
 
 0.9.6
 =====

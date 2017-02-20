@@ -28,7 +28,7 @@ an already open issue).
 If it isn't, please open a new bug.  In case you submit a new bug report,
 please include:
 
- * how you ran khal (please run in verbose mode with `-v`)
+ * how you ran khal (please run in verbose mode with `-v DEBUG`)
  * what you expected khal to do
  * what it did instead
  * everything khal printed to the screen (you may redact private details)
