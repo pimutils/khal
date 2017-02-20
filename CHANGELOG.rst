@@ -11,8 +11,9 @@ may want to subscribe to `GitHub's tag feed
 =====
 not released yet
 
-* FIX `list` (and commands based on it like `calendar` and `at`) crashed
-  if `--notstarted` was given and allday events were found (introduced in 0.9.2)
+* FIX `list` (and commands based on it like `calendar`, `at`, and `search`)
+  crashed if `--notstarted` was given and allday events were found (introduced
+  in 0.9.2)
 * FIX `list --notstarted` (and commands based on it) would show events only on
   the first day of their occurrence and not on all further days
 * FIX `configure` would crash if neither "import config from vdirsyncer" nor

@@ -476,13 +476,15 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
             format = conf['view']['event_format']
 
     term_width, _ = get_terminal_size()
-    now = datetime.now()
+    now = conf['locale']['local_timezone'].localize(datetime.now())
 
     events = sorted(collection.search(search_string))
     for event in events:
-        end = event.end_local.replace(tzinfo=None)
-        if not allow_past and end < now:
-            continue
+        if not allow_past:
+            if event.allday and event.end < now.date():
+                    continue
+            elif not event.allday and event.end_local < now:
+                    continue
         event_text = textwrap.wrap(event.format(format, relative_to=now), term_width)
         echo(''.join(event_text))
         if not edit_event(event, collection, locale, allow_quit=True, width=term_width):
