@@ -182,6 +182,69 @@ def test_days(runner):
     assert not result.exception
 
 
+def test_notstarted(runner):
+    with freeze_time('2015-6-1 15:00'):
+        runner = runner(default_command='calendar', days=2)
+        for command in [
+                'new 30.5.2015 5.6.2015 long event',
+                'new 2.6.2015 4.6.2015 two day event',
+                'new 1.6.2015 14:00 18:00 four hour event',
+                'new 1.6.2015 16:00 17:00 one hour event',
+                'new 2.6.2015 10:00 13:00 three hour event',
+        ]:
+            result = runner.invoke(main_khal, command.split())
+            assert not result.exception
+
+        result = runner.invoke(main_khal, 'list now'.split())
+        assert result.output == \
+            """Today, 01.06.2015
+↔ long event
+14:00-18:00 four hour event
+16:00-17:00 one hour event
+Tomorrow, 02.06.2015
+↔ long event
+↦ two day event
+10:00-13:00 three hour event
+Wednesday, 03.06.2015
+↔ long event
+↔ two day event
+"""
+        assert not result.exception
+        result = runner.invoke(main_khal, 'list now --notstarted'.split())
+        assert result.output == \
+            """Today, 01.06.2015
+16:00-17:00 one hour event
+Tomorrow, 02.06.2015
+↦ two day event
+10:00-13:00 three hour event
+Wednesday, 03.06.2015
+↔ two day event
+"""
+        assert not result.exception
+
+        result = runner.invoke(main_khal, 'list now --once'.split())
+        assert result.output == \
+            """Today, 01.06.2015
+↔ long event
+14:00-18:00 four hour event
+16:00-17:00 one hour event
+Tomorrow, 02.06.2015
+↦ two day event
+10:00-13:00 three hour event
+"""
+        assert not result.exception
+
+        result = runner.invoke(main_khal, 'list now --once --notstarted'.split())
+        assert result.output == \
+            """Today, 01.06.2015
+16:00-17:00 one hour event
+Tomorrow, 02.06.2015
+↦ two day event
+10:00-13:00 three hour event
+"""
+        assert not result.exception
+
+
 def test_calendar(runner):
     with freeze_time('2015-6-1'):
         runner = runner(default_command='calendar', days=0)
@@ -448,7 +511,6 @@ def choices(ordering=0, separator=0, dateconfirm=True,
             create_vdir=False,
             write_config=True):
     """helper function to generate input for testing `configure`"""
-    assert parse_vdirsyncer_conf != create_vdir
     confirm = {True: 'y', False: 'n'}
 
     out = [
@@ -655,23 +717,43 @@ def test_configure_command_cannot_create_vdir(runner):
     assert result.exit_code == 1
 
 
+def test_configure_no_vdir(runner):
+    runner = runner()
+    runner.config_file.remove()
+    result = runner.invoke(
+        main_khal, ['configure'],
+        input=choices(parse_vdirsyncer_conf=False, create_vdir=False),
+    )
+    assert 'khal will not be usable like this' in result.output
+    assert result.exit_code == 0
+    assert not result.exception
+
+
 def test_edit(runner):
     runner = runner()
     result = runner.invoke(main_khal, ['list'])
     assert not result.exception
     assert result.output == 'No events\n'
 
-    cal_dt = _get_text('event_dt_simple')
-    event = runner.calendars['one'].join('test.ics')
-    event.write(cal_dt)
+    for name in ['event_dt_simple', 'event_d_15']:
+        cal_dt = _get_text(name)
+        event = runner.calendars['one'].join('{}.ics'.format(name))
+        event.write(cal_dt)
 
     format = '{start-end-time-style}: {title}'
-    result = runner.invoke(main_khal, ['edit', '--show-past', 'Event'], input='s\nGreat Event\nq\n')
+    result = runner.invoke(
+        main_khal, ['edit', '--show-past', 'Event'], input='s\nGreat Event\nn\nn\n')
     assert not result.exception
 
     args = ['list', '--format', format, '--day-format', '', '09.04.2014']
     result = runner.invoke(main_khal, args)
-    assert result.output == '09:30-10:30: Great Event\n'
+    assert '09:30-10:30: Great Event' in result.output
+    assert not result.exception
+
+    args = ['list', '--format', format, '--day-format', '', '09.04.2015']
+    result = runner.invoke(main_khal, args)
+    assert ': An Event' in result.output
+    assert not result.exception
 
 
 def test_new(runner):

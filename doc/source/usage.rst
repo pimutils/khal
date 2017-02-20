@@ -138,6 +138,14 @@ Several options are common to almost all of :program:`khal`'s commands
    end-necessary-long
         Same as end-necessary but uses datelong and datetimelong.
 
+   status
+       The status of the event (if this event has one), something like
+       `CONFIRMED` or `CANCELLED`.
+
+   cancelled
+       The string `CANCELLED` (plus one blank) if the event's status is
+       cancelled, otherwise nothing.
+
    By default all-day events have no times. To see a start and end time anyway simply
    add `-full` to the end of any template with start/end, for instance
    `start-time` becomes `start-time-full` and will always show start and end times (instead

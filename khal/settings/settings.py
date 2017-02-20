@@ -49,7 +49,6 @@ def find_configuration_file():
     a dot, is searched in the home user directory. Ultimately,
     DEFAULT_FILE is searched in the current directory.
     """
-    # TODO re-simplify after next v0.9.0 release
     DEFAULT_FILE = __productname__ + '.conf'
     DEFAULT_PATH = __productname__
     resource = os.path.join(DEFAULT_PATH, DEFAULT_FILE)
@@ -61,21 +60,28 @@ def find_configuration_file():
         if os.path.exists(path):
             return path
 
+    # remove this part for v0.10.0
     paths = [os.path.join(path, resource) for path in xdg.BaseDirectory.xdg_config_dirs]
     for path in paths:
         if os.path.exists(path):
             logger.warning(
                 'Deprecation Warning: configuration file path `{}` will not be '
-                'supported from the next release onwards, please migrate to '
-                '`{}` or check  the documentation.'
+                'supported from khal v0.10.0 onwards, please move it to '
+                '`{}`.'
                 ''.format(path, path.replace('khal.conf', 'config')))
             return path
     paths = []
     paths.append(os.path.expanduser(os.path.join('~', '.' + resource)))
     paths.append(os.path.expanduser(DEFAULT_FILE))
 
+    # remove this part for v0.11.0
     for path in paths:
         if os.path.exists(path):
+            logger.warning(
+                'Deprecation Warning: configuration file path `{}` will not be '
+                'supported from v0.11.0 onwards, please move it to '
+                '`{}/khal/config`.'
+                ''.format(path, xdg.BaseDirectory.xdg_config_dirs[0]))
             return path
 
     return None

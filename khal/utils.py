@@ -667,7 +667,8 @@ def ics_from_list(events, tzs, random_uid=False):
                         'This can lead to erroneous time shifts'.format(item.params['TZID'])
                     )
                     missing_tz.add(item.params['TZID'])
-                elif datetime_.tzinfo != pytz.UTC:
+                elif datetime_.tzinfo and datetime_.tzinfo != pytz.UTC and \
+                        datetime_.tzinfo not in needed_tz:
                     needed_tz.add(datetime_.tzinfo)
 
     for tzid in needed_tz:

@@ -7,6 +7,24 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.9.3
+=====
+not released yet
+
+* FIX `list` (and commands based on it like `calendar`, `at`, and `search`)
+  crashed if `--notstarted` was given and allday events were found (introduced
+  in 0.9.2)
+* FIX `list --notstarted` (and commands based on it) would show events only on
+  the first day of their occurrence and not on all further days
+* FIX `configure` would crash if neither "import config from vdirsyncer" nor
+  "create locale vdir" was selected
+* FIX `at` will now show an error message if a date instead of a datetime is
+  given
+* FIX `at`'s default header will now show the datetime quried for (instead of
+  just the date)
+
+* NEW khal will now show cancelled events with a big CANCELLED in front (can be
+  configured via event formatting)
 
 0.9.2
 =====

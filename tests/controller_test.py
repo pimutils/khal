@@ -2,9 +2,11 @@ import datetime as dt
 from textwrap import dedent
 
 from freezegun import freeze_time
+import pytest
 
 from khal.khalendar.vdir import Item
-from khal.controllers import import_ics, get_list_from_str, start_end_from_daterange
+from khal.controllers import import_ics, khal_list, start_end_from_daterange
+from khal import exceptions
 
 from .utils import _get_text
 from . import utils
@@ -31,28 +33,48 @@ item_today = Item(event_today)
 event_format = '{calendar-color}{start-end-time-style:16} {title}'
 event_format += '{repeat-symbol}{description-separator}{description}{calendar-color}'
 
+conf = {'locale': utils.LOCALE_BERLIN,
+        'default': {'timedelta': dt.timedelta(days=2), 'show_all_days': False}
+        }
+
 
 class TestGetAgenda(object):
     def test_new_event(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, utils.cal1)
         coll.new(event)
-        start, end = start_end_from_daterange([], utils.LOCALE_BERLIN)
         assert ['                 a meeting :: short description\x1b[0m'] == \
-            get_list_from_str(
-                coll, utils.LOCALE_BERLIN, start, end, agenda_format=event_format, day_format="")
+            khal_list(coll, [], conf, agenda_format=event_format, day_format="")
 
     def test_new_event_day_format(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, utils.cal1)
         coll.new(event)
-        start, end = start_end_from_daterange([], utils.LOCALE_BERLIN)
         assert ['Today\x1b[0m',
                 '                 a meeting :: short description\x1b[0m'] == \
-            get_list_from_str(
-                coll, utils.LOCALE_BERLIN, start, end,
-                agenda_format=event_format, day_format="{name}",
-            )
+            khal_list(coll, [], conf, agenda_format=event_format, day_format="{name}")
+
+    def test_agenda_default_day_format(self, coll_vdirs):
+        with freeze_time('2016-04-10 12:33'):
+            today = dt.date.today()
+            event_today = event_allday_template.format(
+                today.strftime('%Y%m%d'), tomorrow.strftime('%Y%m%d'))
+            coll, vdirs = coll_vdirs
+            event = coll.new_event(event_today, utils.cal1)
+            coll.new(event)
+            out = khal_list(
+                coll, conf=conf, agenda_format=event_format, datepoint=[])
+            assert [
+                '\x1b[1m10.04.2016 12:33\x1b[0m\x1b[0m',
+                '↦                a meeting :: short description\x1b[0m'] == out
+
+    def test_agenda_fail(self, coll_vdirs):
+        with freeze_time('2016-04-10 12:33'):
+            coll, vdirs = coll_vdirs
+            with pytest.raises(exceptions.FatalError):
+                khal_list(coll, conf=conf, agenda_format=event_format, datepoint=['xyz'])
+            with pytest.raises(exceptions.FatalError):
+                khal_list(coll, conf=conf, agenda_format=event_format, datepoint=['today'])
 
     def test_empty_recurrence(self, coll_vdirs):
         coll, vidrs = coll_vdirs
@@ -67,10 +89,8 @@ class TestGetAgenda(object):
             'DTEND:20110908T170000\r\n'
             'END:VEVENT\r\n'
         ), utils.cal1))
-        start, end = start_end_from_daterange([], utils.LOCALE_BERLIN)
         assert 'no events' in '\n'.join(
-            get_list_from_str(coll, utils.LOCALE_BERLIN, start, end, agenda_format=event_format)
-        ).lower()
+            khal_list(coll, [], conf, agenda_format=event_format, day_format="{name}")).lower()
 
 
 class TestImport(object):
