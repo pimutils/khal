@@ -166,7 +166,7 @@ quit = force_list(default=list('q', 'Q'))
 # Some default values and behaviours are set here.
 [default]
 
-# command to be executed if no command is given when executing khal
+# Command to be executed if no command is given when executing khal.
 default_command = option('calendar', 'list', 'interactive', 'printformats', 'printcalendars', 'printics', '', default='calendar')
 
 # The calendar to use if none is specified for some operation (e.g. if adding a
