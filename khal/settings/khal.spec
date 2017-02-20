@@ -186,7 +186,8 @@ print_new = option('event', 'path', 'False', default=False)
 # highlighting are in [highlight_days] section.
 highlight_event_days = boolean(default=False)
 
-# Default timedelta to use for reporting, for example in `list`
+# Controls for how many days into the future we show events (for example, in
+# `khal agenda`.
 timedelta = timedelta(default='2d')
 
 # The view section contains configuration options that effect the visual appearance
