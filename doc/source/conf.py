@@ -12,12 +12,84 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import validate
+from configobj import ConfigObj
+
 import khal
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
+
+# -- Generate configspec.rst ----------------------------------------------
+
+specpath = '../../khal/settings/khal.spec'
+config = ConfigObj(
+    None, configspec=specpath, stringify=False, list_values=False
+)
+validator = validate.Validator()
+config.validate(validator)
+spec = config.configspec
+
+
+def write_section(specsection, secname, key, comment, output):
+    # why is _parse_check a "private" method? seems to be rather useful...
+    # we don't need fun_kwargs
+    fun_name, fun_args, fun_kwargs, default = validator._parse_check(specsection)
+    output.write('\n.. _{}-{}:'.format(secname, key))
+    output.write('\n')
+    output.write('\n.. object:: {}\n'.format(key))
+    output.write('\n')
+    output.write('    ' + '\n    '.join([line.strip('# ') for line in comment]))
+    output.write('\n')
+    if fun_name == 'option':
+        fun_args = ['*{}*'.format(arg) for arg in fun_args]
+        fun_args = fun_args[:-2] + [fun_args[-2] + ' and ' + fun_args[-1]]
+        fun_name += ', allowed values are {}'.format(', '.join(fun_args))
+        fun_args = []
+    if fun_name == 'integer' and len(fun_args) == 2:
+        fun_name += ', allowed values are between {} and {}'.format(
+            fun_args[0], fun_args[1])
+        fun_args = []
+    output.write('\n')
+    if fun_name in ['expand_db_path', 'expand_path']:
+        fun_name = 'string'
+    elif fun_name in ['force_list']:
+        fun_name = 'list'
+        if isinstance(default, list):
+            default = ['space' if one == ' ' else one for one in default]
+            default = ', '.join(default)
+
+    output.write('      :type: {}'.format(fun_name))
+    output.write('\n')
+    if fun_args != []:
+        output.write('      :args: {}'.format(fun_args))
+        output.write('\n')
+    output.write('      :default: {}'.format(default))
+    output.write('\n')
+
+
+with open('configspec.rst', 'w') as f:
+    for secname in sorted(spec):
+        f.write('\n')
+        heading = 'The [{}] section'.format(secname)
+        f.write('{}\n{}'.format(heading, len(heading) * '~'))
+        f.write('\n')
+        comment = spec.comments[secname]
+        f.write('\n'.join([line[2:] for line in comment]))
+        f.write('\n')
+
+        for key, comment in sorted(spec[secname].comments.items()):
+            if key == '__many__':
+                comment = spec[secname].comments[key]
+                f.write('\n'.join([line[2:] for line in comment]))
+                f.write('\n')
+                for key, comment in sorted(spec[secname]['__many__'].comments.items()):
+                    write_section(spec[secname]['__many__'][key], secname,
+                                  key, comment, f)
+            else:
+                write_section(spec[secname][key], secname, key, comment, f)
 
 # -- General configuration ------------------------------------------------
 

@@ -11,3 +11,4 @@ dist/
 .coverage
 .cache
 htmlcov
+doc/source/configspec.rst
