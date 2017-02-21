@@ -120,7 +120,7 @@ Some default values and behaviours are set here.
 .. object:: default_command
 
     
-    command to be executed if no command is given when executing khal
+    Command to be executed if no command is given when executing khal.
 
       :type: option, allowed values are *calendar*, *list*, *interactive*, *printformats*, *printcalendars*, *printics* and **
       :default: calendar
@@ -164,7 +164,8 @@ Some default values and behaviours are set here.
 .. object:: timedelta
 
     
-    Default timedelta to use for reporting, for example in `list`
+    Controls for how many days into the future we show events (for example, in
+    `khal agenda`.
 
       :type: timedelta
       :default: 2d
@@ -512,7 +513,7 @@ The [view] section
 ~~~~~~~~~~~~~~~~~~
 
 The view section contains configuration options that effect the visual appearance
-when using ikhal.
+when using khal and ikhal.
 
 .. _view-agenda_day_format:
 
@@ -537,7 +538,7 @@ when using ikhal.
     The syntax is the same as for :option:`--format`.
 
       :type: string
-      :default: {calendar-color}{start-end-time-style} {title}{repeat-symbol}{description-separator}{description}{reset}
+      :default: {calendar-color}{cancelled}{start-end-time-style} {title}{repeat-symbol}{description-separator}{description}{reset}
 
 .. _view-bold_for_light_color:
 
@@ -576,7 +577,7 @@ when using ikhal.
     The syntax is the same as for :option:`--format`.
 
       :type: string
-      :default: {calendar-color}{start}-{end} {title}{repeat-symbol}{description-separator}{description}{reset}
+      :default: {calendar-color}{cancelled}{start}-{end} {title}{repeat-symbol}{description-separator}{description}{reset}
 
 .. _view-event_view_always_visible:
 
