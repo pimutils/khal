@@ -97,7 +97,7 @@ class SelectableText(urwid.Text):
 
 
 class DateHeader(SelectableText):
-    def __init__(self, day, dateformat):
+    def __init__(self, day, dateformat, conf):
         """
         :type day: datetime.date
         :type dateformat: format to print `day` in
@@ -105,6 +105,7 @@ class DateHeader(SelectableText):
         """
         self._day = day
         self._dateformat = dateformat
+        self._conf = conf
         super().__init__('')
         self.update_date_line()
 
@@ -141,6 +142,18 @@ class DateHeader(SelectableText):
             approx_delta=approx_delta,
             day=day.strftime('%A'),
         )
+
+    def keypress(self, _, key):
+        binds = self._conf['keybindings']
+        if key in binds['left']:
+            key = 'left'
+        elif key in binds['up']:
+            key = 'up'
+        elif key in binds['right']:
+            key = 'right'
+        elif key in binds['down']:
+            key = 'down'
+        return key
 
 
 class U_Event(urwid.Text):
@@ -456,6 +469,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         date_header = DateHeader(
             day=day,
             dateformat=self._conf['locale']['longdateformat'],
+            conf=self._conf,
         )
         event_list.append(urwid.AttrMap(date_header, 'date'))
         self.events = sorted(self._collection.get_events_on(day))
