@@ -629,7 +629,16 @@ class LocalizedEvent(DatetimeEvent):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        starttz = getattr(self._vevents[self.ref]['DTSTART'].dt, 'tzinfo', None)
+        try:
+            starttz = getattr(self._vevents[self.ref]['DTSTART'].dt, 'tzinfo', None)
+        except KeyError:
+            logger.fatal(
+                "Cannot understand event {} from calendar {},\n you might want to"
+                "file an issue at https://github.com/pimutils/khal/issues"
+                "".format(kwargs.get(href), kwargs.get(calendar))
+            )
+            raise
+
         if starttz is None:
             starttz = self._locale['default_timezone']
         try:
