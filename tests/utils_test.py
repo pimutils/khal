@@ -92,9 +92,10 @@ class TestGuessDatetimefstr(object):
     tomorrow16 = datetime.combine(tomorrow, time(16, 0))
 
     def test_today(self):
-        today13 = datetime.combine(date.today(), time(13, 0))
-        assert (today13, False) == guessdatetimefstr(['today', '13:00'], LOCALE_BERLIN)
-        assert today == guessdatetimefstr(['today'], LOCALE_BERLIN)[0].date()
+        with freeze_time('2016-9-19 8:00'):
+            today13 = datetime.combine(date.today(), time(13, 0))
+            assert (today13, False) == guessdatetimefstr(['today', '13:00'], LOCALE_BERLIN)
+            assert today == guessdatetimefstr(['today'], LOCALE_BERLIN)[0].date()
 
     def test_tomorrow(self):
         assert (self.tomorrow16, False) == \
