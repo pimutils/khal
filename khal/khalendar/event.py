@@ -635,7 +635,7 @@ class LocalizedEvent(DatetimeEvent):
             logger.fatal(
                 "Cannot understand event {} from calendar {},\n you might want to"
                 "file an issue at https://github.com/pimutils/khal/issues"
-                "".format(kwargs.get(href), kwargs.get(calendar))
+                "".format(kwargs.get('href'), kwargs.get('calendar'))
             )
             raise
 
