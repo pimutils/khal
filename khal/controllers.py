@@ -261,6 +261,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
             end=day_end, notstarted=notstarted, original_start=original_start,
             env=env,
             seen=once,
+            width=width,
         )
         if day_format and (conf['default']['show_all_days'] or current_events):
             event_column.append(format_day(start.date(), day_format, conf['locale']))
