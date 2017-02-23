@@ -28,6 +28,8 @@ import urwid
 import threading
 import time
 
+from .widgets import NColumns
+
 
 class Pane(urwid.WidgetWrap):
 
@@ -64,6 +66,26 @@ class Pane(urwid.WidgetWrap):
                  'navigate through the fields.'),
                 (['esc'], 'backtrack to the previous pane.'),
                 (['F1', '?'], 'open this pane help.')]
+
+    def dialog(self, text, buttons):
+        """Open a dialog box.
+
+        :param text: Text to appear as the body of the Dialog box
+        :type text: str
+        :param buttons: list of tuples button labels and functions to call
+            when the button is pressed
+        :type buttons: list(str, callable)
+        """
+        lines = [urwid.Text(line) for line in text.splitlines()]
+
+        buttons = NColumns(
+            [urwid.Button(label, on_press=func) for label, func in buttons],
+            outermost=True,
+        )
+        lines.append(buttons)
+        content = urwid.LineBox(urwid.Pile(lines))
+        overlay = urwid.Overlay(content, self, 'center', ('relative', 70), ('relative', 70), None)
+        self.window.open(overlay)
 
 
 class HelpPane(Pane):

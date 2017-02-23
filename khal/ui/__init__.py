@@ -795,15 +795,14 @@ class EventColumn(urwid.WidgetWrap):
         elif event.event.recurring:
             # FIXME if in search results, original pane is used for overlay, not search results
             # also see issue of reseting titles below, probably related
-            overlay = urwid.Overlay(
-                DeleteDialog(
-                    delete_this,
-                    delete_all,
-                    self.pane.window.backtrack,
-                ),
-                self.pane,
-                'center', ('relative', 70), ('relative', 70), None)
-            self.pane.window.open(overlay)
+            self.pane.dialog(
+                text='This is a recurring event.\nWhich instances do you want to delete?',
+                buttons=[
+                    ('Only this', delete_this),
+                    ('All (past and future)', delete_all),
+                    ('Abort', self.pane.window.backtrack),
+                ]
+            )
             refresh = False
         else:
             self.toggle_delete_all(event.recuid)
@@ -1182,22 +1181,6 @@ class EventEditor(urwid.WidgetWrap):
             self.save(None)
             return
         return super().keypress(size, key)
-
-
-class DeleteDialog(urwid.WidgetWrap):
-    def __init__(self, this_func, all_func, abort_func):
-        lines = []
-        lines.append(urwid.Text('This is a recurring event.'))
-        lines.append(urwid.Text('Which instances do you want to delete?'))
-        lines.append(urwid.Text(''))
-        buttons = NColumns(
-            [urwid.Button('Only this', on_press=this_func),
-             urwid.Button('All (past and future)', on_press=all_func),
-             urwid.Button('Abort', on_press=abort_func),
-             ], outermost=True)
-        lines.append(buttons)
-        content = urwid.Pile(lines)
-        urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
 
 
 class ExportDialog(urwid.WidgetWrap):
