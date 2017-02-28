@@ -54,6 +54,7 @@ setup(
     tests_require=test_requirements,
     setup_requires=['setuptools_scm != 1.12.0'],  # not needed when using packages from PyPI
     use_scm_version={'write_to': 'khal/version.py'},
+    zip_safe=False,  # because of configobj loading the .spec file
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
