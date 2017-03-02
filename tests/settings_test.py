@@ -9,7 +9,8 @@ from .utils import LOCALE_BERLIN
 from khal.settings import get_config
 from khal.settings.exceptions import InvalidSettingsError, \
     CannotParseConfigFileError
-from khal.settings.utils import get_all_vdirs, get_unique_name, config_checks
+from khal.settings.utils import get_all_vdirs, get_unique_name, config_checks, \
+    get_color_from_vdir
 
 PATH = __file__.rsplit('/', 1)[0] + '/configs/'
 
@@ -166,6 +167,15 @@ def metavdirs(tmpdir):
         with open(tmpdir + filename, 'w') as metafile:
             metafile.write(content)
     return tmpdir
+
+
+def test_broken_color(metavdirs):
+    path = metavdirs
+    newvdir = path + '/cal5/'
+    os.makedirs(newvdir)
+    with open(newvdir + 'color', 'w') as metafile:
+        metafile.write('xxx')
+    assert get_color_from_vdir(newvdir) is None
 
 
 def test_discover(metavdirs):
