@@ -46,26 +46,13 @@ class Pane(urwid.WidgetWrap):
     def title(self):
         return self._title
 
+    def selectable(self):
+        """mark this widget as selectable"""
+        return True
+
     @property
     def description(self):
         return self._description
-
-    def get_keys(self):
-        """Return a description of the keystrokes recognized by this pane.
-
-        This method returns a list of tuples describing the keys
-        handled by a pane. This list is used to build a contextual
-        pane help. Each tuple is a pair of a list of keys and a
-        description.
-
-        The abstract pane returns the default keys handled by the
-        window. Panes which do not override these keys should extend
-        this list.
-        """
-        return [(['up', 'down', 'pg.up', 'pg.down'],
-                 'navigate through the fields.'),
-                (['esc'], 'backtrack to the previous pane.'),
-                (['F1', '?'], 'open this pane help.')]
 
     def dialog(self, text, buttons):
         """Open a dialog box.
@@ -87,26 +74,23 @@ class Pane(urwid.WidgetWrap):
         overlay = urwid.Overlay(content, self, 'center', ('relative', 70), ('relative', 70), None)
         self.window.open(overlay)
 
+    def keypress(self, size, key):
+        """Handle application-wide key strokes."""
+        if key in ['f1', '?']:
+            self.show_keybindings()
+        else:
+            return super().keypress(size, key)
 
-class HelpPane(Pane):
+    def show_keybindings(self):
+        lines = list()
+        lines.append('  Command              Keys')
+        lines.append('  =======              ====')
+        for command, keys in self._conf['keybindings'].items():
+            lines.append('  {:20} {}'.format(command, keys))
+        lines.append('')
+        lines.append("Press `Escape` to close this window")
 
-    """A contextual help screen."""
-
-    def __init__(self, pane):
-        content = []
-        for key_list, description in pane.get_keys():
-            key_text = []
-            for key in key_list:
-                if key_text:
-                    key_text.append(', ')
-                key_text.append(('bright', key))
-            content.append(
-                urwid.Columns(
-                    [urwid.Padding(urwid.Text(key_text), left=10),
-                     urwid.Padding(urwid.Text(description), right=10)]))
-
-        Pane.__init__(self, urwid.ListBox(urwid.SimpleListWalker(content)),
-                      'Help')
+        self.dialog('\n'.join(lines), [])
 
 
 class Window(urwid.Frame):
@@ -178,8 +162,7 @@ class Window(urwid.Frame):
             self.backtrack()
         elif key == 'esc' and not self.is_top_level():
             self.backtrack()
-        elif key in ['f1', '?']:
-            self.open(HelpPane(self._get_current_pane()))
+        return key
 
     def _update(self, pane):
         self.set_body(pane)

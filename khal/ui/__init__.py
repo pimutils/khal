@@ -735,7 +735,6 @@ class EventColumn(urwid.WidgetWrap):
             ('weight', 1, ContainerWidget(self.dlistbox))
         ], dividechars=0, focus_column=0)
         new_pane.title = editor.title
-        new_pane.get_keys = editor.get_keys
 
         def teardown(data):
             self.editor = False
@@ -1064,11 +1063,6 @@ class EventEditor(urwid.WidgetWrap):
     def title(self):  # Window title
         return 'Edit: {}'.format(self.summary.get_edit_text())
 
-    def get_keys(self):
-        return [(['arrowsu'], 'navigate through properties'),
-                (['enter'], 'edit property'),
-                (['esc'], 'abort')]
-
     @classmethod
     def selectable(cls):
         return True
@@ -1357,6 +1351,7 @@ class ClassicView(Pane):
             columns,
             title="Search results for \"{}\" (Esc for backtrack)".format(search_term),
         )
+        pane._conf = self._conf
         columns.set_focus_column(1)
         self.window.open(pane)
 
@@ -1367,18 +1362,6 @@ class ClassicView(Pane):
             self.eventscolumn.current_date = date.today()
             self.init = False
         return rval
-
-    def get_keys(self):
-        """return all bound keys"""
-        # FIXME show current bindings
-        return [(['arrows'], 'navigate through the calendar'),
-                (['t'], 're-focus on today'),
-                (['enter', 'tab'], 'select a date/event, show/edit event'),
-                (['n'], 'create event on selected day'),
-                (['d'], 'delete selected event'),
-                (['e'], 'export selected event'),
-                (['q', 'esc'], 'previous pane/quit'),
-                ]
 
     def new_event(self, date, end):
         """create a new event starting on date and ending on end (if given)"""
