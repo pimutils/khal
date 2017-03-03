@@ -23,9 +23,11 @@ from datetime import date, datetime, time, timedelta
 import signal
 import sys
 
+import click
 import urwid
 
 from .. import utils
+from ..khalendar.event import Event
 from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
 from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice, AlarmsEditor, \
@@ -681,7 +683,7 @@ class EventColumn(urwid.WidgetWrap):
         """refresh titles in DateListBoxes"""
         self.dlistbox.update_date_line()
 
-    def edit(self, event, always_save=False):
+    def edit(self, event, always_save=False, external_edit=False):
         """create an EventEditor and display it
 
         :param event: event to edit
@@ -726,19 +728,41 @@ class EventColumn(urwid.WidgetWrap):
             self.pane.window.backtrack()
 
         assert not self.editor
-        self.editor = True
-        editor = EventEditor(self.pane, event, update_colors, always_save=always_save)
+        if external_edit:
+            self.pane.window.loop.screen.stop()
+            text = click.edit(event.raw)
+            self.pane.window.loop.screen.start()
+            if text is None:
+                return
+            # KeyErrors can occurr here when we destroy DTSTART,
+            # otherwise, even broken .ics files seem to be no problem
+            new_event = Event.fromString(
+                text,
+                locale=self._conf['locale'],
+                href=event.href,
+                calendar=event.calendar,
+                etag=event.etag,
+            )
+            self.pane.collection.update(new_event)
+            update_colors(
+                new_event.start_local,
+                new_event.end_local,
+                (event.recurring or new_event.recurring)
+            )
+        else:
+            self.editor = True
+            editor = EventEditor(self.pane, event, update_colors, always_save=always_save)
 
-        ContainerWidget = linebox[self.pane._conf['view']['frame']]
-        new_pane = urwid.Columns([
-            ('weight', 2, ContainerWidget(editor)),
-            ('weight', 1, ContainerWidget(self.dlistbox))
-        ], dividechars=0, focus_column=0)
-        new_pane.title = editor.title
+            ContainerWidget = linebox[self.pane._conf['view']['frame']]
+            new_pane = urwid.Columns([
+                ('weight', 2, ContainerWidget(editor)),
+                ('weight', 1, ContainerWidget(self.dlistbox))
+            ], dividechars=0, focus_column=0)
+            new_pane.title = editor.title
 
-        def teardown(data):
-            self.editor = False
-        self.pane.window.open(new_pane, callback=teardown)
+            def teardown(data):
+                self.editor = False
+            self.pane.window.open(new_pane, callback=teardown)
 
     def export_event(self):
         """export the event in focus as an ICS file"""
@@ -896,7 +920,8 @@ class EventColumn(urwid.WidgetWrap):
                     self.clear_event_view()
                     self._eventshown = self.focus_event.recuid
                     self.view(self.focus_event.event)
-
+            elif key in self._conf['keybindings']['external_edit']:
+                self.edit(self.focus_event.event, external_edit=True)
         if key in ['esc'] and self._eventshown:
             self.clear_event_view()
             key = None

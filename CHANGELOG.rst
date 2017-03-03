@@ -27,6 +27,10 @@ not released yet
 
 * NEW khal will now show cancelled events with a big CANCELLED in front (can be
   configured via event formatting)
+* NEW ikhal supports editing an event's raw icalendar content in an external
+  editor ($EDITOR), default keybinding is `alt + shift + e`. Only use this, if
+  you know what you are doing, the icalendar library we use doesn't do a lot of
+  validation, it silently disregards most invalid data.
 
 0.9.2
 =====

@@ -138,6 +138,11 @@ delete = force_list(default=list('d'))
 # show details or edit (if details are already shown) the currently selected event
 view = force_list(default=list('enter'))
 
+# edit the currently selected events's raw .ics file with $EDITOR
+# Only use this, if you know what you are doing, the icalendar library we use
+# doesn't do a lot of validation, it silently disregards most invalid data.
+external_edit = force_list(default=list('meta E'))
+
 # focus the calendar browser on today
 today = force_list(default=list('t'))
 
