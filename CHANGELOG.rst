@@ -22,6 +22,7 @@ not released yet
   given
 * FIX `at`'s default header will now show the datetime quried for (instead of
   just the date)
+* FIX validate vdir metadata in color files
 
 * NEW khal will now show cancelled events with a big CANCELLED in front (can be
   configured via event formatting)

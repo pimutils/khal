@@ -135,6 +135,12 @@ def get_color_from_vdir(path):
         color = None
     if color is None or color is '':
         logger.debug('Found no or empty file `color` in {}'.format(path))
+        return None
+    color = color.strip()
+    try:
+        is_color(color)
+    except VdtValueError:
+        logger.warn("Found invalid color `{}` in {}color".format(color, path))
         color = None
     return color
 
