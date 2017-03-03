@@ -19,7 +19,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""this module cointains the event model, hopefully soon in a cleaned up version"""
+"""This module contains the event model with all relevant subclasses and some
+helper functions."""
 
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta
