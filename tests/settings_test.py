@@ -1,5 +1,6 @@
 import os.path
 import datetime as dt
+from validate import VdtValueError
 
 import pytest
 from tzlocal import get_localzone
@@ -10,7 +11,7 @@ from khal.settings import get_config
 from khal.settings.exceptions import InvalidSettingsError, \
     CannotParseConfigFileError
 from khal.settings.utils import get_all_vdirs, get_unique_name, config_checks, \
-    get_color_from_vdir
+    get_color_from_vdir, is_color
 
 PATH = __file__.rsplit('/', 1)[0] + '/configs/'
 
@@ -158,10 +159,10 @@ def metavdirs(tmpdir):
         os.makedirs(tmpdir + one)
     filestructure = [
         ('/cal1/public/displayname', 'my calendar'),
-        ('/cal1/public/color', 'red'),
+        ('/cal1/public/color', 'dark blue'),
         ('/cal1/private/displayname', 'my private calendar'),
         ('/cal1/private/color', '#FF00FF'),
-        ('/cal4/dircolor/color', 'red'),
+        ('/cal4/dircolor/color', 'dark blue'),
     ]
     for filename, content in filestructure:
         with open(tmpdir + filename, 'w') as metafile:
@@ -225,7 +226,7 @@ def test_config_checks(metavdirs):
                 'type': 'calendar',
             },
             'my calendar': {
-                'color': 'red',
+                'color': 'dark blue',
                 'path': '/cal1/public',
                 'readonly': False,
                 'type': 'calendar',
@@ -261,7 +262,7 @@ def test_config_checks(metavdirs):
                 'type': 'calendar',
             },
             'dircolor': {
-                'color': 'red',
+                'color': 'dark blue',
                 'path': '/cal4/dircolor',
                 'readonly': False,
                 'type': 'calendar',
@@ -284,3 +285,11 @@ def test_config_checks(metavdirs):
         'locale': {'default_timezone': 'Europe/Berlin', 'local_timezone': 'Europe/Berlin'},
         'sqlite': {'path': '/tmp'},
     }
+
+
+def test_is_color():
+    assert is_color('dark blue') == 'dark blue'
+    assert is_color('#123456') == '#123456'
+    assert is_color('123') == '123'
+    with pytest.raises(VdtValueError):
+        assert is_color('red') == 'red'
