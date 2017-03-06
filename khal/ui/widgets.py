@@ -197,16 +197,20 @@ class TimeWidget(DateTimeWidget):
 
 
 class Choice(urwid.PopUpLauncher):
-    def __init__(self, choices, active, decorate_func=None, overlay_width=32):
+    def __init__(
+            self, choices, active, decorate_func=None, overlay_width=32, callback=lambda: None,
+    ):
         self.choices = choices
+        self._callback = callback
         self._decorate = decorate_func or (lambda x: x)
         self._overlay_width = overlay_width
         self.active = self._original = active
 
     def create_pop_up(self):
-        pop_up = ChoiceList(self)
-        urwid.connect_signal(pop_up, 'close',
-                             lambda button: self.close_pop_up())
+        pop_up = ChoiceList(self, callback=self._callback)
+        urwid.connect_signal(
+            pop_up, 'close', lambda button: self.close_pop_up(),
+        )
         return pop_up
 
     def get_pop_up_parameters(self):
@@ -236,8 +240,9 @@ class ChoiceList(urwid.WidgetWrap):
     """A pile of Button() widgets, intended to be used with Choice()"""
     signals = ['close']
 
-    def __init__(self, parent):
+    def __init__(self, parent, callback=lambda: None):
         self.parent = parent
+        self._callback = callback
         buttons = []
         for c in parent.choices:
             buttons.append(
@@ -253,6 +258,7 @@ class ChoiceList(urwid.WidgetWrap):
 
     def set_choice(self, button, account):
         self.parent.active = account
+        self._callback()
         self._emit("close")
 
 
@@ -383,7 +389,8 @@ class NListBox(SupportsNext, urwid.ListBox):
 
 
 class ValidatedEdit(urwid.WidgetWrap):
-    def __init__(self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs):
+    def __init__(
+            self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs):
         assert validate
         self._validate_func = validate
         self._original_widget = urwid.AttrMap(EditWidget(*args, **kwargs), 'edit', 'editf')
@@ -428,6 +435,20 @@ class ValidatedEdit(urwid.WidgetWrap):
             if not self._validate():
                 return
         return super().keypress(size, key)
+
+
+class PositiveIntEdit(ValidatedEdit):
+    def __init__(self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs):
+        """Variant of Validated Edit that only accepts positive integers"""
+        super().__init__(*args, validate=self._unsigned_int, **kwargs)
+
+    @staticmethod
+    def _unsigned_int(number):
+        """test if `number` can be converted to a positive int"""
+        try:
+            return int(number) >= 0
+        except ValueError:
+            return False
 
 
 class DurationWidget(urwid.WidgetWrap):

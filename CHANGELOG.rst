@@ -9,7 +9,11 @@ may want to subscribe to `GitHub's tag feed
 
 0.9.4
 =====
-not released yet
+* FIX ikhal's event editor now warns before allowing to edit recurrence rules it
+  doesn't understand
+
+* NEW ikhal's event editor now allows setting INTERVALs in recurrences
+
 
 0.9.3
 =====

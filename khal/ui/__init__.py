@@ -30,10 +30,9 @@ from .. import utils
 from ..khalendar.event import Event
 from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
-from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, Choice, AlarmsEditor, \
-    linebox
+from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, linebox
 from .base import Pane, Window
-from .startendeditor import StartEndEditor
+from .editor import EventEditor, ExportDialog
 from .calendarwidget import CalendarWidget
 
 
@@ -71,7 +70,6 @@ from .calendarwidget import CalendarWidget
 #   | +-----------------+ +----------------------------------+ |
 #   +----------------------------------------------------------+
 
-NOREPEAT = 'No'
 ALL = 1
 INSTANCES = 2
 
@@ -933,37 +931,6 @@ class EventColumn(urwid.WidgetWrap):
         return super().render(a, focus)
 
 
-class RecurrenceEditor(urwid.WidgetWrap):
-
-    def __init__(self, rrule):
-        # TODO: support more recurrence schemes
-
-        self.rrule = rrule
-        recurrence = self.rrule['freq'][0].lower() if self.rrule else NOREPEAT
-        self.recurrence_choice = Choice(
-            [NOREPEAT, u"weekly", u"monthly", u"yearly"], recurrence)
-        self.columns = urwid.Columns([(10, urwid.Text('Repeat: ')), (11, self.recurrence_choice)])
-        urwid.WidgetWrap.__init__(self, self.columns)
-
-    @property
-    def changed(self):
-        if self.recurrence_choice.changed:
-            return True
-        return False
-
-    @property
-    def active(self):
-        recurrence = self.recurrence_choice.active
-        if recurrence != NOREPEAT:
-            self.rrule["freq"] = [recurrence]
-            return self.rrule
-        return None
-
-    @active.setter
-    def active(self, val):
-        self.recurrence_choice.active = val
-
-
 class EventDisplay(urwid.WidgetWrap):
     """A widget showing one Event()'s details """
 
@@ -1016,206 +983,6 @@ class EventDisplay(urwid.WidgetWrap):
 
         pile = urwid.Pile(lines)
         urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
-
-
-class EventEditor(urwid.WidgetWrap):
-    """Widget that allows Editing one `Event()`"""
-
-    def __init__(self, pane, event, save_callback=None, always_save=False):
-        """
-        :type event: khal.event.Event
-        :param save_callback: call when saving event with new start and end
-             dates and recursiveness of original and edited event as parameters
-        :type save_callback: callable
-        :param always_save: save event even if it has not changed
-        :type always_save: bool
-        """
-
-        self.pane = pane
-        self.event = event
-        self._save_callback = save_callback
-
-        self.collection = pane.collection
-        self._conf = pane._conf
-
-        self._abort_confirmed = False
-
-        self.description = event.description
-        self.location = event.location
-        self.categories = event.categories
-        self.startendeditor = StartEndEditor(
-            event.start_local, event.end_local, self._conf,
-            self.pane.eventscolumn.original_widget.set_focus_date)
-        self.recurrenceeditor = RecurrenceEditor(self.event.recurobject)
-        self.summary = Edit(caption='Title: ', edit_text=event.summary)
-
-        divider = urwid.Divider(' ')
-
-        def decorate_choice(c):
-            return ('calendar ' + c['name'], c['name'])
-
-        self.calendar_chooser = Choice(
-            [self.collection._calendars[c] for c in self.collection.writable_names],
-            self.collection._calendars[self.event.calendar],
-            decorate_choice
-        )
-        self.description = Edit(caption='Description: ',
-                                edit_text=self.description, multiline=True)
-        self.location = Edit(caption='Location: ',
-                             edit_text=self.location)
-        self.categories = Edit(caption='Categories: ',
-                               edit_text=self.categories)
-        self.alarms = AlarmsEditor(self.event)
-        self.pile = NListBox(urwid.SimpleFocusListWalker([
-            NColumns([self.summary, self.calendar_chooser], dividechars=2),
-            divider,
-            self.location,
-            self.categories,
-            self.description,
-            divider,
-            self.startendeditor,
-            self.recurrenceeditor,
-            divider,
-            self.alarms,
-            divider,
-            urwid.Button('Save', on_press=self.save),
-            urwid.Button('Export', on_press=self.export)
-        ]), outermost=True)
-        self._always_save = always_save
-        urwid.WidgetWrap.__init__(self, self.pile)
-
-    @property
-    def title(self):  # Window title
-        return 'Edit: {}'.format(self.summary.get_edit_text())
-
-    @classmethod
-    def selectable(cls):
-        return True
-
-    @property
-    def changed(self):
-        if self.summary.get_edit_text() != self.event.summary:
-            return True
-        if self.description.get_edit_text() != self.event.description:
-            return True
-        if self.location.get_edit_text() != self.event.location:
-            return True
-        if self.categories.get_edit_text() != self.event.categories:
-            return True
-        if self.startendeditor.changed or self.calendar_chooser.changed:
-            return True
-        if self.recurrenceeditor.changed:
-            return True
-        if self.alarms.changed:
-            return True
-        return False
-
-    def update_vevent(self):
-        self.event.update_summary(self.summary.get_edit_text())
-        self.event.update_description(self.description.get_edit_text())
-        self.event.update_location(self.location.get_edit_text())
-        self.event.update_categories(self.categories.get_edit_text())
-
-        if self.startendeditor.changed:
-            self.event.update_start_end(
-                self.startendeditor.startdt, self.startendeditor.enddt)
-        if self.recurrenceeditor.changed:
-            rrule = self.recurrenceeditor.active
-            self.event.update_rrule(rrule)
-
-        if self.alarms.changed:
-            self.event.update_alarms(self.alarms.get_alarms())
-
-    def export(self, button):
-        """
-        export the event as ICS
-        :param button: not needed, passed via the button press
-        """
-        def export_this(_, user_data):
-            try:
-                self.event.export_ics(user_data.get_edit_text())
-            except Exception as e:
-                self.pane.window.backtrack()
-                self.pane.window.alert(
-                    ('light red',
-                     'Failed to save event: %s' % e))
-                return
-
-            self.pane.window.backtrack()
-            self.pane.window.alert(
-                ('light green',
-                 'Event successfully exported'))
-
-        overlay = urwid.Overlay(
-            ExportDialog(
-                export_this,
-                self.pane.window.backtrack,
-                self.event,
-            ),
-            self.pane,
-            'center', ('relative', 50), ('relative', 50), None)
-        self.pane.window.open(overlay)
-
-    def save(self, button):
-        """saves the event to the db
-
-        (only when it has been changed or always_save is set)
-        :param button: not needed, passed via the button press
-        """
-        if not self.startendeditor.validate():
-            self.pane.window.alert(
-                ('light red', "Can't save: end date is before start date!"))
-            return
-        if self._always_save or self.changed is True:
-            self.update_vevent()
-            self.event.allday = self.startendeditor.allday
-            self.event.increment_sequence()
-            if self.event.etag is None:  # has not been saved before
-                self.event.calendar = self.calendar_chooser.active['name']
-                self.collection.new(self.event)
-            elif self.calendar_chooser.changed:
-                self.collection.change_collection(
-                    self.event,
-                    self.calendar_chooser.active['name']
-                )
-            else:
-                self.collection.update(self.event)
-
-            self._save_callback(
-                self.event.start_local, self.event.end_local,
-                self.event.recurring or self.recurrenceeditor.changed,
-            )
-        self._abort_confirmed = False
-        self.pane.window.backtrack()
-
-    def keypress(self, size, key):
-        if key in ['esc'] and self.changed and not self._abort_confirmed:
-            self.pane.window.alert(
-                ('light red', 'Unsaved changes! Hit ESC again to discard.'))
-            self._abort_confirmed = True
-            return
-        else:
-            self._abort_confirmed = False
-        if key in self.pane._conf['keybindings']['save']:
-            self.save(None)
-            return
-        return super().keypress(size, key)
-
-
-class ExportDialog(urwid.WidgetWrap):
-    def __init__(self, this_func, abort_func, event):
-        lines = []
-        lines.append(urwid.Text('Export event as ICS file'))
-        lines.append(urwid.Text(''))
-        export_location = Edit(
-            caption='Location: ', edit_text="~/%s.ics" % event.summary.strip())
-        lines.append(export_location)
-        lines.append(urwid.Divider(' '))
-        lines.append(
-            urwid.Button('Save', on_press=this_func, user_data=export_location)
-        )
-        content = NPile(lines)
-        urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
 
 
 class SearchDialog(urwid.WidgetWrap):
