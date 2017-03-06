@@ -81,7 +81,7 @@ Here is a small example:
     If set to ``discover``, khal will use
     `globbing <https://en.wikipedia.org/wiki/Glob_(programming)>`_ to expand this
     calendar's `path` to (possibly) several paths and use those as individual
-    calendars (this cannot be used with `birthday` collections`). See `Examplary
+    calendars (this cannot be used with `birthday` collections`). See `Exemplary
     discover usage`_ for an example.
     
     If an individual calendar vdir has a `color` file, the calendar's color will
@@ -260,6 +260,18 @@ between), e.g. **ctrl n**.
 
       :type: list
       :default: e
+
+.. _keybindings-external_edit:
+
+.. object:: external_edit
+
+    
+    edit the currently selected events' raw .ics file with $EDITOR
+    Only use this, if you know what you are doing, the icalendar library we use
+    doesn't do a lot of validation, it silently disregards most invalid data.
+
+      :type: list
+      :default: meta E
 
 .. _keybindings-left:
 
@@ -525,9 +537,9 @@ when using khal and ikhal.
     
     Default formatting for events used when the user asks for all events in a
     given time range, used for :command:`list`, :command:`calendar` and in
-    :command:`interactive` (ikhal). Please note, that any color styling will
-    be ignored in `ikhal`, where events will always be shown in the color of
-    the calendar they belong to.
+    :command:`interactive` (ikhal). Please note, that any color styling will be
+    ignored in `ikhal`, where events will always be shown in the color of the
+    calendar they belong to.
     The syntax is the same as for :option:`--format`.
 
       :type: string
@@ -599,10 +611,10 @@ when using khal and ikhal.
     
     Whether to show a visible frame (with *box drawing* characters) around some
     (groups of) elements or not. There are currently several different frame
-    options available, that should visually differentiate whether an element
-    is in focus or not. Some of them will probably be removed in future
-    releases of khal, so please try them out and give feedback on which style
-    you prefer (the color of all variants can be defined in the color themes).
+    options available, that should visually differentiate whether an element is
+    in focus or not. Some of them will probably be removed in future releases of
+    khal, so please try them out and give feedback on which style you prefer
+    (the color of all variants can be defined in the color themes).
 
       :type: option, allowed values are *False*, *width*, *color* and *top*
       :default: False

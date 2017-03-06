@@ -9,7 +9,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.9.3
 =====
-not released yet
+released 2017-03-06
 
 * FIX `list` (and commands based on it like `calendar`, `at`, and `search`)
   crashed if `--notstarted` was given and allday events were found (introduced
@@ -20,7 +20,7 @@ not released yet
   "create locale vdir" was selected
 * FIX `at` will now show an error message if a date instead of a datetime is
   given
-* FIX `at`'s default header will now show the datetime quried for (instead of
+* FIX `at`'s default header will now show the datetime queried for (instead of
   just the date)
 * FIX validate vdir metadata in color files
 * FIX show the actually configured keybindings in ikhal
