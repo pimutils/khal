@@ -41,7 +41,7 @@ from khal.exceptions import FatalError
 def timefstr(dtime_list, timeformat):
     """converts the first item of a list (a time as a string) to a datetimeobject
 
-    where the date is today and the time is given by the a string
+    where the date is today and the time is given by a string
     removes "used" elements of list
 
     :type dtime_list: list(str)
@@ -177,7 +177,7 @@ def datefstr_weekday(dtime_list, _):
     """interprets first element of a list as a relative date and removes that
     element
 
-    :param dtime_list: event descrpition in list form
+    :param dtime_list: event description in list form
     :type dtime_list: list
     :returns: date
     :rtype: datetime.datetime

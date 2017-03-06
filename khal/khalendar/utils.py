@@ -49,7 +49,7 @@ def expand(vevent, href=''):
                  nothing else
     :type href: str
     :returns: list of start and end (date)times of the expanded event
-    :rtyped list(tuple(datetime, datetime))
+    :rtype: list(tuple(datetime, datetime))
     """
     # we do this now and than never care about the "real" end time again
     if 'DURATION' in vevent:
@@ -72,7 +72,7 @@ def expand(vevent, href=''):
         vevent = sanitize_rrule(vevent)
 
         # dst causes problem while expanding the rrule, therefore we transform
-        # everything to naive datetime objects and tranform back after
+        # everything to naive datetime objects and transform back after
         # expanding
         # See https://github.com/dateutil/dateutil/issues/102
         dtstart = vevent['DTSTART'].dt
@@ -147,10 +147,10 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
          were supposed to be localized but which timezone was not understood
          by icalendar
     :type timezone: pytz.timezone
-    :param href: used for for logging to inform user which .ics files are
+    :param href: used for logging to inform user which .ics files are
         problematic
     :type href: str
-    :param calendar: used for for logging to inform user which .ics files are
+    :param calendar: used for logging to inform user which .ics files are
         problematic
     :type calendar: str
     :returns: clean vevent

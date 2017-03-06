@@ -173,10 +173,10 @@ class Event(object):
     def update_start_end(self, start, end):
         """update start and end time of this event
 
-        calling this an a recurring event will lead to the proto instance
+        calling this on a recurring event will lead to the proto instance
         be set to the new start and end times
 
-        beware, this methods performs some open heart surgerly
+        beware, this methods performs some open heart surgery
         """
         if type(start) != type(end):  # flake8: noqa
             raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
@@ -316,7 +316,7 @@ class Event(object):
 
     @property
     def raw(self):
-        """needed for vdirsyncer comat
+        """needed for vdirsyncer compatibility
 
         return text
         """

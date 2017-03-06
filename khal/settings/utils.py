@@ -100,7 +100,7 @@ def is_color(color):
     # 2) auto
     # 3) a color name from the 16 color palette
     # 4) a color index from the 256 color palette
-    # 5) a HTML-style color code
+    # 5) an HTML-style color code
     if (color in ['', 'auto'] or
             color in COLORS.keys() or
             (color.isdigit() and int(color) >= 0 and int(color) <= 255) or

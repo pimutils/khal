@@ -120,7 +120,7 @@ Several options are common to almost all of :program:`khal`'s commands
         The start time in timeformat OR an appropriate symbol.
 
    to-style
-        A hyphen "-" or nothing such that it appropriatly fits between
+        A hyphen "-" or nothing such that it appropriately fits between
         start-style and end-style.
 
    end-style

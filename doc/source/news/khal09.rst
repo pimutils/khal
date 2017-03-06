@@ -8,9 +8,9 @@ khal v0.9.0 released
 This is probably the biggest release of khal to date, that is, the one with the
 most changes since the last release. This changes are made up of a bunch of bug
 fixes and enhancements.  Unfortunately, some of these break backwards
-compatibiliy, many of which will make themselves noticeable, because your config
+compatibility, many of which will make themselves noticeable, because your config
 file will no longer be valid, consult the changelog_ or the documentation_.
-Noticable is also, that command `agenda` has been renamed to `list` 
+Noticable is also, that command `agenda` has been renamed to `list`
 
 Some of the larger changes include, among others, new configuration options on
 how events are printed (thanks to first time contributor Taylor Money) and a new

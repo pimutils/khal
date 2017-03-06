@@ -77,7 +77,7 @@ class CalendarPopUp(urwid.PopUpLauncher):
 
 
 class StartEndEditor(urwid.WidgetWrap):
-    """Wigdet for editing start and end times (of an event)"""
+    """Widget for editing start and end times (of an event)"""
 
     def __init__(self, start, end, conf, on_date_change=lambda x: None):
         """

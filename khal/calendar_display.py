@@ -96,7 +96,7 @@ def str_week(week, today, collection=None,
              hmethod=None, default_color=None, multiple=None, color=None,
              highlight_event_days=False, locale=None, bold_for_light_color=True):
     """returns a string representing one week,
-    if for day == today colour is reversed
+    if for day == today color is reversed
 
     :param week: list of 7 datetime.date objects (one week)
     :type day: list()

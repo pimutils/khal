@@ -115,7 +115,7 @@ def get_config(
                                 file_error=True,
                                 )
     except ConfigObjError as error:
-        logger.fatal('parsing the config file file with the following error: '
+        logger.fatal('parsing the config file with the following error: '
                      '{}'.format(error))
         logger.fatal('if you recently updated khal, the config file format '
                      'might have changed, in that case please consult the '

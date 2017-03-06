@@ -158,7 +158,7 @@ Some default values and behaviours are set here.
 
     
     Controls for how many days into the future we show events (for example, in
-    `khal agenda`.
+    `khal list`) by default.
 
       :type: timedelta
       :default: 2d

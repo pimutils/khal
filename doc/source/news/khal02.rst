@@ -24,7 +24,7 @@ Afterwards you will need to re-setup your *khal* configuration (copy the new
 example config file), also you will need to delete your old (local) database, so
 please make sure you did sync everything.
 
-Also *khal*'s command line syntax changed qutie a bit, so you might want to head over the documentation_.
+Also *khal*'s command line syntax changed quite a bit, so you might want to head over the documentation_.
 
 .. _pypi: https://pypi.python.org/pypi/khal/
 .. _vdirsyncer: https://github.com/untitaker/vdirsyncer/

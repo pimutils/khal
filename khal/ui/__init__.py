@@ -124,7 +124,7 @@ class DateHeader(SelectableText):
         :param day: day to be converted
         :type: day: datetime.day
         :param dtformat: the format day is to be printed in, passed to strftime
-        :tpye dtformat: str
+        :type dtformat: str
         :rtype: str
         """
 
@@ -776,7 +776,7 @@ class EventColumn(urwid.WidgetWrap):
             else:
                 self.pane.window.backtrack()
                 self.pane.window.alert(
-                    ('light green', 'Event successfuly exported'))
+                    ('light green', 'Event successfully exported'))
 
         overlay = urwid.Overlay(
             ExportDialog(
@@ -838,7 +838,7 @@ class EventColumn(urwid.WidgetWrap):
         """duplicate the event in focus"""
         # TODO copying from birthday calendars is currently problematic
         # because their title is determined by X-BIRTHDAY and X-FNAME properties
-        # which are also copied. If the events's summary is edited it will show
+        # which are also copied. If the events' summary is edited it will show
         # up on disk but not be displayed in khal
         event = self.focus_event.event.duplicate()
         try:
@@ -1144,7 +1144,7 @@ class EventEditor(urwid.WidgetWrap):
             self.pane.window.backtrack()
             self.pane.window.alert(
                 ('light green',
-                 'Event successfuly exported'))
+                 'Event successfully exported'))
 
         overlay = urwid.Overlay(
             ExportDialog(

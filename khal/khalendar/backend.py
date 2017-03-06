@@ -83,7 +83,7 @@ class SQLiteDb(object):
     """
     This class should provide a caching database for a calendar, keeping raw
     vevents in one table but allowing to retrieve events by dates (via the help
-    of some utilsiliary tables)
+    of some auxiliary tables)
 
     :param calendar: the `name` of this calendar, if the same *name* and
                      *dbpath* is given on next creation of an SQLiteDb object
@@ -140,7 +140,7 @@ class SQLiteDb(object):
                 raise CouldNotCreateDbDir()
 
     def _check_table_version(self):
-        """tests for curent db Version
+        """tests for current db Version
         if the table is still empty, insert db_version
         """
         self.cursor.execute('SELECT version FROM version')
@@ -280,7 +280,7 @@ class SQLiteDb(object):
             if isinstance(bday, list):
                 logger.warning(
                     'Vcard {0} in collection {1} has more than one '
-                    'BIRTHDAY, will be skippend and not be available '
+                    'BIRTHDAY, will be skipped and not be available '
                     'in khal.'.format(href, calendar)
                 )
                 return
@@ -319,9 +319,9 @@ class SQLiteDb(object):
     def _update_impl(self, vevent, href, calendar):
         """insert `vevent` into the database
 
-        expand `vevent`'s reccurence rules (if needed) and insert all instance
+        expand `vevent`'s recurrence rules (if needed) and insert all instance
         in the respective tables
-        than insert non-reccuring and original recurring (those with an RRULE
+        than insert non-recurring and original recurring (those with an RRULE
         property) events into table `events`
         """
         # TODO FIXME this function is a steaming pile of shit
@@ -422,7 +422,7 @@ class SQLiteDb(object):
         """
         removes the event from the db,
 
-        :param etag: only there for compatiblity with vdirsyncer's Storage,
+        :param etag: only there for compatibility with vdirsyncer's Storage,
                      we always delete
         :returns: None
         """

@@ -351,7 +351,7 @@ def _get_cli():
 
         START and END can be either dates, times or datetimes, please have a
         look at the man page for details.
-        Everthing than can not be interpreted as a (date)times or a timezone is
+        Everything that cannot be interpreted as a (date)time or a timezone is
         assumed to be the event's summary, if two colons (::) are present,
         everything behind them is taken as the event's description.
         '''
@@ -554,7 +554,7 @@ def _get_cli():
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
-    @click.option('--show-past', help=('Show events that have already occured as options'),
+    @click.option('--show-past', help=('Show events that have already occurred as options'),
                   is_flag=True)
     @click.argument('search_string', nargs=-1)
     @click.pass_context

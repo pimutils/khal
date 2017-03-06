@@ -49,11 +49,11 @@ readonly = boolean(default=False)
 # birthdays from those VCARDS, that is only files with ``.ics`` extension will
 # be considered, all other files will be ignored.  ``birthdays`` also implies
 # ``readonly=True``.
-# 
+#
 # If set to ``discover``, khal will use
 # `globbing <https://en.wikipedia.org/wiki/Glob_(programming)>`_ to expand this
 # calendar's `path` to (possibly) several paths and use those as individual
-# calendars (this cannot be used with `birthday` collections`). See `Examplary
+# calendars (this cannot be used with `birthday` collections`). See `Exemplary
 # discover usage`_ for an example.
 #
 # If an individual calendar vdir has a `color` file, the calendar's color will
@@ -138,7 +138,7 @@ delete = force_list(default=list('d'))
 # show details or edit (if details are already shown) the currently selected event
 view = force_list(default=list('enter'))
 
-# edit the currently selected events's raw .ics file with $EDITOR
+# edit the currently selected events' raw .ics file with $EDITOR
 # Only use this, if you know what you are doing, the icalendar library we use
 # doesn't do a lot of validation, it silently disregards most invalid data.
 external_edit = force_list(default=list('meta E'))

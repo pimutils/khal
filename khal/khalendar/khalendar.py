@@ -56,7 +56,7 @@ def create_directory(path):
 class CalendarCollection(object):
     """CalendarCollection allows access to various calendars stored in vdirs
 
-    all calendars are cached in an sqlitedb for perforamce reasons"""
+    all calendars are cached in an sqlitedb for performance reasons"""
 
     def __init__(self,
                  calendars=None,

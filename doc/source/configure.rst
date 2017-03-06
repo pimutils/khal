@@ -28,7 +28,7 @@ Example
 .. literalinclude:: ../../tests/configs/simple.conf
   :language: ini
 
-Examplary discover usage
+Exemplary discover usage
 -------------------------
 If you have the following directory layout::
 
@@ -37,7 +37,7 @@ If you have the following directory layout::
   ├- home/
   └─ family/
 
-where `work`, `home` and `family` are all different vdirs, each containg one
+where `work`, `home` and `family` are all different vdirs, each containing one
 calendar, a matching calendar section could look like this:
 
 .. highlight:: ini

@@ -183,7 +183,7 @@ def get_events_between(
     events_float = sorted(collection.get_floating(start, end))
     events = sorted(events + events_float)
     for event in events:
-        # yes the the logic could be simplified, but I believe it's easier
+        # yes the logic could be simplified, but I believe it's easier
         # to understand what's going on here this way
         if notstarted:
             if event.allday and event.start < original_start.date():
@@ -423,7 +423,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
         edited = False
 
         if choice == "Delete":
-            if confirm("Delete all occurances of event?"):
+            if confirm("Delete all occurences of event?"):
                 collection.delete(event.href, event.etag, event.calendar)
                 return True
         elif choice == "datetime range":
