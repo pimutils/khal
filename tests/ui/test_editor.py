@@ -1,6 +1,6 @@
 from datetime import datetime, date
 
-from khal.ui.startendeditor import StartEndEditor
+from khal.ui.editor import StartEndEditor
 
 from ..utils import LOCALE_BERLIN, BERLIN
 
