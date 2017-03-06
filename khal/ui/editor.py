@@ -304,9 +304,7 @@ class EventEditor(urwid.WidgetWrap):
         self.startendeditor = StartEndEditor(
             event.start_local, event.end_local, self._conf,
             self.pane.eventscolumn.original_widget.set_focus_date)
-        self.recurrenceeditor = RecurrenceEditor(
-            self.event.recurobject, self._conf, event.start_local,
-        )
+        self.recurrenceeditor = RecurrenceEditor(self.event.recurobject, self._conf, event.start_local)
         self.summary = urwid.Edit(caption='Title: ', edit_text=event.summary)
 
         divider = urwid.Divider(' ')
@@ -459,6 +457,23 @@ class EventEditor(urwid.WidgetWrap):
         return super().keypress(size, key)
 
 
+WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']  # TODO use locale and respect weekdaystart
+
+class WeekDaySelector(urwid.WidgetWrap):
+    def __init__(self, startdt):
+
+        self._weekday_boxes = {day: urwid.CheckBox(day, state=False) for day in WEEKDAYS}
+        weekday = startdt.weekday()  # TODO also needs fixing
+        self._weekday_boxes[WEEKDAYS[weekday]].state = True
+        self.weekday_checks = NColumns([(7, self._weekday_boxes[wd]) for wd in WEEKDAYS])
+        urwid.WidgetWrap.__init__(self, self.weekday_checks)
+
+    @property
+    def days(self):
+        days = [day.label for (day, _) in self.weekday_checks.contents if day.state]
+        return days
+
+
 class RecurrenceEditor(urwid.WidgetWrap):
 
     def __init__(self, rrule, conf, startdt):
@@ -497,35 +512,34 @@ class RecurrenceEditor(urwid.WidgetWrap):
             on_date_change=lambda _: None,
         )
         self.until_edit = CalendarPopUp(edit, self._conf, lambda _: None)
-        # TODO use locale and respect weekdaystart
-        weekdays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 
-        self._weekday_boxes = {day: urwid.CheckBox(day, state=False) for day in weekdays}
-        weekday = self._startdt.weekday()  # TODO also needs fixing
-        self._weekday_boxes[weekdays[weekday]].state = True
-        # TODO make sure weekday of startdt is always selected (or perhaps
-        # not un-selectable)
+        self.weekday_checks = WeekDaySelector(self._startdt)
 
         xth_weekday = "every {} {}".format(
-            (self._startdt.day // 7) + 1, weekdays[self._startdt.weekday()],
+            (self._startdt.day // 7) + 1, WEEKDAYS[self._startdt.weekday()],
         )
         self.monthly_choice = Choice(
             ["on the xth", xth_weekday], "on the xth", callback=self.rebuild,
         )
-        self.weekday_checks = NColumns([(7, self._weekday_boxes[wd]) for wd in weekdays])
 
         self._pile = pile = NPile([urwid.Text('')])
         urwid.WidgetWrap.__init__(self, pile)
         self.rebuild()
 
-    def check_understood_rrule(self, rrule):
-        """test if we can reporduce `rrule`"""
+    @staticmethod
+    def check_understood_rrule(rrule):
+        """test if we can reproduce `rrule`."""
         keys = set(rrule.keys())
-        if keys.difference({'FREQ', 'INTERVAL'}) or \
-                rrule.get('FREQ', [None])[0] not in ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']:
+        unsupporetd_rrule_parts = {
+            'BYSECOND', 'BYMINUTE', 'BYHOUR', 'BYMONTHDAY', 'BYYEARDAY',
+            'BYWEEKNO', 'BYMONTH', 'BYSETPOS', 'WKST',
+        }
+        if keys.intersection(unsupporetd_rrule_parts):
             return False
-        else:
-            return True
+        if rrule.get('FREQ', [None])[0] not in ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']:
+            return False
+        # TODO negative BYDAY
+        return True
 
     def check_repeat(self, checkbox, state):
         self.repeat = state
@@ -566,6 +580,18 @@ class RecurrenceEditor(urwid.WidgetWrap):
         ])
         lines = [firstline]
 
+        if self.recurrence_choice.active == "weekly":
+            lines.append(self.weekday_checks)
+        if self.recurrence_choice.active == "monthly":
+            lines.append(self.monthly_choice)
+
+        nextline = [(16, self.until_choice)]
+        if self.until_choice.active == "Until":
+            nextline.append((20, self.until_edit))
+        elif self.until_choice.active == "Repetitions":
+            nextline.append((4, self.repetitions_edit))
+        lines.append(NColumns(nextline))
+
         self._pile = NPile(lines)
         urwid.WidgetWrap.__init__(self, self._pile)
 
@@ -574,9 +600,14 @@ class RecurrenceEditor(urwid.WidgetWrap):
         return self._rrule != self.rrule()  # TODO do this properly
 
     def rrule(self):
-        rrule = dict()  # TODO check if we need to use a caseless dict
+        rrule = dict()   # TODO check if we need to use a caseless dict
         rrule["freq"] = [self.recurrence_choice.active]
-        rrule["interval"] = [int(self.interval_edit.get_edit_text())]
+        interval = int(self.interval_edit.get_edit_text())
+        if interval != 1:
+            rrule["interval"] = [interval]
+        if rrule["freq"] == ["weekly"]:
+            if len(self.weekday_checks.days) > 1:
+                rrule["byday"] = self.weekday_checks.days
         return rrule
 
     @property
