@@ -55,9 +55,9 @@ Several options are common to almost all of :program:`khal`'s commands
 .. option:: --format FORMAT
 
    For all of khal's commands that print events, the formatting of that event
-   can be specfied with this option.  ``FORMAT`` is a template
+   can be specified with this option.  ``FORMAT`` is a template
    string, in which identifiers delimited by curly braces (`{}`) will be
-   expanded to an event's properties.  ``FORMAT`` supports all formating
+   expanded to an event's properties.  ``FORMAT`` supports all formatting
    options offered by python's `str.format()`_ (as it is used internally).
    The available template options are:
 

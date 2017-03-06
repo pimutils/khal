@@ -232,17 +232,17 @@ theme = option('dark', 'light', default='dark')
 
 # Whether to show a visible frame (with *box drawing* characters) around some
 # (groups of) elements or not. There are currently several different frame
-# options available, that should visually differentiate wether an element is
+# options available, that should visually differentiate whether an element is
 # in focus or not. Some of them will probably be removed in future releases of
-# khal, so please try them out and give feedback on which style you prefer (the
-# color of all variants can be defined in the color themes).
+# khal, so please try them out and give feedback on which style you prefer
+# (the color of all variants can be defined in the color themes).
 frame = option('False', 'width', 'color', 'top', default='False')
 
 # Whether to use bold text for light colors or not. Non-bold light colors may
 # not work on all terminals but allow using light background colors.
 bold_for_light_color = boolean(default=True)
 
-# Default formating for events used when the user asks for all events in a
+# Default formatting for events used when the user asks for all events in a
 # given time range, used for :command:`list`, :command:`calendar` and in
 # :command:`interactive` (ikhal). Please note, that any color styling will be
 # ignored in `ikhal`, where events will always be shown in the color of the
@@ -250,13 +250,13 @@ bold_for_light_color = boolean(default=True)
 # The syntax is the same as for :option:`--format`.
 agenda_event_format = string(default='{calendar-color}{cancelled}{start-end-time-style} {title}{repeat-symbol}{description-separator}{description}{reset}')
 
-# Specifies how each *day header* is formated.
+# Specifies how each *day header* is formatted.
 agenda_day_format = string(default='{bold}{name}, {date-long}{reset}')
 
-# Default formating for events used when the start- and end-date are not clear
-# through context, e.g. for :command:`search`, used almost everywhere but
-# :command:`list` and :command:`calendar`. It is therefore probably a sensible
-# choice to include the start- and end-date.
+# Default formatting for events used when the start- and end-date are not
+# clear through context, e.g. for :command:`search`, used almost everywhere
+# but :command:`list` and :command:`calendar`. It is therefore probably a
+# sensible choice to include the start- and end-date.
 # The syntax is the same as for :option:`--format`.
 event_format = string(default='{calendar-color}{cancelled}{start}-{end} {title}{repeat-symbol}{description-separator}{description}{reset}')
 

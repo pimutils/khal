@@ -513,7 +513,7 @@ when using khal and ikhal.
 .. object:: agenda_day_format
 
     
-    Specifies how each *day header* is formated.
+    Specifies how each *day header* is formatted.
 
       :type: string
       :default: {bold}{name}, {date-long}{reset}
@@ -523,11 +523,11 @@ when using khal and ikhal.
 .. object:: agenda_event_format
 
     
-    Default formating for events used when the user asks for all events in a
+    Default formatting for events used when the user asks for all events in a
     given time range, used for :command:`list`, :command:`calendar` and in
-    :command:`interactive` (ikhal). Please note, that any color styling will be
-    ignored in `ikhal`, where events will always be shown in the color of the
-    calendar they belong to.
+    :command:`interactive` (ikhal). Please note, that any color styling will
+    be ignored in `ikhal`, where events will always be shown in the color of
+    the calendar they belong to.
     The syntax is the same as for :option:`--format`.
 
       :type: string
@@ -563,10 +563,10 @@ when using khal and ikhal.
 .. object:: event_format
 
     
-    Default formating for events used when the start- and end-date are not clear
-    through context, e.g. for :command:`search`, used almost everywhere but
-    :command:`list` and :command:`calendar`. It is therefore probably a sensible
-    choice to include the start- and end-date.
+    Default formatting for events used when the start- and end-date are not
+    clear through context, e.g. for :command:`search`, used almost everywhere
+    but :command:`list` and :command:`calendar`. It is therefore probably a
+    sensible choice to include the start- and end-date.
     The syntax is the same as for :option:`--format`.
 
       :type: string
@@ -599,10 +599,10 @@ when using khal and ikhal.
     
     Whether to show a visible frame (with *box drawing* characters) around some
     (groups of) elements or not. There are currently several different frame
-    options available, that should visually differentiate wether an element is
-    in focus or not. Some of them will probably be removed in future releases of
-    khal, so please try them out and give feedback on which style you prefer (the
-    color of all variants can be defined in the color themes).
+    options available, that should visually differentiate whether an element
+    is in focus or not. Some of them will probably be removed in future
+    releases of khal, so please try them out and give feedback on which style
+    you prefer (the color of all variants can be defined in the color themes).
 
       :type: option, allowed values are *False*, *width*, *color* and *top*
       :default: False
