@@ -581,7 +581,7 @@ def _get_cli():
                   help=('The format of the day line.'))
     @click.option('--notstarted', help=('Print only events that have not started'),
                   is_flag=True)
-    @click.argument('DATETIME', nargs=-1, required=False, metavar='[DATETIME]')
+    @click.argument('DATETIME', nargs=-1, required=False, metavar='[[START DATE] TIME | now]')
     @click.pass_context
     def at(ctx, datetime, notstarted, format, day_format):
         '''Print all events at a specific datetime (defaults to now).'''

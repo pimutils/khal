@@ -227,8 +227,8 @@ start.
 
 ::
 
-        khal list [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
-        [--notstarted] [START DATE]
+        khal at [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
+        [--notstarted] [[START DATE] TIME | now]
 
 calendar
 ********
