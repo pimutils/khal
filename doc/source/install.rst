@@ -12,7 +12,7 @@ versions), Debian_, Fedora_, FreeBSD_, Guix_, and pkgsrc_.
 .. _Fedora: https://admin.fedoraproject.org/pkgdb/package/rpms/khal/
 .. _FreeBSD: https://www.freshports.org/deskutils/py-khal/
 .. _Guix: http://www.gnu.org/software/guix/packages/
-.. _pkgsrc: http://pkgsrc.se/wip/khal-git
+.. _pkgsrc: http://pkgsrc.se/time/khal
 
 If a package isn't available (or it is outdated) you need to fall back to one
 of the methods mentioned below.
