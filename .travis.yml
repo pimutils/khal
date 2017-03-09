@@ -11,7 +11,11 @@ python:
 env:
     - BUILD=tests
     - BUILD=tests-negtz
-    - BUILD=style
+
+matrix:
+    include:
+      - python: 3.6
+        env: BUILD=style
 
 addons:
     apt:
