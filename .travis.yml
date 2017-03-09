@@ -16,6 +16,8 @@ matrix:
     include:
       - python: 3.6
         env: BUILD=style
+      - python: 3.6
+        env: BUILD=docs
 
 addons:
     apt:
