@@ -43,9 +43,11 @@ class StartEnd(object):
 
 
 class CalendarPopUp(urwid.PopUpLauncher):
-    def __init__(self, widget, conf, on_date_change):
-        self._conf = conf
+    def __init__(self, widget, on_date_change, weeknumbers=False, firstweekday=0, keybindings=None):
         self._on_date_change = on_date_change
+        self._weeknumbers = weeknumbers
+        self._firstweekday = firstweekday
+        self._keybindings = {} if keybindings is None else keybindings
         self.__super.__init__(widget)
 
     def keypress(self, size, key):
@@ -59,7 +61,6 @@ class CalendarPopUp(urwid.PopUpLauncher):
             self._get_base_widget().set_value(new_date)
             self._on_date_change(new_date)
 
-        keybindings = self._conf['keybindings']
         on_press = {'enter': lambda _, __: self.close_pop_up(),
                     'esc': lambda _, __: self.close_pop_up()}
         try:
@@ -68,16 +69,51 @@ class CalendarPopUp(urwid.PopUpLauncher):
             return None
         else:
             pop_up = CalendarWidget(
-                on_change, keybindings, on_press,
-                firstweekday=self._conf['locale']['firstweekday'],
-                weeknumbers=self._conf['locale']['weeknumbers'],
+                on_change, self._keybindings, on_press,
+                firstweekday=self._firstweekday,
+                weeknumbers=self._weeknumbers,
                 initial=initial_date)
             pop_up = urwid.LineBox(pop_up)
             return pop_up
 
     def get_pop_up_parameters(self):
-        width = 31 if self._conf['locale']['weeknumbers'] == 'right' else 28
+        width = 31 if self._weeknumbers == 'right' else 28
         return {'left': 0, 'top': 1, 'overlay_width': width, 'overlay_height': 8}
+
+
+class DateEdit(urwid.WidgetWrap):
+    def __init__(
+            self,
+            startdt=None, dateformat='%Y-%m-%d', datewidth=10, caption='',
+            on_date_change=lambda _: None,
+            weeknumbers=False, firstweekday=0,
+            keybindings=None,
+    ):
+        self._dateformat = dateformat
+        if startdt is None:
+            startdt = dt.date.today()
+        self._edit = ValidatedEdit(
+            dateformat=dateformat,
+            EditWidget=DateWidget,
+            validate=self._validate,
+            caption=('', caption),
+            edit_text=startdt.strftime(dateformat),
+            on_date_change=on_date_change)
+        wrapped = CalendarPopUp(self._edit, on_date_change, weeknumbers, firstweekday, keybindings)
+        padded = urwid.Padding(wrapped, align='left', width=datewidth + 7, left=0, right=1)
+        super().__init__(padded)
+
+    def _validate(self, text):
+        try:
+            _date = datetime.strptime(text, self._dateformat).date()
+        except ValueError:
+            return False
+        else:
+            return _date
+
+    @property
+    def date(self):
+        return self._validate(self._edit.get_edit_text())
 
 
 class StartEndEditor(urwid.WidgetWrap):
@@ -159,15 +195,9 @@ class StartEndEditor(urwid.WidgetWrap):
         else:
             return startval
 
-    def _validate_start_date(self, text):
-        try:
-            startval = datetime.strptime(text, self.conf['locale']['longdateformat'])
-            self._startdt = self.localize_start(
-                datetime.combine(startval.date(), self._start_time))
-        except ValueError:
-            return False
-        else:
-            return startval
+    def _start_date_change(self, date):
+        self._startdt = self.localize_start(datetime.combine(date, self._start_time))
+        self.on_date_change(date)
 
     def _validate_end_time(self, text):
         try:
@@ -178,14 +208,9 @@ class StartEndEditor(urwid.WidgetWrap):
         else:
             return endval
 
-    def _validate_end_date(self, text):
-        try:
-            endval = datetime.strptime(text, self.conf['locale']['longdateformat'])
-            self._enddt = self.localize_end(datetime.combine(endval.date(), self._end_time))
-        except ValueError:
-            return False
-        else:
-            return endval
+    def _end_date_change(self, date):
+        self._enddt = self.localize_end(datetime.combine(date, self._start_time))
+        self.on_date_change(date)
 
     def toggle(self, checkbox, state):
         """change from allday to datetime event
@@ -205,30 +230,18 @@ class StartEndEditor(urwid.WidgetWrap):
             self._startdt = self._startdt.date()
             self._enddt = self._enddt.date()
         self.allday = state
-        datewidth = self._datewidth + 7
-        # startdate
-        edit = ValidatedEdit(
-            dateformat=self.conf['locale']['longdateformat'],
-            EditWidget=DateWidget,
-            validate=self._validate_start_date,
-            caption=('', 'From: '),
-            edit_text=self.startdt.strftime(self.conf['locale']['longdateformat']),
-            on_date_change=self.on_date_change)
-        edit = CalendarPopUp(edit, self.conf, self.on_date_change)
-        edit = urwid.Padding(edit, align='left', width=datewidth, left=0, right=1)
-        self.widgets.startdate = edit
-
-        # enddate
-        edit = ValidatedEdit(
-            dateformat=self.conf['locale']['longdateformat'],
-            EditWidget=DateWidget,
-            validate=self._validate_end_date,
-            caption=('', 'To:   '),
-            edit_text=self.enddt.strftime(self.conf['locale']['longdateformat']),
-            on_date_change=self.on_date_change)
-        edit = CalendarPopUp(edit, self.conf, self.on_date_change)
-        edit = urwid.Padding(edit, align='left', width=datewidth, left=0, right=1)
-        self.widgets.enddate = edit
+        self.widgets.startdate = DateEdit(
+            self._startdt, self.conf['locale']['longdateformat'], self._datewidth, 'From: ',
+            self._start_date_change,
+            self.conf['locale']['weeknumbers'], self.conf['locale']['firstweekday'],
+            self.conf['keybindings'],
+        )
+        self.widgets.enddate = DateEdit(
+            self._enddt, self.conf['locale']['longdateformat'], self._datewidth, 'To:   ',
+            self._end_date_change,
+            self.conf['locale']['weeknumbers'], self.conf['locale']['firstweekday'],
+            self.conf['keybindings'],
+        )
 
         if state is True:
             timewidth = 1
@@ -258,10 +271,10 @@ class StartEndEditor(urwid.WidgetWrap):
 
         columns = NPile([
             self.checkallday,
-            NColumns([(datewidth, self.widgets.startdate), (
+            NColumns([(self._datewidth + 7, self.widgets.startdate), (
                 timewidth, self.widgets.starttime)], dividechars=1),
             NColumns(
-                [(datewidth, self.widgets.enddate),
+                [(self._datewidth + 7, self.widgets.enddate),
                  (timewidth, self.widgets.endtime)],
                 dividechars=1)
         ], focus_item=1)
