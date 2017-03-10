@@ -12,7 +12,8 @@ may want to subscribe to `GitHub's tag feed
 * FIX ikhal's event editor now warns before allowing to edit recurrence rules it
   doesn't understand
 
-* NEW ikhal's event editor now allows setting INTERVALs in recurrences
+* NEW ikhal's event editor now allows better editing of recurrence rules,
+  including INTERVALs, end dates, and more
 
 
 0.9.3

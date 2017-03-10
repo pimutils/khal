@@ -389,8 +389,7 @@ class NListBox(SupportsNext, urwid.ListBox):
 
 
 class ValidatedEdit(urwid.WidgetWrap):
-    def __init__(
-            self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs):
+    def __init__(self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs):
         assert validate
         self._validate_func = validate
         self._original_widget = urwid.AttrMap(EditWidget(*args, **kwargs), 'edit', 'editf')
@@ -439,7 +438,7 @@ class ValidatedEdit(urwid.WidgetWrap):
 
 class PositiveIntEdit(ValidatedEdit):
     def __init__(self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs):
-        """Variant of Validated Edit that only accepts positive integers"""
+        """Variant of Validated Edit that only accepts positive integers."""
         super().__init__(*args, validate=self._unsigned_int, **kwargs)
 
     @staticmethod
