@@ -19,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""contains a re-usable CalendarWidget for urwid
+"""Contains a re-usable CalendarWidget for urwid.
 
 if anything doesn't work as expected, please open an issue for khal
 """
@@ -334,8 +334,7 @@ class CListBox(urwid.ListBox):
             return self.on_press[key](start, end)
         if key in self.keybindings['today'] + ['page down', 'page up']:
             # reset colors of currently focused Date widget
-            self.focus.focus.set_styles(
-                self.focus.get_styles(self.body.focus_date, False))
+            self.focus.focus.set_styles(self.focus.get_styles(self.body.focus_date, False))
         if key in self.keybindings['today']:
             self.set_focus_date(date.today())
             self.set_focus_valign(('relative', 10))
@@ -554,28 +553,28 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 class CalendarWidget(urwid.WidgetWrap):
     def __init__(self, on_date_change, keybindings, on_press, firstweekday=0,
                  weeknumbers=False, get_styles=None, initial=None):
-
         """
         :param on_date_change: a function that is called every time the selected
             date is changed with the newly selected date as a first (and only
             argument)
         :type on_date_change: function
-        :param keybindings: bind keys to specific functions, keys are
-            commands (e.g. movement commands, values are lists of keys
-            that should be bound to those commands. See below for the
-            defaults.
+        :param keybindings: bind keys to specific functionionality, keys are
+            the available commands, values are lists of keys that should be
+            bound to those commands. See below for the defaults.
             Available commands:
                 'left', 'right', 'up', 'down': move cursor in direction
                 'today': refocus on today
                 'mark': toggles selection mode
         :type keybindings: dict
-        :param on_press: dict of functions that are called when the key is
-            pressed. These functions must accept at least two argument. In the
-            normal case the first argument is the currently selected date
-            (datetime.date) and the second is *None*. When a date range is
-            selected, the first argument is the earlier and the second argument
+        :param on_press: dictonary of functions that are called when the key is
+            pressed and is not already bound to one of the internal functionions
+            via `keybindings`. These functions must accept two arguments, in
+            normal mode the first argument is the currently selected date
+            (datetime.date) and the second is `None`. When a date range is
+            selected, the first argument is the earlier, the second argument
             is the later date. The function's return values are interpreted as
-            pressed keys.
+            pressed keys, which are handed to the widget containing the
+            CalendarWidget.
         :type on_press: dict
         """
         if initial is None:
