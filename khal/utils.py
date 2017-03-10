@@ -736,3 +736,14 @@ def color_wrap(text, width=70):
             if num != len(lines):
                 lines[num + 1] = sgr + lines[num + 1]
     return lines
+
+
+def get_weekday_occurrence(day):
+    """Calculate how often this weekday has already occurred in a given month.
+
+    :type day: datetime.date
+    :returns: weekday (0=Monday, ..., 6=Sunday), occurrence
+    :rtype: tuple(int, int)
+    """
+    xthday = 1 + (day.day - 1) // 7
+    return day.weekday(), xthday

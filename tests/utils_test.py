@@ -9,6 +9,7 @@ from freezegun import freeze_time
 
 from khal.utils import guessdatetimefstr, guesstimedeltafstr, new_event, eventinfofstr
 from khal.utils import timedelta2str, guessrangefstr, weekdaypstr, construct_daynames
+from khal.utils import get_weekday_occurrence
 from khal import utils
 from khal.exceptions import FatalError
 import pytest
@@ -670,3 +671,24 @@ def test_color_wrap_256():
     ]
 
     assert utils.color_wrap(text, 30) == expected
+
+
+def test_get_weekday_occurrence():
+    assert get_weekday_occurrence(datetime(2017, 3, 1)) == (2, 1)
+    assert get_weekday_occurrence(datetime(2017, 3, 2)) == (3, 1)
+    assert get_weekday_occurrence(datetime(2017, 3, 3)) == (4, 1)
+    assert get_weekday_occurrence(datetime(2017, 3, 4)) == (5, 1)
+    assert get_weekday_occurrence(datetime(2017, 3, 5)) == (6, 1)
+    assert get_weekday_occurrence(datetime(2017, 3, 6)) == (0, 1)
+    assert get_weekday_occurrence(datetime(2017, 3, 7)) == (1, 1)
+    assert get_weekday_occurrence(datetime(2017, 3, 8)) == (2, 2)
+    assert get_weekday_occurrence(datetime(2017, 3, 9)) == (3, 2)
+    assert get_weekday_occurrence(datetime(2017, 3, 10)) == (4, 2)
+
+    assert get_weekday_occurrence(datetime(2017, 3, 31)) == (4, 5)
+
+    assert get_weekday_occurrence(date(2017, 5, 1)) == (0, 1)
+    assert get_weekday_occurrence(date(2017, 5, 7)) == (6, 1)
+    assert get_weekday_occurrence(date(2017, 5, 8)) == (0, 2)
+    assert get_weekday_occurrence(date(2017, 5, 28)) == (6, 4)
+    assert get_weekday_occurrence(date(2017, 5, 29)) == (0, 5)
