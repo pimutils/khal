@@ -698,7 +698,7 @@ class AllDayEvent(Event):
             # https://github.com/pimutils/khal/issues/129
             logger.warning('{} ("{}"): The event\'s end date property '
                            'contains the same value as the start date, '
-                           'which is invalid as per RFC 2445. Khal will '
+                           'which is invalid as per RFC 5545. Khal will '
                            'assume this is meant to be single-day event '
                            'on {}'.format(self.href, self.summary, self.start))
             end += timedelta(days=1)
