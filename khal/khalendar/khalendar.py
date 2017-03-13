@@ -96,6 +96,7 @@ class CalendarCollection(object):
         self._locale = locale
         self._backend = backend.SQLiteDb(
             calendars=self.names, db_path=dbpath, locale=self._locale)
+        self._last_ctags = dict()
         self.update_db()
 
     @property
@@ -236,15 +237,45 @@ class CalendarCollection(object):
         should be called after every change to the vdir
         """
         for calendar in self._calendars:
-            if self._needs_update(calendar):
+            if self._needs_update(calendar, remember=True):
                 self._db_update(calendar)
 
-    def _needs_update(self, calendar):
+    def needs_update(self):
+        """Check if you need to call update_db.
+
+        This could either be the case because the vdirs were changed externally,
+        or another instance of khal updated the caching db already.
+        """
+        # TODO is it a good idea to munch both use cases together?
+        # in case another instance of khal has updated the db, we only need
+        # to get new events, but # update_db() takes potentially a long time to return
+        # but then the code (in ikhal's refresh code) would need to look like
+        # this:
+        #
+        # update_ui = False
+        # if collection.needs_update():
+        #   collection.update_db()
+        #   update_ui = True
+        # if collection.needs_refresh() or update_ui:
+        #   do_the_update()
+        #
+        # and the API would be made even uglier than it already is...
+        for calendar in self._calendars:
+            if self._needs_update(calendar) or \
+                    self._last_ctags[calendar] != self._local_ctag(calendar):
+                return True
+        return False
+
+    def _needs_update(self, calendar, remember=False):
         """checks if the db for the given calendar needs an update"""
-        return self._local_ctag(calendar) != self._backend.get_ctag(calendar)
+        local_ctag = self._local_ctag(calendar)
+        if remember:
+            self._last_ctags[calendar] = local_ctag
+        return local_ctag != self._backend.get_ctag(calendar)
 
     def _db_update(self, calendar):
         """implements the actual db update on a per calendar base"""
+        local_ctag = self._local_ctag(calendar)
         db_hrefs = set(href for href, etag in self._backend.list(calendar))
         storage_hrefs = set()
 
@@ -257,7 +288,8 @@ class CalendarCollection(object):
                     self._update_vevent(href, calendar=calendar)
             for href in db_hrefs - storage_hrefs:
                 self._backend.delete(href, calendar=calendar)
-            self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
+            self._backend.set_ctag(local_ctag, calendar=calendar)
+            self._last_ctags[calendar] = local_ctag
 
     def _update_vevent(self, href, calendar):
         """should only be called during db_update, only updates the db,

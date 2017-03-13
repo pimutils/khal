@@ -1267,8 +1267,6 @@ def start_pane(pane, callback, program_info='', quit_keys=['q']):
     frame.loop = loop
 
     def redraw_today(loop, pane, meta={'last_today': None}):
-        # TODO calculate how many seconds the new day is away and set timer
-        # to that
         # XXX TODO this currently assumes, today moves forward by exactly one
         # day, but it could either move forward more (suspend-to-disk/ram) or
         # even move backwards
@@ -1279,7 +1277,17 @@ def start_pane(pane, callback, program_info='', quit_keys=['q']):
             pane.eventscolumn.original_widget.update_date_line()
         loop.set_alarm_in(60, redraw_today, pane)
 
-    redraw_today(frame.loop, pane)
+    loop.set_alarm_in(60, redraw_today, pane)
+
+    def check_for_updates(loop, pane):
+        if pane.collection.needs_update():
+            pane.window.alert('detected external vdir modification, updating...')
+            pane.collection.update_db()
+            pane.eventscolumn.base_widget.update(None, None, everything=True)
+            pane.window.alert('detected external vdir modification, updated.')
+        loop.set_alarm_in(60, check_for_updates, pane)
+
+    loop.set_alarm_in(60, check_for_updates, pane)
     # Make urwid use 256 color mode.
     loop.screen.set_terminal_properties(
         colors=256, bright_is_bold=pane._conf['view']['bold_for_light_color'])
