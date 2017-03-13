@@ -36,6 +36,7 @@ import pytz
 
 from khal.log import logger
 from khal.exceptions import FatalError
+from .khalendar.utils import sanitize
 
 
 def timefstr(dtime_list, timeformat):
@@ -599,7 +600,7 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     return event
 
 
-def split_ics(ics, random_uid=False):
+def split_ics(ics, random_uid=False, default_timezone=None):
     """split an ics string into several according to VEVENT's UIDs
 
     and sort the right VTIMEZONEs accordingly
@@ -622,7 +623,7 @@ def split_ics(ics, random_uid=False):
             sorted(events_grouped.items())]
 
 
-def ics_from_list(events, tzs, random_uid=False):
+def ics_from_list(events, tzs, random_uid=False, default_timezone=None):
     """convert an iterable of icalendar.Events to an icalendar.Calendar
 
     :params events: list of events all with the same uid
@@ -641,6 +642,7 @@ def ics_from_list(events, tzs, random_uid=False):
 
     needed_tz, missing_tz = set(), set()
     for sub_event in events:
+        sub_event = sanitize(sub_event, default_timezone=default_timezone)
         if random_uid:
             sub_event['UID'] = new_uid
         # icalendar round-trip converts `TZID=a b` to `TZID="a b"` investigate, file bug XXX

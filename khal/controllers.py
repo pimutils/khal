@@ -542,7 +542,7 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None
     """
     if format is None:
         format = conf['view']['event_format']
-    vevents = utils.split_ics(ics, random_uid)
+    vevents = utils.split_ics(ics, random_uid, conf['locale']['default_timezone'])
     for vevent in vevents:
         import_event(vevent, collection, conf['locale'], batch, format, env)
 
