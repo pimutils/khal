@@ -619,6 +619,8 @@ class RecurrenceEditor(urwid.WidgetWrap):
         # we don't support negative BYMONTHDAY numbers
         if rrule.get('BYMONTHDAY', ['1'])[0][0] == '-':
             return False
+        if rrule.get('BYDAY', ['1'])[0][0] == '-':
+            return False
         if freq not in ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']:
             return False
         if 'BYDAY' in keys and freq == 'YEARLY':
@@ -629,32 +631,39 @@ class RecurrenceEditor(urwid.WidgetWrap):
         self.repeat = state
         self.rebuild()
 
+    def _refill_contents(self, lines):
+        while True:
+            try:
+                self._pile.contents.pop()
+            except IndexError:
+                break
+        [self._pile.contents.append((line, ('pack', None))) for line in lines]
+
     def rebuild(self):
-        # TODO FIXME after warning button gets pressed, widget is not redrawn
         old_focus_y = self._pile.focus_position
         if not self._allow_edit:
             self._rebuild_no_edit()
         elif self.repeat:
             self._rebuild_edit()
+            self._pile.set_focus(old_focus_y)
         else:
             self._rebuild_edit_no_repeat()
-        self._pile.focus_position = old_focus_y
 
     def _rebuild_no_edit(self):
         def _allow_edit(_):
             self._allow_edit = True
             self.rebuild()
-
-        pile = NPile([
+        lines = [
             urwid.Text("We cannot reproduce this event's repetition rules."),
             urwid.Text("Editing the repetition rules will destroy the current rules."),
             urwid.Button("Edit anyway", on_press=_allow_edit),
-        ])
-        urwid.WidgetWrap.__init__(self, pile)
+        ]
+        self._refill_contents(lines)
+        self._pile.set_focus(2)
 
     def _rebuild_edit_no_repeat(self):
-        pile = NPile([NColumns([(13, self.repeat_box)])])
-        urwid.WidgetWrap.__init__(self, pile)
+        lines = [NColumns([(13, self.repeat_box)])]
+        self._refill_contents(lines)
 
     def _rebuild_edit(self):
         firstline = NColumns([
@@ -676,8 +685,7 @@ class RecurrenceEditor(urwid.WidgetWrap):
             nextline.append((4, self.repetitions_edit))
         lines.append(NColumns(nextline))
 
-        self._pile = NPile(lines)
-        urwid.WidgetWrap.__init__(self, self._pile)
+        self._refill_contents(lines)
 
     @property
     def changed(self):
