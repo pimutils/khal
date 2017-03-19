@@ -14,7 +14,7 @@ def test_colored():
         '\x1b[38;2;255;0;255m\x1b[48;2;0;170;187mtäst\x1b[0m'
 
 
-class TestMergeColumns(object):
+class TestMergeColumns:
 
     def test_longer_right(self):
         left = ['uiae', 'nrtd']

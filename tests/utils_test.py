@@ -89,7 +89,7 @@ def test_normalize_component():
     """))
 
 
-class TestGuessDatetimefstr(object):
+class TestGuessDatetimefstr:
     tomorrow16 = datetime.combine(tomorrow, time(16, 0))
 
     def test_today(self):
@@ -139,7 +139,7 @@ class TestGuessDatetimefstr(object):
             )
 
 
-class TestGuessTimedeltafstr(object):
+class TestGuessTimedeltafstr:
 
     def test_single(self):
         assert timedelta(minutes=10) == guesstimedeltafstr('10m')
@@ -171,7 +171,7 @@ class TestGuessTimedeltafstr(object):
             guesstimedeltafstr('10min 10minutes')
 
 
-class TestGuessRangefstr(object):
+class TestGuessRangefstr:
     td_1d = timedelta(days=1)
     today_start = datetime.combine(date.today(), time.min)
     tomorrow_start = today_start + td_1d
@@ -277,7 +277,7 @@ class TestGuessRangefstr(object):
                 guessrangefstr('2017-1-1 2017-1-1', locale=locale)
 
 
-class TestTimeDelta2Str(object):
+class TestTimeDelta2Str:
 
     def test_single(self):
         assert timedelta2str(timedelta(minutes=10)) == '10m'

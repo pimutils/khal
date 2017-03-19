@@ -21,7 +21,7 @@ today = date.today()
 yesterday = today - timedelta(days=1)
 tomorrow = today + timedelta(days=1)
 
-event_allday_template = u"""BEGIN:VEVENT
+event_allday_template = """BEGIN:VEVENT
 SEQUENCE:0
 UID:uid3@host1.com
 DTSTART;VALUE=DATE:{}
