@@ -93,16 +93,17 @@ class SQLiteDb(object):
                     None, a place according to the XDG specifications will be
                     chosen
     :type db_path: str or None
+    :param kwargs: These additional parameters will be forwarded to sqlite3.connect
     """
 
-    def __init__(self, calendars, db_path, locale):
+    def __init__(self, calendars, db_path, locale, **kwargs):
         assert db_path is not None
         self.calendars = calendars
         self.db_path = path.expanduser(db_path)
         self._create_dbdir()
         self.locale = locale
         self._at_once = False
-        self.conn = sqlite3.connect(self.db_path)
+        self.conn = sqlite3.connect(self.db_path, **kwargs)
         self.cursor = self.conn.cursor()
         self._create_default_tables()
         self._check_calendars_exists()

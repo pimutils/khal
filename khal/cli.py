@@ -160,7 +160,7 @@ def global_options(f):
     return config(verbose(color(version(f))))
 
 
-def build_collection(conf, selection):
+def build_collection(conf, selection, **kwargs):
     """build and return a khalendar.CalendarCollection from the configuration"""
     try:
         props = dict()
@@ -182,6 +182,7 @@ def build_collection(conf, selection):
             default_color=conf['highlight_days']['default_color'],
             multiple=conf['highlight_days']['multiple'],
             highlight_event_days=conf['default']['highlight_event_days'],
+            **kwargs,
         )
     except FatalError as error:
         logger.fatal(error)
