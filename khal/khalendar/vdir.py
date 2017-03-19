@@ -121,7 +121,7 @@ class Item:
 
     @cached_property
     def uid(self):
-        uid = u''
+        uid = ''
         lines = iter(self.raw.splitlines())
         for line in lines:
             if line.startswith('UID:'):
@@ -129,7 +129,7 @@ class Item:
                 break
 
         for line in lines:
-            if not line.startswith(u' '):
+            if not line.startswith(' '):
                 break
             uid += line[1:]
 
@@ -137,7 +137,7 @@ class Item:
 
 
 def _normalize_meta_value(value):
-    return to_unicode(value or u'').strip()
+    return to_unicode(value or '').strip()
 
 
 class VdirBase:
@@ -273,7 +273,7 @@ class VdirBase:
                 raise
 
     def set_meta(self, key, value):
-        value = value or u''
+        value = value or ''
         assert isinstance(value, str)
         fpath = os.path.join(self.path, key)
         with atomic_write(fpath, mode='wb', overwrite=True) as f:

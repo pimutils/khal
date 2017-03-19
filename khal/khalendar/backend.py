@@ -160,7 +160,7 @@ class SQLiteDb(object):
         """
         self.cursor.execute('CREATE TABLE IF NOT EXISTS '
                             'version (version INTEGER)')
-        logger.debug(u"created version table")
+        logger.debug("created version table")
 
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS calendars (
             calendar TEXT NOT NULL UNIQUE,
@@ -207,7 +207,7 @@ class SQLiteDb(object):
             result = self.cursor.fetchone()
 
             if result[0] != 0:
-                logger.debug(u"tables for calendar {0} exist".format(cal))
+                logger.debug("tables for calendar {0} exist".format(cal))
             else:
                 sql_s = 'INSERT INTO calendars (calendar, resource) VALUES (?, ?);'
                 stuple = (cal, '')

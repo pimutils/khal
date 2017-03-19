@@ -16,7 +16,7 @@ today = dt.date.today()
 yesterday = today - dt.timedelta(days=1)
 tomorrow = today + dt.timedelta(days=1)
 
-event_allday_template = u"""BEGIN:VEVENT
+event_allday_template = """BEGIN:VEVENT
 SEQUENCE:0
 UID:uid3@host1.com
 DTSTART;VALUE=DATE:{}
@@ -38,7 +38,7 @@ conf = {'locale': utils.LOCALE_BERLIN,
         }
 
 
-class TestGetAgenda(object):
+class TestGetAgenda:
     def test_new_event(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, utils.cal1)
@@ -93,7 +93,7 @@ class TestGetAgenda(object):
             khal_list(coll, [], conf, agenda_format=event_format, day_format="{name}")).lower()
 
 
-class TestImport(object):
+class TestImport:
     def test_import(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         view = {'event_format': '{title}'}
