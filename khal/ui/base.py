@@ -111,9 +111,9 @@ class Window(urwid.Frame):
 
         header = urwid.AttrWrap(urwid.Text(''), 'header')
         footer = urwid.AttrWrap(urwid.Text(footer), 'footer')
-        urwid.Frame.__init__(self, urwid.Text(''),
-                             header=header,
-                             footer=footer)
+        urwid.Frame.__init__(
+            self, urwid.Text(''), header=header, footer=footer,
+        )
         self.update_header()
         self._original_w = None
         self.quit_keys = quit_keys
@@ -172,7 +172,13 @@ class Window(urwid.Frame):
         return self._track[-1][0] if self._track else None
 
     def update_header(self, alert=None):
-        # TODO setting colors does not work, but is actually used
+        """Update the Windows header line.
+
+        :param alert: additional text to show in header, additionally to
+            the current title. If `alert` is a tuple, the first entry must
+            be a valid palette entry
+        :type alert: str or (palette_entry, str)
+        """
         pane_title = getattr(self._get_current_pane(), 'title', None)
         text = []
 

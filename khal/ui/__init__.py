@@ -691,7 +691,7 @@ class EventColumn(urwid.WidgetWrap):
         """
         if event.readonly:
             self.pane.window.alert(
-                ('light red', 'Calendar {} is read-only.'.format(event.calendar)))
+                ('alert', 'Calendar `{}` is read-only.'.format(event.calendar)))
             return
 
         if isinstance(event.start_local, datetime):
@@ -769,12 +769,10 @@ class EventColumn(urwid.WidgetWrap):
                 self.focus_event.event.export_ics(user_data.get_edit_text())
             except Exception as error:
                 self.pane.window.backtrack()
-                self.pane.window.alert(
-                    ('light red', 'Failed to save event: %s' % error))
+                self.pane.window.alert(('alert', 'Failed to save event: %s' % error))
             else:
                 self.pane.window.backtrack()
-                self.pane.window.alert(
-                    ('light green', 'Event successfully exported'))
+                self.pane.window.alert('Event successfully exported')
 
         overlay = urwid.Overlay(
             ExportDialog(
@@ -865,7 +863,7 @@ class EventColumn(urwid.WidgetWrap):
         :type end: datetime.date
         """
         if not self.pane.collection.writable_names:
-            self.pane.window.alert(('light red', 'No writable calendar.'))
+            self.pane.window.alert(('alert', 'No writable calendar.'))
             return
         if end is None:
             start = datetime.combine(date, time(datetime.now().hour))
@@ -912,7 +910,7 @@ class EventColumn(urwid.WidgetWrap):
                     # the event in focus is already viewed -> edit
                     self.clear_event_view()  # do not move before the if condition
                     if self.delete_status(self.focus_event.recuid):
-                        self.pane.window.alert(('light red', 'This event is marked as deleted'))
+                        self.pane.window.alert(('alert', 'This event is marked as deleted'))
                     self.edit(self.focus_event.event)
                 else:
                     self.clear_event_view()
