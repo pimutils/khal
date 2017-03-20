@@ -803,9 +803,9 @@ class EventColumn(urwid.WidgetWrap):
                 event.event.start_local, event.event.end_local, event.event.recurring)
 
         if event.event.readonly:
-            self.eventcolumn.pane.window.alert(
-                ('light red',
-                 'Calendar {} is read-only.'.format(self.event.calendar)))
+            self.pane.window.alert(
+                ('alert', 'Calendar {} is read-only.'.format(event.event.calendar)),
+            )
             return
         status = self.delete_status(event.recuid)
         refresh = True
