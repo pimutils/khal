@@ -140,7 +140,7 @@ class DateHeader(SelectableText):
         return '{weekday}, {day} ({approx_delta})'.format(
             weekday=weekday,
             approx_delta=approx_delta,
-            day=day.strftime('%A'),
+            day=daystr,
         )
 
     def keypress(self, _, key):
