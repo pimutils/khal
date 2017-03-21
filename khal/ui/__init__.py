@@ -886,7 +886,10 @@ class EventColumn(urwid.WidgetWrap):
         return True
 
     def keypress(self, size, key):
+        prev_shown = self._eventshown
+        self._eventshown = False
         self.clear_event_view()
+
         if key in self._conf['keybindings']['new']:
             self.new(self.focus_date, None)
             key = None
@@ -904,23 +907,18 @@ class EventColumn(urwid.WidgetWrap):
 
         rval = super().keypress(size, key)
         if self.focus_event:
-            if key in self._conf['keybindings']['view'] or \
+            if key in self._conf['keybindings']['view'] and \
+                    prev_shown == self.focus_event.recuid:
+                # the event in focus is already viewed -> edit
+                if self.delete_status(self.focus_event.recuid):
+                    self.pane.window.alert(('light red', 'This event is marked as deleted'))
+                self.edit(self.focus_event.event)
+            elif key in self._conf['keybindings']['view'] or \
                     self._conf['view']['event_view_always_visible']:
-                if self._eventshown == self.focus_event.recuid:
-                    # the event in focus is already viewed -> edit
-                    self.clear_event_view()  # do not move before the if condition
-                    if self.delete_status(self.focus_event.recuid):
-                        self.pane.window.alert(('alert', 'This event is marked as deleted'))
-                    self.edit(self.focus_event.event)
-                else:
-                    self.clear_event_view()
-                    self._eventshown = self.focus_event.recuid
-                    self.view(self.focus_event.event)
+                self._eventshown = self.focus_event.recuid
+                self.view(self.focus_event.event)
             elif key in self._conf['keybindings']['external_edit']:
                 self.edit(self.focus_event.event, external_edit=True)
-        if key in ['esc'] and self._eventshown:
-            self.clear_event_view()
-            key = None
         return rval
 
     def render(self, a, focus):
