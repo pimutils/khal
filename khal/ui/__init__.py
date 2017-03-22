@@ -913,12 +913,12 @@ class EventColumn(urwid.WidgetWrap):
                 if self.delete_status(self.focus_event.recuid):
                     self.pane.window.alert(('alert', 'This event is marked as deleted'))
                 self.edit(self.focus_event.event)
+            elif key in self._conf['keybindings']['external_edit']:
+                self.edit(self.focus_event.event, external_edit=True)
             elif key in self._conf['keybindings']['view'] or \
                     self._conf['view']['event_view_always_visible']:
                 self._eventshown = self.focus_event.recuid
                 self.view(self.focus_event.event)
-            elif key in self._conf['keybindings']['external_edit']:
-                self.edit(self.focus_event.event, external_edit=True)
         return rval
 
     def render(self, a, focus):
