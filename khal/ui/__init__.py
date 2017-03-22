@@ -911,7 +911,7 @@ class EventColumn(urwid.WidgetWrap):
                     prev_shown == self.focus_event.recuid:
                 # the event in focus is already viewed -> edit
                 if self.delete_status(self.focus_event.recuid):
-                    self.pane.window.alert(('light red', 'This event is marked as deleted'))
+                    self.pane.window.alert(('alert', 'This event is marked as deleted'))
                 self.edit(self.focus_event.event)
             elif key in self._conf['keybindings']['view'] or \
                     self._conf['view']['event_view_always_visible']:
