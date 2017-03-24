@@ -119,12 +119,6 @@ add the relevant section(s) in the documentation, which uses the
 reStructuredText_ format, which shouldn't be too hard to use after looking at
 some of the existing documentation (even for users who never used it before).
 
-.. note::
-        The file :file:`doc/source/configspec.rst` is auto-generated on
-        making the documentation from the file :file:`khal/settings/khal.spec`.  So
-        instead of editing the former, please edit the later, run make and include both
-        changes in your patch.
-
 Also, summarize your changes in :file:`CHANGELOG.rst`,  pointing readers to the
 (updated) documentation is fine.
 
