@@ -22,7 +22,6 @@
 """all functions related to terminal display are collected here"""
 
 from collections import namedtuple
-from itertools import zip_longest
 
 
 NamedColor = namedtuple('NamedColor', ['index', 'light'])
@@ -128,22 +127,3 @@ def colored(string, fg=None, bg=None, bold_for_light_color=True):
     if fg or bg:
         result += RESET
     return result
-
-
-def merge_columns(lcolumn, rcolumn, width=25):
-    """merge two lists elementwise together
-
-    Wrap right columns to terminal width.
-    If the right list(column) is longer, first lengthen the left one.
-    We assume that the left column has width `width`, we cannot find
-    out its (real) width automatically since it might contain ANSI
-    escape sequences.
-    """
-
-    missing = len(rcolumn) - len(lcolumn)
-    if missing > 0:
-        lcolumn = lcolumn + missing * [width * ' ']
-
-    rows = ['    '.join(one) for one in zip_longest(
-        lcolumn, rcolumn, fillvalue='')]
-    return rows

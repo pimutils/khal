@@ -268,30 +268,10 @@ def _get_cli():
     @click.pass_context
     def calendar(ctx, daterange, once, notstarted, format, day_format):
         '''Print calendar with agenda.'''
-        try:
-            rows = controllers.calendar(
-                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-                agenda_format=format,
-                day_format=day_format,
-                once=once,
-                notstarted=notstarted,
-                daterange=daterange,
-                conf=ctx.obj['conf'],
-                firstweekday=ctx.obj['conf']['locale']['firstweekday'],
-                locale=ctx.obj['conf']['locale'],
-                weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
-                hmethod=ctx.obj['conf']['highlight_days']['method'],
-                default_color=ctx.obj['conf']['highlight_days']['default_color'],
-                multiple=ctx.obj['conf']['highlight_days']['multiple'],
-                color=ctx.obj['conf']['highlight_days']['color'],
-                highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
-                bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
-                env={"calendars": ctx.obj['conf']['calendars']}
-            )
-            click.echo('\n'.join(rows))
-        except FatalError as error:
-            logger.fatal(error)
-            sys.exit(1)
+        controllers.calendar(
+            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+            ctx.obj['conf']
+        )
 
     @cli.command("list")
     @multi_calendar_option
@@ -464,7 +444,8 @@ def _get_cli():
         '''Interactive UI. Also launchable via `khal interactive`.'''
         controllers.interactive(
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            ctx.obj['conf'])
+            ctx.obj['conf']
+        )
 
     @cli.command()
     @multi_calendar_option

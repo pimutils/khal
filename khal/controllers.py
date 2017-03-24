@@ -35,14 +35,13 @@ from datetime import time, timedelta, datetime, date
 import os
 import textwrap
 
-from khal import utils, calendar_display
+from khal import utils
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
 from khal.exceptions import FatalError
 from khal.khalendar.event import Event
 from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
 from khal.log import logger
-from .terminal import merge_columns
 
 
 def format_day(day, format_string, locale, attributes=None):
@@ -65,59 +64,20 @@ def format_day(day, format_string, locale, attributes=None):
         raise KeyError("cannot format day with: %s" % format_string)
 
 
-def calendar(collection, agenda_format=None, notstarted=False, once=False, daterange=None,
-             day_format=None,
-             locale=None,
-             conf=None,
-             firstweekday=0,
-             weeknumber=False,
-             hmethod='fg',
-             default_color='',
-             multiple='',
-             color='',
-             highlight_event_days=0,
-             full=False,
-             bold_for_light_color=True,
-             env=None,
-             ):
-    term_width, _ = get_terminal_size()
-    lwidth = 27 if conf['locale']['weeknumbers'] == 'right' else 25
-    rwidth = term_width - lwidth - 4
-
-    try:
-        start, end = start_end_from_daterange(
-            daterange, locale,
-            default_timedelta_date=conf['default']['timedelta'],
-            default_timedelta_datetime=conf['default']['timedelta'],
-        )
-    except ValueError as error:
-        raise FatalError(error)
-
-    event_column = khal_list(
+def calendar(collection, conf):
+    """start the interactive user interface"""
+    from . import ui
+    pane = ui.ClassicView(
         collection,
-        daterange,
-        conf=conf,
-        agenda_format=agenda_format,
-        day_format=day_format,
-        once=once,
-        notstarted=notstarted,
-        width=rwidth,
-        env=env,
+        conf,
+        title='select an event',
+        description='do something'
     )
-    calendar_column = calendar_display.vertical_month(
-        month=start.month,
-        year=start.year,
-        count=max(3, (end.year - start.year) * 12 + end.month - start.month + 1),
-        firstweekday=firstweekday, weeknumber=weeknumber,
-        collection=collection,
-        hmethod=hmethod,
-        default_color=default_color,
-        multiple=multiple,
-        color=color,
-        highlight_event_days=highlight_event_days,
-        locale=locale,
-        bold_for_light_color=bold_for_light_color)
-    return merge_columns(calendar_column, event_column, width=lwidth)
+    ui.render_pane(
+        pane, pane.cleanup,
+        program_info='{0} v{1}'.format(__productname__, __version__),
+        quit_keys=conf['keybindings']['quit'],
+    )
 
 
 def start_end_from_daterange(daterange, locale,
@@ -525,7 +485,6 @@ def interactive(collection, conf):
         pane, pane.cleanup,
         program_info='{0} v{1}'.format(__productname__, __version__),
         quit_keys=conf['keybindings']['quit'],
-
     )
 
 

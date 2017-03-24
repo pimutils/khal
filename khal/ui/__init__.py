@@ -20,6 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from datetime import date, datetime, time, timedelta
+from shutil import get_terminal_size
 import signal
 import sys
 
@@ -30,10 +31,11 @@ from .. import utils
 from ..khalendar.event import Event
 from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
-from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, linebox
 from .base import Pane, Window
-from .editor import EventEditor, ExportDialog
 from .calendarwidget import CalendarWidget
+from .editor import EventEditor, ExportDialog
+from .renderer import CanvasTranslator
+from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, linebox
 
 
 #  Overview of how this all meant to fit together:
@@ -1247,6 +1249,26 @@ def _add_calendar_colors(palette, collection):
     palette.append(_urwid_palette_entry('highlight_days_multiple',
                                         collection.multiple, collection.hmethod))
     return palette
+
+
+def render_pane(pane, callback, program_info='', quit_keys=['q']):
+    term_width, term_height = get_terminal_size()
+
+    term_width, term_height = get_terminal_size()
+    canvas = pane.render((term_width, int(term_height * 0.7),), True)
+    printer = CanvasTranslator(canvas)
+
+    for cal in pane.collection.calendars:
+        if not cal['color']:
+            color = pane.collection.default_color
+        else:
+            color = cal['color']
+        printer.add_color('calendar {}'.format(cal['name']), color)
+
+    for entry in getattr(colors, pane._conf['view']['theme']):
+        printer.add_color(entry[0], entry[1])
+
+    click.echo(printer.transform())
 
 
 def start_pane(pane, callback, program_info='', quit_keys=['q']):
