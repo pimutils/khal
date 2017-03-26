@@ -45,11 +45,13 @@ def validate_int(input, min_value, max_value):
     else:
         raise UsageError('Input must be between {} and {}'.format(min_value, max_value))
 
+
 DATE_FORMAT_INFO = [
     ('Year', ['%Y', '%y']),
     ('Month', ['%m', '%B', '%b']),
     ('Day', ['%d', '%a', '%A'])
 ]
+
 
 def present_date_format_info(example_date):
     columns = []
@@ -65,7 +67,9 @@ def present_date_format_info(example_date):
     for row in zip_longest(*columns, fillvalue=''):
         print(''.join(s.ljust(w) for (s, w) in zip(row, widths)))
 
-    print('More info: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior')
+    print('More info: '
+          'https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior')
+
 
 def choose_datetime_format():
     """query user for their date format of choice"""
