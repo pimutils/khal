@@ -24,6 +24,7 @@ from click import confirm, prompt, UsageError
 import xdg
 
 from functools import partial
+from itertools import zip_longest
 from os.path import expanduser, expandvars, join, normpath, exists, isdir
 from os import makedirs
 
@@ -44,6 +45,27 @@ def validate_int(input, min_value, max_value):
     else:
         raise UsageError('Input must be between {} and {}'.format(min_value, max_value))
 
+DATE_FORMAT_INFO = [
+    ('Year', ['%Y', '%y']),
+    ('Month', ['%m', '%B', '%b']),
+    ('Day', ['%d', '%a', '%A'])
+]
+
+def present_date_format_info(example_date):
+    columns = []
+    widths = []
+    for title, formats in DATE_FORMAT_INFO:
+        newcol = [title]
+        for f in formats:
+            newcol.append('{}={}'.format(f, example_date.strftime(f)))
+        widths.append(max(len(s) for s in newcol) + 2)
+        columns.append(newcol)
+
+    print('Common fields for date formatting:')
+    for row in zip_longest(*columns, fillvalue=''):
+        print(''.join(s.ljust(w) for (s, w) in zip(row, widths)))
+
+    print('More info: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior')
 
 def choose_datetime_format():
     """query user for their date format of choice"""
@@ -52,13 +74,18 @@ def choose_datetime_format():
         ('day/month/year', '%d/%m/%Y'),
         ('month/day/year', '%m/%d/%Y'),
     ]
-    validate = partial(validate_int, min_value=0, max_value=2)
+    validate = partial(validate_int, min_value=0, max_value=3)
     today = date.today()
     print("What ordering of year, month, date do you want to use?")
     for num, (desc, fmt) in enumerate(choices):
         print('[{}] {} (today: {})'.format(num, desc, today.strftime(fmt)))
+    print('[3] Custom')
     choice_no = prompt("Please choose one of the above options", value_proc=validate)
-    dateformat = choices[choice_no][1]
+    if choice_no == 3:
+        present_date_format_info(today)
+        dateformat = prompt('Make your date format')
+    else:
+        dateformat = choices[choice_no][1]
     print("Date format: {} "
           "(today as an example: {})".format(dateformat, today.strftime(dateformat)))
     return dateformat
