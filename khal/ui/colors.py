@@ -70,11 +70,11 @@ light = [
 
     ('reveal focus', 'black', 'dark cyan', 'standout'),
     ('today focus', 'white', 'dark cyan', 'standout'),
-    ('today', 'light gray', 'black', 'dark cyan'),
-
-    ('date', 'light gray', 'white'),
+    ('today', 'black', 'light gray', 'dark cyan'),
+    
+    ('date', '', 'white'),
     ('date focused', 'white', 'dark gray', ('bold', 'standout')),
-    ('date selected', 'dark gray', 'yellow'),
+    ('date selected', 'dark gray', 'light cyan'),
 
     ('dayname', 'dark gray', 'white'),
     ('monthname', 'dark gray', 'white'),
