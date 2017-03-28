@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 * FIX ikhal's event editor now warns before allowing to edit recurrence rules it
   doesn't understand
 
+* CHANGE improved the intial configuration wizard
+
 * CHANGE improved ikhal's `light` color scheme
 * NEW ikhal's event editor now allows better editing of recurrence rules,
   including INTERVALs, end dates, and more
