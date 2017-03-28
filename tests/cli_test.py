@@ -505,8 +505,7 @@ def test_color_option(runner):
     assert result.output != 'No events\n'
 
 
-def choices(ordering=0, separator=0, dateconfirm=True,
-            timeformat=0, timeconfirm=True,
+def choices(dateformat=0, timeformat=0,
             parse_vdirsyncer_conf=True,
             create_vdir=False,
             write_config=True):
@@ -514,8 +513,7 @@ def choices(ordering=0, separator=0, dateconfirm=True,
     confirm = {True: 'y', False: 'n'}
 
     out = [
-        str(ordering), str(separator), confirm[dateconfirm],
-        str(timeformat), confirm[timeconfirm],
+        str(dateformat), str(timeformat),
         confirm[parse_vdirsyncer_conf],
     ]
     if not parse_vdirsyncer_conf:

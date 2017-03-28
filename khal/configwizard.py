@@ -24,6 +24,7 @@ from click import confirm, prompt, UsageError
 import xdg
 
 from functools import partial
+from itertools import zip_longest
 from os.path import expanduser, expandvars, join, normpath, exists, isdir
 from os import makedirs
 
@@ -45,50 +46,66 @@ def validate_int(input, min_value, max_value):
         raise UsageError('Input must be between {} and {}'.format(min_value, max_value))
 
 
+DATE_FORMAT_INFO = [
+    ('Year', ['%Y', '%y']),
+    ('Month', ['%m', '%B', '%b']),
+    ('Day', ['%d', '%a', '%A'])
+]
+
+
+def present_date_format_info(example_date):
+    columns = []
+    widths = []
+    for title, formats in DATE_FORMAT_INFO:
+        newcol = [title]
+        for f in formats:
+            newcol.append('{}={}'.format(f, example_date.strftime(f)))
+        widths.append(max(len(s) for s in newcol) + 2)
+        columns.append(newcol)
+
+    print('Common fields for date formatting:')
+    for row in zip_longest(*columns, fillvalue=''):
+        print(''.join(s.ljust(w) for (s, w) in zip(row, widths)))
+
+    print('More info: '
+          'https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior')
+
+
 def choose_datetime_format():
     """query user for their date format of choice"""
-    while True:
-        ordering_choices = [
-            ('year month day', ['%Y', '%m', '%d']),
-            ('day month year', ['%d', '%m', '%Y']),
-            ('month day year', ['%m', '%d', '%Y']),
-        ]
-        separator_choices = ['-', '.', '/']
-        validate = partial(validate_int, min_value=0, max_value=2)
-
-        print("What ordering of year, month, date do you want to use? "
-              "(You can choose the separator in the next step)")
-        print('\n'.join(
-            ['[{}] {}'.format(num, one) for num, (one, _) in enumerate(ordering_choices)]))
-        ordering_no = prompt("Please choose one of the above options", value_proc=validate)
-        print()
-        print("Now, please choose a separator")
-        print('\n'.join(['[{}] {}'.format(num, one) for num, one in enumerate(separator_choices)]))
-        prompt_text = "Please choose one of the above options"
-        separator = separator_choices[prompt(prompt_text, value_proc=validate)]
-        dateformat = separator.join(ordering_choices[ordering_no][1])
-        today = date.today()
-        text = ("Does this look sensible to you: {} "
-                "(today as an example: {})?".format(dateformat, today.strftime(dateformat)))
-        if confirm(text):
-            break
+    choices = [
+        ('year-month-day', '%Y-%m-%d'),
+        ('day/month/year', '%d/%m/%Y'),
+        ('month/day/year', '%m/%d/%Y'),
+    ]
+    validate = partial(validate_int, min_value=0, max_value=3)
+    today = date.today()
+    print("What ordering of year, month, date do you want to use?")
+    for num, (desc, fmt) in enumerate(choices):
+        print('[{}] {} (today: {})'.format(num, desc, today.strftime(fmt)))
+    print('[3] Custom')
+    choice_no = prompt("Please choose one of the above options", value_proc=validate)
+    if choice_no == 3:
+        present_date_format_info(today)
+        dateformat = prompt('Make your date format')
+    else:
+        dateformat = choices[choice_no][1]
+    print("Date format: {} "
+          "(today as an example: {})".format(dateformat, today.strftime(dateformat)))
     return dateformat
 
 
 def choose_time_format():
     """query user for their time format of choice"""
     choices = ['%H:%M', '%I:%M %p']
-    while True:
-        print("What timeformat do you want to use?")
-        print("[0] 24 hour clock (recommended)\n[1] 12 hour clock")
-        validate = partial(validate_int, min_value=0, max_value=1)
-        prompt_text = "Please choose one of the above options"
-        timeformat = choices[prompt(prompt_text, default=0, value_proc=validate)]
-        now = datetime.now()
-        text = ("Does this look sensible to you: {} "
-                "(current time as an example: {})?".format(timeformat, now.strftime(timeformat)))
-        if confirm(text):
-            break
+    print("What timeformat do you want to use?")
+    print("[0] 24 hour clock (recommended)\n[1] 12 hour clock")
+    validate = partial(validate_int, min_value=0, max_value=1)
+    prompt_text = "Please choose one of the above options"
+    timeformat = choices[prompt(prompt_text, default=0, value_proc=validate)]
+    now = datetime.now()
+    print("Time format: {} "
+          "(current time as an example: {})".format(timeformat, now.strftime(timeformat)))
     return timeformat
 
 
@@ -197,7 +214,7 @@ def configwizard():
     config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
     if not confirm(
             "Do you want to write the config to {}? "
-            "(Choosing `No` will abort)".format(config_path)):
+            "(Choosing `No` will abort)".format(config_path), default=True):
         raise FatalError('User aborted...')
     config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
     if not exists(config_dir) and not isdir(config_dir):
