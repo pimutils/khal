@@ -9,10 +9,12 @@ may want to subscribe to `GitHub's tag feed
 
 0.9.4
 =====
+released 2017-03-30
+
 * FIX ikhal's event editor now warns before allowing to edit recurrence rules it
   doesn't understand
 
-* CHANGE improved the intial configuration wizard
+* CHANGE improved the initial configuration wizard
 
 * CHANGE improved ikhal's `light` color scheme
 * NEW ikhal's event editor now allows better editing of recurrence rules,
