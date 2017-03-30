@@ -23,9 +23,11 @@
 import datetime as dt
 import logging
 from functools import partial
+import json
 from itertools import zip_longest
-from os import makedirs
-from os.path import exists, expanduser, expandvars, isdir, join, normpath
+from os import makedirs, environ
+from os.path import expanduser, expandvars, join, normpath, exists, isdir
+from subprocess import call
 
 import xdg
 from click import Choice, UsageError, confirm, prompt
@@ -125,21 +127,16 @@ def choose_default_calendar(vdirs):
 
 def get_vdirs_from_vdirsyncer_config():
     """trying to load vdirsyncer's config and read all vdirs from it"""
-    print("If you use vdirsyncer to sync with CalDAV servers, we can try to "
-          "load its config file and add your calendars to khal's config.")
-    if not confirm("Should we try to load vdirsyncer's config?", default=True):
-        return None
     try:
         from vdirsyncer.cli import config
         from vdirsyncer.exceptions import UserError
     except ImportError:
-        print("Sorry, cannot import vdirsyncer. Please make sure you have it "
-              "installed.")
+        print("Couldn't load vdirsyncer to discover its calendars.")
         return None
     try:
         vdir_config = config.load_config()
     except UserError as error:
-        print("Sorry, trying to load vdirsyncer failed with the following "
+        print("Sorry, trying to load vdirsyncer config failed with the following "
               "error message:")
         print(error)
         return None
@@ -153,21 +150,31 @@ def get_vdirs_from_vdirsyncer_config():
             path += '*'
             vdirs.append((storage['instance_name'], path, 'discover'))
     if vdirs == []:
-        print("No usable collections were found")
+        print("No calendards found from vdirsyncer.")
         return None
     else:
-        print("The following collections were found:")
-        for name, path, _ in vdirs:
-            print(f'  {name}: {path}')
         return vdirs
 
 
+def find_vdir():
+    print("The following collections were found:")
+    synced_vdirs = get_vdirs_from_vdirsyncer_config()
+    if synced_vdirs:
+        print("Found {} calendars from vdirsyncer")
+        for name, path, _ in synced_vdirs:
+            print('  {}: {}'.format(name, path))
+        if confirm("Use these calendars for khal?", default=True):
+            return synced_vdirs
+
+    vdir_path = prompt("Enter the path to a vdir calendar")
+    return [('private', vdir_path, 'calendar')]
+
 def create_vdir(names=None):
+    """create a new vdir, make sure the name doesn't collide with existing names
+
+    :param names: names of existing vdirs
+    """
     names = names or []
-    if not confirm("Do you want to create a local calendar? (You can always "
-                   "set it up to synchronize with a server in vdirsyncer "
-                   "later)."):
-        return None
     name = 'private'
     while True:
         path = join(xdg.BaseDirectory.xdg_data_home, 'khal', 'calendars', name)
@@ -183,6 +190,102 @@ def create_vdir(names=None):
         raise
     print(f"Created new vdir at {path}")
     return [(name, path, 'calendar')]
+
+
+VDS_CONFIG_START = """\
+[general]
+status_path = "~/.local/share/vdirsyncer/status/"
+"""
+
+VDS_CONFIG_TEMPLATE = """
+[pair my_calendar]
+a = "khal_local"
+b = "caldav_remote"
+collections = ["from a", "from b"]
+
+[storage khal_local]
+type = "filesystem"
+path = {local_path}
+fileext = ".ics"
+
+[storage caldav_remote]
+type = "caldav"
+url = {url}
+username = {username}
+password = {password}
+"""
+
+
+def vdirsyncer_config_path():
+    fname = environ.get('VDIRSYNCER_CONFIG', None)
+    if fname is None:
+        fname = normpath(expanduser('~/.vdirsyncer/config'))
+        if not exists(fname):
+            xdg_config_dir = environ.get('XDG_CONFIG_HOME',
+                                         normpath(expanduser('~/.config/')))
+            fname = join(xdg_config_dir, 'vdirsyncer/config')
+    return fname
+
+
+def create_synced_vdir():
+    name, path, _ = create_vdir()[0]
+
+    caldav_url = prompt('CalDAV URL')
+    username = prompt('Username')
+    password = prompt('Password', hide_input=True)
+
+    vds_config = vdirsyncer_config_path()
+    if exists(vds_config):
+        mode = 'a'
+        new_file = False
+    else:
+        mode = 'w'
+        new_file = True
+
+    with open(vds_config, mode) as f:
+        if new_file:
+            f.write(VDS_CONFIG_START)
+
+        f.write(VDS_CONFIG_TEMPLATE.format(
+            local_path=json.dumps(path),
+            url=json.dumps(caldav_url),
+            username=json.dumps(username),
+            password=json.dumps(password),
+        ))
+    start_syncing()
+    return [(name, path, 'calendar')]
+
+
+def start_syncing():
+    print("Syncing calendar...")
+    try:
+        exit_code = call(['vdirsyncer', 'discover'])
+    except FileNotFoundError:
+        print("Could not find vdirsyncer - please set it up manually")
+        exit_code = 1
+    else:
+        if exit_code == 0:
+            exit_code = call(['vdirsyncer', 'sync'])
+        if exit_code != 0:
+            print("vdirsyncer failed - please set up sync manually")
+
+    if exit_code == 0:
+        # TODO: add to cron
+        pass
+
+
+def choose_vdir_calendar():
+    choices = [
+        ("Create a new calendar on this computer", create_vdir),
+        ("Use a calendar already on this computer (vdir format)", find_vdir),
+        ("Sync a calendar from the internet (CalDAV format)", create_synced_vdir),
+    ]
+    validate = partial(validate_int, min_value=0, max_value=2)
+    for i, (desc, func) in enumerate(choices):
+        print('[{}] {}'.format(i, desc))
+    choice_no = prompt("Please choose one of the above options",
+                       value_proc=validate)
+    return choices[choice_no][1]()
 
 
 def create_config(vdirs, dateformat, timeformat, default_calendar=None):
@@ -221,13 +324,8 @@ def configwizard():
     print()
     timeformat = choose_time_format()
     print()
-    vdirs = get_vdirs_from_vdirsyncer_config()
+    vdirs = choose_vdir_calendar()
     print()
-    if not vdirs:
-        try:
-            vdirs = create_vdir()
-        except OSError as error:
-            raise FatalError(error)
 
     if not vdirs:
         print("\nWARNING: no vdir configured, khal will not be usable like this!\n")
