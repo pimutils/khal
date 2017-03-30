@@ -202,23 +202,26 @@ def create_vdir(names=None):
     return [(name, path, 'calendar')]
 
 
+# Parsing and then dumping config naively could lose comments and formatting.
+# Since we don't need to modify existing fields, we can simply append our new
+# config to the end of the file.
 VDS_CONFIG_START = """\
 [general]
 status_path = "~/.local/share/vdirsyncer/status/"
 """
 
 VDS_CONFIG_TEMPLATE = """
-[pair my_calendar]
-a = "khal_local"
-b = "caldav_remote"
+[pair khal_pair_{pairno}]
+a = "khal_pair_{pairno}_local"
+b = "khal_pair_{pairno}_remote"
 collections = ["from a", "from b"]
 
-[storage khal_local]
+[storage khal_pair_{pairno}_local]
 type = "filesystem"
 path = {local_path}
 fileext = ".ics"
 
-[storage caldav_remote]
+[storage khal_pair_{pairno}_remote]
 type = "caldav"
 url = {url}
 username = {username}
@@ -237,7 +240,23 @@ def vdirsyncer_config_path():
     return fname
 
 
+def get_available_pairno():
+    """Find N so that 'khal_pair_N' is not already used in vdirsyncer config
+    """
+    try:
+        from vdirsyncer.cli import config
+        from vdirsyncer.exceptions import UserError
+    except ImportError:
+        raise FatalError("vdirsyncer config exists, but couldn't import vdirsyncer.")
+    vdir_config = config.load_config()
+    pairno = 1
+    while 'khal_pair_{}'.format(pairno) in vdir_config.pairs:
+        pairno += 1
+    return pairno
+
 def create_synced_vdir():
+    """Create a new vdir, and set up vdirsyncer to sync it.
+    """
     name, path, _ = create_vdir()[0]
 
     caldav_url = prompt('CalDAV URL')
@@ -246,11 +265,15 @@ def create_synced_vdir():
 
     vds_config = vdirsyncer_config_path()
     if exists(vds_config):
+        # We are adding a pair to vdirsyncer config
         mode = 'a'
         new_file = False
+        pairno = get_available_pairno()
     else:
+        # We're setting up vdirsyncer for the first time
         mode = 'w'
         new_file = True
+        pairno = 1
 
     with open(vds_config, mode) as f:
         if new_file:
@@ -261,6 +284,7 @@ def create_synced_vdir():
             url=json.dumps(caldav_url),
             username=json.dumps(username),
             password=json.dumps(password),
+            pairno=pairno,
         ))
     start_syncing()
     return [(name, path, 'calendar')]
