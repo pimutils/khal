@@ -167,6 +167,7 @@ def find_vdir():
             return synced_vdirs
 
     vdir_path = prompt("Enter the path to a vdir calendar")
+    vdir_path = normpath(expanduser(expandvars(vdir_path)))
     return [('private', vdir_path, 'calendar')]
 
 def create_vdir(names=None):
