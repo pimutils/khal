@@ -38,6 +38,15 @@ from .settings import find_configuration_file
 logger = logging.getLogger('khal')
 
 
+def compressuser(path):
+    """Abbreviate home directory to '~', for presenting a path."""
+    home = normpath(expanduser('~'))
+    path = normpath(path)
+    if path.startswith(home):
+        path = '~' + path[len(home):]
+    return path
+
+
 def validate_int(input, min_value, max_value):
     try:
         number = int(input)
@@ -160,9 +169,9 @@ def find_vdir():
     print("The following collections were found:")
     synced_vdirs = get_vdirs_from_vdirsyncer_config()
     if synced_vdirs:
-        print("Found {} calendars from vdirsyncer")
+        print("Found {} calendars from vdirsyncer".format(len(synced_vdirs)))
         for name, path, _ in synced_vdirs:
-            print('  {}: {}'.format(name, path))
+            print('  {}: {}'.format(name, compressuser(path)))
         if confirm("Use these calendars for khal?", default=True):
             return synced_vdirs
 
@@ -316,7 +325,7 @@ def create_config(vdirs, dateformat, timeformat, default_calendar=None):
 def configwizard():
     config_file = find_configuration_file()
     if config_file is not None:
-        logger.fatal(f"Found an existing config file at {config_file}.")
+        logger.fatal(f"Found an existing config file at {compressuser(config_file)}.")
         logger.fatal(
             "If you want to create a new configuration file, "
             "please remove the old one first. Exiting.")
@@ -343,7 +352,7 @@ def configwizard():
     )
     config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
     if not confirm(
-            f"Do you want to write the config to {config_path}? "
+            f"Do you want to write the config to {compressuser(config_path)}? "
             "(Choosing `No` will abort)", default=True):
         raise FatalError('User aborted...')
     config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
@@ -352,12 +361,12 @@ def configwizard():
             makedirs(config_dir)
         except OSError as error:
             print(
-                f"Could not write config file at {config_dir} because of "
+                f"Could not write config file at {compressuser(config_dir)} because of "
                 f"{error}. Aborting"
             )
             raise FatalError(error)
         else:
-            print(f'created directory {config_dir}')
+            print(f"created directory {compressuser(config_dir)}")
     with open(config_path, 'w') as config_file:
         config_file.write(config)
-    print(f"Successfully wrote configuration to {config_path}")
+    print(f"Successfully wrote configuration to {compressuser(config_path)}")
