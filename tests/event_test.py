@@ -299,11 +299,17 @@ def test_event_dt_long():
         '09.04.2014 09:30-12.04.2014 10:30 An Event \x1b[0m'
 
 
-def test_event_no_dst():
+def test_event_no_dst(pytz_version):
     """test the creation of a corect VTIMEZONE for timezones with no dst"""
     event_no_dst = _get_text('event_no_dst')
     cal_no_dst = _get_text('cal_no_dst')
     event = Event.fromString(event_no_dst, calendar='foobar', locale=LOCALE_BOGOTA)
+    if pytz_version > (2017, 1):
+        cal_no_dst = cal_no_dst.replace(
+            'TZNAME:COT',
+            'RDATE:20380118T221407\r\nTZNAME:-05'
+        )
+
     assert normalize_component(event.raw) == normalize_component(cal_no_dst)
     assert event.format(SEARCH_FORMAT, date(2014, 4, 10)) == \
         '09.04.2014 09:30-10:30 An Event \x1b[0m'

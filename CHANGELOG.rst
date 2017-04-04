@@ -12,6 +12,7 @@ may want to subscribe to `GitHub's tag feed
 not released yet
 
 * FIX khal new -i does not crash anymore
+* FIX make tests run with latest pytz (2017.2)
 
 0.9.4
 =====
