@@ -10,7 +10,6 @@ python:
 
 env:
     - BUILD=py
-    - BUILD=negtz
     - BUILD=pytz201701,pytz201610
 
 matrix:
