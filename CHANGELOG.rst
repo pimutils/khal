@@ -7,9 +7,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
-0.10.0
+0.9.5
 ======
 not released yet
+
+* FIX khal new -i does not crash anymore
 
 0.9.4
 =====

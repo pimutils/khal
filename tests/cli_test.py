@@ -761,3 +761,37 @@ def test_new(runner):
     assert not result.exception
     assert result.output.endswith('.ics\n')
     assert result.output.startswith(str(runner.tmpdir))
+
+
+@freeze_time('2015-6-1 8:00')
+def test_new_interactive(runner):
+    runner = runner(print_new='path')
+
+    result = runner.invoke(
+        main_khal, 'new -i'.split(),
+        'Another event\n13:00 17:00\n\nNone\nn\n'
+    )
+    assert not result.exception
+    assert result.exit_code == 0
+
+
+@freeze_time('2015-6-1 8:00')
+def test_new_interactive_extensive(runner):
+    runner = runner(print_new='path', default_calendar=False)
+
+    result = runner.invoke(
+        main_khal, 'new -i 15:00 15:30'.split(),
+        '?\ninvalid\ntwo\n'
+        'Unicce Name\n'
+        '\n'
+        'Europe/London\n'
+        'bar\n'
+        'l\non a boat\n'
+        'p\nweekly\n'
+        '1.1.2018\n'
+        'a\n30m\n'
+        'c\nwork\n'
+        'n\n'
+    )
+    assert not result.exception
+    assert result.exit_code == 0

@@ -276,20 +276,23 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
 def new_interactive(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
-    info = utils.eventinfofstr(
-        info, conf['locale'], default_timedelta="60m", adjust_reasonably=True, localize=False)
+    try:
+        info = utils.eventinfofstr(info, conf['locale'], adjust_reasonably=True, localize=False)
+    except ValueError:
+        info = dict()
+
     while True:
-        summary = info["summary"]
+        summary = info.get('summary')
         if not summary:
             summary = None
-        info['summary'] = prompt("summary", default=summary)
+        info['summary'] = prompt('summary', default=summary)
         if info['summary']:
             break
         echo("a summary is required")
 
     while True:
         range_string = None
-        if info["dtstart"] and info["dtend"]:
+        if info.get('dtstart') and info.get('dtend'):
             start_string = info["dtstart"].strftime(conf['locale']['datetimeformat'])
             end_string = info["dtend"].strftime(conf['locale']['datetimeformat'])
             range_string = start_string + ' ' + end_string
@@ -304,22 +307,24 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         echo("invalid datetime range")
 
     while True:
-        tz = info['timezone'] or conf['locale']['default_timezone']
+        tz = info.get('timezone') or conf['locale']['default_timezone']
         timezone = prompt("timezone", default=str(tz))
         try:
             tz = pytz.timezone(timezone)
             info['timezone'] = tz
             break
         except pytz.UnknownTimeZoneError:
-            echo('unknown timezone')
+            echo("unknown timezone")
 
-    info['description'] = prompt('description (or "None")', default=info['description'])
-    if info['description'] == "None":
+    info['description'] = prompt("description (or 'None')", default=info.get('description'))
+    if info['description'] == 'None':
         info['description'] = ''
 
-    event = new_from_args(collection, calendar_name, conf, format=format, env=env,
-                          location=location, categories=categories,
-                          repeat=repeat, until=until, alarms=alarms, **info)
+    event = new_from_args(
+        collection, calendar_name, conf, format=format, env=env,
+        location=location, categories=categories,
+        repeat=repeat, until=until, alarms=alarms,
+        **info)
 
     echo("event saved")
 
@@ -343,7 +348,7 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
                   summary=None, description=None, allday=None, location=None,
                   categories=None, repeat=None, until=None, alarms=None,
                   timezone=None, format=None, env=None):
-
+    """Create a new event from arguments and add to vdirs"""
     try:
         event = utils.new_event(
             locale=conf['locale'], location=location, categories=categories,
@@ -395,6 +400,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
     options = OrderedDict()
     if allow_quit:
         options["no"] = {"short": "n"}
+        options["quit"] = {"short": "q"}
     else:
         options["done"] = {"short": "n"}
     options["summary"] = {"short": "s", "attr": "summary"}
@@ -405,8 +411,6 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
     options["categories"] = {"short": "c", "attr": "categories", "none": True}
     options["alarm"] = {"short": "a"}
     options["Delete"] = {"short": "D"}
-    if allow_quit:
-        options["quit"] = {"short": "q"}
 
     now = datetime.now()
 
@@ -415,9 +419,9 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
         if choice is None:
             echo("unknown choice")
             continue
-        if choice == "no":
+        if choice == 'no':
             return True
-        if choice == "quit":
+        if choice in ['quit', 'done']:
             return False
 
         edited = False
@@ -517,15 +521,12 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
 def interactive(collection, conf):
     """start the interactive user interface"""
     from . import ui
-    pane = ui.ClassicView(collection,
-                          conf,
-                          title='select an event',
-                          description='do something')
+    pane = ui.ClassicView(
+        collection, conf, title="select an event", description="do something")
     ui.start_pane(
         pane, pane.cleanup,
         program_info='{0} v{1}'.format(__productname__, __version__),
         quit_keys=conf['keybindings']['quit'],
-
     )
 
 

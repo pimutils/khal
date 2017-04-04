@@ -375,13 +375,10 @@ def guessrangefstr(daterange, locale, adjust_reasonably=False,
         allday = False
         try:
             # figuring out start
-            if len(start) == 0:
-                raise  # used to be: start = datetime_fillin(end=False)
-            else:
-                split = start.split(" ")
-                start, allday = guessdatetimefstr(split, locale)
-                if len(split) != 0:
-                    continue
+            split = start.split(" ")
+            start, allday = guessdatetimefstr(split, locale)
+            if len(split) != 0:
+                continue
 
             # and end
             if len(end) == 0:
