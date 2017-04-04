@@ -10,7 +10,6 @@ python:
 
 env:
     - BUILD=py
-    - BUILD=pytz201701,pytz201610
 
 matrix:
     include:
@@ -18,6 +17,8 @@ matrix:
         env: BUILD=style
       - python: 3.6
         env: BUILD=docs
+      - python: 3.6
+        env: BUILD=pytz201610
 
 addons:
     apt:
