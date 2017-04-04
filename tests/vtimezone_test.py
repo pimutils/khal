@@ -61,7 +61,7 @@ def test_berlin_rdate():
     assert vberlin_dst in vberlin
 
 
-def test_bogota():
+def test_bogota(pytz_version):
     vbogota = [b'BEGIN:VTIMEZONE',
                b'TZID:America/Bogota',
                b'BEGIN:STANDARD',
@@ -72,4 +72,8 @@ def test_bogota():
                b'END:STANDARD',
                b'END:VTIMEZONE',
                b'']
+    if pytz_version > (2017, 1):
+        vbogota[4] = b'TZNAME:-05'
+        vbogota.insert(4, b'RDATE:20380118T221407')
+
     assert create_timezone(bogota, atime, atime).to_ical().split(b'\r\n') == vbogota
