@@ -9,7 +9,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.9.5
 ======
-not released yet
+released 2017-04-08
 
 * FIX khal new -i does not crash anymore
 * FIX make tests run with latest pytz (2017.2)
