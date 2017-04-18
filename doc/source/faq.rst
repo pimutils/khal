@@ -13,7 +13,7 @@ Frequently asked questions:
 * **ikhal raises an Exception: AttributeError: 'module' object has no attribute 'SimpleFocusListWalker'**
         You probably need to upgrade urwid to version 1.1.0, if your OS does come with
         an older version of *urwid* you can install the latest version to userspace
-        (with out messing up your default installation) with `pip install --upgrade urwid --user`.
+        (without messing up your default installation) with `pip install --upgrade urwid --user`.
 
 
 * **Installation stops with an error: source/str_util.c:25:20: fatal error: Python.h: No such file or directory**

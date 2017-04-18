@@ -13,7 +13,7 @@
 # This allows for paths such as `~/accounts/*/calendars/*`, where the
 # calendars directory contains vdir directories. In addition, `~/calendars/*`
 # and `~/calendars/default` are valid paths if there exists a vdir in the
-# `default` directory. (The previous behaviour of recursively searching
+# `default` directory. (The previous behavior of recursively searching
 # directories has been replaced with globbing).
 path = expand_path(default=None)
 
@@ -111,7 +111,7 @@ longdatetimeformat = string(default='%d.%m.%Y %H:%M')
 # iso weeknumbers, they only work properly if `firstweekday` is set to 0
 weeknumbers = weeknumbers(default='off')
 
-# keybindings for :command:`ikhal` are set here. You can bind more than one key
+# Keybindings for :command:`ikhal` are set here. You can bind more then one key
 # (combination) to a command by supplying a comma-separated list of keys.
 # For binding key combinations concatenate them keys (with a space in
 # between), e.g. **ctrl n**.
@@ -168,7 +168,7 @@ search = force_list(default=list('/'))
 quit = force_list(default=list('q', 'Q'))
 
 
-# Some default values and behaviours are set here.
+# Some default values and behaviors are set here.
 [default]
 
 # Command to be executed if no command is given when executing khal.
@@ -264,18 +264,18 @@ event_format = string(default='{calendar-color}{cancelled}{start}-{end} {title}{
 # the highlighting/coloring of days is handled.
 [highlight_days]
 
-# Highlighting method to use - foreground or background
+# Highlighting method to use -- foreground or background
 method = option('foreground', 'fg', 'background', 'bg', default='fg')
 
-# What color to use when highlighting - explicit color or use calendar
+# What color to use when highlighting -- explicit color or use calendar
 # color when set to ''
 color = color(default='')
 
-# How to color days with events from multiple calendars - either
+# How to color days with events from multiple calendars -- either
 # explicit color or use calendars' colors when set to ''
 multiple = color(default='')
 
-# Default color for calendars without color - when set to '' it
+# Default color for calendars without color -- when set to '' it
 # actually disables highlighting for events that should use the
 # default color.
 default_color = color(default='')

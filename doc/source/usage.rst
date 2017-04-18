@@ -146,12 +146,12 @@ Several options are common to almost all of :program:`khal`'s commands
        The string `CANCELLED` (plus one blank) if the event's status is
        cancelled, otherwise nothing.
 
-   By default all-day events have no times. To see a start and end time anyway simply
+   By default, all-day events have no times. To see a start and end time anyway simply
    add `-full` to the end of any template with start/end, for instance
    `start-time` becomes `start-time-full` and will always show start and end times (instead
    of being empty for all-day events).
 
-   In addition there are colors: `black`, `red`, `green`, `yellow`, `blue`,
+   In addition, there are colors: `black`, `red`, `green`, `yellow`, `blue`,
    `magenta`, `cyan`, `white` (and their bold versions: `red-bold`, etc.). There
    is also `reset`, which clears the styling, and `bold`, which is the normal
    bold.
@@ -165,8 +165,8 @@ Several options are common to almost all of :program:`khal`'s commands
 
 .. option:: --day-format DAYFORMAT
 
-   works similar to :option:`--format`, but for day headings. It only has a small
-   number of options (in addition to all of the color options):
+   works similar to :option:`--format`, but for day headings. It only has a few
+   options (in addition to all the color options):
 
    date
         The date in dateformat.
@@ -209,7 +209,7 @@ assumed. Today is used for START if it is not explicitly given.  If DELTA, a
 (date)time range in the format `I{m,h,d}`, where `I` is an integer and `m` means
 minutes, `h` means hours, and `d` means days, is given, END is assumed to be
 START + DELTA.  A value of `eod` is also accepted as DELTA and means the end of
-day of the start date. In addition the DELTA `week` may be used to specify that
+day of the start date. In addition, the DELTA `week` may be used to specify that
 the daterange should actually be the week containing the START.
 
 The `--once` option only allows events to appear once even if they are on

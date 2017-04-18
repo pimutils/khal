@@ -33,7 +33,7 @@ or the latest development version by executing::
 
 This should also take care of installing all required dependencies.
 
-Otherwise you can always download the latest release from pypi_ and execute::
+Otherwise, you can always download the latest release from pypi_ and execute::
 
         python setup.py install
 
@@ -43,12 +43,12 @@ or better::
 
 in the unpacked distribution folder.
 
-Since version 0.8 *khal* does **only supports python 3**. If you have
+Since version 0.8, *khal* **only supports python 3.3+**. If you have
 python 2 and 3 installed in parallel you might need to use `pip3` instead of
 `pip` and `python3` instead of `python`. In case your operating system cannot
 deal with python 2 and 3 packages concurrently, we suggest installing *khal* in
 a virtualenv_ (e.g. by using virtualenvwrapper_ or with the help of pipsi_) and
-than starting khal from that virtual environment.
+then starting khal from that virtual environment.
 
 .. _pipsi: https://github.com/mitsuhiko/pipsi
 .. _pypi: https://pypi.python.org/pypi/khal

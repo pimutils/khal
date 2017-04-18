@@ -45,7 +45,7 @@ Here is a small example:
     This allows for paths such as `~/accounts/*/calendars/*`, where the
     calendars directory contains vdir directories. In addition, `~/calendars/*`
     and `~/calendars/default` are valid paths if there exists a vdir in the
-    `default` directory. (The previous behaviour of recursively searching
+    `default` directory. (The previous behavior of recursively searching
     directories has been replaced with globbing).
 
       :type: string
@@ -95,7 +95,7 @@ The [default] section
 ~~~~~~~~~~~~~~~~~~~~~
 
 
-Some default values and behaviours are set here.
+Some default values and behaviors are set here.
 
 .. _default-default_calendar:
 
@@ -174,7 +174,7 @@ the highlighting/coloring of days is handled.
 .. object:: color
 
     
-    What color to use when highlighting - explicit color or use calendar
+    What color to use when highlighting -- explicit color or use calendar
     color when set to ''
 
       :type: color
@@ -185,7 +185,7 @@ the highlighting/coloring of days is handled.
 .. object:: default_color
 
     
-    Default color for calendars without color - when set to '' it
+    Default color for calendars without color -- when set to '' it
     actually disables highlighting for events that should use the
     default color.
 
@@ -197,7 +197,7 @@ the highlighting/coloring of days is handled.
 .. object:: method
 
     
-    Highlighting method to use - foreground or background
+    Highlighting method to use -- foreground or background
 
       :type: option, allowed values are *foreground*, *fg*, *background* and *bg*
       :default: fg
@@ -207,7 +207,7 @@ the highlighting/coloring of days is handled.
 .. object:: multiple
 
     
-    How to color days with events from multiple calendars - either
+    How to color days with events from multiple calendars -- either
     explicit color or use calendars' colors when set to ''
 
       :type: color
@@ -216,7 +216,7 @@ the highlighting/coloring of days is handled.
 The [keybindings] section
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-keybindings for :command:`ikhal` are set here. You can bind more than one key
+Keybindings for :command:`ikhal` are set here. You can bind more then one key
 (combination) to a command by supplying a comma-separated list of keys.
 For binding key combinations concatenate them keys (with a space in
 between), e.g. **ctrl n**.

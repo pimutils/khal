@@ -218,7 +218,7 @@ released on 2016-04-13
 ikhal
 -----
 * basic export of events from event editor pane and from event lists (default
-  keybinding: *e* (Filip Pytloun)
+  keybinding: *e*) (Filip Pytloun)
 * pressing *enter* in a date editing widget will now open a small calendar
   widget, arrow keys can be used to select a date, enter (or escape) will close
   it again (Christian Geier)
@@ -251,7 +251,7 @@ There are no new or dropped dependencies.
   events, enable with the new --full/-f flag (Thomas Schaper)
 * updated and improved zsh completion file (Oliver Kiddle)
 * FIX: deleting events did not always work if an event with the same filename existed
-  in an other calendar (but no data lost incurred) (Christian Geier)
+  in another calendar (but no data lost incurred) (Christian Geier)
 
 ikhal
 -----
@@ -309,7 +309,7 @@ released on 2015-06-01
   Jones)
 * compatibility with vdirsyncer 0.5
 
-* new command `search` allows to search for events
+* new command `search` allows searching for events
 * user changeable keybindings in ikhal, with hjkl as default alternatives for
   arrows in calendar browser, see documentation for more details
 * new command `at` shows all events scheduled for a specific datetime
@@ -359,7 +359,7 @@ new and changed features
   events in some other calendar applications
 * change in behaviour: recurring events are now always expanded until 2037
 * major speedup in inserting events into the caching database, especially
-  noticeable when running khal for the first time or after an deleting the
+  noticeable when running khal for the first time or after a deleting the
   database (Thanks to Markus Unterwaditzer)
 * better support for broken events, e.g. events ending before they start
   (Thanks to Markus Unterwaditzer)
@@ -396,7 +396,7 @@ released on 2014-09-03
 * new unified documentation
     * html documentation (website) and man pages are all generated from the same
       sources via sphinx (type `make html` or `make man` in doc/, the result
-      will be build in *build/html* or *build/man* respectively
+      will be build in *build/html* or *build/man* respectively)
     * the new documentation lives in doc/
     * the package sphinxcontrib-newsfeed is needed for generating the html
       version (for generating an RSS feed)

@@ -10,8 +10,8 @@ Please do provide feedback if *khal* works for you or even more importantly,
 if it doesn't. Feature requests and other ideas on how to improve khal are also
 welcome (see below).
 
-In case you are not satisfied with khal, there are at least two other projects
-with similar aims you might want to check out: calendar-cli_ (no
+In case you are not satisfied with khal, there are at least two other
+projects with similar aims you might want to check out: calendar-cli_ (no
 offline storage and a bit different scope) and gcalcli_ (only works with
 google's calendar).
 
@@ -25,8 +25,8 @@ check if that bug is also present in the latest version from github (see
 :doc:`install`) and is not already reported_ (you still might want to comment on
 an already open issue).
 
-If it isn't, please open a new bug.  In case you submit a new bug please
-include:
+If it isn't, please open a new bug.  In case you submit a new bug report,
+please include:
 
  * how you ran khal (please run in verbose mode with `-v`)
  * what you expected khal to do
@@ -50,7 +50,7 @@ Contact
 -------
 * You might get quick answers on the `#pimutils`_ IRC channel on Freenode, if
   nobody is answering you, please hang around for a bit. You can also use this
-  channel for general discussions around :command:`khal` and `related tools`_.
+  channel for general discussions about :command:`khal` and `related tools`_.
 * Open a github issue_
 * If the above mentioned methods do not work, you can always contact the `main
   developer`_.

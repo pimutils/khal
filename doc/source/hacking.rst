@@ -8,10 +8,10 @@ Hacking
 
 
 **Please discuss your ideas with us, before investing a lot of time into
-khal** (to make sure, no efforts are wasted).  Also if you have any questions on
-khal's codebase, please don't hesitate to :ref:`contact <contact>` us, we will
-gladly provide you with any information you need or set up a joined hacking
-session.
+khal** (to make sure, no efforts are wasted).  Also, if you have any questions
+on khal's codebase, please don't hesitate to :ref:`contact <contact>` us, we
+will gladly provide you with any information you need or set up a joined
+hacking session.
 
 The preferred way of submitting patches is via `github pull requests`_ (PRs).  If you
 are not comfortable with that, please :ref:`contact <contact>` us and we can
@@ -54,12 +54,12 @@ python packages depend on different version of the same library.
 virtualenvwrapper_ (for bash and zsh users) and virtualfish_ (for fish users)
 are handy wrappers that make working with virtual environments very comfortable.
 
-After you have created and activated a virtual environment, it is recommend to
+After you have created and activated a virtual environment, it is recommended to
 install khal via :command:`pip install -e .` (from the base of khal's source
 directory), this install khal in an editable development mode, where you do not
 have to reinstall khal after every change you made, but where khal will always
-have picked up all the latest changes (with the exception of adding new files,
-hereafter reinstall khal *is* necessary).
+have picked up all the latest changes (except for adding new files, hereafter
+reinstalling khal *is* necessary).
 
 Testing
 *******
@@ -90,14 +90,14 @@ of that part is therefore not mandatory, but very welcome nonetheless.
 To make sure all major code paths are run through at least once, please check
 the *coverage* the tests provide.  This can be done with pytest-cov_.  After
 installing pytest-cov, running :command:`py.test --cov khal --cov-report=html
-tests` will generate a html-based report on test coverage (which can be
+tests` will generate an html-based report on test coverage (which can be
 found in :file:`htmlcov`), including a color-coded version of khal's source code,
 indicating which lines have been run and which haven't.
 
 Debugging
 *********
 For an improved debugging experience on the command line, `pdb++`_ is
-recommended (install with :command:`pip install pdbpp`. :command:`pdb++` is a
+recommended (install with :command:`pip install pdbpp`). :command:`pdb++` is a
 drop in replacement for python's default debugger, and can therefore be used
 like the default debugger, e.g., invoked by placing ``import pdb;
 pdb.set_trace()`` at the respective place.  One of the main reasons for choosing
@@ -116,8 +116,8 @@ so on some system running :command:`gmake` make be required).
 
 If you make any changes to how a user would interact with khal, please change or
 add the relevant section(s) in the documentation, which uses the
-reStructuredText_ format, which shouldn't be to hard after looking at some of
-the existing documentation (even for users who never used it before).
+reStructuredText_ format, which shouldn't be too hard to use after looking at
+some of the existing documentation (even for users who never used it before).
 
 .. note::
         The file :file:`doc/source/configspec.rst` is auto-generated on
@@ -130,8 +130,8 @@ Also, summarize your changes in :file:`CHANGELOG.rst`,  pointing readers to the
 
 Code Style
 **********
-khal's source code should adhere to the rules laid out in :pep:`008`, with the
-exception of allowing line lengths of up to 100 characters if it improves
+khal's source code should adhere to the rules laid out in :pep:`008`, except 
+for allowing line lengths of up to 100 characters if it improves
 overall legibility (use your judgement).  This can be checked by installing and
 running flake8_ (run with :command:`flake8` from khal's source directory), which
 will also be run with tox and travisCI, see section above.
@@ -192,7 +192,7 @@ RANGE=THISANDFUTURE, meaning the deviations described by this child event also
 apply to all further recurrence instances.
 
 Because it is possible that an event already in the database consists of a
-master event and at least one child event gets updated and than consists only
+master event and at least one child event gets updated and then consists only
 of a master event, we currently *delete* all events with the same UID from the
 database when inserting or updating a new event. But this means that we need
 to update an event always at once (master and all child events) at the same
@@ -203,6 +203,6 @@ on those VEVENTS in any given `.ics` file (at least I didn't find any). Not
 only can the proto event be *behind* any or all RECURRENCE-ID events, but also
 events with different UIDs can be in between.
 
-We therefore currently first collect all events with the same UID and than
+We therefore currently first collect all events with the same UID and then
 sort those by their type (proto or child), and the children by the value of the
 RECURRENCE-ID property.

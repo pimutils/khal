@@ -9,7 +9,7 @@ RDATE;VALUE=PERIOD
 ------------------
 
 `RDATE` s with `PERIOD` values are currently not supported, as icalendar_ does
-does not support it yet. Please submit any real world examples of events with
+not support it yet. Please submit any real world examples of events with
 `RDATE;VALUE=PERIOD` you might encounter (khal will print warnings if you have
 any in your calendars).
 
@@ -79,7 +79,7 @@ conversion is necessary.
 Khal (i.e. icalendar_) can understand all timezone identifiers as used in the
 `Olson DB`_ and custom timezone definitions, if those VTIMEZONE components are
 placed before the VEVENTS that make use of them (as most calendar programs seem
-to do). In case a unknown (or unsupported) timezone is found, khal will assume
+to do). In case an unknown (or unsupported) timezone is found, khal will assume
 you want that event to be placed in the *default timezone* (which can be
 configured in the configuration file as well).
 

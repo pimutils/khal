@@ -56,7 +56,7 @@ To get :command:`khal` working with CalDAV you will first need to setup
 vdirsyncer_.  After each start :command:`khal` will automatically check if
 anything has changed and automatically update its caching db (this may take some
 time after the initial sync, especially for large calendar collections).
-Therefore you might want to execute :command:`khal` automatically after syncing
+Therefore, you might want to execute :command:`khal` automatically after syncing
 with :command:`vdirsyncer` (e.g. via :command:`cron`).
 
 .. _vdirsyncer: https://github.com/untitaker/vdirsyncer
