@@ -11,6 +11,8 @@ may want to subscribe to `GitHub's tag feed
 =====
 unreleased
 
+* FIX set PRODID to khal/icalendar
+
 * ADD new entry points recommended for packagers to use.
 
 0.9.5

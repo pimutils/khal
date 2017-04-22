@@ -322,7 +322,7 @@ def test_event_raw_UTC():
     assert event.raw == '\r\n'.join([
         '''BEGIN:VCALENDAR''',
         '''VERSION:2.0''',
-        '''PRODID:-//CALENDARSERVER.ORG//NONSGML Version 1//EN''',
+        '''PRODID:-//PIMUTILS.ORG//NONSGML khal / icalendar //EN''',
         '''BEGIN:VEVENT''',
         '''SUMMARY:An Event''',
         '''DTSTART:20140409T093000Z''',
@@ -471,7 +471,7 @@ def test_create_timezone_static():
         assert normalize_component(event.raw) == normalize_component(
             """BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//CALENDARSERVER.ORG//NONSGML Version 1//EN
+PRODID:-//PIMUTILS.ORG//NONSGML khal / icalendar //EN
 BEGIN:VTIMEZONE
 TZID:Etc/GMT+3
 BEGIN:STANDARD

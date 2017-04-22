@@ -311,7 +311,9 @@ class Event(object):
         """
         calendar = icalendar.Calendar()
         calendar.add('version', '2.0')
-        calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
+        calendar.add(
+            'prodid', '-//PIMUTILS.ORG//NONSGML khal / icalendar //EN'
+        )
         return calendar
 
     @property

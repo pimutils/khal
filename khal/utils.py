@@ -632,7 +632,9 @@ def ics_from_list(events, tzs, random_uid=False, default_timezone=None):
     """
     calendar = icalendar.Calendar()
     calendar.add('version', '2.0')
-    calendar.add('prodid', '-//CALENDARSERVER.ORG//NONSGML Version 1//EN')
+    calendar.add(
+        'prodid', '-//PIMUTILS.ORG//NONSGML khal / icalendar //EN'
+    )
 
     if random_uid:
         new_uid = generate_random_uid()
