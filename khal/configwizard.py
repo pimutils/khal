@@ -167,7 +167,7 @@ def get_vdirs_from_vdirsyncer_config():
 
 def find_vdir():
     """Use one or more existing vdirs on the system.
-    
+
     Tries to get data from vdirsyncer if it's installed and configured, and
     asks user to confirm it. If not, prompt the user for the path to a single
     vdir.
@@ -237,7 +237,7 @@ password = {password}
 
 def vdirsyncer_config_path():
     """Find where vdirsyncer will look for it's config.
-    
+
     There may or may not already be a file at the returned path.
     """
     fname = environ.get('VDIRSYNCER_CONFIG', None)
@@ -255,7 +255,6 @@ def get_available_pairno():
     """
     try:
         from vdirsyncer.cli import config
-        from vdirsyncer.exceptions import UserError
     except ImportError:
         raise FatalError("vdirsyncer config exists, but couldn't import vdirsyncer.")
     vdir_config = config.load_config()
@@ -263,6 +262,7 @@ def get_available_pairno():
     while 'khal_pair_{}'.format(pairno) in vdir_config.pairs:
         pairno += 1
     return pairno
+
 
 def create_synced_vdir():
     """Create a new vdir, and set up vdirsyncer to sync it.
