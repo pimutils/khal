@@ -372,7 +372,10 @@ def configwizard():
     print()
     timeformat = choose_time_format()
     print()
-    vdirs = choose_vdir_calendar()
+    try:
+        vdirs = choose_vdir_calendar()
+    except OSError as error:
+        raise FatalError(error)
     print()
 
     if not vdirs:
