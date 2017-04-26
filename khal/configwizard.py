@@ -25,6 +25,8 @@ import logging
 from functools import partial
 import json
 from itertools import zip_longest
+from os.path import (expanduser, expandvars, join, normpath, exists, isdir,
+    dirname)
 from os import makedirs, environ
 from os.path import expanduser, expandvars, join, normpath, exists, isdir
 from subprocess import call
@@ -290,7 +292,7 @@ def create_synced_vdir():
             f.write(VDS_CONFIG_START)
 
         f.write(VDS_CONFIG_TEMPLATE.format(
-            local_path=json.dumps(path),
+            local_path=json.dumps(dirname(path)),
             url=json.dumps(caldav_url),
             username=json.dumps(username),
             password=json.dumps(password),
