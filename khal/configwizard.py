@@ -307,16 +307,15 @@ def start_syncing():
         exit_code = call(['vdirsyncer', 'discover'])
     except FileNotFoundError:
         print("Could not find vdirsyncer - please set it up manually")
-        exit_code = 1
     else:
         if exit_code == 0:
             exit_code = call(['vdirsyncer', 'sync'])
         if exit_code != 0:
             print("vdirsyncer failed - please set up sync manually")
 
-    if exit_code == 0:
-        # TODO: add to cron
-        pass
+    # Add code here to check platform and automatically set up cron or similar
+    print("Please set up your system to run 'vdirsyncer sync' periodically, "
+          "using cron or similar mechanisms.")
 
 
 def choose_vdir_calendar():
