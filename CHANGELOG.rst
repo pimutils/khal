@@ -7,6 +7,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.9.6
+=====
+unreleased
+
+* ADD new entry points recommended for packagers to use.
+
 0.9.5
 ======
 released 2017-04-08
