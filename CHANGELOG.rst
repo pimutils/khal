@@ -12,6 +12,7 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 
 * FIX set PRODID to khal/icalendar
+* FIX don't crash on updated vcards
 
 * ADD new entry points recommended for packagers to use.
 

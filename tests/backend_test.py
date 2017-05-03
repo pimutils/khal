@@ -686,6 +686,7 @@ def test_birthdays():
                                   datetime(2016, 3, 11, 23, 59, 59, 999)))
     assert events[0].summary == 'Unix\'s 45th birthday'
 
+
 def test_birthdays_update():
     """test if we can update a birthday"""
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
