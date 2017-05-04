@@ -273,6 +273,7 @@ class SQLiteDb(object):
         """
         assert calendar is not None
         assert href is not None
+        self.delete(href, calendar=calendar)
         ical = icalendar.Event.from_ical(vevent)
         vcard = ical.walk()[0]
         if 'BDAY' in vcard.keys():
