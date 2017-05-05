@@ -13,6 +13,7 @@ unreleased
 
 * FIX set PRODID to khal/icalendar
 * FIX don't crash on updated vcards
+* FIX checking for RRULEs we understand
 
 * ADD new entry points recommended for packagers to use.
 

@@ -1,6 +1,8 @@
 from datetime import datetime, date
 
-from khal.ui.editor import StartEndEditor
+import icalendar
+
+from khal.ui.editor import StartEndEditor, RecurrenceEditor
 
 from ..utils import LOCALE_BERLIN, BERLIN
 
@@ -28,3 +30,22 @@ def test_popup(monkeypatch):
     assert fake.kwargs['initial'] == date(2015, 4, 26)
     see.widgets.enddate.keypress((22, ), 'enter')
     assert fake.kwargs['initial'] == date(2015, 4, 27)
+
+
+def test_check_understood_rrule():
+    assert RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;BYDAY=1SU')
+    )
+    assert RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;BYMONTHDAY=1')
+    )
+
+    assert not RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;BYDAY=-1SU')
+    )
+    assert not RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;BYDAY=TH;BYMONTHDAY=1,2,3,4,5,6,7')
+    )
+    assert not RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;BYDAY=TH;BYMONTHDAY=-1')
+    )

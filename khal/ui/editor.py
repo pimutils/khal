@@ -616,8 +616,11 @@ class RecurrenceEditor(urwid.WidgetWrap):
         }
         if keys.intersection(unsupported_rrule_parts):
             return False
+        if len(rrule.get('BYMONTHDAY', [1])) > 1:
+            return False
         # we don't support negative BYMONTHDAY numbers
-        if rrule.get('BYMONTHDAY', ['1'])[0][0] == '-':
+        # don't need to check whole list, we only support one monthday anyway
+        if rrule.get('BYMONTHDAY', [1])[0] < 1:
             return False
         if rrule.get('BYDAY', ['1'])[0][0] == '-':
             return False
