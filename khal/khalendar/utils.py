@@ -109,6 +109,7 @@ def expand(vevent, href=''):
         dtstartl = {vevent['DTSTART'].dt}
 
     def get_dates(vevent, key):
+        # TODO replace with get_all_properties
         dates = vevent.get(key)
         if dates is None:
             return
@@ -271,62 +272,46 @@ def invalid_timezone(prop):
         return False
 
 
-def _add_exdate(vevent, instance):
-    """remove a recurrence instance from a VEVENT's RRDATE list
+def _get_all_properties(vevent, prop):
+    """Get all properties from a vevent, even if there are several entries
+
+    example input:
+    EXDATE:1234,4567
+    EXDATE:7890
+
+    returns: [1234, 4567, 7890]
 
     :type vevent: icalendar.cal.Event
-    :type instance: datetime.datetime
+    :type prop: str
     """
-
-    def dates_from_exdate(vdddlist):
-        return [dts.dt for dts in vevent['EXDATE'].dts]
-
-    if 'EXDATE' not in vevent:
-        vevent.add('EXDATE', instance)
+    if prop not in vevent:
+        return list()
+    if isinstance(vevent[prop], list):
+        rdates = [leaf.dt for tree in vevent[prop] for leaf in tree.dts]
     else:
-        if not isinstance(vevent['EXDATE'], list):
-            exdates = dates_from_exdate(vevent['EXDATE'])
-        else:
-            exdates = list()
-            for vddlist in vevent['EXDATE']:
-                exdates.append(dates_from_exdate(vddlist))
-        exdates += [instance]
-        vevent.pop('EXDATE')
-        vevent.add('EXDATE', exdates)
-
-
-def _remove_instance(vevent, instance):
-    """remove a recurrence instance from a VEVENT's RRDATE list
-
-    :type vevent: icalendar.cal.Event
-    :type instance: datetime.datetime
-    """
-    if isinstance(vevent['RDATE'], list):
-        rdates = [leaf.dt for tree in vevent['RDATE'] for leaf in tree.dts]
-    else:
-        rdates = [vddd.dt for vddd in vevent['RDATE'].dts]
-    rdates = [one for one in rdates if one != instance]
-    vevent.pop('RDATE')
-    if rdates != []:
-        vevent.add('RDATE', rdates)
+        rdates = [vddd.dt for vddd in vevent[prop].dts]
+    return rdates
 
 
 def delete_instance(vevent, instance):
-    """remove a recurrence instance from a VEVENT's RRDATE list
+    """remove a recurrence instance from a VEVENT's RRDATE list or add it
+    to the EXDATE list
 
     :type vevent: icalendar.cal.Event
     :type instance: datetime.datetime
     """
-
-    if 'RDATE' in vevent and 'RRULE' in vevent:
-        # TODO check where this instance is coming from and only call the
-        # appropriate function
-        _add_exdate(vevent, instance)
-        _remove_instance(vevent, instance)
-    elif 'RRULE' in vevent:
-        _add_exdate(vevent, instance)
-    elif 'RDATE' in vevent:
-        _remove_instance(vevent, instance)
+    # TODO check where this instance is coming from and only call the
+    # appropriate function
+    if 'RRULE' in vevent:
+        exdates = _get_all_properties(vevent, 'EXDATE')
+        exdates += [instance]
+        vevent.pop('EXDATE')
+        vevent.add('EXDATE', exdates)
+    if 'RDATE' in vevent:
+        rdates = [one for one in _get_all_properties(vevent, 'RDATE') if one != instance]
+        vevent.pop('RDATE')
+        if rdates != []:
+            vevent.add('RDATE', rdates)
 
 
 def is_aware(dtime):
