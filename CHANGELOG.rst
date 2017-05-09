@@ -15,7 +15,8 @@ unreleased
 * FIX don't crash on updated vcards
 * FIX checking for RRULEs we understand
 
-* ADD new entry points recommended for packagers to use.
+* NEW new entry points recommended for packagers to use.
+* NEW support keyword `yesterday` for querying and creating events
 
 0.9.5
 ======

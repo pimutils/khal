@@ -166,6 +166,8 @@ def calc_day(dayname):
         return today
     if dayname == 'tomorrow':
         return today + timedelta(days=1)
+    if dayname == 'yesterday':
+        return today - timedelta(days=1)
 
     wday = weekdaypstr(dayname)
     days = (wday - today.weekday()) % 7

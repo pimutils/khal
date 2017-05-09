@@ -106,6 +106,14 @@ class TestGuessDatetimefstr:
         assert (self.tomorrow16, False) == \
             guessdatetimefstr('16:00'.split(), locale=LOCALE_BERLIN, default_day=tomorrow)
 
+    def test_time_yesterday(self):
+        with freeze_time('2016-9-19'):
+            assert (datetime(2016, 9, 18, 16), False) == \
+                guessdatetimefstr(
+                    'Yesterday 16:00'.split(),
+                    locale=LOCALE_BERLIN,
+                    default_day=datetime.today())
+
     def test_time_weekday(self):
         with freeze_time('2016-9-19'):
             assert (datetime(2016, 9, 23, 16), False) == \
