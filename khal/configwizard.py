@@ -133,7 +133,11 @@ def get_vdirs_from_vdirsyncer_config():
     for storage in vdir_config.storages.values():
         if storage['type'] == 'filesystem':
             # TODO detect type of storage properly
-            vdirs.append((storage['instance_name'], storage['path'], 'discover'))
+            path = storage['path']
+            if path[-1] != '/':
+                path += '/'
+            path += '*'
+            vdirs.append((storage['instance_name'], path, 'discover'))
     if vdirs == list():
         print("No usable collections were found")
         return None

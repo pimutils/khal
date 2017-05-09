@@ -580,15 +580,15 @@ def test_configure_command(runner):
     assert actual_config == '''[calendars]
 
 [[events_local]]
-path = ~/.local/share/calendars/events/
+path = ~/.local/share/calendars/events/*
 type = discover
 
 [[home_calendar_local]]
-path = ~/.local/share/calendars/home/
+path = ~/.local/share/calendars/home/*
 type = discover
 
 [[home_contacts_local]]
-path = ~/.local/share/contacts/
+path = ~/.local/share/contacts/*
 type = discover
 
 [locale]
