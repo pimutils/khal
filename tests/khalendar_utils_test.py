@@ -648,6 +648,22 @@ class TestSpecial(object):
         assert dtstart[-1][0] == berlin.localize(
             datetime(2014, 7, 11, 19, 0))
 
+    def test_event_exdates_remove(self):
+        """check if we can remove one more instance"""
+        vevent = _get_vevent(event_exdatesl_dt)
+        dtstart = utils.expand(vevent, berlin)
+        assert len(dtstart) == 7
+
+        exdate1 = pytz.UTC.localize(datetime(2014, 7, 11, 17, 0))
+        utils.delete_instance(vevent, exdate1)
+        dtstart = utils.expand(vevent, berlin)
+        assert len(dtstart) == 6
+
+        exdate2 = berlin.localize(datetime(2014, 7, 9, 19, 0))
+        utils.delete_instance(vevent, exdate2)
+        dtstart = utils.expand(vevent, berlin)
+        assert len(dtstart) == 5
+
     def test_event_dt_rrule_invalid_until(self):
         """DTSTART and RRULE:UNTIL should be of the same type, but might not
         be"""
