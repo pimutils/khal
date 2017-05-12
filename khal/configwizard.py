@@ -324,7 +324,8 @@ def choose_vdir_calendar():
     choices = [
         ("Create a new calendar on this computer", create_vdir),
         ("Use a calendar already on this computer (vdir format)", find_vdir),
-        ("Sync a calendar from the internet (CalDAV format)", create_synced_vdir),
+        ("Sync a calendar from the internet (CalDAV format, requires vdirsyncer)",
+         create_synced_vdir),
     ]
     validate = partial(validate_int, min_value=0, max_value=2)
     for i, (desc, func) in enumerate(choices):
