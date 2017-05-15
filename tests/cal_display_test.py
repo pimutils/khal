@@ -171,6 +171,23 @@ example_de_netbsd = [
     '    20 21 22 23 24 25 26 ',
     '\x1b[1mM\xe4r.\x1b[0m27 28 29  1  2  3  4 ']
 
+example_fr = [
+    '\x1b[1m      lu ma me je ve sa di \x1b[0m',
+    '\x1b[1mdéc.  \x1b[0m28 29 30  1  2  3  4 ',
+    '       5  6  7  8  9 10 11 ',
+    '      \x1b[7m12\x1b[0m 13 14 15 16 17 18 ',
+    '      19 20 21 22 23 24 25 ',
+    '\x1b[1mjanv. \x1b[0m26 27 28 29 30 31  1 ',
+    '       2  3  4  5  6  7  8 ',
+    '       9 10 11 12 13 14 15 ',
+    '      16 17 18 19 20 21 22 ',
+    '      23 24 25 26 27 28 29 ',
+    '\x1b[1mfévr. \x1b[0m30 31  1  2  3  4  5 ',
+    '       6  7  8  9 10 11 12 ',
+    '      13 14 15 16 17 18 19 ',
+    '      20 21 22 23 24 25 26 ',
+    '\x1b[1mmars  \x1b[0m27 28 29  1  2  3  4 ']
+
 
 def test_vertical_month():
     try:
@@ -267,6 +284,27 @@ def test_vertical_month_unicode_weekdeays_gr():
                 'To get this test to run, you need to add `el_GR.UTF-8` to '
                 'your locales. On Debian GNU/Linux 8 you do this by '
                 'uncommenting `el_GR.UTF-8` in /etc/locale.gen and then run '
+                '`locale-gen` (as root).'
+            )
+        else:
+            raise
+    finally:
+        locale.setlocale(locale.LC_ALL, 'C')
+
+
+def test_vertical_month_abbr_fr():
+    # see issue #653
+    try:
+        locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+        vert_str = vertical_month(month=12, year=2011,
+                                  today=datetime.date(2011, 12, 12))
+        assert '\n'.join(vert_str) == '\n'.join(example_fr)
+    except locale.Error as error:
+        if str(error) == 'unsupported locale setting':
+            pytest.xfail(
+                'To get this test to run, you need to add `fr_FR.UTF-8` to '
+                'your locales. On Debian GNU/Linux 8 you do this by '
+                'uncommenting `fr_FR.UTF-8` in /etc/locale.gen and then run '
                 '`locale-gen` (as root).'
             )
         else:

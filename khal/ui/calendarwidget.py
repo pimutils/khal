@@ -29,6 +29,8 @@ from collections import defaultdict
 from datetime import date
 from locale import getlocale, setlocale, LC_ALL, LC_TIME
 
+from khal.utils import get_month_abbr_len
+
 import urwid
 
 setlocale(LC_ALL, '')
@@ -492,7 +494,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             month_name = '    '
             attr = None
 
-        this_week = [(4, urwid.AttrMap(urwid.Text(month_name), attr))]
+        this_week = [(get_month_abbr_len(), urwid.AttrMap(urwid.Text(month_name), attr))]
         for number, day in enumerate(week):
             new_date = Date(day, self.get_styles)
             this_week.append((2, new_date))

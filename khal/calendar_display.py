@@ -26,6 +26,7 @@ from locale import getlocale, setlocale, LC_ALL, LC_TIME
 from click import style
 
 from .terminal import colored
+from .utils import get_month_abbr_len
 
 
 setlocale(LC_ALL, '')
@@ -168,7 +169,8 @@ def vertical_month(month=None,
     w_number = '  ' if weeknumber == 'right' else ''
     calendar.setfirstweekday(firstweekday)
     weekheaders = get_weekheader(firstweekday)
-    khal.append(style('    ' + weekheaders + ' ' + w_number, bold=True))
+    month_abbr_len = get_month_abbr_len()
+    khal.append(style(' ' * month_abbr_len + weekheaders + ' ' + w_number, bold=True))
     _calendar = calendar.Calendar(firstweekday)
     for _ in range(count):
         for week in _calendar.monthdatescalendar(year, month):
@@ -176,11 +178,11 @@ def vertical_month(month=None,
             strweek = str_week(week, today, collection, hmethod, default_color,
                                multiple, color, highlight_event_days, locale, bold_for_light_color)
             if new_month:
-                m_name = style(calendar.month_abbr[week[6].month].ljust(4), bold=True)
+                m_name = style(calendar.month_abbr[week[6].month].ljust(month_abbr_len), bold=True)
             elif weeknumber == 'left':
-                m_name = style(' {:2} '.format(getweeknumber(week[0])), bold=True)
+                m_name = style(str(getweeknumber(week[0])).center(month_abbr_len), bold=True)
             else:
-                m_name = '    '
+                m_name = ' ' * month_abbr_len
             if weeknumber == 'right':
                 w_number = style('{:2}'.format(getweeknumber(week[0])), bold=True)
             else:
