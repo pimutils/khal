@@ -15,6 +15,8 @@ unreleased
 * FIX don't crash on updated vcards
 * FIX checking for RRULEs we understand
 
+* CHANGE import will read from stdin if not filenames are provided.
+
 * NEW new entry points recommended for packagers to use.
 * NEW support keyword `yesterday` for querying and creating events
 
