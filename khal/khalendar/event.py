@@ -32,6 +32,7 @@ import pytz
 from ..utils import generate_random_uid
 from .utils import to_naive_utc, to_unix_time, invalid_timezone, delete_instance, \
     is_aware
+from ..exceptions import FatalError
 from ..log import logger
 from ..terminal import get_color
 from click import style
@@ -640,7 +641,11 @@ class LocalizedEvent(DatetimeEvent):
                 "file an issue at https://github.com/pimutils/khal/issues"
                 "".format(kwargs.get('href'), kwargs.get('calendar'))
             )
-            raise
+            raise FatalError(  # because in ikhal you won't see the logger's output
+                "Cannot understand event {} from calendar {},\n you might want to"
+                "file an issue at https://github.com/pimutils/khal/issues"
+                "".format(kwargs.get('href'), kwargs.get('calendar'))
+            )
 
         if starttz is None:
             starttz = self._locale['default_timezone']
