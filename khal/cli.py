@@ -432,7 +432,21 @@ def _get_cli():
                 'into or set the `default_calendar` in the config file.')
 
         # Default to stdin:
-        ics = ics or (sys.stdin,)
+        if not ics:
+            try:
+                ics_str = sys.stdin.read()
+                sys.stdin = open('/dev/tty', 'r')
+                controllers.import_ics(
+                    collection,
+                    ctx.obj['conf'],
+                    ics=ics_str,
+                    batch=batch,
+                    random_uid=random_uid,
+                    env={"calendars": ctx.obj['conf']['calendars']},
+                )
+            except FatalError as error:
+                logger.fatal(error)
+                sys.exit(1)
 
         try:
             for ics_file in ics:
