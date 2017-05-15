@@ -658,6 +658,13 @@ def test_print_ics_command(runner):
     assert 24 == len(result.output.split('\t'))
 
 
+def test_printics_read_from_stdin(runner):
+    runner = runner(command='printics')
+    result = runner.invoke(main_khal, ['printics'], input=_get_text('cal_d'))
+    assert not result.exception
+    assert result.output == '1 events found in stdin input\n An Event\n'
+
+
 def test_configure_command_config_exists(runner):
     runner = runner()
     result = runner.invoke(main_khal, ['configure'], input=choices())
