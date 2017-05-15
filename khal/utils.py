@@ -22,7 +22,7 @@
 """this module contains some helper functions converting strings or list of
 strings to date(time) or event objects"""
 
-from calendar import isleap
+from calendar import isleap, month_abbr
 from collections import defaultdict
 from datetime import date, datetime, timedelta, time
 import random
@@ -750,3 +750,10 @@ def get_weekday_occurrence(day):
     """
     xthday = 1 + (day.day - 1) // 7
     return day.weekday(), xthday
+
+
+def get_month_abbr_len():
+    """Calculate the number of characters we need to display the month
+    abbreviated name. It depends on the locale.
+    """
+    return max(len(month_abbr[i]) for i in range(1, 13)) + 1
