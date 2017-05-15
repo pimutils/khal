@@ -431,6 +431,9 @@ def _get_cli():
                 'When using batch import, please specify a calendar to import '
                 'into or set the `default_calendar` in the config file.')
 
+        # Default to stdin:
+        ics = ics or (sys.stdin,)
+
         try:
             for ics_file in ics:
                 ics_str = ics_file.read()

@@ -1,6 +1,7 @@
+import datetime
 import os
 import sys
-import datetime
+from unittest import mock
 from datetime import timedelta
 
 import pytest
@@ -473,6 +474,18 @@ def test_import(runner, monkeypatch):
     result = runner.invoke(main_khal, 'import {}'.format(runner.config_file).split())
     assert not result.exception
     assert {cal['name'] for cal in fake.args[0].calendars} == {'one', 'two', 'three'}
+
+
+def test_import_from_stdin(runner):
+    ics_data = 'This is some really fake icalendar data'
+
+    with mock.patch('khal.controllers.import_ics') as mocked_import:
+        runner = runner()
+        result = runner.invoke(main_khal, ['import'], input=ics_data)
+
+    assert not result.exception
+    assert mocked_import.call_count == 1
+    assert mocked_import.call_args[1]['ics'] == ics_data
 
 
 def test_interactive_command(runner, monkeypatch):
