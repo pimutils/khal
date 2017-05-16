@@ -410,7 +410,7 @@ def _get_cli():
     @click.option('--format', '-f', help=('The format to print the event.'))
     @click.pass_context
     def import_ics(ctx, ics, include_calendar, batch, random_uid, format):
-        '''Import events from an .ics file.
+        '''Import events from an .ics file (or stdin).
 
         If an event with the same UID is already present in the (implicitly)
         selected calendar import will ask before updating (i.e. overwriting)
@@ -430,6 +430,23 @@ def _get_cli():
             raise click.UsageError(
                 'When using batch import, please specify a calendar to import '
                 'into or set the `default_calendar` in the config file.')
+
+        # Default to stdin:
+        if not ics:
+            try:
+                ics_str = sys.stdin.read()
+                sys.stdin = open('/dev/tty', 'r')
+                controllers.import_ics(
+                    collection,
+                    ctx.obj['conf'],
+                    ics=ics_str,
+                    batch=batch,
+                    random_uid=random_uid,
+                    env={"calendars": ctx.obj['conf']['calendars']},
+                )
+            except FatalError as error:
+                logger.fatal(error)
+                sys.exit(1)
 
         try:
             for ics_file in ics:
@@ -502,17 +519,23 @@ def _get_cli():
             sys.exit(1)
 
     @cli.command()
-    @click.argument('ics', type=click.File('rb'))
+    @click.argument('ics', type=click.File('rb'), required=False)
     @click.option('--format', '-f',
                   help=('The format to print the event.'))
     @click.pass_context
     def printics(ctx, ics, format):
-        '''Print an ics file without importing it.
+        '''Print an ics file (or read from stdin) without importing it.
 
         Just print the ics file, do nothing else.'''
         try:
-            ics_str = ics.read()
-            controllers.print_ics(ctx.obj['conf'], ics.name, ics_str, format)
+            if ics:
+                ics_str = ics.read()
+                name = ics.name
+            else:
+                ics_str = sys.stdin.read()
+                name = 'stdin input'
+                sys.stdin = open('/dev/tty', 'r')
+            controllers.print_ics(ctx.obj['conf'], name, ics_str, format)
         except FatalError as error:
             logger.fatal(error)
             sys.exit(1)
