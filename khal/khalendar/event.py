@@ -251,7 +251,7 @@ class Event(object):
             )
         else:
             return dict(
-                recurring='R',
+                recurring='(R)',
                 range='<->',
                 range_end='->|',
                 range_start='|->',
@@ -430,11 +430,10 @@ class Event(object):
     @property
     def _recur_str(self):
         if self.recurring:
-            recurstr = self.symbol_strings['recurring']
+            recurstr = ' ' + self.symbol_strings['recurring']
         else:
             recurstr = ''
         return recurstr
-
 
     def format(self, format_string, relative_to, env={}, colors=True):
         """

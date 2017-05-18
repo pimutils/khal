@@ -15,6 +15,9 @@ unreleased
 * FIX don't crash on updated vcards
 * FIX checking for RRULEs we understand
 
+* CHANGE the symbol used for indicating a recurring event now has a space in
+  front of it, also the ascii version changed to `(R)`
+
 * NEW new entry points recommended for packagers to use.
 * NEW support keyword `yesterday` for querying and creating events
 
