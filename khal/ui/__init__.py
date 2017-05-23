@@ -722,6 +722,10 @@ class EventColumn(urwid.WidgetWrap):
             end = max(original_end, new_end)
             self.pane.eventscolumn.base_widget.update(start, end, everything)
 
+            # set original focus date
+            self.pane.calendar.original_widget.set_focus_date(new_start)
+            self.pane.eventscolumn.original_widget.set_focus_date(new_start)
+
         if self.editor:
             self.pane.window.backtrack()
 

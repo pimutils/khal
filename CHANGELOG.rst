@@ -17,6 +17,8 @@ unreleased
 * FIX set PRODID to khal/icalendar
 * FIX don't crash on updated vcards
 * FIX checking for RRULEs we understand
+* FIX after editing an event in ikhal, make sure both the calendar and the
+  eventcolumn are focused on the new date
 
 * CHANGE the symbol used for indicating a recurring event now has a space in
   front of it, also the ascii version changed to `(R)`
