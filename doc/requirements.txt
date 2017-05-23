@@ -1,2 +1,2 @@
-sphinx
+sphinx<=1.6.0
 sphinxcontrib-newsfeed
