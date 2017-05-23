@@ -476,6 +476,25 @@ def test_import(runner, monkeypatch):
     assert {cal['name'] for cal in fake.args[0].calendars} == {'one', 'two', 'three'}
 
 
+def test_import_proper(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['import', _get_ics_filepath('cal_d')], input='0\ny\n')
+    assert result.output.startswith('09.04.-09.04. An Event')
+    assert not result.exception
+    result = runner.invoke(main_khal, ['search', 'Event'])
+    assert result.output == '09.04.-09.04. An Event\n'
+
+
+def test_import_invalid_choice_and_prefix(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['import', _get_ics_filepath('cal_d')], input='9\nth\ny\n')
+    assert result.output.startswith('09.04.-09.04. An Event')
+    assert result.output.find('invalid choice') == 125
+    assert not result.exception
+    result = runner.invoke(main_khal, ['search', 'Event'])
+    assert result.output == '09.04.-09.04. An Event\n'
+
+
 def test_import_from_stdin(runner):
     ics_data = 'This is some really fake icalendar data'
 
