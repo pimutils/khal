@@ -356,7 +356,10 @@ class Event(object):
         if bday:
             number = self.start_local.year - int(bday[:4])
             name = self._vevents[self.ref].get('x-fname', None)
-            return '{name}\'s {number}th birthday'.format(name=name, number=number)
+            if int(bday[4:6]) == 2 and int(bday[6:8]) == 29:
+                return '{name}\'s {number}th birthday (29th of Feb.)'.format(name=name, number=number)
+            else:
+                return '{name}\'s {number}th birthday'.format(name=name, number=number)
         else:
             return self._vevents[self.ref].get('SUMMARY', '')
 

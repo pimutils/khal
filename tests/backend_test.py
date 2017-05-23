@@ -641,6 +641,13 @@ BDAY:19710311
 END:VCARD
 """
 
+card_29thfeb = """BEGIN:VCARD
+VERSION:3.0
+FN:leapyear
+BDAY:20000229
+END:VCARD
+"""
+
 card_no_year = """BEGIN:VCARD
 VERSION:3.0
 FN:Unix
@@ -692,6 +699,24 @@ def test_birthdays_update():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     db.update_birthday(card, 'unix.vcf', calendar=calname)
     db.update_birthday(card, 'unix.vcf', calendar=calname)
+
+
+def test_birthdays_29feb():
+    """test how we deal with birthdays on 29th of feb in leap years"""
+    db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
+    db.update_birthday(card_29thfeb, 'leap.vcf', calendar=calname)
+    events = list(
+        db.get_floating(datetime(2004, 1, 1, 0, 0), datetime(2004, 12, 31))
+    )
+    assert len(events) == 1
+    assert events[0].summary == 'leapyear\'s 4th birthday (29th of Feb.)'
+    assert events[0].start == date(2004, 2, 29)
+    events = list(
+        db.get_floating(datetime(2005, 1, 1, 0, 0), datetime(2005, 12, 31))
+    )
+    assert len(events) == 1
+    assert events[0].summary == 'leapyear\'s 5th birthday (29th of Feb.)'
+    assert events[0].start == date(2005, 3, 1)
 
 
 def test_birthdays_no_year():

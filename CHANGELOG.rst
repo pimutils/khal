@@ -17,6 +17,8 @@ unreleased
 
 * CHANGE the symbol used for indicating a recurring event now has a space in
   front of it, also the ascii version changed to `(R)`
+* CHANGE birthdays on leap 29th of February are shown on 1st of March in
+  non-leap years
 
 * NEW new entry points recommended for packagers to use.
 * NEW support keyword `yesterday` for querying and creating events

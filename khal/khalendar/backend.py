@@ -304,12 +304,15 @@ class SQLiteDb(object):
             event = icalendar.Event()
             event.add('dtstart', bday)
             event.add('dtend', bday + timedelta(days=1))
-            event.add('summary', '{0}\'s birthday'.format(name))
-            event.add('rrule', {'freq': 'YEARLY'})
+            if bday.month == 2 and bday.day == 29:  # leap year
+                event.add('rrule', {'freq': 'YEARLY', 'BYYEARDAY': 60})
+            else:
+                event.add('rrule', {'freq': 'YEARLY'})
             if orig_bday:
                 event.add('x-birthday',
                           '{:04}{:02}{:02}'.format(bday.year, bday.month, bday.day))
                 event.add('x-fname', name)
+            event.add('summary', '{0}\'s birthday'.format(name))
             event.add('uid', href)
             event_str = event.to_ical().decode('utf-8')
             self._update_impl(event, href, calendar)
