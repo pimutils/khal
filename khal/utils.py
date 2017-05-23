@@ -265,7 +265,7 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
             (datefstr_weekday, None, True, False),
             (datetimefwords, None, False, False),
     ]:
-        if shortformat and ('%Y' in dtformat or '%y' in dtformat):
+        if shortformat and '97' in datetime(1997, 10, 11).strftime(dtformat):
             continue
         try:
             dtstart = fun(dtime_list, dtformat)
