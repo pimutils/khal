@@ -431,26 +431,15 @@ def _get_cli():
                 'When using batch import, please specify a calendar to import '
                 'into or set the `default_calendar` in the config file.')
 
-        # Default to stdin:
-        if not ics:
-            try:
-                ics_str = sys.stdin.read()
-                sys.stdin = open('/dev/tty', 'r')
-                controllers.import_ics(
-                    collection,
-                    ctx.obj['conf'],
-                    ics=ics_str,
-                    batch=batch,
-                    random_uid=random_uid,
-                    env={"calendars": ctx.obj['conf']['calendars']},
-                )
-            except FatalError as error:
-                logger.fatal(error)
-                sys.exit(1)
-
         try:
-            for ics_file in ics:
-                ics_str = ics_file.read()
+            # Default to stdin:
+            if not ics:
+                ics_strs = (sys.stdin.read(),)
+                sys.stdin = open('/dev/tty', 'r')
+            else:
+                ics_strs = (ics_file.read() for ics_file in ics)
+
+            for ics_str in ics_strs:
                 controllers.import_ics(
                     collection,
                     ctx.obj['conf'],
