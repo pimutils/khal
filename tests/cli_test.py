@@ -1,6 +1,7 @@
+import datetime
 import os
 import sys
-import datetime
+from unittest import mock
 from datetime import timedelta
 
 import pytest
@@ -475,6 +476,37 @@ def test_import(runner, monkeypatch):
     assert {cal['name'] for cal in fake.args[0].calendars} == {'one', 'two', 'three'}
 
 
+def test_import_proper(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['import', _get_ics_filepath('cal_d')], input='0\ny\n')
+    assert result.output.startswith('09.04.-09.04. An Event')
+    assert not result.exception
+    result = runner.invoke(main_khal, ['search', 'Event'])
+    assert result.output == '09.04.-09.04. An Event\n'
+
+
+def test_import_invalid_choice_and_prefix(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['import', _get_ics_filepath('cal_d')], input='9\nth\ny\n')
+    assert result.output.startswith('09.04.-09.04. An Event')
+    assert result.output.find('invalid choice') == 125
+    assert not result.exception
+    result = runner.invoke(main_khal, ['search', 'Event'])
+    assert result.output == '09.04.-09.04. An Event\n'
+
+
+def test_import_from_stdin(runner):
+    ics_data = 'This is some really fake icalendar data'
+
+    with mock.patch('khal.controllers.import_ics') as mocked_import:
+        runner = runner()
+        result = runner.invoke(main_khal, ['import'], input=ics_data)
+
+    assert not result.exception
+    assert mocked_import.call_count == 1
+    assert mocked_import.call_args[1]['ics'] == ics_data
+
+
 def test_interactive_command(runner, monkeypatch):
     runner = runner(default_command='list', days=2)
     token = "hooray"
@@ -643,6 +675,13 @@ def test_print_ics_command(runner):
         'printics', '-f', form, _get_ics_filepath('cal_dt_two_tz')])
     assert not result.exception
     assert 24 == len(result.output.split('\t'))
+
+
+def test_printics_read_from_stdin(runner):
+    runner = runner(command='printics')
+    result = runner.invoke(main_khal, ['printics'], input=_get_text('cal_d'))
+    assert not result.exception
+    assert result.output == '1 events found in stdin input\n An Event\n'
 
 
 def test_configure_command_config_exists(runner):

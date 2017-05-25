@@ -410,7 +410,7 @@ def _get_cli():
     @click.option('--format', '-f', help=('The format to print the event.'))
     @click.pass_context
     def import_ics(ctx, ics, include_calendar, batch, random_uid, format):
-        '''Import events from an .ics file.
+        '''Import events from an .ics file (or stdin).
 
         If an event with the same UID is already present in the (implicitly)
         selected calendar import will ask before updating (i.e. overwriting)
@@ -432,8 +432,14 @@ def _get_cli():
                 'into or set the `default_calendar` in the config file.')
 
         try:
-            for ics_file in ics:
-                ics_str = ics_file.read()
+            # Default to stdin:
+            if not ics:
+                ics_strs = (sys.stdin.read(),)
+                sys.stdin = open('/dev/tty', 'r')
+            else:
+                ics_strs = (ics_file.read() for ics_file in ics)
+
+            for ics_str in ics_strs:
                 controllers.import_ics(
                     collection,
                     ctx.obj['conf'],
@@ -502,17 +508,23 @@ def _get_cli():
             sys.exit(1)
 
     @cli.command()
-    @click.argument('ics', type=click.File('rb'))
+    @click.argument('ics', type=click.File('rb'), required=False)
     @click.option('--format', '-f',
                   help=('The format to print the event.'))
     @click.pass_context
     def printics(ctx, ics, format):
-        '''Print an ics file without importing it.
+        '''Print an ics file (or read from stdin) without importing it.
 
         Just print the ics file, do nothing else.'''
         try:
-            ics_str = ics.read()
-            controllers.print_ics(ctx.obj['conf'], ics.name, ics_str, format)
+            if ics:
+                ics_str = ics.read()
+                name = ics.name
+            else:
+                ics_str = sys.stdin.read()
+                name = 'stdin input'
+                sys.stdin = open('/dev/tty', 'r')
+            controllers.print_ics(ctx.obj['conf'], name, ics_str, format)
         except FatalError as error:
             logger.fatal(error)
             sys.exit(1)

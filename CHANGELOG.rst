@@ -25,6 +25,7 @@ unreleased
 * CHANGE birthdays on leap 29th of February are shown on 1st of March in
   non-leap years
 
+* NEW import and printics will read from stdin if not filename(s) are provided.
 * NEW new entry points recommended for packagers to use.
 * NEW support keyword `yesterday` for querying and creating events
 
