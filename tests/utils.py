@@ -81,14 +81,18 @@ def _get_text(event_name):
     if directory == '/ics/':
         directory = './ics/'
 
-    return open(os.path.join(directory, event_name + '.ics'), 'rb').read().decode('utf-8')
+    with open(os.path.join(directory, event_name + '.ics'), 'rb') as f:
+        rv = f.read().decode('utf-8')
+
+    return rv
 
 
 def _get_vevent_file(event_path):
     directory = '/'.join(__file__.split('/')[:-1]) + '/ics/'
-    ical = icalendar.Calendar.from_ical(
-        open(os.path.join(directory, event_path + '.ics'), 'rb').read()
-    )
+    with open(os.path.join(directory, event_path + '.ics'), 'rb') as f:
+        ical = icalendar.Calendar.from_ical(
+            f.read()
+        )
     for component in ical.walk():
         if component.name == 'VEVENT':
             return component
