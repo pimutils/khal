@@ -140,7 +140,7 @@ def get_color_from_vdir(path):
     try:
         is_color(color)
     except VdtValueError:
-        logger.warn("Found invalid color `{}` in {}color".format(color, path))
+        logger.warning("Found invalid color `{}` in {}color".format(color, path))
         color = None
     return color
 
