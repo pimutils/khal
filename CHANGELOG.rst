@@ -11,9 +11,6 @@ may want to subscribe to `GitHub's tag feed
 =====
 unreleased
 
-* NOTE as of sphinxcontrib-newsfeed 0.1.4 the latest release of sphinx does not
-  build our documentation, use sphinx 1.5.x, not 1.6.1
-
 * FIX set PRODID to khal/icalendar
 * FIX don't crash on updated vcards
 * FIX checking for RRULEs we understand
