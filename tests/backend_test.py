@@ -178,6 +178,26 @@ def test_event_rrule_recurrence_id_update_with_exclude():
     assert events[4].start == BERLIN.localize(datetime(2014, 8, 4, 7, 0))
 
 
+def test_event_recuid_no_master():
+    """
+    test for events which have a RECUID component, but the master event is
+    not present in the same file
+    """
+    dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
+    dbi.update(_get_text('event_dt_recuid_no_master'),
+               href='12345.ics', etag='abcd', calendar=calname)
+    events = dbi.get_floating(
+        datetime(2017, 3, 1, 0, 0), datetime(2017, 4, 1, 0, 0),
+    )
+    events = sorted(events, key=lambda x: x.start)
+    assert len(events) == 1
+    assert events[0].start == datetime(2017, 3, 29, 16)
+    assert events[0].end == datetime(2017, 3, 29, 16, 25)
+    assert events[0].format(
+        '{title}', relative_to=date(2017, 3, 29)
+    ) == 'Infrastructure Planning\x1b[0m'
+
+
 def test_no_valid_timezone():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     dbi.update(_get_text('event_dt_local_missing_tz'),
