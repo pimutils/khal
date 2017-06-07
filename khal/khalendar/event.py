@@ -120,20 +120,18 @@ class Event(object):
         assert isinstance(events_list, list)
 
         vevents = dict()
-        if len(events_list) == 1:
-            vevents['PROTO'] = events_list[0]  # TODO set mutable = False
-        else:
-            for event in events_list:
-                if 'RECURRENCE-ID' in event:
-                    if invalid_timezone(event['RECURRENCE-ID']):
-                        default_timezone = kwargs['locale']['default_timezone']
-                        recur_id = default_timezone.localize(event['RECURRENCE-ID'].dt)
-                        ident = str(to_unix_time(recur_id))
-                    else:
-                        ident = str(to_unix_time(event['RECURRENCE-ID'].dt))
-                    vevents[ident] = event
+        for event in events_list:
+            if 'RECURRENCE-ID' in event:
+                if invalid_timezone(event['RECURRENCE-ID']):
+                    default_timezone = kwargs['locale']['default_timezone']
+                    recur_id = default_timezone.localize(event['RECURRENCE-ID'].dt)
+                    ident = str(to_unix_time(recur_id))
                 else:
-                    vevents['PROTO'] = event
+                    ident = str(to_unix_time(event['RECURRENCE-ID'].dt))
+                vevents[ident] = event
+            else:
+                vevents['PROTO'] = event
+
         if ref is None:
             ref = 'PROTO'
 
