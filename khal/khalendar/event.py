@@ -638,10 +638,12 @@ class LocalizedEvent(DatetimeEvent):
         try:
             starttz = getattr(self._vevents[self.ref]['DTSTART'].dt, 'tzinfo', None)
         except KeyError:
-            msg = "Cannot understand event {} from " \
-                  "calendar {}, you might want to file an issue at " \
-                  "https://github.com/pimutils/khal/issues" \
-                  .format(kwargs.get('href'), kwargs.get('calendar'))
+            msg = (
+                "Cannot understand event {} from "
+                "calendar {}, you might want to file an issue at "
+                "https://github.com/pimutils/khal/issues"
+                .format(kwargs.get('href'), kwargs.get('calendar'))
+            )
             logger.fatal(msg)
             raise FatalError(  # because in ikhal you won't see the logger's output
                 msg
