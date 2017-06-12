@@ -363,21 +363,15 @@ class SQLiteDb(object):
             if dtype == DATE:
                 dbstart = utils.to_unix_time(dtstart)
                 dbend = utils.to_unix_time(dtend)
-                if rec_id is not None:
-                    rec_inst = utils.to_unix_time(rec_id.dt)
-                    ref = rec_inst
-                else:
-                    rec_inst = dbstart
-                    ref = PROTO
             else:
                 dbstart = utils.to_unix_time(dtstart)
                 dbend = utils.to_unix_time(dtend)
 
-                if rec_id is not None:
-                    ref = rec_inst = str(utils.to_unix_time(rec_id.dt))
-                else:
-                    rec_inst = dbstart
-                    ref = PROTO
+            if rec_id is not None:
+                ref = rec_inst = str(utils.to_unix_time(rec_id.dt))
+            else:
+                rec_inst = dbstart
+                ref = PROTO
 
             if thisandfuture:
                 recs_sql_s = (
