@@ -7,8 +7,8 @@ import random
 import icalendar
 from freezegun import freeze_time
 
-from khal.utils import guessdatetimefstr, guesstimedeltafstr, new_event, eventinfofstr
-from khal.utils import timedelta2str, guessrangefstr, weekdaypstr, construct_daynames
+from khal.parse_datetime import guessdatetimefstr, guesstimedeltafstr, guessrangefstr, weekdaypstr, eventinfofstr, timedelta2str, guessrangefstr, weekdaypstr, construct_daynames
+from khal.utils import new_event
 from khal.utils import get_weekday_occurrence
 from khal import utils
 from khal.exceptions import FatalError

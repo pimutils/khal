@@ -40,9 +40,8 @@ from dateutil import parser
 import icalendar
 import pytz
 
+from .. import log, utils
 from .event import Event, EventStandIn
-from . import utils
-from .. import log
 from .exceptions import CouldNotCreateDbDir, OutdatedDbVersionError, UpdateFailed
 
 logger = log.logger
@@ -57,26 +56,6 @@ DATE = 0
 DATETIME = 1
 
 PROTO = 'PROTO'
-
-
-def sort_key(vevent):
-    """helper function to determine order of VEVENTS
-
-    so that recurrence-id events come after the corresponding rrule event, etc
-
-    :param vevent: icalendar.Event
-    :rtype: tuple(str, int)
-    """
-    assert isinstance(vevent, icalendar.Event)
-    uid = str(vevent['UID'])
-    rec_id = vevent.get(RECURRENCE_ID)
-    if rec_id is None:
-        return uid, 0
-    rrange = rec_id.params.get('RANGE')
-    if rrange == THISANDFUTURE:
-        return uid, utils.to_unix_time(rec_id.dt)
-    else:
-        return uid, 1
 
 
 class SQLiteDb(object):
@@ -256,7 +235,7 @@ class SQLiteDb(object):
         # tables. There are obviously better ways to achieve the same
         # result.
         self.delete(href, calendar=calendar)
-        for vevent in sorted(vevents, key=sort_key):
+        for vevent in sorted(vevents, key=utils.sort_key):
             check_for_errors(vevent, calendar, href)
             check_support(vevent, href, calendar)
             self._update_impl(vevent, href, calendar)

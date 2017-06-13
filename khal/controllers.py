@@ -35,11 +35,10 @@ import datetime as dt
 import os
 import textwrap
 
-from khal import utils, calendar_display
+from khal import utils, calendar_display, parse_datetime
 from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
 from khal.exceptions import FatalError
 from khal.khalendar.event import Event
-from khal.khalendar.backend import sort_key
 from khal import __version__, __productname__
 from khal.log import logger
 from .terminal import merge_columns
@@ -52,7 +51,7 @@ def format_day(day, format_string, locale, attributes=None):
     attributes["date"] = day.strftime(locale['dateformat'])
     attributes["date-long"] = day.strftime(locale['longdateformat'])
 
-    attributes["name"] = utils.construct_daynames(day)
+    attributes["name"] = parse_datetime.construct_daynames(day)
 
     colors = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
     for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
@@ -137,7 +136,7 @@ def start_end_from_daterange(daterange, locale,
         start = dt.datetime(*dt.date.today().timetuple()[:3])
         end = start + default_timedelta_date
     else:
-        start, end, allday = utils.guessrangefstr(
+        start, end, allday = parse_datetime.guessrangefstr(
             daterange, locale, default_timedelta_date=default_timedelta_date,
             default_timedelta_datetime=default_timedelta_datetime,
         )
@@ -231,7 +230,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
         if not datepoint:
             datepoint = ['now']
         try:
-            start, allday = utils.guessdatetimefstr(datepoint, conf['locale'], dt.date.today())
+            start, allday = parse_datetime.guessdatetimefstr(datepoint, conf['locale'], dt.date.today())
         except ValueError:
             raise FatalError('Invalid value of `{}` for a datetime'.format(' '.join(datepoint)))
         if allday:
@@ -277,7 +276,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
     try:
-        info = utils.eventinfofstr(info, conf['locale'], adjust_reasonably=True, localize=False)
+        info = parse_datetime.eventinfofstr(info, conf['locale'], adjust_reasonably=True, localize=False)
     except ValueError:
         info = dict()
 
@@ -297,7 +296,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
             end_string = info["dtend"].strftime(conf['locale']['datetimeformat'])
             range_string = start_string + ' ' + end_string
         daterange = prompt("datetime range", default=range_string)
-        start, end, allday = utils.guessrangefstr(
+        start, end, allday = parse_datetime.guessrangefstr(
             daterange, conf['locale'], adjust_reasonably=True)
         info['dtstart'] = start
         info['dtend'] = end
@@ -336,7 +335,7 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
     """construct a new event from a string and add it"""
-    info = utils.eventinfofstr(info, conf['locale'], adjust_reasonably=True, localize=False)
+    info = parse_datetime.eventinfofstr(info, conf['locale'], adjust_reasonably=True, localize=False)
     new_from_args(
         collection, calendar_name, conf, format=format, env=env,
         location=location, categories=categories, repeat=repeat,
@@ -434,7 +433,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             current = event.format("{start} {end}", relative_to=now)
             value = prompt("datetime range", default=current)
             try:
-                start, end, allday = utils.guessrangefstr(value, locale)
+                start, end, allday = parse_datetime.guessrangefstr(value, locale)
                 event.update_start_end(start, end)
                 edited = True
             except:
@@ -452,13 +451,13 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 until = prompt('until (or "None")', until)
                 if until == 'None':
                     until = None
-                rrule = utils.rrulefstr(freq, until, locale)
+                rrule = parse_datetime.rrulefstr(freq, until, locale)
                 event.update_rrule(rrule)
             edited = True
         elif choice == "alarm":
             default_alarms = []
             for a in event.alarms:
-                s = utils.timedelta2str(-1 * a[0])
+                s = parse_datetime.timedelta2str(-1 * a[0])
                 default_alarms.append(s)
 
             default = ', '.join(default_alarms)
@@ -469,7 +468,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 alarm = ""
             alarm_list = []
             for a in alarm.split(","):
-                alarm_trig = -1 * utils.guesstimedeltafstr(a.strip())
+                alarm_trig = -1 * parse_datetime.guesstimedeltafstr(a.strip())
                 new_alarm = (alarm_trig, event.description)
                 alarm_list += [new_alarm]
             event.update_alarms(alarm_list)
@@ -613,7 +612,7 @@ def print_ics(conf, name, ics, format):
 
     vevents = list()
     for uid in events_grouped:
-        vevents.append(sorted(events_grouped[uid], key=sort_key))
+        vevents.append(sorted(events_grouped[uid], key=utils.sort_key))
 
     echo('{} events found in {}'.format(len(vevents), name))
     for sub_event in vevents:

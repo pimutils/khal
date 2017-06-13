@@ -54,12 +54,6 @@ class UpdateFailed(Error):
     """could not update the event in the database"""
 
 
-class UnsupportedRecurrence(Error):
-
-    """raised if the RRULE is not understood by dateutil.rrule"""
-    pass
-
-
 class DuplicateUid(Error):
 
     """an event with this UID already exists"""

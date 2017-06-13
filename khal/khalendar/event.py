@@ -29,9 +29,8 @@ import os
 import icalendar
 import pytz
 
-from ..utils import generate_random_uid
-from .utils import to_naive_utc, to_unix_time, invalid_timezone, delete_instance, \
-    is_aware
+from ..utils import generate_random_uid, to_naive_utc, to_unix_time, \
+    invalid_timezone, delete_instance, is_aware
 from ..exceptions import FatalError
 from ..log import logger
 from ..terminal import get_color

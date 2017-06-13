@@ -19,423 +19,24 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"""this module contains some helper functions converting strings or list of
-strings to date(time) or event objects"""
+"""collection of utility functions"""
 
-from calendar import isleap, month_abbr
+
+from calendar import month_abbr, timegm
 from collections import defaultdict
 import datetime as dt
 import random
 import string
 import re
-from time import strptime
 from textwrap import wrap
 
 import icalendar
 import pytz
+import dateutil.rrule
 
 from khal.log import logger
-from khal.exceptions import FatalError
-from .khalendar.utils import sanitize
-
-
-def timefstr(dtime_list, timeformat):
-    """converts the first item of a list (a time as a string) to a datetimeobject
-
-    where the date is today and the time is given by a string
-    removes "used" elements of list
-
-    :type dtime_list: list(str)
-    :type timeformat: str
-    :rtype: datetime.datetime
-    """
-    if len(dtime_list) == 0:
-        raise ValueError()
-    time_start = dt.datetime.strptime(dtime_list[0], timeformat)
-    time_start = dt.time(*time_start.timetuple()[3:5])
-    day_start = dt.date.today()
-    dtstart = dt.datetime.combine(day_start, time_start)
-    dtime_list.pop(0)
-    return dtstart
-
-
-def datetimefstr(dtime_list, dtformat):
-    """
-    converts a datetime (as one or several string elements of a list) to
-    a datetimeobject
-
-    removes "used" elements of list
-
-    :returns: a datetime
-    :rtype: datetime.datetime
-    """
-    parts = dtformat.count(' ') + 1
-    dtstring = ' '.join(dtime_list[0:parts])
-    dtstart = dt.datetime.strptime(dtstring, dtformat)
-    for _ in range(parts):
-        dtime_list.pop(0)
-    return dtstart
-
-
-def weekdaypstr(dayname):
-    """converts an (abbreviated) dayname to a number (mon=0, sun=6)
-
-    :param dayname: name of abbreviation of the day
-    :type dayname: str
-    :return: number of the day in a week
-    :rtype: int
-    """
-
-    if dayname in ['monday', 'mon']:
-        return 0
-    if dayname in ['tuesday', 'tue']:
-        return 1
-    if dayname in ['wednesday', 'wed']:
-        return 2
-    if dayname in ['thursday', 'thu']:
-        return 3
-    if dayname in ['friday', 'fri']:
-        return 4
-    if dayname in ['saturday', 'sat']:
-        return 5
-    if dayname in ['sunday', 'sun']:
-        return 6
-    raise ValueError('invalid weekday name `%s`' % dayname)
-
-
-def construct_daynames(date_):
-    """converts datetime.date into a string description
-
-    either `Today`, `Tomorrow` or name of weekday.
-    """
-    if date_ == dt.date.today():
-        return 'Today'
-    elif date_ == dt.date.today() + dt.timedelta(days=1):
-        return 'Tomorrow'
-    else:
-        return date_.strftime('%A')
-
-
-def relative_timedelta_str(day):
-    """Converts the timespan from `day` to today into a human readable string.
-
-    :type day: datetime.date
-    :rtype: str
-    """
-    days = (day - dt.date.today()).days
-    if days < 0:
-        direction = 'ago'
-    else:
-        direction = 'from now'
-    approx = ''
-    if abs(days) < 7:
-        unit = 'day'
-        count = abs(days)
-    elif abs(days) < 365:
-        unit = 'week'
-        count = int(abs(days) / 7)
-        if abs(days) % 7 != 0:
-            approx = '~'
-    else:
-        unit = 'year'
-        count = int(abs(days) / 365)
-        if abs(days) % 365 != 0:
-            approx = '~'
-    if count > 1:
-        unit += 's'
-
-    return '{approx}{count} {unit} {direction}'.format(
-        approx=approx,
-        count=count,
-        unit=unit,
-        direction=direction,
-    )
-
-
-def calc_day(dayname):
-    """converts a relative date's description to a datetime object
-
-    :param dayname: relative day name (like 'today' or 'monday')
-    :type dayname: str
-    :returns: date
-    :rtype: datetime.datetime
-    """
-    today = dt.datetime.combine(dt.date.today(), dt.time.min)
-    dayname = dayname.lower()
-    if dayname == 'today':
-        return today
-    if dayname == 'tomorrow':
-        return today + dt.timedelta(days=1)
-    if dayname == 'yesterday':
-        return today - dt.timedelta(days=1)
-
-    wday = weekdaypstr(dayname)
-    days = (wday - today.weekday()) % 7
-    days = 7 if days == 0 else days
-    day = today + dt.timedelta(days=days)
-    return day
-
-
-def datefstr_weekday(dtime_list, _):
-    """interprets first element of a list as a relative date and removes that
-    element
-
-    :param dtime_list: event description in list form
-    :type dtime_list: list
-    :returns: date
-    :rtype: datetime.datetime
-
-    """
-    if len(dtime_list) == 0:
-        raise ValueError()
-    day = calc_day(dtime_list[0])
-    dtime_list.pop(0)
-    return day
-
-
-def datetimefstr_weekday(dtime_list, timeformat):
-    if len(dtime_list) == 0:
-        raise ValueError()
-    day = calc_day(dtime_list[0])
-    this_time = timefstr(dtime_list[1:], timeformat)
-    dtime_list.pop(0)
-    dtime_list.pop(0)  # we need to pop twice as timefstr gets a copy
-    dtime = dt.datetime.combine(day, this_time.time())
-    return dtime
-
-
-def guessdatetimefstr(dtime_list, locale, default_day=None):
-    """
-    :type dtime_list: list
-    :type locale: dict
-    :type default_day: datetime.datetime
-    :rtype: datetime.datetime
-    """
-    # if now() is called as default param, mocking with freezegun won't work
-    if default_day is None:
-        default_day = dt.datetime.now().date()
-    # TODO rename in guessdatetimefstrLIST or something saner altogether
-
-    def timefstr_day(dtime_list, timeformat):
-        if locale['timeformat'] == '%H:%M' and dtime_list[0] == '24:00':
-            a_date = dt.datetime.combine(default_day, dt.time(0))
-            dtime_list.pop(0)
-        else:
-            a_date = timefstr(dtime_list, timeformat)
-            a_date = dt.datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
-        return a_date
-
-    def datetimefwords(dtime_list, _):
-        if len(dtime_list) > 0 and dtime_list[0].lower() == 'now':
-            dtime_list.pop(0)
-            return dt.datetime.now()
-        raise ValueError
-
-    def datefstr_year(dtime_list, dateformat):
-        """should be used if a date(time) without year is given
-
-        we cannot use datetimefstr() here, because only time.strptime can
-        parse the 29th of Feb. if no year is given
-
-        example: dtime_list = ['17.03.', 'description']
-                 dateformat = '%d.%m.'
-        or     : dtime_list = ['17.03.', '16:00', 'description']
-                 dateformat = '%d.%m. %H:%M'
-        """
-        parts = dateformat.count(' ') + 1
-        dtstring = ' '.join(dtime_list[0:parts])
-        dtstart = strptime(dtstring, dateformat)
-        if dtstart.tm_mon == 2 and dtstart.tm_mday == 29 and not isleap(default_day.year):
-            raise ValueError
-
-        for _ in range(parts):
-            dtime_list.pop(0)
-
-        a_date = dt.datetime(*(default_day.timetuple()[:1] + dtstart[1:5]))
-        return a_date
-
-    dtstart = None
-    for fun, dtformat, all_day, shortformat in [
-            (datefstr_year, locale['datetimeformat'], False, True),
-            (datetimefstr, locale['longdatetimeformat'], False, False),
-            (timefstr_day, locale['timeformat'], False, False),
-            (datetimefstr_weekday, locale['timeformat'], False, False),
-            (datefstr_year, locale['dateformat'], True, True),
-            (datetimefstr, locale['longdateformat'], True, False),
-            (datefstr_weekday, None, True, False),
-            (datetimefwords, None, False, False),
-    ]:
-        if shortformat and '97' in dt.datetime(1997, 10, 11).strftime(dtformat):
-            continue
-        try:
-            dtstart = fun(dtime_list, dtformat)
-        except ValueError:
-            pass
-        else:
-            return dtstart, all_day
-    raise ValueError()
-
-
-def timedelta2str(delta):
-    # we deliberately ignore any subsecond deltas
-    total_seconds = int(abs(delta).total_seconds())
-
-    seconds = total_seconds % 60
-    total_seconds -= seconds
-    total_minutes = total_seconds // 60
-    minutes = total_minutes % 60
-    total_minutes -= minutes
-    total_hours = total_minutes // 60
-    hours = total_hours % 24
-    total_hours -= hours
-    days = total_hours // 24
-
-    s = []
-    if days:
-        s.append(str(days) + "d")
-    if hours:
-        s.append(str(hours) + "h")
-    if minutes:
-        s.append(str(minutes) + "m")
-    if seconds:
-        s.append(str(seconds) + "s")
-
-    if delta != abs(delta):
-        s = ["-" + part for part in s]
-
-    return ' '.join(s)
-
-
-def guesstimedeltafstr(delta_string):
-    """parses a timedelta from a string
-
-    :param delta_string: string encoding time-delta, e.g. '1h 15m'
-    :type delta_string: str
-    :rtype: datetime.timedelta
-    """
-
-    tups = re.split(r'(-?\d+)', delta_string)
-    if not re.match(r'^\s*$', tups[0]):
-        raise ValueError('Invalid beginning of timedelta string "%s": "%s"'
-                         % (delta_string, tups[0]))
-    tups = tups[1:]
-    res = dt.timedelta()
-
-    for num, unit in zip(tups[0::2], tups[1::2]):
-        try:
-            numint = int(num)
-        except ValueError:
-            raise ValueError('Invalid number in timedelta string "%s": "%s"'
-                             % (delta_string, num))
-
-        ulower = unit.lower().strip()
-        if ulower == 'd' or ulower == 'day' or ulower == 'days':
-            res += dt.timedelta(days=numint)
-        elif ulower == 'h' or ulower == 'hour' or ulower == 'hours':
-            res += dt.timedelta(hours=numint)
-        elif (ulower == 'm' or ulower == 'minute' or ulower == 'minutes' or
-              ulower == 'min'):
-            res += dt.timedelta(minutes=numint)
-        elif (ulower == 's' or ulower == 'second' or ulower == 'seconds' or
-              ulower == 'sec'):
-            res += dt.timedelta(seconds=numint)
-        else:
-            raise ValueError('Invalid unit in timedelta string "%s": "%s"'
-                             % (delta_string, unit))
-
-    return res
-
-
-def guessrangefstr(daterange, locale, adjust_reasonably=False,
-                   default_timedelta_date=dt.timedelta(days=1),
-                   default_timedelta_datetime=dt.timedelta(hours=1),
-                   ):
-    """parses a range string
-
-    :param daterange: date1 [date2 | timedelta]
-    :type daterange: str or list
-    :param locale:
-    :returns: start and end of the date(time) range  and if
-        this is an all-day time range or not,
-        **NOTE**: the end is *exclusive* if this is an allday event
-    :rtype: (datetime, datetime, bool)
-
-    """
-    range_list = daterange
-    if isinstance(daterange, str):
-        range_list = daterange.split(' ')
-
-    if range_list == ['week']:
-        today_weekday = dt.datetime.today().weekday()
-        start = dt.datetime.today() - dt.timedelta(days=(today_weekday - locale['firstweekday']))
-        end = start + dt.timedelta(days=8)
-        return start, end, True
-
-    for i in reversed(range(1, len(range_list) + 1)):
-        start = ' '.join(range_list[:i])
-        end = ' '.join(range_list[i:])
-        allday = False
-        try:
-            # figuring out start
-            split = start.split(" ")
-            start, allday = guessdatetimefstr(split, locale)
-            if len(split) != 0:
-                continue
-
-            # and end
-            if len(end) == 0:
-                if allday:
-                    end = start + default_timedelta_date
-                else:
-                    end = start + default_timedelta_datetime
-            elif end.lower() == 'eod':
-                    end = dt.datetime.combine(start.date(), dt.time.max)
-            elif end.lower() == 'week':
-                start -= dt.timedelta(days=(start.weekday() - locale['firstweekday']))
-                end = start + dt.timedelta(days=8)
-            else:
-                try:
-                    delta = guesstimedeltafstr(end)
-                    if allday and delta.total_seconds() % (3600 * 24):
-                        # TODO better error class, no logging in here
-                        logger.fatal(
-                            "Cannot give delta containing anything but whole days for allday events"
-                        )
-                        raise FatalError()
-                    elif delta.total_seconds() == 0:
-                        logger.fatal(
-                            "Events that last no time are not allowed"
-                        )
-                        raise FatalError()
-
-                    end = start + delta
-                except ValueError:
-                    split = end.split(" ")
-                    end, end_allday = guessdatetimefstr(split, locale, default_day=start.date())
-                    if len(split) != 0:
-                        continue
-                    if allday:
-                        end += dt.timedelta(days=1)
-
-            if adjust_reasonably:
-                if allday:
-                    # test if end's year is this year, but start's year is not
-                    today = dt.datetime.today()
-                    if end.year == today.year and start.year != today.year:
-                        end = dt.datetime(start.year, *end.timetuple()[1:6])
-
-                    if end < start:
-                        end = dt.datetime(end.year + 1, *end.timetuple()[1:6])
-
-                if end < start:
-                    end = dt.datetime(*start.timetuple()[0:3] + end.timetuple()[3:5])
-                if end < start:
-                    end = end + dt.timedelta(days=1)
-            return start, end, allday
-        except ValueError:
-            pass
-
-    raise ValueError('Could not parse `{}` as a daterange'.format(daterange))
+import khal.parse_datetime as parse_datetime  # TODO get this out of here
+from .exceptions import UnsupportedRecurrence
 
 
 def generate_random_uid():
@@ -445,96 +46,6 @@ def generate_random_uid():
     should be good enough"""
     choice = string.ascii_uppercase + string.digits
     return ''.join([random.choice(choice) for _ in range(36)])
-
-
-def rrulefstr(repeat, until, locale):
-    if repeat in ["daily", "weekly", "monthly", "yearly"]:
-        rrule_settings = {'freq': repeat}
-        if until:
-            until_date = None
-            for fun, dformat in [(datetimefstr, locale['datetimeformat']),
-                                 (datetimefstr, locale['longdatetimeformat']),
-                                 (timefstr, locale['timeformat']),
-                                 (datetimefstr, locale['dateformat']),
-                                 (datetimefstr, locale['longdateformat'])]:
-                try:
-                    until_date = fun(until.split(' '), dformat)
-                    break
-                except ValueError:
-                    pass
-            if until_date is None:
-                logger.fatal("Cannot parse until date: '{}'\nPlease have a look "
-                             "at the documentation.".format(until))
-                raise FatalError()
-            rrule_settings['until'] = until_date
-
-        return rrule_settings
-    else:
-        logger.fatal("Invalid value for the repeat option. \
-                Possible values are: daily, weekly, monthly or yearly")
-        raise FatalError()
-
-
-def eventinfofstr(info_string, locale, adjust_reasonably=False, localize=False):
-    """parses a string of the form START [END | DELTA] [TIMEZONE] [SUMMARY] [::
-    DESCRIPTION] into a dictionary with keys: dtstart, dtend, timezone, allday,
-    summary, description
-
-    :param info_string:
-    :type info_string: string fitting the form
-    :param locale:
-    :type locale: locale
-    :param adjust_reasonably:
-    :type adjust_reasonably: passed on to guessrangefstr
-    :rtype: dictionary
-
-    """
-    description = None
-    if " :: " in info_string:
-        info_string, description = info_string.split(' :: ')
-
-    parts = info_string.split(' ')
-    summary = None
-    start = None
-    end = None
-    tz = None
-    allday = False
-    for i in reversed(range(1, len(parts) + 1)):
-        try:
-            start, end, allday = guessrangefstr(
-                ' '.join(parts[0:i]), locale,
-                adjust_reasonably=adjust_reasonably,
-            )
-        except ValueError:
-            continue
-        if start is not None and end is not None:
-            try:
-                # next element is a valid Olson db timezone string
-                tz = pytz.timezone(parts[i])
-                i += 1
-            except (pytz.UnknownTimeZoneError, UnicodeDecodeError, IndexError):
-                tz = None
-            summary = ' '.join(parts[i:])
-            break
-
-    if start is None or end is None:
-        raise ValueError('Could not parse `{}`'.format(info_string))
-
-    if tz is None:
-        tz = locale['default_timezone']
-
-    if allday:
-        start = start.date()
-        end = end.date()
-
-    info = {}
-    info["dtstart"] = start
-    info["dtend"] = end
-    info["summary"] = summary if summary else None
-    info["description"] = description
-    info["timezone"] = tz if not allday else None
-    info["allday"] = allday
-    return info
 
 
 def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
@@ -585,12 +96,12 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     if categories:
         event.add('categories', categories)
     if repeat and repeat != "none":
-        rrule = rrulefstr(repeat, until, locale)
+        rrule = parse_datetime.rrulefstr(repeat, until, locale)
         event.add('rrule', rrule)
     if alarms:
         for alarm in alarms.split(","):
             alarm = alarm.strip()
-            alarm_trig = -1 * guesstimedeltafstr(alarm)
+            alarm_trig = -1 * parse_datetime.guesstimedeltafstr(alarm)
             new_alarm = icalendar.Alarm()
             new_alarm.add('ACTION', 'DISPLAY')
             new_alarm.add('TRIGGER', alarm_trig)
@@ -757,3 +268,353 @@ def get_month_abbr_len():
     abbreviated name. It depends on the locale.
     """
     return max(len(month_abbr[i]) for i in range(1, 13)) + 1
+
+
+def expand(vevent, href=''):
+    """
+    Constructs a list of start and end dates for all recurring instances of the
+    event defined in vevent.
+
+    It considers RRULE as well as RDATE and EXDATE properties. In case of
+    unsupported recursion rules an UnsupportedRecurrence exception is thrown.
+
+    If the vevent contains a RECURRENCE-ID property, no expansion is done,
+    the function still returns a tuple of start and end (date)times.
+
+    :param vevent: vevent to be expanded
+    :type vevent: icalendar.cal.Event
+    :param href: the href of the vevent, used for more informative logging and
+                 nothing else
+    :type href: str
+    :returns: list of start and end (date)times of the expanded event
+    :rtype: list(tuple(datetime, datetime))
+    """
+    # we do this now and than never care about the "real" end time again
+    if 'DURATION' in vevent:
+        duration = vevent['DURATION'].dt
+    else:
+        duration = vevent['DTEND'].dt - vevent['DTSTART'].dt
+
+    # if this vevent has a RECURRENCE_ID property, no expansion will be
+    # performed
+    expand = not bool(vevent.get('RECURRENCE-ID'))
+
+    events_tz = getattr(vevent['DTSTART'].dt, 'tzinfo', None)
+    allday = not isinstance(vevent['DTSTART'].dt, dt.datetime)
+
+    def sanitize_datetime(date):
+        if allday and isinstance(date, dt.datetime):
+            date = date.date()
+        if events_tz is not None:
+            date = events_tz.localize(date)
+        return date
+
+    rrule_param = vevent.get('RRULE')
+    if expand and rrule_param is not None:
+        vevent = sanitize_rrule(vevent)
+
+        # dst causes problem while expanding the rrule, therefore we transform
+        # everything to naive datetime objects and transform back after
+        # expanding
+        # See https://github.com/dateutil/dateutil/issues/102
+        dtstart = vevent['DTSTART'].dt
+        if events_tz:
+            dtstart = dtstart.replace(tzinfo=None)
+
+        rrule = dateutil.rrule.rrulestr(
+            rrule_param.to_ical().decode(),
+            dtstart=dtstart
+        )
+
+        if rrule._until is None:
+            # rrule really doesn't like to calculate all recurrences until
+            # eternity, so we only do it until 2037, because a) I'm not sure
+            # if python can deal with larger datetime values yet and b) pytz
+            # doesn't know any larger transition times
+            rrule._until = dt.datetime(2037, 12, 31)
+        elif getattr(rrule._until, 'tzinfo', None):
+            rrule._until = rrule._until \
+                .astimezone(events_tz) \
+                .replace(tzinfo=None)
+
+        rrule = map(sanitize_datetime, rrule)
+
+        logger.debug('calculating recurrence dates for {0}, '
+                     'this might take some time.'.format(href))
+
+        # RRULE and RDATE may specify the same date twice, it is recommended by
+        # the RFC to consider this as only one instance
+        dtstartl = set(rrule)
+        if not dtstartl:
+            raise UnsupportedRecurrence()
+    else:
+        dtstartl = {vevent['DTSTART'].dt}
+
+    def get_dates(vevent, key):
+        # TODO replace with get_all_properties
+        dates = vevent.get(key)
+        if dates is None:
+            return
+        if not isinstance(dates, list):
+            dates = [dates]
+
+        dates = (leaf.dt for tree in dates for leaf in tree.dts)
+        dates = localize_strip_tz(dates, events_tz)
+        return map(sanitize_datetime, dates)
+
+    # include explicitly specified recursion dates
+    if expand:
+        dtstartl.update(get_dates(vevent, 'RDATE') or ())
+
+    # remove excluded dates
+    if expand:
+        for date in get_dates(vevent, 'EXDATE') or ():
+            try:
+                dtstartl.remove(date)
+            except KeyError:
+                logger.warning(
+                    'In event {}, excluded instance starting at {} not found, '
+                    'event might be invalid.'.format(href, date))
+
+    dtstartend = [(start, start + duration) for start in dtstartl]
+    # not necessary, but I prefer deterministic output
+    dtstartend.sort()
+    return dtstartend
+
+
+def sanitize(vevent, default_timezone, href='', calendar=''):
+    """
+    clean up vevents we do not understand
+
+    :param vevent: the vevent that needs to be cleaned
+    :type vevent: icalendar.cal.Event
+    :param default_timezone: timezone to apply to start and/or end dates which
+         were supposed to be localized but which timezone was not understood
+         by icalendar
+    :type timezone: pytz.timezone
+    :param href: used for logging to inform user which .ics files are
+        problematic
+    :type href: str
+    :param calendar: used for logging to inform user which .ics files are
+        problematic
+    :type calendar: str
+    :returns: clean vevent
+    :rtype: icalendar.cal.Event
+    """
+    # convert localized datetimes with timezone information we don't
+    # understand to the default timezone
+    # TODO do this for everything where a TZID can appear (RDATE, EXDATE)
+    for prop in ['DTSTART', 'DTEND', 'DUE', 'RECURRENCE-ID']:
+        if prop in vevent and invalid_timezone(vevent[prop]):
+            timezone = vevent[prop].params.get('TZID')
+            value = default_timezone.localize(vevent.pop(prop).dt)
+            vevent.add(prop, value)
+            logger.warning(
+                "{} localized in invalid or incomprehensible timezone `{}` in {}/{}. "
+                "This could lead to this event being wrongly displayed."
+                "".format(prop, timezone, calendar, href)
+            )
+
+    vdtstart = vevent.pop('DTSTART', None)
+    vdtend = vevent.pop('DTEND', None)
+    dtstart = getattr(vdtstart, 'dt', None)
+    dtend = getattr(vdtend, 'dt', None)
+
+    # event with missing DTSTART
+    if dtstart is None:
+        raise ValueError('Event has no start time (DTSTART).')
+    dtstart, dtend = sanitize_timerange(
+        dtstart, dtend, duration=vevent.get('DURATION', None))
+
+    vevent.add('DTSTART', dtstart)
+    if dtend is not None:
+        vevent.add('DTEND', dtend)
+    return vevent
+
+
+def sanitize_timerange(dtstart, dtend, duration=None):
+    '''return sensible dtstart and end for events that have an invalid or
+    missing DTEND, assuming the event just lasts one hour.'''
+
+    if isinstance(dtstart, dt.datetime) and isinstance(dtend, dt.datetime):
+        if dtstart.tzinfo and not dtend.tzinfo:
+            logger.warning(
+                "Event end time has no timezone. "
+                "Assuming it's the same timezone as the start time"
+            )
+            dtend = dtstart.tzinfo.localize(dtend)
+        if not dtstart.tzinfo and dtend.tzinfo:
+            logger.warning(
+                "Event start time has no timezone. "
+                "Assuming it's the same timezone as the end time"
+            )
+            dtstart = dtend.tzinfo.localize(dtstart)
+
+    if dtend is None and duration is None:
+        if isinstance(dtstart, dt.datetime):
+            dtstart = dtstart.date()
+        dtend = dtstart + dt.timedelta(days=1)
+    elif dtend is not None:
+        if dtend < dtstart:
+            raise ValueError('The event\'s end time (DTEND) is older than '
+                             'the event\'s start time (DTSTART).')
+        elif dtend == dtstart:
+            logger.warning(
+                "Event start time and end time are the same. "
+                "Assuming the event's duration is one hour."
+            )
+            dtend += dt.timedelta(hours=1)
+
+    return dtstart, dtend
+
+
+def sanitize_rrule(vevent):
+    """fix problems with RRULE:UNTIL"""
+    if 'rrule' in vevent and 'UNTIL' in vevent['rrule']:
+        until = vevent['rrule']['UNTIL'][0]
+        dtstart = vevent['dtstart'].dt
+        # DTSTART is date, UNTIL is datetime
+        if not isinstance(dtstart, dt.datetime) and isinstance(until, dt.datetime):
+            vevent['rrule']['until'] = until.date()
+    return vevent
+
+
+def localize_strip_tz(dates, timezone):
+    """converts a list of dates to timezone, than removes tz info"""
+    for one_date in dates:
+        if getattr(one_date, 'tzinfo', None) is not None:
+            one_date = one_date.astimezone(timezone)
+            one_date = one_date.replace(tzinfo=None)
+        yield one_date
+
+
+def to_unix_time(dtime):
+    """convert a datetime object to unix time in UTC (as a float)"""
+    if getattr(dtime, 'tzinfo', None) is not None:
+        dtime = dtime.astimezone(pytz.UTC)
+    unix_time = timegm(dtime.timetuple())
+    return unix_time
+
+
+def to_naive_utc(dtime):
+    """convert a datetime object to UTC and than remove the tzinfo, if
+    datetime is naive already, return it
+    """
+    if not hasattr(dtime, 'tzinfo') or dtime.tzinfo is None:
+        return dtime
+
+    dtime_utc = dtime.astimezone(pytz.UTC)
+    dtime_naive = dtime_utc.replace(tzinfo=None)
+    return dtime_naive
+
+
+def invalid_timezone(prop):
+    """check if an icalendar property has a timezone attached we don't understand"""
+    if hasattr(prop.dt, 'tzinfo') and prop.dt.tzinfo is None and 'TZID' in prop.params:
+        return True
+    else:
+        return False
+
+
+def _get_all_properties(vevent, prop):
+    """Get all properties from a vevent, even if there are several entries
+
+    example input:
+    EXDATE:1234,4567
+    EXDATE:7890
+
+    returns: [1234, 4567, 7890]
+
+    :type vevent: icalendar.cal.Event
+    :type prop: str
+    """
+    if prop not in vevent:
+        return list()
+    if isinstance(vevent[prop], list):
+        rdates = [leaf.dt for tree in vevent[prop] for leaf in tree.dts]
+    else:
+        rdates = [vddd.dt for vddd in vevent[prop].dts]
+    return rdates
+
+
+def delete_instance(vevent, instance):
+    """remove a recurrence instance from a VEVENT's RRDATE list or add it
+    to the EXDATE list
+
+    :type vevent: icalendar.cal.Event
+    :type instance: datetime.datetime
+    """
+    # TODO check where this instance is coming from and only call the
+    # appropriate function
+    if 'RRULE' in vevent:
+        exdates = _get_all_properties(vevent, 'EXDATE')
+        exdates += [instance]
+        vevent.pop('EXDATE')
+        vevent.add('EXDATE', exdates)
+    if 'RDATE' in vevent:
+        rdates = [one for one in _get_all_properties(vevent, 'RDATE') if one != instance]
+        vevent.pop('RDATE')
+        if rdates != []:
+            vevent.add('RDATE', rdates)
+
+
+def is_aware(dtime):
+    """test if a datetime instance is timezone aware"""
+    if dtime.tzinfo is not None and dtime.tzinfo.utcoffset(dtime) is not None:
+        return True
+    else:
+        return False
+
+
+def relative_timedelta_str(day):
+    """Converts the timespan from `day` to today into a human readable string.
+
+    :type day: datetime.date
+    :rtype: str
+    """
+    days = (day - dt.date.today()).days
+    if days < 0:
+        direction = 'ago'
+    else:
+        direction = 'from now'
+    approx = ''
+    if abs(days) < 7:
+        unit = 'day'
+        count = abs(days)
+    elif abs(days) < 365:
+        unit = 'week'
+        count = int(abs(days) / 7)
+        if abs(days) % 7 != 0:
+            approx = '~'
+    else:
+        unit = 'year'
+        count = int(abs(days) / 365)
+        if abs(days) % 365 != 0:
+            approx = '~'
+    if count > 1:
+        unit += 's'
+
+    return '{approx}{count} {unit} {direction}'.format(
+        approx=approx,
+        count=count,
+        unit=unit,
+        direction=direction,
+    )
+
+
+def sort_key(vevent):
+    """helper function to determine order of VEVENTS
+    so that recurrence-id events come after the corresponding rrule event, etc
+    :param vevent: icalendar.Event
+    :rtype: tuple(str, int)
+    """
+    assert isinstance(vevent, icalendar.Event)
+    uid = str(vevent['UID'])
+    rec_id = vevent.get('RECURRENCE-ID')
+    if rec_id is None:
+        return uid, 0
+    rrange = rec_id.params.get('RANGE')
+    if rrange == 'THISANDFUTURE':
+        return uid, to_unix_time(rec_id.dt)
+    else:
+        return uid, 1

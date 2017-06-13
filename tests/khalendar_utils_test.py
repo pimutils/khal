@@ -2,7 +2,7 @@ import datetime as dt
 import icalendar
 import pytz
 
-from khal.khalendar import utils
+import khal.utils as utils
 
 from .utils import _get_text, _get_vevent_file
 

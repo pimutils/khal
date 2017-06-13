@@ -42,5 +42,11 @@ class UnsupportedFeatureError(Error):
     pass
 
 
+class UnsupportedRecurrence(Error):
+
+    """raised if the RRULE is not understood by dateutil.rrule"""
+    pass
+
+
 class InvalidDate(Error):
     pass

@@ -34,7 +34,7 @@ from .exceptions import InvalidSettingsError
 
 from ..terminal import COLORS
 from ..khalendar.vdir import Vdir, CollectionNotFoundError
-from ..utils import guesstimedeltafstr
+from ..parse_datetime import guesstimedeltafstr
 
 
 def is_timezone(tzstring):
@@ -207,6 +207,7 @@ def config_checks(
                     }
 
         # get color from config if not defined in vdir
+
         if calendar['color'] is None and vdir in vdir_colors_from_config:
             logger.debug("using collection's color for {}".format(vdir))
             calendar['color'] = vdir_colors_from_config[vdir]
