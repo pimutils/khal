@@ -81,6 +81,7 @@ released 2017-03-06
 =====
 released 2017-02-13
 
+* CHANGED default date/time formats to be the system's locale's formats.
 * FIX if weekstart != 0 ikhal would show wrong weekday names
 * FIX allday events added with `khal new DATE TIMEDELTA` (e.g., 2017-01-18 3d)
   were lasting one day too long

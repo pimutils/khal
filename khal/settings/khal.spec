@@ -87,24 +87,24 @@ local_timezone = timezone(default=None)
 # khal will display and understand all times in this format.
 
 # The formatting string is interpreted as defined by Python's `strftime
-# <https://docs.python.org/2/library/time.html#time.strftime>`_, which is
+# <https://docs.python.org/3/library/time.html#time.strftime>`_, which is
 # similar to the format specified in ``man strftime``.
-timeformat = string(default='%H:%M')
+timeformat = string(default='%X')
 
 # khal will display and understand all dates in this format, see :ref:`timeformat <locale-timeformat>` for the format
-dateformat = string(default='%d.%m.')
+dateformat = string(default='%x')
 
 # khal will display and understand all dates in this format, it should
 # contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
-longdateformat = string(default='%d.%m.%Y')
+longdateformat = string(default='%x')
 
 # khal will display and understand all datetimes in this format, see
 # :ref:`timeformat <locale-timeformat>` for the format.
-datetimeformat = string(default='%d.%m. %H:%M')
+datetimeformat = string(default='%c')
 
 # khal will display and understand all datetimes in this format, it should
 # contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
-longdatetimeformat = string(default='%d.%m.%Y %H:%M')
+longdatetimeformat = string(default='%c')
 
 
 # Enable weeknumbers in `calendar` and `interactive` (ikhal) mode. As those are
