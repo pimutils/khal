@@ -19,7 +19,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-import logging
 import sys
 import textwrap
 from shutil import get_terminal_size
@@ -32,6 +31,7 @@ except ImportError:
         pass
 
 import click
+import click_log
 
 from . import controllers, khalendar, __version__
 from .log import logger
@@ -125,12 +125,6 @@ def global_options(f):
     def config_callback(ctx, option, config):
         prepare_context(ctx, config)
 
-    def verbosity_callback(ctx, option, verbose):
-        if verbose:
-            logger.setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.INFO)
-
     def color_callback(ctx, option, value):
         ctx.color = value
 
@@ -140,12 +134,6 @@ def global_options(f):
         help='The config file to use.',
         default=None, metavar='PATH', expose_value=False,
         callback=config_callback
-    )
-    verbose = click.option(
-        '--verbose', '-v',
-        is_eager=True,  # make sure to log config when debugging
-        help='Output debugging information.',
-        is_flag=True, expose_value=False, callback=verbosity_callback
     )
     color = click.option(
         '--color/--no-color',
@@ -157,7 +145,7 @@ def global_options(f):
 
     version = click.version_option(version=__version__)
 
-    return config(verbose(color(version(f))))
+    return config(color(version(f)))
 
 
 def build_collection(conf, selection):
@@ -236,6 +224,8 @@ def stringify_conf(conf):
 
 def _get_cli():
     @click.group(invoke_without_command=True)
+    @click_log.init('khal')
+    @click_log.simple_verbosity_option()
     @global_options
     @click.pass_context
     def cli(ctx):
