@@ -9,7 +9,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.9.6
 =====
-unreleased
+released 2017-06-13
 
 * FIX set PRODID to khal/icalendar
 * FIX don't crash on updated vcards
