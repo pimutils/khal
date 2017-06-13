@@ -18,6 +18,8 @@ unreleased
   eventcolumn are focused on the new date
 * FIX no more crashes if only one event which is an overwritten instance is
   present in an .ics file
+* FIX .ics files containing only overwritten instances are not expanded anymore,
+  even if they contain a RRULE or RDATE
 
 * CHANGE the symbol used for indicating a recurring event now has a space in
   front of it, also the ascii version changed to `(R)`

@@ -198,6 +198,27 @@ def test_event_recuid_no_master():
     ) == 'Infrastructure Planning\x1b[0m'
 
 
+def test_event_recuid_rrule_no_master():
+    """
+    test for events which have a RECUID and a RRULE component, but the master event is
+    not present in the same file
+    """
+    dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
+    dbi.update(
+        _get_text('event_dt_multi_recuid_no_master'),
+        href='12345.ics', etag='abcd', calendar=calname,
+    )
+    events = dbi.get_floating(
+        datetime(2010, 1, 1, 0, 0), datetime(2020, 1, 1, 0, 0),
+    )
+    events = sorted(events, key=lambda x: x.start)
+    assert len(list(events)) == 2
+    assert events[0].start == datetime(2014, 6, 30, 7, 30)
+    assert events[0].end == datetime(2014, 6, 30, 12, 0)
+    assert events[1].start == datetime(2014, 7, 7, 8, 30)
+    assert events[1].end == datetime(2014, 7, 7, 12, 0)
+
+
 def test_no_valid_timezone():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     dbi.update(_get_text('event_dt_local_missing_tz'),

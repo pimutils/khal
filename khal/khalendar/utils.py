@@ -40,8 +40,9 @@ def expand(vevent, href=''):
 
     It considers RRULE as well as RDATE and EXDATE properties. In case of
     unsupported recursion rules an UnsupportedRecurrence exception is thrown.
-    If the timezone defined in vevent is not understood by icalendar,
-    default_tz is used.
+
+    If the vevent contains a RECURRENCE-ID property, no expansion is done,
+    the function still returns a tuple of start and end (date)times.
 
     :param vevent: vevent to be expanded
     :type vevent: icalendar.cal.Event
@@ -57,6 +58,10 @@ def expand(vevent, href=''):
     else:
         duration = vevent['DTEND'].dt - vevent['DTSTART'].dt
 
+    # if this vevent has a RECURRENCE_ID property, no expansion will be
+    # performed
+    expand = not bool(vevent.get('RECURRENCE-ID'))
+
     events_tz = getattr(vevent['DTSTART'].dt, 'tzinfo', None)
     allday = not isinstance(vevent['DTSTART'].dt, datetime)
 
@@ -68,7 +73,7 @@ def expand(vevent, href=''):
         return date
 
     rrule_param = vevent.get('RRULE')
-    if rrule_param is not None:
+    if expand and rrule_param is not None:
         vevent = sanitize_rrule(vevent)
 
         # dst causes problem while expanding the rrule, therefore we transform
@@ -121,16 +126,18 @@ def expand(vevent, href=''):
         return map(sanitize_datetime, dates)
 
     # include explicitly specified recursion dates
-    dtstartl.update(get_dates(vevent, 'RDATE') or ())
+    if expand:
+        dtstartl.update(get_dates(vevent, 'RDATE') or ())
 
     # remove excluded dates
-    for date in get_dates(vevent, 'EXDATE') or ():
-        try:
-            dtstartl.remove(date)
-        except KeyError:
-            logger.warning(
-                'In event {}, excluded instance starting at {} not found, '
-                'event might be invalid.'.format(href, date))
+    if expand:
+        for date in get_dates(vevent, 'EXDATE') or ():
+            try:
+                dtstartl.remove(date)
+            except KeyError:
+                logger.warning(
+                    'In event {}, excluded instance starting at {} not found, '
+                    'event might be invalid.'.format(href, date))
 
     dtstartend = [(start, start + duration) for start in dtstartl]
     # not necessary, but I prefer deterministic output

@@ -562,7 +562,7 @@ END:VEVENT
 END:VCALENDAR
 """
 
-another_problem = """BEGIN:VEVENT
+recurrence_id_with_timezone = """BEGIN:VEVENT
 SUMMARY:PyCologne
 DTSTART;TZID=/freeassociation.sourceforge.net/Tzfile/Europe/Berlin:20131113T190000
 DTEND;TZID=/freeassociation.sourceforge.net/Tzfile/Europe/Berlin:20131113T210000
@@ -610,13 +610,12 @@ class TestSpecial(object):
         assert dtstart[0][0] == date(2009, 10, 31)
         assert dtstart[-1][0] == date(2037, 10, 31)
 
-    def test_another_problem(self):
-        vevent = _get_vevent(another_problem)
+    def test_recurrence_id_with_timezone(self):
+        vevent = _get_vevent(recurrence_id_with_timezone)
         dtstart = utils.expand(vevent, berlin)
+        assert len(dtstart) == 1
         assert dtstart[0][0] == berlin.localize(
             datetime(2013, 11, 13, 19, 0))
-        assert dtstart[-1][0] == berlin.localize(
-            datetime(2037, 12, 9, 19, 0))
 
     def test_event_exdate_dt(self):
         """recurring event, one date excluded via EXCLUDE"""

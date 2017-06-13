@@ -385,7 +385,6 @@ class SQLiteDb(object):
                     'VALUES (?, ?, ?, ?, ?, ?, ?);'.format(recs_table))
                 stuple = (dbstart, dbend, href, ref, dtype, rec_inst, calendar)
             self.sql_ex(recs_sql_s, stuple)
-            # end of loop
 
     def get_ctag(self, calendar):
         stuple = (calendar, )
