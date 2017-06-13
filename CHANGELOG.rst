@@ -20,6 +20,7 @@ unreleased
   present in an .ics file
 * FIX .ics files containing only overwritten instances are not expanded anymore,
   even if they contain a RRULE or RDATE
+* FIX valid UNTIL entry for recurring datetime events 
 
 * CHANGE the symbol used for indicating a recurring event now has a space in
   front of it, also the ascii version changed to `(R)`

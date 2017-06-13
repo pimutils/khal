@@ -706,7 +706,13 @@ class RecurrenceEditor(urwid.WidgetWrap):
             weekday, occurrence = get_weekday_occurrence(self._startdt)
             rrule['byday'] = ['{}{}'.format(occurrence, WEEKDAYS[weekday])]
         if self.until_choice.active == 'Until':
-            rrule['until'] = self.until_edit.date
+            if isinstance(self._startdt, dt.datetime):
+                rrule['until'] = dt.datetime.combine(
+                    self.until_edit.date,
+                    self._startdt.time(),
+                )
+            else:
+                rrule['until'] = self.until_edit.date
         elif self.until_choice.active == 'Repetitions':
             rrule['count'] = int(self.repetitions_edit.get_edit_text())
         return rrule
