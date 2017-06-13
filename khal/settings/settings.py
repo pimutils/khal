@@ -42,16 +42,9 @@ def find_configuration_file():
     This function builds the list of paths known by khal and then return the
     first one which exists. The first paths searched are the ones described in
     the XDG Base Directory Standard, e.g. ~/.config/khal/config, additionally
-    ~/.config/khal/khal.conf is searched (deprecated). All other paths end with
-    DEFAULT_PATH/DEFAULT_FILE.
-
-    On failure, the path DEFAULT_PATH/DEFAULT_FILE, prefixed with
-    a dot, is searched in the home user directory. Ultimately,
-    DEFAULT_FILE is searched in the current directory.
+    ~/.config/khal/khal.conf is searched (deprecated).
     """
-    DEFAULT_FILE = __productname__ + '.conf'
     DEFAULT_PATH = __productname__
-    resource = os.path.join(DEFAULT_PATH, DEFAULT_FILE)
 
     paths = []
     paths = [os.path.join(path, os.path.join(DEFAULT_PATH, 'config'))
@@ -59,20 +52,6 @@ def find_configuration_file():
     for path in paths:
         if os.path.exists(path):
             return path
-
-    # remove this part for v0.10.0
-    paths = [os.path.join(path, resource) for path in xdg.BaseDirectory.xdg_config_dirs]
-    for path in paths:
-        if os.path.exists(path):
-            logger.warning(
-                'Deprecation Warning: configuration file path `{}` will not be '
-                'supported from khal v0.10.0 onwards, please move it to '
-                '`{}`.'
-                ''.format(path, path.replace('khal.conf', 'config')))
-            return path
-    paths = []
-    paths.append(os.path.expanduser(os.path.join('~', '.' + resource)))
-    paths.append(os.path.expanduser(DEFAULT_FILE))
 
     # remove this part for v0.11.0
     for path in paths:

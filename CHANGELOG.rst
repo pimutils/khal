@@ -13,6 +13,8 @@ not released yet
 
 * NEW DEPENDENCY added click_log  >= 0.1.3
 
+* CHANGE only searched configuration file paths are now
+  $XDG_CONFIG_HOME/khal/config and $XDG_CONFIG_HOME/khal/khal.conf (deprecated)
 * CHANGE removed default command
 * CHANGE default date/time formats to be the system's locale's formats
 * CHANGE ``--verbose`` flag to ``--verbosity``, allowing finer granularity
