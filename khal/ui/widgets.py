@@ -549,7 +549,7 @@ class AlarmsEditor(urwid.WidgetWrap):
     def add_alarm(self, button):
         self.pile.contents.insert(
             len(self.pile.contents) - 1,
-            (self.AlarmEditor((timedelta(0), self.event.summary), self.remove_alarm),
+            (self.AlarmEditor((dt.timedelta(0), self.event.summary), self.remove_alarm),
              ('weight', 1)))
 
     def remove_alarm(self, button, editor):

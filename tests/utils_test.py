@@ -7,9 +7,10 @@ import random
 import icalendar
 from freezegun import freeze_time
 
-from khal.parse_datetime import guessdatetimefstr, guesstimedeltafstr, guessrangefstr, weekdaypstr, eventinfofstr, timedelta2str, guessrangefstr, weekdaypstr, construct_daynames
-from khal.utils import new_event
-from khal.utils import get_weekday_occurrence
+from khal.parse_datetime import (
+    guessdatetimefstr, guesstimedeltafstr, guessrangefstr, weekdaypstr,
+    eventinfofstr, timedelta2str, construct_daynames,
+)
 from khal import utils
 from khal.exceptions import FatalError
 import pytest
@@ -28,9 +29,11 @@ def _construct_event(info, locale,
     info = eventinfofstr(' '.join(info), locale, adjust_reasonably=True, localize=False)
     if description is not None:
         info["description"] = description
-    event = new_event(locale=locale, location=location,
-                      categories=categories, repeat=repeat, until=until,
-                      alarms=alarm, **info)
+    event = utils.new_event(
+        locale=locale, location=location,
+        categories=categories, repeat=repeat, until=until,
+        alarms=alarm,
+        **info)
     return event
 
 
@@ -125,7 +128,9 @@ class TestGuessDatetimefstr:
     def test_time_now(self):
         with freeze_time('2016-9-19 17:53'):
             assert (dt.datetime(2016, 9, 19, 17, 53), False) == \
-                guessdatetimefstr('now'.split(), locale=LOCALE_BERLIN, default_day=dt.datetime.today())
+                guessdatetimefstr(
+                    'now'.split(), locale=LOCALE_BERLIN, default_day=dt.datetime.today(),
+                )
 
     def test_short_format_contains_year(self):
         """if the non long versions of date(time)format contained a year, the
@@ -139,7 +144,9 @@ class TestGuessDatetimefstr:
         }
         with freeze_time('2016-12-30 17:53'):
             assert (dt.datetime(2017, 1, 1), True) == \
-                guessdatetimefstr('2017-1-1'.split(), locale=locale, default_day=dt.datetime.today())
+                guessdatetimefstr(
+                    '2017-1-1'.split(), locale=locale, default_day=dt.datetime.today(),
+                )
 
         with freeze_time('2016-12-30 17:53'):
             assert (dt.datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
@@ -223,8 +230,8 @@ class TestGuessRangefstr:
                 '1.1.2016 10:00 1.1.2017 22:00', locale=LOCALE_BERLIN)
 
     def test_start_and_eod(self):
-        assert (dt.datetime(2016, 1, 1, 10), dt.datetime(2016, 1, 1, 23, 59, 59, 999999), False) == \
-            guessrangefstr('1.1.2016 10:00 eod', locale=LOCALE_BERLIN)
+        start, end = dt.datetime(2016, 1, 1, 10), dt.datetime(2016, 1, 1, 23, 59, 59, 999999)
+        assert (start, end, False) == guessrangefstr('1.1.2016 10:00 eod', locale=LOCALE_BERLIN)
 
     def test_start_and_week(self):
         assert (dt.datetime(2015, 12, 28), dt.datetime(2016, 1, 5), True) == \
@@ -297,7 +304,9 @@ class TestTimeDelta2Str:
         assert timedelta2str(dt.timedelta(days=2)) == '2d'
 
     def test_multi(self):
-        assert timedelta2str(dt.timedelta(days=6, hours=-3, minutes=10, seconds=-3)) == '5d 21h 9m 57s'
+        assert timedelta2str(
+            dt.timedelta(days=6, hours=-3, minutes=10, seconds=-3)
+        ) == '5d 21h 9m 57s'
 
 
 def test_weekdaypstr():
@@ -682,21 +691,21 @@ def test_color_wrap_256():
 
 
 def test_get_weekday_occurrence():
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 1)) == (2, 1)
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 2)) == (3, 1)
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 3)) == (4, 1)
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 4)) == (5, 1)
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 5)) == (6, 1)
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 6)) == (0, 1)
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 7)) == (1, 1)
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 8)) == (2, 2)
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 9)) == (3, 2)
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 10)) == (4, 2)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 1)) == (2, 1)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 2)) == (3, 1)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 3)) == (4, 1)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 4)) == (5, 1)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 5)) == (6, 1)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 6)) == (0, 1)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 7)) == (1, 1)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 8)) == (2, 2)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 9)) == (3, 2)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 10)) == (4, 2)
 
-    assert get_weekday_occurrence(dt.datetime(2017, 3, 31)) == (4, 5)
+    assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 31)) == (4, 5)
 
-    assert get_weekday_occurrence(dt.date(2017, 5, 1)) == (0, 1)
-    assert get_weekday_occurrence(dt.date(2017, 5, 7)) == (6, 1)
-    assert get_weekday_occurrence(dt.date(2017, 5, 8)) == (0, 2)
-    assert get_weekday_occurrence(dt.date(2017, 5, 28)) == (6, 4)
-    assert get_weekday_occurrence(dt.date(2017, 5, 29)) == (0, 5)
+    assert utils.get_weekday_occurrence(dt.date(2017, 5, 1)) == (0, 1)
+    assert utils.get_weekday_occurrence(dt.date(2017, 5, 7)) == (6, 1)
+    assert utils.get_weekday_occurrence(dt.date(2017, 5, 8)) == (0, 2)
+    assert utils.get_weekday_occurrence(dt.date(2017, 5, 28)) == (6, 4)
+    assert utils.get_weekday_occurrence(dt.date(2017, 5, 29)) == (0, 5)

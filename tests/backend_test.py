@@ -492,7 +492,9 @@ def test_event_rrule_multi_this_and_future_allday():
     dbi.update(event_rrule_multi_this_and_future_allday,
                href='event_rrule_multi_this_and_future_allday.ics', etag='abcd', calendar=calname)
     assert dbi.list(calname) == [('event_rrule_multi_this_and_future_allday.ics', 'abcd')]
-    events = sorted(dbi.get_floating(dt.datetime(2014, 4, 30, 0, 0), dt.datetime(2014, 9, 27, 0, 0)))
+    events = sorted(
+        dbi.get_floating(dt.datetime(2014, 4, 30, 0, 0), dt.datetime(2014, 9, 27, 0, 0)),
+    )
     assert len(events) == 6
 
     assert events[0].start == dt.date(2014, 6, 30)

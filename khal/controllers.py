@@ -230,7 +230,9 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
         if not datepoint:
             datepoint = ['now']
         try:
-            start, allday = parse_datetime.guessdatetimefstr(datepoint, conf['locale'], dt.date.today())
+            start, allday = parse_datetime.guessdatetimefstr(
+                datepoint, conf['locale'], dt.date.today(),
+            )
         except ValueError:
             raise FatalError('Invalid value of `{}` for a datetime'.format(' '.join(datepoint)))
         if allday:
@@ -276,7 +278,9 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
     try:
-        info = parse_datetime.eventinfofstr(info, conf['locale'], adjust_reasonably=True, localize=False)
+        info = parse_datetime.eventinfofstr(
+            info, conf['locale'], adjust_reasonably=True, localize=False,
+        )
     except ValueError:
         info = dict()
 
@@ -335,7 +339,9 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):
     """construct a new event from a string and add it"""
-    info = parse_datetime.eventinfofstr(info, conf['locale'], adjust_reasonably=True, localize=False)
+    info = parse_datetime.eventinfofstr(
+        info, conf['locale'], adjust_reasonably=True, localize=False,
+    )
     new_from_args(
         collection, calendar_name, conf, format=format, env=env,
         location=location, categories=categories, repeat=repeat,

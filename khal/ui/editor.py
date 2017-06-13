@@ -165,7 +165,7 @@ class StartEndEditor(urwid.WidgetWrap):
 
     @property
     def startdt(self):
-        if self.allday and isinstance(self._startdt, datetime):
+        if self.allday and isinstance(self._startdt, dt.datetime):
             return self._startdt.date()
         else:
             return self._startdt
@@ -175,7 +175,7 @@ class StartEndEditor(urwid.WidgetWrap):
         try:
             return self._startdt.time()
         except AttributeError:
-            return time(0)
+            return dt.time(0)
 
     @property
     def localize_start(self):

@@ -396,8 +396,8 @@ class DayWalker(urwid.SimpleFocusListWalker):
         :type end: datetime.date
         :type bool: bool
         """
-        start = start.date() if isinstance(start, datetime) else start
-        end = end.date() if isinstance(end, datetime) else end
+        start = start.date() if isinstance(start, dt.datetime) else start
+        end = end.date() if isinstance(end, dt.datetime) else end
 
         if everything:
             start = self[0].date
@@ -417,8 +417,8 @@ class DayWalker(urwid.SimpleFocusListWalker):
         :type start: datetime.date
         :type end: datetime.date
         """
-        start = start.date() if isinstance(start, datetime) else start
-        end = end.date() if isinstance(end, datetime) else end
+        start = start.date() if isinstance(start, dt.datetime) else start
+        end = end.date() if isinstance(end, dt.datetime) else end
 
         if everything:
             start = self[0].date
@@ -535,8 +535,8 @@ class StaticDayWalker(DayWalker):
         :type start: datetime.date
         :type end: datetime.date
         """
-        start = start.date() if isinstance(start, datetime) else start
-        end = end.date() if isinstance(end, datetime) else end
+        start = start.date() if isinstance(start, dt.datetime) else start
+        end = end.date() if isinstance(end, dt.datetime) else end
 
         update = everything
         for one in self:
@@ -694,11 +694,11 @@ class EventColumn(urwid.WidgetWrap):
                 ('alert', 'Calendar `{}` is read-only.'.format(event.calendar)))
             return
 
-        if isinstance(event.start_local, datetime):
+        if isinstance(event.start_local, dt.datetime):
             original_start = event.start_local.date()
         else:
             original_start = event.start_local
-        if isinstance(event.end_local, datetime):
+        if isinstance(event.end_local, dt.datetime):
             original_end = event.end_local.date()
         else:
             original_end = event.end_local
@@ -714,9 +714,9 @@ class EventColumn(urwid.WidgetWrap):
             """
             # TODO cleverer support for recurring events, where more than start and
             # end dates are affected (complicated)
-            if isinstance(new_start, datetime):
+            if isinstance(new_start, dt.datetime):
                 new_start = new_start.date()
-            if isinstance(new_end, datetime):
+            if isinstance(new_end, dt.datetime):
                 new_end = new_end.date()
             start = min(original_start, new_start)
             end = max(original_end, new_end)
@@ -848,9 +848,9 @@ class EventColumn(urwid.WidgetWrap):
                 self.pane.collection.writable_names[0]
             self.edit(event, always_save=True)
         start_date, end_date = event.start_local, event.end_local
-        if isinstance(start_date, datetime):
+        if isinstance(start_date, dt.datetime):
             start_date = start_date.date()
-        if isinstance(end_date, datetime):
+        if isinstance(end_date, dt.datetime):
             end_date = end_date.date()
         self.pane.eventscolumn.base_widget.update(start_date, end_date, event.recurring)
         try:
@@ -870,7 +870,7 @@ class EventColumn(urwid.WidgetWrap):
             self.pane.window.alert(('alert', 'No writable calendar.'))
             return
         if end is None:
-            start = datetime.combine(date, time(datetime.now().hour))
+            start = dt.datetime.combine(dt.date, dt.time(dt.datetime.now().hour))
             end = start + dt.timedelta(minutes=60)
             event = utils.new_event(
                 dtstart=start, dtend=end, summary="new event",
