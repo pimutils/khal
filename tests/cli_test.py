@@ -47,8 +47,7 @@ def runner(tmpdir, monkeypatch):
     monkeypatch.setattr('xdg.BaseDirectory.xdg_config_home', str(xdg_config_home))
     monkeypatch.setattr('xdg.BaseDirectory.xdg_config_dirs', [str(xdg_config_home)])
 
-    def inner(default_command='list', print_new=False, default_calendar=True, days=2,
-              **kwargs):
+    def inner(print_new=False, default_calendar=True, days=2, **kwargs):
         if default_calendar:
             default_calendar = 'default_calendar = one'
         else:
@@ -56,7 +55,6 @@ def runner(tmpdir, monkeypatch):
         if not os.path.exists(str(xdg_config_home.join('khal'))):
             os.makedirs(str(xdg_config_home.join('khal')))
         config_file.write(config_template.format(
-            default_command=default_command,
             delta=str(days) + 'd',
             calpath=str(calendar), calpath2=str(calendar2), calpath3=str(calendar3),
             default_calendar=default_calendar,
@@ -96,7 +94,6 @@ longdatetimeformat = %d.%m.%Y %H:%M
 firstweekday = 0
 
 [default]
-default_command = {default_command}
 {default_calendar}
 timedelta = {delta}
 print_new = {print_new}
@@ -107,11 +104,11 @@ path = {dbpath}
 
 
 def test_direct_modification(runner):
-    runner = runner(default_command='list')
+    runner = runner()
 
     result = runner.invoke(main_khal, ['list'])
-    assert not result.exception
     assert result.output == 'No events\n'
+    assert not result.exception
 
     cal_dt = _get_text('event_dt_simple')
     event = runner.calendars['one'].join('test.ics')
@@ -129,9 +126,8 @@ def test_direct_modification(runner):
 
 
 def test_simple(runner):
-    runner = runner(default_command='list', days=2)
-
-    result = runner.invoke(main_khal)
+    runner = runner(days=2)
+    result = runner.invoke(main_khal, ['list'])
     assert not result.exception
     assert result.output == 'No events\n'
 
@@ -141,7 +137,7 @@ def test_simple(runner):
     assert result.output == ''
     assert not result.exception
 
-    result = runner.invoke(main_khal)
+    result = runner.invoke(main_khal, ['list'])
     print(result.output)
     assert 'myevent' in result.output
     assert '18:00' in result.output
@@ -151,20 +147,19 @@ def test_simple(runner):
 
 
 def test_simple_color(runner):
-    runner = runner(default_command='list', days=2)
-
+    runner = runner(days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
     assert result.output == ''
     assert not result.exception
 
-    result = runner.invoke(main_khal, color=True)
+    result = runner.invoke(main_khal, ['list'], color=True)
     assert not result.exception
     assert '\x1b[34m' in result.output
 
 
 def test_days(runner):
-    runner = runner(default_command='list', days=9)
+    runner = runner(days=9)
 
     when = (datetime.datetime.now() + timedelta(days=7)).strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 nextweek'.format(when).split())
@@ -176,7 +171,7 @@ def test_days(runner):
     assert result.output == ''
     assert not result.exception
 
-    result = runner.invoke(main_khal)
+    result = runner.invoke(main_khal, ['list'])
     assert 'nextweek' in result.output
     assert 'nextmonth' not in result.output
     assert '18:00' in result.output
@@ -185,7 +180,7 @@ def test_days(runner):
 
 def test_notstarted(runner):
     with freeze_time('2015-6-1 15:00'):
-        runner = runner(default_command='calendar', days=2)
+        runner = runner(days=2)
         for command in [
                 'new 30.5.2015 5.6.2015 long event',
                 'new 2.6.2015 4.6.2015 two day event',
@@ -248,8 +243,8 @@ Tomorrow, 02.06.2015
 
 def test_calendar(runner):
     with freeze_time('2015-6-1'):
-        runner = runner(default_command='calendar', days=0)
-        result = runner.invoke(main_khal)
+        runner = runner(days=0)
+        result = runner.invoke(main_khal, ['calendar'])
         assert not result.exception
         assert result.exit_code == 0
         output = '\n'.join([
@@ -275,8 +270,8 @@ def test_calendar(runner):
 
 def test_long_calendar(runner):
     with freeze_time('2015-6-1'):
-        runner = runner(default_command='calendar', days=100)
-        result = runner.invoke(main_khal)
+        runner = runner(days=100)
+        result = runner.invoke(main_khal, ['calendar'])
         assert not result.exception
         assert result.exit_code == 0
         output = '\n'.join([
@@ -305,24 +300,16 @@ def test_long_calendar(runner):
 
 
 def test_default_command_empty(runner):
-    runner = runner(default_command='', days=2)
+    runner = runner(days=2)
 
     result = runner.invoke(main_khal)
     assert result.exception
-    assert result.exit_code == 1
+    assert result.exit_code == 2
     assert result.output.startswith('Usage: ')
 
 
-def test_default_command_nonempty(runner):
-    runner = runner(default_command='list', days=2)
-
-    result = runner.invoke(main_khal)
-    assert not result.exception
-    assert result.output == 'No events\n'
-
-
 def test_invalid_calendar(runner):
-    runner = runner(default_command='', days=2)
+    runner = runner(days=2)
     result = runner.invoke(
         main_khal, ['new'] + '-a one 18:00 myevent'.split())
     assert not result.exception
@@ -334,7 +321,7 @@ def test_invalid_calendar(runner):
 
 
 def test_attach_calendar(runner):
-    runner = runner(default_command='calendar', days=2)
+    runner = runner(days=2)
     result = runner.invoke(main_khal, ['printcalendars'])
     assert set(result.output.split('\n')[:3]) == set(['one', 'two', 'three'])
     assert not result.exception
@@ -351,19 +338,19 @@ def test_attach_calendar(runner):
     'BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\nEND:VCALENDAR\n'
 ])
 def test_no_vevent(runner, tmpdir, contents):
-    runner = runner(default_command='list', days=2)
+    runner = runner(days=2)
     broken_item = runner.calendars['one'].join('broken_item.ics')
     broken_item.write(contents.encode('utf-8'), mode='wb')
 
-    result = runner.invoke(main_khal)
+    result = runner.invoke(main_khal, ['list'])
     assert not result.exception
     assert 'No events' in result.output
 
 
 def test_printformats(runner):
-    runner = runner(default_command='printformats', days=2)
+    runner = runner(days=2)
 
-    result = runner.invoke(main_khal)
+    result = runner.invoke(main_khal, ['printformats'])
     assert '\n'.join(['longdatetimeformat: 21.12.2013 10:09',
                       'datetimeformat: 21.12. 10:09',
                       'longdateformat: 21.12.2013',
@@ -374,7 +361,7 @@ def test_printformats(runner):
 
 
 def test_repeating(runner):
-    runner = runner(default_command='list', days=2)
+    runner = runner(days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
@@ -385,7 +372,7 @@ def test_repeating(runner):
 
 
 def test_at(runner):
-    runner = runner(default_command='calendar', days=2)
+    runner = runner(days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
@@ -398,7 +385,7 @@ def test_at(runner):
 
 
 def test_at_day_format(runner):
-    runner = runner(default_command='calendar', days=2)
+    runner = runner(days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
@@ -411,7 +398,7 @@ def test_at_day_format(runner):
 
 
 def test_list(runner):
-    runner = runner(default_command='calendar', days=2)
+    runner = runner(days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     end_date = datetime.datetime.now() + datetime.timedelta(days=10)
     result = runner.invoke(
@@ -426,7 +413,7 @@ def test_list(runner):
 
 
 def test_search(runner):
-    runner = runner(default_command='calendar', days=2)
+    runner = runner(days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
     format = '{red}{start-end-time-style}{reset} {title} :: {description}'
@@ -508,7 +495,7 @@ def test_import_from_stdin(runner):
 
 
 def test_interactive_command(runner, monkeypatch):
-    runner = runner(default_command='list', days=2)
+    runner = runner(days=2)
     token = "hooray"
 
     def fake_ui(*a, **kw):
@@ -527,12 +514,12 @@ def test_interactive_command(runner, monkeypatch):
 
 
 def test_color_option(runner):
-    runner = runner(default_command='list', days=2)
+    runner = runner(days=2)
 
-    result = runner.invoke(main_khal, ['--no-color'])
+    result = runner.invoke(main_khal, ['--no-color', 'list'])
     assert result.output == 'No events\n'
 
-    result = runner.invoke(main_khal, ['--color'])
+    result = runner.invoke(main_khal, ['--color', 'list'])
     assert 'No events' in result.output
     assert result.output != 'No events\n'
 
@@ -643,9 +630,9 @@ longdatetimeformat = %Y-%m-%d %H:%M
 
 
 def test_print_ics_command(runner):
-    runner = runner(command='printics', days=2)
+    runner = runner()
     # Input is empty and loading from stdin
-    result = runner.invoke(main_khal, ['-'])
+    result = runner.invoke(main_khal, ['printics', '-'])
     assert result.exception
 
     # Non existing file

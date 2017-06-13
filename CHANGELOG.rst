@@ -7,6 +7,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.10.0
+======
+not released yet
+
+* CHANGE removed default command
+
 0.9.6
 =====
 released 2017-06-13

@@ -24,7 +24,6 @@ longdatetimeformat = %d.%m.%Y %H:%M
 firstweekday = 0
 
 [default]
-default_command = calendar
 default_calendar = home
 timedelta = 2 # the default timedelta that list uses
 highlight_event_days = True  # the default is False

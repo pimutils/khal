@@ -207,7 +207,6 @@ def config_checks(
                     }
 
         # get color from config if not defined in vdir
-
         if calendar['color'] is None and vdir in vdir_colors_from_config:
             logger.debug("using collection's color for {}".format(vdir))
             calendar['color'] = vdir_colors_from_config[vdir]

@@ -33,7 +33,6 @@ class TestSettings(object):
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': LOCALE_BERLIN,
             'default': {
-                'default_command': 'calendar',
                 'default_calendar': None,
                 'print_new': 'False',
                 'highlight_event_days': False,
@@ -77,7 +76,6 @@ class TestSettings(object):
             },
             'default': {
                 'default_calendar': None,
-                'default_command': 'calendar',
                 'print_new': 'False',
                 'highlight_event_days': False,
                 'timedelta': dt.timedelta(days=2),
@@ -99,7 +97,6 @@ timeformat: %H:%M
 dateformat: %d.%m.
 longdateformat: %d.%m.%Y
 [default]
-default_command: calendar
 """
         conf_path = str(tmpdir.join('old.conf'))
         with open(conf_path, 'w+') as conf:

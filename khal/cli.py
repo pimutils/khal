@@ -235,7 +235,7 @@ def stringify_conf(conf):
 
 
 def _get_cli():
-    @click.group(invoke_without_command=True)
+    @click.group()
     @global_options
     @click.pass_context
     def cli(ctx):
@@ -243,14 +243,6 @@ def _get_cli():
         # shows up as 'khal' under linux and as 'python: khal (python2.7)'
         # under FreeBSD, which is still nicer than the default
         setproctitle('khal')
-
-        if not ctx.invoked_subcommand:
-            command = ctx.obj['conf']['default']['default_command']
-            if command:
-                ctx.invoke(cli.commands[command])
-            else:
-                click.echo(ctx.get_help())
-                ctx.exit(1)
 
     @cli.command()
     @multi_calendar_option
