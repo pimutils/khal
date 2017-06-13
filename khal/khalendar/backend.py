@@ -32,7 +32,7 @@ note on naming:
 # we currently expect str/CALENDAR objects but return Event(), we should
 # accept and return the same kind of events
 import contextlib
-from datetime import datetime, timedelta
+import datetime as dt
 from os import makedirs, path
 import sqlite3
 
@@ -303,7 +303,7 @@ class SQLiteDb(object):
                 name = ' '.join([n[1], n[2], n[0]])
             event = icalendar.Event()
             event.add('dtstart', bday)
-            event.add('dtend', bday + timedelta(days=1))
+            event.add('dtend', bday + dt.timedelta(days=1))
             if bday.month == 2 and bday.day == 29:  # leap year
                 event.add('rrule', {'freq': 'YEARLY', 'BYYEARDAY': 60})
             else:
@@ -336,7 +336,7 @@ class SQLiteDb(object):
             rrange = rec_id.params.get('RANGE')
 
         # testing on datetime.date won't work as datetime is a child of date
-        if not isinstance(vevent['DTSTART'].dt, datetime):
+        if not isinstance(vevent['DTSTART'].dt, dt.datetime):
             dtype = DATE
         else:
             dtype = DATETIME
@@ -477,8 +477,8 @@ class SQLiteDb(object):
                 yield EventStandIn(calendar[0])
         else:
             for item, href, start, end, ref, etag, dtype, calendar in result:
-                start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
-                end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
+                start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
+                end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
                 yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
     def get_floating(self, start, end, minimal=False):
@@ -520,8 +520,8 @@ class SQLiteDb(object):
                 yield EventStandIn(calendar[0])
         else:
             for item, href, start, end, ref, etag, dtype, calendar in result:
-                start = datetime.utcfromtimestamp(start)
-                end = datetime.utcfromtimestamp(end)
+                start = dt.datetime.utcfromtimestamp(start)
+                end = dt.datetime.utcfromtimestamp(end)
                 yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
     def get(self, href, start=None, end=None, ref=None, dtype=None, calendar=None):

@@ -1,4 +1,4 @@
-from datetime import datetime, date, timedelta, time
+import datetime as dt
 import os
 from time import sleep
 from textwrap import dedent
@@ -17,9 +17,9 @@ from . import utils
 
 from freezegun import freeze_time
 
-today = date.today()
-yesterday = today - timedelta(days=1)
-tomorrow = today + timedelta(days=1)
+today = dt.date.today()
+yesterday = today - dt.timedelta(days=1)
+tomorrow = today + dt.timedelta(days=1)
 
 event_allday_template = """BEGIN:VEVENT
 SEQUENCE:0
@@ -109,8 +109,8 @@ class TestVdirsyncerCompat(object):
         ))
 
 
-aday = date(2014, 4, 9)
-bday = date(2014, 4, 10)
+aday = dt.date(2014, 4, 9)
+bday = dt.date(2014, 4, 10)
 
 
 event_dt = _get_text('event_dt_simple')
@@ -120,10 +120,10 @@ event_d_no_value = _get_text('event_d_no_value')
 
 class TestCollection(object):
 
-    astart = datetime.combine(aday, time.min)
-    aend = datetime.combine(aday, time.max)
-    bstart = datetime.combine(bday, time.min)
-    bend = datetime.combine(bday, time.max)
+    astart = dt.datetime.combine(aday, dt.time.min)
+    aend = dt.datetime.combine(aday, dt.time.max)
+    bstart = dt.datetime.combine(bday, dt.time.min)
+    bend = dt.datetime.combine(bday, dt.time.max)
     astart_berlin = utils.BERLIN.localize(astart)
     aend_berlin = utils.BERLIN.localize(aend)
     bstart_berlin = utils.BERLIN.localize(bstart)
@@ -151,8 +151,8 @@ class TestCollection(object):
 
     def test_empty(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        start = datetime.combine(today, time.min)
-        end = datetime.combine(today, time.max)
+        start = dt.datetime.combine(today, dt.time.min)
+        end = dt.datetime.combine(today, dt.time.max)
         assert list(coll.get_floating(start, end)) == list()
         assert list(coll.get_localized(utils.BERLIN.localize(start),
                                        utils.BERLIN.localize(end))) == list()
@@ -249,8 +249,8 @@ class TestCollection(object):
 
     def test_newevent(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        bday = datetime.combine(aday, time.min)
-        anend = bday + timedelta(hours=1)
+        bday = dt.datetime.combine(aday, dt.time.min)
+        anend = bday + dt.timedelta(hours=1)
         event = khal.utils.new_event(
             dtstart=bday, dtend=anend, summary="hi", timezone=utils.BERLIN,
             locale=utils.LOCALE_BERLIN,

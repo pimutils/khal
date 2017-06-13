@@ -24,7 +24,7 @@ strings to date(time) or event objects"""
 
 from calendar import isleap, month_abbr
 from collections import defaultdict
-from datetime import date, datetime, timedelta, time
+import datetime as dt
 import random
 import string
 import re
@@ -51,10 +51,10 @@ def timefstr(dtime_list, timeformat):
     """
     if len(dtime_list) == 0:
         raise ValueError()
-    time_start = datetime.strptime(dtime_list[0], timeformat)
-    time_start = time(*time_start.timetuple()[3:5])
-    day_start = date.today()
-    dtstart = datetime.combine(day_start, time_start)
+    time_start = dt.datetime.strptime(dtime_list[0], timeformat)
+    time_start = dt.time(*time_start.timetuple()[3:5])
+    day_start = dt.date.today()
+    dtstart = dt.datetime.combine(day_start, time_start)
     dtime_list.pop(0)
     return dtstart
 
@@ -71,7 +71,7 @@ def datetimefstr(dtime_list, dtformat):
     """
     parts = dtformat.count(' ') + 1
     dtstring = ' '.join(dtime_list[0:parts])
-    dtstart = datetime.strptime(dtstring, dtformat)
+    dtstart = dt.datetime.strptime(dtstring, dtformat)
     for _ in range(parts):
         dtime_list.pop(0)
     return dtstart
@@ -108,9 +108,9 @@ def construct_daynames(date_):
 
     either `Today`, `Tomorrow` or name of weekday.
     """
-    if date_ == date.today():
+    if date_ == dt.date.today():
         return 'Today'
-    elif date_ == date.today() + timedelta(days=1):
+    elif date_ == dt.date.today() + dt.timedelta(days=1):
         return 'Tomorrow'
     else:
         return date_.strftime('%A')
@@ -122,7 +122,7 @@ def relative_timedelta_str(day):
     :type day: datetime.date
     :rtype: str
     """
-    days = (day - date.today()).days
+    days = (day - dt.date.today()).days
     if days < 0:
         direction = 'ago'
     else:
@@ -160,19 +160,19 @@ def calc_day(dayname):
     :returns: date
     :rtype: datetime.datetime
     """
-    today = datetime.combine(date.today(), time.min)
+    today = dt.datetime.combine(dt.date.today(), dt.time.min)
     dayname = dayname.lower()
     if dayname == 'today':
         return today
     if dayname == 'tomorrow':
-        return today + timedelta(days=1)
+        return today + dt.timedelta(days=1)
     if dayname == 'yesterday':
-        return today - timedelta(days=1)
+        return today - dt.timedelta(days=1)
 
     wday = weekdaypstr(dayname)
     days = (wday - today.weekday()) % 7
     days = 7 if days == 0 else days
-    day = today + timedelta(days=days)
+    day = today + dt.timedelta(days=days)
     return day
 
 
@@ -200,7 +200,7 @@ def datetimefstr_weekday(dtime_list, timeformat):
     this_time = timefstr(dtime_list[1:], timeformat)
     dtime_list.pop(0)
     dtime_list.pop(0)  # we need to pop twice as timefstr gets a copy
-    dtime = datetime.combine(day, this_time.time())
+    dtime = dt.datetime.combine(day, this_time.time())
     return dtime
 
 
@@ -213,22 +213,22 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
     """
     # if now() is called as default param, mocking with freezegun won't work
     if default_day is None:
-        default_day = datetime.now().date()
+        default_day = dt.datetime.now().date()
     # TODO rename in guessdatetimefstrLIST or something saner altogether
 
     def timefstr_day(dtime_list, timeformat):
         if locale['timeformat'] == '%H:%M' and dtime_list[0] == '24:00':
-            a_date = datetime.combine(default_day, time(0))
+            a_date = dt.datetime.combine(default_day, dt.time(0))
             dtime_list.pop(0)
         else:
             a_date = timefstr(dtime_list, timeformat)
-            a_date = datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
+            a_date = dt.datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
         return a_date
 
     def datetimefwords(dtime_list, _):
         if len(dtime_list) > 0 and dtime_list[0].lower() == 'now':
             dtime_list.pop(0)
-            return datetime.now()
+            return dt.datetime.now()
         raise ValueError
 
     def datefstr_year(dtime_list, dateformat):
@@ -251,7 +251,7 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
         for _ in range(parts):
             dtime_list.pop(0)
 
-        a_date = datetime(*(default_day.timetuple()[:1] + dtstart[1:5]))
+        a_date = dt.datetime(*(default_day.timetuple()[:1] + dtstart[1:5]))
         return a_date
 
     dtstart = None
@@ -265,7 +265,7 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
             (datefstr_weekday, None, True, False),
             (datetimefwords, None, False, False),
     ]:
-        if shortformat and '97' in datetime(1997, 10, 11).strftime(dtformat):
+        if shortformat and '97' in dt.datetime(1997, 10, 11).strftime(dtformat):
             continue
         try:
             dtstart = fun(dtime_list, dtformat)
@@ -319,7 +319,7 @@ def guesstimedeltafstr(delta_string):
         raise ValueError('Invalid beginning of timedelta string "%s": "%s"'
                          % (delta_string, tups[0]))
     tups = tups[1:]
-    res = timedelta()
+    res = dt.timedelta()
 
     for num, unit in zip(tups[0::2], tups[1::2]):
         try:
@@ -330,15 +330,15 @@ def guesstimedeltafstr(delta_string):
 
         ulower = unit.lower().strip()
         if ulower == 'd' or ulower == 'day' or ulower == 'days':
-            res += timedelta(days=numint)
+            res += dt.timedelta(days=numint)
         elif ulower == 'h' or ulower == 'hour' or ulower == 'hours':
-            res += timedelta(hours=numint)
+            res += dt.timedelta(hours=numint)
         elif (ulower == 'm' or ulower == 'minute' or ulower == 'minutes' or
               ulower == 'min'):
-            res += timedelta(minutes=numint)
+            res += dt.timedelta(minutes=numint)
         elif (ulower == 's' or ulower == 'second' or ulower == 'seconds' or
               ulower == 'sec'):
-            res += timedelta(seconds=numint)
+            res += dt.timedelta(seconds=numint)
         else:
             raise ValueError('Invalid unit in timedelta string "%s": "%s"'
                              % (delta_string, unit))
@@ -347,8 +347,8 @@ def guesstimedeltafstr(delta_string):
 
 
 def guessrangefstr(daterange, locale, adjust_reasonably=False,
-                   default_timedelta_date=timedelta(days=1),
-                   default_timedelta_datetime=timedelta(hours=1),
+                   default_timedelta_date=dt.timedelta(days=1),
+                   default_timedelta_datetime=dt.timedelta(hours=1),
                    ):
     """parses a range string
 
@@ -366,9 +366,9 @@ def guessrangefstr(daterange, locale, adjust_reasonably=False,
         range_list = daterange.split(' ')
 
     if range_list == ['week']:
-        today_weekday = datetime.today().weekday()
-        start = datetime.today() - timedelta(days=(today_weekday - locale['firstweekday']))
-        end = start + timedelta(days=8)
+        today_weekday = dt.datetime.today().weekday()
+        start = dt.datetime.today() - dt.timedelta(days=(today_weekday - locale['firstweekday']))
+        end = start + dt.timedelta(days=8)
         return start, end, True
 
     for i in reversed(range(1, len(range_list) + 1)):
@@ -389,10 +389,10 @@ def guessrangefstr(daterange, locale, adjust_reasonably=False,
                 else:
                     end = start + default_timedelta_datetime
             elif end.lower() == 'eod':
-                    end = datetime.combine(start.date(), time.max)
+                    end = dt.datetime.combine(start.date(), dt.time.max)
             elif end.lower() == 'week':
-                start -= timedelta(days=(start.weekday() - locale['firstweekday']))
-                end = start + timedelta(days=8)
+                start -= dt.timedelta(days=(start.weekday() - locale['firstweekday']))
+                end = start + dt.timedelta(days=8)
             else:
                 try:
                     delta = guesstimedeltafstr(end)
@@ -415,22 +415,22 @@ def guessrangefstr(daterange, locale, adjust_reasonably=False,
                     if len(split) != 0:
                         continue
                     if allday:
-                        end += timedelta(days=1)
+                        end += dt.timedelta(days=1)
 
             if adjust_reasonably:
                 if allday:
                     # test if end's year is this year, but start's year is not
-                    today = datetime.today()
+                    today = dt.datetime.today()
                     if end.year == today.year and start.year != today.year:
-                        end = datetime(start.year, *end.timetuple()[1:6])
+                        end = dt.datetime(start.year, *end.timetuple()[1:6])
 
                     if end < start:
-                        end = datetime(end.year + 1, *end.timetuple()[1:6])
+                        end = dt.datetime(end.year + 1, *end.timetuple()[1:6])
 
                 if end < start:
-                    end = datetime(*start.timetuple()[0:3] + end.timetuple()[3:5])
+                    end = dt.datetime(*start.timetuple()[0:3] + end.timetuple()[3:5])
                 if end < start:
-                    end = end + timedelta(days=1)
+                    end = end + dt.timedelta(days=1)
             return start, end, allday
         except ValueError:
             pass
@@ -573,7 +573,7 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     event = icalendar.Event()
     event.add('dtstart', dtstart)
     event.add('dtend', dtend)
-    event.add('dtstamp', datetime.now())
+    event.add('dtstamp', dt.datetime.now())
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
     # event.add('sequence', 0)

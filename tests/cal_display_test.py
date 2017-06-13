@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import locale
 import platform
 
@@ -8,29 +8,29 @@ import pytest
 from khal.calendar_display import vertical_month, getweeknumber, str_week
 
 
-today = datetime.date.today()
-yesterday = today - datetime.timedelta(days=1)
-tomorrow = today + datetime.timedelta(days=1)
+today = dt.date.today()
+yesterday = today - dt.timedelta(days=1)
+tomorrow = today + dt.timedelta(days=1)
 
 
 def test_getweeknumber():
-    assert getweeknumber(datetime.date(2011, 12, 12)) == 50
-    assert getweeknumber(datetime.date(2011, 12, 31)) == 52
-    assert getweeknumber(datetime.date(2012, 1, 1)) == 52
-    assert getweeknumber(datetime.date(2012, 1, 2)) == 1
+    assert getweeknumber(dt.date(2011, 12, 12)) == 50
+    assert getweeknumber(dt.date(2011, 12, 31)) == 52
+    assert getweeknumber(dt.date(2012, 1, 1)) == 52
+    assert getweeknumber(dt.date(2012, 1, 2)) == 1
 
 
 def test_str_week():
-    aday = datetime.date(2012, 6, 1)
-    bday = datetime.date(2012, 6, 8)
-    week = [datetime.date(2012, 6, 6),
-            datetime.date(2012, 6, 7),
-            datetime.date(2012, 6, 8),
-            datetime.date(2012, 6, 9),
-            datetime.date(2012, 6, 10),
-            datetime.date(2012, 6, 11),
-            datetime.date(2012, 6, 12),
-            datetime.date(2012, 6, 13)]
+    aday = dt.date(2012, 6, 1)
+    bday = dt.date(2012, 6, 8)
+    week = [dt.date(2012, 6, 6),
+            dt.date(2012, 6, 7),
+            dt.date(2012, 6, 8),
+            dt.date(2012, 6, 9),
+            dt.date(2012, 6, 10),
+            dt.date(2012, 6, 11),
+            dt.date(2012, 6, 12),
+            dt.date(2012, 6, 13)]
     assert str_week(week, aday) == ' 6  7  8  9 10 11 12 13 '
     assert str_week(week, bday) == ' 6  7 \x1b[7m 8\x1b[0m  9 10 11 12 13 '
 
@@ -194,17 +194,17 @@ def test_vertical_month():
     try:
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
         vert_str = vertical_month(month=12, year=2011,
-                                  today=datetime.date(2011, 12, 12))
+                                  today=dt.date(2011, 12, 12))
         assert vert_str == example1
 
         weno_str = vertical_month(month=12, year=2011,
-                                  today=datetime.date(2011, 12, 12),
+                                  today=dt.date(2011, 12, 12),
                                   weeknumber='right')
         assert weno_str == example_weno
 
         we_start_su_str = vertical_month(
             month=12, year=2011,
-            today=datetime.date(2011, 12, 12),
+            today=dt.date(2011, 12, 12),
             firstweekday=6)
         assert we_start_su_str == example_we_start_su
     except locale.Error as error:
@@ -223,7 +223,7 @@ def test_vertical_month_unicode():
     try:
         locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
         vert_str = vertical_month(month=12, year=2011,
-                                  today=datetime.date(2011, 12, 12))
+                                  today=dt.date(2011, 12, 12))
         # de_DE locale on at least Net and FreeBSD is different from the one
         # commonly used on linux systems
         if platform.system() == 'FreeBSD':
@@ -252,7 +252,7 @@ def test_vertical_month_unicode_weekdeays():
     try:
         locale.setlocale(locale.LC_ALL, 'cs_CZ.UTF-8')
         vert_str = vertical_month(month=12, year=2011,
-                                  today=datetime.date(2011, 12, 12))
+                                  today=dt.date(2011, 12, 12))
         assert [line.lower() for line in vert_str] == [line.lower() for line in example_cz]
         '\n'.join(vert_str)  # issue 142/293
     except locale.Error as error:
@@ -279,7 +279,7 @@ def test_vertical_month_unicode_weekdeays_gr():
     try:
         locale.setlocale(locale.LC_ALL, 'el_GR.UTF-8')
         vert_str = vertical_month(month=12, year=2011,
-                                  today=datetime.date(2011, 12, 12))
+                                  today=dt.date(2011, 12, 12))
         # on some OSes, Greek locale's abbreviated day of the week and
         # month names have accents, on some they haven't
         assert strip_accents('\n'.join([line.lower() for line in vert_str])) == \
@@ -304,7 +304,7 @@ def test_vertical_month_abbr_fr():
     try:
         locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
         vert_str = vertical_month(month=12, year=2011,
-                                  today=datetime.date(2011, 12, 12))
+                                  today=dt.date(2011, 12, 12))
         assert '\n'.join(vert_str) == '\n'.join(example_fr)
     except locale.Error as error:
         if str(error) == 'unsupported locale setting':

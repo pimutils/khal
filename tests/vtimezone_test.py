@@ -1,12 +1,12 @@
-from datetime import datetime as datetime
+import datetime as dt
 import pytz
 from khal.khalendar.event import create_timezone
 
 berlin = pytz.timezone('Europe/Berlin')
 bogota = pytz.timezone('America/Bogota')
 
-atime = datetime(2014, 10, 28, 10, 10)
-btime = datetime(2016, 10, 28, 10, 10)
+atime = dt.datetime(2014, 10, 28, 10, 10)
+btime = dt.datetime(2016, 10, 28, 10, 10)
 
 
 def test_berlin():

@@ -1,5 +1,5 @@
 """testing functions from the khal.utils"""
-from datetime import date, datetime, time, timedelta
+import datetime as dt
 from collections import OrderedDict
 import textwrap
 import random
@@ -17,8 +17,8 @@ import pytest
 from .utils import _get_text, normalize_component, \
     LOCALE_BERLIN, LOCALE_NEW_YORK
 
-today = date.today()
-tomorrow = today + timedelta(days=1)
+today = dt.date.today()
+tomorrow = today + dt.timedelta(days=1)
 
 
 def _construct_event(info, locale,
@@ -90,13 +90,13 @@ def test_normalize_component():
 
 
 class TestGuessDatetimefstr:
-    tomorrow16 = datetime.combine(tomorrow, time(16, 0))
+    tomorrow16 = dt.datetime.combine(tomorrow, dt.time(16, 0))
 
     def test_today(self):
         with freeze_time('2016-9-19 8:00'):
-            today13 = datetime.combine(date.today(), time(13, 0))
+            today13 = dt.datetime.combine(dt.date.today(), dt.time(13, 0))
             assert (today13, False) == guessdatetimefstr(['today', '13:00'], LOCALE_BERLIN)
-            assert date.today() == guessdatetimefstr(['today'], LOCALE_BERLIN)[0].date()
+            assert dt.date.today() == guessdatetimefstr(['today'], LOCALE_BERLIN)[0].date()
 
     def test_tomorrow(self):
         assert (self.tomorrow16, False) == \
@@ -108,24 +108,24 @@ class TestGuessDatetimefstr:
 
     def test_time_yesterday(self):
         with freeze_time('2016-9-19'):
-            assert (datetime(2016, 9, 18, 16), False) == \
+            assert (dt.datetime(2016, 9, 18, 16), False) == \
                 guessdatetimefstr(
                     'Yesterday 16:00'.split(),
                     locale=LOCALE_BERLIN,
-                    default_day=datetime.today())
+                    default_day=dt.datetime.today())
 
     def test_time_weekday(self):
         with freeze_time('2016-9-19'):
-            assert (datetime(2016, 9, 23, 16), False) == \
+            assert (dt.datetime(2016, 9, 23, 16), False) == \
                 guessdatetimefstr(
                     'Friday 16:00'.split(),
                     locale=LOCALE_BERLIN,
-                    default_day=datetime.today())
+                    default_day=dt.datetime.today())
 
     def test_time_now(self):
         with freeze_time('2016-9-19 17:53'):
-            assert (datetime(2016, 9, 19, 17, 53), False) == \
-                guessdatetimefstr('now'.split(), locale=LOCALE_BERLIN, default_day=datetime.today())
+            assert (dt.datetime(2016, 9, 19, 17, 53), False) == \
+                guessdatetimefstr('now'.split(), locale=LOCALE_BERLIN, default_day=dt.datetime.today())
 
     def test_short_format_contains_year(self):
         """if the non long versions of date(time)format contained a year, the
@@ -138,32 +138,32 @@ class TestGuessDatetimefstr:
             'longdatetimeformat': '%Y-%m-%d %H:%M',
         }
         with freeze_time('2016-12-30 17:53'):
-            assert (datetime(2017, 1, 1), True) == \
-                guessdatetimefstr('2017-1-1'.split(), locale=locale, default_day=datetime.today())
+            assert (dt.datetime(2017, 1, 1), True) == \
+                guessdatetimefstr('2017-1-1'.split(), locale=locale, default_day=dt.datetime.today())
 
         with freeze_time('2016-12-30 17:53'):
-            assert (datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
-                '2017-1-1 16:30'.split(), locale=locale, default_day=datetime.today(),
+            assert (dt.datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
+                '2017-1-1 16:30'.split(), locale=locale, default_day=dt.datetime.today(),
             )
 
 
 class TestGuessTimedeltafstr:
 
     def test_single(self):
-        assert timedelta(minutes=10) == guesstimedeltafstr('10m')
+        assert dt.timedelta(minutes=10) == guesstimedeltafstr('10m')
 
     def test_seconds(self):
-        assert timedelta(seconds=10) == guesstimedeltafstr('10s')
+        assert dt.timedelta(seconds=10) == guesstimedeltafstr('10s')
 
     def test_negative(self):
-        assert timedelta(minutes=-10) == guesstimedeltafstr('-10m')
+        assert dt.timedelta(minutes=-10) == guesstimedeltafstr('-10m')
 
     def test_multi(self):
-        assert timedelta(days=1, hours=-3, minutes=10) == \
+        assert dt.timedelta(days=1, hours=-3, minutes=10) == \
             guesstimedeltafstr(' 1d -3H 10min ')
 
     def test_multi_nospace(self):
-        assert timedelta(days=1, hours=-3, minutes=10) == \
+        assert dt.timedelta(days=1, hours=-3, minutes=10) == \
             guesstimedeltafstr('1D-3hour10m')
 
     def test_garbage(self):
@@ -175,71 +175,71 @@ class TestGuessTimedeltafstr:
                 guesstimedeltafstr('foo10m')
 
     def test_same(self):
-        assert timedelta(minutes=20) == \
+        assert dt.timedelta(minutes=20) == \
             guesstimedeltafstr('10min 10minutes')
 
 
 class TestGuessRangefstr:
-    td_1d = timedelta(days=1)
-    today_start = datetime.combine(date.today(), time.min)
+    td_1d = dt.timedelta(days=1)
+    today_start = dt.datetime.combine(dt.date.today(), dt.time.min)
     tomorrow_start = today_start + td_1d
-    today13 = datetime.combine(date.today(), time(13, 0))
-    today14 = datetime.combine(date.today(), time(14, 0))
-    tomorrow16 = datetime.combine(tomorrow, time(16, 0))
-    today16 = datetime.combine(date.today(), time(16, 0))
-    today17 = datetime.combine(date.today(), time(17, 0))
+    today13 = dt.datetime.combine(dt.date.today(), dt.time(13, 0))
+    today14 = dt.datetime.combine(dt.date.today(), dt.time(14, 0))
+    tomorrow16 = dt.datetime.combine(tomorrow, dt.time(16, 0))
+    today16 = dt.datetime.combine(dt.date.today(), dt.time(16, 0))
+    today17 = dt.datetime.combine(dt.date.today(), dt.time(17, 0))
 
     def test_today(self):
         with freeze_time('2016-9-19'):
-            assert (datetime(2016, 9, 19, 13), datetime(2016, 9, 19, 14), False) == \
+            assert (dt.datetime(2016, 9, 19, 13), dt.datetime(2016, 9, 19, 14), False) == \
                 guessrangefstr('13:00 14:00', locale=LOCALE_BERLIN)
-            assert (datetime(2016, 9, 19), datetime(2016, 9, 21), True) == \
+            assert (dt.datetime(2016, 9, 19), dt.datetime(2016, 9, 21), True) == \
                 guessrangefstr('today tomorrow', LOCALE_BERLIN)
 
     def test_tomorrow(self):
         # XXX remove me, we shouldn't support this anyway
         with freeze_time('2016-9-19 16:34'):
-            assert (datetime(2016, 9, 19), datetime(2016, 9, 21, 16), True) == \
+            assert (dt.datetime(2016, 9, 19), dt.datetime(2016, 9, 21, 16), True) == \
                 guessrangefstr('today tomorrow 16:00', locale=LOCALE_BERLIN)
 
     def test_time_tomorrow(self):
         with freeze_time('2016-9-19 13:34'):
-            assert (datetime(2016, 9, 19, 16), datetime(2016, 9, 19, 17), False) == \
+            assert (dt.datetime(2016, 9, 19, 16), dt.datetime(2016, 9, 19, 17), False) == \
                 guessrangefstr('16:00', locale=LOCALE_BERLIN)
-            assert (datetime(2016, 9, 19, 16), datetime(2016, 9, 19, 17), False) == \
+            assert (dt.datetime(2016, 9, 19, 16), dt.datetime(2016, 9, 19, 17), False) == \
                 guessrangefstr('16:00 17:00', locale=LOCALE_BERLIN)
 
     def test_start_and_end_date(self):
-        assert (datetime(2016, 1, 1), datetime(2017, 1, 2), True) == \
+        assert (dt.datetime(2016, 1, 1), dt.datetime(2017, 1, 2), True) == \
             guessrangefstr('1.1.2016 1.1.2017', locale=LOCALE_BERLIN)
 
     def test_start_and_no_end_date(self):
-        assert (datetime(2016, 1, 1), datetime(2016, 1, 2), True) == \
+        assert (dt.datetime(2016, 1, 1), dt.datetime(2016, 1, 2), True) == \
             guessrangefstr('1.1.2016', locale=LOCALE_BERLIN)
 
     def test_start_and_end_date_time(self):
-        assert (datetime(2016, 1, 1, 10), datetime(2017, 1, 1, 22), False) == \
+        assert (dt.datetime(2016, 1, 1, 10), dt.datetime(2017, 1, 1, 22), False) == \
             guessrangefstr(
                 '1.1.2016 10:00 1.1.2017 22:00', locale=LOCALE_BERLIN)
 
     def test_start_and_eod(self):
-        assert (datetime(2016, 1, 1, 10), datetime(2016, 1, 1, 23, 59, 59, 999999), False) == \
+        assert (dt.datetime(2016, 1, 1, 10), dt.datetime(2016, 1, 1, 23, 59, 59, 999999), False) == \
             guessrangefstr('1.1.2016 10:00 eod', locale=LOCALE_BERLIN)
 
     def test_start_and_week(self):
-        assert (datetime(2015, 12, 28), datetime(2016, 1, 5), True) == \
+        assert (dt.datetime(2015, 12, 28), dt.datetime(2016, 1, 5), True) == \
             guessrangefstr('1.1.2016 week', locale=LOCALE_BERLIN)
 
     def test_start_and_delta_1d(self):
-        assert (datetime(2016, 1, 1), datetime(2016, 1, 2), True) == \
+        assert (dt.datetime(2016, 1, 1), dt.datetime(2016, 1, 2), True) == \
             guessrangefstr('1.1.2016 1d', locale=LOCALE_BERLIN)
 
     def test_start_and_delta_3d(self):
-        assert (datetime(2016, 1, 1), datetime(2016, 1, 4), True) == \
+        assert (dt.datetime(2016, 1, 1), dt.datetime(2016, 1, 4), True) == \
             guessrangefstr('1.1.2016 3d', locale=LOCALE_BERLIN)
 
     def test_start_dt_and_delta(self):
-        assert (datetime(2016, 1, 1, 10), datetime(2016, 1, 4, 10), False) == \
+        assert (dt.datetime(2016, 1, 1, 10), dt.datetime(2016, 1, 4, 10), False) == \
             guessrangefstr('1.1.2016 10:00 3d', locale=LOCALE_BERLIN)
 
     def test_start_allday_and_delta_datetime(self):
@@ -252,7 +252,7 @@ class TestGuessRangefstr:
 
     @freeze_time('20160216')
     def test_week(self):
-        assert (datetime(2016, 2, 15), datetime(2016, 2, 23), True) == \
+        assert (dt.datetime(2016, 2, 15), dt.datetime(2016, 2, 23), True) == \
             guessrangefstr('week', locale=LOCALE_BERLIN)
 
     def test_invalid(self):
@@ -281,23 +281,23 @@ class TestGuessRangefstr:
             'longdatetimeformat': '%Y-%m-%d %H:%M',
         }
         with freeze_time('2016-12-30 17:53'):
-            assert (datetime(2017, 1, 1), datetime(2017, 1, 2), True) == \
+            assert (dt.datetime(2017, 1, 1), dt.datetime(2017, 1, 2), True) == \
                 guessrangefstr('2017-1-1 2017-1-1', locale=locale)
 
 
 class TestTimeDelta2Str:
 
     def test_single(self):
-        assert timedelta2str(timedelta(minutes=10)) == '10m'
+        assert timedelta2str(dt.timedelta(minutes=10)) == '10m'
 
     def test_negative(self):
-        assert timedelta2str(timedelta(minutes=-10)) == '-10m'
+        assert timedelta2str(dt.timedelta(minutes=-10)) == '-10m'
 
     def test_days(self):
-        assert timedelta2str(timedelta(days=2)) == '2d'
+        assert timedelta2str(dt.timedelta(days=2)) == '2d'
 
     def test_multi(self):
-        assert timedelta2str(timedelta(days=6, hours=-3, minutes=10, seconds=-3)) == '5d 21h 9m 57s'
+        assert timedelta2str(dt.timedelta(days=6, hours=-3, minutes=10, seconds=-3)) == '5d 21h 9m 57s'
 
 
 def test_weekdaypstr():
@@ -320,9 +320,9 @@ def test_weekdaypstr_invalid():
 
 def test_construct_daynames():
     with freeze_time('2016-9-19'):
-        assert construct_daynames(date(2016, 9, 19)) == 'Today'
-        assert construct_daynames(date(2016, 9, 20)) == 'Tomorrow'
-        assert construct_daynames(date(2016, 9, 21)) == 'Wednesday'
+        assert construct_daynames(dt.date(2016, 9, 19)) == 'Today'
+        assert construct_daynames(dt.date(2016, 9, 20)) == 'Tomorrow'
+        assert construct_daynames(dt.date(2016, 9, 21)) == 'Wednesday'
 
 
 test_set_format_de = _create_testcases(
@@ -614,10 +614,10 @@ def test_split_ics_random_uid():
 
 def test_relative_timedelta_str():
     with freeze_time('2016-9-19'):
-        assert utils.relative_timedelta_str(date(2016, 9, 24)) == '5 days from now'
-        assert utils.relative_timedelta_str(date(2016, 9, 29)) == '~1 week from now'
-        assert utils.relative_timedelta_str(date(2017, 9, 29)) == '~1 year from now'
-        assert utils.relative_timedelta_str(date(2016, 7, 29)) == '~7 weeks ago'
+        assert utils.relative_timedelta_str(dt.date(2016, 9, 24)) == '5 days from now'
+        assert utils.relative_timedelta_str(dt.date(2016, 9, 29)) == '~1 week from now'
+        assert utils.relative_timedelta_str(dt.date(2017, 9, 29)) == '~1 year from now'
+        assert utils.relative_timedelta_str(dt.date(2016, 7, 29)) == '~7 weeks ago'
 
 
 weekheader = """[1m    Mo Tu We Th Fr Sa Su   [0m"""
@@ -682,21 +682,21 @@ def test_color_wrap_256():
 
 
 def test_get_weekday_occurrence():
-    assert get_weekday_occurrence(datetime(2017, 3, 1)) == (2, 1)
-    assert get_weekday_occurrence(datetime(2017, 3, 2)) == (3, 1)
-    assert get_weekday_occurrence(datetime(2017, 3, 3)) == (4, 1)
-    assert get_weekday_occurrence(datetime(2017, 3, 4)) == (5, 1)
-    assert get_weekday_occurrence(datetime(2017, 3, 5)) == (6, 1)
-    assert get_weekday_occurrence(datetime(2017, 3, 6)) == (0, 1)
-    assert get_weekday_occurrence(datetime(2017, 3, 7)) == (1, 1)
-    assert get_weekday_occurrence(datetime(2017, 3, 8)) == (2, 2)
-    assert get_weekday_occurrence(datetime(2017, 3, 9)) == (3, 2)
-    assert get_weekday_occurrence(datetime(2017, 3, 10)) == (4, 2)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 1)) == (2, 1)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 2)) == (3, 1)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 3)) == (4, 1)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 4)) == (5, 1)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 5)) == (6, 1)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 6)) == (0, 1)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 7)) == (1, 1)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 8)) == (2, 2)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 9)) == (3, 2)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 10)) == (4, 2)
 
-    assert get_weekday_occurrence(datetime(2017, 3, 31)) == (4, 5)
+    assert get_weekday_occurrence(dt.datetime(2017, 3, 31)) == (4, 5)
 
-    assert get_weekday_occurrence(date(2017, 5, 1)) == (0, 1)
-    assert get_weekday_occurrence(date(2017, 5, 7)) == (6, 1)
-    assert get_weekday_occurrence(date(2017, 5, 8)) == (0, 2)
-    assert get_weekday_occurrence(date(2017, 5, 28)) == (6, 4)
-    assert get_weekday_occurrence(date(2017, 5, 29)) == (0, 5)
+    assert get_weekday_occurrence(dt.date(2017, 5, 1)) == (0, 1)
+    assert get_weekday_occurrence(dt.date(2017, 5, 7)) == (6, 1)
+    assert get_weekday_occurrence(dt.date(2017, 5, 8)) == (0, 2)
+    assert get_weekday_occurrence(dt.date(2017, 5, 28)) == (6, 4)
+    assert get_weekday_occurrence(dt.date(2017, 5, 29)) == (0, 5)

@@ -20,7 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import calendar
-import datetime
+import datetime as dt
 from locale import getlocale, setlocale, LC_ALL, LC_TIME
 
 from click import style
@@ -49,7 +49,7 @@ def getweeknumber(date):
     :return: weeknumber
     :rtype: int
     """
-    return datetime.date.isocalendar(date)[1]
+    return dt.date.isocalendar(date)[1]
 
 
 def get_event_color(event, default_color):
@@ -159,11 +159,11 @@ def vertical_month(month=None,
     :rtype: list() of str()
     """
     if month is None:
-        month = datetime.date.today().month
+        month = dt.date.today().month
     if year is None:
-        year = datetime.date.today().year
+        year = dt.date.today().year
     if today is None:
-        today = datetime.date.today()
+        today = dt.date.today()
 
     khal = list()
     w_number = '  ' if weeknumber == 'right' else ''

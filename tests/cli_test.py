@@ -1,8 +1,7 @@
-import datetime
 import os
 import sys
 from unittest import mock
-from datetime import timedelta
+import datetime as dt
 
 import pytest
 from freezegun import freeze_time
@@ -131,7 +130,7 @@ def test_simple(runner):
     assert not result.exception
     assert result.output == 'No events\n'
 
-    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    now = dt.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(
         main_khal, 'new {} 18:00 myevent'.format(now).split())
     assert result.output == ''
@@ -148,7 +147,7 @@ def test_simple(runner):
 
 def test_simple_color(runner):
     runner = runner(days=2)
-    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    now = dt.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
     assert result.output == ''
     assert not result.exception
@@ -161,12 +160,12 @@ def test_simple_color(runner):
 def test_days(runner):
     runner = runner(days=9)
 
-    when = (datetime.datetime.now() + timedelta(days=7)).strftime('%d.%m.%Y')
+    when = (dt.datetime.now() + dt.timedelta(days=7)).strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 nextweek'.format(when).split())
     assert result.output == ''
     assert not result.exception
 
-    when = (datetime.datetime.now() + timedelta(days=30)).strftime('%d.%m.%Y')
+    when = (dt.datetime.now() + dt.timedelta(days=30)).strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 nextmonth'.format(when).split())
     assert result.output == ''
     assert not result.exception
@@ -362,8 +361,8 @@ def test_printformats(runner):
 
 def test_repeating(runner):
     runner = runner(days=2)
-    now = datetime.datetime.now().strftime('%d.%m.%Y')
-    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    end_date = dt.datetime.now() + dt.timedelta(days=10)
     result = runner.invoke(
         main_khal, 'new {} 18:00 myevent -r weekly -u {}'.format(
             now, end_date.strftime('%d.%m.%Y')).split())
@@ -373,8 +372,8 @@ def test_repeating(runner):
 
 def test_at(runner):
     runner = runner(days=2)
-    now = datetime.datetime.now().strftime('%d.%m.%Y')
-    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    end_date = dt.datetime.now() + dt.timedelta(days=10)
     result = runner.invoke(
         main_khal,
         'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
@@ -386,8 +385,8 @@ def test_at(runner):
 
 def test_at_day_format(runner):
     runner = runner(days=2)
-    now = datetime.datetime.now().strftime('%d.%m.%Y')
-    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    end_date = dt.datetime.now() + dt.timedelta(days=10)
     result = runner.invoke(
         main_khal,
         'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
@@ -399,8 +398,8 @@ def test_at_day_format(runner):
 
 def test_list(runner):
     runner = runner(days=2)
-    now = datetime.datetime.now().strftime('%d.%m.%Y')
-    end_date = datetime.datetime.now() + datetime.timedelta(days=10)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    end_date = dt.datetime.now() + dt.timedelta(days=10)
     result = runner.invoke(
         main_khal,
         'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
@@ -414,7 +413,7 @@ def test_list(runner):
 
 def test_search(runner):
     runner = runner(days=2)
-    now = datetime.datetime.now().strftime('%d.%m.%Y')
+    now = dt.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
     format = '{red}{start-end-time-style}{reset} {title} :: {description}'
     result = runner.invoke(main_khal, ['--color', 'search', '--format', format, 'myevent'])

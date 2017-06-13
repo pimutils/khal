@@ -24,7 +24,7 @@
 Widgets that are specific to calendaring/khal should go into __init__.py or,
 if they are large, into their own files
 """
-from datetime import date, datetime, timedelta
+import datetime as dt
 import re
 
 import urwid
@@ -171,12 +171,12 @@ class DateTimeWidget(ExtendedEdit):
 
 
 class DateWidget(DateTimeWidget):
-    dtype = date
-    timedelta = timedelta(days=1)
+    dtype = dt.date
+    timedelta = dt.timedelta(days=1)
 
     def _get_current_value(self):
         try:
-            new_date = datetime.strptime(self.get_edit_text(), self.dateformat).date()
+            new_date = dt.datetime.strptime(self.get_edit_text(), self.dateformat).date()
         except ValueError:
             raise DateConversionError
         else:
@@ -184,12 +184,12 @@ class DateWidget(DateTimeWidget):
 
 
 class TimeWidget(DateTimeWidget):
-    dtype = datetime
-    timedelta = timedelta(minutes=15)
+    dtype = dt.datetime
+    timedelta = dt.timedelta(minutes=15)
 
     def _get_current_value(self):
         try:
-            new_datetime = datetime.strptime(self.get_edit_text(), self.dateformat)
+            new_datetime = dt.datetime.strptime(self.get_edit_text(), self.dateformat)
         except ValueError:
             raise DateConversionError
         else:
@@ -495,7 +495,7 @@ class DurationWidget(urwid.WidgetWrap):
         urwid.WidgetWrap.__init__(self, self.columns)
 
     def get_timedelta(self):
-        return timedelta(
+        return dt.timedelta(
             seconds=int(self.seconds_edit.get_edit_text()) +
             int(self.minutes_edit.get_edit_text()) * 60 +
             int(self.hours_edit.get_edit_text()) * 60 * 60 +

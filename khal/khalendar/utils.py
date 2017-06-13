@@ -20,7 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """collection of utility functions"""
-from datetime import datetime, timedelta
+import datetime as dt
 import calendar
 
 import dateutil.rrule
@@ -63,10 +63,10 @@ def expand(vevent, href=''):
     expand = not bool(vevent.get('RECURRENCE-ID'))
 
     events_tz = getattr(vevent['DTSTART'].dt, 'tzinfo', None)
-    allday = not isinstance(vevent['DTSTART'].dt, datetime)
+    allday = not isinstance(vevent['DTSTART'].dt, dt.datetime)
 
     def sanitize_datetime(date):
-        if allday and isinstance(date, datetime):
+        if allday and isinstance(date, dt.datetime):
             date = date.date()
         if events_tz is not None:
             date = events_tz.localize(date)
@@ -94,7 +94,7 @@ def expand(vevent, href=''):
             # eternity, so we only do it until 2037, because a) I'm not sure
             # if python can deal with larger datetime values yet and b) pytz
             # doesn't know any larger transition times
-            rrule._until = datetime(2037, 12, 31)
+            rrule._until = dt.datetime(2037, 12, 31)
         elif getattr(rrule._until, 'tzinfo', None):
             rrule._until = rrule._until \
                 .astimezone(events_tz) \
@@ -199,7 +199,7 @@ def sanitize_timerange(dtstart, dtend, duration=None):
     '''return sensible dtstart and end for events that have an invalid or
     missing DTEND, assuming the event just lasts one hour.'''
 
-    if isinstance(dtstart, datetime) and isinstance(dtend, datetime):
+    if isinstance(dtstart, dt.datetime) and isinstance(dtend, dt.datetime):
         if dtstart.tzinfo and not dtend.tzinfo:
             logger.warning(
                 "Event end time has no timezone. "
@@ -214,9 +214,9 @@ def sanitize_timerange(dtstart, dtend, duration=None):
             dtstart = dtend.tzinfo.localize(dtstart)
 
     if dtend is None and duration is None:
-        if isinstance(dtstart, datetime):
+        if isinstance(dtstart, dt.datetime):
             dtstart = dtstart.date()
-        dtend = dtstart + timedelta(days=1)
+        dtend = dtstart + dt.timedelta(days=1)
     elif dtend is not None:
         if dtend < dtstart:
             raise ValueError('The event\'s end time (DTEND) is older than '
@@ -226,7 +226,7 @@ def sanitize_timerange(dtstart, dtend, duration=None):
                 "Event start time and end time are the same. "
                 "Assuming the event's duration is one hour."
             )
-            dtend += timedelta(hours=1)
+            dtend += dt.timedelta(hours=1)
 
     return dtstart, dtend
 
@@ -237,7 +237,7 @@ def sanitize_rrule(vevent):
         until = vevent['rrule']['UNTIL'][0]
         dtstart = vevent['dtstart'].dt
         # DTSTART is date, UNTIL is datetime
-        if not isinstance(dtstart, datetime) and isinstance(until, datetime):
+        if not isinstance(dtstart, dt.datetime) and isinstance(until, dt.datetime):
             vevent['rrule']['until'] = until.date()
     return vevent
 

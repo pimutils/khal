@@ -25,7 +25,7 @@ CalendarCollection should enable modifying and querying a collection of
 calendars. Each calendar is defined by the contents of a vdir, but uses an
 SQLite db for caching (see backend if you're interested).
 """
-import datetime
+import datetime as dt
 import os
 import os.path
 import itertools
@@ -153,8 +153,8 @@ class CalendarCollection(object):
         :param day: datetime.date
         :rtype: list()
         """
-        start = datetime.datetime.combine(day, datetime.time.min)
-        end = datetime.datetime.combine(day, datetime.time.max)
+        start = dt.datetime.combine(day, dt.time.min)
+        end = dt.datetime.combine(day, dt.time.max)
         floating_events = self.get_floating(start, end, minimal)
         localize = self._locale['local_timezone'].localize
         localized_events = self.get_localized(localize(start), localize(end), minimal)

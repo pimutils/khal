@@ -57,7 +57,7 @@ released 2017-03-30
 * NEW ikhal's event editor now allows better editing of recurrence rules,
   including INTERVALs, end dates, and more
 * NEW ikhal will now check if any configured vdir has been updated, and, if
-  applicable, refresh its UI to reflect the latest changes 
+  applicable, refresh its UI to reflect the latest changes
 
 0.9.3
 =====

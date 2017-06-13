@@ -23,7 +23,7 @@ import logging
 import sys
 import textwrap
 from shutil import get_terminal_size
-import datetime
+import datetime as dt
 
 try:
     from setproctitle import setproctitle
@@ -487,8 +487,7 @@ def _get_cli():
         Print the date 2013-12-21 10:09 in all configured date(time)
         formats to check if these locale settings are configured to ones
         liking.'''
-        from datetime import datetime
-        time = datetime(2013, 12, 21, 10, 9)
+        time = dt.datetime(2013, 12, 21, 10, 9)
         try:
             for strftime_format in [
                     'longdatetimeformat', 'datetimeformat', 'longdateformat',
@@ -540,7 +539,7 @@ def _get_cli():
             events = sorted(collection.search(search_string))
             event_column = list()
             term_width, _ = get_terminal_size()
-            now = datetime.datetime.now()
+            now = dt.datetime.now()
             env = {"calendars": ctx.obj['conf']['calendars']}
             for event in events:
                 desc = textwrap.wrap(event.format(format, relative_to=now, env=env), term_width)

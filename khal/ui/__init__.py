@@ -19,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from datetime import date, datetime, time, timedelta
+import datetime as dt
 import signal
 import sys
 
@@ -128,11 +128,11 @@ class DateHeader(SelectableText):
 
         weekday = day.strftime('%A')
         daystr = day.strftime(dtformat)
-        if day == date.today():
+        if day == dt.date.today():
             return 'Today ({}, {})'.format(weekday, daystr)
-        elif day == date.today() + timedelta(days=1):
+        elif day == dt.date.today() + dt.timedelta(days=1):
             return 'Tomorrow ({}, {})'.format(weekday, daystr)
-        elif day == date.today() - timedelta(days=1):
+        elif day == dt.date.today() - dt.timedelta(days=1):
             return 'Yesterday ({}, {})'.format(weekday, daystr)
 
         approx_delta = utils.relative_timedelta_str(day)
@@ -164,7 +164,7 @@ class U_Event(urwid.Text):
         :type event: khal.event.Event
         """
         if relative:
-            if isinstance(this_date, datetime) or not isinstance(this_date, date):
+            if isinstance(this_date, dt.datetime) or not isinstance(this_date, dt.date):
                 raise ValueError('`this_date` is of type `{}`, sould be '
                                  '`datetime.date`'.format(type(this_date)))
         self.event = event
@@ -304,7 +304,7 @@ class DListBox(EventListBox):
             key = 'down'
 
         if key in self._conf['keybindings']['today']:
-            self.parent.calendar.base_widget.set_focus_date(date.today())
+            self.parent.calendar.base_widget.set_focus_date(dt.date.today())
 
         rval = super().keypress(size, key)
         self.clean()
@@ -430,7 +430,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         day = start
         while day <= end:
             self.update_events_ondate(day)
-            day += timedelta(days=1)
+            day += dt.timedelta(days=1)
 
     def update_date_line(self):
         for one in self:
@@ -446,7 +446,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         return super().set_focus(position)
 
     def _autoextend(self):
-        self._last_day += timedelta(days=1)
+        self._last_day += dt.timedelta(days=1)
         pile = self._get_events(self._last_day)
         self.append(pile)
 
@@ -456,7 +456,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         # render() method does not get called otherwise, and they would
         # be indicated as the currently selected date
         self[self.focus or 0].reset_style()
-        self._first_day -= timedelta(days=1)
+        self._first_day -= dt.timedelta(days=1)
         pile = self._get_events(self._first_day)
         self.insert(0, pile)
 
@@ -505,7 +505,7 @@ class StaticDayWalker(DayWalker):
         num_days = max(1, self._conf['default']['timedelta'].days)
 
         for delta in range(num_days):
-            pile = self._get_events(day + timedelta(days=delta))
+            pile = self._get_events(day + dt.timedelta(days=delta))
             if len(self) <= delta:
                 self.append(pile)
             else:
@@ -871,7 +871,7 @@ class EventColumn(urwid.WidgetWrap):
             return
         if end is None:
             start = datetime.combine(date, time(datetime.now().hour))
-            end = start + timedelta(minutes=60)
+            end = start + dt.timedelta(minutes=60)
             event = utils.new_event(
                 dtstart=start, dtend=end, summary="new event",
                 timezone=self._conf['locale']['default_timezone'],
@@ -879,7 +879,7 @@ class EventColumn(urwid.WidgetWrap):
             )
         else:
             event = utils.new_event(
-                dtstart=date, dtend=end + timedelta(days=1), summary="new event",
+                dtstart=date, dtend=end + dt.timedelta(days=1), summary="new event",
                 allday=True, locale=self._conf['locale'],
             )
         event = self.pane.collection.new_event(
@@ -1034,8 +1034,8 @@ class ClassicView(Pane):
         else:
             Walker = StaticDayWalker
         daywalker = Walker(
-            date.today(), eventcolumn=self, conf=self._conf, delete_status=self.delete_status,
-            collection=self.collection,
+            dt.date.today(), eventcolumn=self, conf=self._conf,
+            delete_status=self.delete_status, collection=self.collection,
         )
         elistbox = DListBox(
             daywalker, parent=self, conf=self._conf,
@@ -1151,7 +1151,7 @@ class ClassicView(Pane):
         rval = super(ClassicView, self).render(size, focus)
         if self.init:
             # starting with today's events
-            self.eventscolumn.current_date = date.today()
+            self.eventscolumn.current_date = dt.date.today()
             self.init = False
         return rval
 
@@ -1270,10 +1270,10 @@ def start_pane(pane, callback, program_info='', quit_keys=['q']):
         # XXX TODO this currently assumes, today moves forward by exactly one
         # day, but it could either move forward more (suspend-to-disk/ram) or
         # even move backwards
-        today = date.today()
+        today = dt.date.today()
         if meta['last_today'] != today:
             meta['last_today'] = today
-            pane.calendar.original_widget.reset_styles_range(today - timedelta(days=1), today)
+            pane.calendar.original_widget.reset_styles_range(today - dt.timedelta(days=1), today)
             pane.eventscolumn.original_widget.update_date_line()
         loop.set_alarm_in(60, redraw_today, pane)
 

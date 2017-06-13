@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+import datetime as dt
 
 from freezegun import freeze_time
 
@@ -16,7 +16,7 @@ keybindings = {
 
 
 def test_initial_focus_today():
-    today = date.today()
+    today = dt.date.today()
     frame = CalendarWidget(on_date_change=lambda _: None,
                            keybindings=keybindings,
                            on_press=on_press,
@@ -25,13 +25,13 @@ def test_initial_focus_today():
 
 
 def test_set_focus_date():
-    today = date.today()
+    today = dt.date.today()
     for diff in range(-10, 10, 1):
         frame = CalendarWidget(on_date_change=lambda _: None,
                                keybindings=keybindings,
                                on_press=on_press,
                                weeknumbers='right')
-        day = today + timedelta(days=diff)
+        day = today + dt.timedelta(days=diff)
         frame.set_focus_date(day)
         assert frame.focus_date == day
 
@@ -39,25 +39,25 @@ def test_set_focus_date():
 def test_set_focus_date_weekstart_6():
 
     with freeze_time('2016-04-10'):
-        today = date.today()
+        today = dt.date.today()
         for diff in range(-21, 21, 1):
             frame = CalendarWidget(on_date_change=lambda _: None,
                                    keybindings=keybindings,
                                    on_press=on_press,
                                    firstweekday=6,
                                    weeknumbers='right')
-            day = today + timedelta(days=diff)
+            day = today + dt.timedelta(days=diff)
             frame.set_focus_date(day)
             assert frame.focus_date == day
 
     with freeze_time('2016-04-23'):
-        today = date.today()
+        today = dt.date.today()
         for diff in range(10):
             frame = CalendarWidget(on_date_change=lambda _: None,
                                    keybindings=keybindings,
                                    on_press=on_press,
                                    firstweekday=6,
                                    weeknumbers='right')
-            day = today + timedelta(days=diff)
+            day = today + dt.timedelta(days=diff)
             frame.set_focus_date(day)
             assert frame.focus_date == day

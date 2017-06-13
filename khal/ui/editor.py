@@ -19,7 +19,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from datetime import datetime, time
 import datetime as dt
 
 import urwid
@@ -107,7 +106,7 @@ class DateEdit(urwid.WidgetWrap):
 
     def _validate(self, text):
         try:
-            _date = datetime.strptime(text, self._dateformat).date()
+            _date = dt.datetime.strptime(text, self._dateformat).date()
         except ValueError:
             return False
         else:
@@ -128,7 +127,7 @@ class DateEdit(urwid.WidgetWrap):
 
         :type date: datetime.date
         """
-        self._edit.set_edit_text(date.strftime(self._dateformat))
+        self._edit.set_edit_text(dt.date.strftime(self._dateformat))
 
 
 class StartEndEditor(urwid.WidgetWrap):
@@ -147,7 +146,7 @@ class StartEndEditor(urwid.WidgetWrap):
         :param on_end_date_change: same as for on_start_date_change, just for the
             end date
         """
-        self.allday = not isinstance(start, datetime)
+        self.allday = not isinstance(start, dt.datetime)
         self.conf = conf
         self._startdt, self._original_start = start, start
         self._enddt, self._original_end = end, end
@@ -194,7 +193,7 @@ class StartEndEditor(urwid.WidgetWrap):
 
     @property
     def enddt(self):
-        if self.allday and isinstance(self._enddt, datetime):
+        if self.allday and isinstance(self._enddt, dt.datetime):
             return self._enddt.date()
         else:
             return self._enddt
@@ -204,33 +203,33 @@ class StartEndEditor(urwid.WidgetWrap):
         try:
             return self._enddt.time()
         except AttributeError:
-            return time(0)
+            return dt.time(0)
 
     def _validate_start_time(self, text):
         try:
-            startval = datetime.strptime(text, self.conf['locale']['timeformat'])
+            startval = dt.datetime.strptime(text, self.conf['locale']['timeformat'])
             self._startdt = self.localize_start(
-                datetime.combine(self._startdt.date(), startval.time()))
+                dt.datetime.combine(self._startdt.date(), startval.time()))
         except ValueError:
             return False
         else:
             return startval
 
     def _start_date_change(self, date):
-        self._startdt = self.localize_start(datetime.combine(date, self._start_time))
+        self._startdt = self.localize_start(dt.datetime.combine(date, self._start_time))
         self.on_start_date_change(date)
 
     def _validate_end_time(self, text):
         try:
-            endval = datetime.strptime(text, self.conf['locale']['timeformat'])
-            self._enddt = self.localize_end(datetime.combine(self._enddt.date(), endval.time()))
+            endval = dt.datetime.strptime(text, self.conf['locale']['timeformat'])
+            self._enddt = self.localize_end(dt.datetime.combine(self._enddt.date(), endval.time()))
         except ValueError:
             return False
         else:
             return endval
 
     def _end_date_change(self, date):
-        self._enddt = self.localize_end(datetime.combine(date, self._start_time))
+        self._enddt = self.localize_end(dt.datetime.combine(date, self._start_time))
         self.on_end_date_change(date)
 
     def toggle(self, checkbox, state):
@@ -245,8 +244,8 @@ class StartEndEditor(urwid.WidgetWrap):
         """
 
         if self.allday is True and state is False:
-            self._startdt = datetime.combine(self._startdt, datetime.min.time())
-            self._enddt = datetime.combine(self._enddt, datetime.min.time())
+            self._startdt = dt.datetime.combine(self._startdt, dt.datetime.min.time())
+            self._enddt = dt.datetime.combine(self._enddt, dt.datetime.min.time())
         elif self.allday is False and state is True:
             self._startdt = self._startdt.date()
             self._enddt = self._enddt.date()
@@ -560,13 +559,13 @@ class RecurrenceEditor(urwid.WidgetWrap):
         self.repetitions_edit = PositiveIntEdit(edit_text=count)
 
         until = self._rrule.get('UNTIL', [None])[0]
-        if until is None and isinstance(self._startdt, datetime):
+        if until is None and isinstance(self._startdt, dt.datetime):
             until = self._startdt.date()
         elif until is None:
             until = self._startdt
 
-        if isinstance(until, datetime):
-            until = datetime.date()
+        if isinstance(until, dt.datetime):
+            until = dt.datetime.date()
         self.until_edit = DateEdit(
             until, self._conf['locale']['longdateformat'],
             lambda _: None, self._conf['locale']['weeknumbers'],

@@ -31,7 +31,7 @@ import pytz
 from collections import defaultdict, OrderedDict
 from shutil import get_terminal_size
 
-from datetime import time, timedelta, datetime, date
+import datetime as dt
 import os
 import textwrap
 
@@ -121,8 +121,8 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
 
 
 def start_end_from_daterange(daterange, locale,
-                             default_timedelta_date=timedelta(days=1),
-                             default_timedelta_datetime=timedelta(hours=1)):
+                             default_timedelta_date=dt.timedelta(days=1),
+                             default_timedelta_datetime=dt.timedelta(hours=1)):
     """
     convert a string description of a daterange into start and end datetime
 
@@ -134,7 +134,7 @@ def start_end_from_daterange(daterange, locale,
     :type locale: dict
     """
     if not daterange:
-        start = datetime(*date.today().timetuple()[:3])
+        start = dt.datetime(*dt.date.today().timetuple()[:3])
         end = start + default_timedelta_date
     else:
         start, end, allday = utils.guessrangefstr(
@@ -231,13 +231,13 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
         if not datepoint:
             datepoint = ['now']
         try:
-            start, allday = utils.guessdatetimefstr(datepoint, conf['locale'], date.today())
+            start, allday = utils.guessdatetimefstr(datepoint, conf['locale'], dt.date.today())
         except ValueError:
             raise FatalError('Invalid value of `{}` for a datetime'.format(' '.join(datepoint)))
         if allday:
             logger.debug('Got date {}'.format(start))
             raise FatalError('Please supply a datetime, not a date.')
-        end = start + timedelta(seconds=1)
+        end = start + dt.timedelta(seconds=1)
         if day_format is None:
             day_format = style(
                 start.strftime(conf['locale']['longdatetimeformat']),
@@ -255,7 +255,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
         if start.date() == end.date():
             day_end = end
         else:
-            day_end = datetime.combine(start.date(), time.max)
+            day_end = dt.datetime.combine(start.date(), dt.time.max)
         current_events = get_events_between(
             collection, locale=conf['locale'], agenda_format=agenda_format, start=start,
             end=day_end, notstarted=notstarted, original_start=original_start,
@@ -266,7 +266,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
         if day_format and (conf['default']['show_all_days'] or current_events):
             event_column.append(format_day(start.date(), day_format, conf['locale']))
         event_column.extend(current_events)
-        start = datetime(*start.date().timetuple()[:3]) + timedelta(days=1)
+        start = dt.datetime(*start.date().timetuple()[:3]) + dt.timedelta(days=1)
 
     if event_column == []:
         event_column = [style('No events', bold=True)]
@@ -370,7 +370,7 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
     if conf['default']['print_new'] == 'event':
         if format is None:
             format = conf['view']['event_format']
-        echo(event.format(format, datetime.now(), env=env))
+        echo(event.format(format, dt.datetime.now(), env=env))
     elif conf['default']['print_new'] == 'path':
         path = os.path.join(
             collection._calendars[event.calendar]['path'],
@@ -412,7 +412,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
     options["alarm"] = {"short": "a"}
     options["Delete"] = {"short": "D"}
 
-    now = datetime.now()
+    now = dt.datetime.now()
 
     while True:
         choice = present_options(options, prefix="Edit?", width=width)
@@ -503,7 +503,7 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
             format = conf['view']['event_format']
 
     term_width, _ = get_terminal_size()
-    now = conf['locale']['local_timezone'].localize(datetime.now())
+    now = conf['locale']['local_timezone'].localize(dt.datetime.now())
 
     events = sorted(collection.search(search_string))
     for event in events:
@@ -561,7 +561,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
             if item.name == 'VEVENT':
                 event = Event.fromVEvents(
                     [item], calendar=collection.default_calendar_name, locale=locale)
-                echo(event.format(format, datetime.now(), env=env))
+                echo(event.format(format, dt.datetime.now(), env=env))
 
     # get the calendar to insert into
     if not collection.writable_names:
@@ -618,4 +618,4 @@ def print_ics(conf, name, ics, format):
     echo('{} events found in {}'.format(len(vevents), name))
     for sub_event in vevents:
         event = Event.fromVEvents(sub_event, locale=conf['locale'])
-        echo(event.format(format, datetime.now()))
+        echo(event.format(format, dt.datetime.now()))

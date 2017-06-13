@@ -28,7 +28,7 @@ from itertools import zip_longest
 from os.path import expanduser, expandvars, join, normpath, exists, isdir
 from os import makedirs
 
-from datetime import date, datetime
+import datetime as dt
 
 from khal.log import logger
 from .exceptions import FatalError
@@ -79,7 +79,7 @@ def choose_datetime_format():
         ('month/day/year', '%m/%d/%Y'),
     ]
     validate = partial(validate_int, min_value=0, max_value=3)
-    today = date.today()
+    today = dt.date.today()
     print("What ordering of year, month, date do you want to use?")
     for num, (desc, fmt) in enumerate(choices):
         print('[{}] {} (today: {})'.format(num, desc, today.strftime(fmt)))
@@ -103,7 +103,7 @@ def choose_time_format():
     validate = partial(validate_int, min_value=0, max_value=1)
     prompt_text = "Please choose one of the above options"
     timeformat = choices[prompt(prompt_text, default=0, value_proc=validate)]
-    now = datetime.now()
+    now = dt.datetime.now()
     print("Time format: {} "
           "(current time as an example: {})".format(timeformat, now.strftime(timeformat)))
     return timeformat

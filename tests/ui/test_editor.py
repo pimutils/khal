@@ -1,4 +1,4 @@
-from datetime import datetime, date
+import datetime as dt
 
 import icalendar
 
@@ -8,8 +8,8 @@ from ..utils import LOCALE_BERLIN, BERLIN
 
 CONF = {'locale': LOCALE_BERLIN, 'keybindings': {}}
 
-START = BERLIN.localize(datetime(2015, 4, 26, 22, 23))
-END = BERLIN.localize(datetime(2015, 4, 27, 23, 23))
+START = BERLIN.localize(dt.datetime(2015, 4, 26, 22, 23))
+END = BERLIN.localize(dt.datetime(2015, 4, 27, 23, 23))
 
 
 def test_popup(monkeypatch):
@@ -27,9 +27,9 @@ def test_popup(monkeypatch):
         'khal.ui.calendarwidget.CalendarWidget.__init__', fake.store)
     see = StartEndEditor(START, END, CONF)
     see.widgets.startdate.keypress((22, ), 'enter')
-    assert fake.kwargs['initial'] == date(2015, 4, 26)
+    assert fake.kwargs['initial'] == dt.date(2015, 4, 26)
     see.widgets.enddate.keypress((22, ), 'enter')
-    assert fake.kwargs['initial'] == date(2015, 4, 27)
+    assert fake.kwargs['initial'] == dt.date(2015, 4, 27)
 
 
 def test_check_understood_rrule():

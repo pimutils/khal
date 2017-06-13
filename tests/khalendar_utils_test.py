@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+import datetime as dt
 import icalendar
 import pytz
 
@@ -232,79 +232,79 @@ def _get_vevent(event):
 
 class TestExpand(object):
     dtstartend_berlin = [
-        (berlin.localize(datetime(2013, 3, 1, 14, 0, )),
-         berlin.localize(datetime(2013, 3, 1, 16, 0, ))),
-        (berlin.localize(datetime(2013, 5, 1, 14, 0, )),
-         berlin.localize(datetime(2013, 5, 1, 16, 0, ))),
-        (berlin.localize(datetime(2013, 7, 1, 14, 0, )),
-         berlin.localize(datetime(2013, 7, 1, 16, 0, ))),
-        (berlin.localize(datetime(2013, 9, 1, 14, 0, )),
-         berlin.localize(datetime(2013, 9, 1, 16, 0, ))),
-        (berlin.localize(datetime(2013, 11, 1, 14, 0,)),
-         berlin.localize(datetime(2013, 11, 1, 16, 0,))),
-        (berlin.localize(datetime(2014, 1, 1, 14, 0, )),
-         berlin.localize(datetime(2014, 1, 1, 16, 0, )))
+        (berlin.localize(dt.datetime(2013, 3, 1, 14, 0, )),
+         berlin.localize(dt.datetime(2013, 3, 1, 16, 0, ))),
+        (berlin.localize(dt.datetime(2013, 5, 1, 14, 0, )),
+         berlin.localize(dt.datetime(2013, 5, 1, 16, 0, ))),
+        (berlin.localize(dt.datetime(2013, 7, 1, 14, 0, )),
+         berlin.localize(dt.datetime(2013, 7, 1, 16, 0, ))),
+        (berlin.localize(dt.datetime(2013, 9, 1, 14, 0, )),
+         berlin.localize(dt.datetime(2013, 9, 1, 16, 0, ))),
+        (berlin.localize(dt.datetime(2013, 11, 1, 14, 0,)),
+         berlin.localize(dt.datetime(2013, 11, 1, 16, 0,))),
+        (berlin.localize(dt.datetime(2014, 1, 1, 14, 0, )),
+         berlin.localize(dt.datetime(2014, 1, 1, 16, 0, )))
     ]
 
     dtstartend_utc = [
-        (datetime(2013, 3, 1, 14, 0, tzinfo=pytz.utc),
-         datetime(2013, 3, 1, 16, 0, tzinfo=pytz.utc)),
-        (datetime(2013, 5, 1, 14, 0, tzinfo=pytz.utc),
-         datetime(2013, 5, 1, 16, 0, tzinfo=pytz.utc)),
-        (datetime(2013, 7, 1, 14, 0, tzinfo=pytz.utc),
-         datetime(2013, 7, 1, 16, 0, tzinfo=pytz.utc)),
-        (datetime(2013, 9, 1, 14, 0, tzinfo=pytz.utc),
-         datetime(2013, 9, 1, 16, 0, tzinfo=pytz.utc)),
-        (datetime(2013, 11, 1, 14, 0, tzinfo=pytz.utc),
-         datetime(2013, 11, 1, 16, 0, tzinfo=pytz.utc)),
-        (datetime(2014, 1, 1, 14, 0, tzinfo=pytz.utc),
-         datetime(2014, 1, 1, 16, 0, tzinfo=pytz.utc))
+        (dt.datetime(2013, 3, 1, 14, 0, tzinfo=pytz.utc),
+         dt.datetime(2013, 3, 1, 16, 0, tzinfo=pytz.utc)),
+        (dt.datetime(2013, 5, 1, 14, 0, tzinfo=pytz.utc),
+         dt.datetime(2013, 5, 1, 16, 0, tzinfo=pytz.utc)),
+        (dt.datetime(2013, 7, 1, 14, 0, tzinfo=pytz.utc),
+         dt.datetime(2013, 7, 1, 16, 0, tzinfo=pytz.utc)),
+        (dt.datetime(2013, 9, 1, 14, 0, tzinfo=pytz.utc),
+         dt.datetime(2013, 9, 1, 16, 0, tzinfo=pytz.utc)),
+        (dt.datetime(2013, 11, 1, 14, 0, tzinfo=pytz.utc),
+         dt.datetime(2013, 11, 1, 16, 0, tzinfo=pytz.utc)),
+        (dt.datetime(2014, 1, 1, 14, 0, tzinfo=pytz.utc),
+         dt.datetime(2014, 1, 1, 16, 0, tzinfo=pytz.utc))
     ]
 
     dtstartend_float = [
-        (datetime(2013, 3, 1, 14, 0),
-         datetime(2013, 3, 1, 16, 0)),
-        (datetime(2013, 5, 1, 14, 0),
-         datetime(2013, 5, 1, 16, 0)),
-        (datetime(2013, 7, 1, 14, 0),
-         datetime(2013, 7, 1, 16, 0)),
-        (datetime(2013, 9, 1, 14, 0),
-         datetime(2013, 9, 1, 16, 0)),
-        (datetime(2013, 11, 1, 14, 0),
-         datetime(2013, 11, 1, 16, 0)),
-        (datetime(2014, 1, 1, 14, 0),
-         datetime(2014, 1, 1, 16, 0))
+        (dt.datetime(2013, 3, 1, 14, 0),
+         dt.datetime(2013, 3, 1, 16, 0)),
+        (dt.datetime(2013, 5, 1, 14, 0),
+         dt.datetime(2013, 5, 1, 16, 0)),
+        (dt.datetime(2013, 7, 1, 14, 0),
+         dt.datetime(2013, 7, 1, 16, 0)),
+        (dt.datetime(2013, 9, 1, 14, 0),
+         dt.datetime(2013, 9, 1, 16, 0)),
+        (dt.datetime(2013, 11, 1, 14, 0),
+         dt.datetime(2013, 11, 1, 16, 0)),
+        (dt.datetime(2014, 1, 1, 14, 0),
+         dt.datetime(2014, 1, 1, 16, 0))
     ]
     dstartend = [
-        (date(2013, 3, 1,),
-         date(2013, 3, 2,)),
-        (date(2013, 5, 1,),
-         date(2013, 5, 2,)),
-        (date(2013, 7, 1,),
-         date(2013, 7, 2,)),
-        (date(2013, 9, 1,),
-         date(2013, 9, 2,)),
-        (date(2013, 11, 1),
-         date(2013, 11, 2)),
-        (date(2014, 1, 1,),
-         date(2014, 1, 2,))
+        (dt.date(2013, 3, 1,),
+         dt.date(2013, 3, 2,)),
+        (dt.date(2013, 5, 1,),
+         dt.date(2013, 5, 2,)),
+        (dt.date(2013, 7, 1,),
+         dt.date(2013, 7, 2,)),
+        (dt.date(2013, 9, 1,),
+         dt.date(2013, 9, 2,)),
+        (dt.date(2013, 11, 1),
+         dt.date(2013, 11, 2)),
+        (dt.date(2014, 1, 1,),
+         dt.date(2014, 1, 2,))
     ]
     offset_berlin = [
-        timedelta(0, 3600),
-        timedelta(0, 7200),
-        timedelta(0, 7200),
-        timedelta(0, 7200),
-        timedelta(0, 3600),
-        timedelta(0, 3600)
+        dt.timedelta(0, 3600),
+        dt.timedelta(0, 7200),
+        dt.timedelta(0, 7200),
+        dt.timedelta(0, 7200),
+        dt.timedelta(0, 3600),
+        dt.timedelta(0, 3600)
     ]
 
     offset_utc = [
-        timedelta(0, 0),
-        timedelta(0, 0),
-        timedelta(0, 0),
-        timedelta(0, 0),
-        timedelta(0, 0),
-        timedelta(0, 0),
+        dt.timedelta(0, 0),
+        dt.timedelta(0, 0),
+        dt.timedelta(0, 0),
+        dt.timedelta(0, 0),
+        dt.timedelta(0, 0),
+        dt.timedelta(0, 0),
     ]
 
     offset_none = [None, None, None, None, None, None]
@@ -361,36 +361,36 @@ class TestExpand(object):
         dtstartl = utils.expand(vevent, berlin)
         # TODO test for logging message
         assert dtstartl == [
-            (new_york.localize(datetime(2011, 11, 12, 15, 50)),
-             new_york.localize(datetime(2011, 11, 12, 17, 0))),
-            (new_york.localize(datetime(2011, 11, 19, 15, 50)),
-             new_york.localize(datetime(2011, 11, 19, 17, 0))),
-            (new_york.localize(datetime(2011, 12, 3, 15, 50)),
-             new_york.localize(datetime(2011, 12, 3, 17, 0))),
+            (new_york.localize(dt.datetime(2011, 11, 12, 15, 50)),
+             new_york.localize(dt.datetime(2011, 11, 12, 17, 0))),
+            (new_york.localize(dt.datetime(2011, 11, 19, 15, 50)),
+             new_york.localize(dt.datetime(2011, 11, 19, 17, 0))),
+            (new_york.localize(dt.datetime(2011, 12, 3, 15, 50)),
+             new_york.localize(dt.datetime(2011, 12, 3, 17, 0))),
         ]
 
 
 class TestExpandNoRR(object):
     dtstartend_berlin = [
-        (berlin.localize(datetime(2013, 3, 1, 14, 0)),
-         berlin.localize(datetime(2013, 3, 1, 16, 0))),
+        (berlin.localize(dt.datetime(2013, 3, 1, 14, 0)),
+         berlin.localize(dt.datetime(2013, 3, 1, 16, 0))),
     ]
 
     dtstartend_utc = [
-        (datetime(2013, 3, 1, 14, 0, tzinfo=pytz.utc),
-         datetime(2013, 3, 1, 16, 0, tzinfo=pytz.utc)),
+        (dt.datetime(2013, 3, 1, 14, 0, tzinfo=pytz.utc),
+         dt.datetime(2013, 3, 1, 16, 0, tzinfo=pytz.utc)),
     ]
 
     dtstartend_float = [
-        (datetime(2013, 3, 1, 14, 0),
-         datetime(2013, 3, 1, 16, 0)),
+        (dt.datetime(2013, 3, 1, 14, 0),
+         dt.datetime(2013, 3, 1, 16, 0)),
     ]
     offset_berlin = [
-        timedelta(0, 3600),
+        dt.timedelta(0, 3600),
     ]
 
     offset_utc = [
-        timedelta(0, 0),
+        dt.timedelta(0, 0),
     ]
 
     offset_none = [None]
@@ -429,8 +429,8 @@ class TestExpandNoRR(object):
         vevent = _get_vevent(event_d_norr)
         dtstart = utils.expand(vevent, berlin)
         assert dtstart == [
-            (date(2013, 3, 1,),
-             date(2013, 3, 2,)),
+            (dt.date(2013, 3, 1,),
+             dt.date(2013, 3, 2,)),
         ]
 
     def test_expand_dtr_exdatez(self):
@@ -450,11 +450,11 @@ class TestExpandNoRR(object):
         assert len(dtstart) == 5
         dtstarts = [start for start, end in dtstart]
         assert dtstarts == [
-            berlin.localize(datetime(2012, 4, 3, 10, 0)),
-            berlin.localize(datetime(2012, 5, 3, 10, 0)),
-            berlin.localize(datetime(2012, 7, 3, 10, 0)),
-            berlin.localize(datetime(2012, 8, 3, 10, 0)),
-            berlin.localize(datetime(2012, 9, 3, 10, 0)),
+            berlin.localize(dt.datetime(2012, 4, 3, 10, 0)),
+            berlin.localize(dt.datetime(2012, 5, 3, 10, 0)),
+            berlin.localize(dt.datetime(2012, 7, 3, 10, 0)),
+            berlin.localize(dt.datetime(2012, 8, 3, 10, 0)),
+            berlin.localize(dt.datetime(2012, 9, 3, 10, 0)),
         ]
 
     def test_expand_rrule_notz_until_z(self):
@@ -467,13 +467,13 @@ class TestExpandNoRR(object):
         assert len(dtstart) == 7
         dtstarts = [start for start, end in dtstart]
         assert dtstarts == [
-            new_york.localize(datetime(2012, 7, 26, 13, 0)),
-            new_york.localize(datetime(2012, 8, 9, 13, 0)),
-            new_york.localize(datetime(2012, 8, 23, 13, 0)),
-            new_york.localize(datetime(2012, 9, 6, 13, 0)),
-            new_york.localize(datetime(2012, 9, 20, 13, 0)),
-            new_york.localize(datetime(2012, 10, 4, 13, 0)),
-            new_york.localize(datetime(2012, 10, 18, 13, 0)),
+            new_york.localize(dt.datetime(2012, 7, 26, 13, 0)),
+            new_york.localize(dt.datetime(2012, 8, 9, 13, 0)),
+            new_york.localize(dt.datetime(2012, 8, 23, 13, 0)),
+            new_york.localize(dt.datetime(2012, 9, 6, 13, 0)),
+            new_york.localize(dt.datetime(2012, 9, 20, 13, 0)),
+            new_york.localize(dt.datetime(2012, 10, 4, 13, 0)),
+            new_york.localize(dt.datetime(2012, 10, 18, 13, 0)),
         ]
 
 
@@ -583,8 +583,8 @@ class TestSpecial(object):
         dtstart = utils.expand(vevent, berlin)
         starts = [start for start, _ in dtstart]
         assert len(starts) == 18
-        assert dtstart[0][0] == datetime(2014, 2, 3, 7, 0)
-        assert dtstart[-1][0] == datetime(2014, 2, 20, 7, 0)
+        assert dtstart[0][0] == dt.datetime(2014, 2, 3, 7, 0)
+        assert dtstart[-1][0] == dt.datetime(2014, 2, 20, 7, 0)
 
     def test_until_notz(self):
         vevent = _get_vevent(vevent_until_notz)
@@ -592,30 +592,30 @@ class TestSpecial(object):
         starts = [start for start, _ in dtstart]
         assert len(starts) == 18
         assert dtstart[0][0] == berlin.localize(
-            datetime(2014, 2, 3, 7, 0))
+            dt.datetime(2014, 2, 3, 7, 0))
         assert dtstart[-1][0] == berlin.localize(
-            datetime(2014, 2, 20, 7, 0))
+            dt.datetime(2014, 2, 20, 7, 0))
 
     def test_until_d_notz(self):
         vevent = _get_vevent(event_until_d_notz)
         dtstart = utils.expand(vevent, berlin)
         starts = [start for start, _ in dtstart]
         assert len(starts) == 6
-        assert dtstart[0][0] == date(2014, 1, 10)
-        assert dtstart[-1][0] == date(2014, 2, 14)
+        assert dtstart[0][0] == dt.date(2014, 1, 10)
+        assert dtstart[-1][0] == dt.date(2014, 2, 14)
 
     def test_latest_bug(self):
         vevent = _get_vevent(latest_bug)
         dtstart = utils.expand(vevent, berlin)
-        assert dtstart[0][0] == date(2009, 10, 31)
-        assert dtstart[-1][0] == date(2037, 10, 31)
+        assert dtstart[0][0] == dt.date(2009, 10, 31)
+        assert dtstart[-1][0] == dt.date(2037, 10, 31)
 
     def test_recurrence_id_with_timezone(self):
         vevent = _get_vevent(recurrence_id_with_timezone)
         dtstart = utils.expand(vevent, berlin)
         assert len(dtstart) == 1
         assert dtstart[0][0] == berlin.localize(
-            datetime(2013, 11, 13, 19, 0))
+            dt.datetime(2013, 11, 13, 19, 0))
 
     def test_event_exdate_dt(self):
         """recurring event, one date excluded via EXCLUDE"""
@@ -623,9 +623,9 @@ class TestSpecial(object):
         dtstart = utils.expand(vevent, berlin)
         assert len(dtstart) == 9
         assert dtstart[0][0] == berlin.localize(
-            datetime(2014, 7, 2, 19, 0))
+            dt.datetime(2014, 7, 2, 19, 0))
         assert dtstart[-1][0] == berlin.localize(
-            datetime(2014, 7, 11, 19, 0))
+            dt.datetime(2014, 7, 11, 19, 0))
 
     def test_event_exdates_dt(self):
         """recurring event, two dates excluded via EXCLUDE"""
@@ -633,9 +633,9 @@ class TestSpecial(object):
         dtstart = utils.expand(vevent, berlin)
         assert len(dtstart) == 8
         assert dtstart[0][0] == berlin.localize(
-            datetime(2014, 7, 2, 19, 0))
+            dt.datetime(2014, 7, 2, 19, 0))
         assert dtstart[-1][0] == berlin.localize(
-            datetime(2014, 7, 11, 19, 0))
+            dt.datetime(2014, 7, 11, 19, 0))
 
     def test_event_exdatesl_dt(self):
         """recurring event, three dates exclude via two EXCLUDEs"""
@@ -643,9 +643,9 @@ class TestSpecial(object):
         dtstart = utils.expand(vevent, berlin)
         assert len(dtstart) == 7
         assert dtstart[0][0] == berlin.localize(
-            datetime(2014, 7, 2, 19, 0))
+            dt.datetime(2014, 7, 2, 19, 0))
         assert dtstart[-1][0] == berlin.localize(
-            datetime(2014, 7, 11, 19, 0))
+            dt.datetime(2014, 7, 11, 19, 0))
 
     def test_event_exdates_remove(self):
         """check if we can remove one more instance"""
@@ -653,12 +653,12 @@ class TestSpecial(object):
         dtstart = utils.expand(vevent, berlin)
         assert len(dtstart) == 7
 
-        exdate1 = pytz.UTC.localize(datetime(2014, 7, 11, 17, 0))
+        exdate1 = pytz.UTC.localize(dt.datetime(2014, 7, 11, 17, 0))
         utils.delete_instance(vevent, exdate1)
         dtstart = utils.expand(vevent, berlin)
         assert len(dtstart) == 6
 
-        exdate2 = berlin.localize(datetime(2014, 7, 9, 19, 0))
+        exdate2 = berlin.localize(dt.datetime(2014, 7, 9, 19, 0))
         utils.delete_instance(vevent, exdate2)
         dtstart = utils.expand(vevent, berlin)
         assert len(dtstart) == 5
@@ -668,9 +668,9 @@ class TestSpecial(object):
         be"""
         vevent = _get_vevent(_get_text('event_dt_rrule_invalid_until'))
         dtstart = utils.expand(vevent, berlin)
-        assert dtstart == [(date(2007, 12, 1), date(2007, 12, 2)),
-                           (date(2008, 1, 1), date(2008, 1, 2)),
-                           (date(2008, 2, 1), date(2008, 2, 2))]
+        assert dtstart == [(dt.date(2007, 12, 1), dt.date(2007, 12, 2)),
+                           (dt.date(2008, 1, 1), dt.date(2008, 1, 2)),
+                           (dt.date(2008, 2, 1), dt.date(2008, 2, 2))]
 
     def test_event_dt_rrule_invalid_until2(self):
         """same as above, but now dtstart is of type date and until is datetime
@@ -678,10 +678,10 @@ class TestSpecial(object):
         vevent = _get_vevent(_get_text('event_dt_rrule_invalid_until2'))
         dtstart = utils.expand(vevent, berlin)
         assert len(dtstart) == 35
-        assert dtstart[0] == (berlin.localize(datetime(2014, 4, 9, 9, 30)),
-                              berlin.localize(datetime(2014, 4, 9, 10, 30)))
-        assert dtstart[-1] == (berlin.localize(datetime(2014, 12, 3, 9, 30)),
-                               berlin.localize(datetime(2014, 12, 3, 10, 30)))
+        assert dtstart[0] == (berlin.localize(dt.datetime(2014, 4, 9, 9, 30)),
+                              berlin.localize(dt.datetime(2014, 4, 9, 10, 30)))
+        assert dtstart[-1] == (berlin.localize(dt.datetime(2014, 12, 3, 9, 30)),
+                               berlin.localize(dt.datetime(2014, 12, 3, 10, 30)))
 
 
 simple_rdate = """BEGIN:VEVENT
@@ -721,17 +721,17 @@ class TestRDate(object):
         assert vevent is not None
         dtstarts = utils.expand(vevent, berlin)
         assert len(dtstarts) == 73
-        assert dtstarts[0][0] == date(1965, 4, 23)
-        assert dtstarts[-1][0] == date(2037, 4, 23)
+        assert dtstarts[0][0] == dt.date(1965, 4, 23)
+        assert dtstarts[-1][0] == dt.date(2037, 4, 23)
 
     def test_rdate_date(self):
         vevent = _get_vevent_file('event_d_rdate')
         dtstarts = utils.expand(vevent, berlin)
         assert len(dtstarts) == 4
-        assert dtstarts == [(date(2015, 8, 12), date(2015, 8, 13)),
-                            (date(2015, 8, 13), date(2015, 8, 14)),
-                            (date(2015, 8, 14), date(2015, 8, 15)),
-                            (date(2015, 8, 15), date(2015, 8, 16))]
+        assert dtstarts == [(dt.date(2015, 8, 12), dt.date(2015, 8, 13)),
+                            (dt.date(2015, 8, 13), dt.date(2015, 8, 14)),
+                            (dt.date(2015, 8, 14), dt.date(2015, 8, 15)),
+                            (dt.date(2015, 8, 15), dt.date(2015, 8, 16))]
 
 
 noend_date = """
@@ -771,14 +771,14 @@ class TestSanitize(object):
     def test_noend_date(self):
         vevent = _get_vevent(noend_date)
         vevent = utils.sanitize(vevent, berlin, '', '')
-        assert vevent['DTSTART'].dt == date(2014, 8, 29)
-        assert vevent['DTEND'].dt == date(2014, 8, 30)
+        assert vevent['DTSTART'].dt == dt.date(2014, 8, 29)
+        assert vevent['DTEND'].dt == dt.date(2014, 8, 30)
 
     def test_noend_datetime(self):
         vevent = _get_vevent(noend_datetime)
         vevent = utils.sanitize(vevent, berlin, '', '')
-        assert vevent['DTSTART'].dt == date(2014, 8, 29)
-        assert vevent['DTEND'].dt == date(2014, 8, 30)
+        assert vevent['DTSTART'].dt == dt.date(2014, 8, 29)
+        assert vevent['DTEND'].dt == dt.date(2014, 8, 30)
 
     def test_duration(self):
         vevent = _get_vevent_file('event_dtr_exdatez')
@@ -786,20 +786,20 @@ class TestSanitize(object):
 
     def test_instant(self):
         vevent = _get_vevent(instant)
-        assert vevent['DTEND'].dt - vevent['DTSTART'].dt == timedelta()
+        assert vevent['DTEND'].dt - vevent['DTSTART'].dt == dt.timedelta()
         vevent = utils.sanitize(vevent, berlin, '', '')
-        assert vevent['DTEND'].dt - vevent['DTSTART'].dt == timedelta(hours=1)
+        assert vevent['DTEND'].dt - vevent['DTSTART'].dt == dt.timedelta(hours=1)
 
 
 class TestIsAware():
     def test_naive(self):
-        assert utils.is_aware(datetime.now()) is False
+        assert utils.is_aware(dt.datetime.now()) is False
 
     def test_berlin(self):
-        assert utils.is_aware(BERLIN.localize(datetime.now())) is True
+        assert utils.is_aware(BERLIN.localize(dt.datetime.now())) is True
 
     def test_bogota(self):
-        assert utils.is_aware(BOGOTA.localize(datetime.now())) is True
+        assert utils.is_aware(BOGOTA.localize(dt.datetime.now())) is True
 
     def test_utc(self):
-        assert utils.is_aware(pytz.UTC.localize(datetime.now())) is True
+        assert utils.is_aware(pytz.UTC.localize(dt.datetime.now())) is True

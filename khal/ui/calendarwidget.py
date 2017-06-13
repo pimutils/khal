@@ -26,7 +26,7 @@ if anything doesn't work as expected, please open an issue for khal
 
 import calendar
 from collections import defaultdict
-from datetime import date
+import datetime as dt
 from locale import getlocale, setlocale, LC_ALL, LC_TIME
 
 from khal.utils import get_month_abbr_len
@@ -43,7 +43,7 @@ def getweeknumber(day):
     :return: weeknumber
     :rtype: int
     """
-    return date.isocalendar(day)[1]
+    return dt.date.isocalendar(day)[1]
 
 
 class DatePart(urwid.Text):
@@ -351,7 +351,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
     def __init__(self, on_date_change, on_press, keybindings, firstweekday=0,
                  weeknumbers=False, get_styles=None, initial=None):
         if initial is None:
-            initial = date.today()
+            initial = dt.date.today()
         self.firstweekday = firstweekday
         self.weeknumbers = weeknumbers
         self.on_date_change = on_date_change
@@ -512,8 +512,8 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         return week
 
     def _construct_month(self,
-                         year=date.today().year,
-                         month=date.today().month,
+                         year=dt.date.today().year,
+                         month=dt.date.today().month,
                          clean_first_row=False,
                          clean_last_row=False):
         """construct one month of DateCColumns
@@ -580,7 +580,7 @@ class CalendarWidget(urwid.WidgetWrap):
         :type on_press: dict
         """
         if initial is None:
-            self._initial = date.today()
+            self._initial = dt.date.today()
         else:
             self._initial = initial
 
@@ -605,12 +605,12 @@ class CalendarWidget(urwid.WidgetWrap):
 
         def _get_styles(date, focus):
             if focus:
-                if date == date.today():
+                if date == dt.date.today():
                     return 'today focus'
                 else:
                     return 'reveal focus'
             else:
-                if date == date.today():
+                if date == dt.date.today():
                     return 'today'
                 else:
                     return None
@@ -632,7 +632,7 @@ class CalendarWidget(urwid.WidgetWrap):
         self.set_focus_date(self._initial)
 
     def focus_today(self):
-        self.set_focus_date(date.today())
+        self.set_focus_date(dt.date.today())
 
     def reset_styles_range(self, min_date, max_date):
         self.walker.reset_styles_range(min_date, max_date)
