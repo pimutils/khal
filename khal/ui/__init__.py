@@ -73,7 +73,6 @@ from .calendarwidget import CalendarWidget
 ALL = 1
 INSTANCES = 2
 
-
 class DateConversionError(Exception):
     pass
 
@@ -870,7 +869,7 @@ class EventColumn(urwid.WidgetWrap):
             self.pane.window.alert(('alert', 'No writable calendar.'))
             return
         if end is None:
-            start = dt.datetime.combine(dt.date, dt.time(dt.datetime.now().hour))
+            start = dt.datetime.combine(dt.date.today (), dt.time(dt.datetime.now().hour))
             end = start + dt.timedelta(minutes=60)
             event = utils.new_event(
                 dtstart=start, dtend=end, summary="new event",
