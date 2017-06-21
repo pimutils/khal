@@ -21,6 +21,7 @@
 #
 
 import icalendar
+import logging
 from click import confirm, echo, style, prompt
 
 from .khalendar.vdir import Item
@@ -40,8 +41,9 @@ from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
 from khal.exceptions import FatalError
 from khal.khalendar.event import Event
 from khal import __version__, __productname__
-from khal.log import logger
 from .terminal import merge_columns
+
+logger = logging.getLogger(__name__)
 
 
 def format_day(day, format_string, locale, attributes=None):

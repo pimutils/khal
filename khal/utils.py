@@ -25,6 +25,7 @@
 from calendar import month_abbr, timegm
 from collections import defaultdict
 import datetime as dt
+import logging
 import random
 import string
 import re
@@ -34,9 +35,10 @@ import icalendar
 import pytz
 import dateutil.rrule
 
-from khal.log import logger
 import khal.parse_datetime as parse_datetime  # TODO get this out of here
 from .exceptions import UnsupportedRecurrence
+
+logger = logging.getLogger(__name__)
 
 
 def generate_random_uid():

@@ -19,6 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+import logging
 import sys
 import textwrap
 from shutil import get_terminal_size
@@ -34,12 +35,13 @@ import click
 import click_log
 
 from . import controllers, khalendar, __version__
-from .log import logger
 from .settings import get_config, InvalidSettingsError
 from .settings.exceptions import NoConfigFile
 from .exceptions import FatalError
 from .terminal import colored
 
+
+logger = logging.getLogger(__name__)
 
 days_option = click.option('--days', default=None, type=int,
                            help='How many days to include.')

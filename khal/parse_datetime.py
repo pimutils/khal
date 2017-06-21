@@ -24,13 +24,15 @@ strings to date(time) or event objects"""
 
 from calendar import isleap
 import datetime as dt
+import logging
 import re
 from time import strptime
 
 import pytz
 
-from khal.log import logger
 from khal.exceptions import FatalError
+
+logger = logging.getLogger(__name__)
 
 
 def timefstr(dtime_list, timeformat):

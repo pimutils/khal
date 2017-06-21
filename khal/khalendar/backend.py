@@ -33,6 +33,7 @@ note on naming:
 # accept and return the same kind of events
 import contextlib
 import datetime as dt
+import logging
 from os import makedirs, path
 import sqlite3
 
@@ -40,11 +41,11 @@ from dateutil import parser
 import icalendar
 import pytz
 
-from .. import log, utils
+from .. import utils
 from .event import Event, EventStandIn
 from .exceptions import CouldNotCreateDbDir, OutdatedDbVersionError, UpdateFailed
 
-logger = log.logger
+logger = logging.getLogger(__name__)
 
 DB_VERSION = 5  # The current db layout version
 
