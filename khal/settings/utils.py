@@ -20,21 +20,23 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+import logging
+import glob
 from os.path import expandvars, expanduser, join
 import os
-import glob
 
 import pytz
 import xdg
 from tzlocal import get_localzone
 from validate import VdtValueError
 
-from ..log import logger
 from .exceptions import InvalidSettingsError
 
 from ..terminal import COLORS
 from ..khalendar.vdir import Vdir, CollectionNotFoundError
 from ..parse_datetime import guesstimedeltafstr
+
+logger = logging.getLogger(__name__)
 
 
 def is_timezone(tzstring):

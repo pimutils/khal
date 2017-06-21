@@ -24,6 +24,7 @@ helper functions."""
 
 from collections import defaultdict
 import datetime as dt
+import logging
 
 import os
 import icalendar
@@ -32,9 +33,10 @@ import pytz
 from ..utils import generate_random_uid, to_naive_utc, to_unix_time, \
     invalid_timezone, delete_instance, is_aware
 from ..exceptions import FatalError
-from ..log import logger
 from ..terminal import get_color
 from click import style
+
+logger = logging.getLogger(__name__)
 
 
 class Event(object):

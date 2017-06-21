@@ -26,6 +26,7 @@ calendars. Each calendar is defined by the contents of a vdir, but uses an
 SQLite db for caching (see backend if you're interested).
 """
 import datetime as dt
+import logging
 import os
 import os.path
 import itertools
@@ -35,11 +36,10 @@ from .vdir import CollectionNotFoundError, AlreadyExistingError, Vdir, \
 
 from . import backend
 from .event import Event
-from .. import log
 from .exceptions import CouldNotCreateDbDir, UnsupportedFeatureError, \
     ReadOnlyCalendarError, UpdateFailed, DuplicateUid
 
-logger = log.logger
+logger = logging.getLogger(__name__)
 
 
 def create_directory(path):

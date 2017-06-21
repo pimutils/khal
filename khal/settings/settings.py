@@ -24,15 +24,16 @@ import os
 
 from configobj import ConfigObj, flatten_errors, get_extra_values, \
     ConfigObjError
+import logging
 from validate import Validator
 import xdg.BaseDirectory
 
 from .exceptions import InvalidSettingsError, CannotParseConfigFileError, NoConfigFile
 from khal import __productname__
-from ..log import logger
 from .utils import is_timezone, is_timedelta, weeknumber_option, config_checks, \
     expand_path, expand_db_path, is_color, get_vdir_type, get_color_from_vdir
 
+logger = logging.getLogger(__name__)
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
 
 

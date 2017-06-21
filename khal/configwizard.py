@@ -25,14 +25,16 @@ import xdg
 
 from functools import partial
 from itertools import zip_longest
+import logging
 from os.path import expanduser, expandvars, join, normpath, exists, isdir
 from os import makedirs
 
 import datetime as dt
 
-from khal.log import logger
 from .exceptions import FatalError
 from .settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 def validate_int(input, min_value, max_value):
