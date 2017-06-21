@@ -43,12 +43,9 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-days_option = click.option('--days', default=None, type=int,
-                           help='How many days to include.')
-week_option = click.option('--week', '-w',
-                           help=('Include all events in one week.'), is_flag=True)
-events_option = click.option('--events', default=None, type=int,
-                             help='How many events to include.')
+days_option = click.option('--days', default=None, type=int, help='How many days to include.')
+week_option = click.option('--week', '-w', help='Include all events in one week.', is_flag=True)
+events_option = click.option('--events', default=None, type=int, help='How many events to include.')
 dates_arg = click.argument('dates', nargs=-1)
 
 
@@ -119,8 +116,7 @@ def _calendar_select_callback(ctx, option, calendar):
 
 
 def calendar_option(f):
-    return click.option('--calendar', '-a', metavar='CAL',
-                        callback=_calendar_select_callback)(f)
+    return click.option('--calendar', '-a', metavar='CAL', callback=_calendar_select_callback)(f)
 
 
 def global_options(f):
