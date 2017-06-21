@@ -25,13 +25,12 @@ if anything doesn't work as expected, please open an issue for khal
 """
 
 import calendar
-from collections import defaultdict
 import datetime as dt
-from locale import getlocale, setlocale, LC_ALL, LC_TIME
-
-from khal.utils import get_month_abbr_len
+from collections import defaultdict
+from locale import LC_ALL, LC_TIME, getlocale, setlocale
 
 import urwid
+from khal.utils import get_month_abbr_len
 
 setlocale(LC_ALL, '')
 

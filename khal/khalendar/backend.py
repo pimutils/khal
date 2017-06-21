@@ -34,16 +34,17 @@ note on naming:
 import contextlib
 import datetime as dt
 import logging
-from os import makedirs, path
 import sqlite3
+from os import makedirs, path
 
-from dateutil import parser
 import icalendar
 import pytz
+from dateutil import parser
 
 from .. import utils
 from .event import Event, EventStandIn
-from .exceptions import CouldNotCreateDbDir, OutdatedDbVersionError, UpdateFailed
+from .exceptions import (CouldNotCreateDbDir, OutdatedDbVersionError,
+                         UpdateFailed)
 
 logger = logging.getLogger(__name__)
 

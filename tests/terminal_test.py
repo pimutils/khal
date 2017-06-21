@@ -1,4 +1,4 @@
-from khal.terminal import merge_columns, colored
+from khal.terminal import colored, merge_columns
 
 
 def test_colored():

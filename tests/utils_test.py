@@ -1,22 +1,21 @@
 """testing functions from the khal.utils"""
 import datetime as dt
-from collections import OrderedDict
-import textwrap
 import random
+import textwrap
+from collections import OrderedDict
 
 import icalendar
+import pytest
 from freezegun import freeze_time
-
-from khal.parse_datetime import (
-    guessdatetimefstr, guesstimedeltafstr, guessrangefstr, weekdaypstr,
-    eventinfofstr, timedelta2str, construct_daynames,
-)
 from khal import utils
 from khal.exceptions import FatalError
-import pytest
+from khal.parse_datetime import (construct_daynames, eventinfofstr,
+                                 guessdatetimefstr, guessrangefstr,
+                                 guesstimedeltafstr, timedelta2str,
+                                 weekdaypstr)
 
-from .utils import _get_text, normalize_component, \
-    LOCALE_BERLIN, LOCALE_NEW_YORK
+from .utils import (LOCALE_BERLIN, LOCALE_NEW_YORK, _get_text,
+                    normalize_component)
 
 today = dt.date.today()
 tomorrow = today + dt.timedelta(days=1)

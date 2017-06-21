@@ -1,12 +1,10 @@
 import datetime as dt
 import locale
 import platform
-
 import unicodedata
+
 import pytest
-
-from khal.calendar_display import vertical_month, getweeknumber, str_week
-
+from khal.calendar_display import getweeknumber, str_week, vertical_month
 
 today = dt.date.today()
 yesterday = today - dt.timedelta(days=1)

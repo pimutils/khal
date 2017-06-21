@@ -1,16 +1,14 @@
 import datetime as dt
 from textwrap import dedent
 
-from freezegun import freeze_time
 import pytest
-
-from khal.khalendar.vdir import Item
-from khal.controllers import import_ics, khal_list, start_end_from_daterange
+from freezegun import freeze_time
 from khal import exceptions
+from khal.controllers import import_ics, khal_list, start_end_from_daterange
+from khal.khalendar.vdir import Item
 
-from .utils import _get_text
 from . import utils
-
+from .utils import _get_text
 
 today = dt.date.today()
 yesterday = today - dt.timedelta(days=1)

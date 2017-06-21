@@ -1,8 +1,8 @@
 import datetime as dt
-import icalendar
-import pytz
 
+import icalendar
 import khal.utils as utils
+import pytz
 
 from .utils import _get_text, _get_vevent_file
 

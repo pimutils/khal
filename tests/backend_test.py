@@ -1,18 +1,15 @@
 
-import pytest
-
-import pkg_resources
-
 import datetime as dt
-import icalendar
 
+import icalendar
+import pkg_resources
+import pytest
 from khal.khalendar import backend
-from khal.khalendar.event import LocalizedEvent, EventStandIn
+from khal.khalendar.event import EventStandIn, LocalizedEvent
 from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 
-from .utils import _get_text, \
-    BERLIN, LONDON, SYDNEY, \
-    LOCALE_BERLIN, LOCALE_SYDNEY
+from .utils import (BERLIN, LOCALE_BERLIN, LOCALE_SYDNEY, LONDON, SYDNEY,
+                    _get_text)
 
 calname = 'home'
 

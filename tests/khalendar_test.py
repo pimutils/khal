@@ -1,21 +1,19 @@
 import datetime as dt
 import os
-from time import sleep
 from textwrap import dedent
+from time import sleep
 
+import khal.khalendar.exceptions
+import khal.utils
 import pytest
-
+from freezegun import freeze_time
+from khal.khalendar import CalendarCollection
+from khal.khalendar.backend import CouldNotCreateDbDir
+from khal.khalendar.event import Event
 from khal.khalendar.vdir import Item
 
-import khal.utils
-from khal.khalendar import CalendarCollection
-from khal.khalendar.event import Event
-from khal.khalendar.backend import CouldNotCreateDbDir
-import khal.khalendar.exceptions
-from .utils import _get_text, cal1, cal2, cal3, normalize_component
 from . import utils
-
-from freezegun import freeze_time
+from .utils import _get_text, cal1, cal2, cal3, normalize_component
 
 today = dt.date.today()
 yesterday = today - dt.timedelta(days=1)

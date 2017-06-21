@@ -20,21 +20,20 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import logging
 import glob
-from os.path import expandvars, expanduser, join
+import logging
 import os
+from os.path import expanduser, expandvars, join
 
 import pytz
 import xdg
 from tzlocal import get_localzone
 from validate import VdtValueError
 
-from .exceptions import InvalidSettingsError
-
-from ..terminal import COLORS
-from ..khalendar.vdir import Vdir, CollectionNotFoundError
+from ..khalendar.vdir import CollectionNotFoundError, Vdir
 from ..parse_datetime import guesstimedeltafstr
+from ..terminal import COLORS
+from .exceptions import InvalidSettingsError
 
 logger = logging.getLogger(__name__)
 

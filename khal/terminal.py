@@ -24,7 +24,6 @@
 from collections import namedtuple
 from itertools import zip_longest
 
-
 NamedColor = namedtuple('NamedColor', ['index', 'light'])
 
 RTEXT = '\x1b[7m'  # reverse

@@ -1,17 +1,17 @@
-import os.path
 import datetime as dt
-from validate import VdtValueError
+import os.path
 
 import pytest
+from khal.settings import get_config
+from khal.settings.exceptions import (CannotParseConfigFileError,
+                                      InvalidSettingsError)
+from khal.settings.utils import (config_checks, get_all_vdirs,
+                                 get_color_from_vdir, get_unique_name,
+                                 is_color)
 from tzlocal import get_localzone
+from validate import VdtValueError
 
 from .utils import LOCALE_BERLIN
-
-from khal.settings import get_config
-from khal.settings.exceptions import InvalidSettingsError, \
-    CannotParseConfigFileError
-from khal.settings.utils import get_all_vdirs, get_unique_name, config_checks, \
-    get_color_from_vdir, is_color
 
 PATH = __file__.rsplit('/', 1)[0] + '/configs/'
 

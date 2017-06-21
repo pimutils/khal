@@ -1,6 +1,6 @@
-import icalendar
 import os
 
+import icalendar
 import pytz
 
 cal0 = 'a_calendar'

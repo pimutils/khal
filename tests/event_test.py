@@ -1,17 +1,14 @@
 import datetime as dt
-import pytz
 
 import pytest
+import pytz
 from freezegun import freeze_time
-
 from icalendar import vRecur, vText
+from khal.khalendar.event import (AllDayEvent, Event, FloatingEvent,
+                                  LocalizedEvent, create_timezone)
 
-from khal.khalendar.event import Event, AllDayEvent, LocalizedEvent, FloatingEvent, \
-    create_timezone
-
-from .utils import normalize_component, _get_text, \
-    LOCALE_BERLIN, LOCALE_MIXED, LOCALE_BOGOTA, \
-    BERLIN, NEW_YORK, BOGOTA, GMTPLUS3
+from .utils import (BERLIN, BOGOTA, GMTPLUS3, LOCALE_BERLIN, LOCALE_BOGOTA,
+                    LOCALE_MIXED, NEW_YORK, _get_text, normalize_component)
 
 EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE_BERLIN}
 

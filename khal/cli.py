@@ -19,26 +19,27 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+import datetime as dt
 import logging
 import sys
 import textwrap
 from shutil import get_terminal_size
-import datetime as dt
+
+import click
+
+import click_log
+
+from . import __version__, controllers, khalendar
+from .exceptions import FatalError
+from .settings import InvalidSettingsError, get_config
+from .settings.exceptions import NoConfigFile
+from .terminal import colored
 
 try:
     from setproctitle import setproctitle
 except ImportError:
     def setproctitle(x):
         pass
-
-import click
-import click_log
-
-from . import controllers, khalendar, __version__
-from .settings import get_config, InvalidSettingsError
-from .settings.exceptions import NoConfigFile
-from .exceptions import FatalError
-from .terminal import colored
 
 
 logger = logging.getLogger(__name__)

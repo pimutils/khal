@@ -22,19 +22,19 @@
 """This module contains the event model with all relevant subclasses and some
 helper functions."""
 
-from collections import defaultdict
 import datetime as dt
 import logging
-
 import os
+from collections import defaultdict
+
 import icalendar
 import pytz
+from click import style
 
-from ..utils import generate_random_uid, to_naive_utc, to_unix_time, \
-    invalid_timezone, delete_instance, is_aware
 from ..exceptions import FatalError
 from ..terminal import get_color
-from click import style
+from ..utils import (delete_instance, generate_random_uid, invalid_timezone,
+                     is_aware, to_naive_utc, to_unix_time)
 
 logger = logging.getLogger(__name__)
 

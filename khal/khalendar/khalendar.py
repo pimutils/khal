@@ -26,18 +26,18 @@ calendars. Each calendar is defined by the contents of a vdir, but uses an
 SQLite db for caching (see backend if you're interested).
 """
 import datetime as dt
+import itertools
 import logging
 import os
 import os.path
-import itertools
-
-from .vdir import CollectionNotFoundError, AlreadyExistingError, Vdir, \
-    get_etag_from_file
 
 from . import backend
 from .event import Event
-from .exceptions import CouldNotCreateDbDir, UnsupportedFeatureError, \
-    ReadOnlyCalendarError, UpdateFailed, DuplicateUid
+from .exceptions import (CouldNotCreateDbDir, DuplicateUid,
+                         ReadOnlyCalendarError, UnsupportedFeatureError,
+                         UpdateFailed)
+from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
+                   get_etag_from_file)
 
 logger = logging.getLogger(__name__)
 

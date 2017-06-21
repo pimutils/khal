@@ -1,6 +1,5 @@
 import click
 import pytest
-
 from khal.configwizard import validate_int
 
 

@@ -21,13 +21,12 @@
 
 import calendar
 import datetime as dt
-from locale import getlocale, setlocale, LC_ALL, LC_TIME
+from locale import LC_ALL, LC_TIME, getlocale, setlocale
 
 from click import style
 
 from .terminal import colored
 from .utils import get_month_abbr_len
-
 
 setlocale(LC_ALL, '')
 

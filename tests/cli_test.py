@@ -1,15 +1,14 @@
+import datetime as dt
 import os
 import sys
 from unittest import mock
-import datetime as dt
 
 import pytest
-from freezegun import freeze_time
 from click.testing import CliRunner
+from freezegun import freeze_time
+from khal.cli import main_ikhal, main_khal
 
-from khal.cli import main_khal, main_ikhal
-
-from .utils import _get_text, _get_ics_filepath
+from .utils import _get_ics_filepath, _get_text
 
 
 class CustomCliRunner(CliRunner):

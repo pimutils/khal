@@ -1,10 +1,9 @@
 import datetime as dt
 
 import icalendar
+from khal.ui.editor import RecurrenceEditor, StartEndEditor
 
-from khal.ui.editor import StartEndEditor, RecurrenceEditor
-
-from ..utils import LOCALE_BERLIN, BERLIN
+from ..utils import BERLIN, LOCALE_BERLIN
 
 CONF = {'locale': LOCALE_BERLIN, 'keybindings': {}}
 

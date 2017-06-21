@@ -22,14 +22,13 @@
 """this module contains some helper functions converting strings or list of
 strings to date(time) or event objects"""
 
-from calendar import isleap
 import datetime as dt
 import logging
 import re
+from calendar import isleap
 from time import strptime
 
 import pytz
-
 from khal.exceptions import FatalError
 
 logger = logging.getLogger(__name__)

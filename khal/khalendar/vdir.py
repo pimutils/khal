@@ -3,8 +3,8 @@ Based off https://github.com/pimutils/python-vdir, which is itself based off
 vdirsyncer.
 '''
 
-import os
 import errno
+import os
 import uuid
 
 from atomicwrites import atomic_write

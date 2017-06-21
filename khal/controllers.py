@@ -20,27 +20,24 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import icalendar
-import logging
-from click import confirm, echo, style, prompt
-
-from .khalendar.vdir import Item
-from .exceptions import ConfigurationError
-
-import pytz
-
-from collections import defaultdict, OrderedDict
-from shutil import get_terminal_size
-
 import datetime as dt
+import logging
 import os
 import textwrap
+from collections import OrderedDict, defaultdict
+from shutil import get_terminal_size
 
-from khal import utils, calendar_display, parse_datetime
-from khal.khalendar.exceptions import ReadOnlyCalendarError, DuplicateUid
+import icalendar
+import pytz
+from click import confirm, echo, prompt, style
+from khal import (__productname__, __version__, calendar_display,
+                  parse_datetime, utils)
 from khal.exceptions import FatalError
 from khal.khalendar.event import Event
-from khal import __version__, __productname__
+from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
+
+from .exceptions import ConfigurationError
+from .khalendar.vdir import Item
 from .terminal import merge_columns
 
 logger = logging.getLogger(__name__)

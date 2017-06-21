@@ -22,20 +22,20 @@
 """collection of utility functions"""
 
 
-from calendar import month_abbr, timegm
-from collections import defaultdict
 import datetime as dt
 import logging
 import random
-import string
 import re
+import string
+from calendar import month_abbr, timegm
+from collections import defaultdict
 from textwrap import wrap
 
-import icalendar
-import pytz
 import dateutil.rrule
-
+import icalendar
 import khal.parse_datetime as parse_datetime  # TODO get this out of here
+import pytz
+
 from .exceptions import UnsupportedRecurrence
 
 logger = logging.getLogger(__name__)

@@ -20,18 +20,20 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+import logging
 import os
 
-from configobj import ConfigObj, flatten_errors, get_extra_values, \
-    ConfigObjError
-import logging
-from validate import Validator
 import xdg.BaseDirectory
-
-from .exceptions import InvalidSettingsError, CannotParseConfigFileError, NoConfigFile
+from configobj import (ConfigObj, ConfigObjError, flatten_errors,
+                       get_extra_values)
 from khal import __productname__
-from .utils import is_timezone, is_timedelta, weeknumber_option, config_checks, \
-    expand_path, expand_db_path, is_color, get_vdir_type, get_color_from_vdir
+from validate import Validator
+
+from .exceptions import (CannotParseConfigFileError, InvalidSettingsError,
+                         NoConfigFile)
+from .utils import (config_checks, expand_db_path, expand_path,
+                    get_color_from_vdir, get_vdir_type, is_color, is_timedelta,
+                    is_timezone, weeknumber_option)
 
 logger = logging.getLogger(__name__)
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')

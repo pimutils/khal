@@ -24,9 +24,10 @@
 general widgets should go in widgets.py"""
 
 
-import urwid
 import threading
 import time
+
+import urwid
 
 from .widgets import NColumns
 

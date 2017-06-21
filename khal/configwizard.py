@@ -20,16 +20,15 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from click import confirm, prompt, UsageError
-import xdg
-
+import datetime as dt
+import logging
 from functools import partial
 from itertools import zip_longest
-import logging
-from os.path import expanduser, expandvars, join, normpath, exists, isdir
 from os import makedirs
+from os.path import exists, expanduser, expandvars, isdir, join, normpath
 
-import datetime as dt
+import xdg
+from click import UsageError, confirm, prompt
 
 from .exceptions import FatalError
 from .settings import settings

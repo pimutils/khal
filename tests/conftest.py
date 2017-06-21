@@ -3,11 +3,10 @@ from time import sleep
 
 import pytest
 import pytz
-
 from khal.khalendar import CalendarCollection
 from khal.khalendar.vdir import Vdir
 
-from .utils import LOCALE_BERLIN, example_cals, cal1
+from .utils import LOCALE_BERLIN, cal1, example_cals
 
 
 @pytest.fixture
