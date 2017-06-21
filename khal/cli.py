@@ -26,7 +26,6 @@ import textwrap
 from shutil import get_terminal_size
 
 import click
-
 import click_log
 
 from . import __version__, controllers, khalendar
@@ -131,6 +130,9 @@ def global_options(f):
     def color_callback(ctx, option, value):
         ctx.color = value
 
+    def logfile_callback(ctx, option, path):
+        ctx.logfilepath = path
+
     config = click.option(
         '--config', '-c',
         is_eager=True,  # make sure other options can access config
@@ -146,9 +148,19 @@ def global_options(f):
         callback=color_callback
     )
 
+    logfile = click.option(
+        '--logfile', '-l',
+        help='The logfile to use [defaults to stdout]',
+        type=click.Path(),
+        callback=logfile_callback,
+        default=None,
+        expose_value=False,
+        metavar='LOGFILE',
+    )
+
     version = click.version_option(version=__version__)
 
-    return config(color(version(f)))
+    return logfile(config(color(version(f))))
 
 
 def build_collection(conf, selection):
@@ -236,6 +248,9 @@ def _get_cli():
         # shows up as 'khal' under linux and as 'python: khal (python2.7)'
         # under FreeBSD, which is still nicer than the default
         setproctitle('khal')
+        if ctx.logfilepath:
+            logger = logging.getLogger('khal')
+            logger.handlers = [logging.FileHandler(ctx.logfilepath)]
 
     @cli.command()
     @multi_calendar_option

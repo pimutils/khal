@@ -19,6 +19,9 @@ not released yet
 * CHANGE default date/time formats to be the system's locale's formats
 * CHANGE ``--verbose`` flag to ``--verbosity``, allowing finer granularity
 
+* NEW khal learned the ``--logfile/-l LOGFILE`` flag which allows logging to a
+  file
+
 0.9.6
 =====
 released 2017-06-13
