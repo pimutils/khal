@@ -224,6 +224,9 @@ def test_event_recuid_rrule_no_master():
     assert events[0].end == dt.datetime(2014, 6, 30, 12, 0)
     assert events[1].start == dt.datetime(2014, 7, 7, 8, 30)
     assert events[1].end == dt.datetime(2014, 7, 7, 12, 0)
+    events = dbi.search('VEVENTS')
+    events = sorted(events, key=lambda x: x.start)
+    assert len(list(events)) == 1
 
 
 def test_no_valid_timezone():

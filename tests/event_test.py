@@ -190,6 +190,7 @@ def test_event_dt_duration():
     assert event.format(LIST_FORMAT, dt.date(2014, 4, 9)) == '09:30-10:30 An Event\x1b[0m'
     assert event.format(SEARCH_FORMAT, dt.date(2014, 4, 9)) == \
         '09.04.2014 09:30-10:30 An Event\x1b[0m'
+    assert event.format('{duration}', relative_to=dt.date.today()) == '1h\x1b[0m'
 
 
 def test_event_dt_floating():
@@ -198,6 +199,7 @@ def test_event_dt_floating():
     event = Event.fromString(event_str, **EVENT_KWARGS)
     assert isinstance(event, FloatingEvent)
     assert event.format(LIST_FORMAT, dt.date(2014, 4, 9)) == '09:30-10:30 An Event\x1b[0m'
+    assert event.format('{duration}', relative_to=dt.date.today()) == '2h\x1b[0m'
     assert event.format(SEARCH_FORMAT, dt.date(2014, 4, 9)) == \
         '09.04.2014 09:30-10:30 An Event\x1b[0m'
     assert event.start == dt.datetime(2014, 4, 9, 9, 30)
@@ -220,6 +222,7 @@ def test_event_dt_tz_missing():
     assert event.end == BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
     assert event.start_local == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
     assert event.end_local == BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
+    assert event.format('{duration}', relative_to=dt.date.today()) == '1d\x1b[0m'
 
     event = Event.fromString(event_str, calendar='foobar', locale=LOCALE_MIXED)
     assert event.start == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
@@ -272,6 +275,7 @@ def test_event_d_long():
     assert event.format(LIST_FORMAT, dt.date(2014, 4, 12)) == ' Another Event\x1b[0m'
     assert event.format(SEARCH_FORMAT, dt.date(2014, 4, 16)) == \
         '09.04.2014-11.04.2014 Another Event\x1b[0m'
+    assert event.format('{duration}', relative_to=dt.date(2014, 4, 11)) == '3d\x1b[0m'
 
 
 def test_event_d_two_days():

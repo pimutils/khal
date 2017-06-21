@@ -35,6 +35,7 @@ from ..exceptions import FatalError
 from ..terminal import get_color
 from ..utils import (delete_instance, generate_random_uid, invalid_timezone,
                      is_aware, to_naive_utc, to_unix_time)
+from ..parse_datetime import timedelta2str
 
 logger = logging.getLogger(__name__)
 
@@ -484,6 +485,8 @@ class Event(object):
         attributes["end-date-long"] = self.end_local.strftime(self._locale['longdateformat'])
         attributes["end-time"] = self.end_local.strftime(self._locale['timeformat'])
 
+        attributes["duration"] = timedelta2str(self.duration)
+
         # should only have time attributes at this point (start/end)
         full = {}
         for attr in attributes:
@@ -715,6 +718,13 @@ class AllDayEvent(Event):
                            'on {}'.format(self.href, self.summary, self.start))
             end += dt.timedelta(days=1)
         return end - dt.timedelta(days=1)
+
+    @property
+    def duration(self):
+        try:
+            return self._vevents[self.ref]['DURATION'].dt
+        except KeyError:
+            return self.end - self.start + dt.timedelta(days=1)
 
 
 def create_timezone(tz, first_date=None, last_date=None):

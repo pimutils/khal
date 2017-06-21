@@ -21,6 +21,7 @@ not released yet
 
 * NEW khal learned the ``--logfile/-l LOGFILE`` flag which allows logging to a
   file
+* NEW format can now print the duration of an event with `{duration}`
 
 0.9.6
 =====
