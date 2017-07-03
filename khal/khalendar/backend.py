@@ -563,13 +563,33 @@ class SQLiteDb(object):
 
     def search(self, search_string):
         """search for events matching `search_string`"""
-        sql_s = ('SELECT href, calendar FROM events '
-                 'WHERE item LIKE (?) and calendar in ({0});')
+        sql_s = (
+            'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
+            'FROM recs_loc JOIN events ON '
+            'recs_loc.href = events.href AND '
+            'recs_loc.calendar = events.calendar '
+            'WHERE item LIKE (?) and events.calendar in ({0});'
+        )
         stuple = ('%{0}%'.format(search_string), )
         result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
-        for href, calendar in result:
-            event = self.get(href, calendar=calendar)
-            yield event
+        for item, href, start, end, ref, etag, dtype, calendar in result:
+            start = pytz.UTC.localize(datetime.utcfromtimestamp(start))
+            end = pytz.UTC.localize(datetime.utcfromtimestamp(end))
+            yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
+
+        sql_s = (
+            'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar '
+            'FROM recs_float JOIN events ON '
+            'recs_float.href = events.href AND '
+            'recs_float.calendar = events.calendar '
+            'WHERE item LIKE (?) and events.calendar in ({0});'
+        )
+        stuple = ('%{0}%'.format(search_string), )
+        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
+        for item, href, start, end, ref, etag, dtype, calendar in result:
+            start = datetime.utcfromtimestamp(start)
+            end = datetime.utcfromtimestamp(end)
+            yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
 
 
 def check_support(vevent, href, calendar):

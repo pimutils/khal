@@ -442,9 +442,10 @@ This is supposed to help check if those formats are configured as intended.
 
 search
 ******
-search for events matching a search string and print them. Currently recurring
-events are only printed once. No advanced search features are currently
-supported.
+search for events matching a search string and print them.  Currently, search
+will print one line for every different event in a recurrence set, that is one
+line for the master event, and one line for every different overwritten event.
+No advanced search features are currently supported.
 
 The command
 

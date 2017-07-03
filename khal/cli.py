@@ -538,7 +538,8 @@ def _get_cli():
     def search(ctx, format, search_string):
         '''Search for events matching SEARCH_STRING.
 
-        For repetitive events only one event is currently shown.
+        For recurring events, only the master event and different overwritten
+        events are shown.
         '''
         # TODO support for time ranges, location, description etc
         if format is None:

@@ -13,6 +13,11 @@ may want to subscribe to `GitHub's tag feed
 not released yet
 
 * FIX don't crash when editing events with datetime UNTIL properties
+* FIX `search` will no longer break on overwritten events with a master event
+
+* CHANGE `search` will now print one line for every different event in a
+  recurrence set, that is one line for the master event, and one line for every
+  different overwritten event
 
 0.9.6
 =====

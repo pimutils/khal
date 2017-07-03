@@ -353,7 +353,7 @@ def test_cancelled_instance():
     event = Event.fromString(orig_event_str, ref='1405314000', **EVENT_KWARGS)
     assert event.format(SEARCH_FORMAT, date(2014, 7, 14)) == \
         'CANCELLED 14.07.2014 07:00-12:00 Arbeit ⟳\x1b[0m'
-    event = Event.fromString(orig_event_str, **EVENT_KWARGS)
+    event = Event.fromString(orig_event_str, ref='PROTO', **EVENT_KWARGS)
     assert event.format(SEARCH_FORMAT, date(2014, 7, 14)) == \
         '30.06.2014 07:00-12:00 Arbeit ⟳\x1b[0m'
 
