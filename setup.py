@@ -25,7 +25,8 @@ requirements = [
 ]
 
 test_requirements = [
-    'freezegun'
+    'freezegun',
+    'vdirsyncer',
 ]
 
 extra_requirements = {

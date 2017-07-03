@@ -12,6 +12,7 @@ may want to subscribe to `GitHub's tag feed
 not released yet
 
 * NEW DEPENDENCY added click_log  >= 0.1.3
+* vdirsyncer is still a test dependency (and always has been)
 
 * CHANGE only searched configuration file paths are now
   $XDG_CONFIG_HOME/khal/config and $XDG_CONFIG_HOME/khal/khal.conf (deprecated)
