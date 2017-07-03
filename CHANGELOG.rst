@@ -14,11 +14,16 @@ not released yet
 * NEW DEPENDENCY added click_log  >= 0.1.3
 * vdirsyncer is still a test dependency (and always has been)
 
+* FIX `search` will no longer break on overwritten events with a master event
+
 * CHANGE only searched configuration file paths are now
   $XDG_CONFIG_HOME/khal/config and $XDG_CONFIG_HOME/khal/khal.conf (deprecated)
 * CHANGE removed default command
 * CHANGE default date/time formats to be the system's locale's formats
 * CHANGE ``--verbose`` flag to ``--verbosity``, allowing finer granularity
+* CHANGE `search` will now print one line for every different event in a
+  recurrence set, that is one line for the master event, and one line for every
+  different overwritten event
 
 * NEW khal learned the ``--logfile/-l LOGFILE`` flag which allows logging to a
   file

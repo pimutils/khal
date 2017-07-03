@@ -275,15 +275,45 @@ class TestCollection(object):
             _get_text('event_dt_simple'), calendar=cal1, locale=utils.LOCALE_BERLIN)
         coll.new(event, cal1)
         assert len(list(coll.search('Event'))) == 1
+        event = Event.fromString(
+            _get_text('event_dt_floating'), calendar=cal1, locale=utils.LOCALE_BERLIN)
+        coll.new(event, cal1)
+        assert len(list(coll.search('Search for me'))) == 1
+        assert len(list(coll.search('Event'))) == 2
+
+    def test_search_recurrence_id_only(self, coll_vdirs):
+        """test searching for recurring events which only have a recuid event,
+        and no master"""
+        coll, vdirs = coll_vdirs
+        assert len(list(coll.search('Event'))) == 0
+        event = Event.fromString(
+            _get_text('event_dt_recuid_no_master'), calendar=cal1, locale=utils.LOCALE_BERLIN)
+        coll.new(event, cal1)
+        assert len(list(coll.search('Event'))) == 1
+
+    def test_search_recurrence_id_only_multi(self, coll_vdirs):
+        """test searching for recurring events which only have a recuid event,
+        and no master"""
+        coll, vdirs = coll_vdirs
+        assert len(list(coll.search('Event'))) == 0
+        event = Event.fromString(
+            _get_text('event_dt_multi_recuid_no_master'), calendar=cal1, locale=utils.LOCALE_BERLIN)
+        coll.new(event, cal1)
+        events = list(sorted(coll.search('Event')))
+        assert len(events) == 2
+        assert events[0].format(
+            '{start} {end} {title}', dt.date.today()) == '30.06. 07:30 30.06. 12:00 Arbeit\x1b[0m'
+        assert events[1].format(
+            '{start} {end} {title}', dt.date.today()) == '07.07. 08:30 07.07. 12:00 Arbeit\x1b[0m'
 
     def test_delete_two_events(self, coll_vdirs, sleep_time):
             """testing if we can delete any of two events in two different
             calendars with the same filename"""
             coll, vdirs = coll_vdirs
-            event1 = Event.fromString(_get_text('event_dt_simple'),
-                                      calendar=cal1, locale=utils.LOCALE_BERLIN)
-            event2 = Event.fromString(_get_text('event_dt_simple'),
-                                      calendar=cal2, locale=utils.LOCALE_BERLIN)
+            event1 = Event.fromString(
+                _get_text('event_dt_simple'), calendar=cal1, locale=utils.LOCALE_BERLIN)
+            event2 = Event.fromString(
+                _get_text('event_dt_simple'), calendar=cal2, locale=utils.LOCALE_BERLIN)
             coll.new(event1, cal1)
             sleep(sleep_time)  # make sure the etags are different
             coll.new(event2, cal2)
