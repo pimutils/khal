@@ -1051,6 +1051,7 @@ class ClassicView(Pane):
             on_press={key: self.new_event for key in self._conf['keybindings']['new']},
             firstweekday=self._conf['locale']['firstweekday'],
             weeknumbers=self._conf['locale']['weeknumbers'],
+            monthdisplay=self._conf['view']['monthdisplay'],
             get_styles=collection.get_styles
         )
         if self._conf['view']['dynamic_days']:

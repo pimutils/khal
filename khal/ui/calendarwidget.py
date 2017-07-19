@@ -348,11 +348,13 @@ class CListBox(urwid.ListBox):
 
 class CalendarWalker(urwid.SimpleFocusListWalker):
     def __init__(self, on_date_change, on_press, keybindings, firstweekday=0,
-                 weeknumbers=False, get_styles=None, initial=None):
+                 weeknumbers=False, monthdisplay='firstday', get_styles=None,
+                 initial=None):
         if initial is None:
             initial = dt.date.today()
         self.firstweekday = firstweekday
         self.weeknumbers = weeknumbers
+        self.monthdisplay = monthdisplay
         self.on_date_change = on_date_change
         self.on_press = on_press
         self.keybindings = keybindings
@@ -483,7 +485,10 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
                   if today is in this week
         :rtype: tuple(urwid.CColumns, bool)
         """
-        if 1 in [day.day for day in week]:
+        if self.monthdisplay == 'firstday' and 1 in [day.day for day in week]:
+            month_name = calendar.month_abbr[week[-1].month].ljust(4)
+            attr = 'monthname'
+        elif self.monthdisplay == 'plainweek' and week [0].day <= 7:
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
             attr = 'monthname'
         elif self.weeknumbers == 'left':
@@ -553,7 +558,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
 class CalendarWidget(urwid.WidgetWrap):
     def __init__(self, on_date_change, keybindings, on_press, firstweekday=0,
-                 weeknumbers=False, get_styles=None, initial=None):
+                 weeknumbers=False, monthdisplay='firstday', get_styles=None, initial=None):
         """
         :param on_date_change: a function that is called every time the selected
             date is changed with the newly selected date as a first (and only
@@ -623,7 +628,8 @@ class CalendarWidget(urwid.WidgetWrap):
             [(2, urwid.AttrMap(urwid.Text(name), 'dayname')) for name in dnames],
             dividechars=1)
         self.walker = CalendarWalker(
-            on_date_change, on_press, default_keybindings, firstweekday, weeknumbers,
+            on_date_change, on_press, default_keybindings, firstweekday,
+            weeknumbers, monthdisplay,
             get_styles, initial=self._initial)
         self.box = CListBox(self.walker)
         frame = urwid.Frame(self.box, header=dnames)

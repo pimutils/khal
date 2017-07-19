@@ -41,9 +41,10 @@ class StartEnd(object):
 
 
 class CalendarPopUp(urwid.PopUpLauncher):
-    def __init__(self, widget, on_date_change, weeknumbers=False, firstweekday=0, keybindings=None):
+    def __init__(self, widget, on_date_change, weeknumbers=False, firstweekday=0, monthdisplay='firstday', keybindings=None):
         self._on_date_change = on_date_change
         self._weeknumbers = weeknumbers
+        self._monthdisplay = monthdisplay
         self._firstweekday = firstweekday
         self._keybindings = {} if keybindings is None else keybindings
         self.__super.__init__(widget)
@@ -70,6 +71,7 @@ class CalendarPopUp(urwid.PopUpLauncher):
                 on_change, self._keybindings, on_press,
                 firstweekday=self._firstweekday,
                 weeknumbers=self._weeknumbers,
+                monthdisplay=self._monthdisplay,
                 initial=initial_date)
             pop_up = urwid.LineBox(pop_up)
             return pop_up
@@ -89,7 +91,8 @@ class DateEdit(urwid.WidgetWrap):
     def __init__(
             self, startdt=None, dateformat='%Y-%m-%d',
             on_date_change=lambda _: None,
-            weeknumbers=False, firstweekday=0, keybindings=None,
+            weeknumbers=False, firstweekday=0, monthdisplay='firstday',
+            keybindings=None,
     ):
         datewidth = len(startdt.strftime(dateformat)) + 1
         self._dateformat = dateformat
@@ -101,7 +104,7 @@ class DateEdit(urwid.WidgetWrap):
             validate=self._validate,
             edit_text=startdt.strftime(dateformat),
             on_date_change=on_date_change)
-        wrapped = CalendarPopUp(self._edit, on_date_change, weeknumbers, firstweekday, keybindings)
+        wrapped = CalendarPopUp(self._edit, on_date_change, weeknumbers, firstweekday, monthdisplay, keybindings)
         padded = urwid.Padding(wrapped, align='left', width=datewidth, left=0, right=1)
         super().__init__(padded)
 
@@ -254,12 +257,16 @@ class StartEndEditor(urwid.WidgetWrap):
         self.widgets.startdate = DateEdit(
             self._startdt, self.conf['locale']['longdateformat'],
             self._start_date_change, self.conf['locale']['weeknumbers'],
-            self.conf['locale']['firstweekday'], self.conf['keybindings'],
+            self.conf['locale']['firstweekday'],
+            self.conf['view']['monthdisplay'],
+            self.conf['keybindings'],
         )
         self.widgets.enddate = DateEdit(
             self._enddt, self.conf['locale']['longdateformat'],
             self._end_date_change, self.conf['locale']['weeknumbers'],
-            self.conf['locale']['firstweekday'], self.conf['keybindings'],
+            self.conf['locale']['firstweekday'],
+            self.conf['view']['monthdisplay'],
+            self.conf['keybindings'],
         )
 
         if state is True:
@@ -571,6 +578,7 @@ class RecurrenceEditor(urwid.WidgetWrap):
             until, self._conf['locale']['longdateformat'],
             lambda _: None, self._conf['locale']['weeknumbers'],
             self._conf['locale']['firstweekday'],
+            self._conf['view']['monthdisplay'],
         )
 
         self._rebuild_weekday_checks()

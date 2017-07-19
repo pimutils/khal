@@ -78,6 +78,24 @@ def weeknumber_option(option):
             "Invalid value '{}' for option 'weeknumber', must be one of "
             "'off', 'left' or 'right'".format(option))
 
+def monthdisplay_option(option):
+    """checks if *option* is a valid value
+
+    :param option: the option the user set in the config file
+    :type option: str
+    :returns: firstday, plainweek
+    :rtype: str/bool
+    """
+    option = option.lower()
+    if option == 'firstday':
+        return 'firstday'
+    elif option == 'plainweek':
+        return 'plainweek'
+    else:
+        raise VdtValueError(
+            "Invalid value '{}' for option 'monthdisplay', must be one of "
+            "'firstday' or 'plainweek'".format(option))
+
 
 def expand_path(path):
     """expands `~` as well as variable names"""
