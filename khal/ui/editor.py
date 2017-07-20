@@ -41,7 +41,8 @@ class StartEnd(object):
 
 
 class CalendarPopUp(urwid.PopUpLauncher):
-    def __init__(self, widget, on_date_change, weeknumbers=False, firstweekday=0, monthdisplay='firstday', keybindings=None):
+    def __init__(self, widget, on_date_change, weeknumbers=False,
+                 firstweekday=0, monthdisplay='firstday', keybindings=None):
         self._on_date_change = on_date_change
         self._weeknumbers = weeknumbers
         self._monthdisplay = monthdisplay
@@ -104,7 +105,8 @@ class DateEdit(urwid.WidgetWrap):
             validate=self._validate,
             edit_text=startdt.strftime(dateformat),
             on_date_change=on_date_change)
-        wrapped = CalendarPopUp(self._edit, on_date_change, weeknumbers, firstweekday, monthdisplay, keybindings)
+        wrapped = CalendarPopUp(self._edit, on_date_change, weeknumbers,
+                                firstweekday, monthdisplay, keybindings)
         padded = urwid.Padding(wrapped, align='left', width=datewidth, left=0, right=1)
         super().__init__(padded)
 

@@ -78,6 +78,7 @@ def weeknumber_option(option):
             "Invalid value '{}' for option 'weeknumber', must be one of "
             "'off', 'left' or 'right'".format(option))
 
+
 def monthdisplay_option(option):
     """checks if *option* is a valid value
 

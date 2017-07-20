@@ -488,7 +488,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         if self.monthdisplay == 'firstday' and 1 in [day.day for day in week]:
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
             attr = 'monthname'
-        elif self.monthdisplay == 'plainweek' and week [0].day <= 7:
+        elif self.monthdisplay == 'plainweek' and week[0].day <= 7:
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
             attr = 'monthname'
         elif self.weeknumbers == 'left':
