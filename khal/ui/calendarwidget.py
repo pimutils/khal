@@ -235,9 +235,9 @@ class CListBox(urwid.ListBox):
         super(CListBox, self).__init__(walker)
 
     def render(self, size, focus=False):
+        while 'bottom' in self.ends_visible(size):
+            self.body._autoextend()
         if self._init:
-            while 'bottom' in self.ends_visible(size):
-                self.body._autoextend()
             self.set_focus_valign('middle')
             self._init = False
 

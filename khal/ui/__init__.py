@@ -277,9 +277,9 @@ class DListBox(EventListBox):
 
     def render(self, size, focus=False):
         if self._init:
-            while 'bottom' in self.ends_visible(size):
-                self.body._autoextend()
             self._init = False
+        while 'bottom' in self.ends_visible(size):
+            self.body._autoextend()
         return super().render(size, focus)
 
     def clean(self):
