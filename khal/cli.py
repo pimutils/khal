@@ -200,6 +200,8 @@ class _NoConfig(object):
 
 def prepare_context(ctx, config):
     assert ctx.obj is None
+
+    logger.debug('khal %s' % __version__)
     try:
         conf = get_config(config)
     except NoConfigFile:
@@ -208,6 +210,9 @@ def prepare_context(ctx, config):
         logger.info('If your configuration file used to work, please have a  '
                     'look at the Changelog to see what changed.')
         sys.exit(1)
+    else:
+        logger.debug('Using config:')
+        logger.debug(stringify_conf(conf))
 
     ctx.obj = {'conf_path': config, 'conf': conf}
 
@@ -239,13 +244,9 @@ def _get_cli():
         # shows up as 'khal' under linux and as 'python: khal (python2.7)'
         # under FreeBSD, which is still nicer than the default
         setproctitle('khal')
-        logger = logging.getLogger('khal')
         if ctx.logfilepath:
+            logger = logging.getLogger('khal')
             logger.handlers = [logging.FileHandler(ctx.logfilepath)]
-
-        logger.info('khal %s' % __version__)
-        logger.debug('Using config:')
-        logger.debug(stringify_conf(ctx.obj['conf']))
 
     @cli.command()
     @multi_calendar_option
