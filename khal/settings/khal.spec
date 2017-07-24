@@ -46,7 +46,7 @@ readonly = boolean(default=False)
 # considered, all other files are ignored (except for a possible `color` file).
 #
 # If set to ``birthdays`` khal will expect a VCARD collection and extract
-# birthdays from those VCARDS, that is only files with ``.ics`` extension will
+# birthdays from those VCARDS, that is only files with ``.vcf`` extension will
 # be considered, all other files will be ignored.  ``birthdays`` also implies
 # ``readonly=True``.
 #
