@@ -252,7 +252,7 @@ agenda_day_format = string(default='{bold}{name}, {date-long}{reset}')
 
 # Display month name on row when the week contains the first day of
 # of the month ('firstday') or when the first day of the week is in the
-# month ('plainweek')
+# month ('firstfullweek')
 monthdisplay = monthdisplay(default='firstday')
 
 # Default formatting for events used when the start- and end-date are not

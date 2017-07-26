@@ -84,18 +84,18 @@ def monthdisplay_option(option):
 
     :param option: the option the user set in the config file
     :type option: str
-    :returns: firstday, plainweek
+    :returns: firstday, firstfullweek
     :rtype: str/bool
     """
     option = option.lower()
     if option == 'firstday':
         return 'firstday'
-    elif option == 'plainweek':
-        return 'plainweek'
+    elif option == 'firstfullweek':
+        return 'firstfullweek'
     else:
         raise VdtValueError(
             "Invalid value '{}' for option 'monthdisplay', must be one of "
-            "'firstday' or 'plainweek'".format(option))
+            "'firstday' or 'firstfullweek'".format(option))
 
 
 def expand_path(path):

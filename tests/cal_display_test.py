@@ -214,7 +214,7 @@ def test_vertical_month():
 
         vert_str = vertical_month(month=12, year=2011,
                                   today=dt.date(2011, 12, 12),
-                                  monthdisplay='plainweek')
+                                  monthdisplay='firstfullweek')
         assert vert_str == example2
 
         weno_str = vertical_month(month=12, year=2011,

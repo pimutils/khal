@@ -28,10 +28,10 @@ not released yet
 * NEW khal learned the ``--logfile/-l LOGFILE`` flag which allows logging to a
   file
 * NEW format can now print the duration of an event with `{duration}`
-* NEW configuration option: [view]monthdisplay = firstday|plainweek,
+* NEW configuration option: [view]monthdisplay = firstday|firstfullweek,
   if set to 'firstday', khal displays the month name as soon as any day
-  in the week is within the new month. If set to 'plainweek', khal
-  displays the month name only if the first day of the week is winth
+  in the week is within the new month. If set to 'firstfullweek', khal
+  displays the month name only if the first day of the week is within
   the new month.
 
 0.9.6
