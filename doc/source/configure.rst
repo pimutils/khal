@@ -14,8 +14,8 @@ configuration of :command:`khal`.
 Location of configuration file
 ------------------------------
 :command:`khal` is looking for configuration files in the following places and
-order: :file:`$XDG_CONFIG_HOME/khal/config` (on most systems this is
-:file:`~/.config/khal/config`), :file:`~/.khal/khal.conf` (deprecated) and a
+order: :file:`$XDG_CONFIG_HOME/khal/khal.conf` (on most systems this is
+:file:`~/.config/khal/khal.conf`), :file:`~/.khal/khal.conf` (deprecated) and a
 file called :file:`khal.conf` in the current directory (deprecated).
 Alternatively you can specify which configuration file to use with :option:`-c
 path/to/config` at runtime.
