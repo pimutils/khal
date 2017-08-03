@@ -131,6 +131,26 @@ class TestGuessDatetimefstr:
                     'now'.split(), locale=LOCALE_BERLIN, default_day=dt.datetime.today(),
                 )
 
+    def test_long_not_configured(self):
+        """long version is not configured, but short contains the year"""
+        locale = {
+            'timeformat': '%H:%M',
+            'dateformat': '%Y-%m-%d',
+            'longdateformat': '',
+            'datetimeformat': '%Y-%m-%d %H:%M',
+            'longdatetimeformat': '',
+        }
+        with freeze_time('2016-12-30 17:53'):
+            assert (dt.datetime(2017, 1, 1), True) == \
+                guessdatetimefstr(
+                    '2017-1-1'.split(), locale=locale, default_day=dt.datetime.today(),
+                )
+
+        with freeze_time('2016-12-30 17:53'):
+            assert (dt.datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
+                '2017-1-1 16:30'.split(), locale=locale, default_day=dt.datetime.today(),
+            )
+
     def test_short_format_contains_year(self):
         """if the non long versions of date(time)format contained a year, the
         current year would be used instead of the given one, see #545"""
