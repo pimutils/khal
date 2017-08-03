@@ -32,7 +32,7 @@ import pytz
 from click import confirm, echo, prompt, style
 from khal import (__productname__, __version__, calendar_display,
                   parse_datetime, utils)
-from khal.exceptions import FatalError
+from khal.exceptions import FatalError, DateTimeParseError
 from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 
@@ -282,7 +282,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         info = parse_datetime.eventinfofstr(
             info, conf['locale'], adjust_reasonably=True, localize=False,
         )
-    except ValueError:
+    except DateTimeParseError:
         info = dict()
 
     while True:

@@ -8,7 +8,7 @@ import icalendar
 import pytest
 from freezegun import freeze_time
 from khal import utils
-from khal.exceptions import FatalError
+from khal.exceptions import FatalError, DateTimeParseError
 from khal.parse_datetime import (construct_daynames, eventinfofstr,
                                  guessdatetimefstr, guessrangefstr,
                                  guesstimedeltafstr, timedelta2str,
@@ -262,15 +262,15 @@ class TestGuessRangefstr:
             guessrangefstr('week', locale=LOCALE_BERLIN)
 
     def test_invalid(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(DateTimeParseError):
             guessrangefstr('3d', locale=LOCALE_BERLIN)
-        with pytest.raises(ValueError):
+        with pytest.raises(DateTimeParseError):
             guessrangefstr('35.1.2016', locale=LOCALE_BERLIN)
-        with pytest.raises(ValueError):
+        with pytest.raises(DateTimeParseError):
             guessrangefstr('1.1.2016 2x', locale=LOCALE_BERLIN)
-        with pytest.raises(ValueError):
+        with pytest.raises(DateTimeParseError):
             guessrangefstr('1.1.2016x', locale=LOCALE_BERLIN)
-        with pytest.raises(ValueError):
+        with pytest.raises(DateTimeParseError):
             guessrangefstr('xxx yyy zzz', locale=LOCALE_BERLIN)
 
     def test_short_format_contains_year(self):
@@ -467,7 +467,7 @@ test_set_leap_year = _create_testcases(
 def test_leap_year():
     for data_list, vevent in test_set_leap_year:
         with freeze_time('1999-1-1'):
-            with pytest.raises(ValueError):
+            with pytest.raises(DateTimeParseError):
                 event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
         with freeze_time('2016-1-1 20:21:22'):
             event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)

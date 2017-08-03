@@ -32,6 +32,10 @@ class FatalError(Error):
     pass
 
 
+class DateTimeParseError(FatalError):
+    pass
+
+
 class ConfigurationError(FatalError):
     pass
 

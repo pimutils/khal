@@ -29,7 +29,7 @@ from calendar import isleap
 from time import strptime
 
 import pytz
-from khal.exceptions import FatalError
+from khal.exceptions import FatalError, DateTimeParseError
 
 logger = logging.getLogger(__name__)
 
@@ -232,7 +232,13 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
             pass
         else:
             return dtstart, all_day
-    raise ValueError()
+    raise DateTimeParseError(
+        "Could not parse \"{}\".\nPlease check your configuration or run "
+        "`khal printformats` to see if this does match your configured "
+        "[long](date|time|datetime)format.\nIf you suspect a bug, please "
+        "file an issue at https://github.com/pimutils/khal/issues/ "
+        "".format(dtime_list)
+    )
 
 
 def timedelta2str(delta):
@@ -284,8 +290,8 @@ def guesstimedeltafstr(delta_string):
         try:
             numint = int(num)
         except ValueError:
-            raise ValueError('Invalid number in timedelta string "%s": "%s"'
-                             % (delta_string, num))
+            raise DateTimeParseError(
+                'Invalid number in timedelta string "%s": "%s"' % (delta_string, num))
 
         ulower = unit.lower().strip()
         if ulower == 'd' or ulower == 'day' or ulower == 'days':
@@ -368,7 +374,7 @@ def guessrangefstr(daterange, locale, adjust_reasonably=False,
                         raise FatalError()
 
                     end = start + delta
-                except ValueError:
+                except (ValueError, DateTimeParseError):
                     split = end.split(" ")
                     end, end_allday = guessdatetimefstr(split, locale, default_day=start.date())
                     if len(split) != 0:
@@ -391,10 +397,16 @@ def guessrangefstr(daterange, locale, adjust_reasonably=False,
                 if end < start:
                     end = end + dt.timedelta(days=1)
             return start, end, allday
-        except ValueError:
+        except (ValueError, DateTimeParseError):
             pass
 
-    raise ValueError('Could not parse `{}` as a daterange'.format(daterange))
+    raise DateTimeParseError(
+        "Could not parse \"{}\".\nPlease check your configuration or run "
+        "`khal printformats` to see if this does match your configured "
+        "[long](date|time|datetime)format.\nIf you suspect a bug, please "
+        "file an issue at https://github.com/pimutils/khal/issues/ "
+        "".format(daterange)
+    )
 
 
 def rrulefstr(repeat, until, locale):
@@ -455,7 +467,7 @@ def eventinfofstr(info_string, locale, adjust_reasonably=False, localize=False):
                 ' '.join(parts[0:i]), locale,
                 adjust_reasonably=adjust_reasonably,
             )
-        except ValueError:
+        except (ValueError, DateTimeParseError):
             continue
         if start is not None and end is not None:
             try:
@@ -468,7 +480,13 @@ def eventinfofstr(info_string, locale, adjust_reasonably=False, localize=False):
             break
 
     if start is None or end is None:
-        raise ValueError('Could not parse `{}`'.format(info_string))
+        raise DateTimeParseError(
+            "Could not parse \"{}\".\nPlease check your configuration or run "
+            "`khal printformats` to see if this does match your configured "
+            "[long](date|time|datetime)format.\nIf you suspect a bug, please "
+            "file an issue at https://github.com/pimutils/khal/issues/ "
+            "".format(info_string)
+        )
 
     if tz is None:
         tz = locale['default_timezone']
