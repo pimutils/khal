@@ -183,6 +183,7 @@ def build_collection(conf, selection):
             highlight_event_days=conf['default']['highlight_event_days'],
         )
     except FatalError as error:
+        logger.debug(error, exc_info=True)
         logger.fatal(error)
         sys.exit(1)
 
@@ -287,6 +288,7 @@ def _get_cli():
             )
             click.echo('\n'.join(rows))
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
@@ -321,6 +323,7 @@ def _get_cli():
             )
             click.echo('\n'.join(event_column))
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
@@ -393,6 +396,7 @@ def _get_cli():
                 format=format,
             )
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
@@ -446,6 +450,7 @@ def _get_cli():
                     env={"calendars": ctx.obj['conf']['calendars']},
                 )
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
@@ -481,6 +486,7 @@ def _get_cli():
                 )
             )
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
@@ -500,6 +506,7 @@ def _get_cli():
                 dt_str = time.strftime(ctx.obj['conf']['locale'][strftime_format])
                 click.echo('{}: {}'.format(strftime_format, dt_str))
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
@@ -522,6 +529,7 @@ def _get_cli():
                 sys.stdin = open('/dev/tty', 'r')
             controllers.print_ics(ctx.obj['conf'], name, ics_str, format)
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
@@ -556,6 +564,7 @@ def _get_cli():
                 )
             click.echo('\n'.join(event_column))
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
@@ -579,6 +588,7 @@ def _get_cli():
                 conf=ctx.obj['conf']
             )
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
@@ -609,6 +619,7 @@ def _get_cli():
             )
             click.echo('\n'.join(rows))
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
@@ -620,6 +631,7 @@ def _get_cli():
         try:
             configwizard.configwizard()
         except FatalError as error:
+            logger.debug(error, exc_info=True)
             logger.fatal(error)
             sys.exit(1)
 
