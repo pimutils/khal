@@ -50,6 +50,23 @@ example1 = [
     '    20 21 22 23 24 25 26 ',
     '\x1b[1mMar \x1b[0m27 28 29  1  2  3  4 ']
 
+example2 = [
+    '\x1b[1m    Mo Tu We Th Fr Sa Su \x1b[0m',
+    '    28 29 30  1  2  3  4 ',
+    '\x1b[1mDec \x1b[0m 5  6  7  8  9 10 11 ',
+    '    \x1b[7m12\x1b[0m 13 14 15 16 17 18 ',
+    '    19 20 21 22 23 24 25 ',
+    '    26 27 28 29 30 31  1 ',
+    '\x1b[1mJan \x1b[0m 2  3  4  5  6  7  8 ',
+    '     9 10 11 12 13 14 15 ',
+    '    16 17 18 19 20 21 22 ',
+    '    23 24 25 26 27 28 29 ',
+    '    30 31  1  2  3  4  5 ',
+    '\x1b[1mFeb \x1b[0m 6  7  8  9 10 11 12 ',
+    '    13 14 15 16 17 18 19 ',
+    '    20 21 22 23 24 25 26 ',
+    '    27 28 29  1  2  3  4 ']
+
 
 example_weno = [
     '\x1b[1m    Mo Tu We Th Fr Sa Su   \x1b[0m',
@@ -194,6 +211,11 @@ def test_vertical_month():
         vert_str = vertical_month(month=12, year=2011,
                                   today=dt.date(2011, 12, 12))
         assert vert_str == example1
+
+        vert_str = vertical_month(month=12, year=2011,
+                                  today=dt.date(2011, 12, 12),
+                                  monthdisplay='firstfullweek')
+        assert vert_str == example2
 
         weno_str = vertical_month(month=12, year=2011,
                                   today=dt.date(2011, 12, 12),

@@ -129,6 +129,7 @@ def vertical_month(month=None,
                    weeknumber=False,
                    count=3,
                    firstweekday=0,
+                   monthdisplay='firstday',
                    collection=None,
                    hmethod='fg',
                    default_color='',
@@ -173,7 +174,10 @@ def vertical_month(month=None,
     _calendar = calendar.Calendar(firstweekday)
     for _ in range(count):
         for week in _calendar.monthdatescalendar(year, month):
-            new_month = len([day for day in week if day.day == 1])
+            if monthdisplay == 'firstday':
+                new_month = len([day for day in week if day.day == 1])
+            else:
+                new_month = len(week if week[0].day <= 7 else [])
             strweek = str_week(week, today, collection, hmethod, default_color,
                                multiple, color, highlight_event_days, locale, bold_for_light_color)
             if new_month:

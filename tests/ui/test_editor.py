@@ -5,7 +5,7 @@ from khal.ui.editor import RecurrenceEditor, StartEndEditor
 
 from ..utils import BERLIN, LOCALE_BERLIN
 
-CONF = {'locale': LOCALE_BERLIN, 'keybindings': {}}
+CONF = {'locale': LOCALE_BERLIN, 'keybindings': {}, 'view': {'monthdisplay': 'firstday'}}
 
 START = BERLIN.localize(dt.datetime(2015, 4, 26, 22, 23))
 END = BERLIN.localize(dt.datetime(2015, 4, 27, 23, 23))

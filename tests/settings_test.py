@@ -37,7 +37,7 @@ class TestSettings(object):
                 'print_new': 'False',
                 'highlight_event_days': False,
                 'timedelta': dt.timedelta(days=2),
-                'show_all_days': False
+                'show_all_days': False,
             }
         }
         for key in comp_config:

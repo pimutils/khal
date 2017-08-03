@@ -79,6 +79,25 @@ def weeknumber_option(option):
             "'off', 'left' or 'right'".format(option))
 
 
+def monthdisplay_option(option):
+    """checks if *option* is a valid value
+
+    :param option: the option the user set in the config file
+    :type option: str
+    :returns: firstday, firstfullweek
+    :rtype: str/bool
+    """
+    option = option.lower()
+    if option == 'firstday':
+        return 'firstday'
+    elif option == 'firstfullweek':
+        return 'firstfullweek'
+    else:
+        raise VdtValueError(
+            "Invalid value '{}' for option 'monthdisplay', must be one of "
+            "'firstday' or 'firstfullweek'".format(option))
+
+
 def expand_path(path):
     """expands `~` as well as variable names"""
     return expanduser(expandvars(path))

@@ -276,6 +276,7 @@ def _get_cli():
                 firstweekday=ctx.obj['conf']['locale']['firstweekday'],
                 locale=ctx.obj['conf']['locale'],
                 weeknumber=ctx.obj['conf']['locale']['weeknumbers'],
+                monthdisplay=ctx.obj['conf']['view']['monthdisplay'],
                 hmethod=ctx.obj['conf']['highlight_days']['method'],
                 default_color=ctx.obj['conf']['highlight_days']['default_color'],
                 multiple=ctx.obj['conf']['highlight_days']['multiple'],

@@ -33,7 +33,7 @@ from .exceptions import (CannotParseConfigFileError, InvalidSettingsError,
                          NoConfigFile)
 from .utils import (config_checks, expand_db_path, expand_path,
                     get_color_from_vdir, get_vdir_type, is_color, is_timedelta,
-                    is_timezone, weeknumber_option)
+                    is_timezone, weeknumber_option, monthdisplay_option)
 
 logger = logging.getLogger(__name__)
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
@@ -109,6 +109,7 @@ def get_config(
              'expand_path': expand_path,
              'expand_db_path': expand_db_path,
              'weeknumbers': weeknumber_option,
+             'monthdisplay': monthdisplay_option,
              'color': is_color,
              }
     validator = Validator(fdict)

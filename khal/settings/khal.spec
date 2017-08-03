@@ -250,6 +250,11 @@ agenda_event_format = string(default='{calendar-color}{cancelled}{start-end-time
 # Specifies how each *day header* is formatted.
 agenda_day_format = string(default='{bold}{name}, {date-long}{reset}')
 
+# Display month name on row when the week contains the first day of
+# of the month ('firstday') or when the first day of the week is in the
+# month ('firstfullweek')
+monthdisplay = monthdisplay(default='firstday')
+
 # Default formatting for events used when the start- and end-date are not
 # clear through context, e.g. for :command:`search`, used almost everywhere
 # but :command:`list` and :command:`calendar`. It is therefore probably a
