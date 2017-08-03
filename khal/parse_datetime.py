@@ -413,23 +413,8 @@ def rrulefstr(repeat, until, locale):
     if repeat in ["daily", "weekly", "monthly", "yearly"]:
         rrule_settings = {'freq': repeat}
         if until:
-            until_date = None
-            for fun, dformat in [(datetimefstr, locale['datetimeformat']),
-                                 (datetimefstr, locale['longdatetimeformat']),
-                                 (timefstr, locale['timeformat']),
-                                 (datetimefstr, locale['dateformat']),
-                                 (datetimefstr, locale['longdateformat'])]:
-                try:
-                    until_date = fun(until.split(' '), dformat)
-                    break
-                except ValueError:
-                    pass
-            if until_date is None:
-                logger.fatal("Cannot parse until date: '{}'\nPlease have a look "
-                             "at the documentation.".format(until))
-                raise FatalError()
-            rrule_settings['until'] = until_date
-
+            until_dt, is_date = guessdatetimefstr(until.split(' '), locale)
+            rrule_settings['until'] = until_dt
         return rrule_settings
     else:
         logger.fatal("Invalid value for the repeat option. \
