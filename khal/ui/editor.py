@@ -23,7 +23,7 @@ import datetime as dt
 
 import urwid
 
-from ..utils import get_weekday_occurrence
+from ..utils import get_weekday_occurrence, get_wrapped_text
 from .calendarwidget import CalendarWidget
 from .widgets import (AlarmsEditor, Choice, DateConversionError, DateWidget,
                       ExtendedEdit, NColumns, NListBox, NPile, PositiveIntEdit,
@@ -407,7 +407,7 @@ class EventEditor(urwid.WidgetWrap):
 
     @property
     def title(self):  # Window title
-        return 'Edit: {}'.format(self.summary.original_widget.get_edit_text())
+        return 'Edit: {}'.format(get_wrapped_text(self.summary))
 
     @classmethod
     def selectable(cls):
@@ -415,13 +415,13 @@ class EventEditor(urwid.WidgetWrap):
 
     @property
     def changed(self):
-        if self.summary.original_widget.get_edit_text() != self.event.summary:
+        if get_wrapped_text(self.summary) != self.event.summary:
             return True
-        if self.description.original_widget.get_edit_text() != self.event.description:
+        if get_wrapped_text(self.description) != self.event.description:
             return True
-        if self.location.original_widget.get_edit_text() != self.event.location:
+        if get_wrapped_text(self.location) != self.event.location:
             return True
-        if self.categories.original_widget.get_edit_text() != self.event.categories:
+        if get_wrapped_text(self.categories) != self.event.categories:
             return True
         if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
@@ -432,18 +432,10 @@ class EventEditor(urwid.WidgetWrap):
         return False
 
     def update_vevent(self):
-        self.event.update_summary(
-            self.summary.original_widget.get_edit_text()
-        )
-        self.event.update_description(
-            self.description.original_widget.get_edit_text()
-        )
-        self.event.update_location(
-            self.location.original_widget.get_edit_text()
-        )
-        self.event.update_categories(
-            self.categories.original_widget.get_edit_text()
-        )
+        self.event.update_summary(get_wrapped_text(self.summary))
+        self.event.update_description(get_wrapped_text(self.description))
+        self.event.update_location(get_wrapped_text(self.location))
+        self.event.update_categories(get_wrapped_text(self.categories))
 
         if self.startendeditor.changed:
             self.event.update_start_end(

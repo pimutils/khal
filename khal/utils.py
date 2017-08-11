@@ -620,3 +620,7 @@ def sort_key(vevent):
         return uid, to_unix_time(rec_id.dt)
     else:
         return uid, 1
+
+
+def get_wrapped_text(widget):
+    return widget.original_widget.get_edit_text()
