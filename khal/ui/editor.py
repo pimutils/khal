@@ -364,18 +364,24 @@ class EventEditor(urwid.WidgetWrap):
             self.collection._calendars[self.event.calendar],
             decorate_choice
         )
-        self.description = urwid.AttrMap(ExtendedEdit(
-            caption=('', 'Description: '), edit_text=self.description, multiline=True,
-        ), 'edit')
+        self.description = urwid.AttrMap(
+            ExtendedEdit(
+                caption=('', 'Description: '),
+                edit_text=self.description,
+                multiline=True
+            ),
+            'edit'
+        )
         self.location = urwid.AttrMap(ExtendedEdit(
-            caption=('', 'Location:    '), edit_text=self.location), 'edit')
+            caption=('', 'Location:    '), edit_text=self.location), 'edit'
+        )
         self.categories = urwid.AttrMap(ExtendedEdit(
-            caption=('', 'Categories:  '), edit_text=self.categories), 'edit')
+            caption=('', 'Categories:  '), edit_text=self.categories), 'edit'
+        )
         self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
-            # self.summary,
-            # self.calendar_chooser,
-            NColumns([self.summary, self.calendar_chooser], dividechars=2),
+            self.summary,
+            self.calendar_chooser,
             divider,
             self.location,
             self.categories,
@@ -426,10 +432,18 @@ class EventEditor(urwid.WidgetWrap):
         return False
 
     def update_vevent(self):
-        self.event.update_summary(self.summary.original_widget.get_edit_text())
-        self.event.update_description(self.description.original_widget.get_edit_text())
-        self.event.update_location(self.location.original_widget.get_edit_text())
-        self.event.update_categories(self.categories.original_widget.get_edit_text())
+        self.event.update_summary(
+            self.summary.original_widget.get_edit_text()
+        )
+        self.event.update_description(
+            self.description.original_widget.get_edit_text()
+        )
+        self.event.update_location(
+            self.location.original_widget.get_edit_text()
+        )
+        self.event.update_categories(
+            self.categories.original_widget.get_edit_text()
+        )
 
         if self.startendeditor.changed:
             self.event.update_start_end(
