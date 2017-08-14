@@ -381,7 +381,7 @@ class EventEditor(urwid.WidgetWrap):
         self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
             self.summary,
-            self.calendar_chooser,
+            urwid.Columns([(12, self.calendar_chooser)]),
             divider,
             self.location,
             self.categories,
@@ -392,8 +392,8 @@ class EventEditor(urwid.WidgetWrap):
             divider,
             self.alarms,
             divider,
-            urwid.Button('Save', on_press=self.save),
-            urwid.Button('Export', on_press=self.export)
+            urwid.Columns([(12, urwid.Button('Save', on_press=self.save))]),
+            urwid.Columns([(12, urwid.Button('Export', on_press=self.export))])
         ]), outermost=True)
         self._always_save = always_save
         urwid.WidgetWrap.__init__(self, self.pile)
