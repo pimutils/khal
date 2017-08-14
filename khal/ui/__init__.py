@@ -759,7 +759,7 @@ class EventColumn(urwid.WidgetWrap):
             new_pane = urwid.Columns([
                 ('weight', 2, ContainerWidget(editor)),
                 ('weight', 1, ContainerWidget(self.dlistbox))
-            ], dividechars=0, focus_column=0)
+            ], dividechars=2, focus_column=0)
             new_pane.title = editor.title
 
             def teardown(data):
