@@ -23,7 +23,7 @@ import datetime as dt
 
 import urwid
 
-from ..utils import get_weekday_occurrence
+from ..utils import get_weekday_occurrence, get_wrapped_text
 from .calendarwidget import CalendarWidget
 from .widgets import (AlarmsEditor, Choice, DateConversionError, DateWidget,
                       ExtendedEdit, NColumns, NListBox, NPile, PositiveIntEdit,
@@ -350,7 +350,9 @@ class EventEditor(urwid.WidgetWrap):
         self.recurrenceeditor = RecurrenceEditor(
             self.event.recurobject, self._conf, event.start_local,
         )
-        self.summary = ExtendedEdit(caption='Title: ', edit_text=event.summary)
+        self.summary = urwid.AttrMap(ExtendedEdit(
+            caption=('', 'Title:       '), edit_text=event.summary), 'edit'
+        )
 
         divider = urwid.Divider(' ')
 
@@ -362,14 +364,24 @@ class EventEditor(urwid.WidgetWrap):
             self.collection._calendars[self.event.calendar],
             decorate_choice
         )
-        self.description = ExtendedEdit(
-            caption='Description: ', edit_text=self.description, multiline=True,
+        self.description = urwid.AttrMap(
+            ExtendedEdit(
+                caption=('', 'Description: '),
+                edit_text=self.description,
+                multiline=True
+            ),
+            'edit'
         )
-        self.location = ExtendedEdit(caption='Location: ', edit_text=self.location)
-        self.categories = ExtendedEdit(caption='Categories: ', edit_text=self.categories)
+        self.location = urwid.AttrMap(ExtendedEdit(
+            caption=('', 'Location:    '), edit_text=self.location), 'edit'
+        )
+        self.categories = urwid.AttrMap(ExtendedEdit(
+            caption=('', 'Categories:  '), edit_text=self.categories), 'edit'
+        )
         self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
-            NColumns([self.summary, self.calendar_chooser], dividechars=2),
+            self.summary,
+            urwid.Columns([(12, self.calendar_chooser)]),
             divider,
             self.location,
             self.categories,
@@ -380,8 +392,8 @@ class EventEditor(urwid.WidgetWrap):
             divider,
             self.alarms,
             divider,
-            urwid.Button('Save', on_press=self.save),
-            urwid.Button('Export', on_press=self.export)
+            urwid.Columns([(12, urwid.Button('Save', on_press=self.save))]),
+            urwid.Columns([(12, urwid.Button('Export', on_press=self.export))])
         ]), outermost=True)
         self._always_save = always_save
         urwid.WidgetWrap.__init__(self, self.pile)
@@ -395,7 +407,7 @@ class EventEditor(urwid.WidgetWrap):
 
     @property
     def title(self):  # Window title
-        return 'Edit: {}'.format(self.summary.get_edit_text())
+        return 'Edit: {}'.format(get_wrapped_text(self.summary))
 
     @classmethod
     def selectable(cls):
@@ -403,13 +415,13 @@ class EventEditor(urwid.WidgetWrap):
 
     @property
     def changed(self):
-        if self.summary.get_edit_text() != self.event.summary:
+        if get_wrapped_text(self.summary) != self.event.summary:
             return True
-        if self.description.get_edit_text() != self.event.description:
+        if get_wrapped_text(self.description) != self.event.description:
             return True
-        if self.location.get_edit_text() != self.event.location:
+        if get_wrapped_text(self.location) != self.event.location:
             return True
-        if self.categories.get_edit_text() != self.event.categories:
+        if get_wrapped_text(self.categories) != self.event.categories:
             return True
         if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
@@ -420,10 +432,10 @@ class EventEditor(urwid.WidgetWrap):
         return False
 
     def update_vevent(self):
-        self.event.update_summary(self.summary.get_edit_text())
-        self.event.update_description(self.description.get_edit_text())
-        self.event.update_location(self.location.get_edit_text())
-        self.event.update_categories(self.categories.get_edit_text())
+        self.event.update_summary(get_wrapped_text(self.summary))
+        self.event.update_description(get_wrapped_text(self.description))
+        self.event.update_location(get_wrapped_text(self.location))
+        self.event.update_categories(get_wrapped_text(self.categories))
 
         if self.startendeditor.changed:
             self.event.update_start_end(
