@@ -11,7 +11,7 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released yet
 
-* NEW DEPENDENCY added click_log  >= 0.1.3
+* NEW DEPENDENCY added click_log  >= 0.2.0
 * vdirsyncer is still a test dependency (and always has been)
 
 * FIX `search` will no longer break on overwritten events with a master event
