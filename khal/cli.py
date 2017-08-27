@@ -42,6 +42,7 @@ except ImportError:
 
 
 logger = logging.getLogger(__name__)
+click_log.basic_config('khal')
 
 days_option = click.option('--days', default=None, type=int, help='How many days to include.')
 week_option = click.option('--week', '-w', help='Include all events in one week.', is_flag=True)
@@ -53,43 +54,38 @@ def time_args(f):
     return dates_arg(events_option(week_option(days_option(f))))
 
 
-def _multi_calendar_select_callback(ctx, option, calendars):
-    if not calendars:
-        return
-    if 'calendar_selection' in ctx.obj:
+def multi_calendar_select(ctx, include_calendars, exclude_calendars):
+    if include_calendars and exclude_calendars:
         raise click.UsageError('Can\'t use both -a and -d.')
-    if not isinstance(calendars, tuple):
-        calendars = (calendars,)
+    # if not isinstance(include_calendars, tuple):
+        # include_calendars = (include_calendars,)
+    # if not isinstance(exclude_calendars, tuple):
+        # exclude_calendars = (exclude_calendars,)
 
-    mode = option.name
-    selection = ctx.obj['calendar_selection'] = set()
+    selection = set()
 
-    if mode == 'include_calendar':
-        for cal_name in calendars:
+    if include_calendars:
+        for cal_name in include_calendars:
             if cal_name not in ctx.obj['conf']['calendars']:
                 raise click.BadParameter(
                     'Unknown calendar {}, run `khal printcalendars` to get a '
                     'list of all configured calendars.'.format(cal_name)
                 )
 
-        selection.update(calendars)
-    elif mode == 'exclude_calendar':
+        selection.update(include_calendars)
+    elif exclude_calendars:
         selection.update(ctx.obj['conf']['calendars'].keys())
-        for value in calendars:
+        for value in exclude_calendars:
             selection.remove(value)
-    else:
-        raise ValueError(mode)
+
+    return selection or None
 
 
 def multi_calendar_option(f):
     a = click.option('--include-calendar', '-a', multiple=True, metavar='CAL',
-                     expose_value=False,
-                     callback=_multi_calendar_select_callback,
                      help=('Include the given calendar. Can be specified '
                            'multiple times.'))
     d = click.option('--exclude-calendar', '-d', multiple=True, metavar='CAL',
-                     expose_value=False,
-                     callback=_multi_calendar_select_callback,
                      help=('Exclude the given calendar. Can be specified '
                            'multiple times.'))
 
@@ -120,9 +116,6 @@ def calendar_option(f):
 
 
 def global_options(f):
-    def config_callback(ctx, option, config):
-        prepare_context(ctx, config)
-
     def color_callback(ctx, option, value):
         ctx.color = value
 
@@ -131,10 +124,8 @@ def global_options(f):
 
     config = click.option(
         '--config', '-c',
-        is_eager=True,  # make sure other options can access config
         help='The config file to use.',
-        default=None, metavar='PATH', expose_value=False,
-        callback=config_callback
+        default=None, metavar='PATH'
     )
     color = click.option(
         '--color/--no-color',
@@ -236,11 +227,10 @@ def stringify_conf(conf):
 
 def _get_cli():
     @click.group()
-    @click_log.init('khal')
-    @click_log.simple_verbosity_option()
+    @click_log.simple_verbosity_option('khal')
     @global_options
     @click.pass_context
-    def cli(ctx):
+    def cli(ctx, config):
         # setting the process title so it looks nicer in ps
         # shows up as 'khal' under linux and as 'python: khal (python2.7)'
         # under FreeBSD, which is still nicer than the default
@@ -248,6 +238,7 @@ def _get_cli():
         if ctx.logfilepath:
             logger = logging.getLogger('khal')
             logger.handlers = [logging.FileHandler(ctx.logfilepath)]
+        prepare_context(ctx, config)
 
     @cli.command()
     @multi_calendar_option
@@ -263,11 +254,15 @@ def _get_cli():
                   is_flag=True)
     @click.argument('DATERANGE', nargs=-1, required=False)
     @click.pass_context
-    def calendar(ctx, daterange, once, notstarted, format, day_format):
+    def calendar(ctx, include_calendar, exclude_calendar, daterange, once,
+                 notstarted, format, day_format):
         '''Print calendar with agenda.'''
         try:
             rows = controllers.calendar(
-                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+                build_collection(
+                    ctx.obj['conf'],
+                    multi_calendar_select(ctx, include_calendar, exclude_calendar)
+                ),
                 agenda_format=format,
                 day_format=day_format,
                 once=once,
@@ -307,12 +302,16 @@ def _get_cli():
     @click.argument('DATERANGE', nargs=-1, required=False,
                     metavar='[DATETIME [DATETIME | RANGE]]')
     @click.pass_context
-    def klist(ctx, daterange, once, notstarted, format, day_format):
+    def klist(ctx, include_calendar, exclude_calendar,
+              daterange, once, notstarted, format, day_format):
         """List all events between a start (default: today) and (optional)
         end datetime."""
         try:
             event_column = controllers.khal_list(
-                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+                build_collection(
+                    ctx.obj['conf'],
+                    multi_calendar_select(ctx, include_calendar, exclude_calendar)
+                ),
                 agenda_format=format,
                 day_format=day_format,
                 daterange=daterange,
@@ -457,7 +456,7 @@ def _get_cli():
     @cli.command()
     @multi_calendar_option
     @click.pass_context
-    def interactive(ctx):
+    def interactive(ctx, include_calendar, exclude_calendar):
         '''Interactive UI. Also launchable via `ikhal`.'''
         controllers.interactive(
             build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
@@ -468,23 +467,27 @@ def _get_cli():
     @global_options
     @multi_calendar_option
     @click.pass_context
-    def interactive_cli(ctx):
+    def interactive_cli(ctx, config, include_calendar, exclude_calendar):
         '''Interactive UI. Also launchable via `khal interactive`.'''
+        prepare_context(ctx, config)
         controllers.interactive(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
-            ctx.obj['conf'])
+            build_collection(
+                ctx.obj['conf'],
+                multi_calendar_select(ctx, include_calendar, exclude_calendar)
+            ),
+            ctx.obj['conf']
+        )
 
     @cli.command()
     @multi_calendar_option
     @click.pass_context
-    def printcalendars(ctx):
+    def printcalendars(ctx, include_calendar, exclude_calendar):
         '''List all calendars.'''
         try:
-            click.echo(
-                '\n'.join(
-                    build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)).names
-                )
-            )
+            click.echo('\n'.join(build_collection(
+                ctx.obj['conf'],
+                multi_calendar_select(ctx, include_calendar, exclude_calendar)
+            ).names))
         except FatalError as error:
             logger.debug(error, exc_info=True)
             logger.fatal(error)
@@ -539,7 +542,7 @@ def _get_cli():
                   help=('The format of the events.'))
     @click.argument('search_string')
     @click.pass_context
-    def search(ctx, format, search_string):
+    def search(ctx, format, search_string, include_calendar, exclude_calendar):
         '''Search for events matching SEARCH_STRING.
 
         For recurring events, only the master event and different overwritten
@@ -549,7 +552,10 @@ def _get_cli():
         if format is None:
             format = ctx.obj['conf']['view']['event_format']
         try:
-            collection = build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None))
+            collection = build_collection(
+                ctx.obj['conf'],
+                multi_calendar_select(ctx, include_calendar, exclude_calendar)
+            )
             events = sorted(collection.search(search_string))
             event_column = list()
             term_width, _ = get_terminal_size()
@@ -576,11 +582,14 @@ def _get_cli():
                   is_flag=True)
     @click.argument('search_string', nargs=-1)
     @click.pass_context
-    def edit(ctx, format, search_string, show_past):
+    def edit(ctx, format, search_string, show_past, include_calendar, exclude_calendar):
         '''Interactively edit (or delete) events matching the search string.'''
         try:
             controllers.edit(
-                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+                build_collection(
+                    ctx.obj['conf'],
+                    multi_calendar_select(ctx, include_calendar, exclude_calendar)
+                ),
                 ' '.join(search_string),
                 format=format,
                 allow_past=show_past,
@@ -602,13 +611,16 @@ def _get_cli():
                   is_flag=True)
     @click.argument('DATETIME', nargs=-1, required=False, metavar='[[START DATE] TIME | now]')
     @click.pass_context
-    def at(ctx, datetime, notstarted, format, day_format):
+    def at(ctx, datetime, notstarted, format, day_format, include_calendar, exclude_calendar):
         '''Print all events at a specific datetime (defaults to now).'''
         if not datetime:
             datetime = ("now",)
         try:
             rows = controllers.khal_list(
-                build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+                build_collection(
+                    ctx.obj['conf'],
+                    multi_calendar_select(ctx, include_calendar, exclude_calendar)
+                ),
                 agenda_format=format,
                 day_format=day_format,
                 datepoint=list(datetime),
