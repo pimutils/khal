@@ -1,7 +1,6 @@
 import datetime as dt
 import os
 import sys
-from unittest import mock
 
 import pytest
 from click.testing import CliRunner
@@ -493,16 +492,31 @@ def test_import_invalid_choice_and_prefix(runner):
     assert result.output == '09.04.-09.04. An Event\n'
 
 
-def test_import_from_stdin(runner):
+def test_import_from_stdin(runner, monkeypatch):
     ics_data = 'This is some really fake icalendar data'
 
-    with mock.patch('khal.controllers.import_ics') as mocked_import:
-        runner = runner()
-        result = runner.invoke(main_khal, ['import'], input=ics_data)
+    class FakeImport():
+        args, kwargs = None, None
+        call_count = 0
+
+        def clean(self):
+            self.args, self.kwargs = None, None
+
+        def import_ics(self, *args, **kwargs):
+            print('saving args')
+            print(args)
+            self.call_count += 1
+            self.args = args
+            self.kwargs = kwargs
+
+    importer = FakeImport()
+    monkeypatch.setattr('khal.controllers.import_ics', importer.import_ics)
+    runner = runner()
+    result = runner.invoke(main_khal, ['import'], input=ics_data)
 
     assert not result.exception
-    assert mocked_import.call_count == 1
-    assert mocked_import.call_args[1]['ics'] == ics_data
+    assert importer.call_count == 1
+    assert importer.kwargs['ics'] == ics_data
 
 
 def test_interactive_command(runner, monkeypatch):
