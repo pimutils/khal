@@ -38,7 +38,21 @@ def test_check_understood_rrule():
     assert RecurrenceEditor.check_understood_rrule(
         icalendar.vRecur.from_ical('FREQ=MONTHLY;BYMONTHDAY=1')
     )
-
+    assert RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;BYDAY=TH;BYSETPOS=1')
+    )
+    assert RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;BYDAY=TU,TH;BYSETPOS=1')
+    )
+    assert RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;INTERVAL=2;BYDAY=MO,TU,WE,TH,FR,SA,SU;BYSETPOS=1')
+    )
+    assert RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;INTERVAL=2;BYDAY=WE,SU,MO,TH,FR,TU,SA;BYSETPOS=1')
+    )
+    assert RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;INTERVAL=2;BYDAY=WE,MO,TH,FR,TU,SA;BYSETPOS=1')
+    )
     assert not RecurrenceEditor.check_understood_rrule(
         icalendar.vRecur.from_ical('FREQ=MONTHLY;BYDAY=-1SU')
     )
@@ -47,4 +61,7 @@ def test_check_understood_rrule():
     )
     assert not RecurrenceEditor.check_understood_rrule(
         icalendar.vRecur.from_ical('FREQ=MONTHLY;BYDAY=TH;BYMONTHDAY=-1')
+    )
+    assert not RecurrenceEditor.check_understood_rrule(
+        icalendar.vRecur.from_ical('FREQ=MONTHLY;BYDAY=TH;BYSETPOS=3')
     )
