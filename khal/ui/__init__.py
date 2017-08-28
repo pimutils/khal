@@ -567,15 +567,15 @@ class DateListBox(NListBox):
 
     def render(self, size, focus):
         if focus:
-            self.body[0].set_attr_map({None: 'date focused'})
+            self.body[0].set_attr_map({None: 'date header focused'})
         elif DateListBox.selected_date == self.date:
-            self.body[0].set_attr_map({None: 'date selected'})
+            self.body[0].set_attr_map({None: 'date header selected'})
         else:
             self.reset_style()
         return super().render(size, focus)
 
     def reset_style(self):
-        self.body[0].set_attr_map({None: 'date'})
+        self.body[0].set_attr_map({None: 'date header'})
 
     def set_selected_date(self, day):
         """Mark `day` as selected

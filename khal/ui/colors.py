@@ -36,9 +36,9 @@ dark = [
     ('today focus', 'white', 'dark magenta'),
     ('today', 'dark gray', 'dark green',),
 
-    ('date', 'light gray', ''),
-    ('date focused', 'black', 'light gray', ('bold', 'standout')),
-    ('date selected', 'white', 'yellow'),
+    ('date header', 'light gray', 'black'),
+    ('date header focused', 'black', 'white'),
+    ('date header selected', 'dark gray', 'light gray'),
 
     ('dayname', 'light gray', ''),
     ('monthname', 'light gray', ''),
@@ -72,9 +72,9 @@ light = [
     ('today focus', 'white', 'dark cyan', 'standout'),
     ('today', 'black', 'light gray', 'dark cyan'),
 
-    ('date', '', 'white'),
-    ('date focused', 'white', 'dark gray', ('bold', 'standout')),
-    ('date selected', 'dark gray', 'light cyan'),
+    ('date header', '', 'white'),
+    ('date header focused', 'white', 'dark gray', ('bold', 'standout')),
+    ('date header selected', 'dark gray', 'light cyan'),
 
     ('dayname', 'dark gray', 'white'),
     ('monthname', 'dark gray', 'white'),
