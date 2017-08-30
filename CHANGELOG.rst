@@ -34,6 +34,12 @@ not released yet
   displays the month name only if the first day of the week is within
   the new month.
 
+0.9.7
+=====
+not released yet
+
+* FIX don't crash when editing events with datetime UNTIL properties
+
 0.9.6
 =====
 released 2017-06-13

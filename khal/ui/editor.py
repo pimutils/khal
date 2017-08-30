@@ -587,7 +587,7 @@ class RecurrenceEditor(urwid.WidgetWrap):
             until = self._startdt
 
         if isinstance(until, dt.datetime):
-            until = dt.datetime.date()
+            until = until.date()
         self.until_edit = DateEdit(
             until, self._conf['locale']['longdateformat'],
             lambda _: None, self._conf['locale']['weeknumbers'],
