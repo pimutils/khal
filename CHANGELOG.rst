@@ -36,7 +36,7 @@ not released yet
 
 0.9.7
 =====
-not released yet
+released 2017-09-15
 
 * FIX don't crash when editing events with datetime UNTIL properties
 
