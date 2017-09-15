@@ -278,7 +278,7 @@ class DListBox(EventListBox):
     def render(self, size, focus=False):
         if self._init:
             self._init = False
-        while 'bottom' in self.ends_visible(size):
+        while not isinstance(self.body, StaticDayWalker) and 'bottom' in self.ends_visible(size):
             self.body._autoextend()
         return super().render(size, focus)
 
