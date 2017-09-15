@@ -10,7 +10,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.9.7
 =====
-not released yet
+released 2017-09-15
 
 * FIX don't crash when editing events with datetime UNTIL properties
 * FIX `search` will no longer break on overwritten events with a master event
