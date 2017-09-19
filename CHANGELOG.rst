@@ -14,6 +14,7 @@ not released yet
 * NEW DEPENDENCY added click_log  >= 0.2.0
 * vdirsyncer is still a test dependency (and always has been)
 
+* FIX ordinal numbers in birthday entries (before, all number would end on `th`)
 * FIX `search` will no longer break on overwritten events with a master event
 
 * CHANGE only searched configuration file paths are now

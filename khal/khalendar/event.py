@@ -356,9 +356,20 @@ class Event(object):
             number = self.start_local.year - int(bday[:4])
             name = self._vevents[self.ref].get('x-fname', None)
             if int(bday[4:6]) == 2 and int(bday[6:8]) == 29:
-                return '{name}\'s {number}th birthday (29th of Feb.)'.format(name=name, number=number)
+                leap = ' (29th of Feb.)'
             else:
-                return '{name}\'s {number}th birthday'.format(name=name, number=number)
+                leap = ''
+            if (number - 1) % 10 == 0 and number != 11:
+                suffix = 'st'
+            elif (number - 2) % 10 == 0 and number != 12:
+                suffix = 'nd'
+            elif (number - 3) % 10 == 0 and number != 13:
+                suffix = 'rd'
+            else:
+                suffix = 'th'
+            return '{name}\'s {number}{suffix} birthday{leap}'.format(
+                name=name, number=number, suffix=suffix, leap=leap,
+            )
         else:
             return self._vevents[self.ref].get('SUMMARY', '')
 

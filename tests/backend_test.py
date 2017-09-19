@@ -746,6 +746,13 @@ def test_birthdays():
                                   dt.datetime(2016, 3, 11, 23, 59, 59, 999)))
     assert events[0].summary == 'Unix\'s 45th birthday'
 
+    assert list(
+        db.get_floating(dt.datetime(2013, 3, 11), dt.datetime(2013, 3, 11))
+    )[0].summary == 'Unix\'s 42nd birthday'
+    assert list(
+        db.get_floating(dt.datetime(2014, 3, 11), dt.datetime(2014, 3, 11))
+    )[0].summary == 'Unix\'s 43rd birthday'
+
 
 def test_birthdays_update():
     """test if we can update a birthday"""
@@ -770,6 +777,18 @@ def test_birthdays_29feb():
     assert len(events) == 1
     assert events[0].summary == 'leapyear\'s 5th birthday (29th of Feb.)'
     assert events[0].start == dt.date(2005, 3, 1)
+    assert list(
+        db.get_floating(dt.datetime(2001, 1, 1), dt.datetime(2001, 12, 31))
+    )[0].summary == 'leapyear\'s 1st birthday (29th of Feb.)'
+    assert list(
+        db.get_floating(dt.datetime(2002, 1, 1), dt.datetime(2002, 12, 31))
+    )[0].summary == 'leapyear\'s 2nd birthday (29th of Feb.)'
+    assert list(
+        db.get_floating(dt.datetime(2003, 1, 1), dt.datetime(2003, 12, 31))
+    )[0].summary == 'leapyear\'s 3rd birthday (29th of Feb.)'
+    assert list(
+        db.get_floating(dt.datetime(2023, 1, 1), dt.datetime(2023, 12, 31))
+    )[0].summary == 'leapyear\'s 23rd birthday (29th of Feb.)'
 
 
 def test_birthdays_no_year():
