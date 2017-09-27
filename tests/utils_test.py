@@ -640,6 +640,12 @@ def test_split_ics_random_uid():
     assert sorted(vevents1) == sorted(part1)
 
 
+def test_split_ics_missing_timezone():
+    """testing if we detect the missing timezone in splitting"""
+    cal = _get_text('event_dt_local_missing_tz')
+    utils.split_ics(cal, random_uid=True, default_timezone=LOCALE_BERLIN['default_timezone'])
+
+
 def test_relative_timedelta_str():
     with freeze_time('2016-9-19'):
         assert utils.relative_timedelta_str(dt.date(2016, 9, 24)) == '5 days from now'

@@ -131,7 +131,7 @@ def split_ics(ics, random_uid=False, default_timezone=None):
             events_grouped[item['UID']].append(item)
         else:
             continue
-    return [ics_from_list(events, tzs, random_uid) for uid, events in
+    return [ics_from_list(events, tzs, random_uid, default_timezone) for uid, events in
             sorted(events_grouped.items())]
 
 
