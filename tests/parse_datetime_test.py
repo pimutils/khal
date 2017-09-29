@@ -343,6 +343,12 @@ test_set_format_de = _create_testcases(
         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T200000')),
 
+    # only start date given (no year, past day and month)
+    ('25.01. 18:00 20:00 Äwesöme Event',
+     _create_vevent(
+        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20150125T180000',
+        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20150125T200000')),
+
     # date ends next day, but end date not given
     ('25.10.2013 23:00 0:30 Äwesöme Event',
      _create_vevent(
