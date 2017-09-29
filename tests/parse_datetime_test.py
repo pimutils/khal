@@ -337,11 +337,15 @@ test_set_format_de = _create_testcases(
         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T000000')),
 
     # start and end date same, explicit end date (but no year) given
-    # XXX FIXME: if no explicit year is given for the end, this_year is used
     ('25.10.2013 18:00 26.10. 20:00 Äwesöme Event',
      _create_vevent(
         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T200000')),
+
+    ('30.12.2013 18:00 2.1. 20:00 Äwesöme Event',
+     _create_vevent(
+        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131230T180000',
+        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140102T200000')),
 
     # only start date given (no year, past day and month)
     ('25.01. 18:00 20:00 Äwesöme Event',
@@ -354,6 +358,11 @@ test_set_format_de = _create_testcases(
      _create_vevent(
         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T230000',
         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T003000')),
+
+    ('2.2. 23:00 0:30 Äwesöme Event',
+     _create_vevent(
+        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20150202T230000',
+        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20150203T003000')),
 
     # only start datetime given
     ('25.10.2013 06:00 Äwesöme Event',

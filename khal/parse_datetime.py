@@ -54,7 +54,8 @@ def timefstr(dtime_list, timeformat):
     return dtstart
 
 
-def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True):
+def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True,
+                 in_future=True):
     """converts a datetime (as one or several string elements of a list) to
     a datetimeobject, if infer_year is True, use the `default_day`'s year as
     the year of the return datetimeobject,
@@ -82,10 +83,12 @@ def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True):
         dtime_list.pop(0)
 
     if infer_year:
-        date = dt.datetime(*(default_day.timetuple()[:1] + dtstart[1:5]))
-        if date < now:
-            date = date.replace(year=date.year + 1)
-        return date
+        dtstart = dt.datetime(*(default_day.timetuple()[:1] + dtstart[1:5]))
+        if in_future and dtstart < now:
+            dtstart = dtstart.replace(year=dtstart.year + 1)
+        if dtstart.date() < default_day:
+            dtstart = dtstart.replace(year=default_day.year + 1)
+        return dtstart
     else:
         return dt.datetime(*dtstart[:5])
 
@@ -181,11 +184,13 @@ def datetimefstr_weekday(dtime_list, timeformat, **kwargs):
     return dtime
 
 
-def guessdatetimefstr(dtime_list, locale, default_day=None):
+def guessdatetimefstr(dtime_list, locale, default_day=None, in_future=True):
     """
     :type dtime_list: list
     :type locale: dict
     :type default_day: datetime.datetime
+    :param in_future: if set, shortdate(time) events will be set in the future
+    :type in_future: bool
     :rtype: datetime.datetime
     """
     # if now() is called as default param, mocking with freezegun won't work
@@ -209,7 +214,7 @@ def guessdatetimefstr(dtime_list, locale, default_day=None):
         raise ValueError
 
     def datefstr_year(dtime_list, dtformat, infer_year):
-        return datetimefstr(dtime_list, dtformat, default_day, infer_year)
+        return datetimefstr(dtime_list, dtformat, default_day, infer_year, in_future)
 
     dtstart = None
     for fun, dtformat, all_day, infer_year in [
@@ -375,7 +380,8 @@ def guessrangefstr(daterange, locale, adjust_reasonably=False,
                     end = start + delta
                 except (ValueError, DateTimeParseError):
                     split = end.split(" ")
-                    end, end_allday = guessdatetimefstr(split, locale, default_day=start.date())
+                    end, end_allday = guessdatetimefstr(
+                        split, locale, default_day=start.date(), in_future=False)
                     if len(split) != 0:
                         continue
                     if allday:
