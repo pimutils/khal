@@ -67,8 +67,9 @@ def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True):
              dateformat = '%d.%m. %H:%M'
     """
     # if now() is called as default param, mocking with freezegun won't work
+    now = dt.datetime.now()
     if default_day is None:
-        default_day = dt.datetime.now().date()
+        default_day = now.date()
     parts = dateformat.count(' ') + 1
     dtstring = ' '.join(dtime_list[0:parts])
     # only time.strptime can parse the 29th of Feb. if no year is given
@@ -81,7 +82,10 @@ def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True):
         dtime_list.pop(0)
 
     if infer_year:
-        return dt.datetime(*(default_day.timetuple()[:1] + dtstart[1:5]))
+        date = dt.datetime(*(default_day.timetuple()[:1] + dtstart[1:5]))
+        if date < now:
+            date = date.replace(year=date.year + 1)
+        return date
     else:
         return dt.datetime(*dtstart[:5])
 
