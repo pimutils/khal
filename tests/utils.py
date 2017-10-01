@@ -113,3 +113,12 @@ def _get_all_vevents_file(event_path):
     for component in ical.walk():
         if component.name == 'VEVENT':
             yield component
+
+
+def _replace_uid(event):
+    """
+    Replace an event's UID with E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA.
+    """
+    event.pop('uid')
+    event.add('uid', 'E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA')
+    return event

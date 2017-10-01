@@ -16,6 +16,8 @@ not released yet
 
 * FIX ordinal numbers in birthday entries (before, all number would end on `th`)
 * FIX `search` will no longer break on overwritten events with a master event
+* FIX when using short dates, khal infers that you meant next year, when date
+  is before today
 
 * CHANGE only searched configuration file paths are now
   $XDG_CONFIG_HOME/khal/config and $XDG_CONFIG_HOME/khal/khal.conf (deprecated)
