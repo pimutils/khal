@@ -27,6 +27,7 @@ not released yet
 * CHANGE `search` will now print one line for every different event in a
   recurrence set, that is one line for the master event, and one line for every
   different overwritten event
+* CHANGE drop support for Python 3.3.
 
 * NEW khal learned the ``--logfile/-l LOGFILE`` flag which allows logging to a
   file
