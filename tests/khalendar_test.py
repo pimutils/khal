@@ -13,11 +13,15 @@ from khal.khalendar.event import Event
 from khal.khalendar.vdir import Item
 
 from . import utils
-from .utils import _get_text, cal1, cal2, cal3, normalize_component
+from .utils import (_get_text, cal1, cal2, cal3, normalize_component, DumbItem,
+                    BERLIN, LONDON, SYDNEY, LOCALE_SYDNEY, LOCALE_BERLIN)
 
 today = dt.date.today()
 yesterday = today - dt.timedelta(days=1)
 tomorrow = today + dt.timedelta(days=1)
+
+aday = dt.date(2014, 4, 9)
+bday = dt.date(2014, 4, 10)
 
 event_allday_template = """BEGIN:VEVENT
 SEQUENCE:0
@@ -92,28 +96,19 @@ class TestCalendar(object):
 class TestVdirsyncerCompat(object):
     def test_list(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        event = Event.fromString(event_d, calendar=cal1, locale=utils.LOCALE_BERLIN)
+        event = Event.fromString(_get_text('event_d'), calendar=cal1, locale=LOCALE_BERLIN)
         assert event.etag is None
         assert event.href is None
         coll.new(event)
         assert event.etag is not None
         assert event.href == 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU.ics'
-        event = Event.fromString(event_today, calendar=cal1, locale=utils.LOCALE_BERLIN)
+        event = Event.fromString(event_today, calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event)
-        hrefs = sorted(href for href, uid in coll._backend.list(cal1))
-        assert set(str(coll._backend.get(href, calendar=cal1).uid) for href in hrefs) == set((
+        hrefs = sorted(href for href, etag in coll._backend.list(cal1))
+        assert set(str(coll.get_event(href, calendar=cal1).uid) for href in hrefs) == set((
             'uid3@host1.com',
             'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU',
         ))
-
-
-aday = dt.date(2014, 4, 9)
-bday = dt.date(2014, 4, 10)
-
-
-event_dt = _get_text('event_dt_simple')
-event_d = _get_text('event_d')
-event_d_no_value = _get_text('event_d_no_value')
 
 
 class TestCollection(object):
@@ -134,7 +129,7 @@ class TestCollection(object):
             'work': {'name': 'work', 'path': str(tmpdir), 'readonly': True},
         }
         coll = CalendarCollection(
-            calendars=calendars, locale=utils.LOCALE_BERLIN, dbpath=':memory:',
+            calendars=calendars, locale=LOCALE_BERLIN, dbpath=':memory:',
         )
         assert coll.default_calendar_name is None
         with pytest.raises(ValueError):
@@ -158,8 +153,9 @@ class TestCollection(object):
     def test_insert(self, coll_vdirs):
         """insert a localized event"""
         coll, vdirs = coll_vdirs
-        event = Event.fromString(event_dt, calendar=cal1, locale=utils.LOCALE_BERLIN)
-        coll.new(event, cal1)
+        coll.new(
+            Event.fromString(_get_text('event_dt_simple'), calendar=cal1, locale=LOCALE_BERLIN),
+            cal1)
         events = list(coll.get_localized(self.astart_berlin, self.aend_berlin))
         assert len(events) == 1
         assert events[0].color == 'dark blue'
@@ -178,7 +174,7 @@ class TestCollection(object):
     def test_insert_d(self, coll_vdirs):
         """insert a floating event"""
         coll, vdirs = coll_vdirs
-        event = Event.fromString(event_d, calendar=cal1, locale=utils.LOCALE_BERLIN)
+        event = Event.fromString(_get_text('event_d'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
         events = list(coll.get_events_on(aday))
         assert len(events) == 1
@@ -192,9 +188,10 @@ class TestCollection(object):
     def test_insert_d_no_value(self, coll_vdirs):
         """insert a date event with no VALUE=DATE option"""
         coll, vdirs = coll_vdirs
-
-        event = Event.fromString(event_d_no_value, calendar=cal1, locale=utils.LOCALE_BERLIN)
-        coll.new(event, cal1)
+        coll.new(
+            Event.fromString(
+                _get_text('event_d_no_value'), calendar=cal1, locale=LOCALE_BERLIN),
+            cal1)
         events = list(coll.get_events_on(aday))
         assert len(events) == 1
         assert events[0].calendar == cal1
@@ -207,7 +204,7 @@ class TestCollection(object):
         """test getting an event by its href"""
         coll, vdirs = coll_vdirs
         event = Event.fromString(
-            event_dt, href='xyz.ics', calendar=cal1, locale=utils.LOCALE_BERLIN,
+            _get_text('event_dt_simple'), href='xyz.ics', calendar=cal1, locale=LOCALE_BERLIN,
         )
         coll.new(event, cal1)
         event_from_db = coll.get_event(SIMPLE_EVENT_UID + '.ics', cal1)
@@ -218,7 +215,7 @@ class TestCollection(object):
     def test_change(self, coll_vdirs):
         """moving an event from one calendar to another"""
         coll, vdirs = coll_vdirs
-        event = Event.fromString(event_dt, calendar=cal1, locale=utils.LOCALE_BERLIN)
+        event = Event.fromString(_get_text('event_dt_simple'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
         event = list(coll.get_events_on(aday))[0]
         assert event.calendar == cal1
@@ -232,7 +229,7 @@ class TestCollection(object):
         """updating one event"""
         coll, vdirs = coll_vdirs
         event = Event.fromString(
-            _get_text('event_dt_simple'), calendar=cal1, locale=utils.LOCALE_BERLIN)
+            _get_text('event_dt_simple'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
         events = coll.get_events_on(aday)
         event = list(events)[0]
@@ -251,7 +248,7 @@ class TestCollection(object):
         anend = bday + dt.timedelta(hours=1)
         event = khal.utils.new_event(
             dtstart=bday, dtend=anend, summary="hi", timezone=utils.BERLIN,
-            locale=utils.LOCALE_BERLIN,
+            locale=LOCALE_BERLIN,
         )
         event = coll.new_event(event.to_ical(), coll.default_calendar_name)
         assert event.allday is False
@@ -260,7 +257,7 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         coll._calendars[cal1]['readonly'] = True
         coll._calendars[cal3]['readonly'] = True
-        event = Event.fromString(event_dt, calendar=cal1, locale=utils.LOCALE_BERLIN)
+        event = Event.fromString(_get_text('event_dt_simple'), calendar=cal1, locale=LOCALE_BERLIN)
 
         with pytest.raises(khal.khalendar.exceptions.ReadOnlyCalendarError):
             coll.new(event, cal1)
@@ -272,11 +269,11 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         assert len(list(coll.search('Event'))) == 0
         event = Event.fromString(
-            _get_text('event_dt_simple'), calendar=cal1, locale=utils.LOCALE_BERLIN)
+            _get_text('event_dt_simple'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
         assert len(list(coll.search('Event'))) == 1
         event = Event.fromString(
-            _get_text('event_dt_floating'), calendar=cal1, locale=utils.LOCALE_BERLIN)
+            _get_text('event_dt_floating'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
         assert len(list(coll.search('Search for me'))) == 1
         assert len(list(coll.search('Event'))) == 2
@@ -287,7 +284,7 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         assert len(list(coll.search('Event'))) == 0
         event = Event.fromString(
-            _get_text('event_dt_recuid_no_master'), calendar=cal1, locale=utils.LOCALE_BERLIN)
+            _get_text('event_dt_recuid_no_master'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
         assert len(list(coll.search('Event'))) == 1
 
@@ -297,7 +294,7 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         assert len(list(coll.search('Event'))) == 0
         event = Event.fromString(
-            _get_text('event_dt_multi_recuid_no_master'), calendar=cal1, locale=utils.LOCALE_BERLIN)
+            _get_text('event_dt_multi_recuid_no_master'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
         events = list(sorted(coll.search('Event')))
         assert len(events) == 2
@@ -311,9 +308,9 @@ class TestCollection(object):
             calendars with the same filename"""
             coll, vdirs = coll_vdirs
             event1 = Event.fromString(
-                _get_text('event_dt_simple'), calendar=cal1, locale=utils.LOCALE_BERLIN)
+                _get_text('event_dt_simple'), calendar=cal1, locale=LOCALE_BERLIN)
             event2 = Event.fromString(
-                _get_text('event_dt_simple'), calendar=cal2, locale=utils.LOCALE_BERLIN)
+                _get_text('event_dt_simple'), calendar=cal2, locale=LOCALE_BERLIN)
             coll.new(event1, cal1)
             sleep(sleep_time)  # make sure the etags are different
             coll.new(event2, cal2)
@@ -339,7 +336,7 @@ class TestDbCreation(object):
 
         assert not os.path.isdir(dbdir)
         calendars = {cal1: {'name': cal1, 'path': vdirpath}}
-        CalendarCollection(calendars, dbpath=dbpath, locale=utils.LOCALE_BERLIN)
+        CalendarCollection(calendars, dbpath=dbpath, locale=LOCALE_BERLIN)
         assert os.path.isdir(dbdir)
 
     def test_failed_create_db(self, tmpdir):
@@ -349,7 +346,56 @@ class TestDbCreation(object):
 
         calendars = {cal1: {'name': cal1, 'path': str(tmpdir)}}
         with pytest.raises(CouldNotCreateDbDir):
-            CalendarCollection(calendars, dbpath=dbpath, locale=utils.LOCALE_BERLIN)
+            CalendarCollection(calendars, dbpath=dbpath, locale=LOCALE_BERLIN)
+
+
+def test_event_different_timezones(coll_vdirs):
+    coll, vdirs = coll_vdirs
+    vdirs[cal1].upload(DumbItem(_get_text('event_dt_london'), uid='12345'))
+    coll.update_db()
+
+    events = coll.get_localized(
+        BERLIN.localize(dt.datetime(2014, 4, 9, 0, 0)),
+        BERLIN.localize(dt.datetime(2014, 4, 9, 23, 59)),
+    )
+    events = list(events)
+    assert len(events) == 1
+    event = events[0]
+    assert event.start_local == LONDON.localize(dt.datetime(2014, 4, 9, 14))
+    assert event.end_local == LONDON.localize(dt.datetime(2014, 4, 9, 19))
+    assert event.start == LONDON.localize(dt.datetime(2014, 4, 9, 14))
+    assert event.end == LONDON.localize(dt.datetime(2014, 4, 9, 19))
+
+    # no event scheduled on the next day
+    events = coll.get_localized(
+        BERLIN.localize(dt.datetime(2014, 4, 10, 0, 0)),
+        BERLIN.localize(dt.datetime(2014, 4, 10, 23, 59)),
+    )
+    events = list(events)
+    assert len(events) == 0
+
+    # now setting the local_timezone to Sydney
+    coll.locale = LOCALE_SYDNEY
+    events = coll.get_localized(
+        SYDNEY.localize(dt.datetime(2014, 4, 9, 0, 0)),
+        SYDNEY.localize(dt.datetime(2014, 4, 9, 23, 59)),
+    )
+    events = list(events)
+    assert len(events) == 1
+    event = events[0]
+    assert event.start_local == SYDNEY.localize(dt.datetime(2014, 4, 9, 23))
+    assert event.end_local == SYDNEY.localize(dt.datetime(2014, 4, 10, 4))
+    assert event.start == LONDON.localize(dt.datetime(2014, 4, 9, 14))
+    assert event.end == LONDON.localize(dt.datetime(2014, 4, 9, 19))
+
+    # the event spans midnight Sydney, therefor it should also show up on the
+    # next day
+    events = coll.get_localized(SYDNEY.localize(dt.datetime(2014, 4, 10, 0, 0)),
+                                SYDNEY.localize(dt.datetime(2014, 4, 10, 23, 59)))
+    events = list(events)
+    assert len(events) == 1
+    assert event.start_local == SYDNEY.localize(dt.datetime(2014, 4, 9, 23))
+    assert event.end_local == SYDNEY.localize(dt.datetime(2014, 4, 10, 4))
 
 
 def test_default_calendar(coll_vdirs, sleep_time):
@@ -426,3 +472,84 @@ def test_only_update_old_event(coll_vdirs, monkeypatch, sleep_time):
     coll.update_db()
     sleep(sleep_time)
     assert updated_hrefs == [href_three]
+
+
+card = """BEGIN:VCARD
+VERSION:3.0
+FN:Unix
+BDAY:19710311
+END:VCARD
+"""
+
+card_29thfeb = """BEGIN:VCARD
+VERSION:3.0
+FN:leapyear
+BDAY:20000229
+END:VCARD
+"""
+
+card_no_year = """BEGIN:VCARD
+VERSION:3.0
+FN:Unix
+BDAY:--0311
+END:VCARD
+"""
+
+
+def test_birthdays(coll_vdirs_birthday):
+    coll, vdirs = coll_vdirs_birthday
+    assert list(
+        coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59))
+    ) == list()
+    vdirs[cal1].upload(DumbItem(card, 'unix'))
+    coll.update_db()
+    assert 'Unix\'s 41st birthday' == list(
+        coll.get_floating(dt.datetime(2012, 3, 11), dt.datetime(2012, 3, 11)))[0].summary
+    assert 'Unix\'s 42nd birthday' == list(
+        coll.get_floating(dt.datetime(2013, 3, 11), dt.datetime(2013, 3, 11)))[0].summary
+    assert 'Unix\'s 43rd birthday' == list(
+        coll.get_floating(dt.datetime(2014, 3, 11), dt.datetime(2014, 3, 11)))[0].summary
+
+
+def test_birthdays_29feb(coll_vdirs_birthday):
+    """test how we deal with birthdays on 29th of feb in leap years"""
+    coll, vdirs = coll_vdirs_birthday
+    vdirs[cal1].upload(DumbItem(card_29thfeb, 'leap'))
+    coll.update_db()
+    events = list(
+        coll.get_floating(dt.datetime(2004, 1, 1, 0, 0), dt.datetime(2004, 12, 31))
+    )
+    assert len(events) == 1
+    assert events[0].summary == 'leapyear\'s 4th birthday (29th of Feb.)'
+    assert events[0].start == dt.date(2004, 2, 29)
+    events = list(
+        coll.get_floating(dt.datetime(2005, 1, 1, 0, 0), dt.datetime(2005, 12, 31))
+    )
+    assert len(events) == 1
+    assert events[0].summary == 'leapyear\'s 5th birthday (29th of Feb.)'
+    assert events[0].start == dt.date(2005, 3, 1)
+    assert list(
+        coll.get_floating(dt.datetime(2001, 1, 1), dt.datetime(2001, 12, 31))
+    )[0].summary == 'leapyear\'s 1st birthday (29th of Feb.)'
+    assert list(
+        coll.get_floating(dt.datetime(2002, 1, 1), dt.datetime(2002, 12, 31))
+    )[0].summary == 'leapyear\'s 2nd birthday (29th of Feb.)'
+    assert list(
+        coll.get_floating(dt.datetime(2003, 1, 1), dt.datetime(2003, 12, 31))
+    )[0].summary == 'leapyear\'s 3rd birthday (29th of Feb.)'
+    assert list(
+        coll.get_floating(dt.datetime(2023, 1, 1), dt.datetime(2023, 12, 31))
+    )[0].summary == 'leapyear\'s 23rd birthday (29th of Feb.)'
+    assert events[0].start == dt.date(2005, 3, 1)
+
+
+def test_birthdays_no_year(coll_vdirs_birthday):
+    coll, vdirs = coll_vdirs_birthday
+    assert list(
+        coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59))
+    ) == list()
+    vdirs[cal1].upload(DumbItem(card_no_year, 'vcard.vcf'))
+    coll.update_db()
+    events = list(coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59)))
+    assert len(events) == 1
+    assert 'Unix\'s birthday' == events[0].summary

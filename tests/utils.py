@@ -122,3 +122,9 @@ def _replace_uid(event):
     event.pop('uid')
     event.add('uid', 'E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA')
     return event
+
+
+class DumbItem():
+    def __init__(self, raw, uid):
+        self.raw = raw
+        self.uid = uid

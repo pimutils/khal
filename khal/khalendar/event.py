@@ -69,6 +69,7 @@ class Event(object):
         self.href = kwargs.pop('href', None)
         self.etag = kwargs.pop('etag', None)
         self.calendar = kwargs.pop('calendar', None)
+        self.color = kwargs.pop('color', None)
         self.ref = ref
 
         start = kwargs.pop('start', None)
@@ -846,11 +847,3 @@ def _create_timezone_static(tz):
     subcomp.add('TZOFFSETFROM', tz._utcoffset)
     timezone.add_component(subcomp)
     return timezone
-
-
-class EventStandIn():
-    def __init__(self, calendar):
-        self.calendar = calendar
-        self.color = None
-        self.unicode_symbols = None
-        self.readonly = None

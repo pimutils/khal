@@ -31,6 +31,7 @@ test_requirements = [
 
 extra_requirements = {
     'proctitle': ['setproctitle'],
+    ':python_version < "3.5"': 'typing',
 }
 
 setup(

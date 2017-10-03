@@ -7,6 +7,8 @@ import errno
 import os
 import uuid
 
+from typing import Optional  # noqa
+
 from atomicwrites import atomic_write
 
 
@@ -111,7 +113,7 @@ class WrongEtagError(VdirError):
 
 
 class AlreadyExistingError(VdirError):
-    existing_href = None
+    existing_href = None  # type: Optional[str]
 
 
 class Item:

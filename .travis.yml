@@ -17,7 +17,13 @@ matrix:
       - python: 3.6
         env: BUILD=docs
       - python: 3.6
+        env: BUILD=mypy
+      - python: 3.6
         env: BUILD=pytz201610
+      - python: 3.6
+        env: BUILD=pytz201702
+      - python: 3.6
+        env: BUILD=pytz_latest
 
 addons:
     apt:

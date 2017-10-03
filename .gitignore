@@ -12,3 +12,4 @@ dist/
 .cache
 htmlcov
 doc/source/configspec.rst
+.mypy_cache/

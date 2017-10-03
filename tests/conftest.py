@@ -24,6 +24,21 @@ def coll_vdirs(tmpdir):
     return coll, vdirs
 
 
+@pytest.fixture
+def coll_vdirs_birthday(tmpdir):
+    calendars, vdirs = dict(), dict()
+    for name in example_cals:
+        path = str(tmpdir) + '/' + name
+        os.makedirs(path, mode=0o770)
+        readonly = True if name == 'a_calendar' else False
+        calendars[name] = {'name': name, 'path': path, 'color': 'dark blue',
+                           'readonly': readonly, 'unicode_symbols': True, 'ctype': 'birthdays'}
+        vdirs[name] = Vdir(path, '.vcf')
+    coll = CalendarCollection(calendars=calendars, dbpath=':memory:', locale=LOCALE_BERLIN)
+    coll.default_calendar_name = cal1
+    return coll, vdirs
+
+
 @pytest.fixture(autouse=True)
 def never_echo_bytes(monkeypatch):
     '''Click's echo function will not strip colorcodes if we call `click.echo`
