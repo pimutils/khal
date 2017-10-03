@@ -24,6 +24,7 @@ The SQLite backend implementation.
 
 import contextlib
 import datetime as dt
+from enum import IntEnum
 import logging
 import sqlite3
 from os import makedirs, path
@@ -45,10 +46,12 @@ RECURRENCE_ID = 'RECURRENCE-ID'
 THISANDFUTURE = 'THISANDFUTURE'
 THISANDPRIOR = 'THISANDPRIOR'
 
-DATE = 0
-DATETIME = 1
-
 PROTO = 'PROTO'
+
+
+class EventType(IntEnum):
+    DATE = 0
+    DATETIME = 1
 
 
 class SQLiteDb(object):
@@ -301,10 +304,10 @@ class SQLiteDb(object):
 
         # testing on datetime.date won't work as datetime is a child of date
         if not isinstance(vevent['DTSTART'].dt, dt.datetime):
-            dtype = DATE
+            dtype = EventType.DATE
         else:
-            dtype = DATETIME
-        if ('TZID' in vevent['DTSTART'].params and dtype == DATETIME) or \
+            dtype = EventType.DATETIME
+        if ('TZID' in vevent['DTSTART'].params and dtype == EventType.DATETIME) or \
                 getattr(vevent['DTSTART'].dt, 'tzinfo', None):
             recs_table = 'recs_loc'
         else:
@@ -324,7 +327,7 @@ class SQLiteDb(object):
             return
 
         for dtstart, dtend in dtstartend:
-            if dtype == DATE:
+            if dtype == EventType.DATE:
                 dbstart = utils.to_unix_time(dtstart)
                 dbend = utils.to_unix_time(dtend)
             else:
@@ -497,7 +500,7 @@ class SQLiteDb(object):
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = dt.datetime.utcfromtimestamp(start)
             end = dt.datetime.utcfromtimestamp(end)
-            if dtype == DATE:
+            if dtype == EventType.DATE:
                 start = start.date()
                 end = end.date()
             yield item, href, start, end, ref, etag, calendar
@@ -524,7 +527,7 @@ class SQLiteDb(object):
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
-            if dtype == DATE:
+            if dtype == EventType.DATE:
                 start = start.date()
                 end = end.date()
             yield item, href, start, end, ref, etag, calendar
@@ -541,7 +544,7 @@ class SQLiteDb(object):
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = dt.datetime.utcfromtimestamp(start)
             end = dt.datetime.utcfromtimestamp(end)
-            if dtype == DATE:
+            if dtype == EventType.DATE:
                 start = start.date()
                 end = end.date()
             yield item, href, start, end, ref, etag, calendar
