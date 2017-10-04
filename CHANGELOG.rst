@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 not released yet
 
 * NEW DEPENDENCY added click_log  >= 0.2.0
+* NEW DEPENDENCY for Python 3.4: typing
+* DROPPED support for Python 3.3
 * vdirsyncer is still a test dependency (and always has been)
 
 * FIX ordinal numbers in birthday entries (before, all number would end on `th`)
@@ -27,7 +29,6 @@ not released yet
 * CHANGE `search` will now print one line for every different event in a
   recurrence set, that is one line for the master event, and one line for every
   different overwritten event
-* CHANGE drop support for Python 3.3.
 
 * NEW khal learned the ``--logfile/-l LOGFILE`` flag which allows logging to a
   file
@@ -57,7 +58,7 @@ released 2017-06-13
   present in an .ics file
 * FIX .ics files containing only overwritten instances are not expanded anymore,
   even if they contain a RRULE or RDATE
-* FIX valid UNTIL entry for recurring datetime events 
+* FIX valid UNTIL entry for recurring datetime events
 
 * CHANGE the symbol used for indicating a recurring event now has a space in
   front of it, also the ascii version changed to `(R)`

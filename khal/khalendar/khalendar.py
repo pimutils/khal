@@ -30,6 +30,7 @@ import itertools
 import logging
 import os
 import os.path
+from typing import Dict, Iterable, List, Optional, Tuple, Union  # noqa
 
 from . import backend
 from .event import Event
@@ -42,14 +43,14 @@ from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
 logger = logging.getLogger(__name__)
 
 
-def create_directory(path):
+def create_directory(path: str):
     if not os.path.isdir(path):
         if os.path.exists(path):
             raise RuntimeError('{0} is not a directory.'.format(path))
         try:
             os.makedirs(path, mode=0o750)
         except OSError as error:
-            logger.fatal('failed to create {0}: {1}'.format(path, error))
+            logger.critical('failed to create {0}: {1}'.format(path, error))
             raise CouldNotCreateDbDir()
 
 
@@ -60,19 +61,19 @@ class CalendarCollection(object):
 
     def __init__(self,
                  calendars=None,
-                 hmethod='fg',
-                 default_color='',
-                 multiple='',
-                 color='',
-                 highlight_event_days=0,
-                 locale=None,
-                 dbpath=None,
-                 ):
+                 hmethod: str='fg',
+                 default_color: str='',
+                 multiple: str='',
+                 color: str='',
+                 highlight_event_days: bool=False,
+                 locale: Optional[dict]=None,
+                 dbpath: Optional[str]=None,
+                 ) -> None:
         assert dbpath is not None
         assert calendars is not None
         self._calendars = calendars
-        self._default_calendar_name = None
-        self._storages = dict()
+        self._default_calendar_name = None  # type: Optional[str]
+        self._storages = dict()  # type: Dict[str, Vdir]
         for name, calendar in self._calendars.items():
             ctype = calendar.get('ctype', 'calendar')
             if ctype == 'calendar':
@@ -94,29 +95,28 @@ class CalendarCollection(object):
         self.color = color
         self.highlight_event_days = highlight_event_days
         self._locale = locale
-        self._backend = backend.SQLiteDb(
-            calendars=self.names, db_path=dbpath, locale=self._locale)
-        self._last_ctags = dict()
+        self._backend = backend.SQLiteDb(self.names, dbpath, self._locale)
+        self._last_ctags = dict()  # type: Dict[str, str]
         self.update_db()
 
     @property
-    def writable_names(self):
+    def writable_names(self) -> List[str]:
         return [c for c in self._calendars if not self._calendars[c].get('readonly', False)]
 
     @property
-    def calendars(self):
+    def calendars(self) -> Iterable[str]:
         return self._calendars.values()
 
     @property
-    def names(self):
+    def names(self) -> Iterable[str]:
         return self._calendars.keys()
 
     @property
-    def default_calendar_name(self):
+    def default_calendar_name(self) -> str:
         return self._default_calendar_name
 
     @default_calendar_name.setter
-    def default_calendar_name(self, default):
+    def default_calendar_name(self, default: str):
         if default is None:
             self._default_calendar_name = default
         elif default not in self.names:
@@ -130,38 +130,37 @@ class CalendarCollection(object):
             raise ValueError(
                 'Calendar "{0}" is read-only and cannot be used as default'.format(default))
 
-    def _local_ctag(self, calendar):
+    def _local_ctag(self, calendar: str) -> str:
         return get_etag_from_file(self._calendars[calendar]['path'])
 
-    def _cover_event(self, event):
-        event.color = self._calendars[event.calendar]['color']
-        event.readonly = self._calendars[event.calendar]['readonly']
-        event.unicode_symbols = self._locale['unicode_symbols']
-        return event
+    def get_floating(self, start: dt.datetime, end: dt.datetime) -> Iterable[Event]:
+        for args in self._backend.get_floating(start, end):
+            yield self._construct_event(*args)
 
-    def get_floating(self, start, end, minimal=False):
-        events = self._backend.get_floating(start, end, minimal)
-        return (self._cover_event(event) for event in events)
+    def get_localized(self, start: dt.datetime, end: dt.datetime) -> Iterable[Event]:
+        for args in self._backend.get_localized(start, end):
+            yield self._construct_event(*args)
 
-    def get_localized(self, start, end, minimal=False):
-        events = self._backend.get_localized(start, end, minimal)
-        return (self._cover_event(event) for event in events)
-
-    def get_events_on(self, day, minimal=False):
-        """return all events on `day`
-
-        :param day: datetime.date
-        :rtype: list()
-        """
+    def get_events_on(self, day: dt.date) -> Iterable[Event]:
+        """return all events on `day`"""
         start = dt.datetime.combine(day, dt.time.min)
         end = dt.datetime.combine(day, dt.time.max)
-        floating_events = self.get_floating(start, end, minimal)
+        floating_events = self.get_floating(start, end)
         localize = self._locale['local_timezone'].localize
-        localized_events = self.get_localized(localize(start), localize(end), minimal)
-
+        localized_events = self.get_localized(localize(start), localize(end))
         return itertools.chain(floating_events, localized_events)
 
-    def update(self, event):
+    def get_calendars_on(self, day: dt.date) -> List[str]:
+        start = dt.datetime.combine(day, dt.time.min)
+        end = dt.datetime.combine(day, dt.time.max)
+        localize = self._locale['local_timezone'].localize
+        calendars = itertools.chain(
+            self._backend.get_floating_calendars(start, end),
+            self._backend.get_localized_calendars(localize(start), localize(end)),
+        )
+        return list(calendars)
+
+    def update(self, event: Event):
         """update `event` in vdir and db"""
         assert event.etag
         if self._calendars[event.calendar]['readonly']:
@@ -171,7 +170,7 @@ class CalendarCollection(object):
             self._backend.update(event.raw, event.href, event.etag, calendar=event.calendar)
             self._backend.set_ctag(self._local_ctag(event.calendar), calendar=event.calendar)
 
-    def force_update(self, event, collection=None):
+    def force_update(self, event: Event, collection: Optional[str]=None):
         """update `event` even if an event with the same uid/href already exists"""
         calendar = collection if collection is not None else event.calendar
         if self._calendars[calendar]['readonly']:
@@ -187,7 +186,7 @@ class CalendarCollection(object):
             self._backend.update(event.raw, href, etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
-    def new(self, event, collection=None):
+    def new(self, event: Event, collection: Optional[str]=None):
         """save a new event to the vdir and the database
 
         param event: the event that should be updated, will get a new href and
@@ -210,22 +209,48 @@ class CalendarCollection(object):
             self._backend.update(event.raw, event.href, event.etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
-    def delete(self, href, etag, calendar):
+    def delete(self, href: str, etag: str, calendar: str):
         if self._calendars[calendar]['readonly']:
             raise ReadOnlyCalendarError()
         self._storages[calendar].delete(href, etag)
         self._backend.delete(href, calendar=calendar)
 
-    def get_event(self, href, calendar):
-        return self._cover_event(self._backend.get(href, calendar=calendar))
+    def get_event(self, href: str, calendar: str) -> Event:
+        """get an event by its href from the datatbase"""
+        return self._construct_event(
+            self._backend.get(href, calendar), href=href, calendar=calendar,
+        )
 
-    def change_collection(self, event, new_collection):
+    def _construct_event(self,
+                         item: str,
+                         href: str,
+                         start: dt.datetime = None,
+                         end: dt.datetime = None,
+                         ref: str='PROTO',
+                         etag: str=None,
+                         calendar: str=None,
+                         ) -> Event:
+        event = Event.fromString(
+            item,
+            locale=self._locale,
+            href=href,
+            calendar=calendar,
+            etag=etag,
+            start=start,
+            end=end,
+            ref=ref,
+            color=self._calendars[calendar]['color'],
+            readonly=self._calendars[calendar]['readonly'],
+        )
+        return event
+
+    def change_collection(self, event: Event, new_collection: str):
         href, etag, calendar = event.href, event.etag, event.calendar
         event.etag = None
         self.new(event, new_collection)
         self.delete(href, etag, calendar=calendar)
 
-    def new_event(self, ical, collection):
+    def new_event(self, ical: str, collection: str):
         """creates and returns (but does not insert) new event from ical
         string"""
         calendar = collection or self.writable_names[0]
@@ -240,7 +265,7 @@ class CalendarCollection(object):
             if self._needs_update(calendar, remember=True):
                 self._db_update(calendar)
 
-    def needs_update(self):
+    def needs_update(self) -> bool:
         """Check if you need to call update_db.
 
         This could either be the case because the vdirs were changed externally,
@@ -266,14 +291,14 @@ class CalendarCollection(object):
                 return True
         return False
 
-    def _needs_update(self, calendar, remember=False):
+    def _needs_update(self, calendar: str, remember: bool=False) -> bool:
         """checks if the db for the given calendar needs an update"""
         local_ctag = self._local_ctag(calendar)
         if remember:
             self._last_ctags[calendar] = local_ctag
         return local_ctag != self._backend.get_ctag(calendar)
 
-    def _db_update(self, calendar):
+    def _db_update(self, calendar: str):
         """implements the actual db update on a per calendar base"""
         local_ctag = self._local_ctag(calendar)
         db_hrefs = set(href for href, etag in self._backend.list(calendar))
@@ -291,7 +316,7 @@ class CalendarCollection(object):
             self._backend.set_ctag(local_ctag, calendar=calendar)
             self._last_ctags[calendar] = local_ctag
 
-    def _update_vevent(self, href, calendar):
+    def _update_vevent(self, href: str, calendar: str) -> bool:
         """should only be called during db_update, only updates the db,
         does not check for readonly"""
         event, etag = self._storages[calendar].get(href)
@@ -301,7 +326,6 @@ class CalendarCollection(object):
             else:
                 update = self._backend.update
             update(event.raw, href=href, etag=etag, calendar=calendar)
-
             return True
         except Exception as e:
             if not isinstance(e, (UpdateFailed, UnsupportedFeatureError)):
@@ -311,24 +335,23 @@ class CalendarCollection(object):
                 'This event will not be available in khal.'.format(calendar, href, str(e)))
             return False
 
-    def search(self, search_string):
+    def search(self, search_string: str) -> Iterable[Event]:
         """search for the db for events matching `search_string`"""
-        return (self._cover_event(event) for event in self._backend.search(search_string))
+        return (self._construct_event(*args) for args in self._backend.search(search_string))
 
-    def get_day_styles(self, day, focus):
-        devents = list(self.get_events_on(day, minimal=True))
-        if len(devents) == 0:
+    def get_day_styles(self, day: dt.date, focus: bool) -> Union[str, Tuple[str, str]]:
+        calendars = self.get_calendars_on(day)
+        if len(calendars) == 0:
             return None
         if self.color != '':
             return 'highlight_days_color'
-        dcalendars = list(set(map(lambda event: event.calendar, devents)))
-        if len(dcalendars) == 1:
-            return 'calendar ' + dcalendars[0]
+        if len(calendars) == 1:
+            return 'calendar ' + calendars[0]
         if self.multiple != '':
             return 'highlight_days_multiple'
-        return ('calendar ' + dcalendars[0], 'calendar ' + dcalendars[1])
+        return ('calendar ' + calendars[0], 'calendar ' + calendars[1])
 
-    def get_styles(self, date, focus):
+    def get_styles(self, date: dt.date, focus: bool) -> Union[str, None, Tuple[str, str]]:
         if focus:
             if date == date.today():
                 return 'today focus'

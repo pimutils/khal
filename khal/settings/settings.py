@@ -116,19 +116,19 @@ def get_config(
     results = user_config.validate(validator, preserve_errors=True)
 
     abort = False
-    for section, subsection, error in flatten_errors(user_config, results):
+    for section, subsection, config_error in flatten_errors(user_config, results):
         abort = True
-        if isinstance(error, Exception):
+        if isinstance(config_error, Exception):
             logger.fatal(
                 'config error:\n'
-                'in [{}] {}: {}'.format(section[0], subsection, error))
+                'in [{}] {}: {}'.format(section[0], subsection, config_error))
         else:
-            for key in error:
-                if isinstance(error[key], Exception):
+            for key in config_error:
+                if isinstance(config_error[key], Exception):
                     logger.fatal('config error:\nin {} {}: {}'.format(
                         sectionize(section + [subsection]),
                         key,
-                        str(error[key]))
+                        str(config_error[key]))
                     )
 
     if abort or not results:

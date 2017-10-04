@@ -20,29 +20,21 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 The SQLite backend implementation.
-
-note on naming:
-  * every variable name vevent should be of type icalendar.Event
-  * every variable named event should be of type khal.khalendar.Events
-  * variables named vevents/events (plural) should be iterables of their
-    respective types
-
 """
-# TODO remove creating Events from SQLiteDb
-# we currently expect str/CALENDAR objects but return Event(), we should
-# accept and return the same kind of events
+
 import contextlib
 import datetime as dt
+from enum import IntEnum
 import logging
 import sqlite3
 from os import makedirs, path
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import icalendar
 import pytz
 from dateutil import parser
 
 from .. import utils
-from .event import Event, EventStandIn
 from .exceptions import (CouldNotCreateDbDir, OutdatedDbVersionError,
                          UpdateFailed)
 
@@ -54,29 +46,32 @@ RECURRENCE_ID = 'RECURRENCE-ID'
 THISANDFUTURE = 'THISANDFUTURE'
 THISANDPRIOR = 'THISANDPRIOR'
 
-DATE = 0
-DATETIME = 1
-
 PROTO = 'PROTO'
+
+
+class EventType(IntEnum):
+    DATE = 0
+    DATETIME = 1
 
 
 class SQLiteDb(object):
     """
     This class should provide a caching database for a calendar, keeping raw
-    vevents in one table but allowing to retrieve events by dates (via the help
+    vevents in one table and allowing to retrieve them by dates (via the help
     of some auxiliary tables)
 
-    :param calendar: the `name` of this calendar, if the same *name* and
-                     *dbpath* is given on next creation of an SQLiteDb object
-                     the same tables will be used
-    :type calendar: str
+    :param calendar: names of calendars to select from, those are used as
+        additional itentifiers together with event's uids. Each (uid, calendar)
+        combination should be unique.
     :param db_path: path where this sqlite database will be saved, if this is
-                    None, a place according to the XDG specifications will be
-                    chosen
-    :type db_path: str or None
+        None, a place according to the XDG specifications will be chosen
     """
 
-    def __init__(self, calendars, db_path, locale):
+    def __init__(self,
+                 calendars: Iterable[str],
+                 db_path: Optional[str],
+                 locale: Dict[str, str],
+                 ) -> None:
         assert db_path is not None
         self.calendars = calendars
         self.db_path = path.expanduser(db_path)
@@ -90,7 +85,7 @@ class SQLiteDb(object):
         self._check_table_version()
 
     @property
-    def _select_calendars(self):
+    def _select_calendars(self) -> str:
         return ', '.join(['\'' + cal + '\'' for cal in self.calendars])
 
     @contextlib.contextmanager
@@ -106,7 +101,7 @@ class SQLiteDb(object):
         finally:
             self._at_once = False
 
-    def _create_dbdir(self):
+    def _create_dbdir(self) -> None:
         """create the dbdir if it doesn't exist"""
         if self.db_path == ':memory:':
             return None
@@ -117,10 +112,10 @@ class SQLiteDb(object):
                 makedirs(dbdir, mode=0o770)
                 logger.debug('success')
             except OSError as error:
-                logger.fatal('failed to create {0}: {1}'.format(dbdir, error))
+                logger.critical('failed to create {0}: {1}'.format(dbdir, error))
                 raise CouldNotCreateDbDir()
 
-    def _check_table_version(self):
+    def _check_table_version(self) -> None:
         """tests for current db Version
         if the table is still empty, insert db_version
         """
@@ -136,7 +131,7 @@ class SQLiteDb(object):
                 " is probably an invalid or outdated database.\n"
                 "You should consider removing it and running khal again.")
 
-    def _create_default_tables(self):
+    def _create_default_tables(self) -> None:
         """creates version and calendar tables and inserts table version number
         """
         self.cursor.execute('CREATE TABLE IF NOT EXISTS '
@@ -178,13 +173,12 @@ class SQLiteDb(object):
             );''')
         self.conn.commit()
 
-    def _check_calendars_exists(self):
+    def _check_calendars_exists(self) -> None:
         """make sure an entry for the current calendar exists in `calendar`
         table
         """
         for cal in self.calendars:
-            self.cursor.execute('''SELECT count(*) FROM calendars
-                    WHERE calendar = ?;''', (cal,))
+            self.cursor.execute('''SELECT count(*) FROM calendars WHERE calendar = ?;''', (cal,))
             result = self.cursor.fetchone()
 
             if result[0] != 0:
@@ -194,7 +188,7 @@ class SQLiteDb(object):
                 stuple = (cal, '')
                 self.sql_ex(sql_s, stuple)
 
-    def sql_ex(self, statement, stuple=''):
+    def sql_ex(self, statement=str, stuple: tuple=Union[tuple, str]) -> List:
         """wrapper for sql statements, does a "fetchall" """
         self.cursor.execute(statement, stuple)
         result = self.cursor.fetchall()
@@ -202,28 +196,22 @@ class SQLiteDb(object):
             self.conn.commit()
         return result
 
-    def update(self, vevent_str, href, etag='', calendar=None):
-        """insert a new or update an existing card in the db
+    def update(self, vevent_str: str, href: str, etag: str='', calendar: str=None) -> None:
+        """insert a new or update an existing event into the db
 
         This is mostly a wrapper around two SQL statements, doing some cleanup
         before.
 
         :param vevent_str: event to be inserted or updated.
-                           We assume that even if it contains more than one
-                           VEVENT, that they are all part of the same event and
-                           all have the same UID
-        :type vevent: unicode
+            We assume that even if it contains more than one VEVENT, that they
+            are all part of the same event and all have the same UID
         :param href: href of the card on the server, if this href already
-                     exists in the db the card gets updated. If no href is
-                     given, a random href is chosen and it is implied that this
-                     card does not yet exist on the server, but will be
-                     uploaded there on next sync.
-        :type href: str()
+            exists in the db the card gets updated. If no href is given, a
+            random href is chosen and it is implied that this card does not yet
+            exist on the server, but will be uploaded there on next sync.
         :param etag: the etag of the vcard, if this etag does not match the
-                     remote etag on next sync, this card will be updated from
-                     the server. For locally created vcards this should not be
-                     set
-        :type etag: str()
+            remote etag on next sync, this card will be updated from the server.
+            For locally created vcards this should not be set
         """
         assert calendar is not None
         assert href is not None
@@ -242,20 +230,18 @@ class SQLiteDb(object):
             check_support(vevent, href, calendar)
             self._update_impl(vevent, href, calendar)
 
-        sql_s = ('INSERT INTO events '
-                 '(item, etag, href, calendar) '
-                 'VALUES (?, ?, ?, ?);')
+        sql_s = ('INSERT INTO events (item, etag, href, calendar) VALUES (?, ?, ?, ?);')
         stuple = (vevent_str, etag, href, calendar)
         self.sql_ex(sql_s, stuple)
 
-    def update_birthday(self, vevent, href, etag='', calendar=None):
+    def update_birthday(self, vevent_str: str, href: str, etag: str='', calendar: str=None) -> None:
         """
         XXX write docstring
         """
         assert calendar is not None
         assert href is not None
         self.delete(href, calendar=calendar)
-        ical = icalendar.Event.from_ical(vevent)
+        ical = icalendar.Event.from_ical(vevent_str)
         vcard = ical.walk()[0]
         if 'BDAY' in vcard.keys():
             bday = vcard['BDAY']
@@ -282,26 +268,26 @@ class SQLiteDb(object):
             else:
                 n = vcard['N'].split(';')
                 name = ' '.join([n[1], n[2], n[0]])
-            event = icalendar.Event()
-            event.add('dtstart', bday)
-            event.add('dtend', bday + dt.timedelta(days=1))
+            vevent = icalendar.Event()
+            vevent.add('dtstart', bday)
+            vevent.add('dtend', bday + dt.timedelta(days=1))
             if bday.month == 2 and bday.day == 29:  # leap year
-                event.add('rrule', {'freq': 'YEARLY', 'BYYEARDAY': 60})
+                vevent.add('rrule', {'freq': 'YEARLY', 'BYYEARDAY': 60})
             else:
-                event.add('rrule', {'freq': 'YEARLY'})
+                vevent.add('rrule', {'freq': 'YEARLY'})
             if orig_bday:
-                event.add('x-birthday',
-                          '{:04}{:02}{:02}'.format(bday.year, bday.month, bday.day))
-                event.add('x-fname', name)
-            event.add('summary', '{0}\'s birthday'.format(name))
-            event.add('uid', href)
-            event_str = event.to_ical().decode('utf-8')
-            self._update_impl(event, href, calendar)
+                vevent.add('x-birthday',
+                           '{:04}{:02}{:02}'.format(bday.year, bday.month, bday.day))
+                vevent.add('x-fname', name)
+            vevent.add('summary', '{0}\'s birthday'.format(name))
+            vevent.add('uid', href)
+            vevent_str = vevent.to_ical().decode('utf-8')
+            self._update_impl(vevent, href, calendar)
             sql_s = ('INSERT INTO events (item, etag, href, calendar) VALUES (?, ?, ?, ?);')
-            stuple = (event_str, etag, href, calendar)
+            stuple = (vevent_str, etag, href, calendar)
             self.sql_ex(sql_s, stuple)
 
-    def _update_impl(self, vevent, href, calendar):
+    def _update_impl(self, vevent: icalendar.cal.Event, href: str, calendar: str) -> None:
         """insert `vevent` into the database
 
         expand `vevent`'s recurrence rules (if needed) and insert all instance
@@ -318,10 +304,10 @@ class SQLiteDb(object):
 
         # testing on datetime.date won't work as datetime is a child of date
         if not isinstance(vevent['DTSTART'].dt, dt.datetime):
-            dtype = DATE
+            dtype = EventType.DATE
         else:
-            dtype = DATETIME
-        if ('TZID' in vevent['DTSTART'].params and dtype == DATETIME) or \
+            dtype = EventType.DATETIME
+        if ('TZID' in vevent['DTSTART'].params and dtype == EventType.DATETIME) or \
                 getattr(vevent['DTSTART'].dt, 'tzinfo', None):
             recs_table = 'recs_loc'
         else:
@@ -330,8 +316,8 @@ class SQLiteDb(object):
         thisandfuture = (rrange == THISANDFUTURE)
         if thisandfuture:
             start_shift, duration = calc_shift_deltas(vevent)
-            start_shift = start_shift.days * 3600 * 24 + start_shift.seconds
-            duration = duration.days * 3600 * 24 + duration.seconds
+            start_shift_seconds = start_shift.days * 3600 * 24 + start_shift.seconds
+            duration_seconds = duration.days * 3600 * 24 + duration.seconds
 
         dtstartend = utils.expand(vevent, href)
         if not dtstartend:
@@ -341,7 +327,7 @@ class SQLiteDb(object):
             return
 
         for dtstart, dtend in dtstartend:
-            if dtype == DATE:
+            if dtype == EventType.DATE:
                 dbstart = utils.to_unix_time(dtstart)
                 dbend = utils.to_unix_time(dtend)
             else:
@@ -358,7 +344,10 @@ class SQLiteDb(object):
                 recs_sql_s = (
                     'UPDATE {0} SET dtstart = rec_inst + ?, dtend = rec_inst + ?, ref = ? '
                     'WHERE rec_inst >= ? AND href = ? AND calendar = ?;'.format(recs_table))
-                stuple = (start_shift, start_shift + duration, ref, rec_inst, href, calendar)
+                stuple = (
+                    start_shift_seconds, start_shift_seconds + duration_seconds,
+                    ref, rec_inst, href, calendar,
+                )
             else:
                 recs_sql_s = (
                     'INSERT OR REPLACE INTO {0} '
@@ -367,7 +356,7 @@ class SQLiteDb(object):
                 stuple = (dbstart, dbend, href, ref, dtype, rec_inst, calendar)
             self.sql_ex(recs_sql_s, stuple)
 
-    def get_ctag(self, calendar):
+    def get_ctag(self, calendar=str) -> Optional[str]:
         stuple = (calendar, )
         sql_s = 'SELECT ctag FROM calendars WHERE calendar = ?;'
         try:
@@ -376,13 +365,13 @@ class SQLiteDb(object):
         except IndexError:
             return None
 
-    def set_ctag(self, ctag, calendar):
+    def set_ctag(self, ctag: str, calendar: str):
         stuple = (ctag, calendar, )
         sql_s = 'UPDATE calendars SET ctag = ? WHERE calendar = ?;'
         self.sql_ex(sql_s, stuple)
         self.conn.commit()
 
-    def get_etag(self, href, calendar):
+    def get_etag(self, href: str, calendar: str) -> Optional[str]:
         """get etag for href
 
         type href: str()
@@ -396,7 +385,7 @@ class SQLiteDb(object):
         except IndexError:
             return None
 
-    def delete(self, href, etag=None, calendar=None):
+    def delete(self, href: str, etag: Any=None, calendar: str=None):
         """
         removes the event from the db,
 
@@ -420,7 +409,27 @@ class SQLiteDb(object):
         sql_s = 'SELECT href, etag FROM events WHERE calendar = ?;'
         return list(set(self.sql_ex(sql_s, (calendar, ))))
 
-    def get_localized(self, start, end, minimal=False):
+    def get_localized_calendars(self, start: dt.datetime, end: dt.datetime) -> Iterable[str]:
+        assert start.tzinfo is not None
+        assert end.tzinfo is not None
+        start = utils.to_unix_time(start)
+        end = utils.to_unix_time(end)
+        sql_s = (
+            'SELECT events.calendar FROM '
+            'recs_loc JOIN events ON '
+            'recs_loc.href = events.href AND '
+            'recs_loc.calendar = events.calendar WHERE '
+            '(dtstart >= ? AND dtstart <= ? OR '
+            'dtend > ? AND dtend <= ? OR '
+            'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
+            'ORDER BY dtstart')
+        stuple = (start, end, start, end, start, end)
+        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
+        for calendar in result:
+            yield calendar[0]  # result is always an iterable, even if getting only one item
+
+    def get_localized(self, start, end) \
+            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
         """returns
         :type start: datetime.datetime
         :type end: datetime.datetime
@@ -431,118 +440,80 @@ class SQLiteDb(object):
         assert end.tzinfo is not None
         start = utils.to_unix_time(start)
         end = utils.to_unix_time(end)
-        if minimal:
-            sql_s = (
-                'SELECT events.calendar FROM '
-                'recs_loc JOIN events ON '
-                'recs_loc.href = events.href AND '
-                'recs_loc.calendar = events.calendar WHERE '
-                '(dtstart >= ? AND dtstart <= ? OR '
-                'dtend > ? AND dtend <= ? OR '
-                'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
-                'ORDER BY dtstart')
-        else:
-            sql_s = (
-                'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
-                'FROM recs_loc JOIN events ON '
-                'recs_loc.href = events.href AND '
-                'recs_loc.calendar = events.calendar WHERE '
-                '(dtstart >= ? AND dtstart <= ? OR '
-                'dtend > ? AND dtend <= ? OR '
-                'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
-                'ORDER BY dtstart')
+        sql_s = (
+            'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
+            'FROM recs_loc JOIN events ON '
+            'recs_loc.href = events.href AND '
+            'recs_loc.calendar = events.calendar WHERE '
+            '(dtstart >= ? AND dtstart <= ? OR '
+            'dtend > ? AND dtend <= ? OR '
+            'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
+            'ORDER BY dtstart')
         stuple = (start, end, start, end, start, end)
         result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
-        if minimal:
-            for calendar in result:
-                yield EventStandIn(calendar[0])
-        else:
-            for item, href, start, end, ref, etag, dtype, calendar in result:
-                start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
-                end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
-                yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
+        for item, href, start, end, ref, etag, dtype, calendar in result:
+            start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
+            end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
+            yield item, href, start, end, ref, etag, calendar
 
-    def get_floating(self, start, end, minimal=False):
+    def get_floating_calendars(self, start: dt.datetime, end: dt.datetime) -> Iterable[str]:
+        assert start.tzinfo is None
+        assert end.tzinfo is None
+        strstart = utils.to_unix_time(start)
+        strend = utils.to_unix_time(end)
+        sql_s = (
+            'SELECT events.calendar FROM '
+            'recs_float JOIN events ON '
+            'recs_float.href = events.href AND '
+            'recs_float.calendar = events.calendar WHERE '
+            '(dtstart >= ? AND dtstart < ? OR '
+            'dtend > ? AND dtend <= ? OR '
+            'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0}) '
+            'ORDER BY dtstart')
+        stuple = (strstart, strend, strstart, strend, strstart, strend)
+        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
+        for calendar in result:
+            yield calendar[0]
+
+    def get_floating(self, start, end) \
+            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
         """return floating events between `start` and `end`
 
         :type start: datetime.datetime
         :type end: datetime.datetime
-        :param minimal: if set, we do not return an event but a minimal stand in
-        :type minimal: bool
         """
         assert start.tzinfo is None
         assert end.tzinfo is None
         strstart = utils.to_unix_time(start)
         strend = utils.to_unix_time(end)
-        if minimal:
-            sql_s = (
-                'SELECT events.calendar FROM '
-                'recs_float JOIN events ON '
-                'recs_float.href = events.href AND '
-                'recs_float.calendar = events.calendar WHERE '
-                '(dtstart >= ? AND dtstart < ? OR '
-                'dtend > ? AND dtend <= ? OR '
-                'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0}) '
-                'ORDER BY dtstart')
-        else:
-            sql_s = (
-                'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar '
-                'FROM recs_float JOIN events ON '
-                'recs_float.href = events.href AND '
-                'recs_float.calendar = events.calendar WHERE '
-                '(dtstart >= ? AND dtstart < ? OR '
-                'dtend > ? AND dtend <= ? OR '
-                'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0}) '
-                'ORDER BY dtstart')
+        sql_s = (
+            'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar '
+            'FROM recs_float JOIN events ON '
+            'recs_float.href = events.href AND '
+            'recs_float.calendar = events.calendar WHERE '
+            '(dtstart >= ? AND dtstart < ? OR '
+            'dtend > ? AND dtend <= ? OR '
+            'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0}) '
+            'ORDER BY dtstart')
         stuple = (strstart, strend, strstart, strend, strstart, strend)
         result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
-        if minimal:
-            for calendar in result:
-                yield EventStandIn(calendar[0])
-        else:
-            for item, href, start, end, ref, etag, dtype, calendar in result:
-                start = dt.datetime.utcfromtimestamp(start)
-                end = dt.datetime.utcfromtimestamp(end)
-                yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
+        for item, href, start, end, ref, etag, dtype, calendar in result:
+            start = dt.datetime.utcfromtimestamp(start)
+            end = dt.datetime.utcfromtimestamp(end)
+            if dtype == EventType.DATE:
+                start = start.date()
+                end = end.date()
+            yield item, href, start, end, ref, etag, calendar
 
-    def get(self, href, start=None, end=None, ref=None, dtype=None, calendar=None):
-        """returns the Event matching href
-
-        if start and end are given, a specific Event from a Recursion set is
-        returned, otherwise the Event returned exactly as saved in the db
-        """
+    def get(self, href: str, calendar: str) -> str:
+        """returns the ical string matching href and calendar"""
         assert calendar is not None
-        sql_s = 'SELECT href, etag, item FROM events WHERE href = ? AND calendar = ?;'
-        result = self.sql_ex(sql_s, (href, calendar))
-        href, etag, item = result[0]
-        if dtype == DATE:
-            start = start.date()
-            end = end.date()
-        return Event.fromString(item,
-                                locale=self.locale,
-                                href=href,
-                                calendar=calendar,
-                                etag=etag,
-                                start=start,
-                                end=end,
-                                ref=ref,
-                                )
+        sql_s = 'SELECT item, etag FROM events WHERE href = ? AND calendar = ?;'
+        item, etag = self.sql_ex(sql_s, (href, calendar))[0]
+        return item
 
-    def construct_event(self, item, href, start, end, ref, etag, calendar, dtype=None):
-        if dtype == DATE:
-            start = start.date()
-            end = end.date()
-        return Event.fromString(item,
-                                locale=self.locale,
-                                href=href,
-                                calendar=calendar,
-                                etag=etag,
-                                start=start,
-                                end=end,
-                                ref=ref,
-                                )
-
-    def search(self, search_string):
+    def search(self, search_string: str) \
+            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
         """search for events matching `search_string`"""
         sql_s = (
             'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
@@ -556,7 +527,10 @@ class SQLiteDb(object):
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
-            yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
+            if dtype == EventType.DATE:
+                start = start.date()
+                end = end.date()
+            yield item, href, start, end, ref, etag, calendar
 
         sql_s = (
             'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar '
@@ -570,16 +544,17 @@ class SQLiteDb(object):
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = dt.datetime.utcfromtimestamp(start)
             end = dt.datetime.utcfromtimestamp(end)
-            yield self.construct_event(item, href, start, end, ref, etag, calendar, dtype)
+            if dtype == EventType.DATE:
+                start = start.date()
+                end = end.date()
+            yield item, href, start, end, ref, etag, calendar
 
 
-def check_support(vevent, href, calendar):
+def check_support(vevent: icalendar.cal.Event, href: str, calendar: str):
     """test if all icalendar features used in this event are supported,
     raise `UpdateFailed` otherwise.
     :param vevent: event to test
-    :type vevent: icalendar.cal.Event
     :param href: href of this event, only used for logging
-    :type href: str
     """
     rec_id = vevent.get(RECURRENCE_ID)
 
@@ -602,7 +577,7 @@ def check_support(vevent, href, calendar):
         )
 
 
-def check_for_errors(component, calendar, href):
+def check_for_errors(component: icalendar.cal.Component, calendar: str, href: str):
     """checking if component.errors exists, is not empty and if so warn the user"""
     if hasattr(component, 'errors') and component.errors:
         logger.error(
@@ -613,14 +588,11 @@ def check_for_errors(component, calendar, href):
         logger.error('This might lead to this event being shown wrongly or not at all.')
 
 
-def calc_shift_deltas(vevent):
+def calc_shift_deltas(vevent: icalendar.Event) -> Tuple[dt.timedelta, dt.timedelta]:
     """calculate an event's duration and by how much its start time has shifted
     versus its recurrence-id time
 
     :param event: an event with an RECURRENCE-ID property
-    :type event: icalendar.Event
-    :returns: time shift and duration
-    :rtype: (datetime.timedelta, datetime.timedelta)
     """
     assert isinstance(vevent, icalendar.Event)  # REMOVE ME
     start_shift = vevent['DTSTART'].dt - vevent['RECURRENCE-ID'].dt

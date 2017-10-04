@@ -334,6 +334,13 @@ def test_event_raw_UTC():
         '''END:VCALENDAR\r\n'''])
 
 
+def test_zulu_events():
+    """test if events in Zulu time are correctly recognized as localized events"""
+    event = Event.fromString(_get_text('event_dt_simple_zulu'), **EVENT_KWARGS)
+    assert type(event) == LocalizedEvent
+    assert event.start_local == BERLIN.localize(dt.datetime(2014, 4, 9, 11, 30))
+
+
 def test_dtend_equals_dtstart():
     event = Event.fromString(_get_text('event_d_same_start_end'),
                              calendar='foobar', locale=LOCALE_BERLIN)
