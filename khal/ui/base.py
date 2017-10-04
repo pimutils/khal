@@ -75,6 +75,33 @@ class Pane(urwid.WidgetWrap):
         overlay = urwid.Overlay(content, self, 'center', ('relative', 70), ('relative', 70), None)
         self.window.open(overlay)
 
+    def scrollable_dialog(self, text, buttons=None, title="Press `ESC` to close this window"):
+        """Open a scrollable dialog box.
+
+        :param text: Text to appear as the body of the Dialog box
+        :type text: str
+        :param buttons: list of tuples of button labels and functions to call
+            when the button is pressed
+        :type buttons: list(str, callable)
+        """
+        body = urwid.ListBox([urwid.Text(line) for line in text.splitlines()])
+        if buttons:
+            buttons = NColumns(
+                [urwid.Button(label, on_press=func) for label, func in buttons],
+                outermost=True,
+            )
+            content = urwid.LineBox(urwid.Pile([body, ('pack', buttons)]))
+        else:
+            content = urwid.LineBox(urwid.Pile([body]))
+
+        # put the title on the upper line
+        over = urwid.Overlay(
+            urwid.Text(" " + title + " "), content, 'center', len(title) + 2, 'top', None,
+        )
+        overlay = urwid.Overlay(
+            over, self, 'center', ('relative', 70), 'middle', ('relative', 70), None)
+        self.window.open(overlay)
+
     def keypress(self, size, key):
         """Handle application-wide key strokes."""
         if key in ['f1', '?']:
@@ -88,10 +115,7 @@ class Pane(urwid.WidgetWrap):
         lines.append('  =======              ====')
         for command, keys in self._conf['keybindings'].items():
             lines.append('  {:20} {}'.format(command, keys))
-        lines.append('')
-        lines.append("Press `Escape` to close this window")
-
-        self.dialog('\n'.join(lines), [])
+        self.scrollable_dialog('\n'.join(lines), title="Press `Escape` to close this window")
 
 
 class Window(urwid.Frame):
