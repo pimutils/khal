@@ -39,6 +39,9 @@ not released yet
   displays the month name only if the first day of the week is within
   the new month.
 
+* NEW ikhal learned to show log messages in the header and in a new log pane,
+  access with default keybinding `L`
+
 0.9.7
 =====
 released 2017-09-15
