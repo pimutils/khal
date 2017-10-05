@@ -3,9 +3,9 @@ Usage
 Khal offers a set of commands, most importantly :command:`list`,
 :command:`calendar`, :command:`interactive`, :command:`new`,
 :command:`printcalendars`, :command:`printformats`, and :command:`search`. See
-below for a description of what every command does. Calling :program:`khal`
-without any command will invoke the default command, which can be specified in
-the :doc:`configuration file <configure>`.
+below for a description of what every command does. :program:`khal` does
+currently not support any default command, i.e., run a command, even though none
+has been specified. This is intentional.
 
 
 Options
@@ -24,13 +24,18 @@ information about :program:`khal`:
 Several options are common to almost all of :program:`khal`'s commands
 (exceptions are described below):
 
-.. option:: -v
+.. option:: -v, --verbosity LVL
 
-        Configure verbosity (e.g. print debugging information)
+        Configure verbosity (e.g. print debugging information), `LVL` needs to
+        be one of CRITICAL, ERROR, WARNING, INFO, or DEBUG.
+
+.. option:: -l, --logfile LOFILE
+
+        Use logfile `LOGFILE` for logging, default is logging to stdout.
 
 .. option:: -c CONFIGFILE
 
-        Use an alternate configuration file
+        Use an alternate configuration file.
 
 .. option:: -a CALENDAR
 
@@ -190,6 +195,10 @@ three letters abbreviated form). Week day names get interpreted as the date of
 the next occurrence of a day with that name. The name of the current day gets
 interpreted as that date *next* week (i.e. seven days from now).
 
+If a short datetime format is used (no year is given), khal will interpret the
+date to be in the future. The inferred it might be in the next year if the given
+date has already past in the current year.
+
 Commands
 --------
 
@@ -280,7 +289,7 @@ When the calendar on the left is in focus, you can
  * focus on the right column by pressing :kbd:`tab` or :kbd:`enter`
  * re-focus on the current date, default keybinding :kbd:`t` as in today
  * marking a date range, default keybinding :kbd:`v`, as in visual, think visual
-   mode in Vim, pressing :kbd:`esc` escape this visual mode
+   mode in Vim, pressing :kbd:`esc` escapes this visual mode
  * if in visual mode, you can select the other end of the currently marked
    range, default keybinding :kbd:`o` as in other (again as in Vim)
  * create a new event on the currently focused day (or date range if a range is
@@ -308,8 +317,9 @@ In the event editor, you can
 * use some common editing short cuts in most text fields (:kbd:`ctrl+w` deletes word
   before cursor, :kbd:`ctrl+u` (:kbd:`ctrl+k`) deletes till the beginning (end) of the
   line, :kbd:`ctrl+a` (:kbd:`ctrl+e`) will jump to the beginning (end) of the line
-* in the date and time field you can increment and decrement the number under
+* in the date and time fields you can increment and decrement the number under
   the cursor with :kbd:`ctrl+a` and :kbd:`ctrl+x` (time in 15 minute steps)
+* in the date fields you can access a miniature calendar by pressing `enter`
 * activate actions by pressing :kbd:`enter` on text enclosed by angled brackets, e.g.
   :guilabel:`< Save >` (sometimes this might open a pop up)
 
