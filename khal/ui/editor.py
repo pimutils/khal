@@ -230,7 +230,7 @@ class StartEndEditor(urwid.WidgetWrap):
             return endval
 
     def _end_date_change(self, date):
-        self._enddt = self.localize_end(datetime.combine(date, self._start_time))
+        self._enddt = self.localize_end(datetime.combine(date, self._end_time))
         self.on_end_date_change(date)
 
     def toggle(self, checkbox, state):
