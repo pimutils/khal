@@ -23,13 +23,15 @@
 """this module should contain classes that are specific to ikhal, more
 general widgets should go in widgets.py"""
 
-
+import logging
 import threading
 import time
 
 import urwid
 
 from .widgets import NColumns
+
+logger = logging.getLogger(__name__)
 
 
 class Pane(urwid.WidgetWrap):
@@ -106,6 +108,8 @@ class Pane(urwid.WidgetWrap):
         """Handle application-wide key strokes."""
         if key in ['f1', '?']:
             self.show_keybindings()
+        elif key in ['L']:
+            self.show_log()
         else:
             return super().keypress(size, key)
 
@@ -115,7 +119,16 @@ class Pane(urwid.WidgetWrap):
         lines.append('  =======              ====')
         for command, keys in self._conf['keybindings'].items():
             lines.append('  {:20} {}'.format(command, keys))
-        self.scrollable_dialog('\n'.join(lines), title="Press `Escape` to close this window")
+        self.scrollable_dialog(
+            '\n'.join(lines),
+            title="Press `ESC` to close this window, arrows to scroll",
+        )
+
+    def show_log(self):
+        self.scrollable_dialog(
+            '\n'.join(self.window._log),
+            title="Press `ESC` to close this window, arrows to scroll",
+        )
 
 
 class Window(urwid.Frame):
@@ -143,10 +156,14 @@ class Window(urwid.Frame):
         self._original_w = None
         self.quit_keys = quit_keys
 
-        self._alert_daemon = AlertDaemon(self.update_header)
+        def alert(message):
+            self.update_header(message, warn=True)
+        self._alert_daemon = AlertDaemon(alert)
         self._alert_daemon.start()
         self.alert = self._alert_daemon.alert
         self.loop = None
+        self._log = []
+        self._header_is_warning = False
 
     def open(self, pane, callback=None):
         """Open a new pane.
@@ -191,12 +208,21 @@ class Window(urwid.Frame):
 
     def _update(self, pane):
         self.set_body(pane)
-        self.update_header()
+        self.clear_header()
+
+    def log(self, record):
+        self._log.append(record)
 
     def _get_current_pane(self):
         return self._track[-1][0] if self._track else None
 
-    def update_header(self, alert=None):
+    def clear_header(self):
+        """clears header if we are not currently showing a warning"""
+        if not self._header_is_warning:
+            pane_title = getattr(self._get_current_pane(), 'title', '')
+            self.header.w.set_text(pane_title)
+
+    def update_header(self, alert=None, warn=False):
         """Update the Windows header line.
 
         :param alert: additional text to show in header, additionally to
@@ -204,6 +230,7 @@ class Window(urwid.Frame):
             be a valid palette entry
         :type alert: str or (palette_entry, str)
         """
+        self._header_is_warning = warn
         pane_title = getattr(self._get_current_pane(), 'title', None)
         text = []
 

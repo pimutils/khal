@@ -341,8 +341,7 @@ def expand(vevent, href=''):
 
         rrule = map(sanitize_datetime, rrule)
 
-        logger.debug('calculating recurrence dates for {0}, '
-                     'this might take some time.'.format(href))
+        logger.debug('calculating recurrence dates for {}, this might take some time.'.format(href))
 
         # RRULE and RDATE may specify the same date twice, it is recommended by
         # the RFC to consider this as only one instance
