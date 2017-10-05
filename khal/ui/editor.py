@@ -235,7 +235,7 @@ class StartEndEditor(urwid.WidgetWrap):
             return endval
 
     def _end_date_change(self, date):
-        self._enddt = self.localize_end(dt.datetime.combine(date, self._start_time))
+        self._enddt = self.localize_end(dt.datetime.combine(date, self._end_time))
         self.on_end_date_change(date)
 
     def toggle(self, checkbox, state):
@@ -277,25 +277,23 @@ class StartEndEditor(urwid.WidgetWrap):
             self.widgets.endtime = urwid.Text('')
         elif state is False:
             timewidth = self._timewidth + 1
-            edit = ValidatedEdit(
+            raw_start_time_widget = ValidatedEdit(
                 dateformat=self.conf['locale']['timeformat'],
                 EditWidget=TimeWidget,
                 validate=self._validate_start_time,
                 edit_text=self.startdt.strftime(self.conf['locale']['timeformat']),
             )
-            edit = urwid.Padding(
-                edit, align='left', width=self._timewidth + 1, left=1)
-            self.widgets.starttime = edit
+            self.widgets.starttime = urwid.Padding(
+                raw_start_time_widget, align='left', width=self._timewidth + 1, left=1)
 
-            edit = ValidatedEdit(
+            raw_end_time_widget = ValidatedEdit(
                 dateformat=self.conf['locale']['timeformat'],
                 EditWidget=TimeWidget,
                 validate=self._validate_end_time,
                 edit_text=self.enddt.strftime(self.conf['locale']['timeformat']),
             )
-            edit = urwid.Padding(
-                edit, align='left', width=self._timewidth + 1, left=1)
-            self.widgets.endtime = edit
+            self.widgets.endtime = urwid.Padding(
+                raw_end_time_widget, align='left', width=self._timewidth + 1, left=1)
 
         columns = NPile([
             self.checkallday,
