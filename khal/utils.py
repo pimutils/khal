@@ -38,7 +38,7 @@ import pytz
 
 from .exceptions import UnsupportedRecurrence
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 
 
 def generate_random_uid():

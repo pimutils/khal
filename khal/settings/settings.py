@@ -35,7 +35,7 @@ from .utils import (config_checks, expand_db_path, expand_path,
                     get_color_from_vdir, get_vdir_type, is_color, is_timedelta,
                     is_timezone, weeknumber_option, monthdisplay_option)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
 
 

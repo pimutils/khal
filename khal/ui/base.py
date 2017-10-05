@@ -31,7 +31,7 @@ import urwid
 
 from .widgets import NColumns
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 
 
 class Pane(urwid.WidgetWrap):
