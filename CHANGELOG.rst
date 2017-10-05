@@ -42,6 +42,13 @@ not released yet
 * NEW ikhal learned to show log messages in the header and in a new log pane,
   access with default keybinding `L`
 
+0.9.8
+=====
+released 2017-10-05
+
+* FIX a bug in ikhal: when editing events and not editing the dates, the end
+  time could erroneously be moved to the start time + 1h
+
 0.9.7
 =====
 released 2017-09-15
