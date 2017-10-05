@@ -16,7 +16,8 @@ local -A opt_args
 args=( '(- *)--help[show help information]' )
 _arguments -C $args \
   {-c+,--config=}'[specify config file]:config file:_files' \
-  {-v,--verbose}"[give more output]" \
+  {-v+,--verbosity=}"[set verbosity level]:options:(CRITICAL ERROR WARNING INFO  DEBUG)" \
+  {-l+,--logfile=}'[specify the file to log to]:log file:()' \
   '(- *)--version[show version]' \
   ':subcommand:->subcommand' \
   '*::options:->options' && ret=0
