@@ -164,6 +164,9 @@ other = force_list(default=list('o'))
 # open a text field to start a search for events
 search = force_list(default=list('/'))
 
+# show logged messages
+log = force_list(default=list('L'))
+
 # quit
 quit = force_list(default=list('q', 'Q'))
 

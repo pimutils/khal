@@ -20,6 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import datetime as dt
+import logging
 import signal
 import sys
 
@@ -35,6 +36,7 @@ from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
 from .calendarwidget import CalendarWidget
 
+logger = logging.getLogger(__name__)
 
 #  Overview of how this all meant to fit together:
 #
@@ -1013,7 +1015,6 @@ class SearchDialog(urwid.WidgetWrap):
 
 
 class ClassicView(Pane):
-
     """default Pane for khal
 
     showing a CalendarWalker on the left and the eventList + eventviewer/editor
@@ -1256,10 +1257,54 @@ def _add_calendar_colors(palette, collection):
 
 def start_pane(pane, callback, program_info='', quit_keys=['q']):
     """Open the user interface with the given initial pane."""
+
     frame = Window(
         footer=program_info + ' | {}: quit, ?: help'.format(quit_keys[0]),
         quit_keys=quit_keys,
     )
+
+    class LogPaneFormatter(logging.Formatter):
+        def get_prefix(self, level):
+            if level >= 50:
+                return 'CRITICAL'
+            if level >= 40:
+                return 'ERROR'
+            if level >= 30:
+                return 'WARNING'
+            if level >= 20:
+                return 'INFO'
+            else:
+                return 'DEBUG'
+
+        def format(self, record):
+            return (self.get_prefix(record.levelno) + ': ' + record.msg)
+
+    class HeaderFormatter(LogPaneFormatter):
+        def format(self, record):
+            return (
+                super().format(record)[:30] + '... '
+                '[Press `{}` to view log]'.format(pane._conf['keybindings']['log'][0])
+            )
+
+    class LogPaneHandler(logging.Handler):
+        def emit(self, record):
+            frame.log(self.format(record))
+
+    class LogHeaderHandler(logging.Handler):
+        def emit(self, record):
+            frame.alert(self.format(record))
+
+    if len(logger.handlers) > 0 and not isinstance(logger.handlers[-1], logging.FileHandler):
+        logger.handlers.pop()
+
+    pane_handler = LogPaneHandler()
+    pane_handler.setFormatter(LogPaneFormatter())
+    logger.addHandler(pane_handler)
+
+    header_handler = LogHeaderHandler()
+    header_handler.setFormatter(HeaderFormatter())
+    logger.addHandler(header_handler)
+
     frame.open(pane, callback)
     palette = _add_calendar_colors(
         getattr(colors, pane._conf['view']['theme']), pane.collection)
