@@ -35,7 +35,7 @@ from ..parse_datetime import guesstimedeltafstr
 from ..terminal import COLORS
 from .exceptions import InvalidSettingsError
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 
 
 def is_timezone(tzstring):

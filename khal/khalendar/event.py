@@ -37,7 +37,7 @@ from ..utils import (delete_instance, generate_random_uid, invalid_timezone,
                      is_aware, to_naive_utc, to_unix_time)
 from ..parse_datetime import timedelta2str
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 
 
 class Event(object):

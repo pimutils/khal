@@ -41,7 +41,7 @@ except ImportError:
         pass
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 click_log.basic_config('khal')
 
 days_option = click.option('--days', default=None, type=int, help='How many days to include.')

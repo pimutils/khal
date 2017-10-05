@@ -33,7 +33,7 @@ from click import UsageError, confirm, prompt
 from .exceptions import FatalError
 from .settings import settings
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 
 
 def validate_int(input, min_value, max_value):

@@ -36,7 +36,7 @@ from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
 from .calendarwidget import CalendarWidget
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 
 #  Overview of how this all meant to fit together:
 #

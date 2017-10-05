@@ -40,7 +40,7 @@ from .exceptions import (CouldNotCreateDbDir, DuplicateUid,
 from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
                    get_etag_from_file)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 
 
 def create_directory(path: str):

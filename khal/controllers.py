@@ -40,7 +40,7 @@ from .exceptions import ConfigurationError
 from .khalendar.vdir import Item
 from .terminal import merge_columns
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 
 
 def format_day(day, format_string, locale, attributes=None):

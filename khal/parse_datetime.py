@@ -31,7 +31,7 @@ from time import strptime
 import pytz
 from khal.exceptions import FatalError, DateTimeParseError
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('khal')
 
 
 def timefstr(dtime_list, timeformat):
