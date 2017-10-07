@@ -529,7 +529,6 @@ def _get_cli():
             else:
                 ics_str = sys.stdin.read()
                 name = 'stdin input'
-                sys.stdin = open('/dev/tty', 'r')
             controllers.print_ics(ctx.obj['conf'], name, ics_str, format)
         except FatalError as error:
             logger.debug(error, exc_info=True)
