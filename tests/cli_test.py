@@ -681,7 +681,7 @@ def test_printics_read_from_stdin(runner):
     runner = runner(command='printics')
     result = runner.invoke(main_khal, ['printics'], input=_get_text('cal_d'))
     assert not result.exception
-    assert result.output == '1 events found in stdin input\n An Event\n'
+    assert '1 events found in stdin input\n An Event\n' in result.output
 
 
 def test_configure_command_config_exists(runner):

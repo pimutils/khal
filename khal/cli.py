@@ -20,6 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 import logging
+import os
 import sys
 import textwrap
 from shutil import get_terminal_size
@@ -435,7 +436,11 @@ def _get_cli():
             # Default to stdin:
             if not ics:
                 ics_strs = (sys.stdin.read(),)
-                sys.stdin = open('/dev/tty', 'r')
+                if not batch:
+                    if os.path.isfile('/dev/tty'):
+                        sys.stdin = open('/dev/tty', 'r')
+                    else:
+                        logger.warning('/dev/tty does not exist, importing might not work')
             else:
                 ics_strs = (ics_file.read() for ics_file in ics)
 
