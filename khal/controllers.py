@@ -27,7 +27,6 @@ import textwrap
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
 
-import icalendar
 import pytz
 from click import confirm, echo, prompt, style
 from khal import (__productname__, __version__, calendar_display,
@@ -39,6 +38,7 @@ from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 from .exceptions import ConfigurationError
 from .khalendar.vdir import Item
 from .terminal import merge_columns
+from .utils import cal_from_ics
 
 logger = logging.getLogger('khal')
 
@@ -563,7 +563,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
     """
     # print all sub-events
     if not batch:
-        for item in icalendar.Calendar.from_ical(vevent).walk():
+        for item in cal_from_ics(vevent).walk():
             if item.name == 'VEVENT':
                 event = Event.fromVEvents(
                     [item], calendar=collection.default_calendar_name, locale=locale)
@@ -611,7 +611,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
 def print_ics(conf, name, ics, format):
     if format is None:
         format = conf['view']['agenda_event_format']
-    cal = icalendar.Calendar.from_ical(ics)
+    cal = cal_from_ics(ics)
     events = [item for item in cal.walk() if item.name == 'VEVENT']
     events_grouped = defaultdict(list)
     for event in events:
