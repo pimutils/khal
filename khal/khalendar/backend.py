@@ -215,7 +215,7 @@ class SQLiteDb(object):
         """
         assert calendar is not None
         assert href is not None
-        ical = icalendar.Event.from_ical(vevent_str)
+        ical = utils.cal_from_ics(vevent_str)
         check_for_errors(ical, calendar, href)
         vevents = (utils.sanitize(c, self.locale['default_timezone'], href, calendar) for
                    c in ical.walk() if c.name == 'VEVENT')
@@ -241,7 +241,7 @@ class SQLiteDb(object):
         assert calendar is not None
         assert href is not None
         self.delete(href, calendar=calendar)
-        ical = icalendar.Event.from_ical(vevent_str)
+        ical = utils.cal_from_ics(vevent_str)
         vcard = ical.walk()[0]
         if 'BDAY' in vcard.keys():
             bday = vcard['BDAY']

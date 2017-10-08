@@ -122,7 +122,7 @@ def split_ics(ics, random_uid=False, default_timezone=None):
     :type random_uid: bool
     :rtype list:
     """
-    cal = icalendar.Calendar.from_ical(ics)
+    cal = cal_from_ics(ics)
     tzs = {item['TZID']: item for item in cal.walk() if item.name == 'VTIMEZONE'}
 
     events_grouped = defaultdict(list)
@@ -623,3 +623,19 @@ def sort_key(vevent):
 
 def get_wrapped_text(widget):
     return widget.original_widget.get_edit_text()
+
+
+def cal_from_ics(ics):
+    try:
+        cal = icalendar.Calendar.from_ical(ics)
+    except ValueError as error:
+        if (len(error.args) > 0 and isinstance(error.args[0], str) and
+                error.args[0].startswith('Offset must be less than 24 hours')):
+            logger.warn(
+                'Invalid timezone offset encountered, '
+                'timezone information may be wrong: ' + str(error.args[0])
+            )
+            icalendar.vUTCOffset.ignore_exceptions = True
+            cal = icalendar.Calendar.from_ical(ics)
+            icalendar.vUTCOffset.ignore_exceptions = False
+    return cal

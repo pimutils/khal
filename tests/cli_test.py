@@ -470,6 +470,19 @@ def test_import_proper(runner):
     assert result.output == '09.04.-09.04. An Event\n'
 
 
+def test_import_proper_invalid_timezone(runner):
+    runner = runner()
+    result = runner.invoke(
+        main_khal, ['import', _get_ics_filepath('invalid_tzoffset')], input='0\ny\n')
+    assert result.output.startswith(
+        'warning: Invalid timezone offset encountered, timezone information may be wrong')
+    assert not result.exception
+    result = runner.invoke(main_khal, ['search', 'Event'])
+    assert result.output.startswith(
+        'warning: Invalid timezone offset encountered, timezone information may be wrong')
+    assert '02.12. 08:00-02.12. 09:30 Some event' in result.output
+
+
 def test_import_invalid_choice_and_prefix(runner):
     runner = runner()
     result = runner.invoke(main_khal, ['import', _get_ics_filepath('cal_d')], input='9\nth\ny\n')

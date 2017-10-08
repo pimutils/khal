@@ -33,8 +33,8 @@ from click import style
 
 from ..exceptions import FatalError
 from ..terminal import get_color
-from ..utils import (delete_instance, generate_random_uid, invalid_timezone,
-                     is_aware, to_naive_utc, to_unix_time)
+from ..utils import (cal_from_ics, delete_instance, generate_random_uid,
+                     invalid_timezone, is_aware, to_naive_utc, to_unix_time)
 from ..parse_datetime import timedelta2str
 
 logger = logging.getLogger('khal')
@@ -151,7 +151,7 @@ class Event(object):
 
     @classmethod
     def fromString(cls, event_str, ref=None, **kwargs):
-        calendar_collection = icalendar.Calendar.from_ical(event_str)
+        calendar_collection = cal_from_ics(event_str)
         events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
         return cls.fromVEvents(events, ref, **kwargs)
 

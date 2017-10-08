@@ -325,6 +325,18 @@ class TestCollection(object):
                 if event.calendar == cal2:
                     assert event.etag == etag2
 
+    def test_invalid_timezones(self, coll_vdirs):
+        """testing if we can delete any of two events in two different
+        calendars with the same filename"""
+        coll, vdirs = coll_vdirs
+        event = Event.fromString(
+            _get_text('invalid_tzoffset'), calendar=cal1, locale=LOCALE_BERLIN)
+        coll.new(event, cal1)
+        events = list(sorted(coll.search('Event')))
+        assert len(events) == 1
+        assert events[0].format('{start} {end} {title}', dt.date.today()) == \
+            '02.12. 08:00 02.12. 09:30 Some event\x1b[0m'
+
 
 class TestDbCreation(object):
 

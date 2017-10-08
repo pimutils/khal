@@ -13,6 +13,7 @@ not released yet
 
 * NEW DEPENDENCY added click_log  >= 0.2.0
 * NEW DEPENDENCY for Python 3.4: typing
+* UPDATED DEPENDENCY icalendar>=3.11.7
 * DROPPED support for Python 3.3
 * vdirsyncer is still a test dependency (and always has been)
 
@@ -29,6 +30,8 @@ not released yet
 * CHANGE `search` will now print one line for every different event in a
   recurrence set, that is one line for the master event, and one line for every
   different overwritten event
+* CHANGE khal learned to read .ics files with nonsenscial TZOFFSETs > 24h and
+  prints a warning
 
 * NEW khal learned the ``--logfile/-l LOGFILE`` flag which allows logging to a
   file
