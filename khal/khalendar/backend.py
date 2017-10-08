@@ -344,17 +344,18 @@ class SQLiteDb(object):
                 recs_sql_s = (
                     'UPDATE {0} SET dtstart = rec_inst + ?, dtend = rec_inst + ?, ref = ? '
                     'WHERE rec_inst >= ? AND href = ? AND calendar = ?;'.format(recs_table))
-                stuple = (
+                stuple_f = (
                     start_shift_seconds, start_shift_seconds + duration_seconds,
                     ref, rec_inst, href, calendar,
                 )
+                self.sql_ex(recs_sql_s, stuple_f)
             else:
                 recs_sql_s = (
                     'INSERT OR REPLACE INTO {0} '
                     '(dtstart, dtend, href, ref, dtype, rec_inst, calendar)'
                     'VALUES (?, ?, ?, ?, ?, ?, ?);'.format(recs_table))
-                stuple = (dbstart, dbend, href, ref, dtype, rec_inst, calendar)
-            self.sql_ex(recs_sql_s, stuple)
+                stuple_n = (dbstart, dbend, href, ref, dtype, rec_inst, calendar)
+                self.sql_ex(recs_sql_s, stuple_n)
 
     def get_ctag(self, calendar=str) -> Optional[str]:
         stuple = (calendar, )
