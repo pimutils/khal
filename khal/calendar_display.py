@@ -51,20 +51,23 @@ def getweeknumber(date):
     return dt.date.isocalendar(date)[1]
 
 
-def get_event_color(event, default_color):
+def get_calendar_color(calendar, default_color, collection):
     """Because multi-line lambdas would be un-Pythonic
     """
-    if event.color == '':
+    if collection._calendars[calendar]['color'] == '':
         return default_color
-    return event.color
+    return collection._calendars[calendar]['color']
 
 
-def str_highlight_day(day, devents, hmethod, default_color, multiple, color, bold_for_light_color):
+def str_highlight_day(
+        day, calendars, hmethod, default_color, multiple, color, bold_for_light_color, collection):
     """returns a string with day highlighted according to configuration
     """
     dstr = str(day.day).rjust(2)
     if color == '':
-        dcolors = list(set(map(lambda x: get_event_color(x, default_color), devents)))
+        dcolors = list(set(
+            map(lambda x: get_calendar_color(x, default_color, collection), calendars)
+        ))
         if len(dcolors) > 1:
             if multiple == '':
                 if hmethod == "foreground" or hmethod == "fg":
@@ -78,10 +81,7 @@ def str_highlight_day(day, devents, hmethod, default_color, multiple, color, bol
             else:
                 dcolor = multiple
         else:
-            if devents[0].color == '':
-                dcolor = default_color
-            else:
-                dcolor = devents[0].color
+            dcolor = dcolors[0] or default_color
     else:
         dcolor = color
     if dcolor != '':
@@ -111,10 +111,10 @@ def str_week(week, today, collection=None,
         if day == today:
             day = style(str(day.day).rjust(2), reverse=True)
         elif highlight_event_days:
-            devents = list(collection.get_events_on(day, minimal=True))
+            devents = list(collection.get_calendars_on(day))
             if len(devents) > 0:
                 day = str_highlight_day(day, devents, hmethod, default_color,
-                                        multiple, color, bold_for_light_color)
+                                        multiple, color, bold_for_light_color, collection)
             else:
                 day = str(day.day).rjust(2)
         else:
