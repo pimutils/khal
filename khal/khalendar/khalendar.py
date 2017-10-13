@@ -158,7 +158,7 @@ class CalendarCollection(object):
             self._backend.get_floating_calendars(start, end),
             self._backend.get_localized_calendars(localize(start), localize(end)),
         )
-        return list(calendars)
+        return list(set(calendars))
 
     def update(self, event: Event):
         """update `event` in vdir and db"""
