@@ -151,7 +151,7 @@ class Event(object):
 
     @classmethod
     def fromString(cls, event_str, ref=None, **kwargs):
-        calendar_collection = cal_from_ics(event_str)
+        calendar_collection = cal_from_ics(event_str, kwargs['locale']['default_timezone'])
         events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
         return cls.fromVEvents(events, ref, **kwargs)
 

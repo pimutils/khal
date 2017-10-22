@@ -24,7 +24,7 @@ def test_no_initialization():
 
 def test_invalid_keyword_argument():
     with pytest.raises(TypeError):
-        Event.fromString(_get_text('event_dt_simple'), keyword='foo')
+        Event.fromString(_get_text('event_dt_simple'), keyword='foo', **EVENT_KWARGS)
 
 
 def test_raw_dt():

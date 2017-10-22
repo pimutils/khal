@@ -122,7 +122,7 @@ def split_ics(ics, random_uid=False, default_timezone=None):
     :type random_uid: bool
     :rtype list:
     """
-    cal = cal_from_ics(ics)
+    cal = cal_from_ics(ics, default_timezone)
     tzs = {item['TZID']: item for item in cal.walk() if item.name == 'VTIMEZONE'}
 
     events_grouped = defaultdict(list)
@@ -402,20 +402,6 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     :returns: clean vevent
     :rtype: icalendar.cal.Event
     """
-    # convert localized datetimes with timezone information we don't
-    # understand to the default timezone
-    # TODO do this for everything where a TZID can appear (RDATE, EXDATE)
-    for prop in ['DTSTART', 'DTEND', 'DUE', 'RECURRENCE-ID']:
-        if prop in vevent and invalid_timezone(vevent[prop]):
-            timezone = vevent[prop].params.get('TZID')
-            value = default_timezone.localize(vevent.pop(prop).dt)
-            vevent.add(prop, value)
-            logger.warning(
-                "{} localized in invalid or incomprehensible timezone `{}` in {}/{}. "
-                "This could lead to this event being wrongly displayed."
-                "".format(prop, timezone, calendar, href)
-            )
-
     vdtstart = vevent.pop('DTSTART', None)
     vdtend = vevent.pop('DTEND', None)
     dtstart = getattr(vdtstart, 'dt', None)
@@ -625,7 +611,9 @@ def get_wrapped_text(widget):
     return widget.original_widget.get_edit_text()
 
 
-def cal_from_ics(ics):
+def cal_from_ics(ics, default_timezone):
+    """A wrapper for icalendar.Calendar.from_ical() taking care of invalid TZs"""
+    icalendar.prop.handle_invalid_timezone = lambda x: default_timezone
     try:
         cal = icalendar.Calendar.from_ical(ics)
     except ValueError as error:

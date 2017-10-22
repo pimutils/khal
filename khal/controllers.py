@@ -563,7 +563,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
     """
     # print all sub-events
     if not batch:
-        for item in cal_from_ics(vevent).walk():
+        for item in cal_from_ics(vevent, locale['default_timezone']).walk():
             if item.name == 'VEVENT':
                 event = Event.fromVEvents(
                     [item], calendar=collection.default_calendar_name, locale=locale)
@@ -611,7 +611,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
 def print_ics(conf, name, ics, format):
     if format is None:
         format = conf['view']['agenda_event_format']
-    cal = cal_from_ics(ics)
+    cal = cal_from_ics(ics, conf['locale']['default_timezone'])
     events = [item for item in cal.walk() if item.name == 'VEVENT']
     events_grouped = defaultdict(list)
     for event in events:
