@@ -623,8 +623,9 @@ class CalendarWidget(urwid.WidgetWrap):
 
         if weeknumbers == 'right':
             dnames.append('#w')
+        month_names_length = get_month_abbr_len()
         dnames = urwid.Columns(
-            [(4, urwid.Text('    '))] +
+            [(month_names_length, urwid.Text(' ' * month_names_length))] +
             [(2, urwid.AttrMap(urwid.Text(name), 'dayname')) for name in dnames],
             dividechars=1)
         self.walker = CalendarWalker(
