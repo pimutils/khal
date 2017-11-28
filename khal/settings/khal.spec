@@ -68,7 +68,7 @@ path = expand_db_path(default=None)
 # It is mandatory to set (long)date-, time-, and datetimeformat options, all others options in the **[locale]** section are optional and have (sensible) defaults.
 [locale]
 
-# the first day of the week, were Monday is 0 and Sunday is 6
+# the first day of the week, where Monday is 0 and Sunday is 6
 firstweekday = integer(0, 6, default=0)
 
 # by default khal uses some unicode symbols (as in 'non-ascii') as indicators for things like repeating events,
