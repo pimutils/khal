@@ -443,7 +443,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 start, end, allday = parse_datetime.guessrangefstr(value, locale)
                 event.update_start_end(start, end)
                 edited = True
-            except:
+            except:  # noqa
                 echo("error parsing range")
         elif choice == "repeat":
             recur = event.recurobject

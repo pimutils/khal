@@ -94,7 +94,7 @@ class SQLiteDb(object):
         self._at_once = True
         try:
             yield self
-        except:
+        except:  # noqa
             raise
         else:
             self.conn.commit()
