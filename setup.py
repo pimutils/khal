@@ -51,6 +51,7 @@ setup(
         'console_scripts': [
             'khal = khal.cli:main_khal',
             'ikhal = khal.cli:main_ikhal',
+            'khald = khal.daycal:main_khal',
         ]
     },
     install_requires=requirements,
