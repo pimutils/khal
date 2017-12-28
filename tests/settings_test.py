@@ -47,6 +47,10 @@ class TestSettings(object):
         with pytest.raises(InvalidSettingsError):
             get_config(PATH + 'nocalendars.conf')
 
+    def test_one_level_calendar(self):
+        with pytest.raises(InvalidSettingsError):
+            get_config(PATH + 'one_level_calendars.conf')
+
     def test_small(self):
         config = get_config(
             PATH + 'small.conf',

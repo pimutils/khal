@@ -209,6 +209,9 @@ def config_checks(
     vdirs_complete = list()
     vdir_colors_from_config = {}
     for calendar in list(config['calendars'].keys()):
+        if not isinstance(config['calendars'][calendar], dict):
+            logger.fatal('Invalid config file, probably missing calendar sections')
+            raise InvalidSettingsError
         if config['calendars'][calendar]['type'] == 'discover':
             logger.debug(
                 'discovering calendars in {}'.format(config['calendars'][calendar]['path'])

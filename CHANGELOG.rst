@@ -32,6 +32,7 @@ not released yet
   different overwritten event
 * CHANGE khal learned to read .ics files with nonsenscial TZOFFSETs > 24h and
   prints a warning
+* CHANGE better error message for a specific kind of invalid config file
 
 * NEW khal learned the ``--logfile/-l LOGFILE`` flag which allows logging to a
   file
