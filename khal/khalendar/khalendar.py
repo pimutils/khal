@@ -34,7 +34,7 @@ from typing import Dict, Iterable, List, Optional, Tuple, Union  # noqa
 
 from . import backend
 from .event import Event
-from .exceptions import (CouldNotCreateDbDir, DuplicateUid,
+from .exceptions import (CouldNotCreateDbDir, DuplicateUid, NonUniqueUID,
                          ReadOnlyCalendarError, UnsupportedFeatureError,
                          UpdateFailed)
 from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
@@ -328,7 +328,7 @@ class CalendarCollection(object):
             update(event.raw, href=href, etag=etag, calendar=calendar)
             return True
         except Exception as e:
-            if not isinstance(e, (UpdateFailed, UnsupportedFeatureError)):
+            if not isinstance(e, (UpdateFailed, UnsupportedFeatureError, NonUniqueUID)):
                 logger.exception('Unknown exception happened.')
             logger.warning(
                 'Skipping {0}/{1}: {2}\n'

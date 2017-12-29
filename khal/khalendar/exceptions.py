@@ -60,3 +60,8 @@ class DuplicateUid(Error):
 
     """an event with this UID already exists"""
     existing_href = None  # type: Optional[str]
+
+
+class NonUniqueUID(Error):
+
+    """the .ics file contains more than one UID"""

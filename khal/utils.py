@@ -383,6 +383,18 @@ def expand(vevent, href=''):
     return dtstartend
 
 
+def assert_only_one_uid(cal: icalendar.Calendar):
+    """assert the all VEVENTs in cal have the same UID"""
+    uids = set()
+    for item in cal.walk():
+        if item.name == 'VEVENT':
+            uids.add(item['UID'])
+    if len(uids) > 1:
+        return False
+    else:
+        return True
+
+
 def sanitize(vevent, default_timezone, href='', calendar=''):
     """
     clean up vevents we do not understand

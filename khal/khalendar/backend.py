@@ -36,7 +36,7 @@ from dateutil import parser
 
 from .. import utils
 from .exceptions import (CouldNotCreateDbDir, OutdatedDbVersionError,
-                         UpdateFailed)
+                         UpdateFailed, NonUniqueUID)
 
 logger = logging.getLogger('khal')
 
@@ -217,6 +217,16 @@ class SQLiteDb(object):
         assert href is not None
         ical = utils.cal_from_ics(vevent_str)
         check_for_errors(ical, calendar, href)
+        if not utils.assert_only_one_uid(ical):
+            logger.warning(
+                "The .ics file at {}/{} contains multiple UIDs.\n"
+                "This should not occur in vdir .ics files.\n"
+                "If you didn't edit the file by hand, please report a bug "
+                "at https://github.com/pimutils/khal/issues .\n"
+                "If you want to import it, please use `khal import FILE`."
+                "".format(calendar, href)
+            )
+            raise NonUniqueUID
         vevents = (utils.sanitize(c, self.locale['default_timezone'], href, calendar) for
                    c in ical.walk() if c.name == 'VEVENT')
         # Need to delete the whole event in case we are updating a
