@@ -188,7 +188,7 @@ class SQLiteDb(object):
                 stuple = (cal, '')
                 self.sql_ex(sql_s, stuple)
 
-    def sql_ex(self, statement=str, stuple: tuple=Union[tuple, str]) -> List:
+    def sql_ex(self, statement: str, stuple: tuple=Union[tuple, str]) -> List:
         """wrapper for sql statements, does a "fetchall" """
         self.cursor.execute(statement, stuple)
         result = self.cursor.fetchall()
