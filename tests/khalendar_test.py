@@ -1,4 +1,5 @@
 import datetime as dt
+import logging
 import os
 from textwrap import dedent
 from time import sleep
@@ -336,6 +337,20 @@ class TestCollection(object):
         assert len(events) == 1
         assert events[0].format('{start} {end} {title}', dt.date.today()) == \
             '02.12. 08:00 02.12. 09:30 Some event\x1b[0m'
+
+    def test_multi_uid_vdir(self, coll_vdirs, caplog):
+        coll, vdirs = coll_vdirs
+        vdirs[cal1].upload(DumbItem(_get_text('event_dt_multi_uid'), uid='12345'))
+        caplog.set_level(logging.WARNING)
+        coll.update_db()
+        assert list(coll.search('')) == []
+        messages = [rec.message for rec in caplog.records]
+        assert messages[0].startswith(
+            "The .ics file at foobar/12345.ics contains multiple UIDs.\n"
+        )
+        assert messages[1].startswith(
+            "Skipping foobar/12345.ics: \nThis event will not be available in khal."
+        )
 
 
 class TestDbCreation(object):
