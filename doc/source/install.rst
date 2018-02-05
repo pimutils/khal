@@ -6,7 +6,7 @@ standard package manager is probably the easiest way to install khal.
 khal has been packaged for, among others: Arch Linux (stable_ and development_
 versions), Debian_, Fedora_, FreeBSD_, Guix_, and pkgsrc_.
 
-.. _stable: https://aur.archlinux.org/packages/khal/
+.. _stable: https://www.archlinux.org/packages/community/any/khal/
 .. _development: https://aur.archlinux.org/packages/khal-git/
 .. _Debian: https://packages.debian.org/search?keywords=khal&searchon=names
 .. _Fedora: https://admin.fedoraproject.org/pkgdb/package/rpms/khal/
