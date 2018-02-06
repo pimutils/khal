@@ -31,7 +31,12 @@ or the latest development version by executing::
 
      pip install git+git://github.com/pimutils/khal.git
 
-This should also take care of installing all required dependencies.
+This should also take care of installing all required dependencies.  If in
+doubt, do not use `sudo pip install` but install `pip install khal --user`.
+Especially if using the `--user` flag, *khal* might be installed to
+`~/.local/bin`.  So if your shell cannot find *khal*, you might want to check
+there and add that `folder to your $PATH
+<https://askubuntu.com/questions/60218/how-to-add-a-directory-to-the-path>`_.
 
 Otherwise, you can always download the latest release from pypi_ and execute::
 
