@@ -339,6 +339,8 @@ class TestCollection(object):
             '02.12. 08:00 02.12. 09:30 Some event\x1b[0m'
 
     def test_multi_uid_vdir(self, coll_vdirs, caplog):
+        import click_log
+        click_log.basic_config('khal').setLevel(logging.DEBUG)
         coll, vdirs = coll_vdirs
         vdirs[cal1].upload(DumbItem(_get_text('event_dt_multi_uid'), uid='12345'))
         caplog.set_level(logging.WARNING)
