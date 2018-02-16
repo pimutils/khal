@@ -1,3 +1,4 @@
+import logging
 import os
 from time import sleep
 
@@ -109,3 +110,11 @@ def pytz_version():
     """Return the version of pytz as a tuple."""
     year, month = pytz.__version__.split('.')
     return int(year), int(month)
+
+
+@pytest.fixture
+def fix_caplog(monkeypatch):
+    """Temporarily undoes the logging setup by click-log such that the caplog fixture can be used"""
+    logger = logging.getLogger('khal')
+    monkeypatch.setattr(logger, 'handlers', [])
+    monkeypatch.setattr(logger, 'propagate', True)
