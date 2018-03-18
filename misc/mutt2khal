@@ -1,5 +1,5 @@
 #!/usr/bin/awk -f
-# mutt2khal is designed to be used in conjunction with vcalendar-filter (https://github.com/datamuc/mutt-filters/blob/master/vcalendar-filter)
+# mutt2khal is designed to be used in conjunction with vcalendar-filter (https://github.com/terabyte/mutt-filters/blob/master/vcalendar-filter)
 # and was inspired by the work of Jason Ryan (https://bitbucket.org/jasonwryan/shiv/src/tip/Scripts/mutt2khal)
 # example muttrc: macro attach A "<pipe-message>vcalendar-filter | mutt2khal<enter>"
 
