@@ -27,6 +27,6 @@ please make sure you did sync everything.
 Also *khal*'s command line syntax changed quite a bit, so you might want to head over the documentation_.
 
 .. _pypi: https://pypi.python.org/pypi/khal/
-.. _vdirsyncer: https://github.com/untitaker/vdirsyncer/
+.. _vdirsyncer: https://github.com/pimutils/vdirsyncer/
 .. _tutorial: https://vdirsyncer.readthedocs.org/en/latest/tutorial.html
 .. _documentation: http://lostpackets.de/khal/pages/usage.html

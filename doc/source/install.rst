@@ -74,7 +74,7 @@ system's package manager or have python's libxml2's and libxslt1's headers
 (included in a separate "development package" on some distributions) installed.
 
 .. _icalendar: https://github.com/collective/icalendar
-.. _vdirsyncer: https://github.com/untitaker/vdirsyncer
+.. _vdirsyncer: https://github.com/pimutils/vdirsyncer
 .. _lxml: http://lxml.de/
 
 Packaging
