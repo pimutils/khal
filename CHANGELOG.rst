@@ -23,6 +23,7 @@ not released yet
   is before today
 * FIX Check for multi_uid .ics files in vdirs and don't import those events
   (All .ics files in vdirs should only contain VEVENTS with the same UID.)
+* FIX time display of all day events
 
 * CHANGE only searched configuration file paths are now
   $XDG_CONFIG_HOME/khal/config and $XDG_CONFIG_HOME/khal/khal.conf (deprecated)
