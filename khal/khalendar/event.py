@@ -171,7 +171,7 @@ class Event(object):
         except TypeError:
             raise ValueError('Cannot compare events {} and {}'.format(start, other_start))
 
-    def update_start_end(self, start, end):
+    def update_start_end(self, start, end, allday=False):
         """update start and end time of this event
 
         calling this on a recurring event will lead to the proto instance
@@ -181,6 +181,8 @@ class Event(object):
         """
         if type(start) != type(end):  # flake8: noqa
             raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
+        if allday:
+            start = start.date()
         self.__class__ = self._get_type_from_date(start)
 
         self._vevents[self.ref].pop('DTSTART')
@@ -188,6 +190,8 @@ class Event(object):
         self._start = start
         if not isinstance(end, dt.datetime):
             end = end + dt.timedelta(days=1)
+        if allday:
+            end = end.date()
         self._end = end
         if 'DTEND' in self._vevents[self.ref]:
             self._vevents[self.ref].pop('DTEND')
