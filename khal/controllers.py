@@ -441,7 +441,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             value = prompt("datetime range", default=current)
             try:
                 start, end, allday = parse_datetime.guessrangefstr(value, locale)
-                event.update_start_end(start, end)
+                event.update_start_end(start, end, allday)
                 edited = True
             except:  # noqa
                 echo("error parsing range")
