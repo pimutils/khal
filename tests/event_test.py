@@ -434,6 +434,17 @@ def test_format_24():
     assert event.format(format_, dt.date(2014, 4, 9)) == '19:30-24:00 An Event\x1b[0m'
 
 
+def test_update_allday_event():
+    """test formating of events updated to all day"""
+    event_dt = _get_text('event_dt_simple')
+    start = BERLIN.localize(dt.datetime(2018, 7, 7))
+    end = BERLIN.localize(dt.datetime(2018, 7, 8))
+    event = Event.fromString(event_dt, **EVENT_KWARGS)
+    event.update_start_end(start, end, True)
+    format_ = '{start-end-time-style} {title}{repeat-symbol}'
+    assert event.format(format_, dt.date(2018, 7, 7)) == ' An Event\x1b[0m'
+
+
 def test_invalid_format_string():
     event_dt = _get_text('event_dt_simple')
     event = Event.fromString(event_dt, **EVENT_KWARGS)
