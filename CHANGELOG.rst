@@ -11,6 +11,8 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released yet
 
+* only dateutil < 2.7 is supported
+
 * NEW DEPENDENCY added click_log  >= 0.2.0
 * NEW DEPENDENCY for Python 3.4: typing
 * UPDATED DEPENDENCY icalendar>=3.11.7
