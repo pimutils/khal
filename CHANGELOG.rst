@@ -7,6 +7,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.9.9
+=====
+released 2018-05-26
+
+* Dependencies: only dateutil < 2.7 is supported (and always has been)
+
 0.9.8
 =====
 released 2017-10-05
