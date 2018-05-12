@@ -30,7 +30,7 @@ import itertools
 import logging
 import os
 import os.path
-from typing import Dict, Iterable, List, Optional, Tuple, Union  # noqa
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union  # noqa
 
 from . import backend
 from .event import Event
@@ -66,7 +66,7 @@ class CalendarCollection(object):
                  multiple: str='',
                  color: str='',
                  highlight_event_days: bool=False,
-                 locale: Optional[dict]=None,
+                 locale: Dict[str, Any]=dict(),
                  dbpath: Optional[str]=None,
                  ) -> None:
         assert dbpath is not None
@@ -112,7 +112,7 @@ class CalendarCollection(object):
         return self._calendars.keys()
 
     @property
-    def default_calendar_name(self) -> str:
+    def default_calendar_name(self) -> Optional[str]:
         return self._default_calendar_name
 
     @default_calendar_name.setter
@@ -339,7 +339,7 @@ class CalendarCollection(object):
         """search for the db for events matching `search_string`"""
         return (self._construct_event(*args) for args in self._backend.search(search_string))
 
-    def get_day_styles(self, day: dt.date, focus: bool) -> Union[str, Tuple[str, str]]:
+    def get_day_styles(self, day: dt.date, focus: bool) -> Optional[Union[str, Tuple[str, str]]]:
         calendars = self.get_calendars_on(day)
         if len(calendars) == 0:
             return None
