@@ -30,9 +30,12 @@ path = expand_path(default=None)
 # The 24-bit color must be given as #RRGGBB, where RR, GG, BB is the
 # hexadecimal value of the red, green and blue component, respectively.
 # When using a 24-bit color, make sure to enclose the color value in ' or "!
-# If the color is set to *auto* (the default), khal tries to read the file
-# *color* from this calendar's vdir, if this fails the default_color (see
-# below) is used. If color is set to '', the default_color is always used.
+# If `color` is set to *auto* (the default), khal looks for a color value in a
+# *color* file in this calendar's vdir. If the *color* file does not exist, the 
+# default_color (see below) is used. If color is set to '', the default_color is 
+# always used. Note that you can use `vdirsyncer metasync` to synchronize colors 
+# with your caldav server. 
+
 color = color(default='auto')
 
 # setting this to *True*, will keep khal from making any changes to this
