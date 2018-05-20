@@ -14,5 +14,5 @@ own CalDAV implementation, but instead use vdirsyncer_; you can
 already try it out via checking out the branch *vdir* at github_.
 
 .. _pypi: https://pypi.python.org/pypi/khal/
-.. _vdirsyncer: https://github.com/untitaker/vdirsyncer/
+.. _vdirsyncer: https://github.com/pimutils/vdirsyncer/
 .. _github: https://github.com/geier/khal/tree/vdir

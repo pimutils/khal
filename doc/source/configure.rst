@@ -60,6 +60,6 @@ time after the initial sync, especially for large calendar collections).
 Therefore, you might want to execute :command:`khal` automatically after syncing
 with :command:`vdirsyncer` (e.g. via :command:`cron`).
 
-.. _vdirsyncer: https://github.com/untitaker/vdirsyncer
+.. _vdirsyncer: https://github.com/pimutils/vdirsyncer
 
 

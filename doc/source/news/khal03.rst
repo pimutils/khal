@@ -33,4 +33,4 @@ CHANGELOG
 __ https://khal.readthedocs.org
 
 .. _pypi: https://pypi.python.org/pypi/khal/
-.. _vdirsyncer: https://github.com/untitaker/vdirsyncer/
+.. _vdirsyncer: https://github.com/pimutils/vdirsyncer/
