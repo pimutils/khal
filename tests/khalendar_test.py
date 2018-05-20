@@ -127,14 +127,14 @@ class TestCollection(object):
         calendars = {
             'foobar': {'name': 'foobar', 'path': str(tmpdir), 'readonly': True},
             'home': {'name': 'home', 'path': str(tmpdir)},
-            'work': {'name': 'work', 'path': str(tmpdir), 'readonly': True},
+            "Dad's Calendar": {'name': "Dad's calendar", 'path': str(tmpdir), 'readonly': True},
         }
         coll = CalendarCollection(
             calendars=calendars, locale=LOCALE_BERLIN, dbpath=':memory:',
         )
         assert coll.default_calendar_name is None
         with pytest.raises(ValueError):
-            coll.default_calendar_name = 'work'
+            coll.default_calendar_name = "Dad's calendar"
         assert coll.default_calendar_name is None
         with pytest.raises(ValueError):
             coll.default_calendar_name = 'unknownstuff'
