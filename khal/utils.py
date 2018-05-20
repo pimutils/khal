@@ -501,7 +501,7 @@ def localize_strip_tz(dates, timezone):
         yield one_date
 
 
-def to_unix_time(dtime):
+def to_unix_time(dtime: dt.datetime) -> float:
     """convert a datetime object to unix time in UTC (as a float)"""
     if getattr(dtime, 'tzinfo', None) is not None:
         dtime = dtime.astimezone(pytz.UTC)

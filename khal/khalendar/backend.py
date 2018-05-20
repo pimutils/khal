@@ -84,10 +84,6 @@ class SQLiteDb(object):
         self._check_calendars_exists()
         self._check_table_version()
 
-    @property
-    def _select_calendars(self) -> str:
-        return ', '.join(['\'' + cal + '\'' for cal in self.calendars])
-
     @contextlib.contextmanager
     def at_once(self):
         assert not self._at_once
@@ -423,8 +419,8 @@ class SQLiteDb(object):
     def get_localized_calendars(self, start: dt.datetime, end: dt.datetime) -> Iterable[str]:
         assert start.tzinfo is not None
         assert end.tzinfo is not None
-        start = utils.to_unix_time(start)
-        end = utils.to_unix_time(end)
+        start_u = utils.to_unix_time(start)
+        end_u = utils.to_unix_time(end)
         sql_s = (
             'SELECT events.calendar FROM '
             'recs_loc JOIN events ON '
@@ -434,8 +430,9 @@ class SQLiteDb(object):
             'dtend > ? AND dtend <= ? OR '
             'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
             'ORDER BY dtstart')
-        stuple = (start, end, start, end, start, end)
-        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
+        stuple = tuple(
+            [start_u, end_u, start_u, end_u, start_u, end_u] + list(self.calendars))  # type: ignore
+        result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for calendar in result:
             yield calendar[0]  # result is always an iterable, even if getting only one item
 
@@ -460,8 +457,8 @@ class SQLiteDb(object):
             'dtend > ? AND dtend <= ? OR '
             'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
             'ORDER BY dtstart')
-        stuple = (start, end, start, end, start, end)
-        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
+        stuple = tuple([start, end, start, end, start, end] + list(self.calendars))
+        result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
@@ -470,8 +467,8 @@ class SQLiteDb(object):
     def get_floating_calendars(self, start: dt.datetime, end: dt.datetime) -> Iterable[str]:
         assert start.tzinfo is None
         assert end.tzinfo is None
-        strstart = utils.to_unix_time(start)
-        strend = utils.to_unix_time(end)
+        start_u = utils.to_unix_time(start)
+        end_u = utils.to_unix_time(end)
         sql_s = (
             'SELECT events.calendar FROM '
             'recs_float JOIN events ON '
@@ -481,8 +478,9 @@ class SQLiteDb(object):
             'dtend > ? AND dtend <= ? OR '
             'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0}) '
             'ORDER BY dtstart')
-        stuple = (strstart, strend, strstart, strend, strstart, strend)
-        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
+        stuple = tuple(
+            [start_u, end_u, start_u, end_u, start_u, end_u] + list(self.calendars))  # type: ignore
+        result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for calendar in result:
             yield calendar[0]
 
@@ -495,8 +493,8 @@ class SQLiteDb(object):
         """
         assert start.tzinfo is None
         assert end.tzinfo is None
-        strstart = utils.to_unix_time(start)
-        strend = utils.to_unix_time(end)
+        start_u = utils.to_unix_time(start)
+        end_u = utils.to_unix_time(end)
         sql_s = (
             'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar '
             'FROM recs_float JOIN events ON '
@@ -506,8 +504,9 @@ class SQLiteDb(object):
             'dtend > ? AND dtend <= ? OR '
             'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0}) '
             'ORDER BY dtstart')
-        stuple = (strstart, strend, strstart, strend, strstart, strend)
-        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
+        stuple = tuple(
+            [start_u, end_u, start_u, end_u, start_u, end_u] + list(self.calendars))  # type: ignore
+        result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = dt.datetime.utcfromtimestamp(start)
             end = dt.datetime.utcfromtimestamp(end)
@@ -533,8 +532,8 @@ class SQLiteDb(object):
             'recs_loc.calendar = events.calendar '
             'WHERE item LIKE (?) and events.calendar in ({0});'
         )
-        stuple = ('%{0}%'.format(search_string), )
-        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
+        stuple = tuple(['%{0}%'.format(search_string)] + list(self.calendars))
+        result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
@@ -550,8 +549,8 @@ class SQLiteDb(object):
             'recs_float.calendar = events.calendar '
             'WHERE item LIKE (?) and events.calendar in ({0});'
         )
-        stuple = ('%{0}%'.format(search_string), )
-        result = self.sql_ex(sql_s.format(self._select_calendars), stuple)
+        stuple = tuple(['%{0}%'.format(search_string)] + list(self.calendars))
+        result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = dt.datetime.utcfromtimestamp(start)
             end = dt.datetime.utcfromtimestamp(end)
