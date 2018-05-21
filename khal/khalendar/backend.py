@@ -73,7 +73,7 @@ class SQLiteDb(object):
                  locale: Dict[str, str],
                  ) -> None:
         assert db_path is not None
-        self.calendars = calendars
+        self.calendars = list(calendars)
         self.db_path = path.expanduser(db_path)
         self._create_dbdir()
         self.locale = locale
@@ -343,7 +343,7 @@ class SQLiteDb(object):
             if rec_id is not None:
                 ref = rec_inst = str(utils.to_unix_time(rec_id.dt))
             else:
-                rec_inst = dbstart
+                rec_inst = str(dbstart)
                 ref = PROTO
 
             if thisandfuture:
