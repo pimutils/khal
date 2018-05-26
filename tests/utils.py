@@ -5,7 +5,7 @@ import pytz
 
 cal0 = 'a_calendar'
 cal1 = 'foobar'
-cal2 = 'work'
+cal2 = "Dad's calendar"
 cal3 = 'private'
 
 example_cals = [cal0, cal1, cal2, cal3]
