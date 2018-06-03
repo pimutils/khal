@@ -599,6 +599,10 @@ class Event(object):
             for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
                 attributes[c] = attributes[c + '-bold'] = ''
 
+        attributes['nl'] = '\n'
+        attributes['tab'] = '\t'
+        attributes['bell'] = '\a'
+
         attributes['status'] = self.status
         attributes['cancelled'] = 'CANCELLED ' if self.status == 'CANCELLED' else ''
         return format_string.format(**dict(attributes)) + attributes["reset"]
