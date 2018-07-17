@@ -50,6 +50,8 @@ not released yet
 * NEW ikhal learned to show log messages in the header and in a new log pane,
   access with default keybinding `L`
 
+* NEW python 3.7 is now officially supported.
+
 0.9.8
 =====
 released 2017-10-05
