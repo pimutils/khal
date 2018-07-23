@@ -425,8 +425,8 @@ additional description
 
     khal new -a work 26.07. Great Event -g meeting -r weekly
 
-adds a new all day event on 26th of July to the calendar *work* which recurs
-every week.
+adds a new all day event on 26th of July to the calendar *work* in the *meeting* 
+category, which recurs every week.
 
 
 edit
