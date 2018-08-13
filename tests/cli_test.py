@@ -373,6 +373,8 @@ def test_printformats(runner):
     assert not result.exception
 
 
+# "see #810"
+@pytest.mark.xfail
 def test_repeating(runner):
     runner = runner(default_command='list', days=2)
     now = datetime.datetime.now().strftime('%d.%m.%Y')
