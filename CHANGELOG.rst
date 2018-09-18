@@ -52,6 +52,11 @@ not released yet
 
 * NEW python 3.7 is now officially supported.
 
+* NEW configuration option [[per_calendar]]priority = int (default 10). If
+  multiple calendars events are on the same day, the day will be colored with
+  the color of the calendar with highest priority. If multiple calendars have
+  the same highest priority, it falls back to the previous system.
+
 0.9.8
 =====
 released 2017-10-05
