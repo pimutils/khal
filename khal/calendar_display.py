@@ -77,6 +77,8 @@ def get_color_list(calendars, default_color, collection):
         map(lambda x: x[0], dcolors)
     )
 
+    dcolors = set(dcolors)
+
     return dcolors
 
 def str_highlight_day(
