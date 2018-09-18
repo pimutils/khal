@@ -59,6 +59,8 @@ def get_calendar_color(calendar, default_color, collection):
     return collection._calendars[calendar]['color']
 
 def get_color_list(calendars, default_color, collection):
+    """Get the list of possible colors for the day, taking into account priority
+    """
     dcolors = list(
         map(lambda x: (get_calendar_color(x, default_color, collection),
                        collection._calendars[x]['priority']), calendars)
