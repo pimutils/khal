@@ -60,7 +60,7 @@ class TestSettings(object):
         comp_config = {
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'),
-                         'color': 'dark green', 'readonly': False, 'priority': 10,
+                         'color': 'dark green', 'readonly': False, 'priority': 20,
                          'type': 'calendar'},
                 'work': {'path': os.path.expanduser('~/.calendars/work/'),
                          'readonly': True, 'color': None, 'priority': 10,
