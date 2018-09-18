@@ -65,6 +65,7 @@ class CalendarCollection(object):
                  default_color: str='',
                  multiple: str='',
                  color: str='',
+                 priority: int=10,
                  highlight_event_days: bool=False,
                  locale: Dict[str, Any]=dict(),
                  dbpath: Optional[str]=None,
@@ -93,6 +94,7 @@ class CalendarCollection(object):
         self.default_color = default_color
         self.multiple = multiple
         self.color = color
+        self.priority = priority
         self.highlight_event_days = highlight_event_days
         self._locale = locale
         self._backend = backend.SQLiteDb(self.names, dbpath, self._locale)
