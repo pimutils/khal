@@ -58,6 +58,7 @@ def get_calendar_color(calendar, default_color, collection):
         return default_color
     return collection._calendars[calendar]['color']
 
+
 def get_color_list(calendars, default_color, collection):
     """Get the list of possible colors for the day, taking into account priority
     """
@@ -66,11 +67,11 @@ def get_color_list(calendars, default_color, collection):
                        collection._calendars[x]['priority']), calendars)
     )
 
-    dcolors.sort(key=lambda x:x[1], reverse=True)
+    dcolors.sort(key=lambda x: x[1], reverse=True)
 
     maxPriority = dcolors[0][1]
     dcolors = list(
-        filter(lambda x:x[1] == maxPriority, dcolors)
+        filter(lambda x: x[1] == maxPriority, dcolors)
     )
 
     dcolors = list(
@@ -80,6 +81,7 @@ def get_color_list(calendars, default_color, collection):
     dcolors = set(dcolors)
 
     return dcolors
+
 
 def str_highlight_day(
         day, calendars, hmethod, default_color, multiple, color, bold_for_light_color, collection):
