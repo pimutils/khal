@@ -23,6 +23,10 @@ matrix:
         env: BUILD=pytz201702
       - python: 3.6
         env: BUILD=pytz_latest
+      - python: 3.6
+        env: BUILD=dateutil26
+      - python: 3.6
+        env: BUILD=dateutil_latest
       - python: 3.7
         dist: xenial
         sudo: true
