@@ -4,7 +4,9 @@ import platform
 import unicodedata
 
 import pytest
-from khal.calendar_display import getweeknumber, str_week, vertical_month
+from khal.calendar_display import (getweeknumber, str_week, vertical_month,
+                                   get_calendar_color, get_color_list,
+                                   str_highlight_day)
 
 today = dt.date.today()
 yesterday = today - dt.timedelta(days=1)
@@ -31,6 +33,23 @@ def test_str_week():
             dt.date(2012, 6, 13)]
     assert str_week(week, aday) == ' 6  7  8  9 10 11 12 13 '
     assert str_week(week, bday) == ' 6  7 \x1b[7m 8\x1b[0m  9 10 11 12 13 '
+
+class testCollection():
+    def __init__(self):
+        self._calendars = {}
+
+    def addCalendar(self, name, color, priority):
+        self._calendars[name] = {'color': color, 'priority': priority}
+
+exampleCollection = testCollection()
+exampleCollection.addCalendar('testCalendar1', 'dark red',    20)
+exampleCollection.addCalendar('testCalendar2', 'light green', 10)
+exampleCollection.addCalendar('testCalendar3', '',            10)
+
+def test_get_calendar_color():
+    assert get_calendar_color('testCalendar1', 'light blue', exampleCollection) == 'dark red'
+    assert get_calendar_color('testCalendar2', 'light blue', exampleCollection) == 'light green'
+    assert get_calendar_color('testCalendar3', 'light blue', exampleCollection) == 'light blue'
 
 
 example1 = [
