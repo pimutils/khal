@@ -54,6 +54,49 @@ def test_get_calendar_color():
     #test default color
     assert get_calendar_color('testCalendar3', 'light blue', exampleCollection) == 'light blue'
 
+def test_get_color_list():
+
+    exampleCalendarList = ['testCalendar1', 'testCalendar2']
+
+    #test different priorities
+    exampleCollection1 = testCollection()
+    exampleCollection1.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection1.addCalendar('testCalendar2', 'light green', 10)
+
+    testList1 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection1)
+    assert 'dark red' in testList1
+    assert len(testList1) == 1
+
+
+    #test same priorities
+    exampleCollection2 = testCollection()
+    exampleCollection2.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection2.addCalendar('testCalendar2', 'light green', 20)
+
+    testList2 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection2)
+    assert 'dark red' in testList2
+    assert 'light green' in testList2
+    assert len(testList2) == 2
+
+
+    #test duplicated colors
+    exampleCollection3 = testCollection()
+    exampleCollection3.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection3.addCalendar('testCalendar2', 'dark red',    20)
+
+    testList3 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection3)
+    assert len(testList3) == 1
+
+
+    #test indexing operator (required by str_highlight_day())
+    exampleCollection4 = testCollection()
+    exampleCollection4.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection4.addCalendar('testCalendar2', 'dark red',    20)
+
+    testList3 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection4)
+    assert testList3[0] == 'dark red'
+
+
 
 example1 = [
     '\x1b[1m    Mo Tu We Th Fr Sa Su \x1b[0m',
