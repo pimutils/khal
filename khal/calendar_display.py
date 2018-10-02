@@ -78,7 +78,7 @@ def get_color_list(calendars, default_color, collection):
         map(lambda x: x[0], dcolors)
     )
 
-    dcolors = set(dcolors)
+    dcolors = list(set(dcolors))
 
     return dcolors
 
