@@ -50,6 +50,8 @@ def test_get_calendar_color():
 
     assert get_calendar_color('testCalendar1', 'light blue', exampleCollection) == 'dark red'
     assert get_calendar_color('testCalendar2', 'light blue', exampleCollection) == 'light green'
+
+    #test default color
     assert get_calendar_color('testCalendar3', 'light blue', exampleCollection) == 'light blue'
 
 
