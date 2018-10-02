@@ -41,12 +41,13 @@ class testCollection():
     def addCalendar(self, name, color, priority):
         self._calendars[name] = {'color': color, 'priority': priority}
 
-exampleCollection = testCollection()
-exampleCollection.addCalendar('testCalendar1', 'dark red',    20)
-exampleCollection.addCalendar('testCalendar2', 'light green', 10)
-exampleCollection.addCalendar('testCalendar3', '',            10)
-
 def test_get_calendar_color():
+
+    exampleCollection = testCollection()
+    exampleCollection.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection.addCalendar('testCalendar2', 'light green', 10)
+    exampleCollection.addCalendar('testCalendar3', '',            10)
+
     assert get_calendar_color('testCalendar1', 'light blue', exampleCollection) == 'dark red'
     assert get_calendar_color('testCalendar2', 'light blue', exampleCollection) == 'light green'
     assert get_calendar_color('testCalendar3', 'light blue', exampleCollection) == 'light blue'
