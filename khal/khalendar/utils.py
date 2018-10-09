@@ -83,10 +83,23 @@ def expand(vevent, href=''):
         dtstart = vevent['DTSTART'].dt
         if events_tz:
             dtstart = dtstart.replace(tzinfo=None)
+        if events_tz and 'Z' not in rrule_param.to_ical().decode():
+            logger.warning(
+                "In event {}, DTSTART has a timezone, but UNTIL does not. This "
+                "might lead to errenous repeating instances (like missing the "
+                "last intended instance or adding an extra one)."
+                "".format(href))
+        elif not events_tz and 'Z' in rrule_param.to_ical().decode():
+            logger.warning(
+                "In event {}, DTSTART has no timezone, but UNTIL has one. This "
+                "might lead to errenous repeating instances (like missing the "
+                "last intended instance or adding an extra one)."
+                "".format(href))
 
         rrule = dateutil.rrule.rrulestr(
             rrule_param.to_ical().decode(),
-            dtstart=dtstart
+            dtstart=dtstart,
+            ignoretz=True,
         )
 
         if rrule._until is None:
@@ -95,10 +108,9 @@ def expand(vevent, href=''):
             # if python can deal with larger datetime values yet and b) pytz
             # doesn't know any larger transition times
             rrule._until = datetime(2037, 12, 31)
-        elif getattr(rrule._until, 'tzinfo', None):
-            rrule._until = rrule._until \
-                .astimezone(events_tz) \
-                .replace(tzinfo=None)
+        elif events_tz and 'Z' in rrule_param.to_ical().decode():
+            rrule._until = pytz.UTC.localize(
+                rrule._until).astimezone(events_tz).replace(tzinfo=None)
 
         rrule = map(sanitize_datetime, rrule)
 
