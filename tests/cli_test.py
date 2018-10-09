@@ -665,8 +665,10 @@ def test_print_ics_command(runner):
     # Non existing file
     result = runner.invoke(main_khal, ['printics', 'nonexisting_file'])
     assert result.exception
-    assert 'Error: Invalid value for "ics": Could not open file: ' \
-        in result.output
+    assert ('Error: Invalid value for "ics": Could not open file: ' \
+        in result.output or \
+            'Error: Invalid value for "[ICS]": Could not open file:' \
+            in result.output)
 
     # Run on test files
     result = runner.invoke(main_khal, ['printics', _get_ics_filepath('cal_d')])
