@@ -503,10 +503,10 @@ def _get_cli():
     def printformats(ctx):
         '''Print a date in all formats.
 
-        Print the date 2013-12-21 10:09 in all configured date(time)
+        Print the date 2013-12-21 21:45 in all configured date(time)
         formats to check if these locale settings are configured to ones
         liking.'''
-        time = dt.datetime(2013, 12, 21, 10, 9)
+        time = dt.datetime(2013, 12, 21, 21, 45)
         try:
             for strftime_format in [
                     'longdatetimeformat', 'datetimeformat', 'longdateformat',
