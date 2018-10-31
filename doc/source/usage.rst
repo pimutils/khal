@@ -161,7 +161,10 @@ Several options are common to almost all of :program:`khal`'s commands
    is also `reset`, which clears the styling, and `bold`, which is the normal
    bold.
 
-   For example the below command with print the title and description of all events today.
+   A few control codes are exposed.  You can access newline (`nl`), 'tab', and 'bell'.
+   Control codes, such as `nl`, are best used with `--list` mode.
+
+   Below is an example command which prints the title and description of all events today.
 
    ::
 
