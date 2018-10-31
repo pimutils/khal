@@ -25,7 +25,6 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from collections import defaultdict
 
 import icalendar
 import pytz
@@ -138,7 +137,7 @@ class Event(object):
         if ref is None:
             ref = 'PROTO' if ref in vevents.keys() else list(vevents.keys())[0]
         try:
-            if type(vevents[ref]['DTSTART'].dt) != type(vevents[ref]['DTEND'].dt):  # flake8: noqa
+            if type(vevents[ref]['DTSTART'].dt) != type(vevents[ref]['DTEND'].dt):  # noqa: E721
                 raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
         except KeyError:
             pass
@@ -382,7 +381,8 @@ class Event(object):
         """
         Decides whether we can handle a certain alarm.
         """
-        return alarm.get('ACTION') == 'DISPLAY' and isinstance(alarm.get('TRIGGER').dt, dt.timedelta)
+        return alarm.get('ACTION') == 'DISPLAY' and \
+            isinstance(alarm.get('TRIGGER').dt, dt.timedelta)
 
     @property
     def alarms(self):
