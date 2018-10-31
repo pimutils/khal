@@ -450,7 +450,7 @@ prints a list of all configured calendars.
 
 printformats
 ************
-prints a fixed date (*2013-12-21 10:09*) in all configured date(time) formats.
+prints a fixed date (*2013-12-21 21:45*) in all configured date(time) formats.
 This is supposed to help check if those formats are configured as intended.
 
 search

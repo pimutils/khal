@@ -348,11 +348,11 @@ def test_printformats(runner):
     runner = runner(days=2)
 
     result = runner.invoke(main_khal, ['printformats'])
-    assert '\n'.join(['longdatetimeformat: 21.12.2013 10:09',
-                      'datetimeformat: 21.12. 10:09',
+    assert '\n'.join(['longdatetimeformat: 21.12.2013 21:45',
+                      'datetimeformat: 21.12. 21:45',
                       'longdateformat: 21.12.2013',
                       'dateformat: 21.12.',
-                      'timeformat: 10:09',
+                      'timeformat: 21:45',
                       '']) == result.output
     assert not result.exception
 
