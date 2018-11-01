@@ -165,7 +165,7 @@ class TestGuessDatetimefstr:
             'longdatetimeformat': '%Y-%m-%d %H:%M',
         }
         assert (dt.datetime(2017, 1, 1), True) == guessdatetimefstr(
-                '2017-1-1'.split(), locale=locale, default_day=dt.datetime.today())
+            '2017-1-1'.split(), locale=locale, default_day=dt.datetime.today())
         assert (dt.datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
             '2017-1-1 16:30'.split(), locale=locale, default_day=dt.datetime.today())
 
@@ -326,55 +326,55 @@ test_set_format_de = _create_testcases(
     # start and end date same, no explicit end date given
     ('25.10.2013 18:00 20:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T200000')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T200000')),
 
     # start and end date same, ends 24:00 which should be 00:00 (start) of next
     # day
     ('25.10.2013 18:00 24:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T000000')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T000000')),
 
     # start and end date same, explicit end date (but no year) given
     ('25.10.2013 18:00 26.10. 20:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T200000')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T180000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T200000')),
 
     ('30.12.2013 18:00 2.1. 20:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131230T180000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140102T200000')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131230T180000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140102T200000')),
 
     # only start date given (no year, past day and month)
     ('25.01. 18:00 20:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20150125T180000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20150125T200000')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20150125T180000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20150125T200000')),
 
     # date ends next day, but end date not given
     ('25.10.2013 23:00 0:30 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T230000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T003000')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T230000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131026T003000')),
 
     ('2.2. 23:00 0:30 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20150202T230000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20150203T003000')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20150202T230000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20150203T003000')),
 
     # only start datetime given
     ('25.10.2013 06:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T060000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T070000')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T060000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20131025T070000')),
 
     # timezone given
     ('25.10.2013 06:00 America/New_York Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=America/New_York;VALUE=DATE-TIME:20131025T060000',
-        'DTEND;TZID=America/New_York;VALUE=DATE-TIME:20131025T070000'))
+         'DTSTART;TZID=America/New_York;VALUE=DATE-TIME:20131025T060000',
+         'DTEND;TZID=America/New_York;VALUE=DATE-TIME:20131025T070000'))
 )
 
 
@@ -388,8 +388,8 @@ def test_construct_event_format_de():
 test_set_format_us = _create_testcases(
     ('1999/12/31-06:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=America/New_York;VALUE=DATE-TIME:19991231T060000',
-        'DTEND;TZID=America/New_York;VALUE=DATE-TIME:19991231T070000')),
+         'DTSTART;TZID=America/New_York;VALUE=DATE-TIME:19991231T060000',
+         'DTEND;TZID=America/New_York;VALUE=DATE-TIME:19991231T070000')),
 
     ('2014/12/18 2014/12/20 Äwesöme Event',
      _create_vevent('DTSTART;VALUE=DATE:20141218',
@@ -409,20 +409,20 @@ test_set_format_de_complexer = _create_testcases(
     # today
     ('8:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000')),
 
     # today until tomorrow
     ('22:00  1:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T220000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140217T010000')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T220000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140217T010000')),
 
     # other timezone
     ('22:00 1:00 Europe/London Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/London;VALUE=DATE-TIME:20140216T220000',
-        'DTEND;TZID=Europe/London;VALUE=DATE-TIME:20140217T010000')),
+         'DTSTART;TZID=Europe/London;VALUE=DATE-TIME:20140216T220000',
+         'DTEND;TZID=Europe/London;VALUE=DATE-TIME:20140217T010000')),
 
     ('15.06. Äwesöme Event',
      _create_vevent('DTSTART;VALUE=DATE:20140615',
@@ -440,9 +440,9 @@ def test__construct_event_format_de_complexer():
 test_set_leap_year = _create_testcases(
     ('29.02. Äwesöme Event',
      _create_vevent(
-      'DTSTART;VALUE=DATE:20160229',
-      'DTEND;VALUE=DATE:20160301',
-      'DTSTAMP;VALUE=DATE-TIME:20160101T202122Z')),
+         'DTSTART;VALUE=DATE:20160229',
+         'DTEND;VALUE=DATE:20160301',
+         'DTSTAMP;VALUE=DATE-TIME:20160101T202122Z')),
 )
 
 
@@ -461,16 +461,16 @@ test_set_description = _create_testcases(
     # today
     ('8:00 Äwesöme Event :: this is going to be awesome',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
-        'DESCRIPTION:this is going to be awesome')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
+         'DESCRIPTION:this is going to be awesome')),
 
     # today until tomorrow
     ('22:00  1:00 Äwesöme Event :: Will be even better',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T220000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140217T010000',
-        'DESCRIPTION:Will be even better')),
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T220000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140217T010000',
+         'DESCRIPTION:Will be even better')),
 
     ('15.06. Äwesöme Event :: and again',
      _create_vevent('DTSTART;VALUE=DATE:20140615',
@@ -491,10 +491,10 @@ test_set_repeat = _create_testcases(
     # today
     ('8:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
-        'DESCRIPTION:please describe the event',
-        'RRULE:FREQ=DAILY;UNTIL=20150605T000000')))
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
+         'DESCRIPTION:please describe the event',
+         'RRULE:FREQ=DAILY;UNTIL=20150605T000000')))
 
 
 def test_repeat():
@@ -541,11 +541,11 @@ test_set_description_and_location_and_categories = _create_testcases(
     # today
     ('8:00 Äwesöme Event',
      _create_vevent(
-        'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
-        'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
-        'CATEGORIES:boring meeting',
-        'DESCRIPTION:please describe the event',
-        'LOCATION:in the office')))
+         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
+         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
+         'CATEGORIES:boring meeting',
+         'DESCRIPTION:please describe the event',
+         'LOCATION:in the office')))
 
 
 @freeze_time('2014-02-16 12:00:00')
