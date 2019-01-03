@@ -576,6 +576,7 @@ class Event(object):
         attributes["repeat-symbol"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
         attributes["title"] = self.summary
+        attributes["organizer"] = self.organizer.strip()
         attributes["description"] = self.description.strip()
         attributes["description-separator"] = ""
         if attributes["description"]:
