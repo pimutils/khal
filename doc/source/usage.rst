@@ -151,6 +151,17 @@ Several options are common to almost all of :program:`khal`'s commands
        The string `CANCELLED` (plus one blank) if the event's status is
        cancelled, otherwise nothing.
 
+   organizer
+       The organizer of the event. If the format has CN then it returns "CN (email)"
+       if CN does not exist it returns just the email string. Example:
+       ORGANIZER;CN=Name Surname:mailto:name@mail.com
+       returns
+       Name Surname (name@mail.com)
+       and if it has no CN attribute it returns the last element after the colon:
+       ORGANIZER;SENT-BY="mailto:toemail@mail.com":mailto:name@mail.com
+       returns
+       name@mail.com
+
    By default, all-day events have no times. To see a start and end time anyway simply
    add `-full` to the end of any template with start/end, for instance
    `start-time` becomes `start-time-full` and will always show start and end times (instead
