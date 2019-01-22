@@ -953,7 +953,7 @@ class EventDisplay(urwid.WidgetWrap):
             lines.append(urwid.Text('Location: ' + event.location))
 
         if event.categories != '':
-            lines.append(urwid.Text('Categories: ' + event.categories))
+            lines.append(urwid.Text('Categories: ' + event.categories.to_ical().decode()))
 
         # start and end time/date
         if event.allday:
