@@ -276,6 +276,108 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
     return event_column
 
 
+def get_eventobjs_between(
+        collection, locale, start, end, notstarted=False,
+        env=None, seen=None, original_start=None):
+    """returns a list of event objects scheduled between start and end. Start and end
+    are strings or datetimes (of some kind).
+
+    :param collection:
+    :type collection: khalendar.CalendarCollection
+    :param start: the start datetime
+    :param end: the end datetime
+    :param env: a collection of "static" values like calendar names and color
+    :type env: dict
+    :param nostarted: True if each event should start after start (instead of
+    be active between start and end)
+    :type nostarted: bool
+    :param original_start: start datetime to compare against of notstarted is set
+    :type original_start: datetime.datetime
+    :returns: a list of Event objects
+    :rtype: list(Event)
+    """
+    assert not (notstarted and not original_start)
+
+    eventobj_list = []
+    if env is None:
+        env = {}
+    assert start
+    assert end
+    start_local = locale['local_timezone'].localize(start)
+    end_local = locale['local_timezone'].localize(end)
+
+    start = start_local.replace(tzinfo=None)
+    end = end_local.replace(tzinfo=None)
+
+    events = sorted(collection.get_localized(start_local, end_local))
+    events_float = sorted(collection.get_floating(start, end))
+    events = sorted(events + events_float)
+    for event in events:
+        # yes the logic could be simplified, but I believe it's easier
+        # to understand what's going on here this way
+        if notstarted:
+            if event.allday and event.start < original_start.date():
+                    continue
+            elif not event.allday and event.start_local < original_start:
+                    continue
+        if seen is not None and event.uid in seen:
+            continue
+        if seen is not None:
+            seen.add(event.uid)
+        eventobj_list.append(event)
+
+    return eventobj_list
+
+
+def khal_export(collection, daterange=None, conf=None,
+              notstarted=False, env=None, datepoint=None):
+    assert daterange is not None or datepoint is not None
+    """returns a list of all event objects in `daterange`"""
+    if daterange is not None:
+        start, end = start_end_from_daterange(
+            daterange, conf['locale'],
+            default_timedelta_date=conf['default']['timedelta'],
+            default_timedelta_datetime=conf['default']['timedelta'],
+        )
+        logger.debug('Getting all events between {} and {}'.format(start, end))
+
+    elif datepoint is not None:
+        if not datepoint:
+            datepoint = ['now']
+        try:
+            start, allday = parse_datetime.guessdatetimefstr(
+                datepoint, conf['locale'], dt.date.today(),
+            )
+        except ValueError:
+            raise FatalError('Invalid value of `{}` for a datetime'.format(' '.join(datepoint)))
+        if allday:
+            logger.debug('Got date {}'.format(start))
+            raise FatalError('Please supply a datetime, not a date.')
+        end = start + dt.timedelta(seconds=1)
+        logger.debug('Getting all events between {} and {}'.format(start, end))
+
+    events = []
+    if env is None:
+        env = {}
+
+    original_start = conf['locale']['local_timezone'].localize(start)
+    while start < end:
+        if start.date() == end.date():
+            day_end = end
+        else:
+            day_end = dt.datetime.combine(start.date(), dt.time.max)
+        current_events = get_eventobjs_between(
+            collection, locale=conf['locale'], start=start,
+            end=day_end, notstarted=notstarted, original_start=original_start,
+            env=env,
+            seen=set(),
+        )
+        events.extend(current_events)
+        start = dt.datetime(*start.date().timetuple()[:3]) + dt.timedelta(days=1)
+
+    return events
+
+
 def new_interactive(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None):

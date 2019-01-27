@@ -461,6 +461,45 @@ def _get_cli():
 
     @cli.command()
     @multi_calendar_option
+    @click.option('--notstarted', help=('Export only events that have not started.'),
+                  is_flag=True)
+    @click.option('--outfile', '-o', help='The output file [defaults to stdout]',
+                  type=click.File(mode='w'), default='-', metavar='OUT')
+    @click.argument('DATERANGE', nargs=-1, required=False,
+                    metavar='[DATETIME [DATETIME | RANGE]]')
+    @click.pass_context
+    def export(ctx, include_calendar, exclude_calendar, daterange, notstarted, outfile):
+        """Export to an .ics file (or stdout).
+
+        Includes all events between a start (default: today) and (optional)
+        end datetime."""
+        try:
+            events = controllers.khal_export(
+                build_collection(
+                    ctx.obj['conf'],
+                    multi_calendar_select(ctx, include_calendar, exclude_calendar)
+                ),
+                daterange=daterange,
+                notstarted=notstarted,
+                conf=ctx.obj['conf'],
+                env={"calendars": ctx.obj['conf']['calendars']}
+            )
+            if events:
+                sl = events[0].raw.split('\n')
+                header = '\n'.join(sl[:3]) + '\n' # 3 first lines of first event
+                footer = '\n'.join(sl[-2:]) # last line of first event
+                outfile.write(header)
+                for e in events:
+                    sl = e.raw.split('\n')
+                    outfile.write('\n'.join(sl[3:-2]) + '\n')
+                outfile.write(footer)
+        except FatalError as error:
+            logger.debug(error, exc_info=True)
+            logger.fatal(error)
+            sys.exit(1)
+
+    @cli.command()
+    @multi_calendar_option
     @click.pass_context
     def interactive(ctx, include_calendar, exclude_calendar):
         '''Interactive UI. Also launchable via `ikhal`.'''
