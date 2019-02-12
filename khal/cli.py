@@ -162,6 +162,7 @@ def build_collection(conf, selection):
                     'path': cal['path'],
                     'readonly': cal['readonly'],
                     'color': cal['color'],
+                    'priority': cal['priority'],
                     'ctype': cal['type'],
                 }
         collection = khalendar.CalendarCollection(

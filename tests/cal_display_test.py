@@ -4,7 +4,8 @@ import platform
 import unicodedata
 
 import pytest
-from khal.calendar_display import getweeknumber, str_week, vertical_month
+from khal.calendar_display import (getweeknumber, str_week, vertical_month,
+                                   get_calendar_color, get_color_list)
 
 today = dt.date.today()
 yesterday = today - dt.timedelta(days=1)
@@ -31,6 +32,68 @@ def test_str_week():
             dt.date(2012, 6, 13)]
     assert str_week(week, aday) == ' 6  7  8  9 10 11 12 13 '
     assert str_week(week, bday) == ' 6  7 \x1b[7m 8\x1b[0m  9 10 11 12 13 '
+
+
+class testCollection():
+    def __init__(self):
+        self._calendars = {}
+
+    def addCalendar(self, name, color, priority):
+        self._calendars[name] = {'color': color, 'priority': priority}
+
+
+def test_get_calendar_color():
+
+    exampleCollection = testCollection()
+    exampleCollection.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection.addCalendar('testCalendar2', 'light green', 10)
+    exampleCollection.addCalendar('testCalendar3', '',            10)
+
+    assert get_calendar_color('testCalendar1', 'light blue', exampleCollection) == 'dark red'
+    assert get_calendar_color('testCalendar2', 'light blue', exampleCollection) == 'light green'
+
+    # test default color
+    assert get_calendar_color('testCalendar3', 'light blue', exampleCollection) == 'light blue'
+
+
+def test_get_color_list():
+
+    exampleCalendarList = ['testCalendar1', 'testCalendar2']
+
+    # test different priorities
+    exampleCollection1 = testCollection()
+    exampleCollection1.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection1.addCalendar('testCalendar2', 'light green', 10)
+
+    testList1 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection1)
+    assert 'dark red' in testList1
+    assert len(testList1) == 1
+
+    # test same priorities
+    exampleCollection2 = testCollection()
+    exampleCollection2.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection2.addCalendar('testCalendar2', 'light green', 20)
+
+    testList2 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection2)
+    assert 'dark red' in testList2
+    assert 'light green' in testList2
+    assert len(testList2) == 2
+
+    # test duplicated colors
+    exampleCollection3 = testCollection()
+    exampleCollection3.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection3.addCalendar('testCalendar2', 'dark red',    20)
+
+    testList3 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection3)
+    assert len(testList3) == 1
+
+    # test indexing operator (required by str_highlight_day())
+    exampleCollection4 = testCollection()
+    exampleCollection4.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection4.addCalendar('testCalendar2', 'dark red',    20)
+
+    testList3 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection4)
+    assert testList3[0] == 'dark red'
 
 
 example1 = [

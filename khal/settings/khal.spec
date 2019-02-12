@@ -38,6 +38,12 @@ path = expand_path(default=None)
 
 color = color(default='auto')
 
+# When coloring days, the color will be determined based on the calendar with
+# the highest priority. If the priorities are equal, then the "multiple" color
+# will be used.
+
+priority = integer(default=10)
+
 # setting this to *True*, will keep khal from making any changes to this
 # calendar
 readonly = boolean(default=False)
