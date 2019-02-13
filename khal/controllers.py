@@ -36,9 +36,10 @@ from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 
 from .exceptions import ConfigurationError
+from .icalendar import (cal_from_ics, new_event as new_vevent, split_ics,
+                        sort_key as sort_vevent_key)
 from .khalendar.vdir import Item
 from .terminal import merge_columns
-from .utils import cal_from_ics
 
 logger = logging.getLogger('khal')
 
@@ -358,7 +359,7 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
     if isinstance(categories, str):
         categories = list([category.strip() for category in categories.split(',')])
     try:
-        event = utils.new_event(
+        event = new_vevent(
             locale=conf['locale'], location=location, categories=categories,
             repeat=repeat, until=until, alarms=alarms, dtstart=dtstart,
             dtend=dtend, summary=summary, description=description, timezone=timezone,
@@ -554,7 +555,7 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None
     """
     if format is None:
         format = conf['view']['event_format']
-    vevents = utils.split_ics(ics, random_uid, conf['locale']['default_timezone'])
+    vevents = split_ics(ics, random_uid, conf['locale']['default_timezone'])
     for vevent in vevents:
         import_event(vevent, collection, conf['locale'], batch, format, env)
 
@@ -624,7 +625,7 @@ def print_ics(conf, name, ics, format):
 
     vevents = list()
     for uid in events_grouped:
-        vevents.append(sorted(events_grouped[uid], key=utils.sort_key))
+        vevents.append(sorted(events_grouped[uid], key=sort_vevent_key))
 
     echo('{} events found in {}'.format(len(vevents), name))
     for sub_event in vevents:

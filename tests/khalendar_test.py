@@ -8,6 +8,7 @@ import khal.khalendar.exceptions
 import khal.utils
 import pytest
 from freezegun import freeze_time
+from khal import icalendar as icalendar_helpers
 from khal.khalendar import CalendarCollection
 from khal.khalendar.backend import CouldNotCreateDbDir
 from khal.khalendar.event import Event
@@ -247,7 +248,7 @@ class TestCollection(object):
         coll, vdirs = coll_vdirs
         bday = dt.datetime.combine(aday, dt.time.min)
         anend = bday + dt.timedelta(hours=1)
-        event = khal.utils.new_event(
+        event = icalendar_helpers.new_event(
             dtstart=bday, dtend=anend, summary="hi", timezone=utils.BERLIN,
             locale=LOCALE_BERLIN,
         )

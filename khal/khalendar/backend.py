@@ -35,6 +35,9 @@ import pytz
 from dateutil import parser
 
 from .. import utils
+from ..icalendar import (cal_from_ics, assert_only_one_uid,
+                         expand as expand_vevent, sanitize as sanitize_vevent,
+                         sort_key as sort_vevent_key)
 from .exceptions import (CouldNotCreateDbDir, OutdatedDbVersionError,
                          UpdateFailed, NonUniqueUID)
 
@@ -211,9 +214,9 @@ class SQLiteDb(object):
         """
         assert calendar is not None
         assert href is not None
-        ical = utils.cal_from_ics(vevent_str)
+        ical = cal_from_ics(vevent_str)
         check_for_errors(ical, calendar, href)
-        if not utils.assert_only_one_uid(ical):
+        if not assert_only_one_uid(ical):
             logger.warning(
                 "The .ics file at {}/{} contains multiple UIDs.\n"
                 "This should not occur in vdir .ics files.\n"
@@ -223,7 +226,7 @@ class SQLiteDb(object):
                 "".format(calendar, href)
             )
             raise NonUniqueUID
-        vevents = (utils.sanitize(c, self.locale['default_timezone'], href, calendar) for
+        vevents = (sanitize_vevent(c, self.locale['default_timezone'], href, calendar) for
                    c in ical.walk() if c.name == 'VEVENT')
         # Need to delete the whole event in case we are updating a
         # recurring event with an event which is either not recurring any
@@ -231,7 +234,7 @@ class SQLiteDb(object):
         # tables. There are obviously better ways to achieve the same
         # result.
         self.delete(href, calendar=calendar)
-        for vevent in sorted(vevents, key=utils.sort_key):
+        for vevent in sorted(vevents, key=sort_vevent_key):
             check_for_errors(vevent, calendar, href)
             check_support(vevent, href, calendar)
             self._update_impl(vevent, href, calendar)
@@ -261,7 +264,7 @@ class SQLiteDb(object):
         assert href is not None
         # Delete all event entries for this contact
         self.deletelike(href + '%', calendar=calendar)
-        ical = utils.cal_from_ics(vevent_str)
+        ical = cal_from_ics(vevent_str)
         vcard = ical.walk()[0]
         for key in vcard.keys():
             if key in ['BDAY', 'X-ANNIVERSARY', 'ANNIVERSARY'] or key.endswith('X-ABDATE'):
@@ -350,7 +353,7 @@ class SQLiteDb(object):
             start_shift_seconds = start_shift.days * 3600 * 24 + start_shift.seconds
             duration_seconds = duration.days * 3600 * 24 + duration.seconds
 
-        dtstartend = utils.expand(vevent, href)
+        dtstartend = expand_vevent(vevent, href)
         if not dtstartend:
             # Does this event even have dates? Technically it is possible for
             # events to be empty/non-existent by deleting all their recurrences
