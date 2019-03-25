@@ -45,9 +45,9 @@ class testCollection():
 def test_get_calendar_color():
 
     exampleCollection = testCollection()
-    exampleCollection.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection.addCalendar('testCalendar1', 'dark red', 20)
     exampleCollection.addCalendar('testCalendar2', 'light green', 10)
-    exampleCollection.addCalendar('testCalendar3', '',            10)
+    exampleCollection.addCalendar('testCalendar3', '', 10)
 
     assert get_calendar_color('testCalendar1', 'light blue', exampleCollection) == 'dark red'
     assert get_calendar_color('testCalendar2', 'light blue', exampleCollection) == 'light green'
@@ -62,7 +62,7 @@ def test_get_color_list():
 
     # test different priorities
     exampleCollection1 = testCollection()
-    exampleCollection1.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection1.addCalendar('testCalendar1', 'dark red', 20)
     exampleCollection1.addCalendar('testCalendar2', 'light green', 10)
 
     testList1 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection1)
@@ -71,7 +71,7 @@ def test_get_color_list():
 
     # test same priorities
     exampleCollection2 = testCollection()
-    exampleCollection2.addCalendar('testCalendar1', 'dark red',    20)
+    exampleCollection2.addCalendar('testCalendar1', 'dark red', 20)
     exampleCollection2.addCalendar('testCalendar2', 'light green', 20)
 
     testList2 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection2)
@@ -81,16 +81,16 @@ def test_get_color_list():
 
     # test duplicated colors
     exampleCollection3 = testCollection()
-    exampleCollection3.addCalendar('testCalendar1', 'dark red',    20)
-    exampleCollection3.addCalendar('testCalendar2', 'dark red',    20)
+    exampleCollection3.addCalendar('testCalendar1', 'dark red', 20)
+    exampleCollection3.addCalendar('testCalendar2', 'dark red', 20)
 
     testList3 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection3)
     assert len(testList3) == 1
 
     # test indexing operator (required by str_highlight_day())
     exampleCollection4 = testCollection()
-    exampleCollection4.addCalendar('testCalendar1', 'dark red',    20)
-    exampleCollection4.addCalendar('testCalendar2', 'dark red',    20)
+    exampleCollection4.addCalendar('testCalendar1', 'dark red', 20)
+    exampleCollection4.addCalendar('testCalendar2', 'dark red', 20)
 
     testList3 = get_color_list(exampleCalendarList, 'light_blue', exampleCollection4)
     assert testList3[0] == 'dark red'

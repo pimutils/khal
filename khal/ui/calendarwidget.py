@@ -312,9 +312,9 @@ class CListBox(urwid.ListBox):
 
     def keypress(self, size, key):
         if key in self.keybindings['mark'] + ['esc'] and self._marked:
-                self._unmark_all()
-                self._marked = False
-                return
+            self._unmark_all()
+            self._marked = False
+            return
         if key in self.keybindings['mark']:
             self._marked = {'date': self.body.focus_date,
                             'pos': (self.focus_position, self.focus.focus_col)}

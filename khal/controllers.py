@@ -187,9 +187,9 @@ def get_events_between(
         # to understand what's going on here this way
         if notstarted:
             if event.allday and event.start < original_start.date():
-                    continue
+                continue
             elif not event.allday and event.start_local < original_start:
-                    continue
+                continue
         if seen is not None and event.uid in seen:
             continue
 
@@ -520,9 +520,9 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
     for event in events:
         if not allow_past:
             if event.allday and event.end < now.date():
-                    continue
+                continue
             elif not event.allday and event.end_local < now:
-                    continue
+                continue
         event_text = textwrap.wrap(event.format(format, relative_to=now), term_width)
         echo(''.join(event_text))
         if not edit_event(event, collection, locale, allow_quit=True, width=term_width):

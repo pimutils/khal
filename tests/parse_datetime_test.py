@@ -191,11 +191,11 @@ class TestGuessTimedeltafstr:
 
     def test_garbage(self):
         with pytest.raises(ValueError):
-                guesstimedeltafstr('10mbar')
+            guesstimedeltafstr('10mbar')
 
     def test_moregarbage(self):
         with pytest.raises(ValueError):
-                guesstimedeltafstr('foo10m')
+            guesstimedeltafstr('foo10m')
 
     def test_same(self):
         assert dt.timedelta(minutes=20) == \
@@ -206,16 +206,16 @@ class TestGuessRangefstr:
 
     @freeze_time('2016-9-19')
     def test_today(self):
-            assert (dt.datetime(2016, 9, 19, 13), dt.datetime(2016, 9, 19, 14), False) == \
-                guessrangefstr('13:00 14:00', locale=LOCALE_BERLIN)
-            assert (dt.datetime(2016, 9, 19), dt.datetime(2016, 9, 21), True) == \
-                guessrangefstr('today tomorrow', LOCALE_BERLIN)
+        assert (dt.datetime(2016, 9, 19, 13), dt.datetime(2016, 9, 19, 14), False) == \
+            guessrangefstr('13:00 14:00', locale=LOCALE_BERLIN)
+        assert (dt.datetime(2016, 9, 19), dt.datetime(2016, 9, 21), True) == \
+            guessrangefstr('today tomorrow', LOCALE_BERLIN)
 
     @freeze_time('2016-9-19 16:34')
     def test_tomorrow(self):
         # XXX remove this funtionality, we shouldn't support this anyway
-            assert (dt.datetime(2016, 9, 19), dt.datetime(2016, 9, 21, 16), True) == \
-                guessrangefstr('today tomorrow 16:00', locale=LOCALE_BERLIN)
+        assert (dt.datetime(2016, 9, 19), dt.datetime(2016, 9, 21, 16), True) == \
+            guessrangefstr('today tomorrow 16:00', locale=LOCALE_BERLIN)
 
     @freeze_time('2016-9-19 13:34')
     def test_time_tomorrow(self):
