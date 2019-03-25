@@ -1,0 +1,51 @@
+khal v0.10.0 released
+=====================
+
+.. feed-entry::
+        :date: 2019-03-25
+
+This is not only the first bugfix release in more than a year, but also the
+first release containing new features in nearly two years.
+
+v0.10.0 contains some breaking changes from earlier versions of khal, most
+notably the removal of the default command [1]_. For users who want the old
+functionality back, a shell function seems to be the best option. Please use the
+wiki_ to share your solutions. Have a look at the Changelog_ for more changes
+and fixes.
+
+With this release I want to bring the aforementioned changes to more people,
+find (and fix) as many more bugs as possible and then release a version 1.0.
+
+For convenience issues, khal will only be available on pypi_ in the future, with
+minor versions (v0.10.x) not getting announced here any more. Users and packagers
+who want to stay on a current version of khal are therefore advised to watch
+pypi_ for new versions.
+
+.. Important::
+
+   **Contributors and maintainers wanted**
+
+   As I find myself having less and less time to devout to khal, I'm looking for
+   more developers and maintainers. Even if you are not a python developer, your
+   help with helping new users and triaging and prioritizing bugs is very much
+   appreciated. 
+
+   If you don't know how to contact the current team, open an `issue on github`_.
+
+   **vdirsyncer**, which many khal users are probably dependend on, is also
+   looking for new maintainers_.
+
+
+.. [1] The implementation of the default command proved to be a source of
+   constant headache for users and developers alike. This was due to the library chosen
+   for handling argument parsing.
+
+   Feel free to share other suggestions in the wiki_.
+
+.. _pypi: https://pypi.python.org/pypi/khal/
+.. _issue on github: https://github.com/pimutils/khal/issues
+.. _issues: https://github.com/pimutils/khal/issues
+.. _wiki: https://github.com/pimutils/khal/wiki/Default-command-alternatives
+.. _changelog: changelog.html#id2
+.. _vdirsyncer: https://github.com/pimutils/vdirsyncer
+.. _maintainers: https://github.com/pimutils/vdirsyncer/issues/790

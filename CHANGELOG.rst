@@ -9,7 +9,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.10.0
 ======
-not released yet
+2019-03-25
 
 * only dateutil < 2.7 is supported
 
