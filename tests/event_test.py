@@ -52,7 +52,7 @@ def test_update_simple():
     event.update_summary('A not so simple Event')
     event.update_description('Everything has changed')
     event.update_location('anywhere')
-    event.update_categories('meeting')
+    event.update_categories(['meeting'])
     assert normalize_component(event.raw) == normalize_component(event_updated.raw)
 
 
@@ -92,7 +92,7 @@ def test_remove_existing_description_if_set_to_empty():
 def test_update_remove_categories():
     event = Event.fromString(_get_text('event_dt_simple_updated'), **EVENT_KWARGS)
     event_nocat = Event.fromString(_get_text('event_dt_simple_nocat'), **EVENT_KWARGS)
-    event.update_categories('    ')
+    event.update_categories([])
     assert normalize_component(event.raw) == normalize_component(event_nocat.raw)
 
 

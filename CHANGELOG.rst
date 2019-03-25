@@ -15,7 +15,7 @@ not released yet
 
 * NEW DEPENDENCY added click_log  >= 0.2.0
 * NEW DEPENDENCY for Python 3.4: typing
-* UPDATED DEPENDENCY icalendar>=3.11.7
+* UPDATED DEPENDENCY icalendar>=4.03
 * DROPPED support for Python 3.3
 * vdirsyncer is still a test dependency (and always has been)
 

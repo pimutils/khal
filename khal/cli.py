@@ -335,7 +335,7 @@ def _get_cli():
     @click.option('--location', '-l',
                   help=('The location of the new event.'))
     @click.option('--categories', '-g',
-                  help=('The categories of the new event.'))
+                  help=('The categories of the new event, comma separated.'))
     @click.option('--repeat', '-r',
                   help=('Repeat event: daily, weekly, monthly or yearly.'))
     @click.option('--until', '-u',
@@ -357,10 +357,9 @@ def _get_cli():
         everything behind them is taken as the event's description.
         '''
         if not info and not interactive:
-                raise click.BadParameter(
-                    'no details provided, '
-                    'did you mean to use --interactive/-i?'
-                )
+            raise click.BadParameter(
+                'no details provided, did you mean to use --interactive/-i?'
+            )
 
         calendar = calendar or ctx.obj['conf']['default']['default_calendar']
         if calendar is None:

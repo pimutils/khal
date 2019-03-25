@@ -13,7 +13,7 @@ if sys.version_info < (3, 4):
 requirements = [
     'click>=3.2',
     'click_log>=0.2.0',
-    'icalendar>=3.11.7',
+    'icalendar>=4.0.3',
     'urwid',
     'pyxdg',
     'pytz',

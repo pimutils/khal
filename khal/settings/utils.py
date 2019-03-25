@@ -153,7 +153,7 @@ def get_color_from_vdir(path):
         color = Vdir(path, '.ics').get_meta('color')
     except CollectionNotFoundError:
         color = None
-    if color is None or color is '':
+    if color is None or color == '':
         logger.debug('Found no or empty file `color` in {}'.format(path))
         return None
     color = color.strip()

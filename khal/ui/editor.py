@@ -433,7 +433,7 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_summary(get_wrapped_text(self.summary))
         self.event.update_description(get_wrapped_text(self.description))
         self.event.update_location(get_wrapped_text(self.location))
-        self.event.update_categories(get_wrapped_text(self.categories))
+        self.event.update_categories(get_wrapped_text(self.categories).split(','))
 
         if self.startendeditor.changed:
             self.event.update_start_end(
