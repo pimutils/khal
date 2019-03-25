@@ -57,6 +57,8 @@ not released yet
   the color of the calendar with highest priority. If multiple calendars have
   the same highest priority, it falls back to the previous system.
 
+* NEW format can now print the organizer of the event with '(organizer)'
+
 0.9.8
 =====
 released 2017-10-05
