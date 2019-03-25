@@ -35,3 +35,4 @@ Thomas Kluyver - thomas [at] kluyver [dot] me [dot] uk
 Tobias Brummer - hallo [at] t0bybr.de - https://t0bybr.de
 Amanda Hickman - amanda [at] velociraptor [dot] info
 Raef Coles - raefcoles [at] gmail [dot] com
+Nito Martinez - nito [at] qindel [dot] com - http://qindel.com http://theqvd.com
