@@ -423,13 +423,16 @@ class Event(object):
 
     @property
     def categories(self):
-        return self._vevents[self.ref].get('CATEGORIES', '')
+        try:
+            return self._vevents[self.ref].get('CATEGORIES', '').to_ical().decode('utf-8')
+        except AttributeError:
+            return ''
 
     def update_categories(self, categories):
-        if categories.strip():
-            self._vevents[self.ref]['CATEGORIES'] = categories
-        else:
-            self._vevents[self.ref].pop('CATEGORIES', False)
+        assert isinstance(categories, list)
+        self._vevents[self.ref].pop('CATEGORIES', False)
+        if categories:
+            self._vevents[self.ref].add('CATEGORIES', categories)
 
     @property
     def description(self):

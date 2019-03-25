@@ -355,6 +355,8 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
                   categories=None, repeat=None, until=None, alarms=None,
                   timezone=None, format=None, env=None):
     """Create a new event from arguments and add to vdirs"""
+    if isinstance(categories, str):
+        categories = list([category.strip() for category in categories.split(',')])
     try:
         event = utils.new_event(
             locale=conf['locale'], location=location, categories=categories,
@@ -495,7 +497,10 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             value = prompt(question, default)
             if allow_none and value == "None":
                 value = ""
-            getattr(event, "update_" + attr)(value)
+            if attr == 'categories':
+                getattr(event, "update_" + attr)(list([cat.strip() for cat in value.split(',')]))
+            else:
+                getattr(event, "update_" + attr)(value)
             edited = True
 
         if edited:

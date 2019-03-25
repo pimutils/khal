@@ -335,7 +335,7 @@ def _get_cli():
     @click.option('--location', '-l',
                   help=('The location of the new event.'))
     @click.option('--categories', '-g',
-                  help=('The categories of the new event.'))
+                  help=('The categories of the new event, comma separated.'))
     @click.option('--repeat', '-r',
                   help=('Repeat event: daily, weekly, monthly or yearly.'))
     @click.option('--until', '-u',

@@ -554,6 +554,6 @@ def test_description_and_location_and_categories():
         event = _construct_event(data_list.split(),
                                  description='please describe the event',
                                  location='in the office',
-                                 categories='boring meeting',
+                                 categories=['boring meeting'],
                                  locale=LOCALE_BERLIN)
         assert _replace_uid(event).to_ical() == vevent
