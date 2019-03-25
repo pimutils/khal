@@ -52,6 +52,8 @@ not released yet
 
 * NEW python 3.7 is now officially supported.
 
+* NEW format can now print the organizer of the event with '(organizer)'
+
 0.9.8
 =====
 released 2017-10-05
