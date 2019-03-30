@@ -1120,7 +1120,7 @@ class ClassicView(Pane):
     def _search(self, search_term):
         """search for events matching `search_term"""
         self.window.backtrack()
-        events = list(self.collection.search(search_term))
+        events = sorted(self.collection.search(search_term))
         event_list = []
         event_list.extend([
             urwid.AttrMap(
