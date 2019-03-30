@@ -13,6 +13,7 @@ may want to subscribe to `GitHub's tag feed
 2019-03-30
 
 * FIX error with the new color priority system and `discover` calendar type
+* FIX search results in ikhal are ordered, same as in `khal search`
 
 0.10.0
 ======
