@@ -226,7 +226,8 @@ def config_checks(
         calendar = {'path': vdir,
                     'color': _get_color_from_vdir(vdir),
                     'type': _get_vdir_type(vdir),
-                    'readonly': False
+                    'readonly': False,
+                    'priority': 10,
                     }
 
         # get color from config if not defined in vdir
