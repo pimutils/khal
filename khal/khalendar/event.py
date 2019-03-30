@@ -882,13 +882,14 @@ def create_timezone(tz, first_date=None, last_date=None):
     easy solution, we'd really need to ship another version of the OLSON DB.
 
     """
+
     if isinstance(tz, pytz.tzinfo.StaticTzInfo):
         return _create_timezone_static(tz)
 
     # TODO last_date = None, recurring to infinity
 
     first_date = dt.datetime.today() if not first_date else to_naive_utc(first_date)
-    last_date = dt.datetime.today() if not last_date else to_naive_utc(last_date)
+    last_date = first_date + dt.timedelta(days=1) if not last_date else to_naive_utc(last_date)
     timezone = icalendar.Timezone()
     timezone.add('TZID', tz)
 
@@ -906,10 +907,10 @@ def create_timezone(tz, first_date=None, last_date=None):
     first_tt = tz._utc_transition_times[0]
     last_tt = tz._utc_transition_times[-1]
     for num, transtime in enumerate(tz._utc_transition_times):
-        if transtime > first_tt and transtime < first_date:
+        if first_date > transtime > first_tt:
             first_num = num
             first_tt = transtime
-        if transtime < last_tt and transtime > last_date:
+        if last_tt > transtime > last_date:
             last_num = num
             last_tt = transtime
 

@@ -16,6 +16,8 @@ not released
 * FIX ability to show event's calendar in ikhal
 * NEW Add widget to interactive event editor that allows adding attendees as
   comma separated list of email addresses
+* FIX event creation for events after the second next DST transition
+
 * NEW Add support for Python 3.10
 * CHANGE `search`, `at`, and `list` don't print "No events" anymore if no matching
   events are found
