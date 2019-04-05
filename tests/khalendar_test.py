@@ -305,26 +305,26 @@ class TestCollection(object):
             '{start} {end} {title}', dt.date.today()) == '07.07. 08:30 07.07. 12:00 Arbeit\x1b[0m'
 
     def test_delete_two_events(self, coll_vdirs, sleep_time):
-            """testing if we can delete any of two events in two different
-            calendars with the same filename"""
-            coll, vdirs = coll_vdirs
-            event1 = Event.fromString(
-                _get_text('event_dt_simple'), calendar=cal1, locale=LOCALE_BERLIN)
-            event2 = Event.fromString(
-                _get_text('event_dt_simple'), calendar=cal2, locale=LOCALE_BERLIN)
-            coll.new(event1, cal1)
-            sleep(sleep_time)  # make sure the etags are different
-            coll.new(event2, cal2)
-            etag1 = list(vdirs[cal1].list())[0][1]
-            etag2 = list(vdirs[cal2].list())[0][1]
-            events = list(coll.get_localized(self.astart_berlin, self.aend_berlin))
-            assert len(events) == 2
-            assert events[0].calendar != events[1].calendar
-            for event in events:
-                if event.calendar == cal1:
-                    assert event.etag == etag1
-                if event.calendar == cal2:
-                    assert event.etag == etag2
+        """testing if we can delete any of two events in two different
+        calendars with the same filename"""
+        coll, vdirs = coll_vdirs
+        event1 = Event.fromString(
+            _get_text('event_dt_simple'), calendar=cal1, locale=LOCALE_BERLIN)
+        event2 = Event.fromString(
+            _get_text('event_dt_simple'), calendar=cal2, locale=LOCALE_BERLIN)
+        coll.new(event1, cal1)
+        sleep(sleep_time)  # make sure the etags are different
+        coll.new(event2, cal2)
+        etag1 = list(vdirs[cal1].list())[0][1]
+        etag2 = list(vdirs[cal2].list())[0][1]
+        events = list(coll.get_localized(self.astart_berlin, self.aend_berlin))
+        assert len(events) == 2
+        assert events[0].calendar != events[1].calendar
+        for event in events:
+            if event.calendar == cal1:
+                assert event.etag == etag1
+            if event.calendar == cal2:
+                assert event.etag == etag2
 
     def test_invalid_timezones(self, coll_vdirs):
         """testing if we can delete any of two events in two different

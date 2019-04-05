@@ -358,7 +358,7 @@ def guessrangefstr(daterange, locale, adjust_reasonably=False,
                 else:
                     end = start + default_timedelta_datetime
             elif end.lower() == 'eod':
-                    end = dt.datetime.combine(start.date(), dt.time.max)
+                end = dt.datetime.combine(start.date(), dt.time.max)
             elif end.lower() == 'week':
                 start -= dt.timedelta(days=(start.weekday() - locale['firstweekday']))
                 end = start + dt.timedelta(days=8)

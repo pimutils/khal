@@ -153,7 +153,7 @@ def get_color_from_vdir(path):
         color = Vdir(path, '.ics').get_meta('color')
     except CollectionNotFoundError:
         color = None
-    if color is None or color is '':
+    if color is None or color == '':
         logger.debug('Found no or empty file `color` in {}'.format(path))
         return None
     color = color.strip()
@@ -226,7 +226,8 @@ def config_checks(
         calendar = {'path': vdir,
                     'color': _get_color_from_vdir(vdir),
                     'type': _get_vdir_type(vdir),
-                    'readonly': False
+                    'readonly': False,
+                    'priority': 10,
                     }
 
         # get color from config if not defined in vdir

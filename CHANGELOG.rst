@@ -7,15 +7,23 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+
+0.10.1
+======
+2019-03-30
+
+* FIX error with the new color priority system and `discover` calendar type
+* FIX search results in ikhal are ordered, same as in `khal search`
+
 0.10.0
 ======
-not released yet
+2019-03-25
 
 * only dateutil < 2.7 is supported
 
 * NEW DEPENDENCY added click_log  >= 0.2.0
 * NEW DEPENDENCY for Python 3.4: typing
-* UPDATED DEPENDENCY icalendar>=3.11.7
+* UPDATED DEPENDENCY icalendar>=4.03
 * DROPPED support for Python 3.3
 * vdirsyncer is still a test dependency (and always has been)
 
@@ -58,6 +66,8 @@ not released yet
   multiple calendars events are on the same day, the day will be colored with
   the color of the calendar with highest priority. If multiple calendars have
   the same highest priority, it falls back to the previous system.
+
+* NEW format can now print the organizer of the event with '(organizer)'
 
 0.9.8
 =====

@@ -655,7 +655,7 @@ def cal_from_ics(ics):
     except ValueError as error:
         if (len(error.args) > 0 and isinstance(error.args[0], str) and
                 error.args[0].startswith('Offset must be less than 24 hours')):
-            logger.warn(
+            logger.warning(
                 'Invalid timezone offset encountered, '
                 'timezone information may be wrong: ' + str(error.args[0])
             )
