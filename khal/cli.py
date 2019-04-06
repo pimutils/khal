@@ -22,6 +22,7 @@
 import datetime as dt
 import logging
 import os
+import stat
 import sys
 import textwrap
 from shutil import get_terminal_size
@@ -437,7 +438,7 @@ def _get_cli():
             if not ics:
                 ics_strs = (sys.stdin.read(),)
                 if not batch:
-                    if os.path.isfile('/dev/tty'):
+                    if os.stat('/dev/tty').st_mode & stat.S_IFCHR > 0:
                         sys.stdin = open('/dev/tty', 'r')
                     else:
                         logger.warning('/dev/tty does not exist, importing might not work')
