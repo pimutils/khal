@@ -49,6 +49,8 @@ may want to subscribe to `GitHub's tag feed
 * NEW khal learned the ``--logfile/-l LOGFILE`` flag which allows logging to a
   file
 * NEW format can now print the duration of an event with `{duration}`
+* NEW format supports `{nl}`, `{tab}`, `{bell}`. `{status}` has a whitespace
+  like `{cancelled}`
 * NEW configuration option: [view]monthdisplay = firstday|firstfullweek,
   if set to 'firstday', khal displays the month name as soon as any day
   in the week is within the new month. If set to 'firstfullweek', khal

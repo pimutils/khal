@@ -607,7 +607,7 @@ class Event(object):
         attributes['tab'] = '\t'
         attributes['bell'] = '\a'
 
-        attributes['status'] = self.status
+        attributes['status'] = self.status + ' ' if self.status else ''
         attributes['cancelled'] = 'CANCELLED ' if self.status == 'CANCELLED' else ''
         return format_string.format(**dict(attributes)) + attributes["reset"]
 
