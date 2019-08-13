@@ -145,7 +145,7 @@ def get_config(
             deprecated  = ['default_command']
             if value in deprecated:
                 logger.warning(
-                    'Key "{}" in section "{}" was deprecated. See FAQ to learn when and why!'.format(value, section))            
+                    'Key "{}" in section "{}" was deprecated. See the FAQ to find out when and why!'.format(value, section))            
             else:
                 logger.warning(
                     'unknown key or subsection "{}" in section "{}"'.format(value, section))
