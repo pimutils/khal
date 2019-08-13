@@ -20,3 +20,6 @@ Frequently asked questions:
         You do not have the Python development headers installed, on Debian based
         Distributions you can install them via *aptitude install python-dev*.
 
+* **unknown key "default_command"**
+         This key was deprecated by f8d9135.
+         See https://github.com/pimutils/khal/issues/648 for the rationale behind this removal.
