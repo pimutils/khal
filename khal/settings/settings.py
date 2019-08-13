@@ -142,8 +142,13 @@ def get_config(
             logger.warning('unknown section "{}" in config file'.format(value))
         else:
             section = sectionize(section)
-            logger.warning(
-                'unknown key or subsection "{}" in section "{}"'.format(value, section))
+            deprecated  = ['default_command']
+            if value in deprecated:
+                logger.warning(
+                    'Key "{}" in section "{}" was deprecated. See FAQ to learn when and why!'.format(value, section))            
+            else:
+                logger.warning(
+                    'unknown key or subsection "{}" in section "{}"'.format(value, section))
     return user_config
 
 
