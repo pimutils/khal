@@ -655,6 +655,28 @@ BDAY:--0311
 END:VCARD
 """
 
+card_anniversary = """BEGIN:VCARD
+VERSION:3.0
+FN:Unix
+X-ANNIVERSARY:19710311
+END:VCARD
+"""
+
+card_abdate = """BEGIN:VCARD
+VERSION:3.0
+FN:Unix
+ITEM1.X-ABDATE:19710311
+ITEM1.X-ABLabel:spouse's birthday
+END:VCARD
+"""
+
+card_abdate_nolabel = """BEGIN:VCARD
+VERSION:3.0
+FN:Unix
+ITEM1.X-ABDATE:19710311
+END:VCARD
+"""
+
 day = dt.date(1971, 3, 11)
 start = dt.datetime.combine(day, dt.time.min)
 end = dt.datetime.combine(day, dt.time.max)
@@ -663,7 +685,7 @@ end = dt.datetime.combine(day, dt.time.max)
 def test_birthdays():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
-    db.update_birthday(card, 'unix.vcf', calendar=calname)
+    db.update_vcf_dates(card, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 1
     assert 'SUMMARY:Unix\'s birthday' in events[0][0]
@@ -678,15 +700,15 @@ def test_birthdays():
 def test_birthdays_update():
     """test if we can update a birthday"""
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    db.update_birthday(card, 'unix.vcf', calendar=calname)
-    db.update_birthday(card, 'unix.vcf', calendar=calname)
+    db.update_vcf_dates(card, 'unix.vcf', calendar=calname)
+    db.update_vcf_dates(card, 'unix.vcf', calendar=calname)
 
 
 def test_birthdays_no_fn():
     db = backend.SQLiteDb(['home'], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(dt.datetime(1941, 9, 9, 0, 0),
                                 dt.datetime(1941, 9, 9, 23, 59, 59, 9999))) == list()
-    db.update_birthday(card_no_fn, 'unix.vcf', calendar=calname)
+    db.update_vcf_dates(card_no_fn, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(dt.datetime(1941, 9, 9, 0, 0),
                                   dt.datetime(1941, 9, 9, 23, 59, 59, 9999)))
     assert len(events) == 1
@@ -696,7 +718,7 @@ def test_birthdays_no_fn():
 def test_birthday_does_not_parse():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
-    db.update_birthday(card_does_not_parse, 'unix.vcf', calendar=calname)
+    db.update_vcf_dates(card_does_not_parse, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 0
 
@@ -704,6 +726,51 @@ def test_birthday_does_not_parse():
 def test_vcard_two_birthdays():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
-    db.update_birthday(card_two_birthdays, 'unix.vcf', calendar=calname)
+    db.update_vcf_dates(card_two_birthdays, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 0
+
+
+def test_anniversary():
+    db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
+    assert list(db.get_floating(start, end)) == list()
+    db.update_vcf_dates(card_anniversary, 'unix.vcf', calendar=calname)
+    events = list(db.get_floating(start, end))
+    assert len(events) == 1
+    assert 'SUMMARY:Unix\'s anniversary' in events[0][0]
+
+    events = list(
+        db.get_floating(
+            dt.datetime(2016, 3, 11, 0, 0),
+            dt.datetime(2016, 3, 11, 23, 59, 59, 999)))
+    assert 'SUMMARY:Unix\'s anniversary' in events[0][0]
+
+
+def test_abdate():
+    db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
+    assert list(db.get_floating(start, end)) == list()
+    db.update_vcf_dates(card_abdate, 'unix.vcf', calendar=calname)
+    events = list(db.get_floating(start, end))
+    assert len(events) == 1
+    assert 'SUMMARY:Unix\'s spouse\'s birthday' in events[0][0]
+
+    events = list(
+        db.get_floating(
+            dt.datetime(2016, 3, 11, 0, 0),
+            dt.datetime(2016, 3, 11, 23, 59, 59, 999)))
+    assert 'SUMMARY:Unix\'s spouse\'s birthday' in events[0][0]
+
+
+def test_abdate_nolabel():
+    db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
+    assert list(db.get_floating(start, end)) == list()
+    db.update_vcf_dates(card_abdate_nolabel, 'unix.vcf', calendar=calname)
+    events = list(db.get_floating(start, end))
+    assert len(events) == 1
+    assert 'SUMMARY:Unix\'s custom event from vcard' in events[0][0]
+
+    events = list(
+        db.get_floating(
+            dt.datetime(2016, 3, 11, 0, 0),
+            dt.datetime(2016, 3, 11, 23, 59, 59, 999)))
+    assert 'SUMMARY:Unix\'s custom event from vcard' in events[0][0]

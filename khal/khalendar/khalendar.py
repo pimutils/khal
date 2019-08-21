@@ -324,7 +324,7 @@ class CalendarCollection(object):
         event, etag = self._storages[calendar].get(href)
         try:
             if self._calendars[calendar].get('ctype') == 'birthdays':
-                update = self._backend.update_birthday
+                update = self._backend.update_vcf_dates
             else:
                 update = self._backend.update
             update(event.raw, href=href, etag=etag, calendar=calendar)
