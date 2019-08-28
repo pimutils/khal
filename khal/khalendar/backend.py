@@ -311,7 +311,7 @@ class SQLiteDb(object):
                 vevent.add('uid', href + key)
                 vevent_str = vevent.to_ical().decode('utf-8')
                 self._update_impl(vevent, href + key, calendar)
-                sql_s = ('INSERT INTO events (item, etag, href, calendar) VALUES (?, ?, ?, ?);')
+                sql_s = ('INSERT OR REPLACE INTO events (item, etag, href, calendar) VALUES (?, ?, ?, ?);')
                 stuple = (vevent_str, etag, href + key, calendar)
                 self.sql_ex(sql_s, stuple)
 
