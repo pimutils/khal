@@ -240,7 +240,8 @@ class SQLiteDb(object):
         stuple = (vevent_str, etag, href, calendar)
         self.sql_ex(sql_s, stuple)
 
-    def update_vcf_dates(self, vevent_str: str, href: str, etag: str='', calendar: str=None) -> None:
+    def update_vcf_dates(self, vevent_str: str, href: str, etag: str='',
+                         calendar: str=None) -> None:
         """insert events from a vcard into the db
 
         This is will parse BDAY, ANNIVERSARY, X-ANNIVERSARY and X-ABDATE fields.
@@ -262,7 +263,7 @@ class SQLiteDb(object):
         ical = utils.cal_from_ics(vevent_str)
         vcard = ical.walk()[0]
         for key in vcard.keys():
-            if key in ['BDAY', 'X-ANNIVERSARY', 'ANNIVERSARY'] or key[-8:] == 'X-ABDATE':
+            if key in ['BDAY', 'X-ANNIVERSARY', 'ANNIVERSARY'] or key.endswith('X-ABDATE'):
                 date = vcard[key]
                 if isinstance(date, list):
                     logger.warning(
@@ -298,7 +299,7 @@ class SQLiteDb(object):
                 if orig_date:
                     if key == 'BDAY':
                         xtag = 'x-birthday'
-                    elif key[-11:] == 'ANNIVERSARY':
+                    elif key.endswith('ANNIVERSARY'):
                         xtag = 'x-anniversary'
                     else:
                         xtag = 'x-abdate'
@@ -639,9 +640,9 @@ def calc_shift_deltas(vevent: icalendar.Event) -> Tuple[dt.timedelta, dt.timedel
 def get_vcard_event_description(vcard: icalendar.cal.Component, key: str) -> str:
     if key == 'BDAY':
         return 'birthday'
-    elif key[-11:] == 'ANNIVERSARY':
+    elif key.endswith('ANNIVERSARY'):
         return 'anniversary'
-    elif key[-8:] == 'X-ABDATE':
+    elif key.endswith('X-ABDATE'):
         desc_key = key[:-8] + 'X-ABLABEL'
         if desc_key in vcard.keys():
             return vcard[desc_key]
