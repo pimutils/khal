@@ -305,6 +305,7 @@ class CalendarCollection(object):
         local_ctag = self._local_ctag(calendar)
         db_hrefs = set(href for href, etag in self._backend.list(calendar))
         storage_hrefs = set()
+        bdays = self._calendars[calendar].get('ctype') == 'birthdays'
 
         with self._backend.at_once():
             for href, etag in self._storages[calendar].list():
@@ -314,7 +315,14 @@ class CalendarCollection(object):
                     logger.debug('Updating {0} because {1} != {2}'.format(href, etag, db_etag))
                     self._update_vevent(href, calendar=calendar)
             for href in db_hrefs - storage_hrefs:
-                self._backend.delete(href, calendar=calendar)
+                if bdays:
+                    for sh in storage_hrefs:
+                        if href.startswith(sh):
+                            break
+                    else:
+                        self._backend.delete(href, calendar=calendar)
+                else:
+                    self._backend.delete(href, calendar=calendar)
             self._backend.set_ctag(local_ctag, calendar=calendar)
             self._last_ctags[calendar] = local_ctag
 

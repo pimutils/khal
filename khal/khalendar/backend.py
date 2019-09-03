@@ -259,7 +259,8 @@ class SQLiteDb(object):
         """
         assert calendar is not None
         assert href is not None
-        self.delete(href, calendar=calendar)
+        # Delete all event entries for this contact
+        self.deletelike(href + '%', calendar=calendar)
         ical = utils.cal_from_ics(vevent_str)
         vcard = ical.walk()[0]
         for key in vcard.keys():
@@ -312,7 +313,7 @@ class SQLiteDb(object):
                 vevent.add('uid', href + key)
                 vevent_str = vevent.to_ical().decode('utf-8')
                 self._update_impl(vevent, href + key, calendar)
-                sql_s = ('INSERT OR REPLACE INTO events (item, etag, href, calendar)'
+                sql_s = ('INSERT INTO events (item, etag, href, calendar)'
                          ' VALUES (?, ?, ?, ?);')
                 stuple = (vevent_str, etag, href + key, calendar)
                 self.sql_ex(sql_s, stuple)
@@ -429,6 +430,23 @@ class SQLiteDb(object):
             sql_s = 'DELETE FROM {0} WHERE href = ? AND calendar = ?;'.format(table)
             self.sql_ex(sql_s, (href, calendar))
         sql_s = 'DELETE FROM events WHERE href = ? AND calendar = ?;'
+        self.sql_ex(sql_s, (href, calendar))
+
+    def deletelike(self, href: str, etag: Any=None, calendar: str=None):
+        """
+        removes events from the db that match an SQL 'like' statement,
+
+        :param href: The pattern of hrefs to delete. May contain SQL wildcards
+                     like '%'
+        :param etag: only there for compatibility with vdirsyncer's Storage,
+                     we always delete
+        :returns: None
+        """
+        assert calendar is not None
+        for table in ['recs_loc', 'recs_float']:
+            sql_s = 'DELETE FROM {0} WHERE href LIKE ? AND calendar = ?;'.format(table)
+            self.sql_ex(sql_s, (href, calendar))
+        sql_s = 'DELETE FROM events WHERE href LIKE ? AND calendar = ?;'
         self.sql_ex(sql_s, (href, calendar))
 
     def list(self, calendar):
