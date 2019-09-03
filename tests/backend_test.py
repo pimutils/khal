@@ -782,6 +782,7 @@ def test_abdate_nolabel():
             dt.datetime(2016, 3, 11, 23, 59, 59, 999)))
     assert 'SUMMARY:Unix\'s custom event from vcard' in events[0][0]
 
+
 def test_birthday_v3():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
