@@ -677,6 +677,13 @@ ITEM1.X-ABDATE:19710311
 END:VCARD
 """
 
+card_v3 = """BEGIN:VCARD
+VERSION:3.0
+FN:Unix
+BDAY:1971-03-11
+END:VCARD
+"""
+
 day = dt.date(1971, 3, 11)
 start = dt.datetime.combine(day, dt.time.min)
 end = dt.datetime.combine(day, dt.time.max)
@@ -774,3 +781,17 @@ def test_abdate_nolabel():
             dt.datetime(2016, 3, 11, 0, 0),
             dt.datetime(2016, 3, 11, 23, 59, 59, 999)))
     assert 'SUMMARY:Unix\'s custom event from vcard' in events[0][0]
+
+def test_birthday_v3():
+    db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
+    assert list(db.get_floating(start, end)) == list()
+    db.update_vcf_dates(card_v3, 'unix.vcf', calendar=calname)
+    events = list(db.get_floating(start, end))
+    assert len(events) == 1
+    assert 'SUMMARY:Unix\'s birthday' in events[0][0]
+
+    events = list(
+        db.get_floating(
+            dt.datetime(2016, 3, 11, 0, 0),
+            dt.datetime(2016, 3, 11, 23, 59, 59, 999)))
+    assert 'SUMMARY:Unix\'s birthday' in events[0][0]
