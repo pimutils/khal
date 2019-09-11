@@ -8,6 +8,13 @@ may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
 
+0.10.2
+======
+not released
+
+* NEW Parse `X-ANNIVERSARY`, `ANNIVERSARY` and `X-ABDATE` fields from vcards.
+
+
 0.10.1
 ======
 2019-03-30

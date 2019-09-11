@@ -351,11 +351,23 @@ class Event(object):
 
     @property
     def summary(self):
-        bday = self._vevents[self.ref].get('x-birthday', None)
-        if bday:
-            number = self.start_local.year - int(bday[:4])
+        description = None
+        date = self._vevents[self.ref].get('x-birthday', None)
+        if date:
+            description = 'birthday'
+        else:
+            date = self._vevents[self.ref].get('x-anniversary', None)
+            if date:
+                description = 'anniversary'
+            else:
+                date = self._vevents[self.ref].get('x-abdate', None)
+                if date:
+                    description = self._vevents[self.ref].get('x-ablabel', 'custom event')
+
+        if date:
+            number = self.start_local.year - int(date[:4])
             name = self._vevents[self.ref].get('x-fname', None)
-            if int(bday[4:6]) == 2 and int(bday[6:8]) == 29:
+            if int(date[4:6]) == 2 and int(date[6:8]) == 29:
                 leap = ' (29th of Feb.)'
             else:
                 leap = ''
@@ -367,8 +379,8 @@ class Event(object):
                 suffix = 'rd'
             else:
                 suffix = 'th'
-            return '{name}\'s {number}{suffix} birthday{leap}'.format(
-                name=name, number=number, suffix=suffix, leap=leap,
+            return '{name}\'s {number}{suffix} {desc}{leap}'.format(
+                name=name, number=number, suffix=suffix, desc=description, leap=leap,
             )
         else:
             return self._vevents[self.ref].get('SUMMARY', '')
