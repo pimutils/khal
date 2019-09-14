@@ -745,7 +745,7 @@ class AllDayEvent(Event):
             logger.warning('{} ("{}"): The event\'s end date property '
                            'contains the same value as the start date, '
                            'which is invalid as per RFC 5545. Khal will '
-                           'assume this is meant to be single-day event '
+                           'assume this is meant to be a single-day event '
                            'on {}'.format(self.href, self.summary, self.start))
             end += dt.timedelta(days=1)
         return end - dt.timedelta(days=1)
