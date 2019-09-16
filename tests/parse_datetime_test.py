@@ -8,7 +8,7 @@ from khal.parse_datetime import (construct_daynames, eventinfofstr,
                                  guessdatetimefstr, guessrangefstr,
                                  guesstimedeltafstr, timedelta2str,
                                  weekdaypstr)
-from khal.utils import new_event
+from khal.icalendar import new_event
 
 from .utils import (LOCALE_BERLIN, LOCALE_NEW_YORK, _replace_uid,
                     normalize_component)

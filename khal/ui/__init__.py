@@ -27,7 +27,7 @@ import sys
 import click
 import urwid
 
-from .. import utils
+from .. import icalendar as icalendar_helpers, utils
 from ..khalendar.event import Event
 from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
@@ -874,13 +874,13 @@ class EventColumn(urwid.WidgetWrap):
         if end is None:
             start = dt.datetime.combine(date, dt.time(dt.datetime.now().hour))
             end = start + dt.timedelta(minutes=60)
-            event = utils.new_event(
+            event = icalendar_helpers.new_event(
                 dtstart=start, dtend=end, summary='',
                 timezone=self._conf['locale']['default_timezone'],
                 locale=self._conf['locale'],
             )
         else:
-            event = utils.new_event(
+            event = icalendar_helpers.new_event(
                 dtstart=date, dtend=end + dt.timedelta(days=1), summary='',
                 allday=True, locale=self._conf['locale'],
             )

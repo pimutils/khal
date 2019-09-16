@@ -1,7 +1,7 @@
 import datetime as dt
 
 import icalendar
-import khal.utils as utils
+from khal import icalendar as icalendar_helpers, utils
 import pytz
 
 from .utils import _get_text, _get_vevent_file
@@ -311,7 +311,7 @@ class TestExpand(object):
 
     def test_expand_dt(self):
         vevent = _get_vevent(event_dt)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
         assert [start.utcoffset()
                 for start, _ in dtstart] == self.offset_berlin
@@ -319,7 +319,7 @@ class TestExpand(object):
 
     def test_expand_dtb(self):
         vevent = _get_vevent(event_dtb)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
         assert [start.utcoffset()
                 for start, _ in dtstart] == self.offset_berlin
@@ -327,38 +327,38 @@ class TestExpand(object):
 
     def test_expand_dttz(self):
         vevent = _get_vevent(event_dttz)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_utc
         assert [start.utcoffset() for start, _ in dtstart] == self.offset_utc
         assert [end.utcoffset() for _, end in dtstart] == self.offset_utc
 
     def test_expand_dtf(self):
         vevent = _get_vevent(event_dtf)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_float
         assert [start.utcoffset() for start, _ in dtstart] == self.offset_none
         assert [end.utcoffset() for _, end in dtstart] == self.offset_none
 
     def test_expand_d(self):
         vevent = _get_vevent(event_d)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dstartend
 
     def test_expand_dtz(self):
         vevent = _get_vevent(event_dtz)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dstartend
 
     def test_expand_dtzb(self):
         vevent = _get_vevent(event_dtzb)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dstartend
 
     def test_expand_invalid_exdate(self):
         """testing if we can expand an event with EXDATEs that do not much
         its RRULE"""
         vevent = _get_vevent_file('event_invalid_exdate')
-        dtstartl = utils.expand(vevent, berlin)
+        dtstartl = icalendar_helpers.expand(vevent, berlin)
         # TODO test for logging message
         assert dtstartl == [
             (new_york.localize(dt.datetime(2011, 11, 12, 15, 50)),
@@ -397,7 +397,7 @@ class TestExpandNoRR(object):
 
     def test_expand_dt(self):
         vevent = _get_vevent(event_dt_norr)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
         assert [start.utcoffset()
                 for start, _ in dtstart] == self.offset_berlin
@@ -405,7 +405,7 @@ class TestExpandNoRR(object):
 
     def test_expand_dtb(self):
         vevent = _get_vevent(event_dtb_norr)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
         assert [start.utcoffset()
                 for start, _ in dtstart] == self.offset_berlin
@@ -413,21 +413,21 @@ class TestExpandNoRR(object):
 
     def test_expand_dttz(self):
         vevent = _get_vevent(event_dttz_norr)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_utc
         assert [start.utcoffset() for start, _ in dtstart] == self.offset_utc
         assert [end.utcoffset() for _, end in dtstart] == self.offset_utc
 
     def test_expand_dtf(self):
         vevent = _get_vevent(event_dtf_norr)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_float
         assert [start.utcoffset() for start, _ in dtstart] == self.offset_none
         assert [end.utcoffset() for _, end in dtstart] == self.offset_none
 
     def test_expand_d(self):
         vevent = _get_vevent(event_d_norr)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == [
             (dt.date(2013, 3, 1,),
              dt.date(2013, 3, 2,)),
@@ -437,7 +437,7 @@ class TestExpandNoRR(object):
         """a recurring event with an EXDATE in Zulu time while DTSTART is
         localized"""
         vevent = _get_vevent_file('event_dtr_exdatez')
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 3
 
     def test_expand_rrule_exdate_z(self):
@@ -445,8 +445,8 @@ class TestExpandNoRR(object):
         exdate
         """
         vevent = _get_vevent_file('event_dtr_no_tz_exdatez')
-        vevent = utils.sanitize(vevent, berlin, '', '')
-        dtstart = utils.expand(vevent, berlin)
+        vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 5
         dtstarts = [start for start, end in dtstart]
         assert dtstarts == [
@@ -462,8 +462,8 @@ class TestExpandNoRR(object):
         exdate
         """
         vevent = _get_vevent_file('event_dtr_notz_untilz')
-        vevent = utils.sanitize(vevent, new_york, '', '')
-        dtstart = utils.expand(vevent, new_york)
+        vevent = icalendar_helpers.sanitize(vevent, new_york, '', '')
+        dtstart = icalendar_helpers.expand(vevent, new_york)
         assert len(dtstart) == 7
         dtstarts = [start for start, end in dtstart]
         assert dtstarts == [
@@ -580,7 +580,7 @@ class TestSpecial(object):
 
     def test_count(self):
         vevent = _get_vevent(vevent_count)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         starts = [start for start, _ in dtstart]
         assert len(starts) == 18
         assert dtstart[0][0] == dt.datetime(2014, 2, 3, 7, 0)
@@ -588,7 +588,7 @@ class TestSpecial(object):
 
     def test_until_notz(self):
         vevent = _get_vevent(vevent_until_notz)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         starts = [start for start, _ in dtstart]
         assert len(starts) == 18
         assert dtstart[0][0] == berlin.localize(
@@ -598,7 +598,7 @@ class TestSpecial(object):
 
     def test_until_d_notz(self):
         vevent = _get_vevent(event_until_d_notz)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         starts = [start for start, _ in dtstart]
         assert len(starts) == 6
         assert dtstart[0][0] == dt.date(2014, 1, 10)
@@ -606,13 +606,13 @@ class TestSpecial(object):
 
     def test_latest_bug(self):
         vevent = _get_vevent(latest_bug)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart[0][0] == dt.date(2009, 10, 31)
         assert dtstart[-1][0] == dt.date(2037, 10, 31)
 
     def test_recurrence_id_with_timezone(self):
         vevent = _get_vevent(recurrence_id_with_timezone)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 1
         assert dtstart[0][0] == berlin.localize(
             dt.datetime(2013, 11, 13, 19, 0))
@@ -620,7 +620,7 @@ class TestSpecial(object):
     def test_event_exdate_dt(self):
         """recurring event, one date excluded via EXCLUDE"""
         vevent = _get_vevent(event_exdate_dt)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 9
         assert dtstart[0][0] == berlin.localize(
             dt.datetime(2014, 7, 2, 19, 0))
@@ -630,7 +630,7 @@ class TestSpecial(object):
     def test_event_exdates_dt(self):
         """recurring event, two dates excluded via EXCLUDE"""
         vevent = _get_vevent(event_exdates_dt)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 8
         assert dtstart[0][0] == berlin.localize(
             dt.datetime(2014, 7, 2, 19, 0))
@@ -640,7 +640,7 @@ class TestSpecial(object):
     def test_event_exdatesl_dt(self):
         """recurring event, three dates exclude via two EXCLUDEs"""
         vevent = _get_vevent(event_exdatesl_dt)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 7
         assert dtstart[0][0] == berlin.localize(
             dt.datetime(2014, 7, 2, 19, 0))
@@ -650,24 +650,24 @@ class TestSpecial(object):
     def test_event_exdates_remove(self):
         """check if we can remove one more instance"""
         vevent = _get_vevent(event_exdatesl_dt)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 7
 
         exdate1 = pytz.UTC.localize(dt.datetime(2014, 7, 11, 17, 0))
-        utils.delete_instance(vevent, exdate1)
-        dtstart = utils.expand(vevent, berlin)
+        icalendar_helpers.delete_instance(vevent, exdate1)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 6
 
         exdate2 = berlin.localize(dt.datetime(2014, 7, 9, 19, 0))
-        utils.delete_instance(vevent, exdate2)
-        dtstart = utils.expand(vevent, berlin)
+        icalendar_helpers.delete_instance(vevent, exdate2)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 5
 
     def test_event_dt_rrule_invalid_until(self):
         """DTSTART and RRULE:UNTIL should be of the same type, but might not
         be"""
         vevent = _get_vevent(_get_text('event_dt_rrule_invalid_until'))
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == [(dt.date(2007, 12, 1), dt.date(2007, 12, 2)),
                            (dt.date(2008, 1, 1), dt.date(2008, 1, 2)),
                            (dt.date(2008, 2, 1), dt.date(2008, 2, 2))]
@@ -676,7 +676,7 @@ class TestSpecial(object):
         """same as above, but now dtstart is of type date and until is datetime
         """
         vevent = _get_vevent(_get_text('event_dt_rrule_invalid_until2'))
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 35
         assert dtstart[0] == (berlin.localize(dt.datetime(2014, 4, 9, 9, 30)),
                               berlin.localize(dt.datetime(2014, 4, 9, 10, 30)))
@@ -708,25 +708,25 @@ class TestRDate(object):
     """Testing expanding of recurrence rules"""
     def test_simple_rdate(self):
         vevent = _get_vevent(simple_rdate)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 4
 
     def test_rrule_and_rdate(self):
         vevent = _get_vevent(rrule_and_rdate)
-        dtstart = utils.expand(vevent, berlin)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 7
 
     def test_rrule_past(self):
         vevent = _get_vevent_file('event_r_past')
         assert vevent is not None
-        dtstarts = utils.expand(vevent, berlin)
+        dtstarts = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstarts) == 73
         assert dtstarts[0][0] == dt.date(1965, 4, 23)
         assert dtstarts[-1][0] == dt.date(2037, 4, 23)
 
     def test_rdate_date(self):
         vevent = _get_vevent_file('event_d_rdate')
-        dtstarts = utils.expand(vevent, berlin)
+        dtstarts = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstarts) == 4
         assert dtstarts == [(dt.date(2015, 8, 12), dt.date(2015, 8, 13)),
                             (dt.date(2015, 8, 13), dt.date(2015, 8, 14)),
@@ -770,24 +770,24 @@ class TestSanitize(object):
 
     def test_noend_date(self):
         vevent = _get_vevent(noend_date)
-        vevent = utils.sanitize(vevent, berlin, '', '')
+        vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
         assert vevent['DTSTART'].dt == dt.date(2014, 8, 29)
         assert vevent['DTEND'].dt == dt.date(2014, 8, 30)
 
     def test_noend_datetime(self):
         vevent = _get_vevent(noend_datetime)
-        vevent = utils.sanitize(vevent, berlin, '', '')
+        vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
         assert vevent['DTSTART'].dt == dt.date(2014, 8, 29)
         assert vevent['DTEND'].dt == dt.date(2014, 8, 30)
 
     def test_duration(self):
         vevent = _get_vevent_file('event_dtr_exdatez')
-        vevent = utils.sanitize(vevent, berlin, '', '')
+        vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
 
     def test_instant(self):
         vevent = _get_vevent(instant)
         assert vevent['DTEND'].dt - vevent['DTSTART'].dt == dt.timedelta()
-        vevent = utils.sanitize(vevent, berlin, '', '')
+        vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
         assert vevent['DTEND'].dt - vevent['DTSTART'].dt == dt.timedelta(hours=1)
 
 
