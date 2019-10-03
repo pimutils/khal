@@ -156,10 +156,8 @@ def ics_from_list(events, tzs, random_uid=False, default_timezone=None):
                     continue
                 # if prop is a list, all items have the same parameters
                 datetime_ = item.dts[0].dt if hasattr(item, 'dts') else item.dt
-
                 if not hasattr(datetime_, 'tzinfo'):
                     continue
-
                 # check for datetimes' timezones which are not understood by
                 # icalendar
                 if datetime_.tzinfo is None and 'TZID' in item.params and \

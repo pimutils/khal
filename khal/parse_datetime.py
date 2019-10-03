@@ -315,9 +315,10 @@ def guesstimedeltafstr(delta_string):
     return res
 
 
-def guessrangefstr(daterange, locale, adjust_reasonably=False,
+def guessrangefstr(daterange, locale,
                    default_timedelta_date=dt.timedelta(days=1),
                    default_timedelta_datetime=dt.timedelta(hours=1),
+                   adjust_reasonably=False,
                    ):
     """parses a range string
 
@@ -427,7 +428,8 @@ def rrulefstr(repeat, until, locale):
         raise FatalError()
 
 
-def eventinfofstr(info_string, locale, adjust_reasonably=False, localize=False):
+def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_duration,
+                  adjust_reasonably=False, localize=False):
     """parses a string of the form START [END | DELTA] [TIMEZONE] [SUMMARY] [::
     DESCRIPTION] into a dictionary with keys: dtstart, dtend, timezone, allday,
     summary, description
@@ -455,6 +457,8 @@ def eventinfofstr(info_string, locale, adjust_reasonably=False, localize=False):
         try:
             start, end, allday = guessrangefstr(
                 ' '.join(parts[0:i]), locale,
+                default_event_duration,
+                default_dayevent_duration,
                 adjust_reasonably=adjust_reasonably,
             )
         except (ValueError, DateTimeParseError):

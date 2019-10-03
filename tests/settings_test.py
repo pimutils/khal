@@ -37,6 +37,8 @@ class TestSettings(object):
                 'print_new': 'False',
                 'highlight_event_days': False,
                 'timedelta': dt.timedelta(days=2),
+                'default_event_duration': dt.timedelta(days=1),
+                'default_dayevent_duration': dt.timedelta(hours=1),
                 'show_all_days': False,
             }
         }
@@ -83,6 +85,9 @@ class TestSettings(object):
                 'print_new': 'False',
                 'highlight_event_days': False,
                 'timedelta': dt.timedelta(days=2),
+                'default_event_duration': dt.timedelta(days=1),
+                'default_dayevent_duration': dt.timedelta(hours=1),
+
                 'show_all_days': False
             }
         }
