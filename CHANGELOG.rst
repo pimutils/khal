@@ -26,7 +26,8 @@ not released
 ======
 2019-03-25
 
-* only dateutil < 2.7 is supported
+* In contrast to what was stated here before, at release time, khal >0.10.0
+   supported dateutil 2.7
 
 * NEW DEPENDENCY added click_log  >= 0.2.0
 * NEW DEPENDENCY for Python 3.4: typing
