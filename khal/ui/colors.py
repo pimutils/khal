@@ -38,7 +38,7 @@ dark = [
 
     ('date header', 'light gray', 'black'),
     ('date header focused', 'black', 'white'),
-    ('date header selected', 'dark gray', 'light gray'),
+    ('date header selected', 'black', 'light gray'),
 
     ('dayname', 'light gray', ''),
     ('monthname', 'light gray', ''),
