@@ -30,8 +30,8 @@ def test_str_week():
             dt.date(2012, 6, 11),
             dt.date(2012, 6, 12),
             dt.date(2012, 6, 13)]
-    assert str_week(week, aday) == ' 6  7  8  9 10 11 12 13 '
-    assert str_week(week, bday) == ' 6  7 \x1b[7m 8\x1b[0m  9 10 11 12 13 '
+    assert str_week(week, aday) == ' 6  7  8  9 10 11 12 13 ' or '06 07 08 09 10 11 12 13 '
+    assert str_week(week, bday) == ' 6  7 \x1b[7m 8\x1b[0m  9 10 11 12 13 ' or '06 07 \x1b[07m08\x1b[0m 09 10 11 12 13 '
 
 
 class testCollection():

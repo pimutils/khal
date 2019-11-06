@@ -31,10 +31,10 @@ path = expand_path(default=None)
 # hexadecimal value of the red, green and blue component, respectively.
 # When using a 24-bit color, make sure to enclose the color value in ' or "!
 # If `color` is set to *auto* (the default), khal looks for a color value in a
-# *color* file in this calendar's vdir. If the *color* file does not exist, the 
-# default_color (see below) is used. If color is set to '', the default_color is 
-# always used. Note that you can use `vdirsyncer metasync` to synchronize colors 
-# with your caldav server. 
+# *color* file in this calendar's vdir. If the *color* file does not exist, the
+# default_color (see below) is used. If color is set to '', the default_color is
+# always used. Note that you can use `vdirsyncer metasync` to synchronize colors
+# with your caldav server.
 
 color = color(default='auto')
 
@@ -119,6 +119,7 @@ longdatetimeformat = string(default='%c')
 # Enable weeknumbers in `calendar` and `interactive` (ikhal) mode. As those are
 # iso weeknumbers, they only work properly if `firstweekday` is set to 0
 weeknumbers = weeknumbers(default='off')
+
 
 # Keybindings for :command:`ikhal` are set here. You can bind more then one key
 # (combination) to a command by supplying a comma-separated list of keys.
@@ -273,6 +274,9 @@ monthdisplay = monthdisplay(default='firstday')
 # sensible choice to include the start- and end-date.
 # The syntax is the same as for :option:`--format`.
 event_format = string(default='{calendar-color}{cancelled}{start}-{end} {title}{repeat-symbol}{description-separator}{description}{reset}')
+
+# Specifies wich character to put before the single digit numbers on the display.
+date_format_view = string(default=' ')
 
 # When highlight_event_days is enabled, this section specifies how
 # the highlighting/coloring of days is handled.

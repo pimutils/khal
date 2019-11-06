@@ -51,6 +51,7 @@ def getweeknumber(date):
     return dt.date.isocalendar(date)[1]
 
 
+
 def get_calendar_color(calendar, default_color, collection):
     """Because multi-line lambdas would be un-Pythonic
     """
@@ -116,7 +117,7 @@ def str_highlight_day(
 
 def str_week(week, today, collection=None,
              hmethod=None, default_color=None, multiple=None, color=None,
-             highlight_event_days=False, locale=None, bold_for_light_color=True):
+             highlight_event_days=False, locale=None, bold_for_light_color=True, date_format_view=" "):
     """returns a string representing one week,
     if for day == today color is reversed
 
@@ -128,19 +129,20 @@ def str_week(week, today, collection=None,
              but may contain ascii escape sequences
     :rtype: str
     """
+    #date_format_digit
     strweek = ''
     for day in week:
         if day == today:
-            day = style(str(day.day).rjust(2), reverse=True)
+            day = style(str(day.day).rjust(2, date_format_view), reverse=True)
         elif highlight_event_days:
             devents = list(collection.get_calendars_on(day))
             if len(devents) > 0:
                 day = str_highlight_day(day, devents, hmethod, default_color,
                                         multiple, color, bold_for_light_color, collection)
             else:
-                day = str(day.day).rjust(2)
+                day = str(day.day).rjust(2, date_format_view)
         else:
-            day = str(day.day).rjust(2)
+            day = str(day.day).rjust(2, date_format_view)
         strweek = strweek + day + ' '
     return strweek
 
@@ -159,7 +161,8 @@ def vertical_month(month=None,
                    color='',
                    highlight_event_days=False,
                    locale=None,
-                   bold_for_light_color=True):
+                   bold_for_light_color=True,
+                   date_format_view=" "):
     """
     returns a list() of str() of weeks for a vertical arranged calendar
 
@@ -201,7 +204,7 @@ def vertical_month(month=None,
             else:
                 new_month = len(week if week[0].day <= 7 else [])
             strweek = str_week(week, today, collection, hmethod, default_color,
-                               multiple, color, highlight_event_days, locale, bold_for_light_color)
+                               multiple, color, highlight_event_days, locale, bold_for_light_color, date_format_view)
             if new_month:
                 m_name = style(calendar.month_abbr[week[6].month].ljust(month_abbr_len), bold=True)
             elif weeknumber == 'left':
@@ -220,4 +223,5 @@ def vertical_month(month=None,
         if month > 12:
             month = 1
             year = year + 1
+    # import ipdb; ipdb.set_trace
     return khal

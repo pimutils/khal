@@ -262,7 +262,26 @@ def test_calendar(runner):
             "Sep 31  1  2  3  4  5  6     ",
             "",
         ])
-        assert result.output == output
+        # Added output for the case where you want 0 before the single digit numbers
+        output0 = '\n'.join([
+            "    Mo Tu We Th Fr Sa Su     No events",
+            "Jun 01 02 03 04 05 06 07     ",
+            "    08 09 10 11 12 13 14     ",
+            "    15 16 17 18 19 20 21     ",
+            "    22 23 24 25 26 27 28     ",
+            "Jul 29 30 01 02 03 04 05     ",
+            "    06 07 08 09 10 11 12     ",
+            "    13 14 15 16 17 18 19     ",
+            "    20 21 22 23 24 25 26     ",
+            "Aug 27 28 29 30 31 01 02     ",
+            "    03 04 05 06 07 08 09     ",
+            "    10 11 12 13 14 15 16     ",
+            "    17 18 19 20 21 22 23     ",
+            "    24 25 26 27 28 29 30     ",
+            "Sep 31 01 02 03 04 05 06     ",
+            "",
+        ])
+        assert result.output == output or output0
 
 
 def test_long_calendar(runner):
@@ -293,7 +312,30 @@ def test_long_calendar(runner):
             "Oct 28 29 30  1  2  3  4     ",
             "",
         ])
-        assert result.output == output
+        # Added output for the case where you want 0 before the single digit numbers
+        output0 = '\n'.join([
+            "    Mo Tu We Th Fr Sa Su     No events",
+            "Jun 01 02 03 04 05 06 07     ",
+            "    08 09 10 11 12 13 14     ",
+            "    15 16 17 18 19 20 21     ",
+            "    22 23 24 25 26 27 28     ",
+            "Jul 29 30 01 02 03 04 05     ",
+            "    06 07 08 09 10 11 12     ",
+            "    13 14 15 16 17 18 19     ",
+            "    20 21 22 23 24 25 26     ",
+            "Aug 27 28 29 30 31 01 02     ",
+            "    03 04 05 06 07 08 09     ",
+            "    10 11 12 13 14 15 16     ",
+            "    17 18 19 20 21 22 23     ",
+            "    24 25 26 27 28 29 30     ",
+            "Sep 31 01 02 03 04 05 06     ",
+            "    07 08 09 10 11 12 13     ",
+            "    14 15 16 17 18 19 20     ",
+            "    21 22 23 24 25 26 27     ",
+            "Oct 28 29 30 01 02 03 04     ",
+            "",
+        ])
+        assert result.output == output or output0
 
 
 def test_default_command_empty(runner):
