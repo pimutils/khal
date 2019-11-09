@@ -204,8 +204,17 @@ highlight_event_days = boolean(default=False)
 # `khal list`) by default.
 timedelta = timedelta(default='2d')
 
+
+# Define the defaut duration for a day-long event ('khal new' only)
+default_event_duration = timedelta(default='1d')
+
+# Define the default duration for an event ('khal new' only)
+default_dayevent_duration = timedelta(default='1h')
+
+
 # The view section contains configuration options that effect the visual appearance
 # when using khal and ikhal.
+
 [view]
 
 # Defines the behaviour of ikhal's right column. If `True`, the right column
