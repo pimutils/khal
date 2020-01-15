@@ -71,3 +71,10 @@ def test_split_ics_missing_timezone():
     """testing if we detect the missing timezone in splitting"""
     cal = _get_text('event_dt_local_missing_tz')
     split_ics(cal, random_uid=True, default_timezone=LOCALE_BERLIN['default_timezone'])
+
+def test_windows_timezone (caplog):
+    """ Test if a windows tz format work"""
+    cal = _get_text("tz_windows_format")
+    split_ics(cal)
+    assert "Cannot find timezone `Pacific/Auckland`" not in caplog.text
+
