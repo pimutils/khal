@@ -84,7 +84,7 @@ def color_wrap(text, width=70):
     that code to the next line
     """
     # TODO we really want to ignore all SGR codes when measuring the width
-    lines = wrap(text, width)
+    lines = wrap(text, width, expand_tabs=False, replace_whitespace=False)
     for num, _ in enumerate(lines):
         sgr = find_unmatched_sgr(lines[num])
         if sgr:
