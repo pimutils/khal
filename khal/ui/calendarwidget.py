@@ -643,6 +643,10 @@ class CalendarWidget(urwid.WidgetWrap):
     def reset_styles_range(self, min_date, max_date):
         self.walker.reset_styles_range(min_date, max_date)
 
+    @classmethod
+    def selectable(cls):
+        return True
+
     @property
     def focus_date(self):
         return self.walker.focus_date
