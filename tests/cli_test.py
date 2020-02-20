@@ -677,7 +677,7 @@ def test_print_ics_command(runner):
     assert not result.exception
 
     # Test with some nice format strings
-    form = '{title}\t{description}\t{start}\t{start-long}\t{start-date}' \
+    form = '{uid}\t{title}\t{description}\t{start}\t{start-long}\t{start-date}' \
            '\t{start-date-long}\t{start-time}\t{end}\t{end-long}\t{end-date}' \
            '\t{end-date-long}\t{end-time}\t{repeat-symbol}\t{description}' \
            '\t{description-separator}\t{location}\t{calendar}' \
@@ -686,11 +686,11 @@ def test_print_ics_command(runner):
     result = runner.invoke(main_khal, [
         'printics', '-f', form, _get_ics_filepath('cal_dt_two_tz')])
     assert not result.exception
-    assert 24 == len(result.output.split('\t'))
+    assert 25 == len(result.output.split('\t'))
     result = runner.invoke(main_khal, [
         'printics', '-f', form, _get_ics_filepath('cal_dt_two_tz')])
     assert not result.exception
-    assert 24 == len(result.output.split('\t'))
+    assert 25 == len(result.output.split('\t'))
 
 
 def test_printics_read_from_stdin(runner):

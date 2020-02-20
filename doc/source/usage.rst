@@ -73,6 +73,12 @@ Several options are common to almost all of :program:`khal`'s commands
    description
         The description of the event.
 
+   description-separator
+        A separator: " :: " that appears when there is a description.
+
+   uid
+        The UID of the event.
+
    start
         The start datetime in datetimeformat.
 
@@ -105,12 +111,6 @@ Several options are common to almost all of :program:`khal`'s commands
 
    repeat-symbol
         A repeating symbol (loop arrow) if the event is repeating.
-
-   description
-        The event description.
-
-   description-separator
-        A separator: " :: " that appears when there is a description.
 
    location
         The event location.

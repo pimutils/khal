@@ -596,6 +596,7 @@ class Event(object):
         attributes["location"] = self.location.strip()
         attributes["all-day"] = allday
         attributes["categories"] = self.categories
+        attributes['uid'] = self.uid
 
         if "calendars" in env and self.calendar in env["calendars"]:
             cal = env["calendars"][self.calendar]

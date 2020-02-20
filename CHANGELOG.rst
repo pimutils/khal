@@ -16,6 +16,7 @@ not released
 * NEW Add ability to change default event duration with
    `default_event_duration` and `default_dayevent_duration` for an day-long 
    event
+* NEW Add `{uid}` property to template options in `--format`
 
 0.10.1
 ======
