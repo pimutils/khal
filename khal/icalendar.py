@@ -244,18 +244,6 @@ def expand(vevent, href=''):
         dtstart = vevent['DTSTART'].dt
         if events_tz:
             dtstart = dtstart.replace(tzinfo=None)
-        if events_tz and 'Z' not in rrule_param.to_ical().decode():
-            logger.warning(
-                "In event {}, DTSTART has a timezone, but UNTIL does not. This "
-                "might lead to errenous repeating instances (like missing the "
-                "last intended instance or adding an extra one)."
-                "".format(href))
-        elif not events_tz and 'Z' in rrule_param.to_ical().decode():
-            logger.warning(
-                "In event {}, DTSTART has no timezone, but UNTIL has one. This "
-                "might lead to errenous repeating instances (like missing the "
-                "last intended instance or adding an extra one)."
-                "".format(href))
 
         rrule = dateutil.rrule.rrulestr(
             rrule_param.to_ical().decode(),

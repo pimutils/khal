@@ -22,6 +22,9 @@ not released
 * UPDATED DEPENDENCY urwid>=1.3.0
 * FIX Wrong left pane width calculation in ikal when `frame` is `width` or 
    `color` in configuration.
+* CHANGE Remove check for timezones in `UNTIL` that aren't in `DTSTART` and 
+   vice-versa. The check wasn't fulfilling its purpose and was raising warnings
+   when no `UNTIL` value was set.
 
 0.10.1
 ======
