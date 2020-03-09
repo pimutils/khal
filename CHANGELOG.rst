@@ -21,7 +21,7 @@ not released
 * FIX Launching an external editor no longer crashes `ikhal`
 * UPDATED DEPENDENCY urwid>=1.3.0
 
-0.10.1
+ 0.10.1
 ======
 2019-03-30
 
