@@ -17,6 +17,7 @@ not released
    `default_event_duration` and `default_dayevent_duration` for an day-long 
    event
 * NEW Add `{uid}` property to template options in `--format`
+* FIX No warning when importing event with Windows timezone format
 
 0.10.1
 ======
