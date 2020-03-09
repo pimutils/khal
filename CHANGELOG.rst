@@ -8,7 +8,6 @@ may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
 
-
 0.10.2
 ======
 not released
@@ -18,7 +17,6 @@ not released
    `default_event_duration` and `default_dayevent_duration` for an day-long 
    event
 * NEW Add `{uid}` property to template options in `--format`
-* FIX No warning whan importing event with Windows timezone format
 
 0.10.1
 ======

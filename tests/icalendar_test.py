@@ -74,7 +74,7 @@ def test_split_ics_missing_timezone():
 
 
 def test_windows_timezone(caplog):
-    """ Test if a windows tz format work"""
+    """Test if a windows tz format works"""
     cal = _get_text("tz_windows_format")
     split_ics(cal)
     assert "Cannot find timezone `Pacific/Auckland`" not in caplog.text

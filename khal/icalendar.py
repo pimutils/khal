@@ -24,7 +24,6 @@
 import datetime as dt
 import dateutil.rrule
 import icalendar
-from icalendar import windows_to_olson
 import logging
 import pytz
 from collections import defaultdict
@@ -49,17 +48,16 @@ def split_ics(ics, random_uid=False, default_timezone=None):
     cal = cal_from_ics(ics)
     tzs = {}
 
-    # Since some event could have a Windows format EG : 'New Zealand Standard Time'
-    # for 'Pacific/Auckland' in Olson format, we should get the last format and put
-    # it in tzs key to avoid warning in ics_from_list (issue #876)
+    # Since some events could have a Windows format timezone (e.g. 'New Zealand
+    # Standard Time' for 'Pacific/Auckland' in Olson format), we convert any
+    # Windows format timezones to Olson.
     for item in cal.walk():
         if item.name == 'VTIMEZONE':
-            if item['TZID'] in windows_to_olson.WINDOWS_TO_OLSON:
-                key = windows_to_olson.WINDOWS_TO_OLSON[item['TZID']]
-
+            if item['TZID'] in icalendar.windows_to_olson.WINDOWS_TO_OLSON:
+                key = icalendar.windows_to_olson.WINDOWS_TO_OLSON[item['TZID']]
             else:
                 key = item['TZID']
-            tzs.update({key: item})
+            tzs[key] = item
 
     events_grouped = defaultdict(list)
     for item in cal.walk():
