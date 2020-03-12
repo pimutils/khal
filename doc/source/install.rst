@@ -48,7 +48,7 @@ or better::
 
 in the unpacked distribution folder.
 
-Since version 0.10, *khal* **only supports python 3.4+**. If you have
+Since version 0.10, *khal* **only supports python 3.5+**. If you have
 python 2 and 3 installed in parallel you might need to use `pip3` instead of
 `pip` and `python3` instead of `python`. In case your operating system cannot
 deal with python 2 and 3 packages concurrently, we suggest installing *khal* in
@@ -65,7 +65,7 @@ then starting khal from that virtual environment.
 Requirements
 ------------
 
-*khal* is written in python and can run on Python 3.4+. It requires a Python
+*khal* is written in python and can run on Python 3.5+. It requires a Python
 with ``sqlite3`` support enabled (which is usually the case).
 
 If you are installing python via *pip* or from source, be aware that since

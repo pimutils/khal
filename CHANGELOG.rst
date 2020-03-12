@@ -12,6 +12,7 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released
 
+* DROPPED support for Python 3.4
 * FIX `khal interactive` now accepts -a/-d options (as documented)
 * FIX Strip whitespace when loading `displayname` and `color` files
 * FIX Warn when loading events with a recurrence that finishes before it starts

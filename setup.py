@@ -3,8 +3,8 @@ import sys
 
 from setuptools import setup
 
-if sys.version_info < (3, 4):
-    errstr = "khal only supports python version 3.4+. Please Upgrade.\n"
+if sys.version_info < (3, 5):
+    errstr = "khal only supports python version 3.5+. Please Upgrade.\n"
     sys.stderr.write("#" * len(errstr) + '\n')
     sys.stderr.write(errstr)
     sys.stderr.write("#" * len(errstr) + '\n')
@@ -31,7 +31,6 @@ test_requirements = [
 
 extra_requirements = {
     'proctitle': ['setproctitle'],
-    ':python_version < "3.5"': 'typing',
 }
 
 setup(
@@ -65,7 +64,6 @@ setup(
         "Environment :: Console :: Curses",
         "Intended Audience :: End Users/Desktop",
         "Operating System :: POSIX",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
