@@ -48,10 +48,12 @@ def split_ics(ics, random_uid=False, default_timezone=None):
     cal = cal_from_ics(ics)
     tzs = {}
 
-    # Since some events could have a Windows format timezone (e.g. 'New Zealand
-    # Standard Time' for 'Pacific/Auckland' in Olson format), we convert any
-    # Windows format timezones to Olson.
+    events_grouped = defaultdict(list)
     for item in cal.walk():
+
+        # Since some events could have a Windows format timezone (e.g. 'New Zealand
+        # Standard Time' for 'Pacific/Auckland' in Olson format), we convert any
+        # Windows format timezones to Olson.
         if item.name == 'VTIMEZONE':
             if item['TZID'] in icalendar.windows_to_olson.WINDOWS_TO_OLSON:
                 key = icalendar.windows_to_olson.WINDOWS_TO_OLSON[item['TZID']]
@@ -59,8 +61,6 @@ def split_ics(ics, random_uid=False, default_timezone=None):
                 key = item['TZID']
             tzs[key] = item
 
-    events_grouped = defaultdict(list)
-    for item in cal.walk():
         if item.name == 'VEVENT':
             events_grouped[item['UID']].append(item)
         else:
