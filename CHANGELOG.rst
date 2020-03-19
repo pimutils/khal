@@ -12,12 +12,14 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released
 
-* NEW Parse `X-ANNIVERSARY`, `ANNIVERSARY` and `X-ABDATE` fields from vcards.
+* NEW Parse `X-ANNIVERSARY`, `ANNIVERSARY` and `X-ABDATE` fields from vcards
 * NEW Add ability to change default event duration with
    `default_event_duration` and `default_dayevent_duration` for an day-long 
    event
 * NEW Add `{uid}` property to template options in `--format`
 * FIX No warning when importing event with Windows timezone format
+* FIX Launching an external editor no longer crashes `ikhal`
+* UPDATED DEPENDENCY urwid>=1.3.0
 
 0.10.1
 ======

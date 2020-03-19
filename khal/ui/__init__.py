@@ -733,9 +733,9 @@ class EventColumn(urwid.WidgetWrap):
 
         assert not self.editor
         if external_edit:
-            self.pane.window.loop.screen.stop()
+            self.pane.window.loop.stop()
             text = click.edit(event.raw)
-            self.pane.window.loop.screen.start()
+            self.pane.window.loop.start()
             if text is None:
                 return
             # KeyErrors can occurr here when we destroy DTSTART,

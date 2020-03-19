@@ -14,7 +14,7 @@ requirements = [
     'click>=3.2',
     'click_log>=0.2.0',
     'icalendar>=4.0.3',
-    'urwid',
+    'urwid>=1.3.0',
     'pyxdg',
     'pytz',
     'python-dateutil',
