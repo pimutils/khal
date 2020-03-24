@@ -57,6 +57,21 @@ def is_timedelta(string):
     except ValueError:
         raise VdtValueError("Invalid timedelta: {}".format(string))
 
+def is_theme(option):
+    """checks if *theme* is a valid value
+
+    :param option: the option the user set in the config file
+    :type option: str
+    :returns: off, left, right
+    :rtype: str/bool
+    """
+    option = option.lower()
+    if option in ['dark', 'light']:
+        return 'user'
+    else:
+        raise VdtValueError(
+            "Invalid value '{}' for option 'theme', must be one of "
+            "'dark' or 'light' ".format(option))
 
 def weeknumber_option(option):
     """checks if *option* is a valid value
