@@ -62,8 +62,8 @@ def is_theme(option):
 
     :param option: the option the user set in the config file
     :type option: str
-    :returns: off, left, right
-    :rtype: str/bool
+    :returns: user
+    :rtype: str
     """
     option = option.lower()
     if option in ['dark', 'light']:
@@ -219,6 +219,10 @@ def config_checks(
     if not config['locale']['local_timezone']:
         config['locale']['local_timezone'] = is_timezone(
             config['locale']['local_timezone'])
+    
+    if not config['view']['theme']:
+        config['view']['theme'] = is_theme(
+            config['view']['theme'])
 
     # expand calendars with type = discover
     vdirs_complete = list()
