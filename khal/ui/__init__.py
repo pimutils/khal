@@ -1061,6 +1061,8 @@ class ClassicView(Pane):
             elistbox.set_focus_date_callback = lambda _: None
         self.calendar = ContainerWidget(calendar)
         self.lwidth = 31 if self._conf['locale']['weeknumbers'] == 'right' else 28
+        if self._conf['view']['frame'] in ["width", "color"]:
+            self.lwidth += 2
         columns = NColumns(
             [(self.lwidth, self.calendar), self.eventscolumn],
             dividechars=0,

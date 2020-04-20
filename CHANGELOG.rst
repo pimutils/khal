@@ -20,6 +20,8 @@ not released
 * FIX No warning when importing event with Windows timezone format
 * FIX Launching an external editor no longer crashes `ikhal`
 * UPDATED DEPENDENCY urwid>=1.3.0
+* FIX Wrong left pane width calculation in ikal when `frame` is `width` or 
+   `color` in configuration.
 
 0.10.1
 ======
