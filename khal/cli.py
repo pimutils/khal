@@ -545,7 +545,7 @@ def _get_cli():
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
-    @click.argument('search_string')
+    @click.argument('search_string', type=str, nargs=-1)
     @click.pass_context
     def search(ctx, format, search_string, include_calendar, exclude_calendar):
         '''Search for events matching SEARCH_STRING.
@@ -561,6 +561,7 @@ def _get_cli():
                 ctx.obj['conf'],
                 multi_calendar_select(ctx, include_calendar, exclude_calendar)
             )
+
             events = sorted(collection.search(search_string))
             event_column = list()
             term_width, _ = get_terminal_size()

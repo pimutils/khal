@@ -515,7 +515,7 @@ class SQLiteDb(object):
         start_u = utils.to_unix_time(start)
         end_u = utils.to_unix_time(end)
         sql_s = (
-            'SELECT events.calendar FROM '
+            'SELECT  events.calendar FROM '
             'recs_float JOIN events ON '
             'recs_float.href = events.href AND '
             'recs_float.calendar = events.calendar WHERE '
@@ -567,38 +567,46 @@ class SQLiteDb(object):
         item, etag = self.sql_ex(sql_s, (href, calendar))[0]
         return item
 
-    def search(self, search_string: str) \
-            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
+    def search(self, search_string: str, s_start=None, s_end=None) \
+            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime , str, str, str]]:
         """search for events matching `search_string`"""
+        date = ''
         sql_s = (
-            'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
+            'SELECT item, recs_loc.href AS href, dtstart, dtend, ref, etag, dtype, '
+            'events.calendar, CAST(1 AS INTEGER) '
             'FROM recs_loc JOIN events ON '
             'recs_loc.href = events.href AND '
             'recs_loc.calendar = events.calendar '
-            'WHERE item LIKE (?) and events.calendar in ({0});'
-        )
-        stuple = tuple(['%{0}%'.format(search_string)] + list(self.calendars))
-        result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
-        for item, href, start, end, ref, etag, dtype, calendar in result:
-            start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
-            end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
-            if dtype == EventType.DATE:
-                start = start.date()
-                end = end.date()
-            yield item, href, start, end, ref, etag, calendar
-
-        sql_s = (
-            'SELECT item, recs_float.href, dtstart, dtend, ref, etag, dtype, events.calendar '
+            'WHERE item LIKE (\'%{s}%\') and events.calendar in ({c}) '
+            '{date}'
+            ' UNION '
+            'SELECT item, recs_float.href AS href, dtstart, dtend, ref, etag, dtype, '
+            'events.calendar, CAST(0 AS INTEGER) '
             'FROM recs_float JOIN events ON '
             'recs_float.href = events.href AND '
             'recs_float.calendar = events.calendar '
-            'WHERE item LIKE (?) and events.calendar in ({0});'
+            'WHERE item LIKE (\'%{s}%\') and events.calendar in ({c})'
+            '{date}'
+            ';'
         )
-        stuple = tuple(['%{0}%'.format(search_string)] + list(self.calendars))
-        result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
-        for item, href, start, end, ref, etag, dtype, calendar in result:
+        if s_start:
+            date = 'AND dtstart > ' + str(utils.to_unix_time(s_start))
+
+        if s_end:
+            date += ' AND dtend < ' + str(utils.to_unix_time(s_end))
+
+        request = sql_s.format(s=''.join(search_string),
+                               c='"' + '","'.join(self.calendars) + '"',
+                               date=date
+                               )
+        result = self.sql_ex(request, tuple())
+        for item, href, start, end, ref, etag, dtype, calendar, localize in result:
             start = dt.datetime.utcfromtimestamp(start)
             end = dt.datetime.utcfromtimestamp(end)
+            if localize:
+                start = pytz.UTC.localize(start)
+                end = pytz.UTC.localize(end)
+
             if dtype == EventType.DATE:
                 start = start.date()
                 end = end.date()
