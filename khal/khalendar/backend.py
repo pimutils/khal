@@ -577,7 +577,7 @@ class SQLiteDb(object):
             'FROM recs_loc JOIN events ON '
             'recs_loc.href = events.href AND '
             'recs_loc.calendar = events.calendar '
-            'WHERE item LIKE (\'%{s}%\') and events.calendar in ({c}) '
+            'WHERE item LIKE ("%{s}%") and events.calendar in ({c}) '
             '{date}'
             ' UNION '
             'SELECT item, recs_float.href AS href, dtstart, dtend, ref, etag, dtype, '
@@ -594,7 +594,6 @@ class SQLiteDb(object):
 
         if s_end:
             date += ' AND dtend < ' + str(utils.to_unix_time(s_end))
-
         request = sql_s.format(s=''.join(search_string),
                                c='"' + '","'.join(self.calendars) + '"',
                                date=date

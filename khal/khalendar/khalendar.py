@@ -367,7 +367,7 @@ class CalendarCollection(object):
                 if start == end:
                     # if end is like start, there is no end...
                     end = None
-                string = ''.join(search_string[i:])
+                string = ' '.join(search_string[i:])
                 logger.debug('Search by date start:{0}, end:{1}'.format(
                     start, end
                 ))
