@@ -402,7 +402,7 @@ def test_list(runner):
     end_date = dt.datetime.now() + dt.timedelta(days=10)
     result = runner.invoke(
         main_khal,
-        'new {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+        'new {} 18:00 myevent'.format(now).split())
     format = '{red}{start-end-time-style}{reset} {title} :: {description}'
     args = ['--color', 'list', '--format', format, '--day-format', 'header', '18:30']
     result = runner.invoke(main_khal, args)
