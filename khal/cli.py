@@ -486,8 +486,8 @@ def _get_cli():
             )
             if events:
                 sl = events[0].raw.split('\n')
-                header = '\n'.join(sl[:3]) + '\n' # 3 first lines of first event
-                footer = '\n'.join(sl[-2:]) # last line of first event
+                header = '\n'.join(sl[:3]) + '\n'  # 3 first lines of first event
+                footer = '\n'.join(sl[-2:])  # last line of first event
                 outfile.write(header)
                 for e in events:
                     sl = e.raw.split('\n')

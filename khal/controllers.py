@@ -276,9 +276,8 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
     return event_column
 
 
-def get_eventobjs_between(
-        collection, locale, start, end, notstarted=False,
-        env=None, seen=None, original_start=None):
+def get_eventobjs_between(collection, locale, start, end, notstarted=False,
+                          env=None, seen=None, original_start=None):
     """returns a list of event objects scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
 
@@ -317,9 +316,9 @@ def get_eventobjs_between(
         # to understand what's going on here this way
         if notstarted:
             if event.allday and event.start < original_start.date():
-                    continue
+                continue
             elif not event.allday and event.start_local < original_start:
-                    continue
+                continue
         if seen is not None and event.uid in seen:
             continue
         if seen is not None:
@@ -330,7 +329,7 @@ def get_eventobjs_between(
 
 
 def khal_export(collection, daterange=None, conf=None,
-              notstarted=False, env=None, datepoint=None):
+                notstarted=False, env=None, datepoint=None):
     assert daterange is not None or datepoint is not None
     """returns a list of all event objects in `daterange`"""
     if daterange is not None:
