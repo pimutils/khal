@@ -399,7 +399,6 @@ def test_at_day_format(runner):
 def test_list(runner):
     runner = runner(days=2)
     now = dt.datetime.now().strftime('%d.%m.%Y')
-    end_date = dt.datetime.now() + dt.timedelta(days=10)
     result = runner.invoke(
         main_khal,
         'new {} 18:00 myevent'.format(now).split())
