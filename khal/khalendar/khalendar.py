@@ -350,7 +350,7 @@ class CalendarCollection(object):
         """search for the db for events matching `search_string`"""
         start = None
         end = None
-        string = None
+        s_string = ''
         for i in reversed(range(1, len(search_string) + 1)):
             try:
                 start, end, _ = guessrangefstr(
@@ -367,20 +367,18 @@ class CalendarCollection(object):
                 if start == end:
                     # if end is like start, there is no end...
                     end = None
-                string = ' '.join(search_string[i:])
+                s_string = ' '.join(search_string[i:])
                 logger.debug('Search by date start:{0}, end:{1}'.format(
                     start, end
                 ))
                 break
 
         if start is None:
-            string = ''.join(search_string)
+            s_string = ''.join(search_string)
 
-        return (self._construct_event(*args) for args in self._backend.search(string,
+        return (self._construct_event(*args) for args in self._backend.search(s_string,
                                                                               s_start=start,
-                                                                              s_end=end
-                                                                             )
-               )
+                                                                              s_end=end))
 
     def get_day_styles(self, day: dt.date, focus: bool) -> Optional[Union[str, Tuple[str, str]]]:
         calendars = self.get_calendars_on(day)

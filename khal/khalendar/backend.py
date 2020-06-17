@@ -568,7 +568,7 @@ class SQLiteDb(object):
         return item
 
     def search(self, search_string: str, s_start=None, s_end=None) \
-            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime , str, str, str]]:
+            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
         """search for events matching `search_string`"""
         date = ''
         sql_s = (
