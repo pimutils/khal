@@ -345,10 +345,12 @@ def _get_cli():
                   help=('The format to print the event.'))
     @click.option('--alarms', '-m',
                   help=('Alarm times for the new event as DELTAs comma separated'))
+    @click.option('--url', help=("URI for the event."))
     @click.argument('info', metavar='[START [END | DELTA] [TIMEZONE] [SUMMARY] [:: DESCRIPTION]]',
                     nargs=-1)
     @click.pass_context
-    def new(ctx, calendar, info, location, categories, repeat, until, alarms, format, interactive):
+    def new(ctx, calendar, info, location, categories, repeat, until, alarms, url, format,
+            interactive):
         '''Create a new event from arguments.
 
         START and END can be either dates, times or datetimes, please have a
@@ -394,6 +396,7 @@ def _get_cli():
                 env={"calendars": ctx.obj['conf']['calendars']},
                 until=until,
                 alarms=alarms,
+                url=url,
                 format=format,
             )
         except FatalError as error:
