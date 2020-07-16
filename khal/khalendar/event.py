@@ -322,6 +322,12 @@ class Event(object):
         else:
             return email
 
+    @property
+    def url(self):
+        if 'URL' not in self._vevents[self.ref]:
+            return ''
+        return self._vevents[self.ref]['URL']
+
     @staticmethod
     def _create_calendar():
         """
@@ -618,6 +624,7 @@ class Event(object):
         attributes["all-day"] = allday
         attributes["categories"] = self.categories
         attributes['uid'] = self.uid
+        attributes['url'] = self.url
 
         if "calendars" in env and self.calendar in env["calendars"]:
             cal = env["calendars"][self.calendar]
