@@ -463,7 +463,7 @@ def _get_cli():
     @multi_calendar_option
     @click.option('--notstarted', help=('Export only events that have not started.'),
                   is_flag=True)
-    @click.option('--outfile', '-o', help='The output file [defaults to stdout]',
+    @click.option('--outfile', '-o', help='The output file (defaults to stdout)',
                   type=click.File(mode='w'), default='-', metavar='OUT')
     @click.argument('DATERANGE', nargs=-1, required=False,
                     metavar='[DATETIME [DATETIME | RANGE]]')
@@ -480,8 +480,8 @@ def _get_cli():
                     multi_calendar_select(ctx, include_calendar, exclude_calendar)
                 ),
                 daterange=daterange,
-                notstarted=notstarted,
                 conf=ctx.obj['conf'],
+                notstarted=notstarted,
                 env={"calendars": ctx.obj['conf']['calendars']}
             )
             if events:
