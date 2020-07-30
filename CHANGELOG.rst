@@ -8,9 +8,13 @@ may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
 
-0.10.2
+0.10.3
 ======
 not released
+
+0.10.2
+======
+2020-07-29
 
 * NEW Parse `X-ANNIVERSARY`, `ANNIVERSARY` and `X-ABDATE` fields from vcards
 * NEW Add ability to change default event duration with

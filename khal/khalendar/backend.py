@@ -28,7 +28,7 @@ from enum import IntEnum
 import logging
 import sqlite3
 from os import makedirs, path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import icalendar
 import pytz
@@ -187,7 +187,7 @@ class SQLiteDb(object):
                 stuple = (cal, '')
                 self.sql_ex(sql_s, stuple)
 
-    def sql_ex(self, statement: str, stuple: tuple=Union[tuple, str]) -> List:
+    def sql_ex(self, statement: str, stuple: tuple) -> List:
         """wrapper for sql statements, does a "fetchall" """
         self.cursor.execute(statement, stuple)
         result = self.cursor.fetchall()
