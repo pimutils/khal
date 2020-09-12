@@ -298,6 +298,12 @@ color = color(default='')
 # explicit color or use calendars' colors when set to ''
 multiple = color(default='')
 
+# When `multiple` is set to a specific color, setting this to *True* will
+# cause khal to use that color only for days with events from 3 or more 
+# calendars (hence preserving the two-color-highlight for days where all
+# calendar colors can be displayed)
+multiple_on_overflow = boolean(default=False)
+
 # Default color for calendars without color -- when set to '' it
 # actually disables highlighting for events that should use the
 # default color.

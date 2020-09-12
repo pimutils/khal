@@ -64,6 +64,7 @@ class CalendarCollection(object):
                  hmethod: str='fg',
                  default_color: str='',
                  multiple: str='',
+                 multiple_on_overflow: bool=False,
                  color: str='',
                  priority: int=10,
                  highlight_event_days: bool=False,
@@ -93,6 +94,7 @@ class CalendarCollection(object):
         self.hmethod = hmethod
         self.default_color = default_color
         self.multiple = multiple
+        self.multiple_on_overflow = multiple_on_overflow
         self.color = color
         self.priority = priority
         self.highlight_event_days = highlight_event_days
@@ -357,7 +359,7 @@ class CalendarCollection(object):
             return 'highlight_days_color'
         if len(calendars) == 1:
             return 'calendar ' + calendars[0]
-        if self.multiple != '':
+        if self.multiple != '' and not(self.multiple_on_overflow and len(calendars) == 2):
             return 'highlight_days_multiple'
         return ('calendar ' + calendars[0], 'calendar ' + calendars[1])
 

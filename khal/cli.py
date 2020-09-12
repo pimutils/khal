@@ -174,6 +174,7 @@ def build_collection(conf, selection):
             hmethod=conf['highlight_days']['method'],
             default_color=conf['highlight_days']['default_color'],
             multiple=conf['highlight_days']['multiple'],
+            multiple_on_overflow=conf['highlight_days']['multiple_on_overflow'],
             highlight_event_days=conf['default']['highlight_event_days'],
         )
     except FatalError as error:
@@ -279,6 +280,7 @@ def _get_cli():
                 hmethod=ctx.obj['conf']['highlight_days']['method'],
                 default_color=ctx.obj['conf']['highlight_days']['default_color'],
                 multiple=ctx.obj['conf']['highlight_days']['multiple'],
+                multiple_on_overflow=ctx.obj['conf']['highlight_days']['multiple_on_overflow'],
                 color=ctx.obj['conf']['highlight_days']['color'],
                 highlight_event_days=ctx.obj['conf']['default']['highlight_event_days'],
                 bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'],
