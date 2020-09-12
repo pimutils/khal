@@ -83,7 +83,7 @@ def get_color_list(calendars, default_color, collection):
     return dcolors
 
 
-def str_highlight_day(day, calendars, hmethod, default_color, multiple, multiple_on_overflow, 
+def str_highlight_day(day, calendars, hmethod, default_color, multiple, multiple_on_overflow,
                       color, bold_for_light_color, collection):
     """returns a string with day highlighted according to configuration
     """
@@ -136,7 +136,7 @@ def str_week(week, today, collection=None,
             devents = list(collection.get_calendars_on(day))
             if len(devents) > 0:
                 day = str_highlight_day(day, devents, hmethod, default_color, multiple,
-                                        multiple_on_overflow, color, bold_for_light_color, 
+                                        multiple_on_overflow, color, bold_for_light_color,
                                         collection)
             else:
                 day = str(day.day).rjust(2)
