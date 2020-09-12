@@ -12,6 +12,9 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released
 
+* NEW Add option to use `multiple` color only when not all calendar colors can
+   be displayed.
+
 0.10.2
 ======
 2020-07-29
