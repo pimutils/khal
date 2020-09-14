@@ -465,7 +465,8 @@ class SQLiteDb(object):
         sql_s = 'SELECT href, etag FROM events WHERE calendar = ?;'
         return list(set(self.sql_ex(sql_s, (calendar, ))))
 
-    def get_localized_calendars(self, start: dt.datetime, end: dt.datetime) -> Iterable[str]:
+    def get_localized_calendars(self, start: dt.datetime, end: dt.datetime,
+                                filter_from_highlighting: bool = False) -> Iterable[str]:
         assert start.tzinfo is not None
         assert end.tzinfo is not None
         start_u = utils.to_unix_time(start)
@@ -474,7 +475,10 @@ class SQLiteDb(object):
             'SELECT events.calendar FROM '
             'recs_loc JOIN events ON '
             'recs_loc.href = events.href AND '
-            'recs_loc.calendar = events.calendar WHERE '
+            'recs_loc.calendar = events.calendar WHERE ')
+        if filter_from_highlighting:
+            sql_s += 'events.filter_from_highlighting = 0 AND '
+        sql_s += (
             '(dtstart >= ? AND dtstart <= ? OR '
             'dtend > ? AND dtend <= ? OR '
             'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
@@ -513,7 +517,8 @@ class SQLiteDb(object):
             end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
             yield item, href, start, end, ref, etag, calendar
 
-    def get_floating_calendars(self, start: dt.datetime, end: dt.datetime) -> Iterable[str]:
+    def get_floating_calendars(self, start: dt.datetime, end: dt.datetime,
+                               filter_from_highlighting: bool = False) -> Iterable[str]:
         assert start.tzinfo is None
         assert end.tzinfo is None
         start_u = utils.to_unix_time(start)
@@ -522,7 +527,10 @@ class SQLiteDb(object):
             'SELECT events.calendar FROM '
             'recs_float JOIN events ON '
             'recs_float.href = events.href AND '
-            'recs_float.calendar = events.calendar WHERE '
+            'recs_float.calendar = events.calendar WHERE ')
+        if filter_from_highlighting:
+            sql_s += 'events.filter_from_highlighting = 0 AND '
+        sql_s += (
             '(dtstart >= ? AND dtstart < ? OR '
             'dtend > ? AND dtend <= ? OR '
             'dtstart <= ? AND dtend > ? ) AND events.calendar in ({0}) '
