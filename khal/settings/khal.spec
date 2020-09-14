@@ -48,6 +48,8 @@ priority = integer(default=10)
 # calendar
 readonly = boolean(default=False)
 
+filter_from_highlighting = string(default=None)
+
 # Setting the type of this collection (default ``calendar``).
 #
 # If set to ``calendar`` (the default), this collection will be used as a

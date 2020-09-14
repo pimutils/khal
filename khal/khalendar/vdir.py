@@ -123,19 +123,26 @@ class Item:
 
     @cached_property
     def uid(self):
-        uid = ''
+        return self._string_property('UID:')
+
+    @cached_property
+    def summary(self):
+        return self._string_property('SUMMARY:')
+
+    def _string_property(self, name: str):
+        prop = ''
         lines = iter(self.raw.splitlines())
         for line in lines:
-            if line.startswith('UID:'):
-                uid += line[4:].strip()
+            if line.startswith(name):
+                prop += line[len(name):].strip()
                 break
 
         for line in lines:
             if not line.startswith(' '):
                 break
-            uid += line[1:]
+            prop += line[1:]
 
-        return uid or None
+        return prop or None
 
 
 def _normalize_meta_value(value):

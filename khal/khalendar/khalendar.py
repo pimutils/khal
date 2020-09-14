@@ -30,6 +30,7 @@ import itertools
 import logging
 import os
 import os.path
+import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union  # noqa
 
 from . import backend
@@ -162,6 +163,17 @@ class CalendarCollection(object):
         )
         return list(set(calendars))
 
+    def _filter_from_highlighting(self, event: Event, calendar: str = None):
+        if not calendar:
+            calendar = event.calendar
+        filter_expr = self._calendars[calendar]['filter_from_highlighting']
+        summary = event.summary
+
+        if not filter_expr or not summary:
+            return False
+
+        return re.match(filter_expr, event.summary)
+
     def update(self, event: Event):
         """update `event` in vdir and db"""
         assert event.etag
@@ -169,7 +181,8 @@ class CalendarCollection(object):
             raise ReadOnlyCalendarError()
         with self._backend.at_once():
             event.etag = self._storages[event.calendar].update(event.href, event, event.etag)
-            self._backend.update(event.raw, event.href, event.etag, calendar=event.calendar)
+            self._backend.update(event.raw, event.href, event.etag, calendar=event.calendar,
+                                 filter_from_highlighting=self._filter_from_highlighting(event))
             self._backend.set_ctag(self._local_ctag(event.calendar), calendar=event.calendar)
 
     def force_update(self, event: Event, collection: Optional[str]=None):
@@ -185,7 +198,8 @@ class CalendarCollection(object):
                 href = error.existing_href
                 _, etag = self._storages[calendar].get(href)
                 etag = self._storages[calendar].update(href, event, etag)
-            self._backend.update(event.raw, href, etag, calendar=calendar)
+            self._backend.update(event.raw, href, etag, calendar=calendar,
+                                 filter_from_highlighting=self._filter_from_highlighting(event))
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
     def new(self, event: Event, collection: Optional[str]=None):
@@ -208,7 +222,9 @@ class CalendarCollection(object):
             except AlreadyExistingError as Error:
                 href = getattr(Error, 'existing_href', None)
                 raise DuplicateUid(href)
-            self._backend.update(event.raw, event.href, event.etag, calendar=calendar)
+            self._backend.update(event.raw, event.href, event.etag, calendar=calendar,
+                                 filter_from_highlighting=self._filter_from_highlighting(event))
+
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
     def delete(self, href: str, etag: str, calendar: str):
@@ -335,7 +351,9 @@ class CalendarCollection(object):
                 update = self._backend.update_vcf_dates
             else:
                 update = self._backend.update
-            update(event.raw, href=href, etag=etag, calendar=calendar)
+            filter_from_highlighting = self._filter_from_highlighting(event, calendar=calendar)
+            update(event.raw, href=href, etag=etag, calendar=calendar,
+                   filter_from_highlighting=filter_from_highlighting)
             return True
         except Exception as e:
             if not isinstance(e, (UpdateFailed, UnsupportedFeatureError, NonUniqueUID)):

@@ -43,7 +43,7 @@ from .exceptions import (CouldNotCreateDbDir, OutdatedDbVersionError,
 
 logger = logging.getLogger('khal')
 
-DB_VERSION = 5  # The current db layout version
+DB_VERSION = 6  # The current db layout version
 
 RECURRENCE_ID = 'RECURRENCE-ID'
 THISANDFUTURE = 'THISANDFUTURE'
@@ -140,7 +140,8 @@ class SQLiteDb(object):
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS calendars (
             calendar TEXT NOT NULL UNIQUE,
             resource TEXT NOT NULL,
-            ctag TEXT
+            ctag TEXT,
+            filter_from_highlighting TEXT
             )''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS events (
                 href TEXT NOT NULL,
@@ -148,6 +149,7 @@ class SQLiteDb(object):
                 sequence INT,
                 etag TEXT,
                 item TEXT,
+                filter_from_highlighting INT NOT NULL,
                 primary key (href, calendar)
                 );''')
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS recs_loc (
@@ -195,7 +197,7 @@ class SQLiteDb(object):
             self.conn.commit()
         return result
 
-    def update(self, vevent_str: str, href: str, etag: str='', calendar: str=None) -> None:
+    def update(self, vevent_str: str, href: str, etag: str='', calendar: str=None, filter_from_highlighting: bool=False) -> None:
         """insert a new or update an existing event into the db
 
         This is mostly a wrapper around two SQL statements, doing some cleanup
@@ -239,12 +241,13 @@ class SQLiteDb(object):
             check_support(vevent, href, calendar)
             self._update_impl(vevent, href, calendar)
 
-        sql_s = ('INSERT INTO events (item, etag, href, calendar) VALUES (?, ?, ?, ?);')
-        stuple = (vevent_str, etag, href, calendar)
+        sql_s = ('INSERT INTO events (item, etag, href, calendar, filter_from_highlighting) VALUES (?, ?, ?, ?, ?);')
+
+        stuple = (vevent_str, etag, href, calendar, 1 if filter_from_highlighting else 0)
         self.sql_ex(sql_s, stuple)
 
     def update_vcf_dates(self, vevent_str: str, href: str, etag: str='',
-                         calendar: str=None) -> None:
+            calendar: str=None, filter_from_highlighting: bool = False) -> None:
         """insert events from a vcard into the db
 
         This is will parse BDAY, ANNIVERSARY, X-ANNIVERSARY and X-ABDATE fields.
@@ -316,9 +319,10 @@ class SQLiteDb(object):
                 vevent.add('uid', href + key)
                 vevent_str = vevent.to_ical().decode('utf-8')
                 self._update_impl(vevent, href + key, calendar)
-                sql_s = ('INSERT INTO events (item, etag, href, calendar)'
-                         ' VALUES (?, ?, ?, ?);')
-                stuple = (vevent_str, etag, href + key, calendar)
+                sql_s = ('INSERT INTO events (item, etag, href, calendar, filter_from_highlighting)'
+                         ' VALUES (?, ?, ?, ?, ?);')
+                stuple = (vevent_str, etag, href + key, calendar,
+                          1 if filter_from_highlighting else 0)
                 self.sql_ex(sql_s, stuple)
 
     def _update_impl(self, vevent: icalendar.cal.Event, href: str, calendar: str) -> None:
