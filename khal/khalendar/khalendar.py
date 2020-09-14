@@ -76,8 +76,10 @@ class CalendarCollection(object):
         self._calendars = calendars
         self._default_calendar_name = None  # type: Optional[str]
         self._storages = dict()  # type: Dict[str, Vdir]
+        calendar_filters = dict()
         for name, calendar in self._calendars.items():
             ctype = calendar.get('ctype', 'calendar')
+            calendar_filters[name] = calendar.get('filter_from_highlighting')
             if ctype == 'calendar':
                 file_ext = '.ics'
             elif ctype == 'birthdays':
@@ -98,7 +100,7 @@ class CalendarCollection(object):
         self.priority = priority
         self.highlight_event_days = highlight_event_days
         self._locale = locale
-        self._backend = backend.SQLiteDb(self.names, dbpath, self._locale)
+        self._backend = backend.SQLiteDb(self.names, dbpath, self._locale, calendar_filters)
         self._last_ctags = dict()  # type: Dict[str, str]
         self.update_db()
 
@@ -169,6 +171,12 @@ class CalendarCollection(object):
             calendar = event.calendar
         filter_expr = self._calendars[calendar]['filter_from_highlighting']
         summary = event.summary
+
+        # A) '*' is not a valid regex. But it looks nice in the config
+        # B) we test this BEFORE checking filter_expr and summary so birthday calendars (which
+        #    don't have a summary) are supported too
+        if filter_expr and filter_expr.strip() == '*':
+            return True
 
         if not filter_expr or not summary:
             return False
@@ -315,7 +323,15 @@ class CalendarCollection(object):
         local_ctag = self._local_ctag(calendar)
         if remember:
             self._last_ctags[calendar] = local_ctag
-        return local_ctag != self._backend.get_ctag(calendar)
+        if local_ctag != self._backend.get_ctag(calendar):
+            return True
+        if self._filter_from_highlighting_has_changed(calendar):
+            return True
+        return False
+
+    def _filter_from_highlighting_has_changed(self, calendar: str) -> bool:
+        return (self._calendars[calendar].get('filter_from_highlighting')
+                != self._backend.get_filter_from_highlighting(calendar))
 
     def _db_update(self, calendar: str):
         """implements the actual db update on a per calendar base"""
@@ -323,12 +339,13 @@ class CalendarCollection(object):
         db_hrefs = set(href for href, etag in self._backend.list(calendar))
         storage_hrefs = set()
         bdays = self._calendars[calendar].get('ctype') == 'birthdays'
+        filter_from_highlighting_has_changed = self._filter_from_highlighting_has_changed(calendar)
 
         with self._backend.at_once():
             for href, etag in self._storages[calendar].list():
                 storage_hrefs.add(href)
                 db_etag = self._backend.get_etag(href, calendar=calendar)
-                if etag != db_etag:
+                if (filter_from_highlighting_has_changed or (etag != db_etag)):
                     logger.debug('Updating {0} because {1} != {2}'.format(href, etag, db_etag))
                     self._update_vevent(href, calendar=calendar)
             for href in db_hrefs - storage_hrefs:
@@ -341,6 +358,11 @@ class CalendarCollection(object):
                 else:
                     self._backend.delete(href, calendar=calendar)
             self._backend.set_ctag(local_ctag, calendar=calendar)
+
+            self._backend.set_filter_from_highlighting(
+                    self._calendars[calendar].get('filter_from_highlighting'),
+                    calendar=calendar
+                    )
             self._last_ctags[calendar] = local_ctag
 
     def _update_vevent(self, href: str, calendar: str) -> bool:

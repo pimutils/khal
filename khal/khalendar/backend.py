@@ -74,6 +74,7 @@ class SQLiteDb(object):
                  calendars: Iterable[str],
                  db_path: Optional[str],
                  locale: Dict[str, str],
+                 calendar_filters: Dict[str, str],
                  ) -> None:
         assert db_path is not None
         self.calendars = list(calendars)
@@ -84,7 +85,7 @@ class SQLiteDb(object):
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
         self._create_default_tables()
-        self._check_calendars_exists()
+        self._check_calendars_exists(calendar_filters)
         self._check_table_version()
 
     @contextlib.contextmanager
@@ -174,7 +175,7 @@ class SQLiteDb(object):
             );''')
         self.conn.commit()
 
-    def _check_calendars_exists(self) -> None:
+    def _check_calendars_exists(self, calendar_filters: Dict[str, str]) -> None:
         """make sure an entry for the current calendar exists in `calendar`
         table
         """
@@ -185,8 +186,9 @@ class SQLiteDb(object):
             if result[0] != 0:
                 logger.debug("tables for calendar {0} exist".format(cal))
             else:
-                sql_s = 'INSERT INTO calendars (calendar, resource) VALUES (?, ?);'
-                stuple = (cal, '')
+                sql_s = ('INSERT INTO calendars (calendar, resource, filter_from_highlighting) '
+                         'VALUES (?, ?, ?);')
+                stuple = (cal, '', calendar_filters.get(cal))
                 self.sql_ex(sql_s, stuple)
 
     def sql_ex(self, statement: str, stuple: tuple) -> List:
@@ -395,18 +397,31 @@ class SQLiteDb(object):
                 stuple_n = (dbstart, dbend, href, ref, dtype, rec_inst, calendar)
                 self.sql_ex(recs_sql_s, stuple_n)
 
+    def get_filter_from_highlighting(self, calendar: str) -> Optional[str]:
+        return self._get_calendar_string_property(calendar, 'filter_from_highlighting')
+
+    def set_filter_from_highlighting(self, filter_from_highlighting: str, calendar: str):
+        self._set_calendar_string_property(calendar, 'filter_from_highlighting',
+                                           filter_from_highlighting)
+
     def get_ctag(self, calendar=str) -> Optional[str]:
+        return self._get_calendar_string_property(calendar, 'ctag')
+
+    def set_ctag(self, ctag: str, calendar: str):
+        self._set_calendar_string_property(calendar, 'ctag', ctag)
+
+    def _get_calendar_string_property(self, calendar: str, prop: str) -> Optional[str]:
         stuple = (calendar, )
-        sql_s = 'SELECT ctag FROM calendars WHERE calendar = ?;'
+        sql_s = 'SELECT ' + prop + ' FROM calendars WHERE calendar =?;'
         try:
             ctag = self.sql_ex(sql_s, stuple)[0][0]
             return ctag
         except IndexError:
             return None
 
-    def set_ctag(self, ctag: str, calendar: str):
-        stuple = (ctag, calendar, )
-        sql_s = 'UPDATE calendars SET ctag = ? WHERE calendar = ?;'
+    def _set_calendar_string_property(self, calendar: str, prop: str, val: str):
+        stuple = (val, calendar, )
+        sql_s = 'UPDATE calendars SET ' + prop + ' = ? WHERE calendar = ?;'
         self.sql_ex(sql_s, stuple)
         self.conn.commit()
 
