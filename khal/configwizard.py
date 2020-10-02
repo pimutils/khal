@@ -28,7 +28,7 @@ from os import makedirs
 from os.path import exists, expanduser, expandvars, isdir, join, normpath
 
 import xdg
-from click import UsageError, confirm, prompt
+from click import UsageError, confirm, prompt, Choice
 
 from .exceptions import FatalError
 from .settings import settings
@@ -110,6 +110,19 @@ def choose_time_format():
     return timeformat
 
 
+def choose_default_calendar(vdirs):
+    names = [name for name, _, _ in sorted(vdirs or ())]
+    print("Which calendar do you want as a default calendar?")
+    print("(The default calendar is specified, when no calendar is specified.)")
+    print("Configured calendars: {}".format(', '.join(names)))
+    default_calendar = prompt(
+        "Please type one of the above options",
+        default=names[0],
+        type=Choice(names),
+    )
+    return default_calendar
+
+
 def get_vdirs_from_vdirsyncer_config():
     """trying to load vdirsyncer's config and read all vdirs from it"""
     print("If you use vdirsyncer to sync with CalDAV servers, we can try to "
@@ -171,7 +184,7 @@ def create_vdir(names=[]):
     return [(name, path, 'calendar')]
 
 
-def create_config(vdirs, dateformat, timeformat):
+def create_config(vdirs, dateformat, timeformat, default_calendar=None):
     config = ['[calendars]']
     for name, path, type_ in sorted(vdirs or ()):
         config.append('\n[[{name}]]'.format(name=name))
@@ -187,8 +200,11 @@ def create_config(vdirs, dateformat, timeformat):
                   .format(timeformat=timeformat,
                           dateformat=dateformat,
                           longdateformat=dateformat))
-
+    if default_calendar:
+        config.append('[default]')
+        config.append('default_calendar = {}\n'.format(default_calendar))
     config = '\n'.join(config)
+
     return config
 
 
@@ -215,7 +231,16 @@ def configwizard():
     if not vdirs:
         print("\nWARNING: no vdir configured, khal will not be usable like this!\n")
 
-    config = create_config(vdirs, dateformat=dateformat, timeformat=timeformat)
+    print()
+    if vdirs:
+        default_calendar = choose_default_calendar(vdirs)
+    else:
+        default_calendar = None
+
+    config = create_config(
+        vdirs, dateformat=dateformat, timeformat=timeformat,
+        default_calendar=default_calendar,
+    )
     config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
     if not confirm(
             "Do you want to write the config to {}? "
