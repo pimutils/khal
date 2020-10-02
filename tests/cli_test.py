@@ -553,6 +553,7 @@ def test_color_option(runner):
 def choices(dateformat=0, timeformat=0,
             parse_vdirsyncer_conf=True,
             create_vdir=False,
+            default_calendar='',
             write_config=True):
     """helper function to generate input for testing `configure`"""
     confirm = {True: 'y', False: 'n'}
@@ -563,7 +564,9 @@ def choices(dateformat=0, timeformat=0,
     ]
     if not parse_vdirsyncer_conf:
         out.append(confirm[create_vdir])
+    out.append(default_calendar)
     out.append(confirm[write_config])
+    out.append('')
     return '\n'.join(out)
 
 
@@ -642,6 +645,9 @@ dateformat = %Y-%m-%d
 longdateformat = %Y-%m-%d
 datetimeformat = %Y-%m-%d %H:%M
 longdatetimeformat = %Y-%m-%d %H:%M
+
+[default]
+default_calendar = events_local
 '''
 
     # if aborting, no config file should be written
@@ -735,6 +741,9 @@ dateformat = %Y-%m-%d
 longdateformat = %Y-%m-%d
 datetimeformat = %Y-%m-%d %H:%M
 longdatetimeformat = %Y-%m-%d %H:%M
+
+[default]
+default_calendar = private
 '''.format(runner.xdg_data_home)
 
     # running configure again, should yield another vdir path, as the old
