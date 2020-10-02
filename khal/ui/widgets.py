@@ -392,7 +392,7 @@ class ValidatedEdit(urwid.WidgetWrap):
     def __init__(self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs):
         assert validate
         self._validate_func = validate
-        self._original_widget = urwid.AttrMap(EditWidget(*args, **kwargs), 'edit', 'editf')
+        self._original_widget = urwid.AttrMap(EditWidget(*args, **kwargs), 'edit', 'edit focused')
         super().__init__(self._original_widget)
 
     @property

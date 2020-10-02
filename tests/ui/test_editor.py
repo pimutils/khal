@@ -15,7 +15,7 @@ palette = {
     'date header focused': 'blue',
     'date header': 'green',
     'default': 'black',
-    'editf': 'red',
+    'edit focused': 'red',
     'edit': 'blue',
 }
 

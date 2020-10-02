@@ -51,7 +51,6 @@ dark = [
     ('frame focus color', 'dark blue', 'black'),
     ('frame focus top', 'dark magenta', 'black'),
 
-    ('editfc', 'white', 'dark blue', 'bold'),
     ('editbx', 'light gray', 'dark blue'),
     ('editcp', 'black', 'light gray', 'standout'),
     ('popupbg', 'white', 'black', 'bold'),
@@ -87,7 +86,6 @@ light = [
     ('frame focus color', 'dark blue', 'white'),
     ('frame focus top', 'dark magenta', 'white'),
 
-    ('editfc', 'white', 'dark blue', 'bold'),
     ('editbx', 'light gray', 'dark blue'),
     ('editcp', 'black', 'light gray', 'standout'),
     ('popupbg', 'white', 'black', 'bold'),
