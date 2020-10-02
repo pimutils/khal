@@ -415,8 +415,8 @@ Options
 
 Examples
 """"""""
-These may need to be adapted for your configuration and/or locale. See :command:`printformats`.
-::
+These may need to be adapted for your configuration and/or locale (START and END
+need to match the format configured). See :command:`printformats`.  ::
 
     khal new 18:00 Awesome Event
 
