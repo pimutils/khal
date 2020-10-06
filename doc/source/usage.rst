@@ -162,6 +162,9 @@ Several options are common to almost all of :program:`khal`'s commands
        returns
        name@mail.com
 
+   url
+       The URL embeded in the event, otherwise nothing. 
+
    By default, all-day events have no times. To see a start and end time anyway simply
    add `-full` to the end of any template with start/end, for instance
    `start-time` becomes `start-time-full` and will always show start and end times (instead
@@ -408,6 +411,8 @@ Options
   and `yearly`
 
 * **-u, --until=UNTIL** specify until when a recurring event should run
+
+* **--url** specify the URL element of the calendar
 
 * **--alarms DURATION,...** will add alarm times as DELTAs comma separated for this event,
   *DURATION* should look like `1day 10minutes` or `1d3H10m`, negative
