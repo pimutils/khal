@@ -412,7 +412,11 @@ Options
 
 * **-u, --until=UNTIL** specify until when a recurring event should run
 
+<<<<<<< HEAD
 * **--url** specify the URL element of the event
+=======
+* **--url** specify the URL element of the calendar
+>>>>>>> 8a0baeb (Update documentation about url)
 
 * **--alarms DURATION,...** will add alarm times as DELTAs comma separated for this event,
   *DURATION* should look like `1day 10minutes` or `1d3H10m`, negative
