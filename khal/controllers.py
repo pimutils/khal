@@ -622,7 +622,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
 
 def print_ics(conf, name, ics, format):
     if format is None:
-        format = conf['view']['agenda_event_format']
+        format = conf['view']['event_format']
     cal = cal_from_ics(ics)
     events = [item for item in cal.walk() if item.name == 'VEVENT']
     events_grouped = defaultdict(list)
