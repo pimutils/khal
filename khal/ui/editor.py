@@ -338,6 +338,7 @@ class EventEditor(urwid.WidgetWrap):
 
         self.description = event.description
         self.location = event.location
+        self.attendees = event.attendees
         self.categories = event.categories
         self.url = event.url
         self.startendeditor = StartEndEditor(
@@ -365,17 +366,25 @@ class EventEditor(urwid.WidgetWrap):
         )
         self.description = urwid.AttrMap(
             ExtendedEdit(
-                caption=('', 'Description: '),
+                caption=('', 'Description:  '),
                 edit_text=self.description,
                 multiline=True
             ),
             'edit'
         )
         self.location = urwid.AttrMap(ExtendedEdit(
-            caption=('', 'Location:    '), edit_text=self.location), 'edit'
+            caption=('', 'Location:     '), edit_text=self.location), 'edit'
         )
         self.categories = urwid.AttrMap(ExtendedEdit(
-            caption=('', 'Categories:  '), edit_text=self.categories), 'edit'
+            caption=('', 'Categories:   '), edit_text=self.categories), 'edit'
+        )
+        self.attendees = urwid.AttrMap(
+            ExtendedEdit(
+                caption=('', 'Attendees: '),
+                edit_text=self.attendees,
+                multiline=True
+            ),
+            'edit'
         )
         self.url = urwid.AttrMap(ExtendedEdit(
             caption=('', 'URL:         '), edit_text=self.url), 'edit'
@@ -389,6 +398,8 @@ class EventEditor(urwid.WidgetWrap):
             self.categories,
             self.description,
             self.url,
+            divider,
+            self.attendees,
             divider,
             self.startendeditor,
             self.recurrenceeditor,
