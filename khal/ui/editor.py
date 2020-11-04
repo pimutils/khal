@@ -439,6 +439,8 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if get_wrapped_text(self.url) != self.event.url:
             return True
+        if get_wrapped_text(self.attendees) != self.event.attendees:
+            return True
         if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
         if self.recurrenceeditor.changed:
@@ -451,6 +453,8 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_summary(get_wrapped_text(self.summary))
         self.event.update_description(get_wrapped_text(self.description))
         self.event.update_location(get_wrapped_text(self.location))
+        # TODO will overwrite attendee CN information (if any) on change
+        self.event.update_attendees(get_wrapped_text(self.attendees).split(','))
         self.event.update_categories(get_wrapped_text(self.categories).split(','))
         self.event.update_url(get_wrapped_text(self.url))
 

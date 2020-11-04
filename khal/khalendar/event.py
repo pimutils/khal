@@ -482,11 +482,23 @@ class Event:
         '''
         Must return a list of icalendar.prop.vCalAddress
         '''
-        return self._vevents[self.ref].get('ATTENDEE', [])
+        addresses = self._vevents[self.ref].get('ATTENDEE', [])
+        if not isinstance(addresses, list):
+            addresses = [addresses, ]
+        return ", ".join([address.split(':')[-1]
+                          for address in addresses])
 
     def update_attendees(self, attendees):
+        assert isinstance(attendees, list)
         if attendees:
-            self._vevents[self.ref]['ATTENDEE'] = attendees
+            vCalAddresses = []
+            for attendee in attendees:
+                item = icalendar.prop.vCalAddress(f'MAILTO:{attendee.strip()}')
+                item.params['ROLE'] = icalendar.prop.vText('REQ-PARTICIPANT')
+                # TODO use khard here to receive full information from email address
+                vCalAddresses.append(item)
+
+            self._vevents[self.ref]['ATTENDEE'] = vCalAddresses
         else:
             self._vevents[self.ref].pop('ATTENDEE')
 
@@ -662,7 +674,7 @@ class Event:
         if attributes["description"]:
             attributes["description-separator"] = " :: "
         attributes["location"] = self.location.strip()
-        # TODO add attendees attributes
+        attributes["attendees"] = self.attendees
         attributes["all-day"] = allday
         attributes["categories"] = self.categories
         attributes['uid'] = self.uid
