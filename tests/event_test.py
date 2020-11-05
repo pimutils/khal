@@ -3,8 +3,7 @@ import datetime as dt
 import pytest
 import pytz
 from freezegun import freeze_time
-from icalendar import vRecur, vText
-
+from icalendar import vRecur, vText, vCalAddress
 from khal.khalendar.event import (AllDayEvent, Event, FloatingEvent,
                                   LocalizedEvent, create_timezone)
 
@@ -478,6 +477,23 @@ def test_event_alarm():
     assert event.alarms == []
     event.update_alarms([(dt.timedelta(-1, 82800), 'new event')])
     assert event.alarms == [(dt.timedelta(-1, 82800), vText('new event'))]
+
+
+def test_event_attendees():
+    event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    assert event.attendees == ""
+    event.update_attendees(["this-does@not-exist.de", ])
+    assert event.attendees == "this-does@not-exist.de"
+    assert isinstance(event._vevents[event.ref].get('ATTENDEE', []), list)
+    assert isinstance(event._vevents[event.ref].get('ATTENDEE', [])[0], vCalAddress)
+    assert str(event._vevents[event.ref].get('ATTENDEE', [])[0]) == "MAILTO:this-does@not-exist.de"
+
+    event.update_attendees(["this-does@not-exist.de", "also-does@not-exist.de"])
+    assert event.attendees == "this-does@not-exist.de, also-does@not-exist.de"
+
+    assert isinstance(event._vevents[event.ref].get('ATTENDEE', []), list)
+    assert len(event._vevents[event.ref].get('ATTENDEE', [])) == 2
+    assert isinstance(event._vevents[event.ref].get('ATTENDEE', [])[0], vCalAddress)
 
 
 def test_create_timezone_static():
