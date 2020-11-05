@@ -479,9 +479,6 @@ class Event:
 
     @property
     def attendees(self):
-        '''
-        Must return a list of icalendar.prop.vCalAddress
-        '''
         addresses = self._vevents[self.ref].get('ATTENDEE', [])
         if not isinstance(addresses, list):
             addresses = [addresses, ]
