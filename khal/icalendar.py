@@ -261,9 +261,6 @@ def expand(vevent, href=''):
             rrule._until = pytz.UTC.localize(
                 rrule._until).astimezone(events_tz).replace(tzinfo=None)
 
-        if rrule._until <= dt.datetime.now():
-            return []
-
         rrule = map(sanitize_datetime, rrule)
 
         logger.debug('calculating recurrence dates for {}, this might take some time.'.format(href))
