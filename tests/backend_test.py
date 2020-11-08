@@ -13,6 +13,7 @@ from .utils import BERLIN, LOCALE_BERLIN, _get_text
 calname = 'home'
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_new_db_version():
     dbi = backend.SQLiteDb(calname, ':memory:', locale=LOCALE_BERLIN)
     backend.DB_VERSION += 1
@@ -20,6 +21,7 @@ def test_new_db_version():
         dbi._check_table_version()
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_rrule_recurrence_id():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert dbi.list(calname) == list()
@@ -53,6 +55,7 @@ def test_event_rrule_recurrence_id():
     assert len(calendars) == 6
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_rrule_recurrence_id_invalid_tzid():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     dbi.update(_get_text('event_rrule_recuid_invalid_tzid'), href='12345.ics', etag='abcd',
@@ -91,6 +94,7 @@ END:VCALENDAR
 """
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_rrule_recurrence_id_reverse():
     """as icalendar elements can be saved in arbitrary order, we also have to
     deal with `reverse` ordered icalendar files
@@ -117,6 +121,7 @@ def test_event_rrule_recurrence_id_reverse():
     assert events[5][2] == BERLIN.localize(dt.datetime(2014, 8, 4, 7, 0))
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_rrule_recurrence_id_update_with_exclude():
     """
     test if updates work as they should. The updated event has the extra
@@ -137,6 +142,7 @@ def test_event_rrule_recurrence_id_update_with_exclude():
     assert events[4][2] == BERLIN.localize(dt.datetime(2014, 8, 4, 7, 0))
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_recuid_no_master():
     """
     test for events which have a RECUID component, but the master event is
@@ -155,6 +161,7 @@ def test_event_recuid_no_master():
     assert 'SUMMARY:Infrastructure Planning' in events[0][0]
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_recuid_rrule_no_master():
     """
     test for events which have a RECUID and a RRULE component, but the master event is
@@ -178,6 +185,7 @@ def test_event_recuid_rrule_no_master():
     assert len(list(events)) == 2
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_no_valid_timezone():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     dbi.update(_get_text('event_dt_local_missing_tz'),
@@ -191,6 +199,7 @@ def test_no_valid_timezone():
     assert event[3] == BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_delete():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert dbi.list(calname) == list()
@@ -228,6 +237,7 @@ END:VCALENDAR
 """
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_this_and_prior():
     """we do not support THISANDPRIOR, therefore this should fail"""
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
@@ -258,6 +268,7 @@ event_rrule_this_and_future = \
     event_rrule_this_and_future_temp.format('20140707T090000', '20140707T180000')
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_rrule_this_and_future():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     dbi.update(event_rrule_this_and_future, href='12345.ics', etag='abcd', calendar=calname)
@@ -290,6 +301,7 @@ event_rrule_this_and_future_multi_day_shift = \
     event_rrule_this_and_future_temp.format('20140708T090000', '20140709T150000')
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_rrule_this_and_future_multi_day_shift():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     dbi.update(event_rrule_this_and_future_multi_day_shift,
@@ -342,6 +354,7 @@ event_rrule_this_and_future_allday = \
     event_rrule_this_and_future_allday_temp.format(20140708, 20140709)
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_rrule_this_and_future_allday():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     dbi.update(event_rrule_this_and_future_allday,
@@ -369,6 +382,7 @@ def test_event_rrule_this_and_future_allday():
         assert 'SUMMARY:Arbeit (lang)\n' in event[0]
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_rrule_this_and_future_allday_prior():
     event_rrule_this_and_future_allday_prior = \
         event_rrule_this_and_future_allday_temp.format(20140705, 20140706)
@@ -424,6 +438,7 @@ END:VEVENT
 END:VCALENDAR"""
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_event_rrule_multi_this_and_future_allday():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     dbi.update(event_rrule_multi_this_and_future_allday,
@@ -480,6 +495,7 @@ DURATION:PT4H30M
 END:VEVENT""")
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_calc_shift_deltas():
     assert (dt.timedelta(hours=2), dt.timedelta(hours=5)) == \
         backend.calc_shift_deltas(recuid_this_future)
@@ -504,6 +520,7 @@ DTEND;TZID=Europe/Berlin:20140630T120000
 END:VEVENT"""
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_two_calendars_same_uid():
     home = 'home'
     work = 'work'
@@ -550,6 +567,7 @@ def test_two_calendars_same_uid():
     assert dbi.list(work) == [('12345.ics', 'abcd')]
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_update_one_should_not_affect_others():
     """test if an THISANDFUTURE param effects other events as well"""
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
@@ -561,6 +579,7 @@ def test_update_one_should_not_affect_others():
     assert len(events) == 1
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_no_dtend():
     """test support for events with no dtend"""
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
@@ -588,6 +607,7 @@ supported_events = [
 ]
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_check_support():
     for cal_str in supported_events:
         ical = icalendar.Calendar.from_ical(cal_str)
@@ -605,6 +625,7 @@ def test_check_support():
             [backend.check_support(event, '', '') for event in ical.walk()]
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_check_support_rdate_no_values():
     """check if `check_support` doesn't choke on events with an RDATE property
     without a VALUE parameter"""
@@ -689,6 +710,7 @@ start = dt.datetime.combine(day, dt.time.min)
 end = dt.datetime.combine(day, dt.time.max)
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_birthdays():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
@@ -704,6 +726,7 @@ def test_birthdays():
     assert 'SUMMARY:Unix\'s birthday' in events[0][0]
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_birthdays_update():
     """test if we can update a birthday"""
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
@@ -711,6 +734,7 @@ def test_birthdays_update():
     db.update_vcf_dates(card, 'unix.vcf', calendar=calname)
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_birthdays_no_fn():
     db = backend.SQLiteDb(['home'], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(dt.datetime(1941, 9, 9, 0, 0),
@@ -722,6 +746,7 @@ def test_birthdays_no_fn():
     assert 'SUMMARY:Dennis MacAlistair Ritchie\'s birthday' in events[0][0]
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_birthday_does_not_parse():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
@@ -730,6 +755,7 @@ def test_birthday_does_not_parse():
     assert len(events) == 0
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_vcard_two_birthdays():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
@@ -738,6 +764,7 @@ def test_vcard_two_birthdays():
     assert len(events) == 0
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_anniversary():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
@@ -753,6 +780,7 @@ def test_anniversary():
     assert 'SUMMARY:Unix\'s anniversary' in events[0][0]
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_abdate():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
@@ -768,6 +796,7 @@ def test_abdate():
     assert 'SUMMARY:Unix\'s spouse\'s birthday' in events[0][0]
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_abdate_nolabel():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()
@@ -783,6 +812,7 @@ def test_abdate_nolabel():
     assert 'SUMMARY:Unix\'s custom event from vcard' in events[0][0]
 
 
+@pytest.mark.freeze_time("2000-01-01")
 def test_birthday_v3():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(start, end)) == list()

@@ -1,4 +1,5 @@
 import datetime as dt
+import pytest
 
 import icalendar
 from khal import icalendar as icalendar_helpers, utils
@@ -230,7 +231,14 @@ def _get_vevent(event):
             return component
 
 
-class TestExpand(object):
+class FrozenTest:
+    @pytest.fixture(autouse=True)
+    def freeze_time(self, freezer):
+        freezer.move_to('2000-01-01')
+        yield
+
+
+class TestExpand(FrozenTest):
     dtstartend_berlin = [
         (berlin.localize(dt.datetime(2013, 3, 1, 14, 0, )),
          berlin.localize(dt.datetime(2013, 3, 1, 16, 0, ))),
@@ -370,7 +378,7 @@ class TestExpand(object):
         ]
 
 
-class TestExpandNoRR(object):
+class TestExpandNoRR(FrozenTest):
     dtstartend_berlin = [
         (berlin.localize(dt.datetime(2013, 3, 1, 14, 0)),
          berlin.localize(dt.datetime(2013, 3, 1, 16, 0))),
@@ -575,7 +583,7 @@ END:VEVENT
 """
 
 
-class TestSpecial(object):
+class TestSpecial(FrozenTest):
     """collection of strange test cases that don't fit anywhere else really"""
 
     def test_count(self):
@@ -683,6 +691,13 @@ class TestSpecial(object):
         assert dtstart[-1] == (berlin.localize(dt.datetime(2014, 12, 3, 9, 30)),
                                berlin.localize(dt.datetime(2014, 12, 3, 10, 30)))
 
+    def test_event_dt_rrule_expired_until(self):
+        """RRULE:UNTIL might be in the past, if that's so, no events are expanden
+        """
+        vevent = _get_vevent(_get_text('event_dt_rrule_expired_until'))
+        dtstart = icalendar_helpers.expand(vevent, berlin)
+        assert len(dtstart) == 0
+
 
 simple_rdate = """BEGIN:VEVENT
 SUMMARY:Simple Rdate
@@ -704,7 +719,7 @@ UID:datetime123
 END:VEVENT"""
 
 
-class TestRDate(object):
+class TestRDate(FrozenTest):
     """Testing expanding of recurrence rules"""
     def test_simple_rdate(self):
         vevent = _get_vevent(simple_rdate)
@@ -766,7 +781,7 @@ END:VCALENDAR
 """
 
 
-class TestSanitize(object):
+class TestSanitize(FrozenTest):
 
     def test_noend_date(self):
         vevent = _get_vevent(noend_date)
