@@ -257,9 +257,25 @@ def expand(vevent, href=''):
             # if python can deal with larger datetime values yet and b) pytz
             # doesn't know any larger transition times
             rrule._until = dt.datetime(2037, 12, 31)
-        elif events_tz and 'Z' in rrule_param.to_ical().decode():
-            rrule._until = pytz.UTC.localize(
-                rrule._until).astimezone(events_tz).replace(tzinfo=None)
+        else:
+            if events_tz and 'Z' in rrule_param.to_ical().decode():
+                rrule._until = pytz.UTC.localize(
+                    rrule._until).astimezone(events_tz).replace(tzinfo=None)
+
+            # rrule._until and dtstart could be dt.date or dt.datetime. They
+            # need to be the same for comparison
+            testuntil = rrule._until
+            if (type(dtstart) == dt.date and type(testuntil) == dt.datetime):
+                testuntil = testuntil.date()
+            teststart = dtstart
+            if (type(testuntil) == dt.date and type(teststart) == dt.datetime):
+                teststart = teststart.date()
+
+            if testuntil < teststart:
+                logger.warning(
+                    '{0}: Unsupported recurrence. UNTIL is before DTSTART.\n'
+                    'This event will not be available in khal.'.format(href))
+                return False
 
         rrule = map(sanitize_datetime, rrule)
 

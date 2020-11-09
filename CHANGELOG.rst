@@ -14,6 +14,7 @@ not released
 
 * FIX `khal interactive` now accepts -a/-d options (as documented)
 * FIX Strip whitespace when loading `displayname` and `color` files
+* FIX Warn when loading events with a recurrence that finishes before it starts
 
 0.10.2
 ======

@@ -683,6 +683,13 @@ class TestSpecial(object):
         assert dtstart[-1] == (berlin.localize(dt.datetime(2014, 12, 3, 9, 30)),
                                berlin.localize(dt.datetime(2014, 12, 3, 10, 30)))
 
+    def test_event_dt_rrule_until_before_start(self):
+        """test handling if an RRULE's UNTIL is before the event's DTSTART"""
+        vevent = _get_vevent(_get_text('event_dt_rrule_until_before_start'))
+        dtstart = icalendar_helpers.expand(vevent, berlin)
+        # TODO test for logging message
+        assert dtstart is False
+
 
 simple_rdate = """BEGIN:VEVENT
 SUMMARY:Simple Rdate
