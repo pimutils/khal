@@ -465,7 +465,10 @@ def _get_cli():
     def interactive(ctx, include_calendar, exclude_calendar):
         '''Interactive UI. Also launchable via `ikhal`.'''
         controllers.interactive(
-            build_collection(ctx.obj['conf'], ctx.obj.get('calendar_selection', None)),
+            build_collection(
+                ctx.obj['conf'],
+                multi_calendar_select(ctx, include_calendar, exclude_calendar)
+            ),
             ctx.obj['conf']
         )
 

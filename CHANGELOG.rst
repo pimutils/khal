@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released
 
+* FIX `khal interactive` now accepts -a/-d options (as documented)
+
 0.10.2
 ======
 2020-07-29
