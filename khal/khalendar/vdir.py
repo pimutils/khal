@@ -267,7 +267,7 @@ class VdirBase:
         fpath = os.path.join(self.path, key)
         try:
             with open(fpath, 'rb') as f:
-                return f.read().decode(self.encoding) or None
+                return f.read().decode(self.encoding).strip() or None
         except IOError as e:
             if e.errno == errno.ENOENT:
                 return None
