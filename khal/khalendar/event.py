@@ -328,6 +328,9 @@ class Event(object):
             return ''
         return self._vevents[self.ref]['URL']
 
+    def update_url(self, url):
+        self._vevents[self.ref]['URL'] = url
+
     @staticmethod
     def _create_calendar():
         """
