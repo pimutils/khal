@@ -339,6 +339,7 @@ class EventEditor(urwid.WidgetWrap):
         self.description = event.description
         self.location = event.location
         self.categories = event.categories
+        self.url = event.url
         self.startendeditor = StartEndEditor(
             event.start_local, event.end_local, self._conf,
             self.start_datechange, self.end_datechange,
@@ -376,6 +377,9 @@ class EventEditor(urwid.WidgetWrap):
         self.categories = urwid.AttrMap(ExtendedEdit(
             caption=('', 'Categories:  '), edit_text=self.categories), 'edit'
         )
+        self.url = urwid.AttrMap(ExtendedEdit(
+            caption=('', 'URL:         '), edit_text=self.url), 'edit'
+        )
         self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
             self.summary,
@@ -384,6 +388,7 @@ class EventEditor(urwid.WidgetWrap):
             self.location,
             self.categories,
             self.description,
+            self.url,
             divider,
             self.startendeditor,
             self.recurrenceeditor,
