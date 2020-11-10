@@ -428,6 +428,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
     options["categories"] = {"short": "c", "attr": "categories", "none": True}
     options["alarm"] = {"short": "a"}
     options["Delete"] = {"short": "D"}
+    options["url"] = {"short": "u", "attr": "url", "none": True}
 
     now = dt.datetime.now()
 
