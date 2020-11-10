@@ -24,6 +24,7 @@ not released
    `blank_line_before_day` option
 * FIX `new` keybinding in search no longer crash `ikhal`
 * NEW Improved sorting of events. Sort by `DTSTART`, `DTEND` then `SUMMARY`.
+* NEW Add url input and `{url}` template option
 
 0.10.2
 ======
