@@ -515,7 +515,8 @@ class AlarmsEditor(urwid.WidgetWrap):
                 duration = -1 * duration
 
             self.duration = DurationWidget(duration)
-            self.description = ExtendedEdit(edit_text=description)
+            self.description = ExtendedEdit(
+                edit_text=description if description is not None else "")
             self.direction = Choice(
                 ['before', 'after'], active=direction, overlay_width=10)
             self.columns = NColumns([
