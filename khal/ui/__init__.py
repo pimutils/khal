@@ -960,6 +960,9 @@ class EventDisplay(urwid.WidgetWrap):
         if event.categories != '':
             lines.append(urwid.Text('Categories: ' + event.categories))
 
+        if event.url != '':
+            lines.append(urwid.Text('URL: ' + event.url))
+
         # start and end time/date
         if event.allday:
             startstr = event.start_local.strftime(self._conf['locale']['dateformat'])
