@@ -474,7 +474,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
             conf=self._conf,
         )
         event_list.append(urwid.AttrMap(date_header, 'date'))
-        self.events = sorted(self._collection.get_events_on(day))
+        self.events = self._collection.get_events_on(day)
         event_list.extend([
             urwid.AttrMap(
                 U_Event(event, conf=self._conf, this_date=day, delete_status=self.delete_status),

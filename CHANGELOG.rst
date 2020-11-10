@@ -13,6 +13,7 @@ may want to subscribe to `GitHub's tag feed
 not released
 
 * FIX `khal interactive` now accepts -a/-d options (as documented)
+* FIX Display all-day events at the top of the day in `ikhal`
 
 0.10.2
 ======
