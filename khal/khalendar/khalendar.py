@@ -150,7 +150,7 @@ class CalendarCollection(object):
         floating_events = self.get_floating(start, end)
         localize = self._locale['local_timezone'].localize
         localized_events = self.get_localized(localize(start), localize(end))
-        return itertools.chain(floating_events, localized_events)
+        return itertools.chain(localized_events, floating_events)
 
     def get_calendars_on(self, day: dt.date) -> List[str]:
         start = dt.datetime.combine(day, dt.time.min)
