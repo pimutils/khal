@@ -161,12 +161,33 @@ class Event(object):
             start = dt.datetime.combine(start, dt.time.min)
 
         if isinstance(other_start, dt.date) and not isinstance(other_start, dt.datetime):
-            other_start = dt.datetime.combine(other_start, dt.time.max)
+            other_start = dt.datetime.combine(other_start, dt.time.min)
 
         start = start.replace(tzinfo=None)
         other_start = other_start.replace(tzinfo=None)
+
+        if start == other_start:
+            end = self.end_local
+            other_end = other.end_local
+            if isinstance(end, dt.date) and not isinstance(end, dt.datetime):
+                end = dt.datetime.combine(end, dt.time.min)
+
+            if isinstance(other_end, dt.date) and not isinstance(other_end, dt.datetime):
+                other_end = dt.datetime.combine(other_end, dt.time.min)
+
+            end = end.replace(tzinfo=None)
+            other_end = other_end.replace(tzinfo=None)
+
+            if end == other_end:
+                return self.summary < other.summary
+
+            try:
+                return end < other_end
+            except TypeError:
+                raise ValueError('Cannot compare events {} and {}'.format(end, other_end))
+
         try:
-            return start <= other_start
+            return start < other_start
         except TypeError:
             raise ValueError('Cannot compare events {} and {}'.format(start, other_start))
 
