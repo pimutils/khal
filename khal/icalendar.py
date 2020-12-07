@@ -108,6 +108,8 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     event.add('dtstamp', dt.datetime.now())
     event.add('summary', summary)
     event.add('uid', generate_random_uid())
+    event.add('X-MICROSOFT-CDO-BUSYSTATUS','BUSY')
+
     # event.add('sequence', 0)
 
     if description:
