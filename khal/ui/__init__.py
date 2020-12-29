@@ -738,7 +738,7 @@ class EventColumn(urwid.WidgetWrap):
             self.pane.window.loop.start()
             if text is None:
                 return
-            # KeyErrors can occurr here when we destroy DTSTART,
+            # KeyErrors can occur here when we destroy DTSTART,
             # otherwise, even broken .ics files seem to be no problem
             new_event = Event.fromString(
                 text,
