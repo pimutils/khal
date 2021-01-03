@@ -17,7 +17,6 @@ not released
 * FIX Warn when loading events with a recurrence that finishes before it starts
 * FIX Alarms without descriptions no longer crash `ikhal`
 * FIX Display all-day events at the top of the day in `ikhal`
-* FIX Keybindings in empty search results no longer crash `ikhal`
 
 0.10.2
 ======
