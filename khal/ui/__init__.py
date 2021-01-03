@@ -255,7 +255,10 @@ class EventListBox(urwid.ListBox):
 
     @property
     def focus_event(self):
-        return self.focus.original_widget
+        if self.focus is None:
+            return None
+        else:
+            return self.focus.original_widget
 
     def refresh_titles(self, min_date, max_date, everything):
         """Refresh only the currently focused event's title
