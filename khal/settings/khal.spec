@@ -230,6 +230,9 @@ event_view_weighting = integer(default=1)
 # Set to true to always show the event view window when looking at the event list
 event_view_always_visible = boolean(default=False)
 
+# Add a blank line before the name of the day (khal only) 
+blank_line_before_day = boolean(default=False)
+
 # Choose a color theme for khal.
 #
 # This is very much work in progress. Help is really welcome! The two currently
