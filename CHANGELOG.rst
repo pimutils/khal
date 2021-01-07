@@ -18,7 +18,7 @@ not released
 * FIX Alarms without descriptions no longer crash `ikhal`
 * FIX Display all-day events at the top of the day in `ikhal`
 * FIX Keybindings in empty search results no longer crash `ikhal`
-* NEW Possibility to adda bank line before day in `khal` with
+* NEW Possibility to add a blank line before day in `khal` with
    `blank_line_before_day` option
 
 0.10.2
