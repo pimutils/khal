@@ -211,7 +211,7 @@ interpreted as that date *next* week (i.e. seven days from now).
 
 If a short datetime format is used (no year is given), khal will interpret the
 date to be in the future. The inferred it might be in the next year if the given
-date has already past in the current year.
+date has already passed in the current year.
 
 Commands
 --------
