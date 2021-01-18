@@ -267,6 +267,8 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
             width=width,
         )
         if day_format and (conf['default']['show_all_days'] or current_events):
+            if len(event_column) != 0 and conf['view']['blank_line_before_day']:
+                event_column.append('')
             event_column.append(format_day(start.date(), day_format, conf['locale']))
         event_column.extend(current_events)
         start = dt.datetime(*start.date().timetuple()[:3]) + dt.timedelta(days=1)
