@@ -20,6 +20,7 @@ not released
 * FIX Keybindings in empty search results no longer crash `ikhal`
 * NEW Possibility to add a blank line before day in `khal` with
    `blank_line_before_day` option
+* FIX `new` keybinding in search no longer crash `ikhal`
 
 0.10.2
 ======

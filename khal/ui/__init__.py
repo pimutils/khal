@@ -874,6 +874,8 @@ class EventColumn(urwid.WidgetWrap):
         if not self.pane.collection.writable_names:
             self.pane.window.alert(('alert', 'No writable calendar.'))
             return
+        if date is None:
+            date = dt.datetime.now()
         if end is None:
             start = dt.datetime.combine(date, dt.time(dt.datetime.now().hour))
             end = start + dt.timedelta(minutes=60)
