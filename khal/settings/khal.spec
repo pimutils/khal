@@ -98,6 +98,9 @@ local_timezone = timezone(default=None)
 # The formatting string is interpreted as defined by Python's `strftime
 # <https://docs.python.org/3/library/time.html#time.strftime>`_, which is
 # similar to the format specified in ``man strftime``.
+
+# In the configuration file it may be necessary to enclose the format in
+# quotation marks to force it to be loaded as a string.
 timeformat = string(default='%X')
 
 # khal will display and understand all dates in this format, see :ref:`timeformat <locale-timeformat>` for the format
