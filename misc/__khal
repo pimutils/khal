@@ -28,7 +28,7 @@ case $state in
     subcommands=(
       'at:show all events for given time'
       "calendar:show calendar"
-      "configure: intitial configuration"
+      "configure:initial configuration"
       "edit:edit (or delete) an event"
       "import:import an ics file into a calendar"
       "interactive:open the interactive calendar"
