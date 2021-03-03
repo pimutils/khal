@@ -30,9 +30,7 @@ Feedback
 --------
 Please do provide feedback if *khal* works for you or even more importantly if
 it doesn't. The preferred way to get in contact (especially if something isn't
-working) is via github or IRC (#pimutils on Freenode), otherwise you can reach
-the original author via email at khal (at) lostpackets (dot) de or via
-jabber/XMPP at geier (at) jabber (dot) ccc (dot) de.
+working) is via github or via IRC (#pimutils on Freenode).
 
 .. _vdir: https://vdirsyncer.readthedocs.org/en/stable/vdir.html
 .. _vdirsyncer: https://github.com/pimutils/vdirsyncer
