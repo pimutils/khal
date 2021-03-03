@@ -38,7 +38,7 @@ setup(
     name='khal',
     description='A standards based terminal calendar',
     long_description=open('README.rst').read(),
-    author='Christian Geier et. al.',
+    author='khal contributors',
     author_email='khal@lostpackets.de',
     url='http://lostpackets.de/khal/',
     license='Expat/MIT',
