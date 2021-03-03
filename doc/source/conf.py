@@ -119,7 +119,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'khal'
-copyright = '2014-2016, Christan Geier et al.'
+copyright = 'Copyright (c) 2013-2021 khal contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -330,7 +330,7 @@ man_show_urls = True
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'khal', 'khal Documentation',
-     'Christan Geier et al.', 'khal', 'One line description of project.',
+     'khal contributors', 'khal', 'A standards based calendar program',
      'Miscellaneous'),
 ]
 

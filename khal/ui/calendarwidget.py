@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2017 Christian Geier et al.
+# Copyright (c) 2013-2021 khal contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
