@@ -21,6 +21,7 @@ not released
 * NEW Possibility to add a blank line before day in `khal` with
    `blank_line_before_day` option
 * FIX `new` keybinding in search no longer crash `ikhal`
+* NEW Improved sorting of events. Sort by `DTSTART`, `DTEND` then `SUMMARY`.
 
 0.10.2
 ======
