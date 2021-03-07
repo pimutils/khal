@@ -119,8 +119,9 @@ datetimeformat = string(default='%c')
 longdatetimeformat = string(default='%c')
 
 
-# Enable weeknumbers in `calendar` and `interactive` (ikhal) mode. As those are
-# iso weeknumbers, they only work properly if `firstweekday` is set to 0
+# Enable weeknumbers in `calendar` and `interactive` (ikhal) mode by specifying
+# whether they should be displayed on the 'left' or 'right'. These are iso
+# weeknumbers, so will only work properly if `firstweekday` is set to 0
 weeknumbers = weeknumbers(default='off')
 
 # Keybindings for :command:`ikhal` are set here. You can bind more then one key
