@@ -16,6 +16,7 @@ not released
 * FIX `khal interactive` now accepts -a/-d options (as documented)
 * FIX Strip whitespace when loading `displayname` and `color` files
 * FIX Warn when loading events with a recurrence that finishes before it starts
+* FIX Warn when loading events with a recurrence that never occurs
 * FIX Alarms without descriptions no longer crash `ikhal`
 * FIX Display all-day events at the top of the day in `ikhal`
 * FIX Keybindings in empty search results no longer crash `ikhal`
