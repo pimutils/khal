@@ -199,6 +199,23 @@ example_gr = [
     '     20 21 22 23 24 25 26 ',
     '\x1b[1mμαρ  \x1b[0m27 28 29  1  2  3  4 ']
 
+example_gr_darwin = [
+    '\x1b[1m    δε τρ τε πε πα σα κυ \x1b[0m',
+    '\x1b[1mδεκ \x1b[0m28 29 30  1  2  3  4 ',
+    '     5  6  7  8  9 10 11 ',
+    '    \x1b[7m12\x1b[0m 13 14 15 16 17 18 ',
+    '    19 20 21 22 23 24 25 ',
+    '\x1b[1mιαν \x1b[0m26 27 28 29 30 31  1 ',
+    '     2  3  4  5  6  7  8 ',
+    '     9 10 11 12 13 14 15 ',
+    '    16 17 18 19 20 21 22 ',
+    '    23 24 25 26 27 28 29 ',
+    '\x1b[1mφεβ \x1b[0m30 31  1  2  3  4  5 ',
+    '     6  7  8  9 10 11 12 ',
+    '    13 14 15 16 17 18 19 ',
+    '    20 21 22 23 24 25 26 ',
+    '\x1b[1mμαρ \x1b[0m27 28 29  1  2  3  4 ']
+
 example_de = [
     '\x1b[1m    Mo Di Mi Do Fr Sa So \x1b[0m',
     '\x1b[1mDez \x1b[0m28 29 30  1  2  3  4 ',
@@ -266,6 +283,24 @@ example_fr = [
     '      13 14 15 16 17 18 19 ',
     '      20 21 22 23 24 25 26 ',
     '\x1b[1mmars  \x1b[0m27 28 29  1  2  3  4 ']
+
+example_fr_darwin = [
+    '\x1b[1m    Lu Ma Me Je Ve Sa Di \x1b[0m',
+    '\x1b[1mdéc \x1b[0m28 29 30  1  2  3  4 ',
+    '     5  6  7  8  9 10 11 ',
+    '    \x1b[7m12\x1b[0m 13 14 15 16 17 18 ',
+    '    19 20 21 22 23 24 25 ',
+    '\x1b[1mjan \x1b[0m26 27 28 29 30 31  1 ',
+    '     2  3  4  5  6  7  8 ',
+    '     9 10 11 12 13 14 15 ',
+    '    16 17 18 19 20 21 22 ',
+    '    23 24 25 26 27 28 29 ',
+    '\x1b[1mfév \x1b[0m30 31  1  2  3  4  5 ',
+    '     6  7  8  9 10 11 12 ',
+    '    13 14 15 16 17 18 19 ',
+    '    20 21 22 23 24 25 26 ',
+    '\x1b[1mmar \x1b[0m27 28 29  1  2  3  4 ']
+
 
 
 def test_vertical_month():
@@ -365,8 +400,12 @@ def test_vertical_month_unicode_weekdeays_gr():
                                   today=dt.date(2011, 12, 12))
         # on some OSes, Greek locale's abbreviated day of the week and
         # month names have accents, on some they haven't
-        assert strip_accents('\n'.join([line.lower() for line in vert_str])) == \
-            '\n'.join(example_gr)
+        if platform.system() == 'Darwin':
+            assert strip_accents('\n'.join([line.lower() for line in vert_str])) == \
+                '\n'.join(example_gr_darwin)
+        else:
+            assert strip_accents('\n'.join([line.lower() for line in vert_str])) == \
+                '\n'.join(example_gr)
         '\n'.join(vert_str)  # issue 142/293
     except locale.Error as error:
         if str(error) == 'unsupported locale setting':
@@ -388,7 +427,10 @@ def test_vertical_month_abbr_fr():
         locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
         vert_str = vertical_month(month=12, year=2011,
                                   today=dt.date(2011, 12, 12))
-        assert '\n'.join(vert_str) == '\n'.join(example_fr)
+        if platform.system() == 'Darwin':
+            assert '\n'.join(vert_str) == '\n'.join(example_fr_darwin)
+        else:
+            assert '\n'.join(vert_str) == '\n'.join(example_fr)
     except locale.Error as error:
         if str(error) == 'unsupported locale setting':
             pytest.xfail(
