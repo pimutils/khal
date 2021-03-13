@@ -761,12 +761,25 @@ default_calendar = private
     assert '{}/khal/calendars/private1' .format(runner.xdg_data_home) in actual_config
 
 
+def cleanup(paths):
+    """reset permissions of all files and folders in `paths` to 644 resp. 755"""
+    for path in paths:
+        if os.path.exists(path):
+            os.chmod(str(path), 0o755)
+        for dirpath, dirnames, filenames in os.walk(path):
+            os.chmod(str(dirpath), 0o755)
+            for filename in filenames:
+                os.chmod(str(os.path.join(dirpath, filename)), 0o644)
+
+
 def test_configure_command_cannot_write_config_file(runner):
     runner = runner()
     runner.config_file.remove()
     os.chmod(str(runner.xdg_config_home), 555)
     result = runner.invoke(main_khal, ['configure'], input=choices())
     assert result.exit_code == 1
+    # make sure pytest can clean up behind us
+    cleanup([runner.xdg_config_home])
 
 
 def test_configure_command_cannot_create_vdir(runner):
@@ -779,6 +792,8 @@ def test_configure_command_cannot_create_vdir(runner):
     )
     assert 'Exiting' in result.output
     assert result.exit_code == 1
+    # make sure pytest can clean up behind us
+    cleanup([runner.xdg_data_home])
 
 
 def test_configure_no_vdir(runner):

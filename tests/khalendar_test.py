@@ -375,6 +375,7 @@ class TestDbCreation(object):
         calendars = {cal1: {'name': cal1, 'path': str(tmpdir)}}
         with pytest.raises(CouldNotCreateDbDir):
             CalendarCollection(calendars, dbpath=dbpath, locale=LOCALE_BERLIN)
+        os.chmod(str(tmpdir), 777)
 
 
 def test_event_different_timezones(coll_vdirs):
