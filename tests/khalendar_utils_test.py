@@ -690,7 +690,7 @@ class TestSpecial(object):
         # TODO test for logging message
         assert dtstart is False
 
-    def test_event_dt_rrule_until_before_start(self):
+    def test_event_invalid_rrule(self):
         """test handling if an event with RRULE will never occur"""
         vevent = _get_vevent(_get_text('event_rrule_no_occurence'))
         dtstart = icalendar_helpers.expand(vevent, berlin)
