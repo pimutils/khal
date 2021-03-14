@@ -500,10 +500,12 @@ END:VEVENT
 END:VCALENDAR"""
         )
 
+
 def test_sort_date_vs_datetime():
     event1 = Event.fromString(_get_text('event_d'), **EVENT_KWARGS)
     event2 = Event.fromString(_get_text('event_dt_floating'), **EVENT_KWARGS)
     assert event1 < event2
+
 
 def test_sort_event_start():
     event_dt = _get_text('event_dt_simple')
@@ -513,6 +515,7 @@ def test_sort_event_start():
     event2 = Event.fromString(event_dt, start=start, end=end, **EVENT_KWARGS)
     assert event1 < event2
 
+
 def test_sort_event_end():
     event_dt = _get_text('event_dt_simple')
     start = BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
@@ -520,6 +523,7 @@ def test_sort_event_end():
     event1 = Event.fromString(event_dt, **EVENT_KWARGS)
     event2 = Event.fromString(event_dt, start=start, end=end, **EVENT_KWARGS)
     assert event1 < event2
+
 
 def test_sort_event_summary():
     event_dt = _get_text('event_dt_simple')

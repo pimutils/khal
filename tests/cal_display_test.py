@@ -302,7 +302,6 @@ example_fr_darwin = [
     '\x1b[1mmar \x1b[0m27 28 29  1  2  3  4 ']
 
 
-
 def test_vertical_month():
     try:
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
