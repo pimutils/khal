@@ -31,7 +31,7 @@ not released
 
 * NEW Parse `X-ANNIVERSARY`, `ANNIVERSARY` and `X-ABDATE` fields from vcards
 * NEW Add ability to change default event duration with
-   `default_event_duration` and `default_dayevent_duration` for an day-long 
+   `default_event_duration` and `default_dayevent_duration` for a day-long 
    event
 * NEW Add `{uid}` property to template options in `--format`
 * FIX No warning when importing event with Windows timezone format
