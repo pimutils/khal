@@ -3,7 +3,6 @@ import os.path
 
 import pytest
 from tzlocal import get_localzone as _get_localzone
-from validate import VdtValueError
 
 from khal.settings import get_config
 from khal.settings.exceptions import (CannotParseConfigFileError,
@@ -11,6 +10,12 @@ from khal.settings.exceptions import (CannotParseConfigFileError,
 from khal.settings.utils import (config_checks, get_all_vdirs,
                                  get_color_from_vdir, get_unique_name,
                                  is_color)
+
+try:
+    # Available from configobj 5.1.0
+    from configobj.validate import VdtValueError
+except ModuleNotFoundError:
+    from validate import VdtValueError
 
 from .utils import LOCALE_BERLIN
 

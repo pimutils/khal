@@ -12,10 +12,15 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import validate
 from configobj import ConfigObj
 
 import khal
+
+try:
+    # Available from configobj 5.1.0
+    import configobj.validate
+except ModuleNotFoundError:
+    import validate
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
