@@ -329,7 +329,10 @@ class Event(object):
         return self._vevents[self.ref]['URL']
 
     def update_url(self, url):
-        self._vevents[self.ref]['URL'] = url
+        if url:
+            self._vevents[self.ref]['URL'] = url
+        else:
+            self._vevents[self.ref].pop('URL')
 
     @staticmethod
     def _create_calendar():
