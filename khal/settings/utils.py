@@ -167,7 +167,11 @@ def get_color_from_vdir(path):
 
 def get_unique_name(path, names):
     # TODO take care of edge cases, make unique name finding less brain-dead
-    name = Vdir(path, '.ics').get_meta('displayname')
+    try:
+        name = Vdir(path, '.ics').get_meta('displayname')
+    except CollectionNotFoundError:
+        logger.fatal('The calendar at `{}` is not a directory.'.format(path))
+        raise
     if name is None or name == '':
         logger.debug('Found no or empty file `displayname` in {}'.format(path))
         name = os.path.split(path)[-1]
