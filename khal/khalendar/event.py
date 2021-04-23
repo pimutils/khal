@@ -487,7 +487,8 @@ class Event:
 
     def update_attendees(self, attendees):
         assert isinstance(attendees, list)
-        if attendees:
+        attendees = [a for a in attendees if a != ""]
+        if len(attendees) > 0:
             vCalAddresses = []
             for attendee in attendees:
                 item = icalendar.prop.vCalAddress('MAILTO:{}'.format(attendee.strip()))
