@@ -8,9 +8,13 @@ may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
 
-0.10.3
+0.10.4
 ======
 not released
+
+0.10.3
+======
+2021-04-27
 
 * DROPPED support for Python 3.4
 * FIX `khal interactive` now accepts -a/-d options (as documented)
