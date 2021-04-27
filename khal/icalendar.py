@@ -71,7 +71,7 @@ def split_ics(ics, random_uid=False, default_timezone=None):
 
 def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
               allday=False, description=None, location=None, categories=None,
-              repeat=None, until=None, alarms=None):
+              repeat=None, until=None, alarms=None, url=None):
     """create a new event
 
     :param dtstart: starttime of that event
@@ -87,6 +87,8 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     :param allday: if set to True, we will not transform dtstart and dtend to
         datetime
     :type allday: bool
+    :param url: url of the event
+    :type url: string
     :returns: event
     :rtype: icalendar.Event
     """
@@ -116,6 +118,8 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
         event.add('location', location)
     if categories:
         event.add('categories', categories)
+    if url:
+        event.add('url', icalendar.vUri(url))
     if repeat and repeat != "none":
         rrule = rrulefstr(repeat, until, locale)
         event.add('rrule', rrule)
