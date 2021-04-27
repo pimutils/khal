@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released
 
+* DROPPED support for Python 3.5
+
 0.10.3
 ======
 2021-04-27
