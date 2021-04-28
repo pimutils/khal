@@ -226,7 +226,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
             default_timedelta_date=conf['default']['timedelta'],
             default_timedelta_datetime=conf['default']['timedelta'],
         )
-        logger.debug('Getting all events between {} and {}'.format(start, end))
+        logger.debug(f'Getting all events between {start} and {end}')
 
     elif datepoint is not None:
         if not datepoint:
@@ -238,7 +238,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
         except ValueError:
             raise FatalError('Invalid value of `{}` for a datetime'.format(' '.join(datepoint)))
         if allday:
-            logger.debug('Got date {}'.format(start))
+            logger.debug(f'Got date {start}')
             raise FatalError('Please supply a datetime, not a date.')
         end = start + dt.timedelta(seconds=1)
         if day_format is None:
@@ -246,7 +246,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
                 start.strftime(conf['locale']['longdatetimeformat']),
                 bold=True,
             )
-        logger.debug('Getting all events between {} and {}'.format(start, end))
+        logger.debug(f'Getting all events between {start} and {end}')
 
     event_column = []
     once = set() if once else None
@@ -381,7 +381,7 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
         collection.new(event)
     except ReadOnlyCalendarError:
         raise FatalError(
-            'ERROR: Cannot modify calendar "{}" as it is read-only'.format(calendar_name)
+            f'ERROR: Cannot modify calendar "{calendar_name}" as it is read-only'
         )
 
     if conf['default']['print_new'] == 'event':
@@ -546,7 +546,7 @@ def interactive(collection, conf):
         collection, conf, title="select an event", description="do something")
     ui.start_pane(
         pane, pane.cleanup,
-        program_info='{0} v{1}'.format(__productname__, __version__),
+        program_info=f'{__productname__} v{__version__}',
         quit_keys=conf['keybindings']['quit'],
     )
 
@@ -594,7 +594,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
     else:
         calendar_names = sorted(collection.writable_names)
         choices = ', '.join(
-            ['{}({})'.format(name, num) for num, name in enumerate(calendar_names)])
+            [f'{name}({num})' for num, name in enumerate(calendar_names)])
         while True:
             value = prompt(
                 "Which calendar do you want to import to? (unique prefixes are fine)\n"
@@ -612,7 +612,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
             echo('invalid choice')
     assert calendar_name in collection.writable_names
 
-    if batch or confirm("Do you want to import this event into `{}`?".format(calendar_name)):
+    if batch or confirm(f"Do you want to import this event into `{calendar_name}`?"):
         try:
             collection.new(Item(vevent), collection=calendar_name)
         except DuplicateUid:
@@ -620,7 +620,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
                     "An event with the same UID already exists. Do you want to update it?"):
                 collection.force_update(Item(vevent), collection=calendar_name)
             else:
-                logger.warning("Not importing event with UID `{}`".format(event.uid))
+                logger.warning(f"Not importing event with UID `{event.uid}`")
 
 
 def print_ics(conf, name, ics, format):

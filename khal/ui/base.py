@@ -118,7 +118,7 @@ class Pane(urwid.WidgetWrap):
         lines.append('  Command              Keys')
         lines.append('  =======              ====')
         for command, keys in self._conf['keybindings'].items():
-            lines.append('  {:20} {}'.format(command, keys))
+            lines.append(f'  {command:20} {keys}')
         self.scrollable_dialog(
             '\n'.join(lines),
             title="Press `ESC` to close this window, arrows to scroll",

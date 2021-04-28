@@ -295,7 +295,7 @@ def guesstimedeltafstr(delta_string):
             numint = int(num)
         except ValueError:
             raise DateTimeParseError(
-                'Invalid number in timedelta string "%s": "%s"' % (delta_string, num))
+                f'Invalid number in timedelta string "{delta_string}": "{num}"')
 
         ulower = unit.lower().strip()
         if ulower == 'd' or ulower == 'day' or ulower == 'days':

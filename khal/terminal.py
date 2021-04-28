@@ -105,9 +105,9 @@ def get_color(fg=None, bg=None, bold_for_light_color=False):
                     g = int(colorstring[3:5], 16)
                     b = int(colorstring[5:7], 16)
                 if not is_bg:
-                    color += '38;2;{!s};{!s};{!s}'.format(r, g, b)
+                    color += f'38;2;{r!s};{g!s};{b!s}'
                 else:
-                    color += '48;2;{!s};{!s};{!s}'.format(r, g, b)
+                    color += f'48;2;{r!s};{g!s};{b!s}'
             color += 'm'
             result += color
     return result

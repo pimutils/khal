@@ -87,17 +87,17 @@ def get_etag_from_file(f):
     mtime = getattr(stat, 'st_mtime_ns', None)
     if mtime is None:
         mtime = stat.st_mtime
-    return '{:.9f}'.format(mtime)
+    return f'{mtime:.9f}'
 
 
 class VdirError(IOError):
     def __init__(self, *args, **kwargs):
         for key, value in kwargs.items():
             if getattr(self, key, object()) is not None:  # pragma: no cover
-                raise TypeError('Invalid argument: {}'.format(key))
+                raise TypeError(f'Invalid argument: {key}')
             setattr(self, key, value)
 
-        super(VdirError, self).__init__(*args)
+        super().__init__(*args)
 
 
 class NotFoundError(VdirError):
@@ -176,7 +176,7 @@ class VdirBase:
         if not os.path.exists(path):
             os.makedirs(path, mode=cls.default_mode)
         elif not os.path.isdir(path):
-            raise IOError('{} is not a directory.'.format(repr(path)))
+            raise OSError('{} is not a directory.'.format(repr(path)))
 
         kwargs['path'] = path
         return kwargs
@@ -199,7 +199,7 @@ class VdirBase:
             with open(fpath, 'rb') as f:
                 return (Item(f.read().decode(self.encoding)),
                         get_etag_from_file(fpath))
-        except IOError as e:
+        except OSError as e:
             if e.errno == errno.ENOENT:
                 raise NotFoundError(href)
             else:
@@ -268,7 +268,7 @@ class VdirBase:
         try:
             with open(fpath, 'rb') as f:
                 return f.read().decode(self.encoding).strip() or None
-        except IOError as e:
+        except OSError as e:
             if e.errno == errno.ENOENT:
                 return None
             else:

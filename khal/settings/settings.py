@@ -88,7 +88,7 @@ def get_config(
     if config_path is None or not os.path.exists(config_path):
         raise NoConfigFile()
 
-    logger.debug('using the config file at {}'.format(config_path))
+    logger.debug(f'using the config file at {config_path}')
 
     try:
         user_config = ConfigObj(config_path,
@@ -139,11 +139,11 @@ def get_config(
     extras = get_extra_values(user_config)
     for section, value in extras:
         if section == ():
-            logger.warning('unknown section "{}" in config file'.format(value))
+            logger.warning(f'unknown section "{value}" in config file')
         else:
             section = sectionize(section)
             logger.warning(
-                'unknown key or subsection "{}" in section "{}"'.format(value, section))
+                f'unknown key or subsection "{value}" in section "{section}"')
 
             deprecated = [{'value': 'default_command', 'section': 'default'}]
             for d in deprecated:

@@ -48,14 +48,14 @@ def is_timezone(tzstring):
     try:
         return pytz.timezone(tzstring)
     except pytz.UnknownTimeZoneError:
-        raise VdtValueError("Unknown timezone {}".format(tzstring))
+        raise VdtValueError(f"Unknown timezone {tzstring}")
 
 
 def is_timedelta(string):
     try:
         return guesstimedeltafstr(string)
     except ValueError:
-        raise VdtValueError("Invalid timedelta: {}".format(string))
+        raise VdtValueError(f"Invalid timedelta: {string}")
 
 
 def weeknumber_option(option):
@@ -154,13 +154,13 @@ def get_color_from_vdir(path):
     except CollectionNotFoundError:
         color = None
     if color is None or color == '':
-        logger.debug('Found no or empty file `color` in {}'.format(path))
+        logger.debug(f'Found no or empty file `color` in {path}')
         return None
     color = color.strip()
     try:
         is_color(color)
     except VdtValueError:
-        logger.warning("Found invalid color `{}` in {}color".format(color, path))
+        logger.warning(f"Found invalid color `{color}` in {path}color")
         color = None
     return color
 
@@ -170,10 +170,10 @@ def get_unique_name(path, names):
     try:
         name = Vdir(path, '.ics').get_meta('displayname')
     except CollectionNotFoundError:
-        logger.fatal('The calendar at `{}` is not a directory.'.format(path))
+        logger.fatal(f'The calendar at `{path}` is not a directory.')
         raise
     if name is None or name == '':
-        logger.debug('Found no or empty file `displayname` in {}'.format(path))
+        logger.debug(f'Found no or empty file `displayname` in {path}')
         name = os.path.split(path)[-1]
     if name in names:
         while name in names:
@@ -237,7 +237,7 @@ def config_checks(
         # get color from config if not defined in vdir
 
         if calendar['color'] is None and vdir in vdir_colors_from_config:
-            logger.debug("using collection's color for {}".format(vdir))
+            logger.debug(f"using collection's color for {vdir}")
             calendar['color'] = vdir_colors_from_config[vdir]
 
         name = get_unique_name(vdir, config['calendars'].keys())

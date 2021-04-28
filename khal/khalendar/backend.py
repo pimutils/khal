@@ -57,7 +57,7 @@ class EventType(IntEnum):
     DATETIME = 1
 
 
-class SQLiteDb(object):
+class SQLiteDb:
     """
     This class should provide a caching database for a calendar, keeping raw
     vevents in one table and allowing to retrieve them by dates (via the help
@@ -111,7 +111,7 @@ class SQLiteDb(object):
                 makedirs(dbdir, mode=0o770)
                 logger.debug('success')
             except OSError as error:
-                logger.critical('failed to create {0}: {1}'.format(dbdir, error))
+                logger.critical(f'failed to create {dbdir}: {error}')
                 raise CouldNotCreateDbDir()
 
     def _check_table_version(self) -> None:
@@ -181,7 +181,7 @@ class SQLiteDb(object):
             result = self.cursor.fetchone()
 
             if result[0] != 0:
-                logger.debug("tables for calendar {0} exist".format(cal))
+                logger.debug(f"tables for calendar {cal} exist")
             else:
                 sql_s = 'INSERT INTO calendars (calendar, resource) VALUES (?, ?);'
                 stuple = (cal, '')
@@ -271,8 +271,8 @@ class SQLiteDb(object):
                 date = vcard[key]
                 if isinstance(date, list):
                     logger.warning(
-                        'Vcard {0} in collection {1} has more than one '
-                        '{2}, will be skipped and not be available '
+                        'Vcard {} in collection {} has more than one '
+                        '{}, will be skipped and not be available '
                         'in khal.'.format(href, calendar, key)
                     )
                     continue
@@ -285,7 +285,7 @@ class SQLiteDb(object):
                     date = parser.parse(date).date()
                 except ValueError:
                     logger.warning(
-                        'cannot parse {0} in {1} in collection {2}'.format(key, href, calendar))
+                        f'cannot parse {key} in {href} in collection {calendar}')
                     continue
                 if 'FN' in vcard:
                     name = vcard['FN']
@@ -309,10 +309,10 @@ class SQLiteDb(object):
                         xtag = 'x-abdate'
                         vevent.add('x-ablabel', description)
                     vevent.add(xtag,
-                               '{:04}{:02}{:02}'.format(date.year, date.month, date.day))
+                               f'{date.year:04}{date.month:02}{date.day:02}')
                     vevent.add('x-fname', name)
                 vevent.add('summary',
-                           '{0}\'s {1}'.format(name, description))
+                           f'{name}\'s {description}')
                 vevent.add('uid', href + key)
                 vevent_str = vevent.to_ical().decode('utf-8')
                 self._update_impl(vevent, href + key, calendar)
@@ -376,7 +376,7 @@ class SQLiteDb(object):
 
             if thisandfuture:
                 recs_sql_s = (
-                    'UPDATE {0} SET dtstart = rec_inst + ?, dtend = rec_inst + ?, ref = ? '
+                    'UPDATE {} SET dtstart = rec_inst + ?, dtend = rec_inst + ?, ref = ? '
                     'WHERE rec_inst >= ? AND href = ? AND calendar = ?;'.format(recs_table))
                 stuple_f = (
                     start_shift_seconds, start_shift_seconds + duration_seconds,
@@ -385,7 +385,7 @@ class SQLiteDb(object):
                 self.sql_ex(recs_sql_s, stuple_f)
             else:
                 recs_sql_s = (
-                    'INSERT OR REPLACE INTO {0} '
+                    'INSERT OR REPLACE INTO {} '
                     '(dtstart, dtend, href, ref, dtype, rec_inst, calendar)'
                     'VALUES (?, ?, ?, ?, ?, ?, ?);'.format(recs_table))
                 stuple_n = (dbstart, dbend, href, ref, dtype, rec_inst, calendar)
@@ -430,7 +430,7 @@ class SQLiteDb(object):
         """
         assert calendar is not None
         for table in ['recs_loc', 'recs_float']:
-            sql_s = 'DELETE FROM {0} WHERE href = ? AND calendar = ?;'.format(table)
+            sql_s = f'DELETE FROM {table} WHERE href = ? AND calendar = ?;'
             self.sql_ex(sql_s, (href, calendar))
         sql_s = 'DELETE FROM events WHERE href = ? AND calendar = ?;'
         self.sql_ex(sql_s, (href, calendar))
@@ -447,7 +447,7 @@ class SQLiteDb(object):
         """
         assert calendar is not None
         for table in ['recs_loc', 'recs_float']:
-            sql_s = 'DELETE FROM {0} WHERE href LIKE ? AND calendar = ?;'.format(table)
+            sql_s = f'DELETE FROM {table} WHERE href LIKE ? AND calendar = ?;'
             self.sql_ex(sql_s, (href, calendar))
         sql_s = 'DELETE FROM events WHERE href LIKE ? AND calendar = ?;'
         self.sql_ex(sql_s, (href, calendar))
@@ -577,7 +577,7 @@ class SQLiteDb(object):
             'recs_loc.calendar = events.calendar '
             'WHERE item LIKE (?) and events.calendar in ({0});'
         )
-        stuple = tuple(['%{0}%'.format(search_string)] + list(self.calendars))
+        stuple = tuple([f'%{search_string}%'] + list(self.calendars))
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
@@ -594,7 +594,7 @@ class SQLiteDb(object):
             'recs_float.calendar = events.calendar '
             'WHERE item LIKE (?) and events.calendar in ({0});'
         )
-        stuple = tuple(['%{0}%'.format(search_string)] + list(self.calendars))
+        stuple = tuple([f'%{search_string}%'] + list(self.calendars))
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = dt.datetime.utcfromtimestamp(start)
@@ -617,15 +617,15 @@ def check_support(vevent: icalendar.cal.Event, href: str, calendar: str):
         raise UpdateFailed(
             'The parameter `THISANDPRIOR` is not (and will not be) '
             'supported by khal (as applications supporting the latest '
-            'standard MUST NOT create those. Therefore event {0} from '
-            'calendar {1} will not be shown in khal'
+            'standard MUST NOT create those. Therefore event {} from '
+            'calendar {} will not be shown in khal'
             .format(href, calendar)
         )
     rdate = vevent.get('RDATE')
     if rdate is not None and hasattr(rdate, 'params') and rdate.params.get('VALUE') == 'PERIOD':
         raise UpdateFailed(
             '`RDATE;VALUE=PERIOD` is currently not supported by khal. '
-            'Therefore event {0} from calendar {1} will not be shown in khal.\n'
+            'Therefore event {} from calendar {} will not be shown in khal.\n'
             'Please post exemplary events (please remove any private data) '
             'to https://github.com/pimutils/khal/issues/152 .'
             .format(href, calendar)
@@ -636,7 +636,7 @@ def check_for_errors(component: icalendar.cal.Component, calendar: str, href: st
     """checking if component.errors exists, is not empty and if so warn the user"""
     if hasattr(component, 'errors') and component.errors:
         logger.error(
-            'Errors occurred when parsing {0}/{1} for the following '
+            'Errors occurred when parsing {}/{} for the following '
             'reasons:'.format(calendar, href))
         for error in component.errors:
             logger.error(error)

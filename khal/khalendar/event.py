@@ -39,7 +39,7 @@ from ..parse_datetime import timedelta2str
 logger = logging.getLogger('khal')
 
 
-class Event(object):
+class Event:
     """base Event class for representing a *recurring instance* of an Event
 
     (in case of non-recurring events this distinction is irrelevant)
@@ -184,12 +184,12 @@ class Event(object):
             try:
                 return end < other_end
             except TypeError:
-                raise ValueError('Cannot compare events {} and {}'.format(end, other_end))
+                raise ValueError(f'Cannot compare events {end} and {other_end}')
 
         try:
             return start < other_start
         except TypeError:
-            raise ValueError('Cannot compare events {} and {}'.format(start, other_start))
+            raise ValueError(f'Cannot compare events {start} and {other_start}')
 
     def update_start_end(self, start, end):
         """update start and end time of this event
@@ -318,7 +318,7 @@ class Event(object):
         cn = organizer.params.get('CN', '')
         email = organizer.split(':')[-1]
         if cn:
-            return '{} ({})'.format(cn, email)
+            return f'{cn} ({email})'
         else:
             return email
 
@@ -774,7 +774,7 @@ class AllDayEvent(Event):
 
     @property
     def end(self):
-        end = super(AllDayEvent, self).end
+        end = super().end
         if end == self.start:
             # https://github.com/pimutils/khal/issues/129
             logger.warning('{} ("{}"): The event\'s end date property '

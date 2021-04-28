@@ -44,7 +44,7 @@ def validate_int(input, min_value, max_value):
     if min_value <= number <= max_value:
         return number
     else:
-        raise UsageError('Input must be between {} and {}'.format(min_value, max_value))
+        raise UsageError(f'Input must be between {min_value} and {max_value}')
 
 
 DATE_FORMAT_INFO = [
@@ -158,7 +158,7 @@ def get_vdirs_from_vdirsyncer_config():
     else:
         print("The following collections were found:")
         for name, path, _ in vdirs:
-            print('  {}: {}'.format(name, path))
+            print(f'  {name}: {path}')
         return vdirs
 
 
@@ -178,18 +178,18 @@ def create_vdir(names=[]):
     try:
         makedirs(path)
     except OSError as error:
-        print("Could not create directory {} because of {}. Exiting".format(path, error))
+        print(f"Could not create directory {path} because of {error}. Exiting")
         raise
-    print("Created new vdir at {}".format(path))
+    print(f"Created new vdir at {path}")
     return [(name, path, 'calendar')]
 
 
 def create_config(vdirs, dateformat, timeformat, default_calendar=None):
     config = ['[calendars]']
     for name, path, type_ in sorted(vdirs or ()):
-        config.append('\n[[{name}]]'.format(name=name))
-        config.append('path = {path}'.format(path=path))
-        config.append('type = {type}'.format(type=type_))
+        config.append(f'\n[[{name}]]')
+        config.append(f'path = {path}')
+        config.append(f'type = {type_}')
 
     config.append('\n[locale]')
     config.append('timeformat = {timeformat}\n'
@@ -202,7 +202,7 @@ def create_config(vdirs, dateformat, timeformat, default_calendar=None):
                           longdateformat=dateformat))
     if default_calendar:
         config.append('[default]')
-        config.append('default_calendar = {}\n'.format(default_calendar))
+        config.append(f'default_calendar = {default_calendar}\n')
     config = '\n'.join(config)
 
     return config
@@ -211,7 +211,7 @@ def create_config(vdirs, dateformat, timeformat, default_calendar=None):
 def configwizard():
     config_file = settings.find_configuration_file()
     if config_file is not None:
-        logger.fatal("Found an existing config file at {}.".format(config_file))
+        logger.fatal(f"Found an existing config file at {config_file}.")
         logger.fatal(
             "If you want to create a new configuration file, "
             "please remove the old one first. Exiting.")
@@ -257,7 +257,7 @@ def configwizard():
             )
             raise FatalError(error)
         else:
-            print('created directory {}'.format(config_dir))
+            print(f'created directory {config_dir}')
     with open(config_path, 'w') as config_file:
         config_file.write(config)
-    print("Successfully wrote configuration to {}".format(config_path))
+    print(f"Successfully wrote configuration to {config_path}")

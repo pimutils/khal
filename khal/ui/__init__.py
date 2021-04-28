@@ -131,11 +131,11 @@ class DateHeader(SelectableText):
         weekday = day.strftime('%A')
         daystr = day.strftime(dtformat)
         if day == dt.date.today():
-            return 'Today ({}, {})'.format(weekday, daystr)
+            return f'Today ({weekday}, {daystr})'
         elif day == dt.date.today() + dt.timedelta(days=1):
-            return 'Tomorrow ({}, {})'.format(weekday, daystr)
+            return f'Tomorrow ({weekday}, {daystr})'
         elif day == dt.date.today() - dt.timedelta(days=1):
-            return 'Yesterday ({}, {})'.format(weekday, daystr)
+            return f'Yesterday ({weekday}, {daystr})'
 
         approx_delta = utils.relative_timedelta_str(day)
 
@@ -566,7 +566,7 @@ class DateListBox(NListBox):
         super().__init__(content)
 
     def __repr__(self):
-        return '<DateListBox {}>'.format(self.date)
+        return f'<DateListBox {self.date}>'
 
     __str__ = __repr__
 
@@ -696,7 +696,7 @@ class EventColumn(urwid.WidgetWrap):
         """
         if event.readonly:
             self.pane.window.alert(
-                ('alert', 'Calendar `{}` is read-only.'.format(event.calendar)))
+                ('alert', f'Calendar `{event.calendar}` is read-only.'))
             return
 
         if isinstance(event.start_local, dt.datetime):
@@ -811,7 +811,7 @@ class EventColumn(urwid.WidgetWrap):
 
         if event.event.readonly:
             self.pane.window.alert(
-                ('alert', 'Calendar {} is read-only.'.format(event.event.calendar)),
+                ('alert', f'Calendar {event.event.calendar} is read-only.'),
             )
             return
         status = self.delete_status(event.recuid)
@@ -1153,14 +1153,14 @@ class ClassicView(Pane):
         )
         pane = Pane(
             columns,
-            title="Search results for \"{}\" (Esc for backtrack)".format(search_term),
+            title=f"Search results for \"{search_term}\" (Esc for backtrack)",
         )
         pane._conf = self._conf
         columns.set_focus_column(1)
         self.window.open(pane)
 
     def render(self, size, focus=False):
-        rval = super(ClassicView, self).render(size, focus)
+        rval = super().render(size, focus)
         if self.init:
             # starting with today's events
             self.eventscolumn.current_date = dt.date.today()

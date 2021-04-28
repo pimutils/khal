@@ -277,19 +277,19 @@ def expand(vevent, href=''):
 
             if testuntil < teststart:
                 logger.warning(
-                    '{0}: Unsupported recurrence. UNTIL is before DTSTART.\n'
+                    '{}: Unsupported recurrence. UNTIL is before DTSTART.\n'
                     'This event will not be available in khal.'.format(href))
                 return False
 
         if rrule.count() == 0:
             logger.warning(
-                '{0}: Recurrence defined but will never occur.\n'
+                '{}: Recurrence defined but will never occur.\n'
                 'This event will not be available in khal.'.format(href))
             return False
 
         rrule = map(sanitize_datetime, rrule)
 
-        logger.debug('calculating recurrence dates for {}, this might take some time.'.format(href))
+        logger.debug(f'calculating recurrence dates for {href}, this might take some time.')
 
         # RRULE and RDATE may specify the same date twice, it is recommended by
         # the RFC to consider this as only one instance

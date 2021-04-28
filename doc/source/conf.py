@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # khal documentation build configuration file, created by
 # sphinx-quickstart on Fri Jul  4 00:00:47 2014.
@@ -36,14 +35,14 @@ def write_section(specsection, secname, key, comment, output):
     # why is _parse_check a "private" method? seems to be rather useful...
     # we don't need fun_kwargs
     fun_name, fun_args, fun_kwargs, default = validator._parse_check(specsection)
-    output.write('\n.. _{}-{}:'.format(secname, key))
+    output.write(f'\n.. _{secname}-{key}:')
     output.write('\n')
-    output.write('\n.. object:: {}\n'.format(key))
+    output.write(f'\n.. object:: {key}\n')
     output.write('\n')
     output.write('    ' + '\n    '.join([line.strip('# ') for line in comment]))
     output.write('\n')
     if fun_name == 'option':
-        fun_args = ['*{}*'.format(arg) for arg in fun_args]
+        fun_args = [f'*{arg}*' for arg in fun_args]
         fun_args = fun_args[:-2] + [fun_args[-2] + ' and ' + fun_args[-1]]
         fun_name += ', allowed values are {}'.format(', '.join(fun_args))
         fun_args = []
@@ -60,19 +59,19 @@ def write_section(specsection, secname, key, comment, output):
             default = ['space' if one == ' ' else one for one in default]
             default = ', '.join(default)
 
-    output.write('      :type: {}'.format(fun_name))
+    output.write(f'      :type: {fun_name}')
     output.write('\n')
     if fun_args != []:
-        output.write('      :args: {}'.format(fun_args))
+        output.write(f'      :args: {fun_args}')
         output.write('\n')
-    output.write('      :default: {}'.format(default))
+    output.write(f'      :default: {default}')
     output.write('\n')
 
 
 with open('configspec.rst', 'w') as f:
     for secname in sorted(spec):
         f.write('\n')
-        heading = 'The [{}] section'.format(secname)
+        heading = f'The [{secname}] section'
         f.write('{}\n{}'.format(heading, len(heading) * '~'))
         f.write('\n')
         comment = spec.comments[secname]

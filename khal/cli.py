@@ -185,7 +185,7 @@ def build_collection(conf, selection):
     return collection
 
 
-class _NoConfig(object):
+class _NoConfig:
     def __getitem__(self, key):
         logger.fatal(
             'Cannot find a config file. If you have no configuration file '
@@ -217,14 +217,14 @@ def stringify_conf(conf):
     # really worth it
     out = list()
     for key, value in conf.items():
-        out.append('[{}]'.format(key))
+        out.append(f'[{key}]')
         for subkey, subvalue in value.items():
             if isinstance(subvalue, dict):
-                out.append('  [[{}]]'.format(subkey))
+                out.append(f'  [[{subkey}]]')
                 for subsubkey, subsubvalue in subvalue.items():
-                    out.append('    {}: {}'.format(subsubkey, subsubvalue))
+                    out.append(f'    {subsubkey}: {subsubvalue}')
             else:
-                out.append('  {}: {}'.format(subkey, subvalue))
+                out.append(f'  {subkey}: {subvalue}')
     return '\n'.join(out)
 
 
@@ -442,7 +442,7 @@ def _get_cli():
                 ics_strs = (sys.stdin.read(),)
                 if not batch:
                     if os.stat('/dev/tty').st_mode & stat.S_IFCHR > 0:
-                        sys.stdin = open('/dev/tty', 'r')
+                        sys.stdin = open('/dev/tty')
                     else:
                         logger.warning('/dev/tty does not exist, importing might not work')
             else:
@@ -519,7 +519,7 @@ def _get_cli():
                     'longdatetimeformat', 'datetimeformat', 'longdateformat',
                     'dateformat', 'timeformat']:
                 dt_str = time.strftime(ctx.obj['conf']['locale'][strftime_format])
-                click.echo('{}: {}'.format(strftime_format, dt_str))
+                click.echo(f'{strftime_format}: {dt_str}')
         except FatalError as error:
             logger.debug(error, exc_info=True)
             logger.fatal(error)

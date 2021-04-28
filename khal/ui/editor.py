@@ -30,7 +30,7 @@ from .widgets import (AlarmsEditor, Choice, DateConversionError, DateWidget,
                       TimeWidget, ValidatedEdit)
 
 
-class StartEnd(object):
+class StartEnd:
 
     def __init__(self, startdate, starttime, enddate, endtime):
         """collecting some common properties"""
