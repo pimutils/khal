@@ -341,8 +341,8 @@ class CalendarCollection:
             if not isinstance(e, (UpdateFailed, UnsupportedFeatureError, NonUniqueUID)):
                 logger.exception('Unknown exception happened.')
             logger.warning(
-                'Skipping {}/{}: {}\n'
-                'This event will not be available in khal.'.format(calendar, href, str(e)))
+                f'Skipping {calendar}/{href}: {str(e)}\n'
+                'This event will not be available in khal.')
             return False
 
     def search(self, search_string: str) -> Iterable[Event]:

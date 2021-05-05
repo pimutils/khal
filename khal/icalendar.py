@@ -277,14 +277,14 @@ def expand(vevent, href=''):
 
             if testuntil < teststart:
                 logger.warning(
-                    '{}: Unsupported recurrence. UNTIL is before DTSTART.\n'
-                    'This event will not be available in khal.'.format(href))
+                    f'{href}: Unsupported recurrence. UNTIL is before DTSTART.\n'
+                    'This event will not be available in khal.')
                 return False
 
         if rrule.count() == 0:
             logger.warning(
-                '{}: Recurrence defined but will never occur.\n'
-                'This event will not be available in khal.'.format(href))
+                f'{href}: Recurrence defined but will never occur.\n'
+                'This event will not be available in khal.')
             return False
 
         rrule = map(sanitize_datetime, rrule)

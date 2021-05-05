@@ -271,9 +271,8 @@ class SQLiteDb:
                 date = vcard[key]
                 if isinstance(date, list):
                     logger.warning(
-                        'Vcard {} in collection {} has more than one '
-                        '{}, will be skipped and not be available '
-                        'in khal.'.format(href, calendar, key)
+                        f'Vcard {href} in collection {calendar} has more than one '
+                        f'{key}, will be skipped and not be available in khal.'
                     )
                     continue
                 try:
@@ -376,8 +375,8 @@ class SQLiteDb:
 
             if thisandfuture:
                 recs_sql_s = (
-                    'UPDATE {} SET dtstart = rec_inst + ?, dtend = rec_inst + ?, ref = ? '
-                    'WHERE rec_inst >= ? AND href = ? AND calendar = ?;'.format(recs_table))
+                    f'UPDATE {recs_table} SET dtstart = rec_inst + ?, dtend = rec_inst + ?, ref = ? '
+                    'WHERE rec_inst >= ? AND href = ? AND calendar = ?;')
                 stuple_f = (
                     start_shift_seconds, start_shift_seconds + duration_seconds,
                     ref, rec_inst, href, calendar,
@@ -385,9 +384,9 @@ class SQLiteDb:
                 self.sql_ex(recs_sql_s, stuple_f)
             else:
                 recs_sql_s = (
-                    'INSERT OR REPLACE INTO {} '
+                    f'INSERT OR REPLACE INTO {recs_table} '
                     '(dtstart, dtend, href, ref, dtype, rec_inst, calendar)'
-                    'VALUES (?, ?, ?, ?, ?, ?, ?);'.format(recs_table))
+                    'VALUES (?, ?, ?, ?, ?, ?, ?);')
                 stuple_n = (dbstart, dbend, href, ref, dtype, rec_inst, calendar)
                 self.sql_ex(recs_sql_s, stuple_n)
 
@@ -617,18 +616,16 @@ def check_support(vevent: icalendar.cal.Event, href: str, calendar: str):
         raise UpdateFailed(
             'The parameter `THISANDPRIOR` is not (and will not be) '
             'supported by khal (as applications supporting the latest '
-            'standard MUST NOT create those. Therefore event {} from '
-            'calendar {} will not be shown in khal'
-            .format(href, calendar)
+            f'standard MUST NOT create those. Therefore event {href} from '
+            f'calendar {calendar} will not be shown in khal'
         )
     rdate = vevent.get('RDATE')
     if rdate is not None and hasattr(rdate, 'params') and rdate.params.get('VALUE') == 'PERIOD':
         raise UpdateFailed(
             '`RDATE;VALUE=PERIOD` is currently not supported by khal. '
-            'Therefore event {} from calendar {} will not be shown in khal.\n'
+            f'Therefore event {href} from calendar {calendar} will not be shown in khal.\n'
             'Please post exemplary events (please remove any private data) '
             'to https://github.com/pimutils/khal/issues/152 .'
-            .format(href, calendar)
         )
 
 
@@ -636,8 +633,8 @@ def check_for_errors(component: icalendar.cal.Component, calendar: str, href: st
     """checking if component.errors exists, is not empty and if so warn the user"""
     if hasattr(component, 'errors') and component.errors:
         logger.error(
-            'Errors occurred when parsing {}/{} for the following '
-            'reasons:'.format(calendar, href))
+            f'Errors occurred when parsing {calendar}/{href} for '
+            'the following reasons:')
         for error in component.errors:
             logger.error(error)
         logger.error('This might lead to this event being shown wrongly or not at all.')
