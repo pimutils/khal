@@ -605,7 +605,8 @@ def _get_cli():
             now = dt.datetime.now()
             env = {"calendars": ctx.obj['conf']['calendars']}
             for event in events:
-                desc = textwrap.wrap(event.format(format, relative_to=now, env=env), term_width)
+                desc = textwrap.wrap(event.format(controllers.human_formatter(
+                    format), relative_to=now, env=env), term_width)
                 event_column.extend(
                     [colored(d, event.color,
                              bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
@@ -655,9 +656,10 @@ def _get_cli():
                   help=('The format of the day line.'))
     @click.option('--notstarted', help=('Print only events that have not started'),
                   is_flag=True)
+    @click.option('--json', help=("Fields to output in json"), multiple=True)
     @click.argument('DATETIME', nargs=-1, required=False, metavar='[[START DATE] TIME | now]')
     @click.pass_context
-    def at(ctx, datetime, notstarted, format, day_format, include_calendar, exclude_calendar):
+    def at(ctx, datetime, notstarted, format, day_format, json, include_calendar, exclude_calendar):
         '''Print all events at a specific datetime (defaults to now).'''
         if not datetime:
             datetime = ("now",)
@@ -675,7 +677,8 @@ def _get_cli():
                 once=True,
                 notstarted=notstarted,
                 conf=ctx.obj['conf'],
-                env={"calendars": ctx.obj['conf']['calendars']}
+                env={"calendars": ctx.obj['conf']['calendars']},
+                json=json
             )
             if rows:
                 click.echo('\n'.join(rows))

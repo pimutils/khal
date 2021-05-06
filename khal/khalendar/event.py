@@ -555,10 +555,9 @@ class Event:
             alarmstr = ''
         return alarmstr
 
-    def format(self, format_string: str, relative_to, env=None, colors: bool=True):
+    def format(self, formatter, format_string: str, relative_to, env=None, colors: bool=True):
         """
         :param colors: determines if colors codes should be printed or not
-        :type colors: bool
         """
         env = env or {}
 
@@ -722,7 +721,7 @@ class Event:
 
         attributes['status'] = self.status + ' ' if self.status else ''
         attributes['cancelled'] = 'CANCELLED ' if self.status == 'CANCELLED' else ''
-        return format_string.format(**dict(attributes)) + attributes["reset"]
+        return formatter(**dict(attributes)) + attributes["reset"]
 
     def duplicate(self) -> 'Event':
         """duplicate this event's PROTO event"""
