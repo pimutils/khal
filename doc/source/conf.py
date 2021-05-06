@@ -44,11 +44,10 @@ def write_section(specsection, secname, key, comment, output):
     if fun_name == 'option':
         fun_args = [f'*{arg}*' for arg in fun_args]
         fun_args = fun_args[:-2] + [fun_args[-2] + ' and ' + fun_args[-1]]
-        fun_name += ', allowed values are {}'.format(', '.join(fun_args))
+        fun_name += f", allowed values are {', '.join(fun_args)}"
         fun_args = []
     if fun_name == 'integer' and len(fun_args) == 2:
-        fun_name += ', allowed values are between {} and {}'.format(
-            fun_args[0], fun_args[1])
+        fun_name += f', allowed values are between {fun_args[0]} and {fun_args[1]}'
         fun_args = []
     output.write('\n')
     if fun_name in ['expand_db_path', 'expand_path']:
@@ -72,7 +71,7 @@ with open('configspec.rst', 'w') as f:
     for secname in sorted(spec):
         f.write('\n')
         heading = f'The [{secname}] section'
-        f.write('{}\n{}'.format(heading, len(heading) * '~'))
+        f.write(f'{heading}\n{ len(heading) * "~"}')
         f.write('\n')
         comment = spec.comments[secname]
         f.write('\n'.join([line[2:] for line in comment]))

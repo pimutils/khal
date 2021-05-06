@@ -364,8 +364,8 @@ def test_repeating(runner):
     now = dt.datetime.now().strftime('%d.%m.%Y')
     end_date = dt.datetime.now() + dt.timedelta(days=10)
     result = runner.invoke(
-        main_khal, 'new {} 18:00 myevent -r weekly -u {}'.format(
-            now, end_date.strftime('%d.%m.%Y')).split())
+        main_khal, (f"new {now} 18:00 myevent -r weekly -u "
+                    f"{end_date.strftime('%d.%m.%Y')}").split())
     assert not result.exception
     assert result.output == ''
 
@@ -376,7 +376,7 @@ def test_at(runner):
     end_date = dt.datetime.now() + dt.timedelta(days=10)
     result = runner.invoke(
         main_khal,
-        'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+        f"new {now} {end_date.strftime('%d.%m.%Y')} 18:00 myevent".split())
     args = ['--color', 'at', '--format', '{start-time}{title}', '--day-format', '', '18:30']
     result = runner.invoke(main_khal, args)
     assert not result.exception
@@ -389,7 +389,7 @@ def test_at_day_format(runner):
     end_date = dt.datetime.now() + dt.timedelta(days=10)
     result = runner.invoke(
         main_khal,
-        'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+        f"new {now} {end_date.strftime('%d.%m.%Y')} 18:00 myevent".split())
     args = ['--color', 'at', '--format', '{start-time}{title}', '--day-format', '{name}', '18:30']
     result = runner.invoke(main_khal, args)
     assert not result.exception
@@ -724,15 +724,15 @@ def test_configure_command_create_vdir(runner):
         main_khal, ['configure'],
         input=choices(parse_vdirsyncer_conf=False, create_vdir=True),
     )
-    assert 'Successfully wrote configuration to {}'.format(str(runner.config_file)) in result.output
+    assert f'Successfully wrote configuration to {str(runner.config_file)}' in result.output
     assert result.exit_code == 0
     with open(str(runner.config_file)) as f:
         actual_config = ''.join(f.readlines())
 
-    assert actual_config == '''[calendars]
+    assert actual_config == f'''[calendars]
 
 [[private]]
-path = {}/khal/calendars/private
+path = {str(runner.xdg_data_home)}/khal/calendars/private
 type = calendar
 
 [locale]
@@ -744,7 +744,7 @@ longdatetimeformat = %Y-%m-%d %H:%M
 
 [default]
 default_calendar = private
-'''.format(runner.xdg_data_home)
+'''
 
     # running configure again, should yield another vdir path, as the old
     # one still exists
@@ -753,12 +753,12 @@ default_calendar = private
         main_khal, ['configure'],
         input=choices(parse_vdirsyncer_conf=False, create_vdir=True),
     )
-    assert 'Successfully wrote configuration to {}'.format(str(runner.config_file)) in result.output
+    assert f'Successfully wrote configuration to {str(runner.config_file)}' in result.output
     assert result.exit_code == 0
     with open(str(runner.config_file)) as f:
         actual_config = ''.join(f.readlines())
 
-    assert '{}/khal/calendars/private1' .format(runner.xdg_data_home) in actual_config
+    assert f'{runner.xdg_data_home}/khal/calendars/private1' in actual_config
 
 
 def cleanup(paths):

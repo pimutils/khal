@@ -87,7 +87,7 @@ class CalendarCollection:
                 self._storages[name] = Vdir(calendar['path'], file_ext)
             except CollectionNotFoundError:
                 os.makedirs(calendar['path'])
-                logger.info('created non-existing vdir {}'.format(calendar['path']))
+                logger.info(f"created non-existing vdir {calendar['path']}")
                 self._storages[name] = Vdir(calendar['path'], file_ext)
 
         self.hmethod = hmethod

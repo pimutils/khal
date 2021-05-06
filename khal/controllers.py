@@ -236,7 +236,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
                 datepoint, conf['locale'], dt.date.today(),
             )
         except ValueError:
-            raise FatalError('Invalid value of `{}` for a datetime'.format(' '.join(datepoint)))
+            raise FatalError('Invalid value of `{' '.join(datepoint)}` for a datetime')
         if allday:
             logger.debug(f'Got date {start}')
             raise FatalError('Please supply a datetime, not a date.')
@@ -598,7 +598,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
         while True:
             value = prompt(
                 "Which calendar do you want to import to? (unique prefixes are fine)\n"
-                "{}".format(choices),
+                f"{choices}",
                 default=collection.default_calendar_name,
             )
             try:
@@ -636,7 +636,7 @@ def print_ics(conf, name, ics, format):
     for uid in events_grouped:
         vevents.append(sorted(events_grouped[uid], key=sort_vevent_key))
 
-    echo('{} events found in {}'.format(len(vevents), name))
+    echo(f'{len(vevents)} events found in {name}')
     for sub_event in vevents:
         event = Event.fromVEvents(sub_event, locale=conf['locale'])
         echo(event.format(format, dt.datetime.now()))

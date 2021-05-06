@@ -75,8 +75,8 @@ def weeknumber_option(option):
         return False
     else:
         raise VdtValueError(
-            "Invalid value '{}' for option 'weeknumber', must be one of "
-            "'off', 'left' or 'right'".format(option))
+            f"Invalid value '{option}' for option 'weeknumber', must be one of "
+            "'off', 'left' or 'right'")
 
 
 def monthdisplay_option(option):
@@ -94,8 +94,9 @@ def monthdisplay_option(option):
         return 'firstfullweek'
     else:
         raise VdtValueError(
-            "Invalid value '{}' for option 'monthdisplay', must be one of "
-            "'firstday' or 'firstfullweek'".format(option))
+            f"Invalid value '{option}' for option 'monthdisplay', must be one "
+            "of 'firstday' or 'firstfullweek'"
+        )
 
 
 def expand_path(path):
@@ -138,9 +139,9 @@ def test_default_calendar(config):
         pass
     elif config['default']['default_calendar'] not in config['calendars']:
         logger.fatal(
-            "in section [default] {} is not valid for 'default_calendar', "
-            "must be one of {}".format(config['default']['default_calendar'],
-                                       config['calendars'].keys())
+            f"in section [default] {config['default']['default_calendar']} is "
+            "not valid for 'default_calendar', must be one of "
+            f"{config['calendars'].keys()}"
         )
         raise InvalidSettingsError()
     elif config['calendars'][config['default']['default_calendar']]['readonly']:
@@ -218,7 +219,7 @@ def config_checks(
             raise InvalidSettingsError
         if config['calendars'][calendar]['type'] == 'discover':
             logger.debug(
-                'discovering calendars in {}'.format(config['calendars'][calendar]['path'])
+                f"discovering calendars in {config['calendars'][calendar]['path']}"
             )
             vdirs = get_all_vdirs(config['calendars'][calendar]['path'])
             vdirs_complete += vdirs

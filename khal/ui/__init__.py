@@ -167,8 +167,8 @@ class U_Event(urwid.Text):
         """
         if relative:
             if isinstance(this_date, dt.datetime) or not isinstance(this_date, dt.date):
-                raise ValueError('`this_date` is of type `{}`, sould be '
-                                 '`datetime.date`'.format(type(this_date)))
+                raise ValueError(f'`this_date` is of type `{type(this_date)}`, '
+                                 'should be `datetime.date`')
         self.event = event
         self.delete_status = delete_status
         self.this_date = this_date
@@ -969,15 +969,15 @@ class EventDisplay(urwid.WidgetWrap):
             endstr = event.end_local.strftime(self._conf['locale']['dateformat'])
         else:
             startstr = event.start_local.strftime(
-                '{} {}'.format(self._conf['locale']['dateformat'],
-                               self._conf['locale']['timeformat'])
+                f"{self._conf['locale']['dateformat']} "
+                f"{self._conf['locale']['timeformat']}"
             )
             if event.start_local.date == event.end_local.date:
                 endstr = event.end_local.strftime(self._conf['locale']['timeformat'])
             else:
                 endstr = event.end_local.strftime(
-                    '{} {}'.format(self._conf['locale']['dateformat'],
-                                   self._conf['locale']['timeformat'])
+                    f"{self._conf['locale']['dateformat']} "
+                    f"{self._conf['locale']['timeformat']}"
                 )
 
         if startstr == endstr:
@@ -1269,7 +1269,7 @@ def start_pane(pane, callback, program_info='', quit_keys=['q']):
     """Open the user interface with the given initial pane."""
 
     frame = Window(
-        footer=program_info + ' | {}: quit, ?: help'.format(quit_keys[0]),
+        footer=program_info + f' | {quit_keys[0]}: quit, ?: help',
         quit_keys=quit_keys,
     )
 
@@ -1293,7 +1293,7 @@ def start_pane(pane, callback, program_info='', quit_keys=['q']):
         def format(self, record):
             return (
                 super().format(record)[:30] + '... '
-                '[Press `{}` to view log]'.format(pane._conf['keybindings']['log'][0])
+                f"[Press `{pane._conf['keybindings']['log'][0]}` to view log]"
             )
 
     class LogPaneHandler(logging.Handler):

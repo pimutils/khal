@@ -60,7 +60,7 @@ def present_date_format_info(example_date):
     for title, formats in DATE_FORMAT_INFO:
         newcol = [title]
         for f in formats:
-            newcol.append('{}={}'.format(f, example_date.strftime(f)))
+            newcol.append(f'{f}={example_date.strftime(f)}')
         widths.append(max(len(s) for s in newcol) + 2)
         columns.append(newcol)
 
@@ -83,7 +83,7 @@ def choose_datetime_format():
     today = dt.date.today()
     print("What ordering of year, month, date do you want to use?")
     for num, (desc, fmt) in enumerate(choices):
-        print('[{}] {} (today: {})'.format(num, desc, today.strftime(fmt)))
+        print(f'[{num}] {desc} (today: {today.strftime(fmt)})')
     print('[3] Custom')
     choice_no = prompt("Please choose one of the above options", value_proc=validate)
     if choice_no == 3:
@@ -91,8 +91,8 @@ def choose_datetime_format():
         dateformat = prompt('Make your date format')
     else:
         dateformat = choices[choice_no][1]
-    print("Date format: {} "
-          "(today as an example: {})".format(dateformat, today.strftime(dateformat)))
+    print(f"Date format: {dateformat} "
+          f"(today as an example: {today.strftime(dateformat)})")
     return dateformat
 
 
@@ -105,8 +105,8 @@ def choose_time_format():
     prompt_text = "Please choose one of the above options"
     timeformat = choices[prompt(prompt_text, default=0, value_proc=validate)]
     now = dt.datetime.now()
-    print("Time format: {} "
-          "(current time as an example: {})".format(timeformat, now.strftime(timeformat)))
+    print(f"Time format: {timeformat} "
+          f"(current time as an example: {now.strftime(timeformat)})")
     return timeformat
 
 
@@ -114,7 +114,7 @@ def choose_default_calendar(vdirs):
     names = [name for name, _, _ in sorted(vdirs or ())]
     print("Which calendar do you want as a default calendar?")
     print("(The default calendar is specified, when no calendar is specified.)")
-    print("Configured calendars: {}".format(', '.join(names)))
+    print(f"Configured calendars: {', '.join(names)}")
     default_calendar = prompt(
         "Please type one of the above options",
         default=names[0],
@@ -243,8 +243,8 @@ def configwizard():
     )
     config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
     if not confirm(
-            "Do you want to write the config to {}? "
-            "(Choosing `No` will abort)".format(config_path), default=True):
+            f"Do you want to write the config to {config_path}? "
+            "(Choosing `No` will abort)", default=True):
         raise FatalError('User aborted...')
     config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
     if not exists(config_dir) and not isdir(config_dir):
@@ -252,8 +252,8 @@ def configwizard():
             makedirs(config_dir)
         except OSError as error:
             print(
-                "Could not write config file at {} because of {}. "
-                "Aborting".format(config_dir, error)
+                f"Could not write config file at {config_dir} because of "
+                f"{error}. Aborting"
             )
             raise FatalError(error)
         else:

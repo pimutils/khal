@@ -138,7 +138,7 @@ class DateCColumns(urwid.Columns):
         super().__init__(widget_list, **kwargs)
 
     def __repr__(self):
-        return '<DateCColumns from {} to {}>'.format(self[1].date, self[7].date)
+        return f'<DateCColumns from {self[1].date} to {self[7].date}>'
 
     def _clear_cursor(self):
         old_pos = self.focus_position

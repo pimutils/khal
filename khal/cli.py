@@ -70,8 +70,8 @@ def multi_calendar_select(ctx, include_calendars, exclude_calendars):
         for cal_name in include_calendars:
             if cal_name not in ctx.obj['conf']['calendars']:
                 raise click.BadParameter(
-                    'Unknown calendar {}, run `khal printcalendars` to get a '
-                    'list of all configured calendars.'.format(cal_name)
+                    f'Unknown calendar {cal_name}, run `khal printcalendars` '
+                    'to get a list of all configured calendars.'
                 )
 
         selection.update(include_calendars)
@@ -107,8 +107,8 @@ def _select_one_calendar_callback(ctx, option, calendar):
 def _calendar_select_callback(ctx, option, calendar):
     if calendar and calendar not in ctx.obj['conf']['calendars']:
         raise click.BadParameter(
-            'Unknown calendar {}, run `khal printcalendars` to get a '
-            'list of all configured calendars.'.format(calendar)
+            f'Unknown calendar {calendar}, run `khal printcalendars` to get a '
+            'list of all configured calendars.'
         )
     return calendar
 
