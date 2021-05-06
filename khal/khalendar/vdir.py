@@ -304,8 +304,7 @@ class Color:
         if len(r) == len(g) == len(b) == 2:
             return int(r, 16), int(g, 16), int(b, 16)
         else:
-            raise ValueError('Unable to parse color value: {}'
-                             .format(self.value))
+            raise ValueError(f'Unable to parse color value: {self.value}')
 
 
 class ColorMixin:

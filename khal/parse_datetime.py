@@ -237,11 +237,10 @@ def guessdatetimefstr(dtime_list, locale, default_day=None, in_future=True):
         else:
             return dtstart, all_day
     raise DateTimeParseError(
-        "Could not parse \"{}\".\nPlease check your configuration or run "
-        "`khal printformats` to see if this does match your configured "
+        f"Could not parse \"{dtime_list}\".\nPlease check your configuration "
+        "or run `khal printformats` to see if this does match your configured "
         "[long](date|time|datetime)format.\nIf you suspect a bug, please "
         "file an issue at https://github.com/pimutils/khal/issues/ "
-        "".format(dtime_list)
     )
 
 
@@ -407,11 +406,10 @@ def guessrangefstr(daterange, locale,
             pass
 
     raise DateTimeParseError(
-        "Could not parse \"{}\".\nPlease check your configuration or run "
-        "`khal printformats` to see if this does match your configured "
+        f"Could not parse \"{daterange}\".\nPlease check your configuration or "
+        "run `khal printformats` to see if this does match your configured "
         "[long](date|time|datetime)format.\nIf you suspect a bug, please "
         "file an issue at https://github.com/pimutils/khal/issues/ "
-        "".format(daterange)
     )
 
 
@@ -475,11 +473,11 @@ def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_
 
     if start is None or end is None:
         raise DateTimeParseError(
-            "Could not parse \"{}\".\nPlease check your configuration or run "
-            "`khal printformats` to see if this does match your configured "
-            "[long](date|time|datetime)format.\nIf you suspect a bug, please "
-            "file an issue at https://github.com/pimutils/khal/issues/ "
-            "".format(info_string)
+            f"Could not parse \"{info_string}\".\nPlease check your "
+            "configuration or run `khal printformats` to see if this does "
+            "match your configured [long](date|time|datetime)format.\nIf you "
+            "suspect a bug, please file an issue at "
+            "https://github.com/pimutils/khal/issues/ "
         )
 
     if tz is None:

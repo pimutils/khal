@@ -711,10 +711,9 @@ class LocalizedEvent(DatetimeEvent):
             starttz = getattr(self._vevents[self.ref]['DTSTART'].dt, 'tzinfo', None)
         except KeyError:
             msg = (
-                "Cannot understand event {} from "
-                "calendar {}, you might want to file an issue at "
+                f"Cannot understand event {kwargs.get('href')} from "
+                f"calendar {kwargs.get('calendar')}, you might want to file an issue at "
                 "https://github.com/pimutils/khal/issues"
-                .format(kwargs.get('href'), kwargs.get('calendar'))
             )
             logger.fatal(msg)
             raise FatalError(  # because in ikhal you won't see the logger's output
@@ -777,11 +776,11 @@ class AllDayEvent(Event):
         end = super().end
         if end == self.start:
             # https://github.com/pimutils/khal/issues/129
-            logger.warning('{} ("{}"): The event\'s end date property '
-                           'contains the same value as the start date, '
-                           'which is invalid as per RFC 5545. Khal will '
-                           'assume this is meant to be a single-day event '
-                           'on {}'.format(self.href, self.summary, self.start))
+            logger.warning(f'{self.href} ("{self.summary}"): The event\'s end '
+                           'date property contains the same value as the start '
+                           'date, which is invalid as per RFC 5545. Khal will '
+                           'assume this is meant to be a single-day event on '
+                           f'{self.start}')
             end += dt.timedelta(days=1)
         return end - dt.timedelta(days=1)
 

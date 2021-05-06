@@ -218,12 +218,11 @@ class SQLiteDb:
         check_for_errors(ical, calendar, href)
         if not assert_only_one_uid(ical):
             logger.warning(
-                "The .ics file at {}/{} contains multiple UIDs.\n"
+                f"The .ics file at {calendar}/{href} contains multiple UIDs.\n"
                 "This should not occur in vdir .ics files.\n"
                 "If you didn't edit the file by hand, please report a bug "
                 "at https://github.com/pimutils/khal/issues .\n"
                 "If you want to import it, please use `khal import FILE`."
-                "".format(calendar, href)
             )
             raise NonUniqueUID
         vevents = (sanitize_vevent(c, self.locale['default_timezone'], href, calendar) for
@@ -375,8 +374,8 @@ class SQLiteDb:
 
             if thisandfuture:
                 recs_sql_s = (
-                    f'UPDATE {recs_table} SET dtstart = rec_inst + ?, dtend = rec_inst + ?, ref = ? '
-                    'WHERE rec_inst >= ? AND href = ? AND calendar = ?;')
+                    f'UPDATE {recs_table} SET dtstart = rec_inst + ?, dtend = rec_inst + ?, '
+                    'ref = ? WHERE rec_inst >= ? AND href = ? AND calendar = ?;')
                 stuple_f = (
                     start_shift_seconds, start_shift_seconds + duration_seconds,
                     ref, rec_inst, href, calendar,
