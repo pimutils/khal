@@ -73,12 +73,25 @@ def format_day(day: dt.date, format_string: str, locale, attributes=None):
     except (KeyError, IndexError):
         raise KeyError("cannot format day with: %s" % format_string)
 
-def human_formatter(format_string):
-    return lambda *args, **kwargs: format_string.format(*args, **kwargs)
+
+def human_formatter(format_string, width=None):
+    def fmt(rows):
+        results = []
+        for row in rows:
+            s = format_string.format(**row)
+            if width:
+                s = utils.color_wrap(s, width)
+            results.append(s)
+        return '\n'.join(results)
+    return fmt
 
 
 def json_formatter(fields):
-    return lambda **kwargs: json.dumps(dict(filter(lambda e: e[0] in fields, kwargs.items())), ensure_ascii=False)
+    def fmt(rows):
+        return json.dumps(
+            [dict(filter(lambda e: e[0] in fields, row.items())) for row in rows],
+            ensure_ascii=False)
+    return fmt
 
 
 def calendar(
@@ -180,24 +193,24 @@ def get_events_between(
     start: dt.datetime,
     end: dt.datetime,
     formatter: Callable,
-    agenda_format: str,
     notstarted: bool,
     env: dict,
     width: Optional[int],
-    seen,
+    seen=None,
     original_start: dt.datetime,
 ) -> List[str]:
     """returns a list of events scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
 
     :param collection:
+    :param locale:
     :param start: the start datetime
     :param end: the end datetime
     :param formatter: a function that is used for formatting the event
-    :param agenda_format: a format string that can be used in python string formatting
-    :param env: a collection of "static" values like calendar names and color
     :param nostarted: True if each event should start after start (instead of
-    be active between start and end)
+      be active between start and end)
+    :param env: a collection of "static" values like calendar names and color
+    :param seen:
     :param original_start: start datetime to compare against of notstarted is set
     :returns: a list to be printed as the agenda for the given days
     """
@@ -229,18 +242,15 @@ def get_events_between(
             continue
 
         try:
-            event_string = event.format(formatter, relative_to=(start, end), env=env, colors=colors)
+            event_attributes = event.format(relative_to=(start, end), env=env, colors=colors)
         except KeyError as error:
             raise FatalError(error)
 
-        if width and colors:
-            event_list += utils.color_wrap(event_string, width)
-        else:
-            event_list.append(event_string)
+        event_list.append(event_attributes)
         if seen is not None:
             seen.add(event.uid)
 
-    return event_list
+    return formatter(event_list)
 
 
 def khal_list(
@@ -265,7 +275,7 @@ def khal_list(
         agenda_format = conf['view']['agenda_event_format']
 
     if len(json) == 0:
-        formatter = human_formatter(agenda_format)
+        formatter = human_formatter(agenda_format, width)
         colors = True
     else:
         formatter = json_formatter(json)
@@ -319,14 +329,13 @@ def khal_list(
             end=day_end, notstarted=notstarted, original_start=original_start,
             env=env,
             seen=once,
-            width=width,
             colors=colors,
         )
         if day_format and (conf['default']['show_all_days'] or current_events) and len(json) == 0:
             if len(event_column) != 0 and conf['view']['blank_line_before_day']:
                 event_column.append('')
             event_column.append(format_day(start.date(), day_format, conf['locale']))
-        event_column.extend(current_events)
+        event_column.append(current_events)
         start = dt.datetime(*start.date().timetuple()[:3]) + dt.timedelta(days=1)
 
     return event_column
@@ -459,7 +468,7 @@ def new_from_dict(
     if conf['default']['print_new'] == 'event':
         if format is None:
             format = conf['view']['event_format']
-        echo(event.format(human_formatter(format), dt.datetime.now(), env=env))
+        echo(human_formatter(format)(event.format(dt.datetime.now(), env=env)))
     elif conf['default']['print_new'] == 'path':
         assert event.href
         path = os.path.join(collection._calendars[event.calendar]['path'], event.href)
