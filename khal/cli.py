@@ -613,8 +613,8 @@ def _get_cli():
             now = dt.datetime.now()
             env = {"calendars": ctx.obj['conf']['calendars']}
             for event in events:
-                desc = textwrap.wrap(event.format(controllers.human_formatter(
-                    format), relative_to=now, env=env), term_width)
+                desc = textwrap.wrap(controllers.human_formatter(format)(
+                    event.format(relative_to=now, env=env), term_width))
                 event_column.extend(
                     [colored(d, event.color,
                              bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
