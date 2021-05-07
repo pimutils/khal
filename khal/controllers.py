@@ -540,7 +540,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 collection.delete(event.href, event.etag, event.calendar)
                 return True
         elif choice == "datetime range":
-            current = event.format("{start} {end}", relative_to=now)
+            current = human_formatter("{start} {end}")(event.format(relative_to=now))
             value = prompt("datetime range", default=current)
             try:
                 start, end, allday = parse_datetime.guessrangefstr(ansi.sub('', value), locale)
@@ -624,7 +624,8 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
                 continue
             elif not event.allday and event.end_local < now:
                 continue
-        event_text = textwrap.wrap(event.format(format, relative_to=now), term_width)
+        event_text = textwrap.wrap(human_formatter(format)(
+            event.format(relative_to=now)), term_width)
         echo(''.join(event_text))
         if not edit_event(event, collection, locale, allow_quit=True, width=term_width):
             return
@@ -676,7 +677,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
             if item.name == 'VEVENT':
                 event = Event.fromVEvents(
                     [item], calendar=collection.default_calendar_name, locale=locale)
-                echo(event.format(format, dt.datetime.now(), env=env))
+                echo(human_formatter(format)(event.format(dt.datetime.now(), env=env)))
 
     # get the calendar to insert into
     if not collection.writable_names:
@@ -733,4 +734,4 @@ def print_ics(conf, name, ics, format):
     echo(f'{len(vevents)} events found in {name}')
     for sub_event in vevents:
         event = Event.fromVEvents(sub_event, locale=conf['locale'])
-        echo(event.format(format, dt.datetime.now()))
+        echo(human_formatter(format)(event.format(dt.datetime.now())))
