@@ -83,15 +83,15 @@ def human_formatter(format_string, width=None):
                 results += utils.color_wrap(s, width)
             else:
                 results.append(s)
-        return '\n'.join(results)
+        return results
     return fmt
 
 
 def json_formatter(fields):
     def fmt(rows):
-        return json.dumps(
+        return [json.dumps(
             [dict(filter(lambda e: e[0] in fields, row.items())) for row in rows],
-            ensure_ascii=False)
+            ensure_ascii=False)]
     return fmt
 
 
@@ -336,7 +336,7 @@ def khal_list(
             if len(event_column) != 0 and conf['view']['blank_line_before_day']:
                 event_column.append('')
             event_column.append(format_day(start.date(), day_format, conf['locale']))
-        event_column.append(current_events)
+        event_column.extend(current_events)
         start = dt.datetime(*start.date().timetuple()[:3]) + dt.timedelta(days=1)
 
     return event_column
