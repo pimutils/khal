@@ -78,7 +78,7 @@ def human_formatter(format_string, width=None):
     def fmt(rows):
         results = []
         for row in rows:
-            s = format_string.format(**row)
+            s = format_string.format(**row) + style('', reset=True)
             if width:
                 results += utils.color_wrap(s, width)
             else:
