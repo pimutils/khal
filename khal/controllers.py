@@ -74,14 +74,16 @@ def format_day(day: dt.date, format_string: str, locale, attributes=None):
         raise KeyError("cannot format day with: %s" % format_string)
 
 
-def human_formatter(format_string, width=None):
+def human_formatter(format_string, width=None, colors=True):
     def fmt(rows):
         single = type(rows) == dict
         if single:
             rows = [rows]
         results = []
         for row in rows:
-            s = format_string.format(**row) + style('', reset=True)
+            s = format_string.format(**row)
+            if colors:
+                s += style('', reset=True)
             if width:
                 results += utils.color_wrap(s, width)
             else:

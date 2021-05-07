@@ -511,9 +511,10 @@ def test_invalid_format_string():
 def test_format_colors():
     event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
     format_ = '{red}{title}{reset}'
-    formatter = human_formatter(format_)
-    assert formatter(event.format(dt.date(2014, 4, 9))) == '\x1b[31mAn Event\x1b[0m\x1b[0m'
-    assert formatter(event.format(dt.date(2014, 4, 9), colors=False)) == 'An Event'
+    assert human_formatter(format_)(event.format(dt.date(2014, 4, 9))
+                                    ) == '\x1b[31mAn Event\x1b[0m\x1b[0m'
+    assert human_formatter(format_, colors=False)(
+        event.format(dt.date(2014, 4, 9), colors=False)) == 'An Event'
 
 
 def test_event_alarm():
