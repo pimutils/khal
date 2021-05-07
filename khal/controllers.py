@@ -80,8 +80,9 @@ def human_formatter(format_string, width=None):
         for row in rows:
             s = format_string.format(**row)
             if width:
-                s = utils.color_wrap(s, width)
-            results.append(s)
+                results += utils.color_wrap(s, width)
+            else:
+                results.append(s)
         return '\n'.join(results)
     return fmt
 
