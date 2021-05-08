@@ -34,6 +34,7 @@ from typing import Iterator, List, Optional, Tuple
 import pytz
 import urwid
 from click import style
+from .terminal import get_color
 
 
 def generate_random_uid() -> str:
@@ -192,9 +193,14 @@ def human_formatter(format_string, width=None, colors=True):
             rows = [rows]
         results = []
         for row in rows:
+            if 'calendar-color' in row:
+                row['calendar-color'] = get_color(row['calendar-color'])
+
             s = format_string.format(**row)
+
             if colors:
                 s += style('', reset=True)
+
             if width:
                 results += color_wrap(s, width)
             else:
@@ -212,9 +218,22 @@ def json_formatter(fields):
         single = type(rows) == dict
         if single:
             rows = [rows]
-        results = [json.dumps(
-            [dict(filter(lambda e: e[0] in fields, row.items())) for row in rows],
-            ensure_ascii=False)]
+
+        filtered = []
+        for row in rows:
+            f = dict(filter(lambda e: e[0] in fields, row.items()))
+
+            if f.get('repeat-symbol', '') != '':
+                f["repeat-symbol"] = f["repeat-symbol"].strip()
+            if f.get('status', '') != '':
+                f["status"] = f["status"].strip()
+            if f.get('cancelled', '') != '':
+                f["cancelled"] = f["cancelled"].strip()
+
+            filtered.append(f)
+
+        results = [json.dumps(filtered, ensure_ascii=False)]
+
         if single:
             return results[0]
         else:

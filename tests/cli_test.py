@@ -2,6 +2,7 @@ import datetime as dt
 import os
 import re
 import sys
+import traceback
 
 import pytest
 from click.testing import CliRunner
@@ -398,6 +399,19 @@ def test_at_json(runner):
     result = runner.invoke(main_khal, args)
     assert not result.exception
     assert result.output.startswith('[{"start-time": "", "title": "myevent"}]')
+
+
+def test_at_json_strip(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['import', _get_ics_filepath(
+        'event_rrule_recuid_cancelled')], input='0\ny\n')
+    assert not result.exception
+    result = runner.invoke(main_khal, ['at', '--json', 'repeat-symbol',
+                           '--json', 'status', '--json', 'cancelled', '14.07.2014', '07:00'])
+    traceback.print_tb(result.exc_info[2])
+    assert not result.exception
+    assert result.output.startswith(
+        '[{"repeat-symbol": "⟳", "status": "CANCELLED", "cancelled": "CANCELLED"}]')
 
 
 def test_at_day_format(runner):
