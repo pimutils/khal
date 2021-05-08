@@ -387,6 +387,19 @@ def test_at(runner):
     assert result.output.startswith('myevent')
 
 
+def test_at_json(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    end_date = dt.datetime.now() + dt.timedelta(days=10)
+    result = runner.invoke(
+        main_khal,
+        'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+    args = ['--color', 'at', '--json', 'start-time', '--json', 'title', '18:30']
+    result = runner.invoke(main_khal, args)
+    assert not result.exception
+    assert result.output.startswith('[{"start-time": "", "title": "myevent"}]')
+
+
 def test_at_day_format(runner):
     runner = runner(days=2)
     now = dt.datetime.now().strftime('%d.%m.%Y')
@@ -410,6 +423,20 @@ def test_list(runner):
     args = ['--color', 'list', '--format', format, '--day-format', 'header', '18:30']
     result = runner.invoke(main_khal, args)
     expected = 'header\x1b[0m\n\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n'
+    assert not result.exception
+    assert result.output.startswith(expected)
+
+
+def test_list_json(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    result = runner.invoke(
+        main_khal,
+        'new {} 18:00 myevent'.format(now).split())
+    args = ['list', '--json', 'start-end-time-style',
+            '--json', 'title', '--json', 'description', '18:30']
+    result = runner.invoke(main_khal, args)
+    expected = '[{"start-end-time-style": "18:00-19:00", "title": "myevent", "description": ""}]'
     assert not result.exception
     assert result.output.startswith(expected)
 
