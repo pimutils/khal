@@ -35,7 +35,7 @@ from . import __version__, controllers, khalendar
 from .exceptions import FatalError
 from .settings import InvalidSettingsError, NoConfigFile, get_config
 from .terminal import colored
-from .controllers import (human_formatter, json_formatter)
+from .utils import human_formatter, json_formatter
 
 try:
     from setproctitle import setproctitle
