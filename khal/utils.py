@@ -26,12 +26,14 @@ import datetime as dt
 import random
 import re
 import string
+import json
 from calendar import month_abbr, timegm
 from textwrap import wrap
 from typing import Iterator, List, Optional, Tuple
 
 import pytz
 import urwid
+from click import style
 
 
 def generate_random_uid() -> str:
@@ -180,3 +182,39 @@ def relative_timedelta_str(day: dt.date) -> str:
 
 def get_wrapped_text(widget: urwid.AttrMap) -> str:
     return widget.original_widget.get_edit_text()
+
+
+def human_formatter(format_string, width=None, colors=True):
+    def fmt(rows):
+        single = type(rows) == dict
+        if single:
+            rows = [rows]
+        results = []
+        for row in rows:
+            s = format_string.format(**row)
+            if colors:
+                s += style('', reset=True)
+            if width:
+                results += utils.color_wrap(s, width)
+            else:
+                results.append(s)
+        if single:
+            return results[0]
+        else:
+            return results
+    return fmt
+
+
+def json_formatter(fields):
+    def fmt(rows):
+        single = type(rows) == dict
+        if single:
+            rows = [rows]
+        results = [json.dumps(
+            [dict(filter(lambda e: e[0] in fields, row.items())) for row in rows],
+            ensure_ascii=False)]
+        if single:
+            return results[0]
+        else:
+            return results
+    return fmt
