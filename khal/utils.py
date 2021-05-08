@@ -195,7 +195,7 @@ def human_formatter(format_string, width=None, colors=True):
             if colors:
                 s += style('', reset=True)
             if width:
-                results += utils.color_wrap(s, width)
+                results += color_wrap(s, width)
             else:
                 results.append(s)
         if single:

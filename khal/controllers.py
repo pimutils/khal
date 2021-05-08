@@ -41,6 +41,7 @@ from khal.custom_types import (
 )
 from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
+from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 
