@@ -35,6 +35,7 @@ from . import __version__, controllers, khalendar
 from .exceptions import FatalError
 from .settings import InvalidSettingsError, NoConfigFile, get_config
 from .terminal import colored
+from .controllers import (human_formatter, json_formatter)
 
 try:
     from setproctitle import setproctitle
@@ -593,9 +594,10 @@ def _get_cli():
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
+    @click.option('--json', help=("Fields to output in json"), multiple=True)
     @click.argument('search_string')
     @click.pass_context
-    def search(ctx, format, search_string, include_calendar, exclude_calendar):
+    def search(ctx, format, json, search_string, include_calendar, exclude_calendar):
         '''Search for events matching SEARCH_STRING.
 
         For recurring events, only the master event and different overwritten
@@ -614,8 +616,12 @@ def _get_cli():
             term_width, _ = get_terminal_size()
             now = dt.datetime.now()
             env = {"calendars": ctx.obj['conf']['calendars']}
+            if len(json) == 0:
+                formatter = human_formatter(format)
+            else:
+                formatter = json_formatter(json)
             for event in events:
-                desc = textwrap.wrap(controllers.human_formatter(format)(
+                desc = textwrap.wrap(formatter(
                     event.format(relative_to=now, env=env)), term_width)
                 event_column.extend(
                     [colored(d, event.color,
