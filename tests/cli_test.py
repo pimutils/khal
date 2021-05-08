@@ -451,6 +451,16 @@ def test_search(runner):
     assert result.output.startswith('\x1b[34m\x1b[31m18:00')
 
 
+def test_search_json(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
+    result = runner.invoke(main_khal, ['search', '--json', 'start-end-time-style',
+                                       '--json', 'title', '--json', 'description', 'myevent'])
+    assert not result.exception
+    assert result.output.startswith('[{"start-end-time-style": "18:00')
+
+
 def test_no_default_new(runner):
     runner = runner(default_calendar=False)
     result = runner.invoke(main_khal, 'new 18:00 beer'.split())
