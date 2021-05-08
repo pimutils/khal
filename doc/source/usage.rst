@@ -191,6 +191,13 @@ Several options are common to almost all of :program:`khal`'s commands
            khal list --format "{title} {description}"
 
 
+.. option:: --json FIELD ...
+
+   Works similar to :option:`--format`, but instead of defining a format string a JSON
+   object is created for each specified field. The matching events are collected into
+   a JSON array.
+
+
 .. option:: --day-format DAYFORMAT
 
    works similar to :option:`--format`, but for day headings. It only has a few
@@ -231,8 +238,9 @@ shows all events scheduled for a given date (or datetime) range, with custom
 formatting:
 ::
 
-        khal list [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
-        [--day-format DAYFORMAT] [--once] [--notstarted] [START [END | DELTA] ]
+        khal list [-a CALENDAR ... | -d CALENDAR ...]
+        [--format FORMAT] [--json FIELD ...] [--day-format DAYFORMAT]
+        [--once] [--notstarted] [START [END | DELTA] ]
 
 START and END can both be given as dates, datetimes or times (it is assumed
 today is meant in the case of only a given time) in the formats configured in
@@ -270,7 +278,8 @@ start.
 
 ::
 
-        khal at [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
+        khal at [-a CALENDAR ... | -d CALENDAR ...]
+        [--format FORMAT] [--json FIELD ...]
         [--notstarted] [[START DATE] TIME | now]
 
 calendar
