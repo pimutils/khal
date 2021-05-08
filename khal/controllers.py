@@ -97,9 +97,16 @@ def human_formatter(format_string, width=None, colors=True):
 
 def json_formatter(fields):
     def fmt(rows):
-        return [json.dumps(
+        single = type(rows) == dict
+        if single:
+            rows = [rows]
+        results = [json.dumps(
             [dict(filter(lambda e: e[0] in fields, row.items())) for row in rows],
             ensure_ascii=False)]
+        if single:
+            return results[0]
+        else:
+            return results
     return fmt
 
 
