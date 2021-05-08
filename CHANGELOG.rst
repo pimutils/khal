@@ -68,6 +68,7 @@ not released yet
 * FIX event creation for events after the second next DST transition
 
 * NEW Add support for Python 3.10
+* NEW Add `--json` option to output event data as JSON objects
 * CHANGE `search`, `at`, and `list` don't print "No events" anymore if no matching
   events are found
 * NEW Add option to use `multiple` color only when not all calendar colors can
