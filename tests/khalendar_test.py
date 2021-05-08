@@ -315,9 +315,9 @@ class TestCollection:
         coll.insert(event, cal1)
         events = sorted(coll.search('Event'))
         assert len(events) == 2
-        assert human_formatter('{start} {end} {title}')(events[0].format(
+        assert human_formatter('{start} {end} {title}')(events[0].attributes(
             dt.date.today())) == '30.06. 07:30 30.06. 12:00 Arbeit\x1b[0m'
-        assert human_formatter('{start} {end} {title}')(events[1].format(
+        assert human_formatter('{start} {end} {title}')(events[1].attributes(
             dt.date.today())) == '07.07. 08:30 07.07. 12:00 Arbeit\x1b[0m'
 
     def test_delete_two_events(self, coll_vdirs, sleep_time):
@@ -375,7 +375,7 @@ class TestCollection:
         coll.insert(event, cal1)
         events = sorted(coll.search('Event'))
         assert len(events) == 1
-        assert human_formatter('{start} {end} {title}')(events[0].format(dt.date.today())) == \
+        assert human_formatter('{start} {end} {title}')(events[0].attributes(dt.date.today())) == \
             '02.12. 08:00 02.12. 09:30 Some event\x1b[0m'
 
     def test_multi_uid_vdir(self, coll_vdirs, caplog, fix_caplog, sleep_time):
