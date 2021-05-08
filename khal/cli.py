@@ -616,7 +616,7 @@ def _get_cli():
                 formatter = json_formatter(json)
             for event in events:
                 desc = textwrap.wrap(formatter(
-                    event.format(relative_to=now, env=env)), term_width)
+                    event.attributes(relative_to=now, env=env)), term_width)
                 event_column.extend(
                     [colored(d, event.color,
                              bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
