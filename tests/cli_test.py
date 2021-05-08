@@ -875,7 +875,27 @@ def test_new(runner):
     assert result.output.startswith(str(runner.tmpdir))
 
 
-@freeze_time('2015-6-1 8:00')
+def test_new_format(runner):
+    runner = runner(print_new='event')
+
+    format = '{start-end-time-style}: {title}'
+    result = runner.invoke(main_khal, ['new', '13.03.2016 12:00', '3d',
+                           '--format', format, 'Visit'])
+    assert not result.exception
+    assert result.output.startswith('→12:00: Visit')
+
+
+def test_new_json(runner):
+    runner = runner(print_new='event')
+
+    result = runner.invoke(main_khal, ['new', '13.03.2016 12:00', '3d',
+                           '--json', 'start-end-time-style', '--json', 'title', 'Visit'])
+    assert not result.exception
+    assert result.output.startswith(
+        '[{"start-end-time-style": "→12:00", "title": "Visit"}]')
+
+
+@ freeze_time('2015-6-1 8:00')
 def test_new_interactive(runner):
     runner = runner(print_new='path')
 
@@ -896,7 +916,7 @@ def test_debug(runner):
     assert not result.exception
 
 
-@freeze_time('2015-6-1 8:00')
+@ freeze_time('2015-6-1 8:00')
 def test_new_interactive_extensive(runner):
     runner = runner(print_new='path', default_calendar=False)
 

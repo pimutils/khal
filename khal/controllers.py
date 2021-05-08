@@ -175,9 +175,9 @@ def get_events_between(
     formatter: Callable,
     notstarted: bool,
     env: dict,
-    width: Optional[int],
-    seen=None,
     original_start: dt.datetime,
+    seen=None,
+    colors: bool = True,
 ) -> List[str]:
     """returns a list of events scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
@@ -323,7 +323,7 @@ def khal_list(
 
 def new_interactive(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
-                    format=None, env=None, url=None):
+                    format=None, json=[], env=None, url=None):
     info: EventCreationTypes
     try:
         info = parse_datetime.eventinfofstr(
@@ -390,6 +390,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         format=format,
         env=env,
         calendar_name=calendar_name,
+        json=json,
     )
     echo("event saved")
 
@@ -399,7 +400,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
 
 def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
-                    url=None, format=None, env=None):
+                    url=None, format=None, json=[], env=None):
     """construct a new event from a string and add it"""
     info = parse_datetime.eventinfofstr(
         info, conf['locale'],
@@ -415,7 +416,7 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
         'alarms': alarms,
         'url': url,
     })
-    new_from_dict(info, collection, conf=conf, format=format, env=env, calendar_name=calendar_name)
+    new_from_dict(info, collection, conf=conf, format=format, env=env, calendar_name=calendar_name, json=json)
 
 
 def new_from_dict(
@@ -425,6 +426,7 @@ def new_from_dict(
     calendar_name: Optional[str]=None,
     format=None,
     env=None,
+    json=[],
 ) -> Event:
     """Create a new event from arguments and save in vdirs
 
@@ -446,9 +448,13 @@ def new_from_dict(
         )
 
     if conf['default']['print_new'] == 'event':
-        if format is None:
-            format = conf['view']['event_format']
-        echo(human_formatter(format)(event.format(dt.datetime.now(), env=env)))
+        if len(json) == 0:
+            if format is None:
+                format = conf['view']['event_format']
+            formatter = human_formatter(format)
+        else:
+            formatter = json_formatter(json)
+        echo(formatter(event.format(dt.datetime.now(), env=env)))
     elif conf['default']['print_new'] == 'path':
         assert event.href
         path = os.path.join(collection._calendars[event.calendar]['path'], event.href)
