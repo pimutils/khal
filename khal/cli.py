@@ -315,11 +315,12 @@ def _get_cli():
                   )
     @click.option('--notstarted', help=('Print only events that have not started.'),
                   is_flag=True)
+    @click.option('--json', help=("Fields to output in json"), multiple=True)
     @click.argument('DATERANGE', nargs=-1, required=False,
                     metavar='[DATETIME [DATETIME | RANGE]]')
     @click.pass_context
     def klist(ctx, include_calendar, exclude_calendar,
-              daterange, once, notstarted, format, day_format):
+              daterange, once, notstarted, json, format, day_format):
         """List all events between a start (default: today) and (optional)
         end datetime."""
         try:
@@ -334,7 +335,8 @@ def _get_cli():
                 once=once,
                 notstarted=notstarted,
                 conf=ctx.obj['conf'],
-                env={"calendars": ctx.obj['conf']['calendars']}
+                env={"calendars": ctx.obj['conf']['calendars']},
+                json=json
             )
             if event_column:
                 click.echo('\n'.join(event_column))
