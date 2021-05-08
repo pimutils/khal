@@ -187,12 +187,13 @@ def get_events_between(
     :param locale:
     :param start: the start datetime
     :param end: the end datetime
-    :param formatter: a function that is used for formatting the event
+    :param formatter: the formatter (see :class:`.utils.human_formatter`)
     :param nostarted: True if each event should start after start (instead of
       be active between start and end)
     :param env: a collection of "static" values like calendar names and color
-    :param seen:
     :param original_start: start datetime to compare against of notstarted is set
+    :param seen:
+    :param colors:
     :returns: a list to be printed as the agenda for the given days
     """
     assert not (notstarted and not original_start)
