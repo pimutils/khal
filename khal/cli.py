@@ -363,6 +363,7 @@ def _get_cli():
                   help=('Stop an event repeating on this date.'))
     @click.option('--format', '-f',
                   help=('The format to print the event.'))
+    @click.option('--json', help=("Fields to output in json"), multiple=True)
     @click.option('--alarms', '-m',
                   help=('Alarm times for the new event as DELTAs comma separated'))
     @click.option('--url', help=("URI for the event."))
@@ -370,7 +371,7 @@ def _get_cli():
                     nargs=-1)
     @click.pass_context
     def new(ctx, calendar, info, location, categories, repeat, until, alarms, url, format,
-            interactive):
+            json, interactive):
         '''Create a new event from arguments.
 
         START and END can be either dates, times or datetimes, please have a
@@ -418,6 +419,7 @@ def _get_cli():
                 alarms=alarms,
                 url=url,
                 format=format,
+                json=json
             )
         except FatalError as error:
             logger.debug(error, exc_info=True)
