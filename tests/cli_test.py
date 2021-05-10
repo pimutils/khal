@@ -3,12 +3,14 @@ import os
 import re
 import sys
 import traceback
+import json
 
 import pytest
 from click.testing import CliRunner
 from freezegun import freeze_time
 
 from khal.cli import main_ikhal, main_khal
+from khal.utils import CONTENT_ATTRIBUTES
 
 from .utils import _get_ics_filepath, _get_text
 
@@ -399,6 +401,20 @@ def test_at_json(runner):
     result = runner.invoke(main_khal, args)
     assert not result.exception
     assert result.output.startswith('[{"start-time": "", "title": "myevent"}]')
+
+
+def test_at_json_default_fields(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    end_date = dt.datetime.now() + dt.timedelta(days=10)
+    result = runner.invoke(
+        main_khal,
+        'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+    args = ['--color', 'at', '--json', 'all', '18:30']
+    result = runner.invoke(main_khal, args)
+    assert not result.exception
+    output_fields = json.loads(result.output)[0].keys()
+    assert all(x in output_fields for x in CONTENT_ATTRIBUTES)
 
 
 def test_at_json_strip(runner):
