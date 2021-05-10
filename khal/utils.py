@@ -214,12 +214,13 @@ def human_formatter(format_string, width=None, colors=True):
 
 CONTENT_ATTRIBUTES = ['start', 'start-long', 'start-date', 'start-date-long',
                       'start-time', 'end', 'end-long', 'end-date', 'end-date-long', 'end-time',
-                      'duration', 'start-full', 'start-long-full', 'start-date-full', 'start-date-long-full',
-                      'start-time-full', 'end-full', 'end-long-full', 'end-date-full', 'end-date-long-full', 'end-time-full',
-                      'duration-full', 'start-style', 'end-style', 'to-style', 'start-end-time-style',
-                      'end-necessary', 'end-necessary-long', 'repeat-symbol', 'repeat-pattern', 'title',
-                      'organizer', 'description', 'location', 'all-day', 'categories', 'uid', 'url', 'calendar', 'calendar-color',
-                      'status', 'cancelled']
+                      'duration', 'start-full', 'start-long-full', 'start-date-full',
+                      'start-date-long-full', 'start-time-full', 'end-full', 'end-long-full',
+                      'end-date-full', 'end-date-long-full', 'end-time-full', 'duration-full',
+                      'start-style', 'end-style', 'to-style', 'start-end-time-style',
+                      'end-necessary', 'end-necessary-long', 'repeat-symbol', 'repeat-pattern',
+                      'title', 'organizer', 'description', 'location', 'all-day', 'categories',
+                      'uid', 'url', 'calendar', 'calendar-color', 'status', 'cancelled']
 
 
 def json_formatter(fields):
