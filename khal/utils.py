@@ -225,6 +225,10 @@ CONTENT_ATTRIBUTES = ['start', 'start-long', 'start-date', 'start-date-long',
 
 def json_formatter(fields):
     """Create a formatter that formats events in JSON."""
+
+    if len(fields) == 1 and fields[0] == 'all':
+        fields = CONTENT_ATTRIBUTES
+
     def fmt(rows):
         single = type(rows) == dict
         if single:
