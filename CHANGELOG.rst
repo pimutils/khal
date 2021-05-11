@@ -13,6 +13,7 @@ may want to subscribe to `GitHub's tag feed
 not released
 
 * DROPPED support for Python 3.5
+* CHANGE: ikhal: tab (and shift tab) jump from the events back to the calendar
 
 0.10.3
 ======
