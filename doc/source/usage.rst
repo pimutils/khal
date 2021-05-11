@@ -171,8 +171,21 @@ Several options are common to almost all of :program:`khal`'s commands
    url-separator
         A separator: " :: " that appears when there is a url.
 
+   duration
+       The duration of the event in terms of days, hours, months, and seconds
+       (abbreviated to `d`, `h`, `m`, and `s` respectively).
+
+   repeat-pattern
+       The raw iCal recurrence rule if the event is repeating.
+
+   all-day
+       A boolean indicating whether it is an all-day event or not.
+
+   categories
+       The categories of the event.
+
    By default, all-day events have no times. To see a start and end time anyway simply
-   add `-full` to the end of any template with start/end, for instance
+   add `-full` to the end of any templates with start/end or duration, for instance
    `start-time` becomes `start-time-full` and will always show start and end times (instead
    of being empty for all-day events).
 
