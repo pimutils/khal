@@ -185,7 +185,7 @@ Several options are common to almost all of :program:`khal`'s commands
        The categories of the event.
 
    By default, all-day events have no times. To see a start and end time anyway simply
-   add `-full` to the end of any templates with start/end or duration, for instance
+   add `-full` to the end of any template with start/end or duration, for instance
    `start-time` becomes `start-time-full` and will always show start and end times (instead
    of being empty for all-day events).
 
