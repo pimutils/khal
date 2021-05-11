@@ -195,7 +195,34 @@ Several options are common to almost all of :program:`khal`'s commands
 
    Works similar to :option:`--format`, but instead of defining a format string a JSON
    object is created for each specified field. The matching events are collected into
-   a JSON array.
+   a JSON array. This option accepts the following subset of :option:`--format`
+   template options
+
+   ::
+
+           title, description, uid, start, start-long, start-date,
+           start-date-long, start-time, end, end-long, end-date,
+           end-date-long, end-time, start-full, start-long-full,
+           start-date-full, start-date-long-full, start-time-full,
+           end-full, end-long-full, end-date-full, end-date-long-full,
+           end-time-full, repeat-symbol, location, calendar,
+           calendar-color, start-style, to-style, end-style,
+           start-end-time-style, end-necessary, end-necessary-long,
+           status, cancelled, organizer, url, duration, duration-full,
+           repeat-pattern, all-day, categories
+
+
+   Note that `calendar-color` will be the actual color name rather than the ANSI color code,
+   and the `repeat-symbol`, `status`, and `cancelled` values will have leading/trailing
+   whitespace stripped.  Additionally, if only the special value `all` is specified then
+   all fields will be enabled.
+
+   Below is an example command which prints a JSON list of objects containing the title and
+   description of all events today.
+
+   ::
+
+           khal list --json title --json description
 
 
 .. option:: --day-format DAYFORMAT
