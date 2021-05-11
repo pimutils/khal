@@ -22,12 +22,12 @@ def test_new_db_version():
 
 def test_event_rrule_recurrence_id():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    assert dbi.list(calname) == list()
+    assert dbi.list(calname) == []
     events = dbi.get_localized(
         BERLIN.localize(dt.datetime(2014, 6, 30, 0, 0)),
         BERLIN.localize(dt.datetime(2014, 8, 26, 0, 0)),
     )
-    assert list(events) == list()
+    assert list(events) == []
     dbi.update(_get_text('event_rrule_recuid'), href='12345.ics', etag='abcd', calendar=calname)
     assert dbi.list(calname) == [('12345.ics', 'abcd')]
     events = dbi.get_localized(
@@ -96,11 +96,11 @@ def test_event_rrule_recurrence_id_reverse():
     deal with `reverse` ordered icalendar files
     """
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    assert dbi.list(calname) == list()
+    assert dbi.list(calname) == []
     events = dbi.get_localized(
         BERLIN.localize(dt.datetime(2014, 6, 30, 0, 0)),
         BERLIN.localize(dt.datetime(2014, 8, 26, 0, 0)))
-    assert list(events) == list()
+    assert list(events) == []
     dbi.update(event_rrule_recurrence_id_reverse, href='12345.ics', etag='abcd', calendar=calname)
     assert dbi.list(calname) == [('12345.ics', 'abcd')]
     events = dbi.get_localized(
@@ -184,7 +184,7 @@ def test_no_valid_timezone():
                href='12345.ics', etag='abcd', calendar=calname)
     events = dbi.get_localized(BERLIN.localize(dt.datetime(2014, 4, 9, 0, 0)),
                                BERLIN.localize(dt.datetime(2014, 4, 10, 0, 0)))
-    events = sorted(list(events))
+    events = sorted(events)
     assert len(events) == 1
     event = events[0]
     assert event[2] == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
@@ -193,10 +193,10 @@ def test_no_valid_timezone():
 
 def test_event_delete():
     dbi = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    assert dbi.list(calname) == list()
+    assert dbi.list(calname) == []
     events = dbi.get_localized(BERLIN.localize(dt.datetime(2014, 6, 30, 0, 0)),
                                BERLIN.localize(dt.datetime(2014, 8, 26, 0, 0)))
-    assert list(events) == list()
+    assert list(events) == []
     dbi.update(event_rrule_recurrence_id_reverse, href='12345.ics', etag='abcd', calendar=calname)
     assert dbi.list(calname) == [('12345.ics', 'abcd')]
     events = dbi.get_localized(BERLIN.localize(dt.datetime(2014, 6, 30, 0, 0)),
@@ -282,7 +282,7 @@ def test_event_rrule_this_and_future():
     assert events[5][3] == BERLIN.localize(dt.datetime(2014, 8, 4, 18, 0))
 
     assert 'SUMMARY:Arbeit\n' in events[0][0]
-    for num, event in enumerate(events[1:]):
+    for _num, event in enumerate(events[1:]):
         assert 'SUMMARY:Arbeit (lang)\n' in event[0]
 
 
@@ -691,7 +691,7 @@ end = dt.datetime.combine(day, dt.time.max)
 
 def test_birthdays():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    assert list(db.get_floating(start, end)) == list()
+    assert list(db.get_floating(start, end)) == []
     db.update_vcf_dates(card, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 1
@@ -714,7 +714,7 @@ def test_birthdays_update():
 def test_birthdays_no_fn():
     db = backend.SQLiteDb(['home'], ':memory:', locale=LOCALE_BERLIN)
     assert list(db.get_floating(dt.datetime(1941, 9, 9, 0, 0),
-                                dt.datetime(1941, 9, 9, 23, 59, 59, 9999))) == list()
+                                dt.datetime(1941, 9, 9, 23, 59, 59, 9999))) == []
     db.update_vcf_dates(card_no_fn, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(dt.datetime(1941, 9, 9, 0, 0),
                                   dt.datetime(1941, 9, 9, 23, 59, 59, 9999)))
@@ -724,7 +724,7 @@ def test_birthdays_no_fn():
 
 def test_birthday_does_not_parse():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    assert list(db.get_floating(start, end)) == list()
+    assert list(db.get_floating(start, end)) == []
     db.update_vcf_dates(card_does_not_parse, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 0
@@ -732,7 +732,7 @@ def test_birthday_does_not_parse():
 
 def test_vcard_two_birthdays():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    assert list(db.get_floating(start, end)) == list()
+    assert list(db.get_floating(start, end)) == []
     db.update_vcf_dates(card_two_birthdays, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 0
@@ -740,7 +740,7 @@ def test_vcard_two_birthdays():
 
 def test_anniversary():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    assert list(db.get_floating(start, end)) == list()
+    assert list(db.get_floating(start, end)) == []
     db.update_vcf_dates(card_anniversary, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 1
@@ -755,7 +755,7 @@ def test_anniversary():
 
 def test_abdate():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    assert list(db.get_floating(start, end)) == list()
+    assert list(db.get_floating(start, end)) == []
     db.update_vcf_dates(card_abdate, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 1
@@ -770,7 +770,7 @@ def test_abdate():
 
 def test_abdate_nolabel():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    assert list(db.get_floating(start, end)) == list()
+    assert list(db.get_floating(start, end)) == []
     db.update_vcf_dates(card_abdate_nolabel, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 1
@@ -785,7 +785,7 @@ def test_abdate_nolabel():
 
 def test_birthday_v3():
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
-    assert list(db.get_floating(start, end)) == list()
+    assert list(db.get_floating(start, end)) == []
     db.update_vcf_dates(card_v3, 'unix.vcf', calendar=calname)
     events = list(db.get_floating(start, end))
     assert len(events) == 1

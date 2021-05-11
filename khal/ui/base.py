@@ -114,7 +114,7 @@ class Pane(urwid.WidgetWrap):
             return super().keypress(size, key)
 
     def show_keybindings(self):
-        lines = list()
+        lines = []
         lines.append('  Command              Keys')
         lines.append('  =======              ====')
         for command, keys in self._conf['keybindings'].items():
@@ -144,7 +144,8 @@ class Window(urwid.Frame):
     to carry data between them.
     """
 
-    def __init__(self, footer='', quit_keys=['q']):
+    def __init__(self, footer='', quit_keys=None):
+        quit_keys = quit_keys or ['q']
         self._track = []
 
         header = urwid.AttrWrap(urwid.Text(''), 'header')

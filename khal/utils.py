@@ -50,8 +50,7 @@ ansi_sgr = re.compile(r'\x1b\['
 
 
 def find_last_reset(string):
-    for match in re.finditer(ansi_reset, string):
-        pass
+    *_, match = re.finditer(ansi_reset, string)
     try:
         return match.start(), match.end(), match.group(0)
     except UnboundLocalError:
@@ -59,8 +58,7 @@ def find_last_reset(string):
 
 
 def find_last_sgr(string):
-    for match in re.finditer(ansi_sgr, string):
-        pass
+    *_, match = re.finditer(ansi_sgr, string)
     try:
         return match.start(), match.end(), match.group(0)
     except UnboundLocalError:

@@ -485,7 +485,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
                   if today is in this week
         :rtype: tuple(urwid.CColumns, bool)
         """
-        if self.monthdisplay == 'firstday' and 1 in [day.day for day in week]:
+        if self.monthdisplay == 'firstday' and 1 in (day.day for day in week):
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
             attr = 'monthname'
         elif self.monthdisplay == 'firstfullweek' and week[0].day <= 7:
@@ -499,7 +499,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             attr = None
 
         this_week = [(get_month_abbr_len(), urwid.AttrMap(urwid.Text(month_name), attr))]
-        for number, day in enumerate(week):
+        for _number, day in enumerate(week):
             new_date = Date(day, self.get_styles)
             this_week.append((2, new_date))
             new_date.set_styles(self.get_styles(new_date.date, False))
@@ -543,8 +543,8 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
         plain_weeks = calendar.Calendar(
             self.firstweekday).monthdatescalendar(year, month)
-        weeks = list()
-        for number, week in enumerate(plain_weeks):
+        weeks = []
+        for _number, week in enumerate(plain_weeks):
             week = self._construct_week(week)
             weeks.append(week)
         if clean_first_row and weeks[0][1].date.month != weeks[0][7].date.month:

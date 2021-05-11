@@ -67,14 +67,15 @@ class CalendarCollection(object):
                  color: str='',
                  priority: int=10,
                  highlight_event_days: bool=False,
-                 locale: Dict[str, Any]=dict(),
+                 locale: Dict[str, Any]=None,
                  dbpath: Optional[str]=None,
                  ) -> None:
+        locale = locale or {}
         assert dbpath is not None
         assert calendars is not None
         self._calendars = calendars
         self._default_calendar_name = None  # type: Optional[str]
-        self._storages = dict()  # type: Dict[str, Vdir]
+        self._storages = {}  # type: Dict[str, Vdir]
         for name, calendar in self._calendars.items():
             ctype = calendar.get('ctype', 'calendar')
             if ctype == 'calendar':
@@ -98,7 +99,7 @@ class CalendarCollection(object):
         self.highlight_event_days = highlight_event_days
         self._locale = locale
         self._backend = backend.SQLiteDb(self.names, dbpath, self._locale)
-        self._last_ctags = dict()  # type: Dict[str, str]
+        self._last_ctags = {}  # type: Dict[str, str]
         self.update_db()
 
     @property
@@ -303,7 +304,7 @@ class CalendarCollection(object):
     def _db_update(self, calendar: str):
         """implements the actual db update on a per calendar base"""
         local_ctag = self._local_ctag(calendar)
-        db_hrefs = set(href for href, etag in self._backend.list(calendar))
+        db_hrefs = {href for href, etag in self._backend.list(calendar)}
         storage_hrefs = set()
         bdays = self._calendars[calendar].get('ctype') == 'birthdays'
 
