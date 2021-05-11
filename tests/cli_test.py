@@ -946,7 +946,7 @@ def test_debug(runner):
     assert not result.exception
 
 
-@ freeze_time('2015-6-1 8:00')
+@freeze_time('2015-6-1 8:00')
 def test_new_interactive_extensive(runner):
     runner = runner(print_new='path', default_calendar=False)
 
