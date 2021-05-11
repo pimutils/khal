@@ -41,7 +41,6 @@ from khal.custom_types import (
 )
 from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
-from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 
@@ -237,7 +236,7 @@ def get_events_between(
 
 def khal_list(
     collection,
-    daterange: Optional[List[str]]=None,
+    daterange: Optional[List[str]] = None,
     conf: Optional[dict] = None,
     agenda_format=None,
     day_format: Optional[str]=None,
@@ -246,7 +245,7 @@ def khal_list(
     width: Optional[int] = None,
     env=None,
     datepoint=None,
-    json: Iterable = [],
+    json: Optional[List] = None,
 ):
     """returns a list of all events in `daterange`"""
     assert daterange is not None or datepoint is not None
@@ -256,12 +255,13 @@ def khal_list(
     if agenda_format is None:
         agenda_format = conf['view']['agenda_event_format']
 
-    if len(json) == 0:
-        formatter = human_formatter(agenda_format, width)
-        colors = True
-    else:
+    json_mode = json is not None and len(json) > 0
+    if json_mode:
         formatter = json_formatter(json)
         colors = False
+    else:
+        formatter = human_formatter(agenda_format, width)
+        colors = True
 
     if daterange is not None:
         if day_format is None:
@@ -313,7 +313,7 @@ def khal_list(
             seen=once,
             colors=colors,
         )
-        if day_format and (conf['default']['show_all_days'] or current_events) and len(json) == 0:
+        if day_format and (conf['default']['show_all_days'] or current_events) and not json_mode:
             if len(event_column) != 0 and conf['view']['blank_line_before_day']:
                 event_column.append('')
             event_column.append(format_day(start.date(), day_format, conf['locale']))
@@ -325,7 +325,7 @@ def khal_list(
 
 def new_interactive(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
-                    format=None, json=[], env=None, url=None):
+                    format=None, json=None, env=None, url=None):
     info: EventCreationTypes
     try:
         info = parse_datetime.eventinfofstr(
@@ -402,7 +402,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
 
 def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
-                    url=None, format=None, json=[], env=None):
+                    url=None, format=None, json=None, env=None):
     """construct a new event from a string and add it"""
     info = parse_datetime.eventinfofstr(
         info, conf['locale'],
@@ -428,7 +428,7 @@ def new_from_dict(
     calendar_name: Optional[str]=None,
     format=None,
     env=None,
-    json=[],
+    json=None,
 ) -> Event:
     """Create a new event from arguments and save in vdirs
 
@@ -450,7 +450,7 @@ def new_from_dict(
         )
 
     if conf['default']['print_new'] == 'event':
-        if len(json) == 0:
+        if json is None or len(json) == 0:
             if format is None:
                 format = conf['view']['event_format']
             formatter = human_formatter(format)
