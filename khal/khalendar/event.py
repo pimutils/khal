@@ -218,9 +218,18 @@ class Event:
 
     @property
     def recurring(self):
-        return 'RRULE' in self._vevents[self.ref] or \
-            'RECURRENCE-ID' in self._vevents[self.ref] or \
-            'RDATE' in self._vevents[self.ref]
+        try:
+            rval = 'RRULE' in self._vevents[self.ref] or \
+                'RECURRENCE-ID' in self._vevents[self.ref] or \
+                'RDATE' in self._vevents[self.ref]
+        except KeyError:
+            logger.fatal(
+                f"The event at {self.href} might be broken. You might want to "
+                "file an issue at https://github.com/pimutils/khal/issues"
+            )
+            raise
+        else:
+            return rval
 
     @property
     def recurpattern(self):
