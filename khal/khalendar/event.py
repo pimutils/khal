@@ -263,19 +263,19 @@ class Event(object):
     def symbol_strings(self):
         if self._locale['unicode_symbols']:
             return {
-                "recurring": '\N{Clockwise gapped circle arrow}',
-                "range": '\N{Left right arrow}',
-                "range_end": '\N{Rightwards arrow to bar}',
-                "range_start": '\N{Rightwards arrow from bar}',
-                "right_arrow": '\N{Rightwards arrow}'
+                'recurring': '\N{Clockwise gapped circle arrow}',
+                'range': '\N{Left right arrow}',
+                'range_end': '\N{Rightwards arrow to bar}',
+                'range_start': '\N{Rightwards arrow from bar}',
+                'right_arrow': '\N{Rightwards arrow}'
             }
         else:
             return {
-                "recurring": '(R)',
-                "range": '<->',
-                "range_end": '->|',
-                "range_start": '|->',
-                "right_arrow": '->'
+                'recurring': '(R)',
+                'range': '<->',
+                'range_end': '->|',
+                'range_start': '|->',
+                'right_arrow': '->'
             }
 
     @property
