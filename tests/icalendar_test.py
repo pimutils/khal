@@ -9,7 +9,7 @@ from .utils import (LOCALE_BERLIN, _get_text, normalize_component)
 
 def _get_TZIDs(lines):
     """from a list of strings, get all unique strings that start with TZID"""
-    return sorted((line for line in lines if line.startswith('TZID')))
+    return sorted(line for line in lines if line.startswith('TZID'))
 
 
 def test_normalize_component():

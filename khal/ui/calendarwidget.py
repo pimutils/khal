@@ -50,7 +50,7 @@ class DatePart(urwid.Text):
     """used in the Date widget (single digit)"""
 
     def __init__(self, digit):
-        super(DatePart, self).__init__(digit)
+        super().__init__(digit)
 
     @classmethod
     def selectable(cls):
@@ -80,7 +80,7 @@ class Date(urwid.WidgetWrap):
                        urwid.AttrMap(DatePart(dstr[1:]), None, None)]
         self.date = date
         self._get_styles = get_styles
-        super(Date, self).__init__(urwid.Columns(self.halves))
+        super().__init__(urwid.Columns(self.halves))
 
     def set_styles(self, styles):
         """If single string, sets the same style for both halves, if two
@@ -135,10 +135,10 @@ class DateCColumns(urwid.Columns):
         self.keybindings = keybindings
         self.get_styles = get_styles
         self._init = True
-        super(DateCColumns, self).__init__(widget_list, **kwargs)
+        super().__init__(widget_list, **kwargs)
 
     def __repr__(self):
-        return '<DateCColumns from {} to {}>'.format(self[1].date, self[7].date)
+        return f'<DateCColumns from {self[1].date} to {self[7].date}>'
 
     def _clear_cursor(self):
         old_pos = self.focus_position
@@ -156,7 +156,7 @@ class DateCColumns(urwid.Columns):
             self.contents[position][0].set_styles(
                 self.get_styles(self.contents[position][0].date, True))
             self.on_date_change(self.contents[position][0].date)
-        super(DateCColumns, self)._set_focus_position(position)
+        super()._set_focus_position(position)
 
     def set_focus_date(self, a_date):
         for num, day in enumerate(self.contents[1:8], 1):
@@ -196,7 +196,7 @@ class DateCColumns(urwid.Columns):
         exit_row = False  # set this, if we are leaving the current row
         old_pos = self.focus_position
 
-        key = super(DateCColumns, self).keypress(size, key)
+        key = super().keypress(size, key)
 
         # make sure we don't leave the calendar
         if old_pos == 7 and key == 'right':
@@ -232,7 +232,7 @@ class CListBox(urwid.ListBox):
         self._marked = False
         self._pos_old = False
 
-        super(CListBox, self).__init__(walker)
+        super().__init__(walker)
 
     def render(self, size, focus=False):
         while 'bottom' in self.ends_visible(size):
@@ -241,7 +241,7 @@ class CListBox(urwid.ListBox):
             self.set_focus_valign('middle')
             self._init = False
 
-        return super(CListBox, self).render(size, focus)
+        return super().render(size, focus)
 
     def mouse_event(self, *args):
         size, event, button, col, row, focus = args
@@ -340,7 +340,7 @@ class CListBox(urwid.ListBox):
             self.set_focus_date(dt.date.today())
             self.set_focus_valign(('relative', 10))
 
-        key = super(CListBox, self).keypress(size, key)
+        key = super().keypress(size, key)
         if self._marked:
             self._mark()
         return key

@@ -85,7 +85,7 @@ class ExtendedEdit(urwid.Edit):
         elif key == 'ctrl e':
             self._goto_end_of_line()
         else:
-            return super(ExtendedEdit, self).keypress(size, key)
+            return super().keypress(size, key)
 
     def _delete_word(self):
         """delete word before cursor"""
@@ -143,7 +143,7 @@ class DateTimeWidget(ExtendedEdit):
                 pass
             else:
                 self.on_date_change(new_date)
-        return super(DateTimeWidget, self).keypress(size, key)
+        return super().keypress(size, key)
 
     def increase(self):
         """call to increase the datefield by self.timedelta"""
@@ -262,7 +262,7 @@ class ChoiceList(urwid.WidgetWrap):
         self._emit("close")
 
 
-class SupportsNext(object):
+class SupportsNext:
     """classes inheriting from SupportsNext must implement the following methods:
     _select_first_selectable
     _select_last_selectable
@@ -271,7 +271,7 @@ class SupportsNext(object):
         self.outermost = kwargs.get('outermost', False)
         if 'outermost' in kwargs:
             kwargs.pop('outermost')
-        super(SupportsNext, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class NextMixin(SupportsNext):
@@ -305,7 +305,7 @@ class NextMixin(SupportsNext):
         return False
 
     def keypress(self, size, key):
-        key = super(NextMixin, self).keypress(size, key)
+        key = super().keypress(size, key)
 
         if key == 'tab':
             if self.outermost and self.focus_position == self._last_selectable():

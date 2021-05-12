@@ -178,8 +178,8 @@ def ics_from_list(events, tzs, random_uid=False, default_timezone=None):
                 if datetime_.tzinfo is None and 'TZID' in item.params and \
                         item.params['TZID'] not in missing_tz:
                     logger.warning(
-                        'Cannot find timezone `{}` in .ics file, using default timezone. '
-                        'This can lead to erroneous time shifts'.format(item.params['TZID'])
+                        f"Cannot find timezone `{item.params['TZID']}` in .ics file, "
+                        "using default timezone. This can lead to erroneous time shifts"
                     )
                     missing_tz.add(item.params['TZID'])
                 elif datetime_.tzinfo and datetime_.tzinfo != pytz.UTC and \
@@ -191,8 +191,8 @@ def ics_from_list(events, tzs, random_uid=False, default_timezone=None):
             calendar.add_component(tzs[str(tzid)])
         else:
             logger.warning(
-                'Cannot find timezone `{}` in .ics file, this could be a bug, '
-                'please report this issue at http://github.com/pimutils/khal/.'.format(tzid))
+                f'Cannot find timezone `{tzid}` in .ics file, this could be a bug, '
+                'please report this issue at http://github.com/pimutils/khal/.')
     for sub_event in events:
         calendar.add_component(sub_event)
     return calendar.to_ical().decode('utf-8')
@@ -277,19 +277,19 @@ def expand(vevent, href=''):
 
             if testuntil < teststart:
                 logger.warning(
-                    '{0}: Unsupported recurrence. UNTIL is before DTSTART.\n'
-                    'This event will not be available in khal.'.format(href))
+                    f'{href}: Unsupported recurrence. UNTIL is before DTSTART.\n'
+                    'This event will not be available in khal.')
                 return False
 
         if rrule.count() == 0:
             logger.warning(
-                '{0}: Recurrence defined but will never occur.\n'
-                'This event will not be available in khal.'.format(href))
+                f'{href}: Recurrence defined but will never occur.\n'
+                'This event will not be available in khal.')
             return False
 
         rrule = map(sanitize_datetime, rrule)
 
-        logger.debug('calculating recurrence dates for {}, this might take some time.'.format(href))
+        logger.debug(f'calculating recurrence dates for {href}, this might take some time.')
 
         # RRULE and RDATE may specify the same date twice, it is recommended by
         # the RFC to consider this as only one instance
@@ -322,8 +322,8 @@ def expand(vevent, href=''):
                 dtstartl.remove(date)
             except KeyError:
                 logger.warning(
-                    'In event {}, excluded instance starting at {} not found, '
-                    'event might be invalid.'.format(href, date))
+                    f'In event {href}, excluded instance starting at {date} '
+                    'not found, event might be invalid.')
 
     dtstartend = [(start, start + duration) for start in dtstartl]
     # not necessary, but I prefer deterministic output
@@ -371,9 +371,9 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
             value = default_timezone.localize(vevent.pop(prop).dt)
             vevent.add(prop, value)
             logger.warning(
-                "{} localized in invalid or incomprehensible timezone `{}` in {}/{}. "
-                "This could lead to this event being wrongly displayed."
-                "".format(prop, timezone, calendar, href)
+                f"{prop} localized in invalid or incomprehensible timezone "
+                f"`{timezone}` in {calendar}/{href}. This could lead to this "
+                "event being wrongly displayed."
             )
 
     vdtstart = vevent.pop('DTSTART', None)

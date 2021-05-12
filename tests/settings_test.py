@@ -16,7 +16,7 @@ from .utils import LOCALE_BERLIN
 PATH = __file__.rsplit('/', 1)[0] + '/configs/'
 
 
-class TestSettings(object):
+class TestSettings:
     def test_simple_config(self):
         config = get_config(
             PATH + 'simple.conf',

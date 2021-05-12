@@ -41,7 +41,7 @@ item_today = Item(event_today)
 SIMPLE_EVENT_UID = 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
 
 
-class TestCalendar(object):
+class TestCalendar:
 
     def test_create(self, coll_vdirs):
         assert True
@@ -74,8 +74,8 @@ class TestCalendar(object):
 
         print('init')
         for calendar in coll._calendars:
-            print('{}: saved ctag: {}, vdir ctag: {}'.format(
-                calendar, coll._local_ctag(calendar), coll._backend.get_ctag(calendar)))
+            print(f'{calendar}: saved ctag: {coll._local_ctag(calendar)}, '
+                  f'vdir ctag: {coll._backend.get_ctag(calendar)}')
         assert len(list(vdirs[cal1].list())) == 0
         assert coll._needs_update(cal1) is False
         sleep(sleep_time)
@@ -83,19 +83,19 @@ class TestCalendar(object):
         vdirs[cal1].upload(item_today)
         print('upload')
         for calendar in coll._calendars:
-            print('{}: saved ctag: {}, vdir ctag: {}'.format(
-                calendar, coll._local_ctag(calendar), coll._backend.get_ctag(calendar)))
+            print(f'{calendar}: saved ctag: {coll._local_ctag(calendar)}, '
+                  f'vdir ctag: {coll._backend.get_ctag(calendar)}')
         assert len(list(vdirs[cal1].list())) == 1
         assert coll._needs_update(cal1) is True
         coll.update_db()
         print('updated')
         for calendar in coll._calendars:
-            print('{}: saved ctag: {}, vdir ctag: {}'.format(
-                calendar, coll._local_ctag(calendar), coll._backend.get_ctag(calendar)))
+            print(f'{calendar}: saved ctag: {coll._local_ctag(calendar)}, '
+                  f'vdir ctag: {coll._backend.get_ctag(calendar)}')
         assert coll._needs_update(cal1) is False
 
 
-class TestVdirsyncerCompat(object):
+class TestVdirsyncerCompat:
     def test_list(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         event = Event.fromString(_get_text('event_d'), calendar=cal1, locale=LOCALE_BERLIN)
@@ -107,13 +107,13 @@ class TestVdirsyncerCompat(object):
         event = Event.fromString(event_today, calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event)
         hrefs = sorted(href for href, etag in coll._backend.list(cal1))
-        assert set(str(coll.get_event(href, calendar=cal1).uid) for href in hrefs) == set((
+        assert {str(coll.get_event(href, calendar=cal1).uid) for href in hrefs} == {
             'uid3@host1.com',
             'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU',
-        ))
+        }
 
 
-class TestCollection(object):
+class TestCollection:
 
     astart = dt.datetime.combine(aday, dt.time.min)
     aend = dt.datetime.combine(aday, dt.time.max)
@@ -354,7 +354,7 @@ class TestCollection(object):
         )
 
 
-class TestDbCreation(object):
+class TestDbCreation:
 
     def test_create_db(self, tmpdir):
         vdirpath = str(tmpdir) + '/' + cal1

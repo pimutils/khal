@@ -230,7 +230,7 @@ def _get_vevent(event):
             return component
 
 
-class TestExpand(object):
+class TestExpand:
     dtstartend_berlin = [
         (berlin.localize(dt.datetime(2013, 3, 1, 14, 0, )),
          berlin.localize(dt.datetime(2013, 3, 1, 16, 0, ))),
@@ -370,7 +370,7 @@ class TestExpand(object):
         ]
 
 
-class TestExpandNoRR(object):
+class TestExpandNoRR:
     dtstartend_berlin = [
         (berlin.localize(dt.datetime(2013, 3, 1, 14, 0)),
          berlin.localize(dt.datetime(2013, 3, 1, 16, 0))),
@@ -575,7 +575,7 @@ END:VEVENT
 """
 
 
-class TestSpecial(object):
+class TestSpecial:
     """collection of strange test cases that don't fit anywhere else really"""
 
     def test_count(self):
@@ -718,7 +718,7 @@ UID:datetime123
 END:VEVENT"""
 
 
-class TestRDate(object):
+class TestRDate:
     """Testing expanding of recurrence rules"""
     def test_simple_rdate(self):
         vevent = _get_vevent(simple_rdate)
@@ -780,7 +780,7 @@ END:VCALENDAR
 """
 
 
-class TestSanitize(object):
+class TestSanitize:
 
     def test_noend_date(self):
         vevent = _get_vevent(noend_date)

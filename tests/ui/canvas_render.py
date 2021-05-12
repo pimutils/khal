@@ -52,6 +52,6 @@ class CanvasTranslator:
         else:
             fmt = self._palette[fmt]
             if fmt[0]:
-                self.output.write('{}{}'.format(fmt[1], click.style(text)))
+                self.output.write(f'{fmt[1]}{click.style(text)}')
             else:
                 self.output.write(click.style(text, fg=fmt[1]))

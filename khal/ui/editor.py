@@ -30,7 +30,7 @@ from .widgets import (AlarmsEditor, Choice, DateConversionError, DateWidget,
                       TimeWidget, ValidatedEdit)
 
 
-class StartEnd(object):
+class StartEnd:
 
     def __init__(self, startdate, starttime, enddate, endtime):
         """collecting some common properties"""
@@ -410,7 +410,7 @@ class EventEditor(urwid.WidgetWrap):
 
     @property
     def title(self):  # Window title
-        return 'Edit: {}'.format(get_wrapped_text(self.summary))
+        return f'Edit: {get_wrapped_text(self.summary)}'
 
     @classmethod
     def selectable(cls):
@@ -607,12 +607,9 @@ class RecurrenceEditor(urwid.WidgetWrap):
     def _rebuild_monthly_choice(self):
         weekday, xth = get_weekday_occurrence(self._startdt)
         ords = {1: 'st', 2: 'nd', 3: 'rd', 21: 'st', 22: 'nd', 23: 'rd', 31: 'st'}
-        self._xth_weekday = 'on every {}{} {}'.format(
-            xth, ords.get(xth, 'th'), WEEKDAYS[weekday],
-        )
-        self._xth_monthday = 'on every {}{} of the month'.format(
-            self._startdt.day, ords.get(self._startdt.day, 'th'),
-        )
+        self._xth_weekday = f"on every {xth}{ords.get(xth, 'th')} {WEEKDAYS[weekday]}"
+        self._xth_monthday = (f"on every {self._startdt.day}"
+                              f"{ords.get(self._startdt.day, 'th')} of the month")
         self.monthly_choice = Choice(
             [self._xth_monthday, self._xth_weekday], self._xth_monthday, callback=self.rebuild,
         )
@@ -730,7 +727,7 @@ class RecurrenceEditor(urwid.WidgetWrap):
             rrule['byday'] = self.weekday_checks.days
         if rrule['freq'] == ['monthly'] and self.monthly_choice.active == self._xth_weekday:
             weekday, occurrence = get_weekday_occurrence(self._startdt)
-            rrule['byday'] = ['{}{}'.format(occurrence, WEEKDAYS[weekday])]
+            rrule['byday'] = [f'{occurrence}{WEEKDAYS[weekday]}']
         if self.until_choice.active == 'Until':
             if isinstance(self._startdt, dt.datetime):
                 rrule['until'] = dt.datetime.combine(
