@@ -107,10 +107,10 @@ class TestVdirsyncerCompat(object):
         event = Event.fromString(event_today, calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event)
         hrefs = sorted(href for href, etag in coll._backend.list(cal1))
-        assert {str(coll.get_event(href, calendar=cal1).uid) for href in hrefs} == {(
+        assert {str(coll.get_event(href, calendar=cal1).uid) for href in hrefs} == {
             'uid3@host1.com',
             'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU',
-        )}
+        }
 
 
 class TestCollection(object):
