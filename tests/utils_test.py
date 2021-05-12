@@ -36,9 +36,9 @@ def test_last_sgr():
 
 
 def test_find_unmatched_sgr():
-    assert utils.find_unmatched_sgr(weekheader) is False
-    assert utils.find_unmatched_sgr(today_line) is False
-    assert utils.find_unmatched_sgr(calendarline) is False
+    assert utils.find_unmatched_sgr(weekheader) is None
+    assert utils.find_unmatched_sgr(today_line) is None
+    assert utils.find_unmatched_sgr(calendarline) is None
     assert utils.find_unmatched_sgr('\x1b[31mHello World') == '\x1b[31m'
     assert utils.find_unmatched_sgr('\x1b[31mHello\x1b[0m \x1b[32mWorld') == '\x1b[32m'
     assert utils.find_unmatched_sgr('foo\x1b[1;31mbar') == '\x1b[1;31m'

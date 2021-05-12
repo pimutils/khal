@@ -67,16 +67,16 @@ def find_last_sgr(string):
         return -2, -1, ''
 
 
-def find_unmatched_sgr(string):
+def find_unmatched_sgr(string: str) -> Optional[str]:
     reset_pos, _, _ = find_last_reset(string)
     sgr_pos, _, sgr = find_last_sgr(string)
     if sgr_pos > reset_pos:
         return sgr
     else:
-        return False
+        return None
 
 
-def color_wrap(text, width=70):
+def color_wrap(text: str, width: int = 70) -> List[str]:
     """A variant of wrap that takes SGR codes (somewhat) into account.
 
     This doesn't actually adjust the length, but makes sure that
@@ -87,9 +87,9 @@ def color_wrap(text, width=70):
     lines = wrap(text, width)
     for num, _ in enumerate(lines):
         sgr = find_unmatched_sgr(lines[num])
-        if sgr:
+        if sgr is not None:
             lines[num] += RESET
-            if num != len(lines):
+            if (num + 1) < len(lines):
                 lines[num + 1] = sgr + lines[num + 1]
     return lines
 
