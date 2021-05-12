@@ -320,7 +320,7 @@ def test_invalid_calendar(runner):
 def test_attach_calendar(runner):
     runner = runner(days=2)
     result = runner.invoke(main_khal, ['printcalendars'])
-    assert set(result.output.split('\n')[:3]) == {['one', 'two', 'three']}
+    assert set(result.output.split('\n')[:3]) == {'one', 'two', 'three'}
     assert not result.exception
     result = runner.invoke(main_khal, ['printcalendars', '-a', 'one'])
     assert result.output == 'one\n'
