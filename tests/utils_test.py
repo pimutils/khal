@@ -74,6 +74,31 @@ def test_color_wrap_256():
     assert utils.color_wrap(text, 30) == expected
 
 
+def test_color_wrap_multiple_colors_and_tabs():
+    text = (
+        "\x1b[31m14:00-14:50    AST-1002-102 INTRO AST II/STAR GALAX (R) Classes",
+        "15:30-16:45    PHL-2000-104 PHILOSOPHY, SOCIETY & ETHICS (R) Classes",
+        "\x1b[38;2;255;0m17:00-18:00    Pay Ticket Deadline Calendar",
+        "09:30-10:45    PHL-1501-101 MIND, KNOWLEDGE & REALITY (R) Classes",
+        "\x1b[38;2;255;0m11:00-14:00    Rivers Street (noodles and pizza) (R) Calendar",
+    )
+    expected = [
+      '\x1b[31m14:00-14:50    AST-1002-102 INTRO AST II/STAR GALAX (R)\x1b[0m',
+      '\x1b[31mClasses\x1b[0m',
+      '15:30-16:45    PHL-2000-104 PHILOSOPHY, SOCIETY & ETHICS (R)',
+      'Classes',
+      '\x1b[38;2;255;0m17:00-18:00    Pay Ticket Deadline Calendar\x1b[0m',
+      '09:30-10:45    PHL-1501-101 MIND, KNOWLEDGE & REALITY (R)',
+      'Classes',
+      '\x1b[38;2;255;0m11:00-14:00    Rivers Street (noodles and\x1b[0m',
+      '\x1b[38;2;255;0mpizza) (R) Calendar\x1b[0m'
+    ]
+    actual = list()
+    for line in text:
+        actual += utils.color_wrap(line, 60)
+    assert actual == expected
+
+
 def test_get_weekday_occurrence():
     assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 1)) == (2, 1)
     assert utils.get_weekday_occurrence(dt.datetime(2017, 3, 2)) == (3, 1)
