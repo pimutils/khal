@@ -298,7 +298,7 @@ class TestCollection(object):
         event = Event.fromString(
             _get_text('event_dt_multi_recuid_no_master'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
-        events = list(coll.search('Event'))
+        events = sorted(coll.search('Event'))
         assert len(events) == 2
         assert events[0].format(
             '{start} {end} {title}', dt.date.today()) == '30.06. 07:30 30.06. 12:00 Arbeit\x1b[0m'
@@ -334,7 +334,7 @@ class TestCollection(object):
         event = Event.fromString(
             _get_text('invalid_tzoffset'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
-        events = list(coll.search('Event'))
+        events = sorted(coll.search('Event'))
         assert len(events) == 1
         assert events[0].format('{start} {end} {title}', dt.date.today()) == \
             '02.12. 08:00 02.12. 09:30 Some event\x1b[0m'
