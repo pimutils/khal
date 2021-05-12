@@ -326,7 +326,7 @@ def test_attach_calendar(runner):
     assert result.output == 'one\n'
     assert not result.exception
     result = runner.invoke(main_khal, ['printcalendars', '-d', 'one'])
-    assert set(result.output.split('\n')[:2]) == {['two', 'three']}
+    assert set(result.output.split('\n')[:2]) == {'two', 'three'}
     assert not result.exception
 
 
