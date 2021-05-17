@@ -23,6 +23,8 @@ jobs:
         env: BUILD=pytz201610
       - python: 3.9
         env: BUILD=pytz201702
+      - python: 3.9
+        env: BUILD=pytz_latest
     allow_failures:
       - python: "nightly"
 
