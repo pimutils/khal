@@ -13,6 +13,7 @@ may want to subscribe to `GitHub's tag feed
 not released
 
 * DROPPED support for Python 3.5
+* NEW Add symbol for events with at least one alarm
 
 0.10.3
 ======

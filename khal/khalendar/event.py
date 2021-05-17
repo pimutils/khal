@@ -264,6 +264,7 @@ class Event:
         if self._locale['unicode_symbols']:
             return dict(
                 recurring='\N{Clockwise gapped circle arrow}',
+                alarming='\N{Beamed eighth notes}',
                 range='\N{Left right arrow}',
                 range_end='\N{Rightwards arrow to bar}',
                 range_start='\N{Rightwards arrow from bar}',
@@ -272,6 +273,7 @@ class Event:
         else:
             return dict(
                 recurring='(R)',
+                alarming='(A)',
                 range='<->',
                 range_end='->|',
                 range_start='|->',
@@ -497,6 +499,14 @@ class Event:
             recurstr = ''
         return recurstr
 
+    @property
+    def _alarm_str(self):
+        if self.alarms:
+            alarmstr = ' ' + self.symbol_strings['alarming']
+        else:
+            alarmstr = ''
+        return alarmstr
+
     def format(self, format_string, relative_to, env={}, colors=True):
         """
         :param colors: determines if colors codes should be printed or not
@@ -620,6 +630,7 @@ class Event:
 
         attributes["repeat-symbol"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
+        attributes["alarm-symbol"] = self._alarm_str
         attributes["title"] = self.summary
         attributes["organizer"] = self.organizer.strip()
         attributes["description"] = self.description.strip()
