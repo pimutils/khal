@@ -77,7 +77,7 @@ class SQLiteDb:
                  locale: Dict[str, str],
                  ) -> None:
         assert db_path is not None
-        self.calendars = list(calendars)
+        self.calendars: list = list(calendars)
         self.db_path = path.expanduser(db_path)
         self._create_dbdir()
         self.locale = locale
@@ -89,7 +89,7 @@ class SQLiteDb:
         self._check_table_version()
 
     @contextlib.contextmanager
-    def at_once(self):
+    def at_once(self) -> 'SQLiteDb':
         assert not self._at_once
         self._at_once = True
         try:
@@ -196,7 +196,7 @@ class SQLiteDb:
             self.conn.commit()
         return result
 
-    def update(self, vevent_str: str, href: str, etag: str='', calendar: str=None) -> None:
+    def update(self, vevent_str: str, href: str, etag: str='', calendar: Optional[str]=None) -> None:
         """insert a new or update an existing event into the db
 
         This is mostly a wrapper around two SQL statements, doing some cleanup
@@ -405,7 +405,7 @@ class SQLiteDb:
         except IndexError:
             return None
 
-    def set_ctag(self, ctag: str, calendar: str):
+    def set_ctag(self, ctag: str, calendar: str) -> None:
         stuple = (ctag, calendar, )
         sql_s = 'UPDATE calendars SET ctag = ? WHERE calendar = ?;'
         self.sql_ex(sql_s, stuple)
@@ -414,9 +414,7 @@ class SQLiteDb:
     def get_etag(self, href: str, calendar: str) -> Optional[str]:
         """get etag for href
 
-        type href: str()
         return: etag
-        rtype: str()
         """
         sql_s = 'SELECT etag FROM events WHERE href = ? AND calendar = ?;'
         try:
@@ -425,7 +423,7 @@ class SQLiteDb:
         except IndexError:
             return None
 
-    def delete(self, href: str, etag: Any=None, calendar: str=None):
+    def delete(self, href: str, etag: str=None, calendar: str=None):
         """
         removes the event from the db,
 
@@ -457,7 +455,7 @@ class SQLiteDb:
         sql_s = 'DELETE FROM events WHERE href LIKE ? AND calendar = ?;'
         self.sql_ex(sql_s, (href, calendar))
 
-    def list(self, calendar):
+    def list(self, calendar: str) -> List[Tuple[str, str]]:
         """ list all events in `calendar`
 
         used for testing
@@ -486,14 +484,8 @@ class SQLiteDb:
         for calendar in result:
             yield calendar[0]  # result is always an iterable, even if getting only one item
 
-    def get_localized(self, start, end) \
+    def get_localized(self, start: dt.datetime, end: dt.datetime) \
             -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
-        """returns
-        :type start: datetime.datetime
-        :type end: datetime.datetime
-        :param minimal: if set, we do not return an event but a minimal stand in
-        :type minimal: bool
-        """
         assert start.tzinfo is not None
         assert end.tzinfo is not None
         start = utils.to_unix_time(start)
@@ -534,13 +526,9 @@ class SQLiteDb:
         for calendar in result:
             yield calendar[0]
 
-    def get_floating(self, start, end) \
+    def get_floating(self, start: dt.datetime, end: dt.datetime) \
             -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
-        """return floating events between `start` and `end`
-
-        :type start: datetime.datetime
-        :type end: datetime.datetime
-        """
+        """return floating events between `start` and `end`"""
         assert start.tzinfo is None
         assert end.tzinfo is None
         start_u = utils.to_unix_time(start)

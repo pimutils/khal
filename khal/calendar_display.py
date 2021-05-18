@@ -22,16 +22,22 @@
 import calendar
 import datetime as dt
 from locale import LC_ALL, LC_TIME, getlocale, setlocale
+from typing import Union, Optional
+
+from .custom_types import CalendarConfiguration, LocaleConfiguration
+from typing import Dict, List
 
 from click import style
 
 from .terminal import colored
 from .utils import get_month_abbr_len
+from .khalendar import CalendarCollection
 
 setlocale(LC_ALL, '')
 
 
 def get_weekheader(firstweekday):
+    mylocale: str
     try:
         mylocale = '.'.join(getlocale(LC_TIME))
     except TypeError:
@@ -41,17 +47,15 @@ def get_weekheader(firstweekday):
     return _calendar.formatweekheader(2)
 
 
-def getweeknumber(date):
+def getweeknumber(date: dt.date) -> int:
     """return iso week number for datetime.date object
     :param date: date
-    :type date: datetime.date()
     :return: weeknumber
-    :rtype: int
     """
     return dt.date.isocalendar(date)[1]
 
 
-def get_calendar_color(calendar, default_color, collection):
+def get_calendar_color(calendar: str, default_color: str, collection: CalendarCollection) -> str:
     """Because multi-line lambdas would be un-Pythonic
     """
     if collection._calendars[calendar]['color'] == '':
@@ -59,7 +63,7 @@ def get_calendar_color(calendar, default_color, collection):
     return collection._calendars[calendar]['color']
 
 
-def get_color_list(calendars, default_color, collection):
+def get_color_list(calendars: List[str], default_color: str, collection: CalendarCollection) -> List[str]:
     """Get the list of possible colors for the day, taking into account priority"""
     dcolors = [
         (
@@ -72,13 +76,20 @@ def get_color_list(calendars, default_color, collection):
     dcolors.sort(key=lambda x: x[1], reverse=True)
 
     maxPriority = dcolors[0][1]
-    dcolors = {x[0] for x in filter(lambda x: x[1] == maxPriority, dcolors)}
-
-    return list(dcolors)
+    return list({x[0] for x in filter(lambda x: x[1] == maxPriority, dcolors)})
 
 
-def str_highlight_day(day, calendars, hmethod, default_color, multiple, multiple_on_overflow,
-                      color, bold_for_light_color, collection):
+def str_highlight_day(
+    day: dt.date,
+    calendars: List[str],
+    hmethod: Optional[str],
+    default_color: str,
+    multiple: str,
+    multiple_on_overflow: bool,
+    color: str,
+    bold_for_light_color: bool,
+    collection: CalendarCollection,
+) -> str:
     """returns a string with day highlighted according to configuration
     """
     dstr = str(day.day).rjust(2)
@@ -108,73 +119,81 @@ def str_highlight_day(day, calendars, hmethod, default_color, multiple, multiple
     return dstr
 
 
-def str_week(week, today, collection=None,
-             hmethod=None, default_color=None, multiple=None, multiple_on_overflow=False,
-             color=None, highlight_event_days=False, locale=None, bold_for_light_color=True):
+def str_week(
+    week: List[dt.date],
+    today: dt.date,
+    collection: Optional[CalendarCollection]=None,
+    hmethod: Optional[str]=None,
+    default_color: str='',
+    multiple: str='',
+    multiple_on_overflow: bool=False,
+    color: str='',
+    highlight_event_days: bool=False,
+    locale=None,
+    bold_for_light_color=True,
+) -> str:
     """returns a string representing one week,
     if for day == today color is reversed
 
     :param week: list of 7 datetime.date objects (one week)
-    :type day: list()
     :param today: the date of today
-    :type today: datetime.date
     :return: string, which if printed on terminal appears to have length 20,
              but may contain ascii escape sequences
-    :rtype: str
     """
     strweek = ''
+    if highlight_event_days and collection is None:
+        raise ValueError('if `highlight_event_days` is True, `collection` must be a CalendarCollection')
     for day in week:
         if day == today:
-            day = style(str(day.day).rjust(2), reverse=True)
+            day_str = style(str(day.day).rjust(2), reverse=True)
         elif highlight_event_days:
+            assert collection is not None
             devents = list(collection.get_calendars_on(day))
             if len(devents) > 0:
-                day = str_highlight_day(day, devents, hmethod, default_color, multiple,
-                                        multiple_on_overflow, color, bold_for_light_color,
-                                        collection)
+                day_str = str_highlight_day(
+                    day, devents, hmethod, default_color, multiple,
+                    multiple_on_overflow, color, bold_for_light_color,
+                    collection,
+                )
             else:
-                day = str(day.day).rjust(2)
+                day_str = str(day.day).rjust(2)
         else:
-            day = str(day.day).rjust(2)
-        strweek = strweek + day + ' '
+            day_str = str(day.day).rjust(2)
+        strweek = strweek + day_str + ' '
     return strweek
 
 
-def vertical_month(month=None,
-                   year=None,
-                   today=None,
-                   weeknumber=False,
-                   count=3,
-                   firstweekday=0,
-                   monthdisplay='firstday',
+def vertical_month(month: Optional[int]=None,
+                   year: Optional[int]=None,
+                   today: Optional[dt.date]=None,
+                   weeknumber: Union[bool, str]=False,
+                   count: int=3,
+                   firstweekday: int=0,
+                   monthdisplay: str='firstday',
                    collection=None,
-                   hmethod='fg',
-                   default_color='',
-                   multiple='',
-                   multiple_on_overflow='',
-                   color='',
+                   hmethod: str='fg',
+                   default_color: str='',
+                   multiple: str='',
+                   multiple_on_overflow: bool=False,
+                   color: str='',
                    highlight_event_days=False,
                    locale=None,
-                   bold_for_light_color=True):
+                   bold_for_light_color=True,
+                   ) -> List[str]:
     """
     returns a list() of str() of weeks for a vertical arranged calendar
 
     :param month: first month of the calendar,
                   if non given, current month is assumed
-    :type month: int
     :param year: year of the first month included,
                  if non given, current year is assumed
-    :type year: int
     :param today: day highlighted, if non is given, current date is assumed
-    :type today: datetime.date()
     :param weeknumber: if not False the iso weeknumber will be shown for each
                        week, if weeknumber is 'right' it will be shown in its
                        own column, if it is 'left' it will be shown interleaved
                        with the month names
-    :type weeknumber: str/bool
     :returns: calendar strings,  may also include some
               ANSI (color) escape strings
-    :rtype: list() of str()
     """
     if month is None:
         month = dt.date.today().month

@@ -25,6 +25,7 @@ helper functions."""
 import datetime as dt
 import logging
 import os
+from typing import Optional, List, Dict
 
 import icalendar
 import pytz
@@ -51,28 +52,31 @@ class Event:
         only one day will have the same start and end date (even though the
         icalendar standard would have the end date be one day later)
     """
-    allday = False
+    allday: bool = False
 
-    def __init__(self, vevents, ref=None, **kwargs):
+    def __init__(self, vevents, ref: Optional[str] = None, **kwargs):
         """
-        :param start: start datetime of this event instance
         :type start: datetime.date
         :param end: end datetime of this event instance in unix time
         :type end: datetime.date
         """
         if self.__class__.__name__ == 'Event':
             raise ValueError('do not initialize this class directly')
+        if ref is None:
+            raise ValueError('ref should not be None')
         self._vevents = vevents
         self._locale = kwargs.pop('locale', None)
         self.readonly = kwargs.pop('readonly', None)
-        self.href = kwargs.pop('href', None)
-        self.etag = kwargs.pop('etag', None)
-        self.calendar = kwargs.pop('calendar', None)
-        self.color = kwargs.pop('color', None)
+        self.href: Optional[str] = kwargs.pop('href', None)
+        self.etag: Optional[str] = kwargs.pop('etag', None)
+        self.calendar: Optional[str] = kwargs.pop('calendar', None)
+        self.color: Optional[str] = kwargs.pop('color', None)
         self.ref = ref
 
-        start = kwargs.pop('start', None)
-        end = kwargs.pop('end', None)
+        # start datetime of this event instance
+        start: Optional[dt.datetime] = kwargs.pop('start', None)
+        # end datetime of this event instance
+        end: Optional[dt.datetime] = kwargs.pop('end', None)
 
         if start is None:
             self._start = self._vevents[self.ref]['DTSTART'].dt
@@ -93,7 +97,7 @@ class Event:
             raise TypeError('%s are invalid keyword arguments to this function' % kwargs.keys())
 
     @classmethod
-    def _get_type_from_vDDD(cls, start):
+    def _get_type_from_vDDD(cls, start: icalendar.prop.vDDDTypes) -> type:
         """
         :type start: icalendar.prop.vDDDTypes
         :type start: icalendar.prop.vDDDTypes
@@ -105,7 +109,7 @@ class Event:
         return FloatingEvent
 
     @classmethod
-    def _get_type_from_date(cls, start):
+    def _get_type_from_date(cls, start: dt.datetime) -> 'Event':
         if hasattr(start, 'tzinfo') and start.tzinfo is not None:
             cls = LocalizedEvent
         elif isinstance(start, dt.datetime):
@@ -115,7 +119,7 @@ class Event:
         return cls
 
     @classmethod
-    def fromVEvents(cls, events_list, ref=None, **kwargs):
+    def fromVEvents(cls, events_list: List[icalendar.cal.Event], ref: Optional[str]=None, **kwargs) -> 'Event':
         """
         :type events: list
         """
@@ -269,7 +273,7 @@ class Event:
             self._vevents[self.ref]['SEQUENCE'] = 0
 
     @property
-    def symbol_strings(self):
+    def symbol_strings(self) -> Dict[str, str]:
         if self._locale['unicode_symbols']:
             return {
                 'recurring': '\N{Clockwise gapped circle arrow}',
@@ -318,7 +322,7 @@ class Event:
             return self.end - self.start
 
     @property
-    def uid(self):
+    def uid(self) -> str:
         return self._vevents[self.ref]['UID']
 
     @property
@@ -334,25 +338,20 @@ class Event:
             return email
 
     @property
-    def url(self):
+    def url(self) -> str:
         if 'URL' not in self._vevents[self.ref]:
             return ''
         return self._vevents[self.ref]['URL']
 
-    def update_url(self, url):
+    def update_url(self, url: str) -> None:
         if url:
             self._vevents[self.ref]['URL'] = url
         else:
             self._vevents[self.ref].pop('URL')
 
     @staticmethod
-    def _create_calendar():
-        """
-        create the calendar
-
-        :returns: calendar
-        :rtype: icalendar.Calendar()
-        """
+    def _create_calendar() -> icalendar.Calendar:
+        """create the calendar"""
         calendar = icalendar.Calendar()
         calendar.add('version', '2.0')
         calendar.add(
@@ -361,7 +360,7 @@ class Event:
         return calendar
 
     @property
-    def raw(self):
+    def raw(self) -> str:
         """needed for vdirsyncer compatibility
 
         return text
@@ -394,7 +393,7 @@ class Event:
             fh.write(self.raw)
 
     @property
-    def summary(self):
+    def summary(self) -> str:
         description = None
         date = self._vevents[self.ref].get('x-birthday', None)
         if date:
@@ -719,11 +718,8 @@ class Event:
         attributes['cancelled'] = 'CANCELLED ' if self.status == 'CANCELLED' else ''
         return format_string.format(**dict(attributes)) + attributes["reset"]
 
-    def duplicate(self):
-        """duplicate this event's PROTO event
-
-        :rtype: Event
-        """
+    def duplicate(self) -> 'Event':
+        """duplicate this event's PROTO event"""
         new_uid = generate_random_uid()
         vevent = self._vevents['PROTO'].copy()
         vevent['SEQUENCE'] = 0
@@ -853,20 +849,17 @@ class AllDayEvent(Event):
             return self.end - self.start + dt.timedelta(days=1)
 
 
-def create_timezone(tz, first_date=None, last_date=None):
+def create_timezone(tz: pytz.tzinfo.BaseTzInfo, first_date: Optional[dt.datetime]=None, last_date: Optional[dt.datetime]=None) -> icalendar.Timezone:
     """
     create an icalendar vtimezone from a pytz.tzinfo object
 
     :param tz: the timezone
-    :type tz: pytz.tzinfo
     :param first_date: the very first datetime that needs to be included in the
     transition times, typically the DTSTART value of the (first recurring)
     event
-    :type first_date: datetime.datetime
     :param last_date: the last datetime that needs to included, typically the
     end of the (very last) event (of a recursion set)
     :returns: timezone information
-    :rtype: icalendar.Timezone()
 
     we currently have a problem here:
 
@@ -945,13 +938,11 @@ def create_timezone(tz, first_date=None, last_date=None):
     return timezone
 
 
-def _create_timezone_static(tz):
+def _create_timezone_static(tz: pytz.tzinfo.StaticTzInfo) -> icalendar.Timezone:
     """create an icalendar vtimezone from a pytz.tzinfo.StaticTzInfo
 
     :param tz: the timezone
-    :type tz: pytz.tzinfo.StaticTzInfo
     :returns: timezone information
-    :rtype: icalendar.Timezone()
     """
     timezone = icalendar.Timezone()
     timezone.add('TZID', tz)

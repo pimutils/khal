@@ -7,7 +7,8 @@ import errno
 import os
 import uuid
 from hashlib import sha1
-from typing import Optional  # noqa
+from typing import Optional, Tuple, Iterable  # noqa
+from ..custom_types import SupportsRaw
 
 from atomicwrites import atomic_write
 
@@ -38,7 +39,7 @@ def _href_safe(uid, safe=SAFE_UID_CHARS):
     return not bool(set(uid) - set(safe))
 
 
-def _generate_href(uid=None, safe=SAFE_UID_CHARS):
+def _generate_href(uid=None, safe=SAFE_UID_CHARS) -> str:
     if not uid:
         return str(uuid.uuid4().hex)
     elif not _href_safe(uid, safe):
@@ -83,7 +84,7 @@ def get_etag_from_file(f):
 class VdirError(IOError):
     def __init__(self, *args, **kwargs):
         for key, value in kwargs.items():
-            if getattr(self, key, object()) is not None:  # pragma: no cover
+            if getattr(self, key, object()) not in [None, '']:  # pragma: no cover
                 raise TypeError(f'Invalid argument: {key}')
             setattr(self, key, value)
 
@@ -103,7 +104,7 @@ class WrongEtagError(VdirError):
 
 
 class AlreadyExistingError(VdirError):
-    existing_href = None  # type: Optional[str]
+    existing_href: str = ''
 
 
 class Item:
@@ -132,7 +133,7 @@ class VdirBase:
     item_class = Item
     default_mode = 0o750
 
-    def __init__(self, path, fileext, encoding='utf-8'):
+    def __init__(self, path: str, fileext: str, encoding='utf-8'):
         if not os.path.isdir(path):
             raise CollectionNotFoundError(path)
         self.path = path
@@ -173,25 +174,27 @@ class VdirBase:
     def _get_href(self, uid):
         return _generate_href(uid) + self.fileext
 
-    def list(self):
+    def list(self) -> Iterable[Tuple[str, str]]:
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)
             if os.path.isfile(fpath) and fname.endswith(self.fileext):
                 yield fname, get_etag_from_file(fpath)
 
-    def get(self, href):
+    def get(self, href: str) -> Tuple[Item, str]:
         fpath = self._get_filepath(href)
         try:
             with open(fpath, 'rb') as f:
-                return (Item(f.read().decode(self.encoding)),
-                        get_etag_from_file(fpath))
+                return (
+                    Item(f.read().decode(self.encoding)),
+                    get_etag_from_file(fpath)
+                )
         except OSError as e:
             if e.errno == errno.ENOENT:
                 raise NotFoundError(href)
             else:
                 raise
 
-    def upload(self, item):
+    def upload(self, item) -> Tuple[str, str]:
         if not isinstance(item.raw, str):
             raise TypeError('item.raw must be a unicode string.')
 
@@ -208,10 +211,9 @@ class VdirBase:
                 fpath, etag = self._upload_impl(item, href)
             else:
                 raise
-
         return href, etag
 
-    def _upload_impl(self, item, href):
+    def _upload_impl(self, item, href: str):
         fpath = self._get_filepath(href)
         try:
             with atomic_write(fpath, mode='wb', overwrite=False) as f:
@@ -223,7 +225,7 @@ class VdirBase:
             else:
                 raise
 
-    def update(self, href, item, etag):
+    def update(self, href: str, item: SupportsRaw, etag: str) -> str:
         fpath = self._get_filepath(href)
         if not os.path.exists(fpath):
             raise NotFoundError(item.uid)

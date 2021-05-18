@@ -21,6 +21,8 @@
 #
 """all functions related to terminal display are collected here"""
 
+from typing import Optional, List, Dict
+
 from collections import namedtuple
 from itertools import zip_longest
 
@@ -30,7 +32,7 @@ RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal
 BTEXT = '\x1b[1m'  # bold
 RESET = '\33[0m'
-COLORS = {
+COLORS: Dict[str, NamedColor] = {
     'black': NamedColor(index=0, light=False),
     'dark red': NamedColor(index=1, light=False),
     'dark green': NamedColor(index=2, light=False),
@@ -50,7 +52,7 @@ COLORS = {
 }
 
 
-def get_color(fg=None, bg=None, bold_for_light_color=False):
+def get_color(fg: Optional[str]=None, bg: Optional[str]=None, bold_for_light_color: bool=False) -> str:
     """convert foreground and/or background color in ANSI color codes
 
     colors can be a color name from the ANSI color palette (e.g. 'dark green'),
@@ -113,14 +115,12 @@ def get_color(fg=None, bg=None, bold_for_light_color=False):
     return result
 
 
-def colored(string, fg=None, bg=None, bold_for_light_color=True):
+def colored(string: str, fg: Optional[str]=None, bg: Optional[str]=None, bold_for_light_color: bool=True) -> str:
     """colorize `string` with ANSI color codes
 
      see get_color for description of `fg`, `bg` and `bold_for_light_color`
     :param string: string to be colorized
-    :type string: str
     :returns: colorized string
-    :rtype: str
     """
     result = get_color(fg, bg, bold_for_light_color)
     result += string
@@ -129,7 +129,7 @@ def colored(string, fg=None, bg=None, bold_for_light_color=True):
     return result
 
 
-def merge_columns(lcolumn, rcolumn, width=25):
+def merge_columns(lcolumn: List[str], rcolumn: List[str], width: int=25) -> List[str]:
     """merge two lists elementwise together
 
     Wrap right columns to terminal width.
@@ -138,11 +138,8 @@ def merge_columns(lcolumn, rcolumn, width=25):
     out its (real) width automatically since it might contain ANSI
     escape sequences.
     """
-
     missing = len(rcolumn) - len(lcolumn)
     if missing > 0:
         lcolumn = lcolumn + missing * [width * ' ']
 
-    rows = ['    '.join(one) for one in zip_longest(
-        lcolumn, rcolumn, fillvalue='')]
-    return rows
+    return ['    '.join(one) for one in zip_longest(lcolumn, rcolumn, fillvalue='')]

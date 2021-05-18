@@ -27,7 +27,7 @@ import re
 import textwrap
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
-from typing import Iterable, List, Tuple
+from typing import Dict, Iterable, List, Tuple, Any
 
 import pytz
 from click import confirm, echo, prompt, style
@@ -133,10 +133,10 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
 
 def start_end_from_daterange(
     daterange: Iterable[str],
-    locale: dict,
-    default_timedelta_date=dt.timedelta(days=1),
-    default_timedelta_datetime=dt.timedelta(hours=1),
-) -> Tuple[dt.datetime, dt.datetime]:
+    locale: Dict[Any, Any],
+    default_timedelta_date:dt.timedelta=dt.timedelta(days=1),
+    default_timedelta_datetime:dt.timedelta=dt.timedelta(hours=1),
+):
     """
     convert a string description of a daterange into start and end datetime
 
