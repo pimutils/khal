@@ -121,7 +121,7 @@ class Event:
         """
         assert isinstance(events_list, list)
 
-        vevents = dict()
+        vevents = {}
         for event in events_list:
             if 'RECURRENCE-ID' in event:
                 if invalid_timezone(event['RECURRENCE-ID']):
@@ -262,21 +262,21 @@ class Event:
     @property
     def symbol_strings(self):
         if self._locale['unicode_symbols']:
-            return dict(
-                recurring='\N{Clockwise gapped circle arrow}',
-                range='\N{Left right arrow}',
-                range_end='\N{Rightwards arrow to bar}',
-                range_start='\N{Rightwards arrow from bar}',
-                right_arrow='\N{Rightwards arrow}'
-            )
+            return {
+                'recurring': '\N{Clockwise gapped circle arrow}',
+                'range': '\N{Left right arrow}',
+                'range_end': '\N{Rightwards arrow to bar}',
+                'range_start': '\N{Rightwards arrow from bar}',
+                'right_arrow': '\N{Rightwards arrow}'
+            }
         else:
-            return dict(
-                recurring='(R)',
-                range='<->',
-                range_end='->|',
-                range_start='|->',
-                right_arrow='->'
-            )
+            return {
+                'recurring': '(R)',
+                'range': '<->',
+                'range_end': '->|',
+                'range_start': '|->',
+                'right_arrow': '->'
+            }
 
     @property
     def start_local(self):
@@ -356,7 +356,7 @@ class Event:
         return text
         """
         calendar = self._create_calendar()
-        tzs = list()
+        tzs = []
         for vevent in self._vevents.values():
             if hasattr(vevent['DTSTART'].dt, 'tzinfo') and vevent['DTSTART'].dt.tzinfo is not None:
                 tzs.append(vevent['DTSTART'].dt.tzinfo)
@@ -497,12 +497,14 @@ class Event:
             recurstr = ''
         return recurstr
 
-    def format(self, format_string, relative_to, env={}, colors=True):
+    def format(self, format_string, relative_to, env=None, colors=True):
         """
         :param colors: determines if colors codes should be printed or not
         :type colors: bool
         """
-        attributes = dict()
+        env = env or {}
+
+        attributes = {}
         try:
             relative_to_start, relative_to_end = relative_to
         except TypeError:
@@ -680,7 +682,7 @@ class Event:
 
         # in case the instance we want to delete is specified as a RECURRENCE-ID
         # event, we should delete that as well
-        to_pop = list()
+        to_pop = []
         for key in self._vevents:
             if key == 'PROTO':
                 continue
@@ -852,7 +854,7 @@ def create_timezone(tz, first_date=None, last_date=None):
             last_num = num
             last_tt = transtime
 
-    timezones = dict()
+    timezones = {}
     for num in range(first_num, last_num + 1):
         name = tz._transition_info[num][2]
         if name in timezones:

@@ -289,7 +289,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
             adjust_reasonably=True, localize=False,
         )
     except DateTimeParseError:
-        info = dict()
+        info = {}
 
     while True:
         summary = info.get('summary')
@@ -365,7 +365,7 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
                   timezone=None, url=None, format=None, env=None):
     """Create a new event from arguments and add to vdirs"""
     if isinstance(categories, str):
-        categories = list([category.strip() for category in categories.split(',')])
+        categories = [category.strip() for category in categories.split(',')]
     try:
         event = new_vevent(
             locale=conf['locale'], location=location, categories=categories,
@@ -508,7 +508,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             if allow_none and value == "None":
                 value = ""
             if attr == 'categories':
-                getattr(event, "update_" + attr)(list([cat.strip() for cat in value.split(',')]))
+                getattr(event, "update_" + attr)([cat.strip() for cat in value.split(',')])
             else:
                 getattr(event, "update_" + attr)(value)
             edited = True
@@ -632,7 +632,7 @@ def print_ics(conf, name, ics, format):
     for event in events:
         events_grouped[event['UID']].append(event)
 
-    vevents = list()
+    vevents = []
     for uid in events_grouped:
         vevents.append(sorted(events_grouped[uid], key=sort_vevent_key))
 

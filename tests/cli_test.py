@@ -58,7 +58,7 @@ def runner(tmpdir, monkeypatch):
             print_new=print_new,
             dbpath=str(db), **kwargs))
         runner = CustomCliRunner(
-            config_file=config_file, db=db, calendars=dict(one=calendar),
+            config_file=config_file, db=db, calendars={"one": calendar},
             xdg_data_home=xdg_data_home, xdg_config_home=xdg_config_home,
             tmpdir=tmpdir,
         )
@@ -766,7 +766,7 @@ def cleanup(paths):
     for path in paths:
         if os.path.exists(path):
             os.chmod(str(path), 0o755)
-        for dirpath, dirnames, filenames in os.walk(path):
+        for dirpath, _dirnames, filenames in os.walk(path):
             os.chmod(str(dirpath), 0o755)
             for filename in filenames:
                 os.chmod(str(os.path.join(dirpath, filename)), 0o644)

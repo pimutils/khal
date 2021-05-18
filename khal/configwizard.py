@@ -143,7 +143,7 @@ def get_vdirs_from_vdirsyncer_config():
               "error message:")
         print(error)
         return None
-    vdirs = list()
+    vdirs = []
     for storage in vdir_config.storages.values():
         if storage['type'] == 'filesystem':
             # TODO detect type of storage properly
@@ -152,7 +152,7 @@ def get_vdirs_from_vdirsyncer_config():
                 path += '/'
             path += '*'
             vdirs.append((storage['instance_name'], path, 'discover'))
-    if vdirs == list():
+    if vdirs == []:
         print("No usable collections were found")
         return None
     else:
@@ -162,7 +162,8 @@ def get_vdirs_from_vdirsyncer_config():
         return vdirs
 
 
-def create_vdir(names=[]):
+def create_vdir(names=None):
+    names = names or []
     if not confirm("Do you want to create a local calendar? (You can always "
                    "set it up to synchronize with a server in vdirsyncer "
                    "later)."):

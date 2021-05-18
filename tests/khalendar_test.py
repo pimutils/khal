@@ -60,8 +60,8 @@ class TestCalendar:
 
     def test_sanity(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        mtimes = dict()
-        for i in range(100):
+        mtimes = {}
+        for _ in range(100):
             for cal in coll._calendars:
                 mtime = coll._local_ctag(cal)
                 if mtimes.get(cal):
@@ -148,9 +148,9 @@ class TestCollection:
         coll, vdirs = coll_vdirs
         start = dt.datetime.combine(today, dt.time.min)
         end = dt.datetime.combine(today, dt.time.max)
-        assert list(coll.get_floating(start, end)) == list()
+        assert list(coll.get_floating(start, end)) == []
         assert list(coll.get_localized(utils.BERLIN.localize(start),
-                                       utils.BERLIN.localize(end))) == list()
+                                       utils.BERLIN.localize(end))) == []
 
     def test_insert(self, coll_vdirs):
         """insert a localized event"""
@@ -298,7 +298,7 @@ class TestCollection:
         event = Event.fromString(
             _get_text('event_dt_multi_recuid_no_master'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
-        events = list(sorted(coll.search('Event')))
+        events = sorted(coll.search('Event'))
         assert len(events) == 2
         assert events[0].format(
             '{start} {end} {title}', dt.date.today()) == '30.06. 07:30 30.06. 12:00 Arbeit\x1b[0m'
@@ -334,7 +334,7 @@ class TestCollection:
         event = Event.fromString(
             _get_text('invalid_tzoffset'), calendar=cal1, locale=LOCALE_BERLIN)
         coll.new(event, cal1)
-        events = list(sorted(coll.search('Event')))
+        events = sorted(coll.search('Event'))
         assert len(events) == 1
         assert events[0].format('{start} {end} {title}', dt.date.today()) == \
             '02.12. 08:00 02.12. 09:30 Some event\x1b[0m'
@@ -529,7 +529,7 @@ def test_birthdays(coll_vdirs_birthday):
     coll, vdirs = coll_vdirs_birthday
     assert list(
         coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59))
-    ) == list()
+    ) == []
     vdirs[cal1].upload(DumbItem(card, 'unix'))
     coll.update_db()
     assert 'Unix\'s 41st birthday' == list(
@@ -576,7 +576,7 @@ def test_birthdays_no_year(coll_vdirs_birthday):
     coll, vdirs = coll_vdirs_birthday
     assert list(
         coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59))
-    ) == list()
+    ) == []
     vdirs[cal1].upload(DumbItem(card_no_year, 'vcard.vcf'))
     coll.update_db()
     events = list(coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59)))

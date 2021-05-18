@@ -67,14 +67,15 @@ class CalendarCollection:
                  color: str='',
                  priority: int=10,
                  highlight_event_days: bool=False,
-                 locale: Dict[str, Any]=dict(),
+                 locale: Optional[Dict[str, Any]]=None,
                  dbpath: Optional[str]=None,
                  ) -> None:
+        locale = locale or {}
         assert dbpath is not None
         assert calendars is not None
         self._calendars = calendars
         self._default_calendar_name = None  # type: Optional[str]
-        self._storages = dict()  # type: Dict[str, Vdir]
+        self._storages = {}  # type: Dict[str, Vdir]
         for name, calendar in self._calendars.items():
             ctype = calendar.get('ctype', 'calendar')
             if ctype == 'calendar':
@@ -98,7 +99,7 @@ class CalendarCollection:
         self.highlight_event_days = highlight_event_days
         self._locale = locale
         self._backend = backend.SQLiteDb(self.names, dbpath, self._locale)
-        self._last_ctags = dict()  # type: Dict[str, str]
+        self._last_ctags = {}  # type: Dict[str, str]
         self.update_db()
 
     @property

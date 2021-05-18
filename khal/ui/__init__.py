@@ -357,7 +357,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         self._first_day = this_date
         self._collection = collection
 
-        super().__init__(list())
+        super().__init__([])
         self.ensure_date(this_date)
 
     def ensure_date(self, day):
@@ -470,7 +470,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
 
         :type day: datetime.date
         """
-        event_list = list()
+        event_list = []
         date_header = DateHeader(
             day=day,
             dateformat=self._conf['locale']['longdateformat'],
@@ -1265,8 +1265,9 @@ def _add_calendar_colors(palette, collection):
     return palette
 
 
-def start_pane(pane, callback, program_info='', quit_keys=['q']):
+def start_pane(pane, callback, program_info='', quit_keys=None):
     """Open the user interface with the given initial pane."""
+    quit_keys = quit_keys or ['q']
 
     frame = Window(
         footer=program_info + f' | {quit_keys[0]}: quit, ?: help',
@@ -1322,7 +1323,8 @@ def start_pane(pane, callback, program_info='', quit_keys=['q']):
         frame, palette, unhandled_input=frame.on_key_press, pop_ups=True)
     frame.loop = loop
 
-    def redraw_today(loop, pane, meta={'last_today': None}):
+    def redraw_today(loop, pane, meta=None):
+        meta = meta or {'last_today': None}
         # XXX TODO this currently assumes, today moves forward by exactly one
         # day, but it could either move forward more (suspend-to-disk/ram) or
         # even move backwards

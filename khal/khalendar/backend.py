@@ -502,7 +502,7 @@ class SQLiteDb:
             'ORDER BY dtstart')
         stuple = tuple([start, end, start, end, start, end] + list(self.calendars))
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
-        for item, href, start, end, ref, etag, dtype, calendar in result:
+        for item, href, start, end, ref, etag, _dtype, calendar in result:
             start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
             end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
             yield item, href, start, end, ref, etag, calendar
