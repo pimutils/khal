@@ -67,7 +67,7 @@ class CalendarCollection(object):
                  color: str='',
                  priority: int=10,
                  highlight_event_days: bool=False,
-                 locale: Dict[str, Any]=None,
+                 locale: Optional[Dict[str, Any]]=None,
                  dbpath: Optional[str]=None,
                  ) -> None:
         locale = locale or {}
