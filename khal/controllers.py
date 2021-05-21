@@ -409,6 +409,11 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
         conf['default']['default_dayevent_duration'],
         adjust_reasonably=True,
     )
+    if alarms is None:
+        if info['allday']:
+            alarms = conf['default']['default_dayevent_alarm']
+        else:
+            alarms = conf['default']['default_event_alarm']
     info.update({
         'location': location,
         'categories': categories,

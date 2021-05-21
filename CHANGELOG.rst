@@ -18,6 +18,7 @@ not released yet
   config file (via the new [palette] section, check the documenation)
 * NEW timedelta strings can now have a leading `+`, e.g. `+1d`
 * NEW Add `--json` option to output event data as JSON objects
+* NEW Add default alarms configuration option
 
 0.11.2
 ======
