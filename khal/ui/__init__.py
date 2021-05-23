@@ -31,7 +31,7 @@ from .. import icalendar as icalendar_helpers, utils
 from ..khalendar.event import Event
 from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
-from .widgets import ExtendedEdit as Edit, NPile, NColumns, NListBox, linebox
+from .widgets import ExtendedEdit as Edit, NPile, NColumns, linebox
 from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
 from .calendarwidget import CalendarWidget
@@ -555,7 +555,7 @@ class StaticDayWalker(DayWalker):
         return urwid.SimpleFocusListWalker.set_focus(self, position)
 
 
-class DateListBox(NListBox):
+class DateListBox(urwid.ListBox):
     """A ListBox container for a SimpleFocusListWalker, that contains one day
     worth of events"""
 
