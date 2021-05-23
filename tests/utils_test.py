@@ -36,9 +36,9 @@ def test_last_sgr():
 
 
 def test_find_unmatched_sgr():
-    assert utils.find_unmatched_sgr(weekheader) is False
-    assert utils.find_unmatched_sgr(today_line) is False
-    assert utils.find_unmatched_sgr(calendarline) is False
+    assert utils.find_unmatched_sgr(weekheader) is None
+    assert utils.find_unmatched_sgr(today_line) is None
+    assert utils.find_unmatched_sgr(calendarline) is None
     assert utils.find_unmatched_sgr('\x1b[31mHello World') == '\x1b[31m'
     assert utils.find_unmatched_sgr('\x1b[31mHello\x1b[0m \x1b[32mWorld') == '\x1b[32m'
     assert utils.find_unmatched_sgr('foo\x1b[1;31mbar') == '\x1b[1;31m'
@@ -72,6 +72,31 @@ def test_color_wrap_256():
     ]
 
     assert utils.color_wrap(text, 30) == expected
+
+
+def test_color_wrap_multiple_colors_and_tabs():
+    text = (
+        "\x1b[31m14:00-14:50    AST-1002-102 INTRO AST II/STAR GALAX (R) Classes",
+        "15:30-16:45    PHL-2000-104 PHILOSOPHY, SOCIETY & ETHICS (R) Classes",
+        "\x1b[38;2;255;0m17:00-18:00    Pay Ticket Deadline Calendar",
+        "09:30-10:45    PHL-1501-101 MIND, KNOWLEDGE & REALITY (R) Classes",
+        "\x1b[38;2;255;0m11:00-14:00    Rivers Street (noodles and pizza) (R) Calendar",
+    )
+    expected = [
+      '\x1b[31m14:00-14:50    AST-1002-102 INTRO AST II/STAR GALAX (R)\x1b[0m',
+      '\x1b[31mClasses\x1b[0m',
+      '15:30-16:45    PHL-2000-104 PHILOSOPHY, SOCIETY & ETHICS (R)',
+      'Classes',
+      '\x1b[38;2;255;0m17:00-18:00    Pay Ticket Deadline Calendar\x1b[0m',
+      '09:30-10:45    PHL-1501-101 MIND, KNOWLEDGE & REALITY (R)',
+      'Classes',
+      '\x1b[38;2;255;0m11:00-14:00    Rivers Street (noodles and\x1b[0m',
+      '\x1b[38;2;255;0mpizza) (R) Calendar\x1b[0m'
+    ]
+    actual = list()
+    for line in text:
+        actual += utils.color_wrap(line, 60)
+    assert actual == expected
 
 
 def test_get_weekday_occurrence():

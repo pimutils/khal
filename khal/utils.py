@@ -29,9 +29,10 @@ import re
 import string
 from calendar import month_abbr, timegm
 from textwrap import wrap
+from typing import Iterator, List, Tuple, Optional
 
 
-def generate_random_uid():
+def generate_random_uid() -> str:
     """generate a random uid
 
     when random isn't broken, getting a random UID from a pool of roughly 10^56
@@ -49,7 +50,7 @@ ansi_sgr = re.compile(r'\x1b\['
                       'm')
 
 
-def find_last_reset(string):
+def find_last_reset(string: str) -> Tuple[int, int, str]:
     for match in re.finditer(ansi_reset, string):  # noqa B007: this is actually used below.
         pass
     try:
@@ -58,7 +59,7 @@ def find_last_reset(string):
         return -2, -1, ''
 
 
-def find_last_sgr(string):
+def find_last_sgr(string: str) -> Tuple[int, int, str]:
     for match in re.finditer(ansi_sgr, string):  # noqa B007: this is actually used below.
         pass
     try:
@@ -67,16 +68,16 @@ def find_last_sgr(string):
         return -2, -1, ''
 
 
-def find_unmatched_sgr(string):
+def find_unmatched_sgr(string: str) -> Optional[str]:
     reset_pos, _, _ = find_last_reset(string)
     sgr_pos, _, sgr = find_last_sgr(string)
     if sgr_pos > reset_pos:
         return sgr
     else:
-        return False
+        return None
 
 
-def color_wrap(text, width=70):
+def color_wrap(text: str, width: int = 70) -> List[str]:
     """A variant of wrap that takes SGR codes (somewhat) into account.
 
     This doesn't actually adjust the length, but makes sure that
@@ -87,32 +88,30 @@ def color_wrap(text, width=70):
     lines = wrap(text, width)
     for num, _ in enumerate(lines):
         sgr = find_unmatched_sgr(lines[num])
-        if sgr:
+        if sgr is not None:
             lines[num] += RESET
-            if num != len(lines):
+            if (num + 1) < len(lines):
                 lines[num + 1] = sgr + lines[num + 1]
     return lines
 
 
-def get_weekday_occurrence(day):
+def get_weekday_occurrence(day: dt.date) -> Tuple[int, int]:
     """Calculate how often this weekday has already occurred in a given month.
 
-    :type day: datetime.date
     :returns: weekday (0=Monday, ..., 6=Sunday), occurrence
-    :rtype: tuple(int, int)
     """
     xthday = 1 + (day.day - 1) // 7
     return day.weekday(), xthday
 
 
-def get_month_abbr_len():
+def get_month_abbr_len() -> int:
     """Calculate the number of characters we need to display the month
     abbreviated name. It depends on the locale.
     """
     return max(len(month_abbr[i]) for i in range(1, 13)) + 1
 
 
-def localize_strip_tz(dates, timezone):
+def localize_strip_tz(dates: List[dt.datetime], timezone: dt.tzinfo) -> Iterator[dt.datetime]:
     """converts a list of dates to timezone, than removes tz info"""
     for one_date in dates:
         if getattr(one_date, 'tzinfo', None) is not None:
@@ -129,7 +128,7 @@ def to_unix_time(dtime: dt.datetime) -> float:
     return unix_time
 
 
-def to_naive_utc(dtime):
+def to_naive_utc(dtime: dt.datetime) -> dt.datetime:
     """convert a datetime object to UTC and than remove the tzinfo, if
     datetime is naive already, return it
     """
@@ -141,7 +140,7 @@ def to_naive_utc(dtime):
     return dtime_naive
 
 
-def is_aware(dtime):
+def is_aware(dtime: dt.datetime) -> bool:
     """test if a datetime instance is timezone aware"""
     if dtime.tzinfo is not None and dtime.tzinfo.utcoffset(dtime) is not None:
         return True
@@ -149,11 +148,8 @@ def is_aware(dtime):
         return False
 
 
-def relative_timedelta_str(day):
+def relative_timedelta_str(day: dt.date) -> str:
     """Converts the timespan from `day` to today into a human readable string.
-
-    :type day: datetime.date
-    :rtype: str
     """
     days = (day - dt.date.today()).days
     if days < 0:
