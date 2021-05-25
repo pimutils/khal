@@ -124,7 +124,7 @@ longdatetimeformat = string(default='%c')
 # weeknumbers, so will only work properly if `firstweekday` is set to 0
 weeknumbers = weeknumbers(default='off')
 
-# Keybindings for :command:`ikhal` are set here. You can bind more then one key
+# Keybindings for :command:`ikhal` are set here. You can bind more than one key
 # (combination) to a command by supplying a comma-separated list of keys.
 # For binding key combinations concatenate them keys (with a space in
 # between), e.g. **ctrl n**.
@@ -278,7 +278,7 @@ agenda_event_format = string(default='{calendar-color}{cancelled}{start-end-time
 # Specifies how each *day header* is formatted.
 agenda_day_format = string(default='{bold}{name}, {date-long}{reset}')
 
-# Display month name on row when the week contains the first day of
+# Display month name on row when the week contains the first day
 # of the month ('firstday') or when the first day of the week is in the
 # month ('firstfullweek')
 monthdisplay = monthdisplay(default='firstday')
