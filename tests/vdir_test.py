@@ -86,7 +86,8 @@ def test_etag_sleep(tmpdir, sleep_time):
 
     assert old_etag != new_etag
 
-def test_get_href_from_uid ():
+
+def test_get_href_from_uid():
     uid = "V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU@pimutils.org"
     href = vdir._generate_href(uid)
     assert href == "4aa4284e48c5b195d48e3f9a8fd29bd574c66f47"
