@@ -326,7 +326,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         except pytz.UnknownTimeZoneError:
             echo("unknown timezone")
 
-    info['description'] = prompt("description (or 'None')", default=info.get('description'))
+    info['description'] = prompt('description (or "None")', default=info.get('description'))
     if info['description'] == 'None':
         info['description'] = ''
 
@@ -413,6 +413,24 @@ def present_options(options, prefix="", sep="  ", width=70):
         return None
 
 
+def prompt_none(text, default=None, lower=False, type=None):
+    # icalendar.prop.vRecur returns list values for frequency, until and
+    # interval with one element.  However, when creating an event with
+    # new -i they are str values.
+    if isinstance(default, list):
+        default = default[0]
+
+    # icalendar.prop.vRecur return the freq value in upper case,
+    # however we only accept lower case values.  For consistency
+    # with the interactive mode conver the value for lowercase
+    # for display.
+    if isinstance(default, str) and lower:
+        default = default.lower()
+
+    v = prompt(text + ' (or "None")', default=default or "None", type=type)
+    return v if v != "None" else None
+
+
 def edit_event(event, collection, locale, allow_quit=False, width=80):
     options = OrderedDict()
     if allow_quit:
@@ -458,24 +476,14 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             except:  # noqa
                 echo("error parsing range")
         elif choice == "repeat":
-            recur = event.recurobject
-            freq = recur["freq"] if "freq" in recur else ""
-            until = recur["until"] if "until" in recur else ""
-            interval = recur["interval"] if "interval" in recur else ""
-            if not freq:
-                freq = 'None'
-            freq = prompt('frequency (or "None")', freq)
-            if freq == 'None':
-                event.update_rrule(None)
-            else:
-                until = prompt('until (or "None")', until)
-                if until == 'None':
-                    until = None
-                interval = prompt('every (or "None")', interval)
-                if interval == 'None':
-                    interval = None
+            freq = prompt_none("frequency", event.recurobject.get("freq"), lower=True)
+            if freq:
+                until = prompt_none("until", event.recurobject.get("until"))
+                interval = prompt_none("interval", event.recurobject.get("interval"), int)
                 rrule = parse_datetime.rrulefstr(freq, until, interval, locale)
-                event.update_rrule(rrule)
+            else:
+                rrule = None
+            event.update_rrule(rrule)
             edited = True
         elif choice == "alarm":
             default_alarms = []
