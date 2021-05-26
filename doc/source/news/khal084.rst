@@ -33,7 +33,7 @@ identifiers with the corresponding one from the Olson DB (e.g., change
 `Europe_Berlin` to `Europe/Berlin`) or copy original VTIMZONE definition in.
 
 If you have any problems with this, please either open an `issue at github`_ or come into
-our `irc channel`_ (`#pimutils` on Freenode).
+our `irc channel`_ (`#pimutils` on Libera.Chat).
 
 We are sorry for any inconveniences this is causing you!
 
@@ -42,4 +42,4 @@ We are sorry for any inconveniences this is causing you!
 .. _github: https://github.com/pimutils/khal/
 .. _issue at github: https://github.com/pimutils/khal/issues
 .. _pypi: https://pypi.python.org/pypi/khal/
-.. _irc channel: irc://#pimutils@Freenode
+.. _irc channel: irc://#pimutils@Libera.Chat
