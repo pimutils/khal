@@ -414,7 +414,7 @@ Options
 
 * **-e, --every=EVERY** specify at what interval a reccurint event
   should run. For instance, if RRULE is weekly and EVERY is 2, it
-  woulld schedule the event every 2 weeks.
+  would schedule the event every 2 weeks.
 
 * **--url** specify the URL element of the event
 
