@@ -423,8 +423,8 @@ def rrulefstr(repeat, until, every, locale):
             try:
                 int(every)
             except ValueError:
-                logger.fatal("Invalid value for every option." +
-                        "Must be an integer")
+                logger.fatal("Invalid value for every option. " +
+                             "Must be an integer")
                 raise FatalError()
             rrule_settings['interval'] = every
         return rrule_settings
