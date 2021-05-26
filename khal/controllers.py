@@ -279,7 +279,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
 
 
 def new_interactive(collection, calendar_name, conf, info, location=None,
-                    categories=None, repeat=None, until=None, alarms=None,
+                    categories=None, repeat=None, until=None, every=None, alarms=None,
                     format=None, env=None, url=None):
     try:
         info = parse_datetime.eventinfofstr(
@@ -333,7 +333,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
     event = new_from_args(
         collection, calendar_name, conf, format=format, env=env,
         location=location, categories=categories,
-        repeat=repeat, until=until, alarms=alarms, url=url,
+        repeat=repeat, until=until, every=every, alarms=alarms, url=url,
         **info)
 
     echo("event saved")
@@ -343,7 +343,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
 
 
 def new_from_string(collection, calendar_name, conf, info, location=None,
-                    categories=None, repeat=None, until=None, alarms=None,
+                    categories=None, repeat=None, until=None, every=None, alarms=None,
                     url=None, format=None, env=None):
     """construct a new event from a string and add it"""
     info = parse_datetime.eventinfofstr(
@@ -355,13 +355,13 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
     new_from_args(
         collection, calendar_name, conf, format=format, env=env,
         location=location, categories=categories, repeat=repeat,
-        until=until, alarms=alarms, url=url, **info
+        until=until, every=every, alarms=alarms, url=url, **info
     )
 
 
 def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
                   summary=None, description=None, allday=None, location=None,
-                  categories=None, repeat=None, until=None, alarms=None,
+                  categories=None, repeat=None, until=None, every=None, alarms=None,
                   timezone=None, url=None, format=None, env=None):
     """Create a new event from arguments and add to vdirs"""
     if isinstance(categories, str):
@@ -369,7 +369,7 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
     try:
         event = new_vevent(
             locale=conf['locale'], location=location, categories=categories,
-            repeat=repeat, until=until, alarms=alarms, dtstart=dtstart,
+            repeat=repeat, until=until, every=every, alarms=alarms, dtstart=dtstart,
             dtend=dtend, summary=summary, description=description, timezone=timezone, url=url,
         )
     except ValueError as error:
@@ -461,6 +461,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             recur = event.recurobject
             freq = recur["freq"] if "freq" in recur else ""
             until = recur["until"] if "until" in recur else ""
+            interval = recur["interval"] if "interval" in recur else ""
             if not freq:
                 freq = 'None'
             freq = prompt('frequency (or "None")', freq)
@@ -470,7 +471,10 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 until = prompt('until (or "None")', until)
                 if until == 'None':
                     until = None
-                rrule = parse_datetime.rrulefstr(freq, until, locale)
+                interval = prompt('every (or "None")', interval)
+                if interval == 'None':
+                    interval = None
+                rrule = parse_datetime.rrulefstr(freq, until, interval, locale)
                 event.update_rrule(rrule)
             edited = True
         elif choice == "alarm":

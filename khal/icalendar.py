@@ -71,7 +71,7 @@ def split_ics(ics, random_uid=False, default_timezone=None):
 
 def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
               allday=False, description=None, location=None, categories=None,
-              repeat=None, until=None, alarms=None, url=None):
+              repeat=None, until=None, every=None, alarms=None, url=None):
     """create a new event
 
     :param dtstart: starttime of that event
@@ -121,7 +121,7 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     if url:
         event.add('url', icalendar.vUri(url))
     if repeat and repeat != "none":
-        rrule = rrulefstr(repeat, until, locale)
+        rrule = rrulefstr(repeat, until, every, locale)
         event.add('rrule', rrule)
     if alarms:
         for alarm in alarms.split(","):
