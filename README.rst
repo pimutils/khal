@@ -33,7 +33,7 @@ Feedback
 --------
 Please do provide feedback if *khal* works for you or even more importantly if
 it doesn't. The preferred way to get in contact (especially if something isn't
-working) is via github or via IRC (#pimutils on Freenode).
+working) is via github or via IRC (#pimutils on Libera.Chat).
 
 .. _vdir: https://vdirsyncer.readthedocs.org/en/stable/vdir.html
 .. _vdirsyncer: https://github.com/pimutils/vdirsyncer

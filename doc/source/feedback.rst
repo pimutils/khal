@@ -48,14 +48,14 @@ a relevant issue_ for it and otherwise open a new one.
 
 Contact
 -------
-* You might get quick answers on the `#pimutils`_ IRC channel on Freenode, if
+* You might get quick answers on the `#pimutils`_ IRC channel on Libera.Chat, if
   nobody is answering you, please hang around for a bit. You can also use this
   channel for general discussions about :command:`khal` and `related tools`_.
 * Open a github issue_
 * If the above mentioned methods do not work, you can always contact the `main
   developer`_.
 
-.. _#pimutils: irc://#pimutils@Freenode
+.. _#pimutils: irc://#pimutils@Libera.Chat
 .. _related tools: https://github.com/pimutils/
 .. _issue: https://github.com/pimutils/khal/issues
 .. _reported: https://github.com/pimutils/khal/issues
