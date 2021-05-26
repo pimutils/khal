@@ -341,6 +341,9 @@ def _get_cli():
                   help=('Repeat event: daily, weekly, monthly or yearly.'))
     @click.option('--until', '-u',
                   help=('Stop an event repeating on this date.'))
+    @click.option('--every', '-e',
+                  help=('Frequency for repeating events.'),
+                  type=click.INT)
     @click.option('--format', '-f',
                   help=('The format to print the event.'))
     @click.option('--alarms', '-m',
@@ -349,7 +352,7 @@ def _get_cli():
     @click.argument('info', metavar='[START [END | DELTA] [TIMEZONE] [SUMMARY] [:: DESCRIPTION]]',
                     nargs=-1)
     @click.pass_context
-    def new(ctx, calendar, info, location, categories, repeat, until, alarms, url, format,
+    def new(ctx, calendar, info, location, categories, repeat, until, every, alarms, url, format,
             interactive):
         '''Create a new event from arguments.
 
@@ -395,6 +398,7 @@ def _get_cli():
                 repeat=repeat,
                 env={"calendars": ctx.obj['conf']['calendars']},
                 until=until,
+                every=every,
                 alarms=alarms,
                 url=url,
                 format=format,

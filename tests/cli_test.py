@@ -879,6 +879,7 @@ def test_new_interactive_extensive(runner):
         'l\non a boat\n'
         'p\nweekly\n'
         '1.1.2018\n'
+        '1\n'
         'a\n30m\n'
         'c\nwork\n'
         'n\n'

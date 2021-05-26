@@ -412,6 +412,10 @@ Options
 
 * **-u, --until=UNTIL** specify until when a recurring event should run
 
+* **-e, --every=EVERY** specify at what interval a reccurint event
+  should run. For instance, if RRULE is weekly and EVERY is 2, it
+  woulld schedule the event every 2 weeks.
+
 * **--url** specify the URL element of the event
 
 * **--alarms DURATION,...** will add alarm times as DELTAs comma separated for this event,
