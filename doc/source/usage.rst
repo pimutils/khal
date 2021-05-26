@@ -412,7 +412,7 @@ Options
 
 * **-u, --until=UNTIL** specify until when a recurring event should run
 
-* **-e, --every=EVERY** specify at what interval a reccurint event
+* **-e, --every=EVERY** specify at what interval a recurring event
   should run. For instance, if RRULE is weekly and EVERY is 2, it
   would schedule the event every 2 weeks.
 
