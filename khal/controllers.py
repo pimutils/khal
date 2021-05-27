@@ -24,6 +24,7 @@ import datetime as dt
 import logging
 import os
 import textwrap
+import re
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
 
@@ -429,6 +430,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
     options["alarm"] = {"short": "a"}
     options["Delete"] = {"short": "D"}
     options["url"] = {"short": "u", "attr": "url", "none": True}
+    ansi = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
     now = dt.datetime.now()
 
@@ -452,7 +454,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             current = event.format("{start} {end}", relative_to=now)
             value = prompt("datetime range", default=current)
             try:
-                start, end, allday = parse_datetime.guessrangefstr(value, locale)
+                start, end, allday = parse_datetime.guessrangefstr(ansi.sub('', value), locale)
                 event.update_start_end(start, end)
                 edited = True
             except:  # noqa
