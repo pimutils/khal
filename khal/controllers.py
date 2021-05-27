@@ -326,10 +326,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         except pytz.UnknownTimeZoneError:
             echo("unknown timezone")
 
-    info['description'] = prompt('description (or "None")', default=info.get('description'))
-    if info['description'] == 'None':
-        info['description'] = ''
-
+    info['description'] = prompt_none("description", info.get('description'))
     event = new_from_args(
         collection, calendar_name, conf, format=format, env=env,
         location=location, categories=categories,
