@@ -27,7 +27,7 @@ import re
 import textwrap
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
-from typing import Dict, Iterable, List, Tuple, Any
+from typing import Any, Dict, Iterable, List, Tuple
 
 import pytz
 from click import confirm, echo, prompt, style

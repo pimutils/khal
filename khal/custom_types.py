@@ -1,5 +1,6 @@
-from typing import TypedDict, Union, Protocol
 import datetime as dt
+from typing import Protocol, TypedDict, Union
+
 
 class CalendarConfiguration(TypedDict):
     name: str
@@ -26,4 +27,3 @@ class LocaleConfiguration(TypedDict):
 class SupportsRaw(Protocol):
     uid: str
     def raw(self) -> str: ...
-

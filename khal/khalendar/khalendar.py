@@ -30,9 +30,10 @@ import itertools
 import logging
 import os
 import os.path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, Set  # noqa
-from ..custom_types import CalendarConfiguration
+from typing import (Any, Dict, Iterable, List, Optional, Set, Tuple,  # noqa
+                    Union)
 
+from ..custom_types import CalendarConfiguration
 from . import backend
 from .event import Event
 from .exceptions import (CouldNotCreateDbDir, DuplicateUid, NonUniqueUID,

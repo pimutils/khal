@@ -28,7 +28,7 @@ import re
 import string
 from calendar import month_abbr, timegm
 from textwrap import wrap
-from typing import Iterator, List, Optional, Tuple
+from typing import Iterator, List, Optional, Tuple, Union
 
 import pytz
 

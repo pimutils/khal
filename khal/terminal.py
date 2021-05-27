@@ -21,10 +21,9 @@
 #
 """all functions related to terminal display are collected here"""
 
-from typing import Optional, List, Dict
-
 from collections import namedtuple
 from itertools import zip_longest
+from typing import Dict, List, Optional
 
 NamedColor = namedtuple('NamedColor', ['index', 'light'])
 

@@ -25,11 +25,12 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional, Type
 
 import icalendar
 import pytz
 from click import style
+from pytz.tzinfo import StaticTzInfo
 
 from ..exceptions import FatalError
 from ..icalendar import cal_from_ics, delete_instance, invalid_timezone
@@ -109,7 +110,7 @@ class Event:
         return FloatingEvent
 
     @classmethod
-    def _get_type_from_date(cls, start: dt.datetime) -> 'Event':
+    def _get_type_from_date(cls, start: dt.datetime) -> Type['Event']:
         if hasattr(start, 'tzinfo') and start.tzinfo is not None:
             cls = LocalizedEvent
         elif isinstance(start, dt.datetime):
@@ -875,8 +876,7 @@ def create_timezone(tz: pytz.tzinfo.BaseTzInfo, first_date: Optional[dt.datetime
     easy solution, we'd really need to ship another version of the OLSON DB.
 
     """
-
-    if isinstance(tz, pytz.tzinfo.StaticTzInfo):
+    if isinstance(tz, StaticTzInfo):
         return _create_timezone_static(tz)
 
     # TODO last_date = None, recurring to infinity
@@ -907,7 +907,7 @@ def create_timezone(tz: pytz.tzinfo.BaseTzInfo, first_date: Optional[dt.datetime
             last_num = num
             last_tt = transtime
 
-    timezones = {}
+    timezones: Dict[str, icalendar.Component] = {}
     for num in range(first_num, last_num + 1):
         name = tz._transition_info[num][2]
         if name in timezones:
@@ -938,8 +938,8 @@ def create_timezone(tz: pytz.tzinfo.BaseTzInfo, first_date: Optional[dt.datetime
     return timezone
 
 
-def _create_timezone_static(tz: pytz.tzinfo.StaticTzInfo) -> icalendar.Timezone:
-    """create an icalendar vtimezone from a pytz.tzinfo.StaticTzInfo
+def _create_timezone_static(tz: StaticTzInfo) -> icalendar.Timezone:
+    """create an icalendar vtimezone from a StaticTzInfo
 
     :param tz: the timezone
     :returns: timezone information

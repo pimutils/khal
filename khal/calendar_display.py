@@ -22,16 +22,14 @@
 import calendar
 import datetime as dt
 from locale import LC_ALL, LC_TIME, getlocale, setlocale
-from typing import Union, Optional
-
-from .custom_types import CalendarConfiguration, LocaleConfiguration
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 
 from click import style
 
+from .custom_types import CalendarConfiguration, LocaleConfiguration
+from .khalendar import CalendarCollection
 from .terminal import colored
 from .utils import get_month_abbr_len
-from .khalendar import CalendarCollection
 
 setlocale(LC_ALL, '')
 

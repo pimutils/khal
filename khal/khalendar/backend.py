@@ -488,8 +488,8 @@ class SQLiteDb:
             -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
         assert start.tzinfo is not None
         assert end.tzinfo is not None
-        start = utils.to_unix_time(start)
-        end = utils.to_unix_time(end)
+        start_timestamp = utils.to_unix_time(start)
+        end_timestamp = utils.to_unix_time(end)
         sql_s = (
             'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
             'FROM recs_loc JOIN events ON '
@@ -499,11 +499,21 @@ class SQLiteDb:
             'dtend > ? AND dtend <= ? OR '
             'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
             'ORDER BY dtstart')
-        stuple = tuple([start, end, start, end, start, end] + list(self.calendars))
+        stuple = tuple(
+            [
+                start_timestamp,
+                end_timestamp,
+                start_timestamp,
+                end_timestamp,
+                start_timestamp,
+                end_timestamp,
+            ]
+            + list(self.calendars)
+        )
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
-        for item, href, start, end, ref, etag, _dtype, calendar in result:
-            start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
-            end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
+        for item, href, start_timestamp, end_timestamp, ref, etag, _dtype, calendar in result:
+            start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start_timestamp))
+            end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end_timestamp))
             yield item, href, start, end, ref, etag, calendar
 
     def get_floating_calendars(self, start: dt.datetime, end: dt.datetime) -> Iterable[str]:
