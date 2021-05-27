@@ -479,7 +479,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             freq = prompt_none("frequency", event.recurobject.get("freq"), lower=True)
             if freq:
                 until = prompt_none("until", event.recurobject.get("until"))
-                interval = prompt_none("interval", event.recurobject.get("interval"), int)
+                interval = prompt_none("interval", event.recurobject.get("interval"), type=int)
                 rrule = parse_datetime.rrulefstr(freq, until, interval, locale)
             else:
                 rrule = None
