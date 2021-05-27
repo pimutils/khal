@@ -420,7 +420,7 @@ def prompt_none(text, default=None, lower=False, type=None):
     if isinstance(default, list):
         default = default[0]
 
-    # icalendar.prop.vRecur return the freq value in upper case,
+    # icalendar.prop.vRecur returns the freq value in upper case,
     # however we only accept lower case values.  For consistency
     # with the interactive mode convert the value for lowercase
     # for display.
