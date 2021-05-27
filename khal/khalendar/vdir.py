@@ -44,7 +44,7 @@ def to_bytes(x, encoding='ascii'):
 
 SAFE_UID_CHARS = ('abcdefghijklmnopqrstuvwxyz'
                   'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-                  '0123456789_.-+')
+                  '0123456789_.-+@')
 
 
 def _href_safe(uid, safe=SAFE_UID_CHARS):
