@@ -88,13 +88,16 @@ def test_etag_sleep(tmpdir, sleep_time):
 
 
 def test_get_href_from_uid():
+    # Test UID with unsafe characters
+    uid = "V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWÈÉ@pimutils.org"
+    first_href = vdir._generate_href(uid)
+    second_href = vdir._generate_href(uid)
+    assert first_href == second_href
+
+    # test UID with safe characters
     uid = "V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU@pimutils.org"
     href = vdir._generate_href(uid)
-    assert href == "4aa4284e48c5b195d48e3f9a8fd29bd574c66f47"
-
-    uid = "V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU"
-    href = vdir._generate_href(uid)
-    assert href == "V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU"
+    assert href == uid
 
     href = vdir._generate_href()
     assert href is not None
