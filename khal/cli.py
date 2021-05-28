@@ -342,7 +342,7 @@ def _get_cli():
     @click.option('--until', '-u',
                   help=('Stop an event repeating on this date.'))
     @click.option('--every', '-e',
-                  help=('Frequency for repeating events.'),
+                  help=('Interval of a repeating event'),
                   type=click.INT)
     @click.option('--format', '-f',
                   help=('The format to print the event.'))

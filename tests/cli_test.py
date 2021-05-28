@@ -370,6 +370,19 @@ def test_repeating(runner):
     assert result.output == ''
 
 
+# "see #810 by analogy of test_repeating"
+@pytest.mark.xfail
+def test_repeat_biweekly(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    end_date = dt.datetime.now() + dt.timedelta(days=10)
+    result = runner.invoke(
+        main_khal, (f"new {now} 20:00 myevent -r weekly -e 2 -u "
+                    f"{end_date.strftime('%d.%m.%Y')}").split())
+    assert not result.exception
+    assert result.output == ''
+
+
 def test_at(runner):
     runner = runner(days=2)
     now = dt.datetime.now().strftime('%d.%m.%Y')

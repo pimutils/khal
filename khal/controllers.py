@@ -29,8 +29,12 @@ from shutil import get_terminal_size
 
 import pytz
 from click import confirm, echo, prompt, style
+from click.types import IntRange, Choice, BadParameter
 from khal import (__productname__, __version__, calendar_display,
-                  parse_datetime, utils)
+                  utils)
+from khal.parse_datetime import (construct_daynames, eventinfofstr,
+                                 guesstimedeltafstr, guessdatetimefstr,
+                                 guessrangefstr, rrulefstr, timedelta2str)
 from khal.exceptions import FatalError, DateTimeParseError
 from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
@@ -51,7 +55,7 @@ def format_day(day, format_string, locale, attributes=None):
     attributes["date"] = day.strftime(locale['dateformat'])
     attributes["date-long"] = day.strftime(locale['longdateformat'])
 
-    attributes["name"] = parse_datetime.construct_daynames(day)
+    attributes["name"] = construct_daynames(day)
 
     colors = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
     for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
@@ -138,7 +142,7 @@ def start_end_from_daterange(daterange, locale,
         start = dt.datetime(*dt.date.today().timetuple()[:3])
         end = start + default_timedelta_date
     else:
-        start, end, allday = parse_datetime.guessrangefstr(
+        start, end, allday = guessrangefstr(
             daterange, locale, default_timedelta_date=default_timedelta_date,
             default_timedelta_datetime=default_timedelta_datetime,
         )
@@ -232,7 +236,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
         if not datepoint:
             datepoint = ['now']
         try:
-            start, allday = parse_datetime.guessdatetimefstr(
+            start, allday = guessdatetimefstr(
                 datepoint, conf['locale'], dt.date.today(),
             )
         except ValueError:
@@ -282,7 +286,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, every=None, alarms=None,
                     format=None, env=None, url=None):
     try:
-        info = parse_datetime.eventinfofstr(
+        info = eventinfofstr(
             info, conf['locale'],
             conf['default']['default_event_duration'],
             conf['default']['default_dayevent_duration'],
@@ -307,7 +311,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
             end_string = info["dtend"].strftime(conf['locale']['datetimeformat'])
             range_string = start_string + ' ' + end_string
         daterange = prompt("datetime range", default=range_string)
-        start, end, allday = parse_datetime.guessrangefstr(
+        start, end, allday = guessrangefstr(
             daterange, conf['locale'], adjust_reasonably=True)
         info['dtstart'] = start
         info['dtend'] = end
@@ -343,7 +347,7 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, every=None, alarms=None,
                     url=None, format=None, env=None):
     """construct a new event from a string and add it"""
-    info = parse_datetime.eventinfofstr(
+    info = eventinfofstr(
         info, conf['locale'],
         conf['default']['default_event_duration'],
         conf['default']['default_dayevent_duration'],
@@ -410,22 +414,9 @@ def present_options(options, prefix="", sep="  ", width=70):
         return None
 
 
-def prompt_none(text, default=None, lower=False, type=None):
-    # icalendar.prop.vRecur returns list values for frequency, until and
-    # interval with one element.  However, when creating an event with
-    # new -i they are str values.
-    if isinstance(default, list):
-        default = default[0]
-
-    # icalendar.prop.vRecur returns the freq value in upper case,
-    # however we only accept lower case values.  For consistency
-    # with the interactive mode convert the value for lowercase
-    # for display.
-    if isinstance(default, str) and lower:
-        default = default.lower()
-
-    v = prompt(text + ' (or "None")', default=default or "None", type=type)
-    return v if v != "None" else None
+def prompt_none(text, default=None, *args, **kw):
+    v = prompt(f'{text} (or "None")', default=default or "None", *args, **kw)
+    return None if v == "None" else v
 
 
 def edit_event(event, collection, locale, allow_quit=False, width=80):
@@ -467,55 +458,84 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             current = event.format("{start} {end}", relative_to=now)
             value = prompt("datetime range", default=current)
             try:
-                start, end, allday = parse_datetime.guessrangefstr(value, locale)
+                start, end, allday = guessrangefstr(value, locale)
                 event.update_start_end(start, end)
                 edited = True
             except:  # noqa
                 echo("error parsing range")
         elif choice == "repeat":
-            freq = prompt_none("frequency", event.recurobject.get("freq"), lower=True)
+            # edit of an existing event returns either None, or a
+            # list with one elment.  We need a string like when
+            # we create a event.
+            def get(k):
+                v = event.recurobject.get(k)
+                return v[0] if isinstance(v, list) else v
+
+            # edit of an existing event returns an upper case value
+            # for frequentcy.  For consistency with ihkal we convert
+            # it to lower case for display.
+            def get_lower(k):
+                v = get(k)
+                return v.lower() if isinstance(v, str) else v
+
+            def freq_type(ty, default=None):
+                if ty == "None":
+                    return None
+                return Choice(["daily", "weekly", "monthly", "yearly"])(ty)
+
+            freq = prompt_none("frequency", get_lower("freq"), value_proc=freq_type)
             if freq:
-                until = prompt_none("until", event.recurobject.get("until"))
-                interval = prompt_none("interval", event.recurobject.get("interval"), type=int)
-                rrule = parse_datetime.rrulefstr(freq, until, interval, locale)
+                def datetime_type(ty, default=None):
+                    if ty == "None":
+                        return None
+                    try:
+                        return guessdatetimefstr(ty.split(' '), locale)[0]
+                    except DateTimeParseError as e:
+                        raise BadParameter(str(e))
+
+                until = prompt_none("until", get("until"), value_proc=datetime_type)
+
+                def interval_type(ty, default=None):
+                    if ty == "None":
+                        return None
+                    return IntRange(1)(ty)
+
+                interval = prompt_none("interval", get("interval"), value_proc=interval_type)
+
+                rrule = rrulefstr(freq, until, interval, locale)
             else:
                 rrule = None
             event.update_rrule(rrule)
             edited = True
         elif choice == "alarm":
-            default_alarms = []
-            for a in event.alarms:
-                s = parse_datetime.timedelta2str(-1 * a[0])
-                default_alarms.append(s)
+            alarms = ", ".join(map(lambda a: timedelta2str(-a[0]), event.alarms))
 
-            default = ', '.join(default_alarms)
-            if not default:
-                default = 'None'
-            alarm = prompt('alarm (or "None")', default)
-            if alarm == "None":
-                alarm = ""
-            alarm_list = []
-            for a in alarm.split(","):
-                alarm_trig = -1 * parse_datetime.guesstimedeltafstr(a.strip())
-                new_alarm = (alarm_trig, event.description)
-                alarm_list += [new_alarm]
-            event.update_alarms(alarm_list)
+            def alarms_type(alarms, default=None):
+                if alarms == "None":
+                    return None
+                try:
+                    for a in alarms.split(","):
+                        -guesstimedeltafstr(a.strip())
+                    return alarms
+                except ValueError as e:
+                    raise BadParameter(str(e))
+
+            alarms = prompt_none("alarms", alarms, value_proc=alarms_type)
+            if alarms:
+                event.update_alarms(map(
+                    lambda a: (-guesstimedeltafstr(a.strip()), event.description),
+                    alarms.split(",")
+                ))
+            else:
+                event.update_alarms([])
             edited = True
         else:
             attr = options[choice]["attr"]
             default = getattr(event, attr)
-            question = choice
-
-            allow_none = False
             if "none" in options[choice] and options[choice]["none"]:
-                question += ' (or "None")'
-                allow_none = True
-                if not default:
-                    default = 'None'
-
-            value = prompt(question, default)
-            if allow_none and value == "None":
-                value = ""
+                value = prompt_none(choice, default) or ""
+            else:
+                value = prompt(choice, default)
             if attr == 'categories':
                 getattr(event, "update_" + attr)([cat.strip() for cat in value.split(',')])
             else:
