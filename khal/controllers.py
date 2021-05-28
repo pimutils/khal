@@ -29,7 +29,8 @@ from shutil import get_terminal_size
 
 import pytz
 from click import confirm, echo, prompt, style
-from click.types import IntRange, Choice, BadParameter
+from click.types import IntRange, Choice
+from click.exceptions import BadParameter
 from khal import (__productname__, __version__, calendar_display,
                   utils)
 from khal.parse_datetime import (construct_daynames, eventinfofstr,
