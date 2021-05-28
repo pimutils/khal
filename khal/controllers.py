@@ -472,7 +472,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 return v[0] if isinstance(v, list) else v
 
             # edit of an existing event returns an upper case value
-            # for frequentcy.  For consistency with ihkal we convert
+            # for frequentcy.  For consistency with ikhal we convert
             # it to lower case for display.
             def get_lower(k):
                 v = get(k)
