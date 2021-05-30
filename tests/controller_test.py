@@ -88,8 +88,8 @@ class TestGetAgenda:
             'DTEND:20110908T170000\r\n'
             'END:VEVENT\r\n'
         ), utils.cal1))
-        assert 'no events' in '\n'.join(
-            khal_list(coll, [], conf, agenda_format=event_format, day_format="{name}")).lower()
+        assert '\n'.join(khal_list(coll, [], conf,
+                         agenda_format=event_format, day_format="{name}")).lower() == ''
 
 
 class TestImport:

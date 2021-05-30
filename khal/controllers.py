@@ -294,8 +294,6 @@ def khal_list(
         event_column.extend(current_events)
         start = dt.datetime(*start.date().timetuple()[:3]) + dt.timedelta(days=1)
 
-    if event_column == []:
-        event_column = [style('No events', bold=True)]
     return event_column
 
 

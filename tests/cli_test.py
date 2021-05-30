@@ -106,7 +106,7 @@ def test_direct_modification(runner):
     runner = runner()
 
     result = runner.invoke(main_khal, ['list'])
-    assert result.output == 'No events\n'
+    assert result.output == ''
     assert not result.exception
 
     cal_dt = _get_text('event_dt_simple')
@@ -121,14 +121,14 @@ def test_direct_modification(runner):
     os.remove(str(event))
     result = runner.invoke(main_khal, ['list'])
     assert not result.exception
-    assert result.output == 'No events\n'
+    assert result.output == ''
 
 
 def test_simple(runner):
     runner = runner(days=2)
     result = runner.invoke(main_khal, ['list'])
     assert not result.exception
-    assert result.output == 'No events\n'
+    assert result.output == ''
 
     now = dt.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(
@@ -247,7 +247,7 @@ def test_calendar(runner):
         assert not result.exception
         assert result.exit_code == 0
         output = '\n'.join([
-            "    Mo Tu We Th Fr Sa Su     No events",
+            "    Mo Tu We Th Fr Sa Su     ",
             "Jun  1  2  3  4  5  6  7     ",
             "     8  9 10 11 12 13 14     ",
             "    15 16 17 18 19 20 21     ",
@@ -274,7 +274,7 @@ def test_long_calendar(runner):
         assert not result.exception
         assert result.exit_code == 0
         output = '\n'.join([
-            "    Mo Tu We Th Fr Sa Su     No events",
+            "    Mo Tu We Th Fr Sa Su     ",
             "Jun  1  2  3  4  5  6  7     ",
             "     8  9 10 11 12 13 14     ",
             "    15 16 17 18 19 20 21     ",
@@ -332,6 +332,8 @@ def test_attach_calendar(runner):
     assert not result.exception
 
 
+# "see #905"
+@pytest.mark.xfail
 @pytest.mark.parametrize('contents', [
     '',
     'BEGIN:VCALENDAR\nBEGIN:VTODO\nEND:VTODO\nEND:VCALENDAR\n'
@@ -343,7 +345,7 @@ def test_no_vevent(runner, tmpdir, contents):
 
     result = runner.invoke(main_khal, ['list'])
     assert not result.exception
-    assert 'No events' in result.output
+    assert result.output == ''
 
 
 def test_printformats(runner):
@@ -545,11 +547,10 @@ def test_color_option(runner):
     runner = runner(days=2)
 
     result = runner.invoke(main_khal, ['--no-color', 'list'])
-    assert result.output == 'No events\n'
+    assert result.output == ''
 
     result = runner.invoke(main_khal, ['--color', 'list'])
-    assert 'No events' in result.output
-    assert result.output != 'No events\n'
+    assert result.output == ''
 
 
 def choices(dateformat=0, timeformat=0,
@@ -810,7 +811,7 @@ def test_edit(runner):
     runner = runner()
     result = runner.invoke(main_khal, ['list'])
     assert not result.exception
-    assert result.output == 'No events\n'
+    assert result.output == ''
 
     for name in ['event_dt_simple', 'event_d_15']:
         cal_dt = _get_text(name)

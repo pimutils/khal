@@ -323,7 +323,8 @@ def _get_cli():
                 conf=ctx.obj['conf'],
                 env={"calendars": ctx.obj['conf']['calendars']}
             )
-            click.echo('\n'.join(event_column))
+            if event_column:
+                click.echo('\n'.join(event_column))
         except FatalError as error:
             logger.debug(error, exc_info=True)
             logger.fatal(error)
@@ -586,7 +587,8 @@ def _get_cli():
                              bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
                      for d in desc]
                 )
-            click.echo('\n'.join(event_column))
+            if event_column:
+                click.echo('\n'.join(event_column))
         except FatalError as error:
             logger.debug(error, exc_info=True)
             logger.fatal(error)
@@ -647,7 +649,8 @@ def _get_cli():
                 conf=ctx.obj['conf'],
                 env={"calendars": ctx.obj['conf']['calendars']}
             )
-            click.echo('\n'.join(rows))
+            if rows:
+                click.echo('\n'.join(rows))
         except FatalError as error:
             logger.debug(error, exc_info=True)
             logger.fatal(error)
