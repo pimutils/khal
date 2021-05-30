@@ -14,6 +14,7 @@ not released
 
 * DROPPED support for Python 3.5
 * CHANGE: ikhal: tab (and shift tab) jump from the events back to the calendar
+* NEW Add --every / -e to support INTERVAL on the command line
 
 0.10.3
 ======

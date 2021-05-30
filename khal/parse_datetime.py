@@ -413,12 +413,24 @@ def guessrangefstr(daterange, locale,
     )
 
 
-def rrulefstr(repeat, until, locale):
+def rrulefstr(repeat, until, every, locale):
     if repeat in ["daily", "weekly", "monthly", "yearly"]:
         rrule_settings = {'freq': repeat}
         if until:
-            until_dt, is_date = guessdatetimefstr(until.split(' '), locale)
-            rrule_settings['until'] = until_dt
+            if isinstance(until, str):
+                rrule_settings['until'] = guessdatetimefstr(until.split(' '), locale)[0]
+            else:
+                rrule_settings['until'] = until
+        if every is not None:
+            try:
+                every = int(every)
+                if every < 0:
+                    raise ValueError
+                rrule_settings['interval'] = every
+            except ValueError:
+                logger.fatal("Invalid value for the 'every' option. "
+                             "Must be positive integer")
+                raise FatalError()
         return rrule_settings
     else:
         logger.fatal("Invalid value for the repeat option. \
