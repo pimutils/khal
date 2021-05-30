@@ -496,14 +496,14 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
 
                 until = prompt_none("until", get("until"), value_proc=datetime_type)
 
-                def interval_type(ty, default=None):
+                def every_type(ty, default=None):
                     if ty == "None":
                         return None
                     return IntRange(1)(ty)
 
-                interval = prompt_none("interval", get("interval"), value_proc=interval_type)
+                every = prompt_none("every", get("interval"), value_proc=every_type)
 
-                rrule = rrulefstr(freq, until, interval, locale)
+                rrule = rrulefstr(freq, until, every, locale)
             else:
                 rrule = None
             event.update_rrule(rrule)
