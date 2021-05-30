@@ -413,12 +413,17 @@ def guessrangefstr(daterange, locale,
     )
 
 
-def rrulefstr(repeat, until, locale):
+def rrulefstr(repeat, until, locale, timezone):
     if repeat in ["daily", "weekly", "monthly", "yearly"]:
         rrule_settings = {'freq': repeat}
         if until:
             until_dt, is_date = guessdatetimefstr(until.split(' '), locale)
-            rrule_settings['until'] = until_dt
+            if timezone:
+                rrule_settings['until'] = until_dt.\
+                    replace(tzinfo=timezone).\
+                    astimezone(pytz.UTC)
+            else:
+                rrule_settings['until'] = until_dt
         return rrule_settings
     else:
         logger.fatal("Invalid value for the repeat option. \

@@ -497,7 +497,7 @@ test_set_repeat = _create_testcases(
          'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
          'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
          'DESCRIPTION:please describe the event',
-         'RRULE:FREQ=DAILY;UNTIL=20150605T000000')))
+         'RRULE:FREQ=DAILY;UNTIL=20150604T230000Z')))
 
 
 def test_repeat():
