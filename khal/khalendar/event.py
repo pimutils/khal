@@ -487,11 +487,22 @@ class Event:
 
     def update_attendees(self, attendees):
         assert isinstance(attendees, list)
-        attendees = [a for a in attendees if a != ""]
+        attendees = [a.strip().lower() for a in attendees if a != ""]
         if len(attendees) > 0:
+            # first check for overlaps in existing attendees.
+            # Existing vCalAddress objects will be copied, non-existing
+            # vCalAddress objects will be created and appended.
+            old_attendees = self._vevents[self.ref].get('ATTENDEE', [])
+            unchanged_attendees = []
             vCalAddresses = []
             for attendee in attendees:
-                item = icalendar.prop.vCalAddress('MAILTO:{}'.format(attendee.strip()))
+                for old_attendee in old_attendees:
+                    old_email = old_attendee.removeprefix("MAILTO:").lower()
+                    if attendee == old_email:
+                        vCalAddresses.append(old_attendee)
+                        unchanged_attendees.append(attendee)
+            for attendee in [a for a in attendees if a not in unchanged_attendees]:
+                item = icalendar.prop.vCalAddress('MAILTO:{}'.format(attendee))
                 item.params['ROLE'] = icalendar.prop.vText('REQ-PARTICIPANT')
                 item.params['PARTSTAT'] = icalendar.prop.vText('NEEDS-ACTION')
                 item.params['CUTYPE'] = icalendar.prop.vText('INDIVIDUAL')
