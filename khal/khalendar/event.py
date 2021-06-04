@@ -497,7 +497,7 @@ class Event:
             vCalAddresses = []
             for attendee in attendees:
                 for old_attendee in old_attendees:
-                    old_email = old_attendee.removeprefix("MAILTO:").lower()
+                    old_email = old_attendee.lstrip("MAILTO:").lower()
                     if attendee == old_email:
                         vCalAddresses.append(old_attendee)
                         unchanged_attendees.append(attendee)
