@@ -497,7 +497,12 @@ def test_event_attendees():
 
     # test if parameters from existing vCalAddress objects will be preserved
     new_address = vCalAddress("MAILTO:mail.address@not-exist.de")
-    new_address.params = Parameters({'CN': 'Real Name', 'PARTSTAT': 'NEEDS-ACTION', 'ROLE': 'REQ-PARTICIPANT', 'RSVP': 'TRUE'})
+    new_address.params = Parameters(
+        {'CN': 'Real Name',
+         'PARTSTAT': 'NEEDS-ACTION',
+         'ROLE': 'REQ-PARTICIPANT',
+         'RSVP': 'TRUE'}
+    )
     event._vevents[event.ref]['ATTENDEE'] = [new_address, ]
     event.update_attendees(["another.mailaddress@not-exist.de", "mail.address@not-exist.de"])
     assert event.attendees == "mail.address@not-exist.de, another.mailaddress@not-exist.de"
@@ -507,7 +512,6 @@ def test_event_attendees():
     address = address[0]
     assert address.params.get('CN', None) is not None
     assert address.params['CN'] == "Real Name"
-
 
 
 def test_create_timezone_static():
