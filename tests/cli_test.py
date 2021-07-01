@@ -1,6 +1,7 @@
 import datetime as dt
 import os
 import sys
+import re
 
 import pytest
 from click.testing import CliRunner
@@ -670,13 +671,9 @@ def test_print_ics_command(runner):
     # Non existing file
     result = runner.invoke(main_khal, ['printics', 'nonexisting_file'])
     assert result.exception
-    assert (
-        'Error: Invalid value for "ics": Could not open file: ' in result.output or
-        'Error: Invalid value for "[ICS]": Could not open file:'
-        in result.output or
-        'Error: Invalid value for \'ics\': Could not open file: ' in result.output or
-        'Error: Invalid value for \'[ICS]\': Could not open file:'
-        in result.output)
+    assert re.search(r'''Error: Invalid value for "?'?\[?(ICS|ics)\]?'?"?: '''
+                     r'''('nonexisting_file': No such file or directory\n|'''
+                     r'Could not open file:)', result.output)
 
     # Run on test files
     result = runner.invoke(main_khal, ['printics', _get_ics_filepath('cal_d')])
