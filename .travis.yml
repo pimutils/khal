@@ -2,7 +2,6 @@ language: python
 os: linux
 
 python:
-    - 3.6
     - 3.7
     - 3.8
     - 3.9
@@ -23,8 +22,8 @@ jobs:
         env: BUILD=pytz201610
       - python: 3.9
         env: BUILD=pytz201702
-      - python: 3.9
-        env: BUILD=pytz_latest
+      - python: 3.6
+        env: BUILD=py36
     allow_failures:
       - python: "nightly"
 
