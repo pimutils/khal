@@ -112,6 +112,9 @@ Several options are common to almost all of :program:`khal`'s commands
    repeat-symbol
         A repeating symbol (loop arrow) if the event is repeating.
 
+   alarm-symbol
+        An alarm symbol (alarm clock) if the event has at least one alarm.
+
    location
         The event location.
 
