@@ -426,6 +426,8 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if get_wrapped_text(self.categories) != self.event.categories:
             return True
+        if get_wrapped_text(self.url) != self.event.url:
+            return True
         if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
         if self.recurrenceeditor.changed:
@@ -439,6 +441,7 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_description(get_wrapped_text(self.description))
         self.event.update_location(get_wrapped_text(self.location))
         self.event.update_categories(get_wrapped_text(self.categories).split(','))
+        self.event.update_url(get_wrapped_text(self.url))
 
         if self.startendeditor.changed:
             self.event.update_start_end(
