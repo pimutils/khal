@@ -16,6 +16,8 @@ not released
 * CHANGE ikhal: tab (and shift tab) jump from the events back to the calendar
 * NEW Add symbol for events with at least one alarm
 * FIX URL can now be set/updated from ikhal
+* FIX Imported events without an end or duration will now last one day if
+   `DTSTART` is a date (as per RFC) or one hour if it is a datetime.
 
 0.10.3
 ======

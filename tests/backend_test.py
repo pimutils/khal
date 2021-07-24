@@ -564,11 +564,13 @@ def test_no_dtend():
     """test support for events with no dtend"""
     db = backend.SQLiteDb([calname], ':memory:', locale=LOCALE_BERLIN)
     db.update(_get_text('event_dt_no_end'), href='event_dt_no_end', calendar=calname)
-    events = db.get_floating(
-        dt.datetime(2016, 1, 16, 0, 0), dt.datetime(2016, 1, 17, 0, 0))
+    events = db.get_localized(
+        BERLIN.localize(dt.datetime(2016, 1, 16, 0, 0)),
+        BERLIN.localize(dt.datetime(2016, 1, 17, 0, 0)),
+    )
     event = list(events)[0]
-    assert event[2] == dt.date(2016, 1, 16)
-    assert event[3] == dt.date(2016, 1, 17)
+    assert event[2] == BERLIN.localize(dt.datetime(2016, 1, 16, 8, 0))
+    assert event[3] == BERLIN.localize(dt.datetime(2016, 1, 16, 9, 0))
 
 
 event_rdate_period = """BEGIN:VEVENT

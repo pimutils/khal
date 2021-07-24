@@ -791,8 +791,8 @@ class TestSanitize:
     def test_noend_datetime(self):
         vevent = _get_vevent(noend_datetime)
         vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
-        assert vevent['DTSTART'].dt == dt.date(2014, 8, 29)
-        assert vevent['DTEND'].dt == dt.date(2014, 8, 30)
+        assert vevent['DTSTART'].dt == BERLIN.localize(dt.datetime(2014, 8, 29, 8))
+        assert vevent['DTEND'].dt == BERLIN.localize(dt.datetime(2014, 8, 29, 9))
 
     def test_duration(self):
         vevent = _get_vevent_file('event_dtr_exdatez')

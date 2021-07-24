@@ -413,8 +413,9 @@ def sanitize_timerange(dtstart, dtend, duration=None):
 
     if dtend is None and duration is None:
         if isinstance(dtstart, dt.datetime):
-            dtstart = dtstart.date()
-        dtend = dtstart + dt.timedelta(days=1)
+            dtend = dtstart + dt.timedelta(hours=1)
+        else:
+            dtend = dtstart + dt.timedelta(days=1)
     elif dtend is not None:
         if dtend < dtstart:
             raise ValueError('The event\'s end time (DTEND) is older than '
@@ -424,7 +425,10 @@ def sanitize_timerange(dtstart, dtend, duration=None):
                 "Event start time and end time are the same. "
                 "Assuming the event's duration is one hour."
             )
-            dtend += dt.timedelta(hours=1)
+            if isinstance(dtstart, dt.datetime):
+                dtend += dt.timedelta(hours=1)
+            else:
+                dtend += dt.timedelta(days=1)
 
     return dtstart, dtend
 
