@@ -23,6 +23,13 @@ jobs:
       - uses: "actions/setup-python@v2"
         with:
           python-version: "${{ matrix.python-version }}"
+      - name: "Install test locales"
+        run: |
+          echo "de_DE.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+          echo "cs_CZ.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+          echo "el_GR.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+          echo "fr_FR.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+          sudo locale-gen
       - name: "Install dependencies"
         run: |
           set -xe
