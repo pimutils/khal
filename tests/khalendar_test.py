@@ -339,9 +339,10 @@ class TestCollection:
         assert events[0].format('{start} {end} {title}', dt.date.today()) == \
             '02.12. 08:00 02.12. 09:30 Some event\x1b[0m'
 
-    def test_multi_uid_vdir(self, coll_vdirs, caplog, fix_caplog):
+    def test_multi_uid_vdir(self, coll_vdirs, caplog, fix_caplog, sleep_time):
         coll, vdirs = coll_vdirs
         caplog.set_level(logging.WARNING)
+        sleep(sleep_time)
         vdirs[cal1].upload(DumbItem(_get_text('event_dt_multi_uid'), uid='12345'))
         coll.update_db()
         assert list(coll.search('')) == []
@@ -378,8 +379,9 @@ class TestDbCreation:
         os.chmod(str(tmpdir), 777)
 
 
-def test_event_different_timezones(coll_vdirs):
+def test_event_different_timezones(coll_vdirs, sleep_time):
     coll, vdirs = coll_vdirs
+    sleep(sleep_time)
     vdirs[cal1].upload(DumbItem(_get_text('event_dt_london'), uid='12345'))
     coll.update_db()
 
@@ -435,6 +437,7 @@ def test_default_calendar(coll_vdirs, sleep_time):
 
     assert len(list(coll.get_events_on(today))) == 0
 
+    sleep(sleep_time)
     vdir.upload(event)
     sleep(sleep_time)
     href, etag = list(vdir.list())[0]
@@ -525,11 +528,12 @@ END:VCARD
 """
 
 
-def test_birthdays(coll_vdirs_birthday):
+def test_birthdays(coll_vdirs_birthday, sleep_time):
     coll, vdirs = coll_vdirs_birthday
     assert list(
         coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59))
     ) == []
+    sleep(sleep_time)
     vdirs[cal1].upload(DumbItem(card, 'unix'))
     coll.update_db()
     assert 'Unix\'s 41st birthday' == list(
@@ -540,10 +544,12 @@ def test_birthdays(coll_vdirs_birthday):
         coll.get_floating(dt.datetime(2014, 3, 11), dt.datetime(2014, 3, 11)))[0].summary
 
 
-def test_birthdays_29feb(coll_vdirs_birthday):
+def test_birthdays_29feb(coll_vdirs_birthday, sleep_time):
     """test how we deal with birthdays on 29th of feb in leap years"""
     coll, vdirs = coll_vdirs_birthday
+    sleep(sleep_time)
     vdirs[cal1].upload(DumbItem(card_29thfeb, 'leap'))
+    assert coll.needs_update()
     coll.update_db()
     events = list(
         coll.get_floating(dt.datetime(2004, 1, 1, 0, 0), dt.datetime(2004, 12, 31))
@@ -572,11 +578,12 @@ def test_birthdays_29feb(coll_vdirs_birthday):
     assert events[0].start == dt.date(2005, 3, 1)
 
 
-def test_birthdays_no_year(coll_vdirs_birthday):
+def test_birthdays_no_year(coll_vdirs_birthday, sleep_time):
     coll, vdirs = coll_vdirs_birthday
     assert list(
         coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59))
     ) == []
+    sleep(sleep_time)
     vdirs[cal1].upload(DumbItem(card_no_year, 'vcard.vcf'))
     coll.update_db()
     events = list(coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59)))
