@@ -39,5 +39,6 @@ jobs:
           python -m pip install --upgrade coverage[toml] virtualenv tox tox-gh-actions          
 
       - name: "Run tox targets for ${{ matrix.python-version }}"
+        # Fake a TTY
         shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'
         run: "python -m tox"

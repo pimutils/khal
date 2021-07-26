@@ -46,7 +46,7 @@ class TestCalendar:
     def test_create(self, coll_vdirs):
         assert True
 
-    def test_new_event(self, coll_vdirs, sleep_time):
+    def test_new_event(self, coll_vdirs):
         coll, vdirs = coll_vdirs
         event = coll.new_event(event_today, cal1)
         assert event.calendar == cal1
@@ -342,7 +342,7 @@ class TestCollection:
     def test_multi_uid_vdir(self, coll_vdirs, caplog, fix_caplog, sleep_time):
         coll, vdirs = coll_vdirs
         caplog.set_level(logging.WARNING)
-        sleep(sleep_time)
+        sleep(sleep_time)  # Make sure we get a new ctag on upload
         vdirs[cal1].upload(DumbItem(_get_text('event_dt_multi_uid'), uid='12345'))
         coll.update_db()
         assert list(coll.search('')) == []
@@ -381,7 +381,7 @@ class TestDbCreation:
 
 def test_event_different_timezones(coll_vdirs, sleep_time):
     coll, vdirs = coll_vdirs
-    sleep(sleep_time)
+    sleep(sleep_time)  # Make sure we get a new ctag on upload
     vdirs[cal1].upload(DumbItem(_get_text('event_dt_london'), uid='12345'))
     coll.update_db()
 
@@ -437,7 +437,7 @@ def test_default_calendar(coll_vdirs, sleep_time):
 
     assert len(list(coll.get_events_on(today))) == 0
 
-    sleep(sleep_time)
+    sleep(sleep_time)  # Make sure we get a new ctag on upload
     vdir.upload(event)
     sleep(sleep_time)
     href, etag = list(vdir.list())[0]
@@ -533,7 +533,7 @@ def test_birthdays(coll_vdirs_birthday, sleep_time):
     assert list(
         coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59))
     ) == []
-    sleep(sleep_time)
+    sleep(sleep_time)  # Make sure we get a new ctag on upload
     vdirs[cal1].upload(DumbItem(card, 'unix'))
     coll.update_db()
     assert 'Unix\'s 41st birthday' == list(
@@ -547,7 +547,7 @@ def test_birthdays(coll_vdirs_birthday, sleep_time):
 def test_birthdays_29feb(coll_vdirs_birthday, sleep_time):
     """test how we deal with birthdays on 29th of feb in leap years"""
     coll, vdirs = coll_vdirs_birthday
-    sleep(sleep_time)
+    sleep(sleep_time)  # Make sure we get a new ctag on upload
     vdirs[cal1].upload(DumbItem(card_29thfeb, 'leap'))
     assert coll.needs_update()
     coll.update_db()
@@ -583,7 +583,7 @@ def test_birthdays_no_year(coll_vdirs_birthday, sleep_time):
     assert list(
         coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59))
     ) == []
-    sleep(sleep_time)
+    sleep(sleep_time)  # Make sure we get a new ctag on upload
     vdirs[cal1].upload(DumbItem(card_no_year, 'vcard.vcf'))
     coll.update_db()
     events = list(coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59)))
