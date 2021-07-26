@@ -6,6 +6,7 @@ vdirsyncer.
 import errno
 import os
 import uuid
+from hashlib import sha1
 
 from typing import Optional  # noqa
 
@@ -43,7 +44,7 @@ def to_bytes(x, encoding='ascii'):
 
 SAFE_UID_CHARS = ('abcdefghijklmnopqrstuvwxyz'
                   'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-                  '0123456789_.-+')
+                  '0123456789_.-+@')
 
 
 def _href_safe(uid, safe=SAFE_UID_CHARS):
@@ -51,8 +52,10 @@ def _href_safe(uid, safe=SAFE_UID_CHARS):
 
 
 def _generate_href(uid=None, safe=SAFE_UID_CHARS):
-    if not uid or not _href_safe(uid, safe):
+    if not uid:
         return to_unicode(uuid.uuid4().hex)
+    elif not _href_safe(uid, safe):
+        return to_unicode(sha1(uid.encode()).hexdigest())
     else:
         return uid
 

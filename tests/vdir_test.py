@@ -57,7 +57,6 @@ def test_etag_sync(tmpdir):
     file_.write('foo')
     file_.close()
     os.sync()
-
     old_etag = vdir.get_etag_from_file(fpath)
 
     file_ = open(fpath, 'w')
@@ -86,3 +85,19 @@ def test_etag_sleep(tmpdir, sleep_time):
     new_etag = vdir.get_etag_from_file(fpath)
 
     assert old_etag != new_etag
+
+
+def test_get_href_from_uid():
+    # Test UID with unsafe characters
+    uid = "V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWÈÉ@pimutils.org"
+    first_href = vdir._generate_href(uid)
+    second_href = vdir._generate_href(uid)
+    assert first_href == second_href
+
+    # test UID with safe characters
+    uid = "V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU@pimutils.org"
+    href = vdir._generate_href(uid)
+    assert href == uid
+
+    href = vdir._generate_href()
+    assert href is not None
