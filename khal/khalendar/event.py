@@ -273,7 +273,7 @@ class Event:
         if self._locale['unicode_symbols']:
             return {
                 'recurring': '\N{Clockwise gapped circle arrow}',
-                'alarming': '\N{Beamed eighth notes}',
+                'alarming': '\N{Alarm clock}',
                 'range': '\N{Left right arrow}',
                 'range_end': '\N{Rightwards arrow to bar}',
                 'range_start': '\N{Rightwards arrow from bar}',
