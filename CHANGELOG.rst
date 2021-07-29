@@ -8,9 +8,13 @@ may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
 
-0.10.4
+0.10.5
 ======
 not released
+
+0.10.4
+======
+2021-07-29
 
 * DROPPED support for Python 3.5
 * CHANGE ikhal: tab (and shift tab) jump from the events back to the calendar
