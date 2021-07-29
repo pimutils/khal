@@ -1,7 +1,7 @@
 khal
 ====
-.. image:: https://travis-ci.com/pimutils/khal.svg?branch=master
-    :target: https://travis-ci.com/pimutils/khal
+.. image:: https://github.com/pimutils/khal/actions/workflows/ci.yml/badge.svg?branch=master&event=push
+    :target: https://github.com/pimutils/khal/actions/workflows/ci.yml
 
 .. image:: https://codecov.io/github/pimutils/khal/coverage.svg?branch=master
   :target: https://codecov.io/github/pimutils/khal?branch=master
