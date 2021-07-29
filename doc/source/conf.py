@@ -181,7 +181,6 @@ html_theme = 'alabaster'
 html_theme_options = {
     'github_user': 'pimutils',
     'github_repo': 'khal',
-    'travis_button': 'true',
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

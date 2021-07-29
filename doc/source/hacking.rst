@@ -78,8 +78,8 @@ virtual environments (which it will reuse on later runs), one for each python
 version specified in :file:`tox.ini`, run the test suite and report on it.
 
 If you open a pull request (*PR*) on github, the continuous integration service
-`travis CI`_ will automatically perform exactly those tasks and then comment on
-the success or failure.
+`GitHub Actions`_ will automatically perform exactly those tasks and then comment
+on the success or failure.
 
 If you make any non-trivial changes to khal, please ensure that those changes
 are covered by (new) tests.  As testing :command:`ikhal` (the part of
@@ -128,7 +128,7 @@ khal's source code should adhere to the rules laid out in :pep:`008`, except
 for allowing line lengths of up to 100 characters if it improves
 overall legibility (use your judgement).  This can be checked by installing and
 running flake8_ (run with :command:`flake8` from khal's source directory), which
-will also be run with tox and travisCI, see section above.
+will also be run with tox and GitHub Actions, see section above.
  
 We try to document the parameters functions and methods accept, including their
 types, and their return values in the `sphinx style`_, though this is currently
@@ -143,7 +143,7 @@ identifiers, e.g., in dictionary keys::
 .. _github: https://github.com/pimutils/khal/
 .. _reported: https://github.com/pimutils/khal/issues?state=open
 .. _issue: https://github.com/pimutils/khal/issues
-.. _travis CI: https://travis-ci.org/pimutils/khal
+.. _GitHub Actions: https://github.com/pimutils/khal/actions/workflows/ci.yml
 .. _github pull requests: https://github.com/pimutils/khal/pulls
 .. _tox: https://tox.readthedocs.org/
 .. _pytest: http://pytest.org/
