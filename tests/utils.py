@@ -60,6 +60,10 @@ LOCALE_BOGOTA['default_timezone'] = BOGOTA
 LOCALE_MIXED = LOCALE_BERLIN.copy()
 LOCALE_MIXED['local_timezone'] = BOGOTA
 
+LOCALE_FLOATING = LOCALE_BERLIN.copy()
+LOCALE_FLOATING['default_timezone'] = None
+LOCALE_FLOATING['local_timezone'] = None
+
 
 def normalize_component(x):
     x = icalendar.cal.Component.from_ical(x)
