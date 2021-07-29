@@ -468,6 +468,8 @@ def test_only_update_old_event(coll_vdirs, monkeypatch, sleep_time):
     END:VEVENT
     """), cal1))
 
+    sleep(sleep_time)
+
     href_two, etag_two = vdirs[cal1].upload(coll.new_event(dedent("""
     BEGIN:VEVENT
     UID:meeting-two
