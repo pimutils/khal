@@ -1,0 +1,12 @@
+pycarddav and khal at 30c3
+==========================
+
+.. feed-entry::
+        :date: 2013-12-13
+
+If you will be 30C3_ and would like to discuss the faults and merits of khal or
+pycarddav, commandline calendaring/addressbooking in general, your ideas or just
+have a beer or mate, I'd love to meet up. You can find my contact details under
+*Feedback*.
+
+.. _30C3: https://events.ccc.de/congress/2013/wiki/Main_Page

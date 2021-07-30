@@ -1,0 +1,15 @@
+*.pyc
+*.swp
+khal/version.py
+khal.egg-info/
+build/
+dist/
+.eggs/*
+*.egg
+*.db
+.tox
+.coverage
+.cache
+htmlcov
+doc/source/configspec.rst
+.mypy_cache/

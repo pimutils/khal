@@ -1,0 +1,32 @@
+#/etc/khal/khal.conf.sample
+[calendars]
+[[home]]
+path = ~/.khal/calendars/home/
+color = dark blue
+
+[[work]]
+path = ~/.khal/calendars/work/
+readonly = True
+
+[sqlite]
+path = ~/.khal/khal.db
+
+[locale]
+local_timezone = Europe/Berlin
+default_timezone = America/New_York
+
+# If you use certain characters (e.g. commas) in these formats you may need to
+# enclose them in "" to ensure that they are loaded as strings.
+timeformat = %H:%M
+dateformat = %d.%m.
+longdateformat = %d.%m.%Y
+datetimeformat =  %d.%m. %H:%M
+longdatetimeformat = %d.%m.%Y %H:%M
+
+firstweekday = 0
+monthdisplay = firstday
+
+[default]
+default_calendar = home
+timedelta = 2 # the default timedelta that list uses
+highlight_event_days = True  # the default is False

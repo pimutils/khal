@@ -1,0 +1,63 @@
+---
+name: CI
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: "Python ${{ matrix.python-version }} ${{ matrix.tox-test }}"
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.6", "3.7", "3.8", "3.9"]
+        tox-test: ["default"]
+        include:
+          - python-version: "3.9"
+            tox-test: "mypy"
+          - python-version: "3.9"
+            tox-test: "style"
+
+    steps:
+      - uses: "actions/checkout@v2"
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: "${{ matrix.python-version }}"
+      - name: "Install test locales"
+        run: |
+          echo "de_DE.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+          echo "cs_CZ.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+          echo "el_GR.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+          echo "fr_FR.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+          sudo locale-gen
+      - name: "Install dependencies"
+        run: |
+          set -xe
+          python -VV
+          python -m site
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade coverage[toml] virtualenv tox tox-gh-actions          
+
+      - name: "Run tox targets for ${{ matrix.python-version }}"
+        if: ${{ matrix.tox-test == 'default' }}
+        # Fake a TTY
+        shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'
+        run: "python -m tox"
+
+      - name: "Run tox targets for mypy"
+        if: ${{ matrix.tox-test == 'mypy' }}
+        # Fake a TTY
+        shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'
+        run: "python -m tox -e mypy"
+
+      - name: "Run tox targets for style"
+        if: ${{ matrix.tox-test == 'style' }}
+        # Fake a TTY
+        shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'
+        run: "python -m tox -e style"

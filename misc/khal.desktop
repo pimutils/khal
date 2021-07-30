@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=ikhal
+Categories=Calendar;ConsoleOnly;
+GenericName=Calendar application
+Comment=Terminal CLI calendar application
+Exec=ikhal
+Terminal=true
+Type=Application
+
+MimeType=text/calendar
