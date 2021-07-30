@@ -121,7 +121,7 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     if url:
         event.add('url', icalendar.vUri(url))
     if repeat and repeat != "none":
-        rrule = rrulefstr(repeat, until, locale)
+        rrule = rrulefstr(repeat, until, locale, dtstart.tzinfo)
         event.add('rrule', rrule)
     if alarms:
         for alarm in alarms.split(","):

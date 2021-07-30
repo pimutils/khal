@@ -10,8 +10,8 @@ from khal.parse_datetime import (construct_daynames, eventinfofstr,
                                  weekdaypstr)
 from khal.icalendar import new_event
 
-from .utils import (LOCALE_BERLIN, LOCALE_NEW_YORK, _replace_uid,
-                    normalize_component)
+from .utils import (LOCALE_BERLIN, LOCALE_FLOATING, LOCALE_NEW_YORK,
+                    _replace_uid, normalize_component)
 
 
 def _create_testcases(*cases):
@@ -489,7 +489,30 @@ def test_description():
             assert _replace_uid(event).to_ical() == vevent
 
 
-test_set_repeat = _create_testcases(
+test_set_repeat_floating = _create_testcases(
+    # now events where the start date has to be inferred, too
+    # today
+    ('8:00 Äwesöme Event',
+     _create_vevent(
+         'DTSTART;VALUE=DATE-TIME:20140216T080000',
+         'DTEND;VALUE=DATE-TIME:20140216T090000',
+         'DESCRIPTION:please describe the event',
+         'RRULE:FREQ=DAILY;UNTIL=20150604T000000')))
+
+
+def test_repeat_floating():
+    for data_list, vevent in test_set_repeat_floating:
+        with freeze_time('2014-02-16 12:00:00'):
+            event = _construct_event(data_list.split(),
+                                     description='please describe the event',
+                                     repeat='daily',
+                                     until='04.06.2015',
+                                     locale=LOCALE_FLOATING)
+            assert normalize_component(_replace_uid(event).to_ical()) == \
+                normalize_component(vevent)
+
+
+test_set_repeat_localized = _create_testcases(
     # now events where the start date has to be inferred, too
     # today
     ('8:00 Äwesöme Event',
@@ -497,11 +520,11 @@ test_set_repeat = _create_testcases(
          'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
          'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
          'DESCRIPTION:please describe the event',
-         'RRULE:FREQ=DAILY;UNTIL=20150605T000000')))
+         'RRULE:FREQ=DAILY;UNTIL=20150604T230000Z')))
 
 
-def test_repeat():
-    for data_list, vevent in test_set_repeat:
+def test_repeat_localized():
+    for data_list, vevent in test_set_repeat_localized:
         with freeze_time('2014-02-16 12:00:00'):
             event = _construct_event(data_list.split(),
                                      description='please describe the event',
