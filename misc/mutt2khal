@@ -40,7 +40,7 @@
 }
 
 END {
-  printf("khal new --location %s %sT%s %sT%s %s :: %s", loc, d_st, t_st, d_end, t_end, summ, desc) | "sh"
+  printf("khal new --location %s %s %s %s %s %s :: %s", loc, d_st, t_st, d_end, t_end, summ, desc) | "sh"
 }
 
 ## IMPORTANT ##
