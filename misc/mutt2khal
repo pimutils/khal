@@ -6,19 +6,22 @@
 
 /^Summary/ {
   sub(/^Summary[ ]*:[ ]*/, "")
-  summ = $0
+  gsub("'", "'\\''")
+  summ = sprintf("'%s'", $0)
   next
 }
 
 /^Location/ {
   sub(/^Location[ ]*:[ ]*/,"")
-  loc = sprintf("-l \"%s\"", $0)
+  gsub("'", "'\\''")
+  loc = sprintf("'%s'", $0)
   next
 }
 
 /^Desc/ {
   sub(/^Description[ ]*:[ ]*/, "")
-  desc = ":: " $0
+  gsub("'", "'\\''")
+  desc = sprintf("'%s'", $0)
   next
 }
 
