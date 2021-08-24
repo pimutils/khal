@@ -61,8 +61,8 @@ LOCALE_MIXED = LOCALE_BERLIN.copy()
 LOCALE_MIXED['local_timezone'] = BOGOTA
 
 LOCALE_FLOATING = LOCALE_BERLIN.copy()
-LOCALE_FLOATING['default_timezone'] = None
-LOCALE_FLOATING['local_timezone'] = None
+LOCALE_FLOATING['default_timezone'] = None  # type: ignore
+LOCALE_FLOATING['local_timezone'] = None  # type: ignore
 
 
 def normalize_component(x):

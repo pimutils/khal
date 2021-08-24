@@ -3,7 +3,7 @@ import datetime as dt
 from freezegun import freeze_time
 from khal.ui.calendarwidget import CalendarWidget
 
-on_press = {}
+on_press: dict = {}
 
 keybindings = {
     'today': ['T'],
