@@ -62,5 +62,3 @@ Therefore, you might want to execute :command:`khal` automatically after syncing
 with :command:`vdirsyncer` (e.g. via :command:`cron`).
 
 .. _vdirsyncer: https://github.com/pimutils/vdirsyncer
-
-

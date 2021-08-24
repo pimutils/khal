@@ -47,15 +47,15 @@ not released
 
 * NEW Parse `X-ANNIVERSARY`, `ANNIVERSARY` and `X-ABDATE` fields from vcards
 * NEW Add ability to change default event duration with
-   `default_event_duration` and `default_dayevent_duration` for a day-long 
+   `default_event_duration` and `default_dayevent_duration` for a day-long
    event
 * NEW Add `{uid}` property to template options in `--format`
 * FIX No warning when importing event with Windows timezone format
 * FIX Launching an external editor no longer crashes `ikhal`
 * UPDATED DEPENDENCY urwid>=1.3.0
-* FIX Wrong left pane width calculation in ikal when `frame` is `width` or 
+* FIX Wrong left pane width calculation in ikal when `frame` is `width` or
    `color` in configuration.
-* CHANGE Remove check for timezones in `UNTIL` that aren't in `DTSTART` and 
+* CHANGE Remove check for timezones in `UNTIL` that aren't in `DTSTART` and
    vice-versa. The check wasn't fulfilling its purpose and was raising warnings
    when no `UNTIL` value was set.
 

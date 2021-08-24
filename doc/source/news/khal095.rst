@@ -15,4 +15,3 @@ Get `khal v0.9.5`__ from this site, or from pypi_.
 .. _changelog: changelog.html#id2
 .. _documentation: https://lostpackets.de/khal/
 __ https://lostpackets.de/khal/downloads/khal-0.9.5.tar.gz
-

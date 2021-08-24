@@ -166,7 +166,7 @@ Several options are common to almost all of :program:`khal`'s commands
        name@mail.com
 
    url
-       The URL embedded in the event, otherwise nothing. 
+       The URL embedded in the event, otherwise nothing.
 
    By default, all-day events have no times. To see a start and end time anyway simply
    add `-full` to the end of any template with start/end, for instance
@@ -448,7 +448,7 @@ additional description
 
     khal new -a work 26.07. Great Event -g meeting -r weekly
 
-adds a new all day event on 26th of July to the calendar *work* in the *meeting* 
+adds a new all day event on 26th of July to the calendar *work* in the *meeting*
 category, which recurs every week.
 
 

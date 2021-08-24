@@ -1,3 +1,4 @@
+# noqa: E265
 #
 # khal documentation build configuration file, created by
 # sphinx-quickstart on Fri Jul  4 00:00:47 2014.
