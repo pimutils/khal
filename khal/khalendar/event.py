@@ -23,6 +23,7 @@
 helper functions."""
 
 import datetime as dt
+from zoneinfo import ZoneInfo
 import logging
 import os
 
@@ -529,6 +530,7 @@ class Event:
         except TypeError:
             relative_to_start = relative_to_end = relative_to
 
+        local_locale = ZoneInfo(str(self._locale['local_timezone']))
         if isinstance(relative_to_end, dt.datetime):
             relative_to_end = relative_to_end.date()
         if isinstance(relative_to_start, dt.datetime):
@@ -538,17 +540,12 @@ class Event:
             start_local_datetime = self.start_local
             end_local_datetime = self.end_local
         else:
-            start_local_datetime = self._locale['local_timezone'].localize(
-                dt.datetime.combine(self.start, dt.time.min))
-            end_local_datetime = self._locale['local_timezone'].localize(
-                dt.datetime.combine(self.end, dt.time.min))
+            start_local_datetime = dt.datetime.combine(self.start, dt.time.min, local_locale)
+            end_local_datetime = dt.datetime.combine(self.end, dt.time.min, local_locale)
 
-        day_start = self._locale['local_timezone'].localize(
-            dt.datetime.combine(relative_to_start, dt.time.min),
-        )
-        day_end = self._locale['local_timezone'].localize(
-            dt.datetime.combine(relative_to_end, dt.time.max),
-        )
+       
+        day_start = dt.datetime.combine(relative_to_start, dt.time.min, local_locale)
+        day_end = dt.datetime.combine(relative_to_end, dt.time.max, local_locale)
         next_day_start = day_start + dt.timedelta(days=1)
 
         allday = isinstance(self, AllDayEvent)
