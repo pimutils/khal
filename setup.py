@@ -16,6 +16,7 @@ requirements = [
     'icalendar>=4.0.3',
     'urwid>=1.3.0',
     'pyxdg',
+    "zoneinfo; python_version < '3.8'",
     'pytz',
     'python-dateutil',
     'configobj',
