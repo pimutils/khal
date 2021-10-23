@@ -31,10 +31,10 @@ path = expand_path(default=None)
 # hexadecimal value of the red, green and blue component, respectively.
 # When using a 24-bit color, make sure to enclose the color value in ' or "!
 # If `color` is set to *auto* (the default), khal looks for a color value in a
-# *color* file in this calendar's vdir. If the *color* file does not exist, the 
-# default_color (see below) is used. If color is set to '', the default_color is 
-# always used. Note that you can use `vdirsyncer metasync` to synchronize colors 
-# with your caldav server. 
+# *color* file in this calendar's vdir. If the *color* file does not exist, the
+# default_color (see below) is used. If color is set to '', the default_color is
+# always used. Note that you can use `vdirsyncer metasync` to synchronize colors
+# with your caldav server.
 
 color = color(default='auto')
 
@@ -234,7 +234,7 @@ event_view_weighting = integer(default=1)
 # Set to true to always show the event view window when looking at the event list
 event_view_always_visible = boolean(default=False)
 
-# Add a blank line before the name of the day (khal only) 
+# Add a blank line before the name of the day (khal only)
 blank_line_before_day = boolean(default=False)
 
 # Choose a color theme for khal.

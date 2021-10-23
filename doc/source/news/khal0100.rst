@@ -28,7 +28,7 @@ pypi_ for new versions.
    As I find myself having less and less time to devout to khal, I'm looking for
    more developers and maintainers. Even if you are not a python developer, your
    help with helping new users and triaging and prioritizing bugs is very much
-   appreciated. 
+   appreciated.
 
    If you don't know how to contact the current team, open an `issue on github`_.
 
