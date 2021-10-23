@@ -580,7 +580,7 @@ class Event:
             start_local_datetime = dt.datetime.combine(self.start, dt.time.min, local_locale)
             end_local_datetime = dt.datetime.combine(self.end, dt.time.min, local_locale)
 
-       
+
         day_start = dt.datetime.combine(relative_to_start, dt.time.min, local_locale)
         day_end = dt.datetime.combine(relative_to_end, dt.time.max, local_locale)
         next_day_start = day_start + dt.timedelta(days=1)
