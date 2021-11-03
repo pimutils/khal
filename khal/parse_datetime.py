@@ -424,7 +424,7 @@ def rrulefstr(repeat, until, locale, timezone):
             if timezone:
                 rrule_settings['until'] = until_dt.\
                     replace(tzinfo=timezone).\
-                    astimezone(ZoneInfo("UTC"))
+                    astimezone(ZoneInfo.ZoneInfo("UTC"))
             else:
                 rrule_settings['until'] = until_dt
         return rrule_settings
