@@ -23,14 +23,16 @@
 strings to date(time) or event objects"""
 
 import datetime as dt
+try:
+    import zoneinfo as ZoneInfo
+except ImportError:  # I am not sure if this is correct for the backport
+    from backports import zoneinfo as ZoneInfo
 import logging
 import re
 from calendar import isleap
 from time import strptime
 
-import pytz
-
-from khal.exceptions import DateTimeParseError, FatalError
+from khal.exceptions import FatalError, DateTimeParseError
 
 logger = logging.getLogger('khal')
 
@@ -422,7 +424,7 @@ def rrulefstr(repeat, until, locale, timezone):
             if timezone:
                 rrule_settings['until'] = until_dt.\
                     replace(tzinfo=timezone).\
-                    astimezone(pytz.UTC)
+                    astimezone(ZoneInfo("UTC"))
             else:
                 rrule_settings['until'] = until_dt
         return rrule_settings
@@ -470,9 +472,9 @@ def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_
         if start is not None and end is not None:
             try:
                 # next element is a valid Olson db timezone string
-                tz = pytz.timezone(parts[i])
+                tz = ZoneInfo.ZoneInfo(str(parts[i]))
                 i += 1
-            except (pytz.UnknownTimeZoneError, UnicodeDecodeError, IndexError):
+            except (ZoneInfo._common.ZoneInfoNotFoundError, UnicodeDecodeError, IndexError):
                 tz = None
             summary = ' '.join(parts[i:])
             break

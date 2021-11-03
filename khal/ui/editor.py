@@ -20,6 +20,10 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import datetime as dt
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports import zoneinfo as ZoneInfo
 
 import urwid
 
@@ -186,16 +190,16 @@ class StartEndEditor(urwid.WidgetWrap):
     @property
     def localize_start(self):
         if getattr(self.startdt, 'tzinfo', None) is None:
-            return self.conf['locale']['default_timezone'].localize
+            return self.conf['locale']['default_timezone']
         else:
-            return self.startdt.tzinfo.localize
+            return self.startdt.tzinfo
 
     @property
     def localize_end(self):
         if getattr(self.enddt, 'tzinfo', None) is None:
-            return self.conf['locale']['default_timezone'].localize
+            return self.conf['locale']['default_timezone']
         else:
-            return self.enddt.tzinfo.localize
+            return self.enddt.tzinfo
 
     @property
     def enddt(self):
@@ -214,28 +218,31 @@ class StartEndEditor(urwid.WidgetWrap):
     def _validate_start_time(self, text):
         try:
             startval = dt.datetime.strptime(text, self.conf['locale']['timeformat'])
-            self._startdt = self.localize_start(
-                dt.datetime.combine(self._startdt.date(), startval.time()))
+            self._startdt = dt.datetime.combine(self._startdt.date(), startval.time()).replace(
+                tzinfo=ZoneInfo(str(self.localize_start)))
         except ValueError:
             return False
         else:
             return startval
 
     def _start_date_change(self, date):
-        self._startdt = self.localize_start(dt.datetime.combine(date, self._start_time))
+        self._startdt = dt.datetime.combine(date, self._start_time).replace(
+            tzinfo=ZoneInfo(str(self.localize_start)))
         self.on_start_date_change(date)
 
     def _validate_end_time(self, text):
         try:
             endval = dt.datetime.strptime(text, self.conf['locale']['timeformat'])
-            self._enddt = self.localize_end(dt.datetime.combine(self._enddt.date(), endval.time()))
+            self._enddt = dt.datetime.combine(self._enddt.date(), endval.time()).replace(
+                tzinfo=ZoneInfo(str(self.localize_end)))
         except ValueError:
             return False
         else:
             return endval
 
     def _end_date_change(self, date):
-        self._enddt = self.localize_end(dt.datetime.combine(date, self._end_time))
+        self._enddt = dt.datetime.combine(date, self._end_time).replace(
+            tzinfo=ZoneInfo(str(self.localize_end)))
         self.on_end_date_change(date)
 
     def toggle(self, checkbox, state):

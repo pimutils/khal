@@ -23,6 +23,10 @@
 
 
 import datetime as dt
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports import zoneinfo as ZoneInfo
 import random
 import re
 import string
@@ -124,7 +128,7 @@ def localize_strip_tz(dates: List[dt.datetime], timezone: dt.tzinfo) -> Iterator
 def to_unix_time(dtime: dt.datetime) -> float:
     """convert a datetime object to unix time in UTC (as a float)"""
     if getattr(dtime, 'tzinfo', None) is not None:
-        dtime = dtime.astimezone(pytz.UTC)
+        dtime = dtime.replace(tzinfo=ZoneInfo("UTC"))
     unix_time = timegm(dtime.timetuple())
     return unix_time
 
@@ -136,7 +140,7 @@ def to_naive_utc(dtime: dt.datetime) -> dt.datetime:
     if not hasattr(dtime, 'tzinfo') or dtime.tzinfo is None:
         return dtime
 
-    dtime_utc = dtime.astimezone(pytz.UTC)
+    dtime_utc = dtime.replace(tzinfo=ZoneInfo("UTC"))
     dtime_naive = dtime_utc.replace(tzinfo=None)
     return dtime_naive
 

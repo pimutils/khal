@@ -9,8 +9,8 @@ from .canvas_render import CanvasTranslator
 
 CONF = {'locale': LOCALE_BERLIN, 'keybindings': {}, 'view': {'monthdisplay': 'firstday'}}
 
-START = BERLIN.localize(dt.datetime(2015, 4, 26, 22, 23))
-END = BERLIN.localize(dt.datetime(2015, 4, 27, 23, 23))
+START = dt.datetime(2015, 4, 26, 22, 23, tzinfo=BERLIN)
+END = dt.datetime(2015, 4, 27, 23, 23, tzinfo=BERLIN)
 
 palette = {
     'date header focused': 'blue',
@@ -80,27 +80,27 @@ def test_check_understood_rrule():
 def test_editor():
     """test for the issue in #666"""
     editor = StartEndEditor(
-        BERLIN.localize(dt.datetime(2017, 10, 2, 13)),
-        BERLIN.localize(dt.datetime(2017, 10, 4, 18)),
+        dt.datetime(2017, 10, 2, 13, tzinfo=BERLIN),
+        dt.datetime(2017, 10, 4, 18, tzinfo=BERLIN),
         conf=CONF
     )
-    assert editor.startdt == BERLIN.localize(dt.datetime(2017, 10, 2, 13))
-    assert editor.enddt == BERLIN.localize(dt.datetime(2017, 10, 4, 18))
+    assert editor.startdt == dt.datetime(2017, 10, 2, 13, tzinfo=BERLIN)
+    assert editor.enddt == dt.datetime(2017, 10, 4, 18, tzinfo=BERLIN)
     assert editor.changed is False
     for _ in range(3):
         editor.keypress((10, ), 'tab')
     for _ in range(3):
         editor.keypress((10, ), 'shift tab')
-    assert editor.startdt == BERLIN.localize(dt.datetime(2017, 10, 2, 13))
-    assert editor.enddt == BERLIN.localize(dt.datetime(2017, 10, 4, 18))
+    assert editor.startdt == dt.datetime(2017, 10, 2, 13, tzinfo=BERLIN)
+    assert editor.enddt == dt.datetime(2017, 10, 4, 18, tzinfo=BERLIN)
     assert editor.changed is False
 
 
 def test_convert_to_date():
     """test for the issue in #666"""
     editor = StartEndEditor(
-        BERLIN.localize(dt.datetime(2017, 10, 2, 13)),
-        BERLIN.localize(dt.datetime(2017, 10, 4, 18)),
+        dt.datetime(2017, 10, 2, 13, tzinfo=BERLIN),
+        dt.datetime(2017, 10, 4, 18, tzinfo=BERLIN),
         conf=CONF
     )
     canvas = editor.render((50, ), True)
@@ -109,8 +109,8 @@ def test_convert_to_date():
         'To:   \x1b[34m04.10.2017\x1b[0m \x1b[34m18:00 \x1b[0m\n'
     )
 
-    assert editor.startdt == BERLIN.localize(dt.datetime(2017, 10, 2, 13))
-    assert editor.enddt == BERLIN.localize(dt.datetime(2017, 10, 4, 18))
+    assert editor.startdt == dt.datetime(2017, 10, 2, 13, tzinfo=BERLIN)
+    assert editor.enddt == dt.datetime(2017, 10, 4, 18, tzinfo=BERLIN)
     assert editor.changed is False
     assert editor.allday is False
 

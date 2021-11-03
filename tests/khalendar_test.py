@@ -120,10 +120,10 @@ class TestCollection:
     aend = dt.datetime.combine(aday, dt.time.max)
     bstart = dt.datetime.combine(bday, dt.time.min)
     bend = dt.datetime.combine(bday, dt.time.max)
-    astart_berlin = utils.BERLIN.localize(astart)
-    aend_berlin = utils.BERLIN.localize(aend)
-    bstart_berlin = utils.BERLIN.localize(bstart)
-    bend_berlin = utils.BERLIN.localize(bend)
+    astart_berlin = astart.replace(tzinfo=BERLIN)
+    aend_berlin = aend.replace(tzinfo=BERLIN)
+    bstart_berlin = bstart.replace(tzinfo=BERLIN)
+    bend_berlin = bend.replace(tzinfo=BERLIN)
 
     def test_default_calendar(self, tmpdir):
         calendars = {
@@ -150,8 +150,8 @@ class TestCollection:
         start = dt.datetime.combine(today, dt.time.min)
         end = dt.datetime.combine(today, dt.time.max)
         assert list(coll.get_floating(start, end)) == []
-        assert list(coll.get_localized(utils.BERLIN.localize(start),
-                                       utils.BERLIN.localize(end))) == []
+        assert list(coll.get_localized(start.replace(tzinfo=BERLIN),
+                                       end.replace(tzinfo=BERLIN))) == []
 
     def test_insert(self, coll_vdirs):
         """insert a localized event"""
@@ -387,21 +387,21 @@ def test_event_different_timezones(coll_vdirs, sleep_time):
     coll.update_db()
 
     events = coll.get_localized(
-        BERLIN.localize(dt.datetime(2014, 4, 9, 0, 0)),
-        BERLIN.localize(dt.datetime(2014, 4, 9, 23, 59)),
+        dt.datetime(2014, 4, 9, 0, 0, tzinfo=BERLIN),
+        dt.datetime(2014, 4, 9, 23, 59, tzinfo=BERLIN),
     )
     events = list(events)
     assert len(events) == 1
     event = events[0]
-    assert event.start_local == LONDON.localize(dt.datetime(2014, 4, 9, 14))
-    assert event.end_local == LONDON.localize(dt.datetime(2014, 4, 9, 19))
-    assert event.start == LONDON.localize(dt.datetime(2014, 4, 9, 14))
-    assert event.end == LONDON.localize(dt.datetime(2014, 4, 9, 19))
+    assert event.start_local == dt.datetime(2014, 4, 9, 14, tzinfo=LONDON)
+    assert event.end_local == dt.datetime(2014, 4, 9, 19, tzinfo=LONDON)
+    assert event.start == dt.datetime(2014, 4, 9, 14, tzinfo=LONDON)
+    assert event.end == dt.datetime(2014, 4, 9, 19, tzinfo=LONDON)
 
     # no event scheduled on the next day
     events = coll.get_localized(
-        BERLIN.localize(dt.datetime(2014, 4, 10, 0, 0)),
-        BERLIN.localize(dt.datetime(2014, 4, 10, 23, 59)),
+        dt.datetime(2014, 4, 10, 0, 0, tzinfo=BERLIN),
+        dt.datetime(2014, 4, 10, 23, 59, tzinfo=BERLIN),
     )
     events = list(events)
     assert len(events) == 0
@@ -409,25 +409,25 @@ def test_event_different_timezones(coll_vdirs, sleep_time):
     # now setting the local_timezone to Sydney
     coll.locale = LOCALE_SYDNEY
     events = coll.get_localized(
-        SYDNEY.localize(dt.datetime(2014, 4, 9, 0, 0)),
-        SYDNEY.localize(dt.datetime(2014, 4, 9, 23, 59)),
+        dt.datetime(2014, 4, 9, 0, 0, tzinfo=SYDNEY),
+        dt.datetime(2014, 4, 9, 23, 59, tzinfo=SYDNEY),
     )
     events = list(events)
     assert len(events) == 1
     event = events[0]
-    assert event.start_local == SYDNEY.localize(dt.datetime(2014, 4, 9, 23))
-    assert event.end_local == SYDNEY.localize(dt.datetime(2014, 4, 10, 4))
-    assert event.start == LONDON.localize(dt.datetime(2014, 4, 9, 14))
-    assert event.end == LONDON.localize(dt.datetime(2014, 4, 9, 19))
+    assert event.start_local == dt.datetime(2014, 4, 9, 23, tzinfo=SYDNEY)
+    assert event.end_local == dt.datetime(2014, 4, 10, 4, tzinfo=SYDNEY)
+    assert event.start == dt.datetime(2014, 4, 9, 14, tzinfo=LONDON)
+    assert event.end == dt.datetime(2014, 4, 9, 19, tzinfo=LONDON)
 
     # the event spans midnight Sydney, therefor it should also show up on the
     # next day
-    events = coll.get_localized(SYDNEY.localize(dt.datetime(2014, 4, 10, 0, 0)),
-                                SYDNEY.localize(dt.datetime(2014, 4, 10, 23, 59)))
+    events = coll.get_localized(dt.datetime(2014, 4, 10, 0, 0, tzinfo=SYDNEY),
+                                dt.datetime(2014, 4, 10, 23, 59, tzinfo=SYDNEY))
     events = list(events)
     assert len(events) == 1
-    assert event.start_local == SYDNEY.localize(dt.datetime(2014, 4, 9, 23))
-    assert event.end_local == SYDNEY.localize(dt.datetime(2014, 4, 10, 4))
+    assert event.start_local == dt.datetime(2014, 4, 9, 23, tzinfo=SYDNEY)
+    assert event.end_local == dt.datetime(2014, 4, 10, 4, tzinfo=SYDNEY)
 
 
 def test_default_calendar(coll_vdirs, sleep_time):
