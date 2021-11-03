@@ -26,7 +26,11 @@ calendars. Each calendar is defined by the contents of a vdir, but uses an
 SQLite db for caching (see backend if you're interested).
 """
 import datetime as dt
-from zoneinfo import ZoneInfo
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports import zoneinfo as ZoneInfo
+
 import itertools
 import logging
 import os
@@ -151,7 +155,8 @@ class CalendarCollection:
         end = dt.datetime.combine(day, dt.time.max)
         floating_events = self.get_floating(start, end)
         locale = ZoneInfo(str(self._locale['local_timezone']))
-        localized_events = self.get_localized(start.replace(tzinfo=locale), end.replace(tzinfo=locale))
+        localized_events = self.get_localized(start.replace(tzinfo=locale),
+                                              end.replace(tzinfo=locale))
         return itertools.chain(localized_events, floating_events)
 
     def get_calendars_on(self, day: dt.date) -> List[str]:
@@ -160,7 +165,8 @@ class CalendarCollection:
         locale = ZoneInfo(str(self._locale['local_timezone']))
         calendars = itertools.chain(
             self._backend.get_floating_calendars(start, end),
-            self._backend.get_localized_calendars(start.replace(tzinfo=locale), end.replace(tzinfo=locale)),
+            self._backend.get_localized_calendars(start.replace(tzinfo=locale),
+                                                  end.replace(tzinfo=locale)),
         )
         return list(set(calendars))
 
@@ -210,6 +216,7 @@ class CalendarCollection:
             except AlreadyExistingError as Error:
                 href = getattr(Error, 'existing_href', None)
                 raise DuplicateUid(href)
+
             self._backend.update(event.raw, event.href, event.etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 

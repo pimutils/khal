@@ -24,6 +24,10 @@ The SQLite backend implementation.
 
 import contextlib
 import datetime as dt
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    import backports.zoneinfo as ZoneInfo
 import logging
 import sqlite3
 from enum import IntEnum
@@ -31,7 +35,6 @@ from os import makedirs, path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import icalendar
-import pytz
 from dateutil import parser
 
 from .. import utils
@@ -503,9 +506,10 @@ class SQLiteDb:
             'ORDER BY dtstart')
         stuple = tuple([start, end, start, end, start, end] + list(self.calendars))
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
+        utc = ZoneInfo('UTC')
         for item, href, start, end, ref, etag, _dtype, calendar in result:
-            start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
-            end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
+            start = dt.datetime.utcfromtimestamp(start).replace(tzinfo=utc)
+            end = dt.datetime.utcfromtimestamp(end).replace(tzinfo=utc)
             yield item, href, start, end, ref, etag, calendar
 
     def get_floating_calendars(self, start: dt.datetime, end: dt.datetime) -> Iterable[str]:
@@ -578,9 +582,10 @@ class SQLiteDb:
         )
         stuple = tuple([f'%{search_string}%'] + list(self.calendars))
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
+        utc = ZoneInfo('UTC')
         for item, href, start, end, ref, etag, dtype, calendar in result:
-            start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
-            end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
+            start = dt.datetime.utcfromtimestamp(start).replace(tzinfo=utc)
+            end = dt.datetime.utcfromtimestamp(end).replace(tzinfo=utc)
             if dtype == EventType.DATE:
                 start = start.date()
                 end = end.date()

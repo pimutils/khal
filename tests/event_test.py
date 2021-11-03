@@ -1,7 +1,10 @@
 import datetime as dt
 
 import pytest
-import pytz
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports import zoneinfo as ZoneInfo
 from freezegun import freeze_time
 from icalendar import vRecur, vText
 
@@ -30,8 +33,8 @@ def test_invalid_keyword_argument():
 
 def test_raw_dt():
     event_dt = _get_text('event_dt_simple')
-    start = BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    end = BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
+    start = dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    end = dt.datetime(2014, 4, 9, 10, 30, tzinfo=BERLIN)
     event = Event.fromString(event_dt, start=start, end=end, **EVENT_KWARGS)
     with freeze_time('2016-1-1'):
         assert normalize_component(event.raw) == \
@@ -147,8 +150,8 @@ def test_transform_event():
     event_d = _get_text('event_d')
     event = Event.fromString(event_d, **EVENT_KWARGS)
     assert isinstance(event, AllDayEvent)
-    start = BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    end = BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
+    start = dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    end = dt.datetime(2014, 4, 9, 10, 30, tzinfo=BERLIN)
     event.update_start_end(start, end)
     assert isinstance(event, LocalizedEvent)
     assert event.format(LIST_FORMAT, dt.date(2014, 4, 9)) == '09:30-10:30 An Event\x1b[0m'
@@ -177,13 +180,13 @@ def test_update_event_d():
 def test_update_event_duration():
     event_dur = _get_text('event_dt_duration')
     event = Event.fromString(event_dur, **EVENT_KWARGS)
-    assert event.start == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    assert event.end == BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
+    assert event.start == dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    assert event.end == dt.datetime(2014, 4, 9, 10, 30, tzinfo=BERLIN)
     assert event.duration == dt.timedelta(hours=1)
-    event.update_start_end(BERLIN.localize(dt.datetime(2014, 4, 9, 8, 0)),
-                           BERLIN.localize(dt.datetime(2014, 4, 9, 12, 0)))
-    assert event.start == BERLIN.localize(dt.datetime(2014, 4, 9, 8, 0))
-    assert event.end == BERLIN.localize(dt.datetime(2014, 4, 9, 12, 0))
+    event.update_start_end(dt.datetime(2014, 4, 9, 8, 0, tzinfo=BERLIN),
+                           dt.datetime(2014, 4, 9, 12, 0, tzinfo=BERLIN))
+    assert event.start == dt.datetime(2014, 4, 9, 8, 0, tzinfo=BERLIN)
+    assert event.end == dt.datetime(2014, 4, 9, 12, 0, tzinfo=BERLIN)
     assert event.duration == dt.timedelta(hours=4)
 
 
@@ -195,11 +198,11 @@ def test_dt_two_tz():
     with freeze_time('2016-02-16 12:00:00'):
         assert normalize_component(cal_dt_two_tz) == normalize_component(event.raw)
 
-    assert event.start == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    assert event.end == NEW_YORK.localize(dt.datetime(2014, 4, 9, 10, 30))
+    assert event.start == dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    assert event.end == dt.datetime(2014, 4, 9, 10, 30, tzinfo=NEW_YORK)
     # local (Berlin) time!
-    assert event.start_local == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    assert event.end_local == BERLIN.localize(dt.datetime(2014, 4, 9, 16, 30))
+    assert event.start_local == dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    assert event.end_local == dt.datetime(2014, 4, 9, 16, 30, tzinfo=BERLIN)
     assert event.format(LIST_FORMAT, dt.date(2014, 4, 9)) == '09:30-16:30 An Event\x1b[0m'
     assert event.format(SEARCH_FORMAT, dt.date(2014, 4, 9)) == \
         '09.04.2014 09:30-16:30 An Event\x1b[0m'
@@ -209,8 +212,8 @@ def test_event_dt_duration():
     """event has no end, but duration"""
     event_dt_duration = _get_text('event_dt_duration')
     event = Event.fromString(event_dt_duration, **EVENT_KWARGS)
-    assert event.start == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    assert event.end == BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
+    assert event.start == dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    assert event.end == dt.datetime(2014, 4, 9, 10, 3, tzinfo=BERLIN)
     assert event.format(LIST_FORMAT, dt.date(2014, 4, 9)) == '09:30-10:30 An Event\x1b[0m'
     assert event.format(SEARCH_FORMAT, dt.date(2014, 4, 9)) == \
         '09.04.2014 09:30-10:30 An Event\x1b[0m'
@@ -228,31 +231,31 @@ def test_event_dt_floating():
         '09.04.2014 09:30-10:30 An Event\x1b[0m'
     assert event.start == dt.datetime(2014, 4, 9, 9, 30)
     assert event.end == dt.datetime(2014, 4, 9, 10, 30)
-    assert event.start_local == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    assert event.end_local == BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
+    assert event.start_local == dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    assert event.end_local == dt.datetime(2014, 4, 9, 10, 30, tzinfo=BERLIN)
 
     event = Event.fromString(event_str, calendar='foobar', locale=LOCALE_MIXED)
     assert event.start == dt.datetime(2014, 4, 9, 9, 30)
     assert event.end == dt.datetime(2014, 4, 9, 10, 30)
-    assert event.start_local == BOGOTA.localize(dt.datetime(2014, 4, 9, 9, 30))
-    assert event.end_local == BOGOTA.localize(dt.datetime(2014, 4, 9, 10, 30))
+    assert event.start_local == dt.datetime(2014, 4, 9, 9, 30, tzinfo=BOGOTA)
+    assert event.end_local == dt.datetime(2014, 4, 9, 10, 30, tzinfo=BOGOTA)
 
 
 def test_event_dt_tz_missing():
     """localized event DTSTART;TZID=foo, but VTIMEZONE components missing"""
     event_str = _get_text('event_dt_local_missing_tz')
     event = Event.fromString(event_str, **EVENT_KWARGS)
-    assert event.start == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    assert event.end == BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
-    assert event.start_local == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    assert event.end_local == BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
+    assert event.start == dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    assert event.end == dt.datetime(2014, 4, 9, 10, 30, tzinfo=BERLIN)
+    assert event.start_local == dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    assert event.end_local == dt.datetime(2014, 4, 9, 10, 30, tzinfo=BERLIN)
     assert event.format('{duration}', relative_to=dt.date.today()) == '1h\x1b[0m'
 
     event = Event.fromString(event_str, calendar='foobar', locale=LOCALE_MIXED)
-    assert event.start == BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    assert event.end == BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
-    assert event.start_local == BOGOTA.localize(dt.datetime(2014, 4, 9, 2, 30))
-    assert event.end_local == BOGOTA.localize(dt.datetime(2014, 4, 9, 3, 30))
+    assert event.start == dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    assert event.end == dt.datetime(2014, 4, 9, 10, 30, tzinfo=BERLIN)
+    assert event.start_local == dt.datetime(2014, 4, 9, 2, 30, tzinfo=BOGOTA)
+    assert event.end_local == dt.datetime(2014, 4, 9, 3, 30, tzinfo=BOGOTA)
 
 
 def test_event_dt_rr():
@@ -362,7 +365,7 @@ def test_zulu_events():
     """test if events in Zulu time are correctly recognized as localized events"""
     event = Event.fromString(_get_text('event_dt_simple_zulu'), **EVENT_KWARGS)
     assert type(event) == LocalizedEvent
-    assert event.start_local == BERLIN.localize(dt.datetime(2014, 4, 9, 11, 30))
+    assert event.start_local == dt.datetime(2014, 4, 9, 11, 30, tzinfo=BERLIN)
 
 
 def test_dtend_equals_dtstart():
@@ -441,7 +444,7 @@ def test_remove_instance_from_recuid():
     with the same UID (which we call `recuid` here"""
     event = Event.fromString(_get_text('event_rrule_recuid'), **EVENT_KWARGS)
     assert event.raw.split('\r\n').count('UID:event_rrule_recurrence_id') == 2
-    event.delete_instance(BERLIN.localize(dt.datetime(2014, 7, 7, 7, 0)))
+    event.delete_instance(dt.datetime(2014, 7, 7, 7, 0, tzinfo=BERLIN))
     assert event.raw.split('\r\n').count('UID:event_rrule_recurrence_id') == 1
     assert 'EXDATE;TZID=Europe/Berlin:20140707T070000' in event.raw.split('\r\n')
 
@@ -450,8 +453,8 @@ def test_format_24():
     """test if events ending at 00:00/24:00 are displayed as ending the day
     before"""
     event_dt = _get_text('event_dt_simple')
-    start = BERLIN.localize(dt.datetime(2014, 4, 9, 19, 30))
-    end = BERLIN.localize(dt.datetime(2014, 4, 10))
+    start = dt.datetime(2014, 4, 9, 19, 30, tzinfo=BERLIN)
+    end = dt.datetime(2014, 4, 10, tzinfo=BERLIN)
     event = Event.fromString(event_dt, **EVENT_KWARGS)
     event.update_start_end(start, end)
     format_ = '{start-end-time-style} {title}{repeat-symbol}'
@@ -481,7 +484,7 @@ def test_event_alarm():
 
 
 def test_create_timezone_static():
-    gmt = pytz.timezone('Etc/GMT-8')
+    gmt = ZoneInfo('Etc/GMT-8')
     assert create_timezone(gmt).to_ical().split() == [
         b'BEGIN:VTIMEZONE',
         b'TZID:Etc/GMT-8',
@@ -495,8 +498,8 @@ def test_create_timezone_static():
         b'END:VTIMEZONE',
     ]
     event_dt = _get_text('event_dt_simple')
-    start = GMTPLUS3.localize(dt.datetime(2014, 4, 9, 9, 30))
-    end = GMTPLUS3.localize(dt.datetime(2014, 4, 9, 10, 30))
+    start = dt.datetime(2014, 4, 9, 9, 30, tzinfo=GMTPLUS3)
+    end = dt.datetime(2014, 4, 9, 10, 30, tzinfo=GMTPLUS3)
     event = Event.fromString(event_dt, **EVENT_KWARGS)
     event.update_start_end(start, end)
     with freeze_time('2016-1-1'):
@@ -533,8 +536,8 @@ def test_sort_date_vs_datetime():
 
 def test_sort_event_start():
     event_dt = _get_text('event_dt_simple')
-    start = BERLIN.localize(dt.datetime(2014, 4, 9, 9, 45))
-    end = BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
+    start = dt.datetime(2014, 4, 9, 9, 45, tzinfo=BERLIN)
+    end = dt.datetime(2014, 4, 9, 10, 30, tzinfo=BERLIN)
     event1 = Event.fromString(event_dt, **EVENT_KWARGS)
     event2 = Event.fromString(event_dt, start=start, end=end, **EVENT_KWARGS)
     assert event1 < event2
@@ -542,8 +545,8 @@ def test_sort_event_start():
 
 def test_sort_event_end():
     event_dt = _get_text('event_dt_simple')
-    start = BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
-    end = BERLIN.localize(dt.datetime(2014, 4, 9, 10, 45))
+    start = dt.datetime(2014, 4, 9, 9, 30, tzinfo=BERLIN)
+    end = dt.datetime(2014, 4, 9, 10, 45, tzinfo=BERLIN)
     event1 = Event.fromString(event_dt, **EVENT_KWARGS)
     event2 = Event.fromString(event_dt, start=start, end=end, **EVENT_KWARGS)
     assert event1 < event2

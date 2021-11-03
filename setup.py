@@ -17,7 +17,6 @@ requirements = [
     'urwid>=1.3.0',
     'pyxdg',
     "backports.zoneinfo;python_version<'3.9'",
-    'pytz',
     'python-dateutil',
     'configobj',
     # https://github.com/untitaker/python-atomicwrites/commit/4d12f23227b6a944ab1d99c507a69fdbc7c9ed6d  # noqa

@@ -28,7 +28,10 @@ from hashlib import sha256
 
 import dateutil.rrule
 import icalendar
-import pytz
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    import backports.zoneinfo as ZoneInfo
 
 from .exceptions import UnsupportedRecurrence
 from .parse_datetime import guesstimedeltafstr, rrulefstr
@@ -109,8 +112,9 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
         raise ValueError("no summary given")
 
     if not allday and timezone is not None:
-        dtstart = timezone.localize(dtstart)
-        dtend = timezone.localize(dtend)
+        timezone_info = ZoneInfo(str(timezone))
+        dtstart = dtstart.replace(tzinfo=timezone_info)
+        dtend = dtend.replace(tzinfo=timezone_info)
 
     event = icalendar.Event()
     event.add('dtstart', dtstart)
@@ -190,7 +194,7 @@ def ics_from_list(events, tzs, random_uid=False, default_timezone=None):
                         "using default timezone. This can lead to erroneous time shifts"
                     )
                     missing_tz.add(item.params['TZID'])
-                elif datetime_.tzinfo and datetime_.tzinfo != pytz.UTC and \
+                elif datetime_.tzinfo and datetime_.tzinfo != ZoneInfo("UTC") and \
                         datetime_.tzinfo not in needed_tz:
                     needed_tz.add(datetime_.tzinfo)
 
@@ -242,7 +246,7 @@ def expand(vevent, href=''):
         if allday and isinstance(date, dt.datetime):
             date = date.date()
         if events_tz is not None:
-            date = events_tz.localize(date)
+            date = date.replace(tzinfo=ZoneInfo(str(events_tz)))
         return date
 
     rrule_param = vevent.get('RRULE')
@@ -271,8 +275,8 @@ def expand(vevent, href=''):
             rrule._until = dt.datetime(2037, 12, 31)
         else:
             if events_tz and 'Z' in rrule_param.to_ical().decode():
-                rrule._until = pytz.UTC.localize(
-                    rrule._until).astimezone(events_tz).replace(tzinfo=None)
+                rrule._until = rrule._until.replace(tzinfo=ZoneInfo("UTC")).astimezone(
+                    events_tz).replace(tzinfo=None)
 
             # rrule._until and dtstart could be dt.date or dt.datetime. They
             # need to be the same for comparison
@@ -376,7 +380,7 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     for prop in ['DTSTART', 'DTEND', 'DUE', 'RECURRENCE-ID']:
         if prop in vevent and invalid_timezone(vevent[prop]):
             timezone = vevent[prop].params.get('TZID')
-            value = default_timezone.localize(vevent.pop(prop).dt)
+            value = vevent.pop(prop).dt.replace(tzinfo=default_timezone)
             vevent.add(prop, value)
             logger.warning(
                 f"{prop} localized in invalid or incomprehensible timezone "
@@ -411,13 +415,13 @@ def sanitize_timerange(dtstart, dtend, duration=None):
                 "Event end time has no timezone. "
                 "Assuming it's the same timezone as the start time"
             )
-            dtend = dtstart.tzinfo.localize(dtend)
+            dtend = dtend.replace(tzinfo=ZoneInfo(str(dtstart.tzinfo)))
         if not dtstart.tzinfo and dtend.tzinfo:
             logger.warning(
                 "Event start time has no timezone. "
                 "Assuming it's the same timezone as the end time"
             )
-            dtstart = dtend.tzinfo.localize(dtstart)
+            dtstart = dtstart.replace(tzinfo=ZoneInfo(str(dtend.tzinfo)))
 
     if dtend is None and duration is None:
         if isinstance(dtstart, dt.datetime):
