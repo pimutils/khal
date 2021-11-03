@@ -7,6 +7,7 @@ from freezegun import freeze_time
 from khal import exceptions
 from khal.controllers import import_ics, khal_list, start_end_from_daterange
 from khal.khalendar.vdir import Item
+from tests.khalendar_utils_test import BERLIN
 
 from . import utils
 from .utils import _get_text
@@ -98,13 +99,13 @@ class TestImport:
         view = {'event_format': '{title}'}
         conf = {'locale': utils.LOCALE_BERLIN, 'view': view}
         import_ics(coll, conf, _get_text('event_rrule_recuid'), batch=True)
-        start_date = utils.BERLIN.localize(dt.datetime(2014, 4, 30))
-        end_date = utils.BERLIN.localize(dt.datetime(2014, 9, 26))
+        start_date = dt.datetime(2014, 4, 30, tzinfo=BERLIN)
+        end_date = dt.datetime(2014, 9, 26, tzinfo=BERLIN)
         events = list(coll.get_localized(start_date, end_date))
         assert len(events) == 6
         events = sorted(events)
-        assert events[1].start_local == utils.BERLIN.localize(dt.datetime(2014, 7, 7, 9, 0))
-        assert utils.BERLIN.localize(dt.datetime(2014, 7, 14, 7, 0)) in \
+        assert events[1].start_local == dt.datetime(2014, 7, 7, 9, 0, tzinfo=BERLIN)
+        assert dt.datetime(2014, 7, 14, 7, 0, tzinfo=BERLIN) in \
             [ev.start for ev in events]
 
         import_ics(coll, conf, _get_text('event_rrule_recuid_update'), batch=True)
@@ -113,7 +114,7 @@ class TestImport:
             print(ev.start)
             assert ev.calendar == 'foobar'
         assert len(events) == 5
-        assert utils.BERLIN.localize(dt.datetime(2014, 7, 14, 7, 0)) not in \
+        assert dt.datetime(2014, 7, 14, 7, 0, tzinfo=BERLIN) not in \
             [ev.start_local for ev in events]
 
     def test_mix_datetime_types(self, coll_vdirs):
@@ -128,19 +129,19 @@ class TestImport:
             _get_text('event_dt_mixed_awareness'),
             batch=True
         )
-        start_date = utils.BERLIN.localize(dt.datetime(2015, 5, 29))
-        end_date = utils.BERLIN.localize(dt.datetime(2015, 6, 3))
+        start_date = dt.datetime(2015, 5, 29, tzinfo=BERLIN)
+        end_date = dt.datetime(2015, 6, 3, tzinfo=BERLIN)
         events = list(coll.get_localized(start_date, end_date))
         assert len(events) == 2
         events = sorted(events)
         assert events[0].start_local == \
-            utils.BERLIN.localize(dt.datetime(2015, 5, 30, 12, 0))
+            dt.datetime(2015, 5, 30, 12, 0, tzinfo=BERLIN)
         assert events[0].end_local == \
-            utils.BERLIN.localize(dt.datetime(2015, 5, 30, 16, 0))
+            dt.datetime(2015, 5, 30, 16, 0, tzinfo=BERLIN)
         assert events[1].start_local == \
-            utils.BERLIN.localize(dt.datetime(2015, 6, 2, 12, 0))
+            dt.datetime(2015, 6, 2, 12, 0, tzinfo=BERLIN)
         assert events[1].end_local == \
-            utils.BERLIN.localize(dt.datetime(2015, 6, 2, 16, 0))
+            dt.datetime(2015, 6, 2, 16, 0, tzinfo=BERLIN)
 
 
 def test_start_end():
