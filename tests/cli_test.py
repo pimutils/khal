@@ -882,3 +882,26 @@ def test_new_interactive_extensive(runner):
     )
     assert not result.exception
     assert result.exit_code == 0
+
+
+@freeze_time('2015-6-1 8:00')
+def test_issue_1056(runner):
+    """if an ansi escape sequence is contained in the output, we can't parse it
+    properly"""
+
+    runner = runner(print_new='path', default_calendar=False)
+
+    result = runner.invoke(
+        main_khal, 'new -i'.split(),
+        'two\n'
+        'new event\n'
+        'now\n'
+        'Europe/London\n'
+        'None\n'
+        't\n'  # edit datetime range
+        '\n'
+        'n\n'
+    )
+    assert 'error parsing range' not in result.output
+    assert not result.exception
+    assert result.exit_code == 0

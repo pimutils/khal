@@ -430,6 +430,10 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
     options["alarm"] = {"short": "a"}
     options["Delete"] = {"short": "D"}
     options["url"] = {"short": "u", "attr": "url", "none": True}
+    # some output contains ansi escape sequences (probably only resets)
+    # if hitting enter, the output (including the escape sequence) gets parsed
+    # and fails the parsing. Therefore we remove ansi escape sequences before
+    # parsing.
     ansi = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
     now = dt.datetime.now()
