@@ -9,7 +9,7 @@ This is a bug fix release for python 3.6.
 Under python 3.6, datetimes with timezone information that is missing from the
 icalendar file would be treated if they were in the system's local timezone, not
 as if they were in khal's configured default timezone. This could therefore lead
-to erroneous offsets in start and end times for those events. 
+to erroneous offsets in start and end times for those events.
 
 To check if you are affected by this bug, delete khal's database file (usually
 :file:`~/.local/share/khal/khal.db`), rerun khal and watch for error messages

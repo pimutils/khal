@@ -21,7 +21,7 @@ requirements = [
     'configobj',
     # https://github.com/untitaker/python-atomicwrites/commit/4d12f23227b6a944ab1d99c507a69fdbc7c9ed6d  # noqa
     'atomicwrites>=0.1.7',
-    'tzlocal>=1.0',
+    'tzlocal>=1.0,<3',
 ]
 
 test_requirements = [
@@ -64,7 +64,6 @@ setup(
         "Environment :: Console :: Curses",
         "Intended Audience :: End Users/Desktop",
         "Operating System :: POSIX",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3 :: Only",

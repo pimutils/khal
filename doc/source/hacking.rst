@@ -68,7 +68,7 @@ To run the test suite, install `pytest` and run :command:`py.test tests`, pytest
 will then collect and run all tests and report on any failures (which you should
 then proceed to fix).  If you only want to run tests contained in one file, run,
 e.g., :command:`py.test tests/backend_test.py`.  If you only want to run one or
-more specific tests, you can filter for them with :command:`py.test -k calendar`, 
+more specific tests, you can filter for them with :command:`py.test -k calendar`,
 which would only run tests including `calendar` in their name.
 
 To ensure that khal runs on all currently supported version of python, the self
@@ -124,12 +124,12 @@ Also, summarize your changes in :file:`CHANGELOG.rst`,  pointing readers to the
 
 Code Style
 **********
-khal's source code should adhere to the rules laid out in :pep:`008`, except 
+khal's source code should adhere to the rules laid out in :pep:`008`, except
 for allowing line lengths of up to 100 characters if it improves
 overall legibility (use your judgement).  This can be checked by installing and
 running flake8_ (run with :command:`flake8` from khal's source directory), which
 will also be run with tox and GitHub Actions, see section above.
- 
+
 We try to document the parameters functions and methods accept, including their
 types, and their return values in the `sphinx style`_, though this is currently
 not used thoroughly.

@@ -21,4 +21,3 @@ Get `khal v0.9.8`_ from this site, or from pypi_.
 
 .. _pypi: https://pypi.python.org/pypi/khal/
 .. _khal v0.9.8: https://lostpackets.de/khal/downloads/khal-0.9.8.tar.gz
-

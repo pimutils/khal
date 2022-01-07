@@ -60,4 +60,3 @@ Contact
 .. _issue: https://github.com/pimutils/khal/issues
 .. _reported: https://github.com/pimutils/khal/issues
 .. _main developer: https://lostpackets.de
-
