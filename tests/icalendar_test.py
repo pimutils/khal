@@ -79,3 +79,11 @@ def test_windows_timezone(caplog):
     cal = _get_text("tz_windows_format")
     split_ics(cal)
     assert "Cannot find timezone `Pacific/Auckland`" not in caplog.text
+
+
+def test_split_ics_without_uid():
+    cal = _get_text('without_uid')
+    vevents = split_ics(cal)
+    assert vevents
+    vevents2 = split_ics(cal)
+    assert vevents[0] == vevents2[0]

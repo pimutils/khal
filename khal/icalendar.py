@@ -24,6 +24,7 @@
 import datetime as dt
 import logging
 from collections import defaultdict
+from hashlib import sha256
 
 import dateutil.rrule
 import icalendar
@@ -63,6 +64,12 @@ def split_ics(ics, random_uid=False, default_timezone=None):
             tzs[key] = item
 
         if item.name == 'VEVENT':
+            if 'UID' not in item:
+                logger.warning(
+                    f"Event with summary '{item['SUMMARY']}' doesn't have a unique ID."
+                    "A generated ID will be used instead."
+                )
+                item['UID'] = sha256(item.to_ical()).hexdigest()
             events_grouped[item['UID']].append(item)
         else:
             continue
