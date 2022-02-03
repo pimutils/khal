@@ -3,6 +3,7 @@ from textwrap import dedent
 
 import pytest
 from freezegun import freeze_time
+
 from khal import exceptions
 from khal.controllers import import_ics, khal_list, start_end_from_daterange
 from khal.khalendar.vdir import Item

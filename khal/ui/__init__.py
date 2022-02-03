@@ -27,14 +27,16 @@ import sys
 import click
 import urwid
 
-from .. import icalendar as icalendar_helpers, utils
+from .. import icalendar as icalendar_helpers
+from .. import utils
 from ..khalendar.event import Event
 from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
-from .widgets import ExtendedEdit as Edit, NPile, NColumns, linebox
 from .base import Pane, Window
-from .editor import EventEditor, ExportDialog
 from .calendarwidget import CalendarWidget
+from .editor import EventEditor, ExportDialog
+from .widgets import ExtendedEdit as Edit
+from .widgets import NColumns, NPile, linebox
 
 logger = logging.getLogger('khal')
 

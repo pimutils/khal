@@ -1,6 +1,7 @@
 import datetime as dt
 
 import icalendar
+
 from khal.ui.editor import RecurrenceEditor, StartEndEditor
 
 from ..utils import BERLIN, LOCALE_BERLIN

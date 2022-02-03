@@ -721,7 +721,7 @@ class RecurrenceEditor(urwid.WidgetWrap):
         return self._rrule != self.rrule()  # TODO do this properly
 
     def rrule(self):
-        rrule = dict()
+        rrule = {}
         rrule['freq'] = [self.recurrence_choice.active]
         interval = int(self.interval_edit.get_edit_text())
         if interval != 1:

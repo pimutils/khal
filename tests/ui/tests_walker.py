@@ -24,7 +24,7 @@ palette = {
 def test_daywalker(coll_vdirs):
     collection, _ = coll_vdirs
     this_date = dt.date.today()
-    daywalker = DayWalker(this_date, None, CONF, collection, delete_status=dict())
+    daywalker = DayWalker(this_date, None, CONF, collection, delete_status={})
     elistbox = DListBox(
         daywalker, parent=None, conf=CONF,
         delete_status=lambda: False,
@@ -47,7 +47,7 @@ def test_daywalker(coll_vdirs):
 def test_staticdaywalker(coll_vdirs):
     collection, _ = coll_vdirs
     this_date = dt.date.today()
-    daywalker = StaticDayWalker(this_date, None, CONF, collection, delete_status=dict())
+    daywalker = StaticDayWalker(this_date, None, CONF, collection, delete_status={})
     elistbox = DListBox(
         daywalker, parent=None, conf=CONF,
         delete_status=lambda: False,
@@ -74,10 +74,10 @@ def test_staticdaywalker(coll_vdirs):
 def test_staticdaywalker_3(coll_vdirs):
     collection, _ = coll_vdirs
     this_date = dt.date.today()
-    conf = dict()
+    conf = {}
     conf.update(CONF)
     conf['default'] = {'timedelta': dt.timedelta(days=1)}
-    daywalker = StaticDayWalker(this_date, None, conf, collection, delete_status=dict())
+    daywalker = StaticDayWalker(this_date, None, conf, collection, delete_status={})
     elistbox = DListBox(
         daywalker, parent=None, conf=conf,
         delete_status=lambda: False,

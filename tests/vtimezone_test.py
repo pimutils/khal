@@ -1,6 +1,7 @@
 import datetime as dt
 
 import pytz
+
 from khal.khalendar.event import create_timezone
 
 berlin = pytz.timezone('Europe/Berlin')

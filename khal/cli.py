@@ -155,7 +155,7 @@ def global_options(f):
 def build_collection(conf, selection):
     """build and return a khalendar.CalendarCollection from the configuration"""
     try:
-        props = dict()
+        props = {}
         for name, cal in conf['calendars'].items():
             if selection is None or name in selection:
                 props[name] = {
@@ -215,7 +215,7 @@ def prepare_context(ctx, config):
 def stringify_conf(conf):
     # since we have only two levels of recursion, a recursive function isn't
     # really worth it
-    out = list()
+    out = []
     for key, value in conf.items():
         out.append(f'[{key}]')
         for subkey, subvalue in value.items():
@@ -568,7 +568,7 @@ def _get_cli():
                 multi_calendar_select(ctx, include_calendar, exclude_calendar)
             )
             events = sorted(collection.search(search_string))
-            event_column = list()
+            event_column = []
             term_width, _ = get_terminal_size()
             now = dt.datetime.now()
             env = {"calendars": ctx.obj['conf']['calendars']}

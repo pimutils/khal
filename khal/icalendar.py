@@ -22,11 +22,12 @@
 """collection of icalendar helper functions"""
 
 import datetime as dt
+import logging
+from collections import defaultdict
+
 import dateutil.rrule
 import icalendar
-import logging
 import pytz
-from collections import defaultdict
 
 from .exceptions import UnsupportedRecurrence
 from .parse_datetime import guesstimedeltafstr, rrulefstr
@@ -465,7 +466,7 @@ def _get_all_properties(vevent, prop):
     :type prop: str
     """
     if prop not in vevent:
-        return list()
+        return []
     if isinstance(vevent[prop], list):
         rdates = [leaf.dt for tree in vevent[prop] for leaf in tree.dts]
     else:

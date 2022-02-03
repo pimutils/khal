@@ -30,6 +30,7 @@ from collections import defaultdict
 from locale import LC_ALL, LC_TIME, getlocale, setlocale
 
 import urwid
+
 from khal.utils import get_month_abbr_len
 
 setlocale(LC_ALL, '')
@@ -492,7 +493,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
             attr = 'monthname'
         elif self.weeknumbers == 'left':
-            month_name = ' {:2} '.format(getweeknumber(week[0]))
+            month_name = f' {getweeknumber(week[0]):2} '
             attr = 'weeknumber_left'
         else:
             month_name = '    '
@@ -505,7 +506,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             new_date.set_styles(self.get_styles(new_date.date, False))
         if self.weeknumbers == 'right':
             this_week.append((2, urwid.AttrMap(
-                urwid.Text('{:2}'.format(getweeknumber(week[0]))), 'weeknumber_right')))
+                urwid.Text(f'{getweeknumber(week[0]):2}'), 'weeknumber_right')))
 
         week = DateCColumns(this_week,
                             on_date_change=self.on_date_change,

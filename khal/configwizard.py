@@ -28,7 +28,7 @@ from os import makedirs
 from os.path import exists, expanduser, expandvars, isdir, join, normpath
 
 import xdg
-from click import UsageError, confirm, prompt, Choice
+from click import Choice, UsageError, confirm, prompt
 
 from .exceptions import FatalError
 from .settings import settings

@@ -26,14 +26,15 @@ import os
 import xdg.BaseDirectory
 from configobj import (ConfigObj, ConfigObjError, flatten_errors,
                        get_extra_values)
-from khal import __productname__
 from validate import Validator
+
+from khal import __productname__
 
 from .exceptions import (CannotParseConfigFileError, InvalidSettingsError,
                          NoConfigFile)
 from .utils import (config_checks, expand_db_path, expand_path,
                     get_color_from_vdir, get_vdir_type, is_color, is_timedelta,
-                    is_timezone, weeknumber_option, monthdisplay_option)
+                    is_timezone, monthdisplay_option, weeknumber_option)
 
 logger = logging.getLogger('khal')
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')

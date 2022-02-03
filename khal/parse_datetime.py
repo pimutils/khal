@@ -29,7 +29,8 @@ from calendar import isleap
 from time import strptime
 
 import pytz
-from khal.exceptions import FatalError, DateTimeParseError
+
+from khal.exceptions import DateTimeParseError, FatalError
 
 logger = logging.getLogger('khal')
 

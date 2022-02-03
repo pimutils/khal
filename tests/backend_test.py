@@ -4,6 +4,7 @@ from operator import itemgetter
 import icalendar
 import pkg_resources
 import pytest
+
 from khal.khalendar import backend
 from khal.khalendar.exceptions import OutdatedDbVersionError, UpdateFailed
 

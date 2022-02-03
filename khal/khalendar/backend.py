@@ -24,9 +24,9 @@ The SQLite backend implementation.
 
 import contextlib
 import datetime as dt
-from enum import IntEnum
 import logging
 import sqlite3
+from enum import IntEnum
 from os import makedirs, path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -35,11 +35,12 @@ import pytz
 from dateutil import parser
 
 from .. import utils
-from ..icalendar import (cal_from_ics, assert_only_one_uid,
-                         expand as expand_vevent, sanitize as sanitize_vevent,
-                         sort_key as sort_vevent_key)
-from .exceptions import (CouldNotCreateDbDir, OutdatedDbVersionError,
-                         UpdateFailed, NonUniqueUID)
+from ..icalendar import assert_only_one_uid, cal_from_ics
+from ..icalendar import expand as expand_vevent
+from ..icalendar import sanitize as sanitize_vevent
+from ..icalendar import sort_key as sort_vevent_key
+from .exceptions import (CouldNotCreateDbDir, NonUniqueUID,
+                         OutdatedDbVersionError, UpdateFailed)
 
 logger = logging.getLogger('khal')
 

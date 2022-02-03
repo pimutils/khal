@@ -4,8 +4,9 @@ import platform
 import unicodedata
 
 import pytest
-from khal.calendar_display import (getweeknumber, str_week, vertical_month,
-                                   get_calendar_color, get_color_list)
+
+from khal.calendar_display import (get_calendar_color, get_color_list,
+                                   getweeknumber, str_week, vertical_month)
 
 today = dt.date.today()
 yesterday = today - dt.timedelta(days=1)

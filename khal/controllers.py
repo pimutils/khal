@@ -23,24 +23,27 @@
 import datetime as dt
 import logging
 import os
-import textwrap
 import re
+import textwrap
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
 from typing import Iterable, List, Tuple
 
 import pytz
 from click import confirm, echo, prompt, style
+
 from khal import (__productname__, __version__, calendar_display,
                   parse_datetime, utils)
-from khal.exceptions import FatalError, DateTimeParseError
+from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 
 from .exceptions import ConfigurationError
-from .icalendar import (cal_from_ics, new_event as new_vevent, split_ics,
-                        sort_key as sort_vevent_key)
+from .icalendar import cal_from_ics
+from .icalendar import new_event as new_vevent
+from .icalendar import sort_key as sort_vevent_key
+from .icalendar import split_ics
 from .khalendar.vdir import Item
 from .terminal import merge_columns
 

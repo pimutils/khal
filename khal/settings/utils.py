@@ -211,7 +211,7 @@ def config_checks(
             config['locale']['local_timezone'])
 
     # expand calendars with type = discover
-    vdirs_complete = list()
+    vdirs_complete = []
     vdir_colors_from_config = {}
     for calendar in list(config['calendars'].keys()):
         if not isinstance(config['calendars'][calendar], dict):
