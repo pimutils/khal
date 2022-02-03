@@ -93,7 +93,7 @@ def test_color_wrap_multiple_colors_and_tabs():
       '\x1b[38;2;255;0m11:00-14:00    Rivers Street (noodles and\x1b[0m',
       '\x1b[38;2;255;0mpizza) (R) Calendar\x1b[0m'
     ]
-    actual = list()
+    actual = []
     for line in text:
         actual += utils.color_wrap(line, 60)
     assert actual == expected

@@ -12,7 +12,7 @@ from .utils import LOCALE_BERLIN, cal1, example_cals
 
 @pytest.fixture
 def coll_vdirs(tmpdir):
-    calendars, vdirs = dict(), dict()
+    calendars, vdirs = {}, {}
     for name in example_cals:
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
@@ -27,7 +27,7 @@ def coll_vdirs(tmpdir):
 
 @pytest.fixture
 def coll_vdirs_birthday(tmpdir):
-    calendars, vdirs = dict(), dict()
+    calendars, vdirs = {}, {}
     for name in example_cals:
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)

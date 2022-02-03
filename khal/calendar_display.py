@@ -187,7 +187,7 @@ def vertical_month(month=None,
     if today is None:
         today = dt.date.today()
 
-    khal = list()
+    khal = []
     w_number = '  ' if weeknumber == 'right' else ''
     calendar.setfirstweekday(firstweekday)
     weekheaders = get_weekheader(firstweekday)

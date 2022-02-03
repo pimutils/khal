@@ -197,8 +197,8 @@ def test_discover(metavdirs):
 
 def test_get_unique_name(metavdirs):
     path = metavdirs
-    vdirs = [vdir for vdir in get_all_vdirs(path + '/*/*')]
-    names = list()
+    vdirs = list(get_all_vdirs(path + '/*/*'))
+    names = []
     for vdir in sorted(vdirs):
         names.append(get_unique_name(vdir, names))
     assert names == [

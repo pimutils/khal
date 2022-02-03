@@ -465,7 +465,7 @@ def _get_all_properties(vevent, prop):
     :type prop: str
     """
     if prop not in vevent:
-        return list()
+        return []
     if isinstance(vevent[prop], list):
         rdates = [leaf.dt for tree in vevent[prop] for leaf in tree.dts]
     else:
