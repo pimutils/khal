@@ -441,7 +441,14 @@ def _get_cli():
             if not ics:
                 ics_strs = (sys.stdin.read(),)
                 if not batch:
-                    if os.stat('/dev/tty').st_mode & stat.S_IFCHR > 0:
+
+                    def isatty(_file):
+                        try:
+                            return _file.isatty()
+                        except Exception:
+                            return False
+
+                    if isatty(sys.stdin) and os.stat('/dev/tty').st_mode & stat.S_IFCHR > 0:
                         sys.stdin = open('/dev/tty')
                     else:
                         logger.warning('/dev/tty does not exist, importing might not work')
