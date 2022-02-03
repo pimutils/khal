@@ -27,12 +27,14 @@ import textwrap
 import re
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
+from typing import List
 
 import pytz
 from click import confirm, echo, prompt, style
 from khal import (__productname__, __version__, calendar_display,
                   parse_datetime, utils)
 from khal.exceptions import FatalError, DateTimeParseError
+from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 
@@ -147,26 +149,29 @@ def start_end_from_daterange(daterange, locale,
 
 
 def get_events_between(
-        collection, locale, start, end, agenda_format=None, notstarted=False,
-        env=None, width=None, seen=None, original_start=None):
+    collection: CalendarCollection,
+    locale: dict,
+    start: dt.datetime,
+    end: dt.datetime,
+    agenda_format: str,
+    notstarted: bool,
+    env: dict,
+    width,
+    seen,
+    original_start: dt.datetime,
+) -> List[str]:
     """returns a list of events scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
 
     :param collection:
-    :type collection: khalendar.CalendarCollection
     :param start: the start datetime
     :param end: the end datetime
     :param agenda_format: a format string that can be used in python string formatting
-    :type  agenda_format: str
     :param env: a collection of "static" values like calendar names and color
-    :type env: dict
     :param nostarted: True if each event should start after start (instead of
     be active between start and end)
-    :type nostarted: bool
     :param original_start: start datetime to compare against of notstarted is set
-    :type original_start: datetime.datetime
     :returns: a list to be printed as the agenda for the given days
-    :rtype: list(str)
     """
     assert not (notstarted and not original_start)
 
