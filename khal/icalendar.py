@@ -22,11 +22,12 @@
 """collection of icalendar helper functions"""
 
 import datetime as dt
+import logging
+from collections import defaultdict
+
 import dateutil.rrule
 import icalendar
-import logging
 import pytz
-from collections import defaultdict
 
 from .exceptions import UnsupportedRecurrence
 from .parse_datetime import guesstimedeltafstr, rrulefstr

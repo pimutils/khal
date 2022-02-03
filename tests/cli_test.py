@@ -1,11 +1,12 @@
 import datetime as dt
 import os
-import sys
 import re
+import sys
 
 import pytest
 from click.testing import CliRunner
 from freezegun import freeze_time
+
 from khal.cli import main_ikhal, main_khal
 
 from .utils import _get_ics_filepath, _get_text

@@ -1,10 +1,11 @@
-import icalendar
 import random
 import textwrap
 
+import icalendar
+
 from khal.icalendar import split_ics
 
-from .utils import (LOCALE_BERLIN, _get_text, normalize_component)
+from .utils import LOCALE_BERLIN, _get_text, normalize_component
 
 
 def _get_TZIDs(lines):

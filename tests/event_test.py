@@ -4,6 +4,7 @@ import pytest
 import pytz
 from freezegun import freeze_time
 from icalendar import vRecur, vText
+
 from khal.khalendar.event import (AllDayEvent, Event, FloatingEvent,
                                   LocalizedEvent, create_timezone)
 

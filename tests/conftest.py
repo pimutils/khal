@@ -4,6 +4,7 @@ from time import sleep
 
 import pytest
 import pytz
+
 from khal.khalendar import CalendarCollection
 from khal.khalendar.vdir import Vdir
 

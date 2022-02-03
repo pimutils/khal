@@ -2,14 +2,15 @@ import datetime as dt
 import os.path
 
 import pytest
+from tzlocal import get_localzone
+from validate import VdtValueError
+
 from khal.settings import get_config
 from khal.settings.exceptions import (CannotParseConfigFileError,
                                       InvalidSettingsError)
 from khal.settings.utils import (config_checks, get_all_vdirs,
                                  get_color_from_vdir, get_unique_name,
                                  is_color)
-from tzlocal import get_localzone
-from validate import VdtValueError
 
 from .utils import LOCALE_BERLIN
 

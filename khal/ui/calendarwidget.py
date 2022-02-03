@@ -30,6 +30,7 @@ from collections import defaultdict
 from locale import LC_ALL, LC_TIME, getlocale, setlocale
 
 import urwid
+
 from khal.utils import get_month_abbr_len
 
 setlocale(LC_ALL, '')

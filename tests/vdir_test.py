@@ -23,6 +23,7 @@ import os
 import time
 
 import pytest
+
 from khal.khalendar import vdir
 
 

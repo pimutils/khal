@@ -1,5 +1,6 @@
 """testing functions from the khal.utils"""
 import datetime as dt
+
 from freezegun import freeze_time
 
 from khal import utils

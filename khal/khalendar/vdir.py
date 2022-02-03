@@ -7,7 +7,6 @@ import errno
 import os
 import uuid
 from hashlib import sha1
-
 from typing import Optional  # noqa
 
 from atomicwrites import atomic_write
