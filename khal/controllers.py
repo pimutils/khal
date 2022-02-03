@@ -32,8 +32,7 @@ from typing import Iterable, List, Tuple
 import pytz
 from click import confirm, echo, prompt, style
 
-from khal import (__productname__, __version__, calendar_display,
-                  parse_datetime, utils)
+from khal import __productname__, __version__, calendar_display, parse_datetime, utils
 from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
@@ -47,15 +46,15 @@ from .icalendar import split_ics
 from .khalendar.vdir import Item
 from .terminal import merge_columns
 
-logger = logging.getLogger('khal')
+logger = logging.getLogger("khal")
 
 
 def format_day(day, format_string: str, locale, attributes=None):
     if attributes is None:
         attributes = {}
 
-    attributes["date"] = day.strftime(locale['dateformat'])
-    attributes["date-long"] = day.strftime(locale['longdateformat'])
+    attributes["date"] = day.strftime(locale["dateformat"])
+    attributes["date-long"] = day.strftime(locale["longdateformat"])
 
     attributes["name"] = parse_datetime.construct_daynames(day)
 
@@ -70,31 +69,37 @@ def format_day(day, format_string: str, locale, attributes=None):
         raise KeyError("cannot format day with: %s" % format_string)
 
 
-def calendar(collection, agenda_format=None, notstarted=False, once=False, daterange=None,
-             day_format=None,
-             locale=None,
-             conf=None,
-             firstweekday=0,
-             weeknumber=False,
-             monthdisplay='firstday',
-             hmethod='fg',
-             default_color='',
-             multiple='',
-             color='',
-             highlight_event_days=0,
-             full=False,
-             bold_for_light_color=True,
-             env=None,
-             ):
+def calendar(
+    collection,
+    agenda_format=None,
+    notstarted=False,
+    once=False,
+    daterange=None,
+    day_format=None,
+    locale=None,
+    conf=None,
+    firstweekday=0,
+    weeknumber=False,
+    monthdisplay="firstday",
+    hmethod="fg",
+    default_color="",
+    multiple="",
+    color="",
+    highlight_event_days=0,
+    full=False,
+    bold_for_light_color=True,
+    env=None,
+):
     term_width, _ = get_terminal_size()
-    lwidth = 27 if conf['locale']['weeknumbers'] == 'right' else 25
+    lwidth = 27 if conf["locale"]["weeknumbers"] == "right" else 25
     rwidth = term_width - lwidth - 4
 
     try:
         start, end = start_end_from_daterange(
-            daterange, locale,
-            default_timedelta_date=conf['default']['timedelta'],
-            default_timedelta_datetime=conf['default']['timedelta'],
+            daterange,
+            locale,
+            default_timedelta_date=conf["default"]["timedelta"],
+            default_timedelta_datetime=conf["default"]["timedelta"],
         )
     except ValueError as error:
         raise FatalError(error)
@@ -114,7 +119,8 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
         month=start.month,
         year=start.year,
         count=max(3, (end.year - start.year) * 12 + end.month - start.month + 1),
-        firstweekday=firstweekday, weeknumber=weeknumber,
+        firstweekday=firstweekday,
+        weeknumber=weeknumber,
         monthdisplay=monthdisplay,
         collection=collection,
         hmethod=hmethod,
@@ -123,7 +129,8 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
         color=color,
         highlight_event_days=highlight_event_days,
         locale=locale,
-        bold_for_light_color=bold_for_light_color)
+        bold_for_light_color=bold_for_light_color,
+    )
     return merge_columns(calendar_column, event_column, width=lwidth)
 
 
@@ -146,7 +153,9 @@ def start_end_from_daterange(
         end = start + default_timedelta_date
     else:
         start, end, allday = parse_datetime.guessrangefstr(
-            daterange, locale, default_timedelta_date=default_timedelta_date,
+            daterange,
+            locale,
+            default_timedelta_date=default_timedelta_date,
             default_timedelta_datetime=default_timedelta_datetime,
         )
     return start, end
@@ -184,8 +193,8 @@ def get_events_between(
         env = {}
     assert start
     assert end
-    start_local = locale['local_timezone'].localize(start)
-    end_local = locale['local_timezone'].localize(end)
+    start_local = locale["local_timezone"].localize(start)
+    end_local = locale["local_timezone"].localize(end)
 
     start = start_local.replace(tzinfo=None)
     end = end_local.replace(tzinfo=None)
@@ -205,7 +214,9 @@ def get_events_between(
             continue
 
         try:
-            event_string = event.format(agenda_format, relative_to=(start, end), env=env)
+            event_string = event.format(
+                agenda_format, relative_to=(start, end), env=env
+            )
         except KeyError as error:
             raise FatalError(error)
 
@@ -224,7 +235,7 @@ def khal_list(
     daterange: Iterable[str] = None,
     conf: dict = None,
     agenda_format=None,
-    day_format: str=None,
+    day_format: str = None,
     once=False,
     notstarted: bool = False,
     width: bool = False,
@@ -237,166 +248,244 @@ def khal_list(
 
     # because empty strings are also Falsish
     if agenda_format is None:
-        agenda_format = conf['view']['agenda_event_format']
+        agenda_format = conf["view"]["agenda_event_format"]
 
     if daterange is not None:
         if day_format is None:
-            day_format = conf['view']['agenda_day_format']
+            day_format = conf["view"]["agenda_day_format"]
         start, end = start_end_from_daterange(
-            daterange, conf['locale'],
-            default_timedelta_date=conf['default']['timedelta'],
-            default_timedelta_datetime=conf['default']['timedelta'],
+            daterange,
+            conf["locale"],
+            default_timedelta_date=conf["default"]["timedelta"],
+            default_timedelta_datetime=conf["default"]["timedelta"],
         )
-        logger.debug(f'Getting all events between {start} and {end}')
+        logger.debug(f"Getting all events between {start} and {end}")
 
     elif datepoint is not None:
         if not datepoint:
-            datepoint = ['now']
+            datepoint = ["now"]
         try:
             start, allday = parse_datetime.guessdatetimefstr(
-                datepoint, conf['locale'], dt.date.today(),
+                datepoint,
+                conf["locale"],
+                dt.date.today(),
             )
         except ValueError:
-            raise FatalError('Invalid value of `{' '.join(datepoint)}` for a datetime')
+            raise FatalError("Invalid value of `{" ".join(datepoint)}` for a datetime")
         if allday:
-            logger.debug(f'Got date {start}')
-            raise FatalError('Please supply a datetime, not a date.')
+            logger.debug(f"Got date {start}")
+            raise FatalError("Please supply a datetime, not a date.")
         end = start + dt.timedelta(seconds=1)
         if day_format is None:
             day_format = style(
-                start.strftime(conf['locale']['longdatetimeformat']),
+                start.strftime(conf["locale"]["longdatetimeformat"]),
                 bold=True,
             )
-        logger.debug(f'Getting all events between {start} and {end}')
+        logger.debug(f"Getting all events between {start} and {end}")
 
     event_column: List[str] = []
     once = set() if once else None
     if env is None:
         env = {}
 
-    original_start = conf['locale']['local_timezone'].localize(start)
+    original_start = conf["locale"]["local_timezone"].localize(start)
     while start < end:
         if start.date() == end.date():
             day_end = end
         else:
             day_end = dt.datetime.combine(start.date(), dt.time.max)
         current_events = get_events_between(
-            collection, locale=conf['locale'], agenda_format=agenda_format, start=start,
-            end=day_end, notstarted=notstarted, original_start=original_start,
+            collection,
+            locale=conf["locale"],
+            agenda_format=agenda_format,
+            start=start,
+            end=day_end,
+            notstarted=notstarted,
+            original_start=original_start,
             env=env,
             seen=once,
             width=width,
         )
-        if day_format and (conf['default']['show_all_days'] or current_events):
-            if len(event_column) != 0 and conf['view']['blank_line_before_day']:
-                event_column.append('')
-            event_column.append(format_day(start.date(), day_format, conf['locale']))
+        if day_format and (conf["default"]["show_all_days"] or current_events):
+            if len(event_column) != 0 and conf["view"]["blank_line_before_day"]:
+                event_column.append("")
+            event_column.append(format_day(start.date(), day_format, conf["locale"]))
         event_column.extend(current_events)
         start = dt.datetime(*start.date().timetuple()[:3]) + dt.timedelta(days=1)
 
     if event_column == []:
-        event_column = [style('No events', bold=True)]
+        event_column = [style("No events", bold=True)]
     return event_column
 
 
-def new_interactive(collection, calendar_name, conf, info, location=None,
-                    categories=None, repeat=None, until=None, alarms=None,
-                    format=None, env=None, url=None):
+def new_interactive(
+    collection,
+    calendar_name,
+    conf,
+    info,
+    location=None,
+    categories=None,
+    repeat=None,
+    until=None,
+    alarms=None,
+    format=None,
+    env=None,
+    url=None,
+):
     try:
         info = parse_datetime.eventinfofstr(
-            info, conf['locale'],
-            conf['default']['default_event_duration'],
-            conf['default']['default_dayevent_duration'],
-            adjust_reasonably=True, localize=False,
+            info,
+            conf["locale"],
+            conf["default"]["default_event_duration"],
+            conf["default"]["default_dayevent_duration"],
+            adjust_reasonably=True,
+            localize=False,
         )
     except DateTimeParseError:
         info = {}
 
     while True:
-        summary = info.get('summary')
+        summary = info.get("summary")
         if not summary:
             summary = None
-        info['summary'] = prompt('summary', default=summary)
-        if info['summary']:
+        info["summary"] = prompt("summary", default=summary)
+        if info["summary"]:
             break
         echo("a summary is required")
 
     while True:
         range_string = None
-        if info.get('dtstart') and info.get('dtend'):
-            start_string = info["dtstart"].strftime(conf['locale']['datetimeformat'])
-            end_string = info["dtend"].strftime(conf['locale']['datetimeformat'])
-            range_string = start_string + ' ' + end_string
+        if info.get("dtstart") and info.get("dtend"):
+            start_string = info["dtstart"].strftime(conf["locale"]["datetimeformat"])
+            end_string = info["dtend"].strftime(conf["locale"]["datetimeformat"])
+            range_string = start_string + " " + end_string
         daterange = prompt("datetime range", default=range_string)
         start, end, allday = parse_datetime.guessrangefstr(
-            daterange, conf['locale'], adjust_reasonably=True)
-        info['dtstart'] = start
-        info['dtend'] = end
-        info['allday'] = allday
-        if info['dtstart'] and info['dtend']:
+            daterange, conf["locale"], adjust_reasonably=True
+        )
+        info["dtstart"] = start
+        info["dtend"] = end
+        info["allday"] = allday
+        if info["dtstart"] and info["dtend"]:
             break
         echo("invalid datetime range")
 
     while True:
-        tz = info.get('timezone') or conf['locale']['default_timezone']
+        tz = info.get("timezone") or conf["locale"]["default_timezone"]
         timezone = prompt("timezone", default=str(tz))
         try:
             tz = pytz.timezone(timezone)
-            info['timezone'] = tz
+            info["timezone"] = tz
             break
         except pytz.UnknownTimeZoneError:
             echo("unknown timezone")
 
-    info['description'] = prompt("description (or 'None')", default=info.get('description'))
-    if info['description'] == 'None':
-        info['description'] = ''
+    info["description"] = prompt(
+        "description (or 'None')", default=info.get("description")
+    )
+    if info["description"] == "None":
+        info["description"] = ""
 
     event = new_from_args(
-        collection, calendar_name, conf, format=format, env=env,
-        location=location, categories=categories,
-        repeat=repeat, until=until, alarms=alarms, url=url,
-        **info)
+        collection,
+        calendar_name,
+        conf,
+        format=format,
+        env=env,
+        location=location,
+        categories=categories,
+        repeat=repeat,
+        until=until,
+        alarms=alarms,
+        url=url,
+        **info,
+    )
 
     echo("event saved")
 
     term_width, _ = get_terminal_size()
-    edit_event(event, collection, conf['locale'], width=term_width)
+    edit_event(event, collection, conf["locale"], width=term_width)
 
 
-def new_from_string(collection, calendar_name, conf, info, location=None,
-                    categories=None, repeat=None, until=None, alarms=None,
-                    url=None, format=None, env=None):
+def new_from_string(
+    collection,
+    calendar_name,
+    conf,
+    info,
+    location=None,
+    categories=None,
+    repeat=None,
+    until=None,
+    alarms=None,
+    url=None,
+    format=None,
+    env=None,
+):
     """construct a new event from a string and add it"""
     info = parse_datetime.eventinfofstr(
-        info, conf['locale'],
-        conf['default']['default_event_duration'],
-        conf['default']['default_dayevent_duration'],
-        adjust_reasonably=True, localize=False
+        info,
+        conf["locale"],
+        conf["default"]["default_event_duration"],
+        conf["default"]["default_dayevent_duration"],
+        adjust_reasonably=True,
+        localize=False,
     )
     new_from_args(
-        collection, calendar_name, conf, format=format, env=env,
-        location=location, categories=categories, repeat=repeat,
-        until=until, alarms=alarms, url=url, **info
+        collection,
+        calendar_name,
+        conf,
+        format=format,
+        env=env,
+        location=location,
+        categories=categories,
+        repeat=repeat,
+        until=until,
+        alarms=alarms,
+        url=url,
+        **info,
     )
 
 
-def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
-                  summary=None, description=None, allday=None, location=None,
-                  categories=None, repeat=None, until=None, alarms=None,
-                  timezone=None, url=None, format=None, env=None):
+def new_from_args(
+    collection,
+    calendar_name,
+    conf,
+    dtstart=None,
+    dtend=None,
+    summary=None,
+    description=None,
+    allday=None,
+    location=None,
+    categories=None,
+    repeat=None,
+    until=None,
+    alarms=None,
+    timezone=None,
+    url=None,
+    format=None,
+    env=None,
+):
     """Create a new event from arguments and add to vdirs"""
     if isinstance(categories, str):
-        categories = [category.strip() for category in categories.split(',')]
+        categories = [category.strip() for category in categories.split(",")]
     try:
         event = new_vevent(
-            locale=conf['locale'], location=location, categories=categories,
-            repeat=repeat, until=until, alarms=alarms, dtstart=dtstart,
-            dtend=dtend, summary=summary, description=description, timezone=timezone, url=url,
+            locale=conf["locale"],
+            location=location,
+            categories=categories,
+            repeat=repeat,
+            until=until,
+            alarms=alarms,
+            dtstart=dtstart,
+            dtend=dtend,
+            summary=summary,
+            description=description,
+            timezone=timezone,
+            url=url,
         )
     except ValueError as error:
         raise FatalError(error)
-    event = Event.fromVEvents(
-        [event], calendar=calendar_name, locale=conf['locale'])
+    event = Event.fromVEvents([event], calendar=calendar_name, locale=conf["locale"])
 
     try:
         collection.new(event)
@@ -405,15 +494,12 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
             f'ERROR: Cannot modify calendar "{calendar_name}" as it is read-only'
         )
 
-    if conf['default']['print_new'] == 'event':
+    if conf["default"]["print_new"] == "event":
         if format is None:
-            format = conf['view']['event_format']
+            format = conf["view"]["event_format"]
         echo(event.format(format, dt.datetime.now(), env=env))
-    elif conf['default']['print_new'] == 'path':
-        path = os.path.join(
-            collection._calendars[event.calendar]['path'],
-            event.href
-        )
+    elif conf["default"]["print_new"] == "path":
+        path = os.path.join(collection._calendars[event.calendar]["path"], event.href)
         echo(path)
     return event
 
@@ -424,7 +510,7 @@ def present_options(options, prefix="", sep="  ", width=70):
     for option in options:
         char = options[option]["short"]
         chars[char] = option
-        option_list.append(option.replace(char, '[' + char + ']', 1))
+        option_list.append(option.replace(char, "[" + char + "]", 1))
     option_string = sep.join(option_list)
     option_string = textwrap.fill(option_string, width)
     char = prompt(option_string)
@@ -454,7 +540,7 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
     # if hitting enter, the output (including the escape sequence) gets parsed
     # and fails the parsing. Therefore we remove ansi escape sequences before
     # parsing.
-    ansi = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    ansi = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
     now = dt.datetime.now()
 
@@ -463,9 +549,9 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
         if choice is None:
             echo("unknown choice")
             continue
-        if choice == 'no':
+        if choice == "no":
             return True
-        if choice in ['quit', 'done']:
+        if choice in ["quit", "done"]:
             return False
 
         edited = False
@@ -478,7 +564,9 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             current = event.format("{start} {end}", relative_to=now)
             value = prompt("datetime range", default=current)
             try:
-                start, end, allday = parse_datetime.guessrangefstr(ansi.sub('', value), locale)
+                start, end, allday = parse_datetime.guessrangefstr(
+                    ansi.sub("", value), locale
+                )
                 event.update_start_end(start, end)
                 edited = True
             except:  # noqa
@@ -488,15 +576,17 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             freq = recur["freq"] if "freq" in recur else ""
             until = recur["until"] if "until" in recur else ""
             if not freq:
-                freq = 'None'
+                freq = "None"
             freq = prompt('frequency (or "None")', freq)
-            if freq == 'None':
+            if freq == "None":
                 event.update_rrule(None)
             else:
                 until = prompt('until (or "None")', until)
-                if until == 'None':
+                if until == "None":
                     until = None
-                rrule = parse_datetime.rrulefstr(freq, until, locale, event.start.tzinfo)
+                rrule = parse_datetime.rrulefstr(
+                    freq, until, locale, event.start.tzinfo
+                )
                 event.update_rrule(rrule)
             edited = True
         elif choice == "alarm":
@@ -505,9 +595,9 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 s = parse_datetime.timedelta2str(-1 * a[0])
                 default_alarms.append(s)
 
-            default = ', '.join(default_alarms)
+            default = ", ".join(default_alarms)
             if not default:
-                default = 'None'
+                default = "None"
             alarm = prompt('alarm (or "None")', default)
             if alarm == "None":
                 alarm = ""
@@ -528,13 +618,15 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 question += ' (or "None")'
                 allow_none = True
                 if not default:
-                    default = 'None'
+                    default = "None"
 
             value = prompt(question, default)
             if allow_none and value == "None":
                 value = ""
-            if attr == 'categories':
-                getattr(event, "update_" + attr)([cat.strip() for cat in value.split(',')])
+            if attr == "categories":
+                getattr(event, "update_" + attr)(
+                    [cat.strip() for cat in value.split(",")]
+                )
             else:
                 getattr(event, "update_" + attr)(value)
             edited = True
@@ -547,10 +639,10 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
 def edit(collection, search_string, locale, format=None, allow_past=False, conf=None):
     if conf is not None:
         if format is None:
-            format = conf['view']['event_format']
+            format = conf["view"]["event_format"]
 
     term_width, _ = get_terminal_size()
-    now = conf['locale']['local_timezone'].localize(dt.datetime.now())
+    now = conf["locale"]["local_timezone"].localize(dt.datetime.now())
 
     events = sorted(collection.search(search_string))
     for event in events:
@@ -560,7 +652,7 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
             elif not event.allday and event.end_local < now:
                 continue
         event_text = textwrap.wrap(event.format(format, relative_to=now), term_width)
-        echo(''.join(event_text))
+        echo("".join(event_text))
         if not edit_event(event, collection, locale, allow_quit=True, width=term_width):
             return
 
@@ -568,17 +660,21 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
 def interactive(collection, conf):
     """start the interactive user interface"""
     from . import ui
+
     pane = ui.ClassicView(
-        collection, conf, title="select an event", description="do something")
+        collection, conf, title="select an event", description="do something"
+    )
     ui.start_pane(
-        pane, pane.cleanup,
-        program_info=f'{__productname__} v{__version__}',
-        quit_keys=conf['keybindings']['quit'],
+        pane,
+        pane.cleanup,
+        program_info=f"{__productname__} v{__version__}",
+        quit_keys=conf["keybindings"]["quit"],
     )
 
 
-def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None,
-               env=None):
+def import_ics(
+    collection, conf, ics, batch=False, random_uid=False, format=None, env=None
+):
     """
     :param batch: setting this to True will insert without asking for approval,
                   even when an event with the same uid already exists
@@ -589,10 +685,10 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None
     :type format: str
     """
     if format is None:
-        format = conf['view']['event_format']
-    vevents = split_ics(ics, random_uid, conf['locale']['default_timezone'])
+        format = conf["view"]["event_format"]
+    vevents = split_ics(ics, random_uid, conf["locale"]["default_timezone"])
     for vevent in vevents:
-        import_event(vevent, collection, conf['locale'], batch, format, env)
+        import_event(vevent, collection, conf["locale"], batch, format, env)
 
 
 def import_event(vevent, collection, locale, batch, format=None, env=None):
@@ -605,22 +701,24 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
     # print all sub-events
     if not batch:
         for item in cal_from_ics(vevent).walk():
-            if item.name == 'VEVENT':
+            if item.name == "VEVENT":
                 event = Event.fromVEvents(
-                    [item], calendar=collection.default_calendar_name, locale=locale)
+                    [item], calendar=collection.default_calendar_name, locale=locale
+                )
                 echo(event.format(format, dt.datetime.now(), env=env))
 
     # get the calendar to insert into
     if not collection.writable_names:
-        raise ConfigurationError('No writable calendars found, aborting import.')
+        raise ConfigurationError("No writable calendars found, aborting import.")
     if len(collection.writable_names) == 1:
         calendar_name = collection.writable_names[0]
     elif batch:
         calendar_name = collection.default_calendar_name
     else:
         calendar_names = sorted(collection.writable_names)
-        choices = ', '.join(
-            [f'{name}({num})' for num, name in enumerate(calendar_names)])
+        choices = ", ".join(
+            [f"{name}({num})" for num, name in enumerate(calendar_names)]
+        )
         while True:
             value = prompt(
                 "Which calendar do you want to import to? (unique prefixes are fine)\n"
@@ -635,7 +733,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
                 if len(matches) == 1:
                     calendar_name = matches[0]
                     break
-            echo('invalid choice')
+            echo("invalid choice")
     assert calendar_name in collection.writable_names
 
     if batch or confirm(f"Do you want to import this event into `{calendar_name}`?"):
@@ -643,7 +741,8 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
             collection.new(Item(vevent), collection=calendar_name)
         except DuplicateUid:
             if batch or confirm(
-                    "An event with the same UID already exists. Do you want to update it?"):
+                "An event with the same UID already exists. Do you want to update it?"
+            ):
                 collection.force_update(Item(vevent), collection=calendar_name)
             else:
                 logger.warning(f"Not importing event with UID `{event.uid}`")
@@ -651,18 +750,18 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
 
 def print_ics(conf, name, ics, format):
     if format is None:
-        format = conf['view']['event_format']
+        format = conf["view"]["event_format"]
     cal = cal_from_ics(ics)
-    events = [item for item in cal.walk() if item.name == 'VEVENT']
+    events = [item for item in cal.walk() if item.name == "VEVENT"]
     events_grouped = defaultdict(list)
     for event in events:
-        events_grouped[event['UID']].append(event)
+        events_grouped[event["UID"]].append(event)
 
     vevents = []
     for uid in events_grouped:
         vevents.append(sorted(events_grouped[uid], key=sort_vevent_key))
 
-    echo(f'{len(vevents)} events found in {name}')
+    echo(f"{len(vevents)} events found in {name}")
     for sub_event in vevents:
-        event = Event.fromVEvents(sub_event, locale=conf['locale'])
+        event = Event.fromVEvents(sub_event, locale=conf["locale"])
         echo(event.format(format, dt.datetime.now()))

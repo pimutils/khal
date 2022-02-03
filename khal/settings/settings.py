@@ -24,20 +24,27 @@ import logging
 import os
 
 import xdg.BaseDirectory
-from configobj import (ConfigObj, ConfigObjError, flatten_errors,
-                       get_extra_values)
+from configobj import ConfigObj, ConfigObjError, flatten_errors, get_extra_values
 from validate import Validator
 
 from khal import __productname__
 
-from .exceptions import (CannotParseConfigFileError, InvalidSettingsError,
-                         NoConfigFile)
-from .utils import (config_checks, expand_db_path, expand_path,
-                    get_color_from_vdir, get_vdir_type, is_color, is_timedelta,
-                    is_timezone, monthdisplay_option, weeknumber_option)
+from .exceptions import CannotParseConfigFileError, InvalidSettingsError, NoConfigFile
+from .utils import (
+    config_checks,
+    expand_db_path,
+    expand_path,
+    get_color_from_vdir,
+    get_vdir_type,
+    is_color,
+    is_timedelta,
+    is_timezone,
+    monthdisplay_option,
+    weeknumber_option,
+)
 
-logger = logging.getLogger('khal')
-SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
+logger = logging.getLogger("khal")
+SPECPATH = os.path.join(os.path.dirname(__file__), "khal.spec")
 
 
 def find_configuration_file():
@@ -51,8 +58,10 @@ def find_configuration_file():
     DEFAULT_PATH = __productname__
 
     paths = []
-    paths = [os.path.join(path, os.path.join(DEFAULT_PATH, 'config'))
-             for path in xdg.BaseDirectory.xdg_config_dirs]
+    paths = [
+        os.path.join(path, os.path.join(DEFAULT_PATH, "config"))
+        for path in xdg.BaseDirectory.xdg_config_dirs
+    ]
     for path in paths:
         if os.path.exists(path):
             return path
@@ -61,9 +70,9 @@ def find_configuration_file():
     for path in paths:
         if os.path.exists(path):
             logger.warning(
-                f'Deprecation Warning: configuration file path `{path}` will '
-                'not be supported from v0.11.0 onwards, please move it to '
-                f'`{xdg.BaseDirectory.xdg_config_dirs[0]}/khal/config`.'
+                f"Deprecation Warning: configuration file path `{path}` will "
+                "not be supported from v0.11.0 onwards, please move it to "
+                f"`{xdg.BaseDirectory.xdg_config_dirs[0]}/khal/config`."
             )
             return path
 
@@ -71,9 +80,10 @@ def find_configuration_file():
 
 
 def get_config(
-        config_path=None,
-        _get_color_from_vdir=get_color_from_vdir,
-        _get_vdir_type=get_vdir_type):
+    config_path=None,
+    _get_color_from_vdir=get_color_from_vdir,
+    _get_vdir_type=get_vdir_type,
+):
     """reads the config file, validates it and return a config dict
 
     :param config_path: path to a custom config file, if none is given the
@@ -89,30 +99,33 @@ def get_config(
     if config_path is None or not os.path.exists(config_path):
         raise NoConfigFile()
 
-    logger.debug(f'using the config file at {config_path}')
+    logger.debug(f"using the config file at {config_path}")
 
     try:
-        user_config = ConfigObj(config_path,
-                                configspec=SPECPATH,
-                                interpolation=False,
-                                file_error=True,
-                                )
+        user_config = ConfigObj(
+            config_path,
+            configspec=SPECPATH,
+            interpolation=False,
+            file_error=True,
+        )
     except ConfigObjError as error:
-        logger.fatal('parsing the config file with the following error: '
-                     f'{error}')
-        logger.fatal('if you recently updated khal, the config file format '
-                     'might have changed, in that case please consult the '
-                     'CHANGELOG or other documentation')
+        logger.fatal("parsing the config file with the following error: " f"{error}")
+        logger.fatal(
+            "if you recently updated khal, the config file format "
+            "might have changed, in that case please consult the "
+            "CHANGELOG or other documentation"
+        )
         raise CannotParseConfigFileError()
 
-    fdict = {'timezone': is_timezone,
-             'timedelta': is_timedelta,
-             'expand_path': expand_path,
-             'expand_db_path': expand_db_path,
-             'weeknumbers': weeknumber_option,
-             'monthdisplay': monthdisplay_option,
-             'color': is_color,
-             }
+    fdict = {
+        "timezone": is_timezone,
+        "timedelta": is_timedelta,
+        "expand_path": expand_path,
+        "expand_db_path": expand_db_path,
+        "weeknumbers": weeknumber_option,
+        "monthdisplay": monthdisplay_option,
+        "color": is_color,
+    }
     validator = Validator(fdict)
     results = user_config.validate(validator, preserve_errors=True)
 
@@ -121,15 +134,15 @@ def get_config(
         abort = True
         if isinstance(config_error, Exception):
             logger.fatal(
-                f'config error:\n'
-                f'in [{section[0]}] {subsection}: {config_error}')
+                f"config error:\n" f"in [{section[0]}] {subsection}: {config_error}"
+            )
         else:
             for key in config_error:
                 if isinstance(config_error[key], Exception):
                     logger.fatal(
-                        'config error:\n'
-                        f'in {sectionize(section + [subsection])} {key}: '
-                        f'{str(config_error[key])}'
+                        "config error:\n"
+                        f"in {sectionize(section + [subsection])} {key}: "
+                        f"{str(config_error[key])}"
                     )
 
     if abort or not results:
@@ -144,19 +157,22 @@ def get_config(
         else:
             section = sectionize(section)
             logger.warning(
-                f'unknown key or subsection "{value}" in section "{section}"')
+                f'unknown key or subsection "{value}" in section "{section}"'
+            )
 
-            deprecated = [{'value': 'default_command', 'section': 'default'}]
+            deprecated = [{"value": "default_command", "section": "default"}]
             for d in deprecated:
-                if (value == d['value']) and (section == d['section']):
-                    logger.warning(f'Key "{value}" in section "{section}" was '
-                                   'deprecated. See the FAQ to find out when and why!')
+                if (value == d["value"]) and (section == d["section"]):
+                    logger.warning(
+                        f'Key "{value}" in section "{section}" was '
+                        "deprecated. See the FAQ to find out when and why!"
+                    )
     return user_config
 
 
 def sectionize(sections, depth=1):
     """converts list of string into [list][[of]][[[strings]]]"""
-    this_part = depth * '[' + sections[0] + depth * ']'
+    this_part = depth * "[" + sections[0] + depth * "]"
     if len(sections) > 1:
         return this_part + sectionize(sections[1:], depth=depth + 1)
     else:

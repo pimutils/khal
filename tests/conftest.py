@@ -15,13 +15,20 @@ from .utils import LOCALE_BERLIN, cal1, example_cals
 def coll_vdirs(tmpdir):
     calendars, vdirs = {}, {}
     for name in example_cals:
-        path = str(tmpdir) + '/' + name
+        path = str(tmpdir) + "/" + name
         os.makedirs(path, mode=0o770)
-        readonly = True if name == 'a_calendar' else False
-        calendars[name] = {'name': name, 'path': path, 'color': 'dark blue',
-                           'readonly': readonly, 'unicode_symbols': True}
-        vdirs[name] = Vdir(path, '.ics')
-    coll = CalendarCollection(calendars=calendars, dbpath=':memory:', locale=LOCALE_BERLIN)
+        readonly = True if name == "a_calendar" else False
+        calendars[name] = {
+            "name": name,
+            "path": path,
+            "color": "dark blue",
+            "readonly": readonly,
+            "unicode_symbols": True,
+        }
+        vdirs[name] = Vdir(path, ".ics")
+    coll = CalendarCollection(
+        calendars=calendars, dbpath=":memory:", locale=LOCALE_BERLIN
+    )
     coll.default_calendar_name = cal1
     return coll, vdirs
 
@@ -30,20 +37,28 @@ def coll_vdirs(tmpdir):
 def coll_vdirs_birthday(tmpdir):
     calendars, vdirs = {}, {}
     for name in example_cals:
-        path = str(tmpdir) + '/' + name
+        path = str(tmpdir) + "/" + name
         os.makedirs(path, mode=0o770)
-        readonly = True if name == 'a_calendar' else False
-        calendars[name] = {'name': name, 'path': path, 'color': 'dark blue',
-                           'readonly': readonly, 'unicode_symbols': True, 'ctype': 'birthdays'}
-        vdirs[name] = Vdir(path, '.vcf')
-    coll = CalendarCollection(calendars=calendars, dbpath=':memory:', locale=LOCALE_BERLIN)
+        readonly = True if name == "a_calendar" else False
+        calendars[name] = {
+            "name": name,
+            "path": path,
+            "color": "dark blue",
+            "readonly": readonly,
+            "unicode_symbols": True,
+            "ctype": "birthdays",
+        }
+        vdirs[name] = Vdir(path, ".vcf")
+    coll = CalendarCollection(
+        calendars=calendars, dbpath=":memory:", locale=LOCALE_BERLIN
+    )
     coll.default_calendar_name = cal1
     return coll, vdirs
 
 
 @pytest.fixture(autouse=True)
 def never_echo_bytes(monkeypatch):
-    '''Click's echo function will not strip colorcodes if we call `click.echo`
+    """Click's echo function will not strip colorcodes if we call `click.echo`
     with a bytestring message. The reason for this that bytestrings may contain
     arbitrary binary data (such as images).
 
@@ -51,24 +66,24 @@ def never_echo_bytes(monkeypatch):
     instances where it explicitly encodes its output into the configured
     locale. This in turn would break the functionality of the global
     `--color/--no-color` flag.
-    '''
+    """
     from click import echo as old_echo
 
     def echo(msg=None, *a, **kw):
         assert not isinstance(msg, bytes)
         return old_echo(msg, *a, **kw)
 
-    monkeypatch.setattr('click.echo', echo)
+    monkeypatch.setattr("click.echo", echo)
 
     class Result:
         @staticmethod
         def undo():
-            monkeypatch.setattr('click.echo', old_echo)
+            monkeypatch.setattr("click.echo", old_echo)
 
     return Result
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def sleep_time(tmpdir_factory):
     """
     Returns the filesystem's mtime precision
@@ -79,12 +94,12 @@ def sleep_time(tmpdir_factory):
     This keeps test fast on systems with high precisions, but makes them pass
     on those that don't.
     """
-    tmpfile = tmpdir_factory.mktemp('sleep').join('touch_me')
+    tmpfile = tmpdir_factory.mktemp("sleep").join("touch_me")
 
     def touch_and_mtime():
-        tmpfile.open('w').close()
+        tmpfile.open("w").close()
         stat = os.stat(str(tmpfile))
-        return getattr(stat, 'st_mtime_ns', stat.st_mtime)
+        return getattr(stat, "st_mtime_ns", stat.st_mtime)
 
     i = 0.00001
     while i < 100:
@@ -101,21 +116,21 @@ def sleep_time(tmpdir_factory):
 
     # This should never happen, but oh, well:
     raise Exception(
-        'Filesystem does not seem to save modified times of files. \n'
-        'Cannot run tests that depend on this.'
+        "Filesystem does not seem to save modified times of files. \n"
+        "Cannot run tests that depend on this."
     )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def pytz_version():
     """Return the version of pytz as a tuple."""
-    year, month = pytz.__version__.split('.')
+    year, month = pytz.__version__.split(".")
     return int(year), int(month)
 
 
 @pytest.fixture
 def fix_caplog(monkeypatch):
     """Temporarily undoes the logging setup by click-log such that the caplog fixture can be used"""
-    logger = logging.getLogger('khal')
-    monkeypatch.setattr(logger, 'handlers', [])
-    monkeypatch.setattr(logger, 'propagate', True)
+    logger = logging.getLogger("khal")
+    monkeypatch.setattr(logger, "handlers", [])
+    monkeypatch.setattr(logger, "propagate", True)

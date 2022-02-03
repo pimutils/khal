@@ -10,8 +10,8 @@ from .utils import _get_text, _get_vevent_file
 
 # FIXME this file is in urgent need of a clean up
 
-BERLIN = pytz.timezone('Europe/Berlin')
-BOGOTA = pytz.timezone('America/Bogota')
+BERLIN = pytz.timezone("Europe/Berlin")
+BOGOTA = pytz.timezone("America/Bogota")
 
 # datetime
 event_dt = """BEGIN:VCALENDAR
@@ -221,75 +221,238 @@ END:VEVENT
 END:VCALENDAR
 """
 
-berlin = pytz.timezone('Europe/Berlin')
-new_york = pytz.timezone('America/New_York')
+berlin = pytz.timezone("Europe/Berlin")
+new_york = pytz.timezone("America/New_York")
 
 
 def _get_vevent(event):
     ical = icalendar.Event.from_ical(event)
     for component in ical.walk():
-        if component.name == 'VEVENT':
+        if component.name == "VEVENT":
             return component
 
 
 class TestExpand:
     dtstartend_berlin = [
-        (berlin.localize(dt.datetime(2013, 3, 1, 14, 0, )),
-         berlin.localize(dt.datetime(2013, 3, 1, 16, 0, ))),
-        (berlin.localize(dt.datetime(2013, 5, 1, 14, 0, )),
-         berlin.localize(dt.datetime(2013, 5, 1, 16, 0, ))),
-        (berlin.localize(dt.datetime(2013, 7, 1, 14, 0, )),
-         berlin.localize(dt.datetime(2013, 7, 1, 16, 0, ))),
-        (berlin.localize(dt.datetime(2013, 9, 1, 14, 0, )),
-         berlin.localize(dt.datetime(2013, 9, 1, 16, 0, ))),
-        (berlin.localize(dt.datetime(2013, 11, 1, 14, 0,)),
-         berlin.localize(dt.datetime(2013, 11, 1, 16, 0,))),
-        (berlin.localize(dt.datetime(2014, 1, 1, 14, 0, )),
-         berlin.localize(dt.datetime(2014, 1, 1, 16, 0, )))
+        (
+            berlin.localize(
+                dt.datetime(
+                    2013,
+                    3,
+                    1,
+                    14,
+                    0,
+                )
+            ),
+            berlin.localize(
+                dt.datetime(
+                    2013,
+                    3,
+                    1,
+                    16,
+                    0,
+                )
+            ),
+        ),
+        (
+            berlin.localize(
+                dt.datetime(
+                    2013,
+                    5,
+                    1,
+                    14,
+                    0,
+                )
+            ),
+            berlin.localize(
+                dt.datetime(
+                    2013,
+                    5,
+                    1,
+                    16,
+                    0,
+                )
+            ),
+        ),
+        (
+            berlin.localize(
+                dt.datetime(
+                    2013,
+                    7,
+                    1,
+                    14,
+                    0,
+                )
+            ),
+            berlin.localize(
+                dt.datetime(
+                    2013,
+                    7,
+                    1,
+                    16,
+                    0,
+                )
+            ),
+        ),
+        (
+            berlin.localize(
+                dt.datetime(
+                    2013,
+                    9,
+                    1,
+                    14,
+                    0,
+                )
+            ),
+            berlin.localize(
+                dt.datetime(
+                    2013,
+                    9,
+                    1,
+                    16,
+                    0,
+                )
+            ),
+        ),
+        (
+            berlin.localize(
+                dt.datetime(
+                    2013,
+                    11,
+                    1,
+                    14,
+                    0,
+                )
+            ),
+            berlin.localize(
+                dt.datetime(
+                    2013,
+                    11,
+                    1,
+                    16,
+                    0,
+                )
+            ),
+        ),
+        (
+            berlin.localize(
+                dt.datetime(
+                    2014,
+                    1,
+                    1,
+                    14,
+                    0,
+                )
+            ),
+            berlin.localize(
+                dt.datetime(
+                    2014,
+                    1,
+                    1,
+                    16,
+                    0,
+                )
+            ),
+        ),
     ]
 
     dtstartend_utc = [
-        (dt.datetime(2013, 3, 1, 14, 0, tzinfo=pytz.utc),
-         dt.datetime(2013, 3, 1, 16, 0, tzinfo=pytz.utc)),
-        (dt.datetime(2013, 5, 1, 14, 0, tzinfo=pytz.utc),
-         dt.datetime(2013, 5, 1, 16, 0, tzinfo=pytz.utc)),
-        (dt.datetime(2013, 7, 1, 14, 0, tzinfo=pytz.utc),
-         dt.datetime(2013, 7, 1, 16, 0, tzinfo=pytz.utc)),
-        (dt.datetime(2013, 9, 1, 14, 0, tzinfo=pytz.utc),
-         dt.datetime(2013, 9, 1, 16, 0, tzinfo=pytz.utc)),
-        (dt.datetime(2013, 11, 1, 14, 0, tzinfo=pytz.utc),
-         dt.datetime(2013, 11, 1, 16, 0, tzinfo=pytz.utc)),
-        (dt.datetime(2014, 1, 1, 14, 0, tzinfo=pytz.utc),
-         dt.datetime(2014, 1, 1, 16, 0, tzinfo=pytz.utc))
+        (
+            dt.datetime(2013, 3, 1, 14, 0, tzinfo=pytz.utc),
+            dt.datetime(2013, 3, 1, 16, 0, tzinfo=pytz.utc),
+        ),
+        (
+            dt.datetime(2013, 5, 1, 14, 0, tzinfo=pytz.utc),
+            dt.datetime(2013, 5, 1, 16, 0, tzinfo=pytz.utc),
+        ),
+        (
+            dt.datetime(2013, 7, 1, 14, 0, tzinfo=pytz.utc),
+            dt.datetime(2013, 7, 1, 16, 0, tzinfo=pytz.utc),
+        ),
+        (
+            dt.datetime(2013, 9, 1, 14, 0, tzinfo=pytz.utc),
+            dt.datetime(2013, 9, 1, 16, 0, tzinfo=pytz.utc),
+        ),
+        (
+            dt.datetime(2013, 11, 1, 14, 0, tzinfo=pytz.utc),
+            dt.datetime(2013, 11, 1, 16, 0, tzinfo=pytz.utc),
+        ),
+        (
+            dt.datetime(2014, 1, 1, 14, 0, tzinfo=pytz.utc),
+            dt.datetime(2014, 1, 1, 16, 0, tzinfo=pytz.utc),
+        ),
     ]
 
     dtstartend_float = [
-        (dt.datetime(2013, 3, 1, 14, 0),
-         dt.datetime(2013, 3, 1, 16, 0)),
-        (dt.datetime(2013, 5, 1, 14, 0),
-         dt.datetime(2013, 5, 1, 16, 0)),
-        (dt.datetime(2013, 7, 1, 14, 0),
-         dt.datetime(2013, 7, 1, 16, 0)),
-        (dt.datetime(2013, 9, 1, 14, 0),
-         dt.datetime(2013, 9, 1, 16, 0)),
-        (dt.datetime(2013, 11, 1, 14, 0),
-         dt.datetime(2013, 11, 1, 16, 0)),
-        (dt.datetime(2014, 1, 1, 14, 0),
-         dt.datetime(2014, 1, 1, 16, 0))
+        (dt.datetime(2013, 3, 1, 14, 0), dt.datetime(2013, 3, 1, 16, 0)),
+        (dt.datetime(2013, 5, 1, 14, 0), dt.datetime(2013, 5, 1, 16, 0)),
+        (dt.datetime(2013, 7, 1, 14, 0), dt.datetime(2013, 7, 1, 16, 0)),
+        (dt.datetime(2013, 9, 1, 14, 0), dt.datetime(2013, 9, 1, 16, 0)),
+        (dt.datetime(2013, 11, 1, 14, 0), dt.datetime(2013, 11, 1, 16, 0)),
+        (dt.datetime(2014, 1, 1, 14, 0), dt.datetime(2014, 1, 1, 16, 0)),
     ]
     dstartend = [
-        (dt.date(2013, 3, 1,),
-         dt.date(2013, 3, 2,)),
-        (dt.date(2013, 5, 1,),
-         dt.date(2013, 5, 2,)),
-        (dt.date(2013, 7, 1,),
-         dt.date(2013, 7, 2,)),
-        (dt.date(2013, 9, 1,),
-         dt.date(2013, 9, 2,)),
-        (dt.date(2013, 11, 1),
-         dt.date(2013, 11, 2)),
-        (dt.date(2014, 1, 1,),
-         dt.date(2014, 1, 2,))
+        (
+            dt.date(
+                2013,
+                3,
+                1,
+            ),
+            dt.date(
+                2013,
+                3,
+                2,
+            ),
+        ),
+        (
+            dt.date(
+                2013,
+                5,
+                1,
+            ),
+            dt.date(
+                2013,
+                5,
+                2,
+            ),
+        ),
+        (
+            dt.date(
+                2013,
+                7,
+                1,
+            ),
+            dt.date(
+                2013,
+                7,
+                2,
+            ),
+        ),
+        (
+            dt.date(
+                2013,
+                9,
+                1,
+            ),
+            dt.date(
+                2013,
+                9,
+                2,
+            ),
+        ),
+        (dt.date(2013, 11, 1), dt.date(2013, 11, 2)),
+        (
+            dt.date(
+                2014,
+                1,
+                1,
+            ),
+            dt.date(
+                2014,
+                1,
+                2,
+            ),
+        ),
     ]
     offset_berlin = [
         dt.timedelta(0, 3600),
@@ -297,7 +460,7 @@ class TestExpand:
         dt.timedelta(0, 7200),
         dt.timedelta(0, 7200),
         dt.timedelta(0, 3600),
-        dt.timedelta(0, 3600)
+        dt.timedelta(0, 3600),
     ]
 
     offset_utc = [
@@ -315,16 +478,14 @@ class TestExpand:
         vevent = _get_vevent(event_dt)
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
-        assert [start.utcoffset()
-                for start, _ in dtstart] == self.offset_berlin
+        assert [start.utcoffset() for start, _ in dtstart] == self.offset_berlin
         assert [end.utcoffset() for _, end in dtstart] == self.offset_berlin
 
     def test_expand_dtb(self):
         vevent = _get_vevent(event_dtb)
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
-        assert [start.utcoffset()
-                for start, _ in dtstart] == self.offset_berlin
+        assert [start.utcoffset() for start, _ in dtstart] == self.offset_berlin
         assert [end.utcoffset() for _, end in dtstart] == self.offset_berlin
 
     def test_expand_dttz(self):
@@ -359,33 +520,42 @@ class TestExpand:
     def test_expand_invalid_exdate(self):
         """testing if we can expand an event with EXDATEs that do not much
         its RRULE"""
-        vevent = _get_vevent_file('event_invalid_exdate')
+        vevent = _get_vevent_file("event_invalid_exdate")
         dtstartl = icalendar_helpers.expand(vevent, berlin)
         # TODO test for logging message
         assert dtstartl == [
-            (new_york.localize(dt.datetime(2011, 11, 12, 15, 50)),
-             new_york.localize(dt.datetime(2011, 11, 12, 17, 0))),
-            (new_york.localize(dt.datetime(2011, 11, 19, 15, 50)),
-             new_york.localize(dt.datetime(2011, 11, 19, 17, 0))),
-            (new_york.localize(dt.datetime(2011, 12, 3, 15, 50)),
-             new_york.localize(dt.datetime(2011, 12, 3, 17, 0))),
+            (
+                new_york.localize(dt.datetime(2011, 11, 12, 15, 50)),
+                new_york.localize(dt.datetime(2011, 11, 12, 17, 0)),
+            ),
+            (
+                new_york.localize(dt.datetime(2011, 11, 19, 15, 50)),
+                new_york.localize(dt.datetime(2011, 11, 19, 17, 0)),
+            ),
+            (
+                new_york.localize(dt.datetime(2011, 12, 3, 15, 50)),
+                new_york.localize(dt.datetime(2011, 12, 3, 17, 0)),
+            ),
         ]
 
 
 class TestExpandNoRR:
     dtstartend_berlin = [
-        (berlin.localize(dt.datetime(2013, 3, 1, 14, 0)),
-         berlin.localize(dt.datetime(2013, 3, 1, 16, 0))),
+        (
+            berlin.localize(dt.datetime(2013, 3, 1, 14, 0)),
+            berlin.localize(dt.datetime(2013, 3, 1, 16, 0)),
+        ),
     ]
 
     dtstartend_utc = [
-        (dt.datetime(2013, 3, 1, 14, 0, tzinfo=pytz.utc),
-         dt.datetime(2013, 3, 1, 16, 0, tzinfo=pytz.utc)),
+        (
+            dt.datetime(2013, 3, 1, 14, 0, tzinfo=pytz.utc),
+            dt.datetime(2013, 3, 1, 16, 0, tzinfo=pytz.utc),
+        ),
     ]
 
     dtstartend_float = [
-        (dt.datetime(2013, 3, 1, 14, 0),
-         dt.datetime(2013, 3, 1, 16, 0)),
+        (dt.datetime(2013, 3, 1, 14, 0), dt.datetime(2013, 3, 1, 16, 0)),
     ]
     offset_berlin = [
         dt.timedelta(0, 3600),
@@ -401,16 +571,14 @@ class TestExpandNoRR:
         vevent = _get_vevent(event_dt_norr)
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
-        assert [start.utcoffset()
-                for start, _ in dtstart] == self.offset_berlin
+        assert [start.utcoffset() for start, _ in dtstart] == self.offset_berlin
         assert [end.utcoffset() for _, end in dtstart] == self.offset_berlin
 
     def test_expand_dtb(self):
         vevent = _get_vevent(event_dtb_norr)
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dtstartend_berlin
-        assert [start.utcoffset()
-                for start, _ in dtstart] == self.offset_berlin
+        assert [start.utcoffset() for start, _ in dtstart] == self.offset_berlin
         assert [end.utcoffset() for _, end in dtstart] == self.offset_berlin
 
     def test_expand_dttz(self):
@@ -431,14 +599,24 @@ class TestExpandNoRR:
         vevent = _get_vevent(event_d_norr)
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == [
-            (dt.date(2013, 3, 1,),
-             dt.date(2013, 3, 2,)),
+            (
+                dt.date(
+                    2013,
+                    3,
+                    1,
+                ),
+                dt.date(
+                    2013,
+                    3,
+                    2,
+                ),
+            ),
         ]
 
     def test_expand_dtr_exdatez(self):
         """a recurring event with an EXDATE in Zulu time while DTSTART is
         localized"""
-        vevent = _get_vevent_file('event_dtr_exdatez')
+        vevent = _get_vevent_file("event_dtr_exdatez")
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 3
 
@@ -446,8 +624,8 @@ class TestExpandNoRR:
         """event with not understood timezone for dtstart and zulu time form
         exdate
         """
-        vevent = _get_vevent_file('event_dtr_no_tz_exdatez')
-        vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
+        vevent = _get_vevent_file("event_dtr_no_tz_exdatez")
+        vevent = icalendar_helpers.sanitize(vevent, berlin, "", "")
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 5
         dtstarts = [start for start, end in dtstart]
@@ -463,8 +641,8 @@ class TestExpandNoRR:
         """event with not understood timezone for dtstart and zulu time form
         exdate
         """
-        vevent = _get_vevent_file('event_dtr_notz_untilz')
-        vevent = icalendar_helpers.sanitize(vevent, new_york, '', '')
+        vevent = _get_vevent_file("event_dtr_notz_untilz")
+        vevent = icalendar_helpers.sanitize(vevent, new_york, "", "")
         dtstart = icalendar_helpers.expand(vevent, new_york)
         assert len(dtstart) == 7
         dtstarts = [start for start, end in dtstart]
@@ -593,10 +771,8 @@ class TestSpecial:
         dtstart = icalendar_helpers.expand(vevent, berlin)
         starts = [start for start, _ in dtstart]
         assert len(starts) == 18
-        assert dtstart[0][0] == berlin.localize(
-            dt.datetime(2014, 2, 3, 7, 0))
-        assert dtstart[-1][0] == berlin.localize(
-            dt.datetime(2014, 2, 20, 7, 0))
+        assert dtstart[0][0] == berlin.localize(dt.datetime(2014, 2, 3, 7, 0))
+        assert dtstart[-1][0] == berlin.localize(dt.datetime(2014, 2, 20, 7, 0))
 
     def test_until_d_notz(self):
         vevent = _get_vevent(event_until_d_notz)
@@ -616,38 +792,31 @@ class TestSpecial:
         vevent = _get_vevent(recurrence_id_with_timezone)
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 1
-        assert dtstart[0][0] == berlin.localize(
-            dt.datetime(2013, 11, 13, 19, 0))
+        assert dtstart[0][0] == berlin.localize(dt.datetime(2013, 11, 13, 19, 0))
 
     def test_event_exdate_dt(self):
         """recurring event, one date excluded via EXCLUDE"""
         vevent = _get_vevent(event_exdate_dt)
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 9
-        assert dtstart[0][0] == berlin.localize(
-            dt.datetime(2014, 7, 2, 19, 0))
-        assert dtstart[-1][0] == berlin.localize(
-            dt.datetime(2014, 7, 11, 19, 0))
+        assert dtstart[0][0] == berlin.localize(dt.datetime(2014, 7, 2, 19, 0))
+        assert dtstart[-1][0] == berlin.localize(dt.datetime(2014, 7, 11, 19, 0))
 
     def test_event_exdates_dt(self):
         """recurring event, two dates excluded via EXCLUDE"""
         vevent = _get_vevent(event_exdates_dt)
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 8
-        assert dtstart[0][0] == berlin.localize(
-            dt.datetime(2014, 7, 2, 19, 0))
-        assert dtstart[-1][0] == berlin.localize(
-            dt.datetime(2014, 7, 11, 19, 0))
+        assert dtstart[0][0] == berlin.localize(dt.datetime(2014, 7, 2, 19, 0))
+        assert dtstart[-1][0] == berlin.localize(dt.datetime(2014, 7, 11, 19, 0))
 
     def test_event_exdatesl_dt(self):
         """recurring event, three dates exclude via two EXCLUDEs"""
         vevent = _get_vevent(event_exdatesl_dt)
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 7
-        assert dtstart[0][0] == berlin.localize(
-            dt.datetime(2014, 7, 2, 19, 0))
-        assert dtstart[-1][0] == berlin.localize(
-            dt.datetime(2014, 7, 11, 19, 0))
+        assert dtstart[0][0] == berlin.localize(dt.datetime(2014, 7, 2, 19, 0))
+        assert dtstart[-1][0] == berlin.localize(dt.datetime(2014, 7, 11, 19, 0))
 
     def test_event_exdates_remove(self):
         """check if we can remove one more instance"""
@@ -668,33 +837,38 @@ class TestSpecial:
     def test_event_dt_rrule_invalid_until(self):
         """DTSTART and RRULE:UNTIL should be of the same type, but might not
         be"""
-        vevent = _get_vevent(_get_text('event_dt_rrule_invalid_until'))
+        vevent = _get_vevent(_get_text("event_dt_rrule_invalid_until"))
         dtstart = icalendar_helpers.expand(vevent, berlin)
-        assert dtstart == [(dt.date(2007, 12, 1), dt.date(2007, 12, 2)),
-                           (dt.date(2008, 1, 1), dt.date(2008, 1, 2)),
-                           (dt.date(2008, 2, 1), dt.date(2008, 2, 2))]
+        assert dtstart == [
+            (dt.date(2007, 12, 1), dt.date(2007, 12, 2)),
+            (dt.date(2008, 1, 1), dt.date(2008, 1, 2)),
+            (dt.date(2008, 2, 1), dt.date(2008, 2, 2)),
+        ]
 
     def test_event_dt_rrule_invalid_until2(self):
-        """same as above, but now dtstart is of type date and until is datetime
-        """
-        vevent = _get_vevent(_get_text('event_dt_rrule_invalid_until2'))
+        """same as above, but now dtstart is of type date and until is datetime"""
+        vevent = _get_vevent(_get_text("event_dt_rrule_invalid_until2"))
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 35
-        assert dtstart[0] == (berlin.localize(dt.datetime(2014, 4, 9, 9, 30)),
-                              berlin.localize(dt.datetime(2014, 4, 9, 10, 30)))
-        assert dtstart[-1] == (berlin.localize(dt.datetime(2014, 12, 3, 9, 30)),
-                               berlin.localize(dt.datetime(2014, 12, 3, 10, 30)))
+        assert dtstart[0] == (
+            berlin.localize(dt.datetime(2014, 4, 9, 9, 30)),
+            berlin.localize(dt.datetime(2014, 4, 9, 10, 30)),
+        )
+        assert dtstart[-1] == (
+            berlin.localize(dt.datetime(2014, 12, 3, 9, 30)),
+            berlin.localize(dt.datetime(2014, 12, 3, 10, 30)),
+        )
 
     def test_event_dt_rrule_until_before_start(self):
         """test handling if an RRULE's UNTIL is before the event's DTSTART"""
-        vevent = _get_vevent(_get_text('event_dt_rrule_until_before_start'))
+        vevent = _get_vevent(_get_text("event_dt_rrule_until_before_start"))
         dtstart = icalendar_helpers.expand(vevent, berlin)
         # TODO test for logging message
         assert dtstart is False
 
     def test_event_invalid_rrule(self):
         """test handling if an event with RRULE will never occur"""
-        vevent = _get_vevent(_get_text('event_rrule_no_occurence'))
+        vevent = _get_vevent(_get_text("event_rrule_no_occurence"))
         dtstart = icalendar_helpers.expand(vevent, berlin)
         # TODO test for logging message
         assert dtstart is False
@@ -722,6 +896,7 @@ END:VEVENT"""
 
 class TestRDate:
     """Testing expanding of recurrence rules"""
+
     def test_simple_rdate(self):
         vevent = _get_vevent(simple_rdate)
         dtstart = icalendar_helpers.expand(vevent, berlin)
@@ -733,7 +908,7 @@ class TestRDate:
         assert len(dtstart) == 7
 
     def test_rrule_past(self):
-        vevent = _get_vevent_file('event_r_past')
+        vevent = _get_vevent_file("event_r_past")
         assert vevent is not None
         dtstarts = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstarts) == 73
@@ -741,13 +916,15 @@ class TestRDate:
         assert dtstarts[-1][0] == dt.date(2037, 4, 23)
 
     def test_rdate_date(self):
-        vevent = _get_vevent_file('event_d_rdate')
+        vevent = _get_vevent_file("event_d_rdate")
         dtstarts = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstarts) == 4
-        assert dtstarts == [(dt.date(2015, 8, 12), dt.date(2015, 8, 13)),
-                            (dt.date(2015, 8, 13), dt.date(2015, 8, 14)),
-                            (dt.date(2015, 8, 14), dt.date(2015, 8, 15)),
-                            (dt.date(2015, 8, 15), dt.date(2015, 8, 16))]
+        assert dtstarts == [
+            (dt.date(2015, 8, 12), dt.date(2015, 8, 13)),
+            (dt.date(2015, 8, 13), dt.date(2015, 8, 14)),
+            (dt.date(2015, 8, 14), dt.date(2015, 8, 15)),
+            (dt.date(2015, 8, 15), dt.date(2015, 8, 16)),
+        ]
 
 
 noend_date = """
@@ -783,31 +960,30 @@ END:VCALENDAR
 
 
 class TestSanitize:
-
     def test_noend_date(self):
         vevent = _get_vevent(noend_date)
-        vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
-        assert vevent['DTSTART'].dt == dt.date(2014, 8, 29)
-        assert vevent['DTEND'].dt == dt.date(2014, 8, 30)
+        vevent = icalendar_helpers.sanitize(vevent, berlin, "", "")
+        assert vevent["DTSTART"].dt == dt.date(2014, 8, 29)
+        assert vevent["DTEND"].dt == dt.date(2014, 8, 30)
 
     def test_noend_datetime(self):
         vevent = _get_vevent(noend_datetime)
-        vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
-        assert vevent['DTSTART'].dt == BERLIN.localize(dt.datetime(2014, 8, 29, 8))
-        assert vevent['DTEND'].dt == BERLIN.localize(dt.datetime(2014, 8, 29, 9))
+        vevent = icalendar_helpers.sanitize(vevent, berlin, "", "")
+        assert vevent["DTSTART"].dt == BERLIN.localize(dt.datetime(2014, 8, 29, 8))
+        assert vevent["DTEND"].dt == BERLIN.localize(dt.datetime(2014, 8, 29, 9))
 
     def test_duration(self):
-        vevent = _get_vevent_file('event_dtr_exdatez')
-        vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
+        vevent = _get_vevent_file("event_dtr_exdatez")
+        vevent = icalendar_helpers.sanitize(vevent, berlin, "", "")
 
     def test_instant(self):
         vevent = _get_vevent(instant)
-        assert vevent['DTEND'].dt - vevent['DTSTART'].dt == dt.timedelta()
-        vevent = icalendar_helpers.sanitize(vevent, berlin, '', '')
-        assert vevent['DTEND'].dt - vevent['DTSTART'].dt == dt.timedelta(hours=1)
+        assert vevent["DTEND"].dt - vevent["DTSTART"].dt == dt.timedelta()
+        vevent = icalendar_helpers.sanitize(vevent, berlin, "", "")
+        assert vevent["DTEND"].dt - vevent["DTSTART"].dt == dt.timedelta(hours=1)
 
 
-class TestIsAware():
+class TestIsAware:
     def test_naive(self):
         assert utils.is_aware(dt.datetime.now()) is False
 

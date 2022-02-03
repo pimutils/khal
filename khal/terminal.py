@@ -24,29 +24,29 @@
 from collections import namedtuple
 from itertools import zip_longest
 
-NamedColor = namedtuple('NamedColor', ['index', 'light'])
+NamedColor = namedtuple("NamedColor", ["index", "light"])
 
-RTEXT = '\x1b[7m'  # reverse
-NTEXT = '\x1b[0m'  # normal
-BTEXT = '\x1b[1m'  # bold
-RESET = '\33[0m'
+RTEXT = "\x1b[7m"  # reverse
+NTEXT = "\x1b[0m"  # normal
+BTEXT = "\x1b[1m"  # bold
+RESET = "\33[0m"
 COLORS = {
-    'black': NamedColor(index=0, light=False),
-    'dark red': NamedColor(index=1, light=False),
-    'dark green': NamedColor(index=2, light=False),
-    'brown': NamedColor(index=3, light=False),
-    'dark blue': NamedColor(index=4, light=False),
-    'dark magenta': NamedColor(index=5, light=False),
-    'dark cyan': NamedColor(index=6, light=False),
-    'white': NamedColor(index=7, light=False),
-    'light gray': NamedColor(index=7, light=True),
-    'dark gray': NamedColor(index=0, light=True),  # actually light black
-    'light red': NamedColor(index=1, light=True),
-    'light green': NamedColor(index=2, light=True),
-    'yellow': NamedColor(index=3, light=True),
-    'light blue': NamedColor(index=4, light=True),
-    'light magenta': NamedColor(index=5, light=True),
-    'light cyan': NamedColor(index=6, light=True)
+    "black": NamedColor(index=0, light=False),
+    "dark red": NamedColor(index=1, light=False),
+    "dark green": NamedColor(index=2, light=False),
+    "brown": NamedColor(index=3, light=False),
+    "dark blue": NamedColor(index=4, light=False),
+    "dark magenta": NamedColor(index=5, light=False),
+    "dark cyan": NamedColor(index=6, light=False),
+    "white": NamedColor(index=7, light=False),
+    "light gray": NamedColor(index=7, light=True),
+    "dark gray": NamedColor(index=0, light=True),  # actually light black
+    "light red": NamedColor(index=1, light=True),
+    "light green": NamedColor(index=2, light=True),
+    "yellow": NamedColor(index=3, light=True),
+    "light blue": NamedColor(index=4, light=True),
+    "light magenta": NamedColor(index=5, light=True),
+    "light cyan": NamedColor(index=6, light=True),
 }
 
 
@@ -65,10 +65,10 @@ def get_color(fg=None, bg=None, bold_for_light_color=False):
     :rtype: str
     """
 
-    result = ''
+    result = ""
     for colorstring, is_bg in ((fg, False), (bg, True)):
         if colorstring:
-            color = '\33['
+            color = "\33["
             if colorstring in COLORS:
                 # 16 color palette
                 if not is_bg:
@@ -76,7 +76,7 @@ def get_color(fg=None, bg=None, bold_for_light_color=False):
                     c = 30 + COLORS[colorstring].index
                     if COLORS[colorstring].light:
                         if bold_for_light_color:
-                            color += '1;'
+                            color += "1;"
                         else:
                             c += 60
                 else:
@@ -89,9 +89,9 @@ def get_color(fg=None, bg=None, bold_for_light_color=False):
             elif colorstring.isdigit():
                 # 256 color palette
                 if not is_bg:
-                    color += '38;5;' + colorstring
+                    color += "38;5;" + colorstring
                 else:
-                    color += '48;5;' + colorstring
+                    color += "48;5;" + colorstring
             else:
                 # HTML-style 24-bit color
                 if len(colorstring) == 4:
@@ -105,10 +105,10 @@ def get_color(fg=None, bg=None, bold_for_light_color=False):
                     g = int(colorstring[3:5], 16)
                     b = int(colorstring[5:7], 16)
                 if not is_bg:
-                    color += f'38;2;{r!s};{g!s};{b!s}'
+                    color += f"38;2;{r!s};{g!s};{b!s}"
                 else:
-                    color += f'48;2;{r!s};{g!s};{b!s}'
-            color += 'm'
+                    color += f"48;2;{r!s};{g!s};{b!s}"
+            color += "m"
             result += color
     return result
 
@@ -141,8 +141,7 @@ def merge_columns(lcolumn, rcolumn, width=25):
 
     missing = len(rcolumn) - len(lcolumn)
     if missing > 0:
-        lcolumn = lcolumn + missing * [width * ' ']
+        lcolumn = lcolumn + missing * [width * " "]
 
-    rows = ['    '.join(one) for one in zip_longest(
-        lcolumn, rcolumn, fillvalue='')]
+    rows = ["    ".join(one) for one in zip_longest(lcolumn, rcolumn, fillvalue="")]
     return rows

@@ -32,7 +32,7 @@ import pytz
 
 from khal.exceptions import DateTimeParseError, FatalError
 
-logger = logging.getLogger('khal')
+logger = logging.getLogger("khal")
 
 
 def timefstr(dtime_list, timeformat):
@@ -55,8 +55,9 @@ def timefstr(dtime_list, timeformat):
     return dtstart
 
 
-def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True,
-                 in_future=True):
+def datetimefstr(
+    dtime_list, dateformat, default_day=None, infer_year=True, in_future=True
+):
     """converts a datetime (as one or several string elements of a list) to
     a datetimeobject, if infer_year is True, use the `default_day`'s year as
     the year of the return datetimeobject,
@@ -72,12 +73,16 @@ def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True,
     now = dt.datetime.now()
     if default_day is None:
         default_day = now.date()
-    parts = dateformat.count(' ') + 1
-    dtstring = ' '.join(dtime_list[0:parts])
+    parts = dateformat.count(" ") + 1
+    dtstring = " ".join(dtime_list[0:parts])
     # only time.strptime can parse the 29th of Feb. if no year is given
     dtstart = strptime(dtstring, dateformat)
-    if infer_year and dtstart.tm_mon == 2 and dtstart.tm_mday == 29 and \
-            not isleap(default_day.year):
+    if (
+        infer_year
+        and dtstart.tm_mon == 2
+        and dtstart.tm_mday == 29
+        and not isleap(default_day.year)
+    ):
         raise ValueError
 
     for _ in range(parts):
@@ -103,21 +108,21 @@ def weekdaypstr(dayname):
     :rtype: int
     """
 
-    if dayname in ['monday', 'mon']:
+    if dayname in ["monday", "mon"]:
         return 0
-    if dayname in ['tuesday', 'tue']:
+    if dayname in ["tuesday", "tue"]:
         return 1
-    if dayname in ['wednesday', 'wed']:
+    if dayname in ["wednesday", "wed"]:
         return 2
-    if dayname in ['thursday', 'thu']:
+    if dayname in ["thursday", "thu"]:
         return 3
-    if dayname in ['friday', 'fri']:
+    if dayname in ["friday", "fri"]:
         return 4
-    if dayname in ['saturday', 'sat']:
+    if dayname in ["saturday", "sat"]:
         return 5
-    if dayname in ['sunday', 'sun']:
+    if dayname in ["sunday", "sun"]:
         return 6
-    raise ValueError('invalid weekday name `%s`' % dayname)
+    raise ValueError("invalid weekday name `%s`" % dayname)
 
 
 def construct_daynames(date_):
@@ -126,11 +131,11 @@ def construct_daynames(date_):
     either `Today`, `Tomorrow` or name of weekday.
     """
     if date_ == dt.date.today():
-        return 'Today'
+        return "Today"
     elif date_ == dt.date.today() + dt.timedelta(days=1):
-        return 'Tomorrow'
+        return "Tomorrow"
     else:
-        return date_.strftime('%A')
+        return date_.strftime("%A")
 
 
 def calc_day(dayname):
@@ -143,11 +148,11 @@ def calc_day(dayname):
     """
     today = dt.datetime.combine(dt.date.today(), dt.time.min)
     dayname = dayname.lower()
-    if dayname == 'today':
+    if dayname == "today":
         return today
-    if dayname == 'tomorrow':
+    if dayname == "tomorrow":
         return today + dt.timedelta(days=1)
-    if dayname == 'yesterday':
+    if dayname == "yesterday":
         return today - dt.timedelta(days=1)
 
     wday = weekdaypstr(dayname)
@@ -200,16 +205,18 @@ def guessdatetimefstr(dtime_list, locale, default_day=None, in_future=True):
     # TODO rename in guessdatetimefstrLIST or something saner altogether
 
     def timefstr_day(dtime_list, timeformat, **kwargs):
-        if locale['timeformat'] == '%H:%M' and dtime_list[0] == '24:00':
+        if locale["timeformat"] == "%H:%M" and dtime_list[0] == "24:00":
             a_date = dt.datetime.combine(default_day, dt.time(0))
             dtime_list.pop(0)
         else:
             a_date = timefstr(dtime_list, timeformat)
-            a_date = dt.datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
+            a_date = dt.datetime(
+                *(default_day.timetuple()[:3] + a_date.timetuple()[3:5])
+            )
         return a_date
 
     def datetimefwords(dtime_list, _, **kwargs):
-        if len(dtime_list) > 0 and dtime_list[0].lower() == 'now':
+        if len(dtime_list) > 0 and dtime_list[0].lower() == "now":
             dtime_list.pop(0)
             return dt.datetime.now()
         raise ValueError
@@ -219,17 +226,17 @@ def guessdatetimefstr(dtime_list, locale, default_day=None, in_future=True):
 
     dtstart = None
     for fun, dtformat, all_day, infer_year in [
-            (datefstr_year, locale['datetimeformat'], False, True),
-            (datefstr_year, locale['longdatetimeformat'], False, False),
-            (timefstr_day, locale['timeformat'], False, False),
-            (datetimefstr_weekday, locale['timeformat'], False, False),
-            (datefstr_year, locale['dateformat'], True, True),
-            (datefstr_year, locale['longdateformat'], True, False),
-            (datefstr_weekday, None, True, False),
-            (datetimefwords, None, False, False),
+        (datefstr_year, locale["datetimeformat"], False, True),
+        (datefstr_year, locale["longdatetimeformat"], False, False),
+        (timefstr_day, locale["timeformat"], False, False),
+        (datetimefstr_weekday, locale["timeformat"], False, False),
+        (datefstr_year, locale["dateformat"], True, True),
+        (datefstr_year, locale["longdateformat"], True, False),
+        (datefstr_weekday, None, True, False),
+        (datetimefwords, None, False, False),
     ]:
         # if a `short` format contains a year, treat it as a `long` format
-        if infer_year and '97' in dt.datetime(1997, 10, 11).strftime(dtformat):
+        if infer_year and "97" in dt.datetime(1997, 10, 11).strftime(dtformat):
             infer_year = False
         try:
             dtstart = fun(dtime_list, dtformat, infer_year=infer_year)
@@ -238,7 +245,7 @@ def guessdatetimefstr(dtime_list, locale, default_day=None, in_future=True):
         else:
             return dtstart, all_day
     raise DateTimeParseError(
-        f"Could not parse \"{dtime_list}\".\nPlease check your configuration "
+        f'Could not parse "{dtime_list}".\nPlease check your configuration '
         "or run `khal printformats` to see if this does match your configured "
         "[long](date|time|datetime)format.\nIf you suspect a bug, please "
         "file an issue at https://github.com/pimutils/khal/issues/ "
@@ -272,7 +279,7 @@ def timedelta2str(delta):
     if delta != abs(delta):
         s = ["-" + part for part in s]
 
-    return ' '.join(s)
+    return " ".join(s)
 
 
 def guesstimedeltafstr(delta_string):
@@ -283,10 +290,11 @@ def guesstimedeltafstr(delta_string):
     :rtype: datetime.timedelta
     """
 
-    tups = re.split(r'(-?\d+)', delta_string)
-    if not re.match(r'^\s*$', tups[0]):
-        raise ValueError('Invalid beginning of timedelta string "%s": "%s"'
-                         % (delta_string, tups[0]))
+    tups = re.split(r"(-?\d+)", delta_string)
+    if not re.match(r"^\s*$", tups[0]):
+        raise ValueError(
+            f'Invalid beginning of timedelta string "{delta_string}": "{tups[0]}"'
+        )
     tups = tups[1:]
     res = dt.timedelta()
 
@@ -295,31 +303,43 @@ def guesstimedeltafstr(delta_string):
             numint = int(num)
         except ValueError:
             raise DateTimeParseError(
-                f'Invalid number in timedelta string "{delta_string}": "{num}"')
+                f'Invalid number in timedelta string "{delta_string}": "{num}"'
+            )
 
         ulower = unit.lower().strip()
-        if ulower == 'd' or ulower == 'day' or ulower == 'days':
+        if ulower == "d" or ulower == "day" or ulower == "days":
             res += dt.timedelta(days=numint)
-        elif ulower == 'h' or ulower == 'hour' or ulower == 'hours':
+        elif ulower == "h" or ulower == "hour" or ulower == "hours":
             res += dt.timedelta(hours=numint)
-        elif (ulower == 'm' or ulower == 'minute' or ulower == 'minutes' or
-              ulower == 'min'):
+        elif (
+            ulower == "m"
+            or ulower == "minute"
+            or ulower == "minutes"
+            or ulower == "min"
+        ):
             res += dt.timedelta(minutes=numint)
-        elif (ulower == 's' or ulower == 'second' or ulower == 'seconds' or
-              ulower == 'sec'):
+        elif (
+            ulower == "s"
+            or ulower == "second"
+            or ulower == "seconds"
+            or ulower == "sec"
+        ):
             res += dt.timedelta(seconds=numint)
         else:
-            raise ValueError('Invalid unit in timedelta string "%s": "%s"'
-                             % (delta_string, unit))
+            raise ValueError(
+                f'Invalid unit in timedelta string "{delta_string}": "{unit}"'
+            )
 
     return res
 
 
-def guessrangefstr(daterange, locale,
-                   default_timedelta_date=dt.timedelta(days=1),
-                   default_timedelta_datetime=dt.timedelta(hours=1),
-                   adjust_reasonably=False,
-                   ):
+def guessrangefstr(
+    daterange,
+    locale,
+    default_timedelta_date=dt.timedelta(days=1),
+    default_timedelta_datetime=dt.timedelta(hours=1),
+    adjust_reasonably=False,
+):
     """parses a range string
 
     :param daterange: date1 [date2 | timedelta]
@@ -333,17 +353,19 @@ def guessrangefstr(daterange, locale,
     """
     range_list = daterange
     if isinstance(daterange, str):
-        range_list = daterange.split(' ')
+        range_list = daterange.split(" ")
 
-    if range_list == ['week']:
+    if range_list == ["week"]:
         today_weekday = dt.datetime.today().weekday()
-        start = dt.datetime.today() - dt.timedelta(days=(today_weekday - locale['firstweekday']))
+        start = dt.datetime.today() - dt.timedelta(
+            days=(today_weekday - locale["firstweekday"])
+        )
         end = start + dt.timedelta(days=8)
         return start, end, True
 
     for i in reversed(range(1, len(range_list) + 1)):
-        start = ' '.join(range_list[:i])
-        end = ' '.join(range_list[i:])
+        start = " ".join(range_list[:i])
+        end = " ".join(range_list[i:])
         allday = False
         try:
             # figuring out start
@@ -358,10 +380,10 @@ def guessrangefstr(daterange, locale,
                     end = start + default_timedelta_date
                 else:
                     end = start + default_timedelta_datetime
-            elif end.lower() == 'eod':
+            elif end.lower() == "eod":
                 end = dt.datetime.combine(start.date(), dt.time.max)
-            elif end.lower() == 'week':
-                start -= dt.timedelta(days=(start.weekday() - locale['firstweekday']))
+            elif end.lower() == "week":
+                start -= dt.timedelta(days=(start.weekday() - locale["firstweekday"]))
                 end = start + dt.timedelta(days=8)
             else:
                 try:
@@ -373,16 +395,15 @@ def guessrangefstr(daterange, locale,
                         )
                         raise FatalError()
                     elif delta.total_seconds() == 0:
-                        logger.fatal(
-                            "Events that last no time are not allowed"
-                        )
+                        logger.fatal("Events that last no time are not allowed")
                         raise FatalError()
 
                     end = start + delta
                 except (ValueError, DateTimeParseError):
                     split = end.split(" ")
                     end, end_allday = guessdatetimefstr(
-                        split, locale, default_day=start.date(), in_future=False)
+                        split, locale, default_day=start.date(), in_future=False
+                    )
                     if len(split) != 0:
                         continue
                     if allday:
@@ -407,7 +428,7 @@ def guessrangefstr(daterange, locale,
             pass
 
     raise DateTimeParseError(
-        f"Could not parse \"{daterange}\".\nPlease check your configuration or "
+        f'Could not parse "{daterange}".\nPlease check your configuration or '
         "run `khal printformats` to see if this does match your configured "
         "[long](date|time|datetime)format.\nIf you suspect a bug, please "
         "file an issue at https://github.com/pimutils/khal/issues/ "
@@ -416,24 +437,32 @@ def guessrangefstr(daterange, locale,
 
 def rrulefstr(repeat, until, locale, timezone):
     if repeat in ["daily", "weekly", "monthly", "yearly"]:
-        rrule_settings = {'freq': repeat}
+        rrule_settings = {"freq": repeat}
         if until:
-            until_dt, is_date = guessdatetimefstr(until.split(' '), locale)
+            until_dt, is_date = guessdatetimefstr(until.split(" "), locale)
             if timezone:
-                rrule_settings['until'] = until_dt.\
-                    replace(tzinfo=timezone).\
-                    astimezone(pytz.UTC)
+                rrule_settings["until"] = until_dt.replace(tzinfo=timezone).astimezone(
+                    pytz.UTC
+                )
             else:
-                rrule_settings['until'] = until_dt
+                rrule_settings["until"] = until_dt
         return rrule_settings
     else:
-        logger.fatal("Invalid value for the repeat option. \
-                Possible values are: daily, weekly, monthly or yearly")
+        logger.fatal(
+            "Invalid value for the repeat option. \
+                Possible values are: daily, weekly, monthly or yearly"
+        )
         raise FatalError()
 
 
-def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_duration,
-                  adjust_reasonably=False, localize=False):
+def eventinfofstr(
+    info_string,
+    locale,
+    default_event_duration,
+    default_dayevent_duration,
+    adjust_reasonably=False,
+    localize=False,
+):
     """parses a string of the form START [END | DELTA] [TIMEZONE] [SUMMARY] [::
     DESCRIPTION] into a dictionary with keys: dtstart, dtend, timezone, allday,
     summary, description
@@ -449,9 +478,9 @@ def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_
     """
     description = None
     if " :: " in info_string:
-        info_string, description = info_string.split(' :: ')
+        info_string, description = info_string.split(" :: ")
 
-    parts = info_string.split(' ')
+    parts = info_string.split(" ")
     summary = None
     start = None
     end = None
@@ -460,7 +489,8 @@ def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_
     for i in reversed(range(1, len(parts) + 1)):
         try:
             start, end, allday = guessrangefstr(
-                ' '.join(parts[0:i]), locale,
+                " ".join(parts[0:i]),
+                locale,
                 default_event_duration,
                 default_dayevent_duration,
                 adjust_reasonably=adjust_reasonably,
@@ -474,12 +504,12 @@ def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_
                 i += 1
             except (pytz.UnknownTimeZoneError, UnicodeDecodeError, IndexError):
                 tz = None
-            summary = ' '.join(parts[i:])
+            summary = " ".join(parts[i:])
             break
 
     if start is None or end is None:
         raise DateTimeParseError(
-            f"Could not parse \"{info_string}\".\nPlease check your "
+            f'Could not parse "{info_string}".\nPlease check your '
             "configuration or run `khal printformats` to see if this does "
             "match your configured [long](date|time|datetime)format.\nIf you "
             "suspect a bug, please file an issue at "
@@ -487,7 +517,7 @@ def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_
         )
 
     if tz is None:
-        tz = locale['default_timezone']
+        tz = locale["default_timezone"]
 
     if allday:
         start = start.date()

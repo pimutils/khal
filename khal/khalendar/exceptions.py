@@ -28,10 +28,10 @@ class UnsupportedRruleExceptionError(UnsupportedFeatureError):
 
     """we do not support exceptions that do not delete events yet"""
 
-    def __init__(self, message=''):
-        x = 'This kind of recurrence exception is currently unsupported'
+    def __init__(self, message=""):
+        x = "This kind of recurrence exception is currently unsupported"
         if message:
-            x += f': {message.strip()}'
+            x += f": {message.strip()}"
         UnsupportedFeatureError.__init__(self, x)
 
 
@@ -59,6 +59,7 @@ class UpdateFailed(Error):
 class DuplicateUid(Error):
 
     """an event with this UID already exists"""
+
     existing_href = None  # type: Optional[str]
 
 

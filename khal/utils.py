@@ -39,34 +39,37 @@ def generate_random_uid() -> str:
     when random isn't broken, getting a random UID from a pool of roughly 10^56
     should be good enough"""
     choice = string.ascii_uppercase + string.digits
-    return ''.join([random.choice(choice) for _ in range(36)])
+    return "".join([random.choice(choice) for _ in range(36)])
 
 
-RESET = '\x1b[0m'
+RESET = "\x1b[0m"
 
-ansi_reset = re.compile(r'\x1b\[0m')
-ansi_sgr = re.compile(r'\x1b\['
-                      '(?!0m)'  # negative lookahead, don't match 0m
-                      '([0-9]+;?)+'
-                      'm')
+ansi_reset = re.compile(r"\x1b\[0m")
+ansi_sgr = re.compile(
+    r"\x1b\[" "(?!0m)" "([0-9]+;?)+" "m"  # negative lookahead, don't match 0m
+)
 
 
 def find_last_reset(string: str) -> Tuple[int, int, str]:
-    for match in re.finditer(ansi_reset, string):  # noqa B007: this is actually used below.
+    for match in re.finditer(  # noqa B007: this is actually used below.
+        ansi_reset, string
+    ):
         pass
     try:
         return match.start(), match.end(), match.group(0)
     except UnboundLocalError:
-        return -2, -1, ''
+        return -2, -1, ""
 
 
 def find_last_sgr(string: str) -> Tuple[int, int, str]:
-    for match in re.finditer(ansi_sgr, string):  # noqa B007: this is actually used below.
+    for match in re.finditer(  # noqa B007: this is actually used below.
+        ansi_sgr, string
+    ):
         pass
     try:
         return match.start(), match.end(), match.group(0)
     except UnboundLocalError:
-        return -2, -1, ''
+        return -2, -1, ""
 
 
 def find_unmatched_sgr(string: str) -> Optional[str]:
@@ -112,10 +115,12 @@ def get_month_abbr_len() -> int:
     return max(len(month_abbr[i]) for i in range(1, 13)) + 1
 
 
-def localize_strip_tz(dates: List[dt.datetime], timezone: dt.tzinfo) -> Iterator[dt.datetime]:
+def localize_strip_tz(
+    dates: List[dt.datetime], timezone: dt.tzinfo
+) -> Iterator[dt.datetime]:
     """converts a list of dates to timezone, than removes tz info"""
     for one_date in dates:
-        if getattr(one_date, 'tzinfo', None) is not None:
+        if getattr(one_date, "tzinfo", None) is not None:
             one_date = one_date.astimezone(timezone)
             one_date = one_date.replace(tzinfo=None)
         yield one_date
@@ -123,7 +128,7 @@ def localize_strip_tz(dates: List[dt.datetime], timezone: dt.tzinfo) -> Iterator
 
 def to_unix_time(dtime: dt.datetime) -> float:
     """convert a datetime object to unix time in UTC (as a float)"""
-    if getattr(dtime, 'tzinfo', None) is not None:
+    if getattr(dtime, "tzinfo", None) is not None:
         dtime = dtime.astimezone(pytz.UTC)
     unix_time = timegm(dtime.timetuple())
     return unix_time
@@ -133,7 +138,7 @@ def to_naive_utc(dtime: dt.datetime) -> dt.datetime:
     """convert a datetime object to UTC and than remove the tzinfo, if
     datetime is naive already, return it
     """
-    if not hasattr(dtime, 'tzinfo') or dtime.tzinfo is None:
+    if not hasattr(dtime, "tzinfo") or dtime.tzinfo is None:
         return dtime
 
     dtime_utc = dtime.astimezone(pytz.UTC)
@@ -150,31 +155,30 @@ def is_aware(dtime: dt.datetime) -> bool:
 
 
 def relative_timedelta_str(day: dt.date) -> str:
-    """Converts the timespan from `day` to today into a human readable string.
-    """
+    """Converts the timespan from `day` to today into a human readable string."""
     days = (day - dt.date.today()).days
     if days < 0:
-        direction = 'ago'
+        direction = "ago"
     else:
-        direction = 'from now'
-    approx = ''
+        direction = "from now"
+    approx = ""
     if abs(days) < 7:
-        unit = 'day'
+        unit = "day"
         count = abs(days)
     elif abs(days) < 365:
-        unit = 'week'
+        unit = "week"
         count = int(abs(days) / 7)
         if abs(days) % 7 != 0:
-            approx = '~'
+            approx = "~"
     else:
-        unit = 'year'
+        unit = "year"
         count = int(abs(days) / 365)
         if abs(days) % 365 != 0:
-            approx = '~'
+            approx = "~"
     if count > 1:
-        unit += 's'
+        unit += "s"
 
-    return '{approx}{count} {unit} {direction}'.format(
+    return "{approx}{count} {unit} {direction}".format(
         approx=approx,
         count=count,
         unit=unit,

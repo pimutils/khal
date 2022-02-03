@@ -35,7 +35,7 @@ from ..parse_datetime import guesstimedeltafstr
 from ..terminal import COLORS
 from .exceptions import InvalidSettingsError
 
-logger = logging.getLogger('khal')
+logger = logging.getLogger("khal")
 
 
 def is_timezone(tzstring):
@@ -67,16 +67,17 @@ def weeknumber_option(option):
     :rtype: str/bool
     """
     option = option.lower()
-    if option == 'left':
-        return 'left'
-    elif option == 'right':
-        return 'right'
-    elif option in ['off', 'false', '0', 'no', 'none']:
+    if option == "left":
+        return "left"
+    elif option == "right":
+        return "right"
+    elif option in ["off", "false", "0", "no", "none"]:
         return False
     else:
         raise VdtValueError(
             f"Invalid value '{option}' for option 'weeknumber', must be one of "
-            "'off', 'left' or 'right'")
+            "'off', 'left' or 'right'"
+        )
 
 
 def monthdisplay_option(option):
@@ -88,10 +89,10 @@ def monthdisplay_option(option):
     :rtype: str/bool
     """
     option = option.lower()
-    if option == 'firstday':
-        return 'firstday'
-    elif option == 'firstfullweek':
-        return 'firstfullweek'
+    if option == "firstday":
+        return "firstday"
+    elif option == "firstfullweek":
+        return "firstfullweek"
     else:
         raise VdtValueError(
             f"Invalid value '{option}' for option 'monthdisplay', must be one "
@@ -107,7 +108,7 @@ def expand_path(path):
 def expand_db_path(path):
     """expands `~` as well as variable names, defaults to $XDG_DATA_HOME"""
     if path is None:
-        path = join(xdg.BaseDirectory.xdg_data_home, 'khal', 'khal.db')
+        path = join(xdg.BaseDirectory.xdg_data_home, "khal", "khal.db")
     return expanduser(expandvars(path))
 
 
@@ -122,11 +123,16 @@ def is_color(color):
     # 3) a color name from the 16 color palette
     # 4) a color index from the 256 color palette
     # 5) an HTML-style color code
-    if (color in ['', 'auto'] or
-            color in COLORS.keys() or
-            (color.isdigit() and int(color) >= 0 and int(color) <= 255) or
-            (color.startswith('#') and (len(color) in [4, 7, 9]) and
-             all(c in '01234567890abcdefABCDEF' for c in color[1:]))):
+    if (
+        color in ["", "auto"]
+        or color in COLORS.keys()
+        or (color.isdigit() and int(color) >= 0 and int(color) <= 255)
+        or (
+            color.startswith("#")
+            and (len(color) in [4, 7, 9])
+            and all(c in "01234567890abcdefABCDEF" for c in color[1:])
+        )
+    ):
         return color
     raise VdtValueError(color)
 
@@ -135,27 +141,27 @@ def test_default_calendar(config):
     """test if config['default']['default_calendar'] is set to a sensible
     value
     """
-    if config['default']['default_calendar'] is None:
+    if config["default"]["default_calendar"] is None:
         pass
-    elif config['default']['default_calendar'] not in config['calendars']:
+    elif config["default"]["default_calendar"] not in config["calendars"]:
         logger.fatal(
             f"in section [default] {config['default']['default_calendar']} is "
             "not valid for 'default_calendar', must be one of "
             f"{config['calendars'].keys()}"
         )
         raise InvalidSettingsError()
-    elif config['calendars'][config['default']['default_calendar']]['readonly']:
-        logger.fatal('default_calendar may not be read_only!')
+    elif config["calendars"][config["default"]["default_calendar"]]["readonly"]:
+        logger.fatal("default_calendar may not be read_only!")
         raise InvalidSettingsError()
 
 
 def get_color_from_vdir(path):
     try:
-        color = Vdir(path, '.ics').get_meta('color')
+        color = Vdir(path, ".ics").get_meta("color")
     except CollectionNotFoundError:
         color = None
-    if color is None or color == '':
-        logger.debug(f'Found no or empty file `color` in {path}')
+    if color is None or color == "":
+        logger.debug(f"Found no or empty file `color` in {path}")
         return None
     color = color.strip()
     try:
@@ -169,85 +175,89 @@ def get_color_from_vdir(path):
 def get_unique_name(path, names):
     # TODO take care of edge cases, make unique name finding less brain-dead
     try:
-        name = Vdir(path, '.ics').get_meta('displayname')
+        name = Vdir(path, ".ics").get_meta("displayname")
     except CollectionNotFoundError:
-        logger.fatal(f'The calendar at `{path}` is not a directory.')
+        logger.fatal(f"The calendar at `{path}` is not a directory.")
         raise
-    if name is None or name == '':
-        logger.debug(f'Found no or empty file `displayname` in {path}')
+    if name is None or name == "":
+        logger.debug(f"Found no or empty file `displayname` in {path}")
         name = os.path.split(path)[-1]
     if name in names:
         while name in names:
-            name = name + '1'
+            name = name + "1"
     return name
 
 
 def get_all_vdirs(path):
-    """returns a list of paths, expanded using glob
-    """
+    """returns a list of paths, expanded using glob"""
     items = glob.glob(path)
     return items
 
 
 def get_vdir_type(_):
     # TODO implement
-    return 'calendar'
+    return "calendar"
 
 
 def config_checks(
-        config,
-        _get_color_from_vdir=get_color_from_vdir,
-        _get_vdir_type=get_vdir_type):
+    config, _get_color_from_vdir=get_color_from_vdir, _get_vdir_type=get_vdir_type
+):
     """do some tests on the config we cannot do with configobj's validator"""
-    if len(config['calendars'].keys()) < 1:
-        logger.fatal('Found no calendar section in the config file')
+    if len(config["calendars"].keys()) < 1:
+        logger.fatal("Found no calendar section in the config file")
         raise InvalidSettingsError()
-    config['sqlite']['path'] = expand_db_path(config['sqlite']['path'])
-    if not config['locale']['default_timezone']:
-        config['locale']['default_timezone'] = is_timezone(
-            config['locale']['default_timezone'])
-    if not config['locale']['local_timezone']:
-        config['locale']['local_timezone'] = is_timezone(
-            config['locale']['local_timezone'])
+    config["sqlite"]["path"] = expand_db_path(config["sqlite"]["path"])
+    if not config["locale"]["default_timezone"]:
+        config["locale"]["default_timezone"] = is_timezone(
+            config["locale"]["default_timezone"]
+        )
+    if not config["locale"]["local_timezone"]:
+        config["locale"]["local_timezone"] = is_timezone(
+            config["locale"]["local_timezone"]
+        )
 
     # expand calendars with type = discover
     vdirs_complete = []
     vdir_colors_from_config = {}
-    for calendar in list(config['calendars'].keys()):
-        if not isinstance(config['calendars'][calendar], dict):
-            logger.fatal('Invalid config file, probably missing calendar sections')
+    for calendar in list(config["calendars"].keys()):
+        if not isinstance(config["calendars"][calendar], dict):
+            logger.fatal("Invalid config file, probably missing calendar sections")
             raise InvalidSettingsError
-        if config['calendars'][calendar]['type'] == 'discover':
+        if config["calendars"][calendar]["type"] == "discover":
             logger.debug(
                 f"discovering calendars in {config['calendars'][calendar]['path']}"
             )
-            vdirs = get_all_vdirs(config['calendars'][calendar]['path'])
+            vdirs = get_all_vdirs(config["calendars"][calendar]["path"])
             vdirs_complete += vdirs
-            if 'color' in config['calendars'][calendar]:
+            if "color" in config["calendars"][calendar]:
                 for vdir in vdirs:
-                    vdir_colors_from_config[vdir] = config['calendars'][calendar]['color']
-            config['calendars'].pop(calendar)
+                    vdir_colors_from_config[vdir] = config["calendars"][calendar][
+                        "color"
+                    ]
+            config["calendars"].pop(calendar)
     for vdir in sorted(vdirs_complete):
-        calendar = {'path': vdir,
-                    'color': _get_color_from_vdir(vdir),
-                    'type': _get_vdir_type(vdir),
-                    'readonly': False,
-                    'priority': 10,
-                    }
+        calendar = {
+            "path": vdir,
+            "color": _get_color_from_vdir(vdir),
+            "type": _get_vdir_type(vdir),
+            "readonly": False,
+            "priority": 10,
+        }
 
         # get color from config if not defined in vdir
 
-        if calendar['color'] is None and vdir in vdir_colors_from_config:
+        if calendar["color"] is None and vdir in vdir_colors_from_config:
             logger.debug(f"using collection's color for {vdir}")
-            calendar['color'] = vdir_colors_from_config[vdir]
+            calendar["color"] = vdir_colors_from_config[vdir]
 
-        name = get_unique_name(vdir, config['calendars'].keys())
-        config['calendars'][name] = calendar
+        name = get_unique_name(vdir, config["calendars"].keys())
+        config["calendars"][name] = calendar
 
     test_default_calendar(config)
-    for calendar in config['calendars']:
-        if config['calendars'][calendar]['type'] == 'birthdays':
-            config['calendars'][calendar]['readonly'] = True
-        if config['calendars'][calendar]['color'] == 'auto':
-            config['calendars'][calendar]['color'] = \
-                _get_color_from_vdir(config['calendars'][calendar]['path'])
+    for calendar in config["calendars"]:
+        if config["calendars"][calendar]["type"] == "birthdays":
+            config["calendars"][calendar]["readonly"] = True
+        if config["calendars"][calendar]["color"] == "auto":
+            config["calendars"][calendar]["color"] = _get_color_from_vdir(
+                config["calendars"][calendar]["path"]
+            )

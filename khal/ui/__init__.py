@@ -38,7 +38,7 @@ from .editor import EventEditor, ExportDialog
 from .widgets import ExtendedEdit as Edit
 from .widgets import NColumns, NPile, linebox
 
-logger = logging.getLogger('khal')
+logger = logging.getLogger("khal")
 
 #  Overview of how this all meant to fit together:
 #
@@ -110,7 +110,7 @@ class DateHeader(SelectableText):
         self._day = day
         self._dateformat = dateformat
         self._conf = conf
-        super().__init__('')
+        super().__init__("")
         self.update_date_line()
 
     def update_date_line(self):
@@ -130,33 +130,33 @@ class DateHeader(SelectableText):
         :rtype: str
         """
 
-        weekday = day.strftime('%A')
+        weekday = day.strftime("%A")
         daystr = day.strftime(dtformat)
         if day == dt.date.today():
-            return f'Today ({weekday}, {daystr})'
+            return f"Today ({weekday}, {daystr})"
         elif day == dt.date.today() + dt.timedelta(days=1):
-            return f'Tomorrow ({weekday}, {daystr})'
+            return f"Tomorrow ({weekday}, {daystr})"
         elif day == dt.date.today() - dt.timedelta(days=1):
-            return f'Yesterday ({weekday}, {daystr})'
+            return f"Yesterday ({weekday}, {daystr})"
 
         approx_delta = utils.relative_timedelta_str(day)
 
-        return '{weekday}, {day} ({approx_delta})'.format(
+        return "{weekday}, {day} ({approx_delta})".format(
             weekday=weekday,
             approx_delta=approx_delta,
             day=daystr,
         )
 
     def keypress(self, _, key):
-        binds = self._conf['keybindings']
-        if key in binds['left']:
-            key = 'left'
-        elif key in binds['up']:
-            key = 'up'
-        elif key in binds['right']:
-            key = 'right'
-        elif key in binds['down']:
-            key = 'down'
+        binds = self._conf["keybindings"]
+        if key in binds["left"]:
+            key = "left"
+        elif key in binds["up"]:
+            key = "up"
+        elif key in binds["right"]:
+            key = "right"
+        elif key in binds["down"]:
+            key = "down"
         return key
 
 
@@ -169,14 +169,16 @@ class U_Event(urwid.Text):
         """
         if relative:
             if isinstance(this_date, dt.datetime) or not isinstance(this_date, dt.date):
-                raise ValueError(f'`this_date` is of type `{type(this_date)}`, '
-                                 'should be `datetime.date`')
+                raise ValueError(
+                    f"`this_date` is of type `{type(this_date)}`, "
+                    "should be `datetime.date`"
+                )
         self.event = event
         self.delete_status = delete_status
         self.this_date = this_date
         self._conf = conf
         self.relative = relative
-        super().__init__('', wrap='clip')
+        super().__init__("", wrap="clip")
         self.set_title()
 
     def get_cursor_coords(self, size):
@@ -195,19 +197,24 @@ class U_Event(urwid.Text):
 
     @property
     def uid(self):
-        return self.event.calendar + '\n' + \
-            str(self.event.href) + '\n' + str(self.event.etag)
+        return (
+            self.event.calendar
+            + "\n"
+            + str(self.event.href)
+            + "\n"
+            + str(self.event.etag)
+        )
 
     @property
     def recuid(self):
         return (self.uid, self.event.recurrence_id)
 
-    def set_title(self, mark=' '):
-        mark = {ALL: 'D', INSTANCES: 'd', False: ''}[self.delete_status(self.recuid)]
+    def set_title(self, mark=" "):
+        mark = {ALL: "D", INSTANCES: "d", False: ""}[self.delete_status(self.recuid)]
         if self.relative:
-            format_ = self._conf['view']['agenda_event_format']
+            format_ = self._conf["view"]["agenda_event_format"]
         else:
-            format_ = self._conf['view']['event_format']
+            format_ = self._conf["view"]["event_format"]
         if self.this_date:
             date_ = self.this_date
         elif self.event.allday:
@@ -215,33 +222,40 @@ class U_Event(urwid.Text):
         else:
             date_ = self.event.start.date()
         text = self.event.format(format_, date_, colors=False)
-        if self._conf['locale']['unicode_symbols']:
-            newline = ' \N{LEFTWARDS ARROW WITH HOOK} '
+        if self._conf["locale"]["unicode_symbols"]:
+            newline = " \N{LEFTWARDS ARROW WITH HOOK} "
         else:
-            newline = ' -- '
+            newline = " -- "
 
-        self.set_text(mark + ' ' + text.replace('\n', newline))
+        self.set_text(mark + " " + text.replace("\n", newline))
 
     def keypress(self, _, key):
-        binds = self._conf['keybindings']
-        if key in binds['left']:
-            key = 'left'
-        elif key in binds['up']:
-            key = 'up'
-        elif key in binds['right']:
-            key = 'right'
-        elif key in binds['down']:
-            key = 'down'
+        binds = self._conf["keybindings"]
+        if key in binds["left"]:
+            key = "left"
+        elif key in binds["up"]:
+            key = "up"
+        elif key in binds["right"]:
+            key = "right"
+        elif key in binds["down"]:
+            key = "down"
         return key
 
 
 class EventListBox(urwid.ListBox):
     """Container for list of U_Events"""
+
     def __init__(
-            self, *args, parent, conf,
-            delete_status, toggle_delete_instance, toggle_delete_all,
-            set_focus_date_callback=None,
-            **kwargs):
+        self,
+        *args,
+        parent,
+        conf,
+        delete_status,
+        toggle_delete_instance,
+        toggle_delete_all,
+        set_focus_date_callback=None,
+        **kwargs,
+    ):
         self._init = True
         self.parent = parent
         self.delete_status = delete_status
@@ -276,23 +290,26 @@ class EventListBox(urwid.ListBox):
 
 class DListBox(EventListBox):
     """Container for a DayWalker"""
+
     # XXX unfortunate naming, there is also DateListBox
     def __init__(self, *args, **kwargs):
-        dynamic_days = kwargs.pop('dynamic_days', True)
+        dynamic_days = kwargs.pop("dynamic_days", True)
         super().__init__(*args, **kwargs)
         self._init = dynamic_days
 
     def render(self, size, focus=False):
         if self._init:
             self._init = False
-        while not isinstance(self.body, StaticDayWalker) and 'bottom' in self.ends_visible(size):
+        while not isinstance(
+            self.body, StaticDayWalker
+        ) and "bottom" in self.ends_visible(size):
             self.body._autoextend()
         return super().render(size, focus)
 
     def clean(self):
         """reset event most recently in focus"""
         if self._old_focus is not None:
-            self.body[self._old_focus].body[0].set_attr_map({None: 'date'})
+            self.body[self._old_focus].body[0].set_attr_map({None: "date"})
 
     def ensure_date(self, day):
         """ensure an entry for `day` exists and bring it into focus"""
@@ -305,17 +322,17 @@ class DListBox(EventListBox):
         return rval
 
     def keypress(self, size, key):
-        if key in self._conf['keybindings']['up']:
-            key = 'up'
-        if key in self._conf['keybindings']['down']:
-            key = 'down'
+        if key in self._conf["keybindings"]["up"]:
+            key = "up"
+        if key in self._conf["keybindings"]["down"]:
+            key = "down"
 
-        if key in self._conf['keybindings']['today']:
+        if key in self._conf["keybindings"]["today"]:
             self.parent.calendar.base_widget.set_focus_date(dt.date.today())
 
         rval = super().keypress(size, key)
         self.clean()
-        if key in ['up', 'down']:
+        if key in ["up", "down"]:
             try:
                 self._old_focus = self.focus_position
             except IndexError:
@@ -475,19 +492,29 @@ class DayWalker(urwid.SimpleFocusListWalker):
         event_list = []
         date_header = DateHeader(
             day=day,
-            dateformat=self._conf['locale']['longdateformat'],
+            dateformat=self._conf["locale"]["longdateformat"],
             conf=self._conf,
         )
-        event_list.append(urwid.AttrMap(date_header, 'date'))
+        event_list.append(urwid.AttrMap(date_header, "date"))
         self.events = sorted(self._collection.get_events_on(day))
-        event_list.extend([
-            urwid.AttrMap(
-                U_Event(event, conf=self._conf, this_date=day, delete_status=self.delete_status),
-                'calendar ' + event.calendar, 'reveal focus')
-            for event in self.events])
+        event_list.extend(
+            [
+                urwid.AttrMap(
+                    U_Event(
+                        event,
+                        conf=self._conf,
+                        this_date=day,
+                        delete_status=self.delete_status,
+                    ),
+                    "calendar " + event.calendar,
+                    "reveal focus",
+                )
+                for event in self.events
+            ]
+        )
         return urwid.BoxAdapter(
             DateListBox(urwid.SimpleFocusListWalker(event_list), date=day),
-            (len(event_list) + 1) if self.events else 1
+            (len(event_list) + 1) if self.events else 1,
         )
 
     def selectable(self):
@@ -509,7 +536,7 @@ class StaticDayWalker(DayWalker):
     def ensure_date(self, day):
         """make sure a DateListBox for `day` exists, update it and bring it into focus"""
         # TODO cache events for each day and update as needed
-        num_days = max(1, self._conf['default']['timedelta'].days)
+        num_days = max(1, self._conf["default"]["timedelta"].days)
 
         for delta in range(num_days):
             pile = self._get_events(day + dt.timedelta(days=delta))
@@ -547,7 +574,7 @@ class StaticDayWalker(DayWalker):
 
         update = everything
         for one in self:
-            if (start <= one.date <= end):
+            if start <= one.date <= end:
                 update = True
         if update:
             self.ensure_date(self[0].date)
@@ -568,21 +595,21 @@ class DateListBox(urwid.ListBox):
         super().__init__(content)
 
     def __repr__(self):
-        return f'<DateListBox {self.date}>'
+        return f"<DateListBox {self.date}>"
 
     __str__ = __repr__
 
     def render(self, size, focus):
         if focus:
-            self.body[0].set_attr_map({None: 'date header focused'})
+            self.body[0].set_attr_map({None: "date header focused"})
         elif DateListBox.selected_date == self.date:
-            self.body[0].set_attr_map({None: 'date header selected'})
+            self.body[0].set_attr_map({None: "date header selected"})
         else:
             self.reset_style()
         return super().render(size, focus)
 
     def reset_style(self):
-        self.body[0].set_attr_map({None: 'date header'})
+        self.body[0].set_attr_map({None: "date header"})
 
     def set_selected_date(self, day):
         """Mark `day` as selected
@@ -623,11 +650,11 @@ class EventColumn(urwid.WidgetWrap):
     def __init__(self, elistbox, pane):
         self.pane = pane
         self._conf = pane._conf
-        self.divider = urwid.Divider('─')
+        self.divider = urwid.Divider("─")
         self.editor = False
         self._current_date = None
         self._eventshown = False
-        self.event_width = int(self.pane._conf['view']['event_view_weighting'])
+        self.event_width = int(self.pane._conf["view"]["event_view_weighting"])
         self.delete_status = pane.delete_status
         self.toggle_delete_all = pane.toggle_delete_all
         self.toggle_delete_instance = pane.toggle_delete_instance
@@ -642,10 +669,13 @@ class EventColumn(urwid.WidgetWrap):
 
     def view(self, event):
         """show event in the lower part of this column"""
-        self.container.contents.append((self.divider, ('pack', None)))
+        self.container.contents.append((self.divider, ("pack", None)))
         self.container.contents.append(
-            (EventDisplay(self.pane._conf, event, collection=self.pane.collection),
-             ('weight', self.event_width)))
+            (
+                EventDisplay(self.pane._conf, event, collection=self.pane.collection),
+                ("weight", self.event_width),
+            )
+        )
 
     def clear_event_view(self):
         while len(self.container.contents) > 1:
@@ -673,7 +703,9 @@ class EventColumn(urwid.WidgetWrap):
         if everything:
             min_date = self.pane.calendar.base_widget.walker.earliest_date
             max_date = self.pane.calendar.base_widget.walker.latest_date
-        self.pane.base_widget.calendar.base_widget.reset_styles_range(min_date, max_date)
+        self.pane.base_widget.calendar.base_widget.reset_styles_range(
+            min_date, max_date
+        )
         self.dlistbox.body.update_range(min_date, max_date)
 
     def refresh_titles(self, min_date, max_date, everything):
@@ -698,7 +730,8 @@ class EventColumn(urwid.WidgetWrap):
         """
         if event.readonly:
             self.pane.window.alert(
-                ('alert', f'Calendar `{event.calendar}` is read-only.'))
+                ("alert", f"Calendar `{event.calendar}` is read-only.")
+            )
             return
 
         if isinstance(event.start_local, dt.datetime):
@@ -747,7 +780,7 @@ class EventColumn(urwid.WidgetWrap):
             # otherwise, even broken .ics files seem to be no problem
             new_event = Event.fromString(
                 text,
-                locale=self._conf['locale'],
+                locale=self._conf["locale"],
                 href=event.href,
                 calendar=event.calendar,
                 etag=event.etag,
@@ -756,34 +789,42 @@ class EventColumn(urwid.WidgetWrap):
             update_colors(
                 new_event.start_local,
                 new_event.end_local,
-                (event.recurring or new_event.recurring)
+                (event.recurring or new_event.recurring),
             )
         else:
             self.editor = True
-            editor = EventEditor(self.pane, event, update_colors, always_save=always_save)
+            editor = EventEditor(
+                self.pane, event, update_colors, always_save=always_save
+            )
 
-            ContainerWidget = linebox[self.pane._conf['view']['frame']]
-            new_pane = urwid.Columns([
-                ('weight', 2, ContainerWidget(editor)),
-                ('weight', 1, ContainerWidget(self.dlistbox))
-            ], dividechars=2, focus_column=0)
+            ContainerWidget = linebox[self.pane._conf["view"]["frame"]]
+            new_pane = urwid.Columns(
+                [
+                    ("weight", 2, ContainerWidget(editor)),
+                    ("weight", 1, ContainerWidget(self.dlistbox)),
+                ],
+                dividechars=2,
+                focus_column=0,
+            )
             new_pane.title = editor.title
 
             def teardown(data):
                 self.editor = False
+
             self.pane.window.open(new_pane, callback=teardown)
 
     def export_event(self):
         """export the event in focus as an ICS file"""
+
         def export_this(_, user_data):
             try:
                 self.focus_event.event.export_ics(user_data.get_edit_text())
             except Exception as error:
                 self.pane.window.backtrack()
-                self.pane.window.alert(('alert', 'Failed to save event: %s' % error))
+                self.pane.window.alert(("alert", "Failed to save event: %s" % error))
             else:
                 self.pane.window.backtrack()
-                self.pane.window.alert('Event successfully exported')
+                self.pane.window.alert("Event successfully exported")
 
         overlay = urwid.Overlay(
             ExportDialog(
@@ -792,7 +833,11 @@ class EventColumn(urwid.WidgetWrap):
                 self.focus_event.event,
             ),
             self.pane,
-            'center', ('relative', 50), ('relative', 50), None)
+            "center",
+            ("relative", 50),
+            ("relative", 50),
+            None,
+        )
         self.pane.window.open(overlay)
 
     def toggle_delete(self):
@@ -803,17 +848,19 @@ class EventColumn(urwid.WidgetWrap):
             self.toggle_delete_instance(event.recuid)
             self.pane.window.backtrack()
             self.refresh_titles(
-                event.event.start_local, event.event.end_local, event.event.recurring)
+                event.event.start_local, event.event.end_local, event.event.recurring
+            )
 
         def delete_all(_):
             self.toggle_delete_all(event.recuid)
             self.pane.window.backtrack()
             self.refresh_titles(
-                event.event.start_local, event.event.end_local, event.event.recurring)
+                event.event.start_local, event.event.end_local, event.event.recurring
+            )
 
         if event.event.readonly:
             self.pane.window.alert(
-                ('alert', f'Calendar {event.event.calendar} is read-only.'),
+                ("alert", f"Calendar {event.event.calendar} is read-only."),
             )
             return
         status = self.delete_status(event.recuid)
@@ -826,19 +873,20 @@ class EventColumn(urwid.WidgetWrap):
             # FIXME if in search results, original pane is used for overlay, not search results
             # also see issue of reseting titles below, probably related
             self.pane.dialog(
-                text='This is a recurring event.\nWhich instances do you want to delete?',
+                text="This is a recurring event.\nWhich instances do you want to delete?",
                 buttons=[
-                    ('Only this', delete_this),
-                    ('All (past and future)', delete_all),
-                    ('Abort', self.pane.window.backtrack),
-                ]
+                    ("Only this", delete_this),
+                    ("All (past and future)", delete_all),
+                    ("Abort", self.pane.window.backtrack),
+                ],
             )
             refresh = False
         else:
             self.toggle_delete_all(event.recuid)
         if refresh:
             self.refresh_titles(
-                event.event.start_local, event.event.end_local, event.event.recurring)
+                event.event.start_local, event.event.end_local, event.event.recurring
+            )
             event.set_title()  # if we are in search results, refresh_titles doesn't work properly
 
     def duplicate(self):
@@ -851,8 +899,10 @@ class EventColumn(urwid.WidgetWrap):
         try:
             self.pane.collection.new(event)
         except ReadOnlyCalendarError:
-            event.calendar = self.pane.collection.default_calendar_name or \
-                self.pane.collection.writable_names[0]
+            event.calendar = (
+                self.pane.collection.default_calendar_name
+                or self.pane.collection.writable_names[0]
+            )
             self.edit(event, always_save=True)
         start_date, end_date = event.start_local, event.end_local
         if isinstance(start_date, dt.datetime):
@@ -874,7 +924,7 @@ class EventColumn(urwid.WidgetWrap):
         :type end: datetime.date
         """
         if not self.pane.collection.writable_names:
-            self.pane.window.alert(('alert', 'No writable calendar.'))
+            self.pane.window.alert(("alert", "No writable calendar."))
             return
         if date is None:
             date = dt.datetime.now()
@@ -882,17 +932,23 @@ class EventColumn(urwid.WidgetWrap):
             start = dt.datetime.combine(date, dt.time(dt.datetime.now().hour))
             end = start + dt.timedelta(minutes=60)
             event = icalendar_helpers.new_event(
-                dtstart=start, dtend=end, summary='',
-                timezone=self._conf['locale']['default_timezone'],
-                locale=self._conf['locale'],
+                dtstart=start,
+                dtend=end,
+                summary="",
+                timezone=self._conf["locale"]["default_timezone"],
+                locale=self._conf["locale"],
             )
         else:
             event = icalendar_helpers.new_event(
-                dtstart=date, dtend=end + dt.timedelta(days=1), summary='',
-                allday=True, locale=self._conf['locale'],
+                dtstart=date,
+                dtend=end + dt.timedelta(days=1),
+                summary="",
+                allday=True,
+                locale=self._conf["locale"],
             )
         event = self.pane.collection.new_event(
-            event.to_ical(), self.pane.collection.default_calendar_name)
+            event.to_ical(), self.pane.collection.default_calendar_name
+        )
         self.edit(event)
 
     def selectable(self):
@@ -903,33 +959,37 @@ class EventColumn(urwid.WidgetWrap):
         self._eventshown = False
         self.clear_event_view()
 
-        if key in self._conf['keybindings']['new']:
+        if key in self._conf["keybindings"]["new"]:
             self.new(self.focus_date, None)
             key = None
 
         if self.focus_event:
-            if key in self._conf['keybindings']['delete']:
+            if key in self._conf["keybindings"]["delete"]:
                 self.toggle_delete()
-                key = 'down'
-            elif key in self._conf['keybindings']['duplicate']:
+                key = "down"
+            elif key in self._conf["keybindings"]["duplicate"]:
                 self.duplicate()
                 key = None
-            elif key in self._conf['keybindings']['export']:
+            elif key in self._conf["keybindings"]["export"]:
                 self.export_event()
                 key = None
 
         rval = super().keypress(size, key)
         if self.focus_event:
-            if key in self._conf['keybindings']['view'] and \
-                    prev_shown == self.focus_event.recuid:
+            if (
+                key in self._conf["keybindings"]["view"]
+                and prev_shown == self.focus_event.recuid
+            ):
                 # the event in focus is already viewed -> edit
                 if self.delete_status(self.focus_event.recuid):
-                    self.pane.window.alert(('alert', 'This event is marked as deleted'))
+                    self.pane.window.alert(("alert", "This event is marked as deleted"))
                 self.edit(self.focus_event.event)
-            elif key in self._conf['keybindings']['external_edit']:
+            elif key in self._conf["keybindings"]["external_edit"]:
                 self.edit(self.focus_event.event, external_edit=True)
-            elif key in self._conf['keybindings']['view'] or \
-                    self._conf['view']['event_view_always_visible']:
+            elif (
+                key in self._conf["keybindings"]["view"]
+                or self._conf["view"]["event_view_always_visible"]
+            ):
                 self._eventshown = self.focus_event.recuid
                 self.view(self.focus_event.event)
         return rval
@@ -941,41 +1001,41 @@ class EventColumn(urwid.WidgetWrap):
 
 
 class EventDisplay(urwid.WidgetWrap):
-    """A widget showing one Event()'s details """
+    """A widget showing one Event()'s details"""
 
     def __init__(self, conf, event, collection=None):
         self._conf = conf
         self.collection = collection
         self.event = event
-        divider = urwid.Divider(' ')
+        divider = urwid.Divider(" ")
 
         lines = []
-        lines.append(urwid.Text('Title: ' + event.summary))
+        lines.append(urwid.Text("Title: " + event.summary))
 
         # show organizer
-        if event.organizer != '':
-            lines.append(urwid.Text('Organizer: ' + event.organizer))
+        if event.organizer != "":
+            lines.append(urwid.Text("Organizer: " + event.organizer))
 
-        if event.location != '':
-            lines.append(urwid.Text('Location: ' + event.location))
+        if event.location != "":
+            lines.append(urwid.Text("Location: " + event.location))
 
-        if event.categories != '':
-            lines.append(urwid.Text('Categories: ' + event.categories))
+        if event.categories != "":
+            lines.append(urwid.Text("Categories: " + event.categories))
 
-        if event.url != '':
-            lines.append(urwid.Text('URL: ' + event.url))
+        if event.url != "":
+            lines.append(urwid.Text("URL: " + event.url))
 
         # start and end time/date
         if event.allday:
-            startstr = event.start_local.strftime(self._conf['locale']['dateformat'])
-            endstr = event.end_local.strftime(self._conf['locale']['dateformat'])
+            startstr = event.start_local.strftime(self._conf["locale"]["dateformat"])
+            endstr = event.end_local.strftime(self._conf["locale"]["dateformat"])
         else:
             startstr = event.start_local.strftime(
                 f"{self._conf['locale']['dateformat']} "
                 f"{self._conf['locale']['timeformat']}"
             )
             if event.start_local.date == event.end_local.date:
-                endstr = event.end_local.strftime(self._conf['locale']['timeformat'])
+                endstr = event.end_local.strftime(self._conf["locale"]["timeformat"])
             else:
                 endstr = event.end_local.strftime(
                     f"{self._conf['locale']['dateformat']} "
@@ -983,42 +1043,45 @@ class EventDisplay(urwid.WidgetWrap):
                 )
 
         if startstr == endstr:
-            lines.append(urwid.Text('Date: ' + startstr))
+            lines.append(urwid.Text("Date: " + startstr))
         else:
-            lines.append(urwid.Text('Date: ' + startstr + ' - ' + endstr))
+            lines.append(urwid.Text("Date: " + startstr + " - " + endstr))
 
-        lines.append(urwid.Text('Calendar: ' + event.calendar))
+        lines.append(urwid.Text("Calendar: " + event.calendar))
         lines.append(divider)
 
-        if event.description != '':
+        if event.description != "":
             lines.append(urwid.Text(event.description))
 
         pile = urwid.Pile(lines)
-        urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign='top'))
+        urwid.WidgetWrap.__init__(self, urwid.Filler(pile, valign="top"))
 
 
 class SearchDialog(urwid.WidgetWrap):
     """A Search Dialog Widget"""
+
     def __init__(self, search_func, abort_func):
-
         class Search(Edit):
-
             def keypress(self, size, key):
-                if key == 'enter':
+                if key == "enter":
                     search_func(self.text)
                 else:
                     return super().keypress(size, key)
 
-        search_field = Search('')
+        search_field = Search("")
 
         def this_func(_):
             search_func(search_field.text)
 
         lines = []
-        lines.append(urwid.Text('Please enter a search term (Escape cancels):'))
+        lines.append(urwid.Text("Please enter a search term (Escape cancels):"))
         lines.append(search_field)
-        buttons = NColumns([urwid.Button('Search', on_press=this_func),
-                            urwid.Button('Abort', on_press=abort_func)])
+        buttons = NColumns(
+            [
+                urwid.Button("Search", on_press=this_func),
+                urwid.Button("Abort", on_press=abort_func),
+            ]
+        )
         lines.append(buttons)
         content = NPile(lines, outermost=True)
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
@@ -1031,7 +1094,7 @@ class ClassicView(Pane):
     on the right
     """
 
-    def __init__(self, collection, conf=None, title='', description=''):
+    def __init__(self, collection, conf=None, title="", description=""):
         self.init = True
         # Will be set when opening the view inside a Window
         self.window = None
@@ -1039,39 +1102,44 @@ class ClassicView(Pane):
         self.collection = collection
         self._deleted = {ALL: [], INSTANCES: []}
 
-        ContainerWidget = linebox[self._conf['view']['frame']]
-        if self._conf['view']['dynamic_days']:
+        ContainerWidget = linebox[self._conf["view"]["frame"]]
+        if self._conf["view"]["dynamic_days"]:
             Walker = DayWalker
         else:
             Walker = StaticDayWalker
         daywalker = Walker(
-            dt.date.today(), eventcolumn=self, conf=self._conf,
-            delete_status=self.delete_status, collection=self.collection,
+            dt.date.today(),
+            eventcolumn=self,
+            conf=self._conf,
+            delete_status=self.delete_status,
+            collection=self.collection,
         )
         elistbox = DListBox(
-            daywalker, parent=self, conf=self._conf,
+            daywalker,
+            parent=self,
+            conf=self._conf,
             delete_status=self.delete_status,
             toggle_delete_all=self.toggle_delete_all,
             toggle_delete_instance=self.toggle_delete_instance,
-            dynamic_days=self._conf['view']['dynamic_days'],
+            dynamic_days=self._conf["view"]["dynamic_days"],
         )
         self.eventscolumn = ContainerWidget(EventColumn(pane=self, elistbox=elistbox))
         calendar = CalendarWidget(
             on_date_change=self.eventscolumn.original_widget.set_focus_date,
-            keybindings=self._conf['keybindings'],
-            on_press={key: self.new_event for key in self._conf['keybindings']['new']},
-            firstweekday=self._conf['locale']['firstweekday'],
-            weeknumbers=self._conf['locale']['weeknumbers'],
-            monthdisplay=self._conf['view']['monthdisplay'],
-            get_styles=collection.get_styles
+            keybindings=self._conf["keybindings"],
+            on_press={key: self.new_event for key in self._conf["keybindings"]["new"]},
+            firstweekday=self._conf["locale"]["firstweekday"],
+            weeknumbers=self._conf["locale"]["weeknumbers"],
+            monthdisplay=self._conf["view"]["monthdisplay"],
+            get_styles=collection.get_styles,
         )
-        if self._conf['view']['dynamic_days']:
+        if self._conf["view"]["dynamic_days"]:
             elistbox.set_focus_date_callback = calendar.set_focus_date
         else:
             elistbox.set_focus_date_callback = lambda _: None
         self.calendar = ContainerWidget(calendar)
-        self.lwidth = 31 if self._conf['locale']['weeknumbers'] == 'right' else 28
-        if self._conf['view']['frame'] in ["width", "color"]:
+        self.lwidth = 31 if self._conf["locale"]["weeknumbers"] == "right" else 28
+        if self._conf["view"]["frame"] in ["width", "color"]:
             self.lwidth += 2
         columns = NColumns(
             [(self.lwidth, self.calendar), self.eventscolumn],
@@ -1105,28 +1173,30 @@ class ClassicView(Pane):
     def cleanup(self, data):
         """delete all events marked for deletion"""
         for part in self._deleted[ALL]:
-            account, href, etag = part.split('\n', 2)
+            account, href, etag = part.split("\n", 2)
             self.collection.delete(href, etag, account)
         for part, rec_id in self._deleted[INSTANCES]:
-            account, href, etag = part.split('\n', 2)
+            account, href, etag = part.split("\n", 2)
             event = self.collection.get_event(href, account)
             event.delete_instance(rec_id)
             self.collection.update(event)
 
     def keypress(self, size, key):
-        binds = self._conf['keybindings']
-        if key in binds['search']:
+        binds = self._conf["keybindings"]
+        if key in binds["search"]:
             self.search()
         return super().keypress(size, key)
 
     def search(self):
         """create a search dialog and display it"""
         overlay = urwid.Overlay(
-            SearchDialog(self._search, self.window.backtrack), self,
-            align='center',
-            width=('relative', 70),
-            valign=('relative', 50),
-            height=None)
+            SearchDialog(self._search, self.window.backtrack),
+            self,
+            align="center",
+            width=("relative", 70),
+            valign=("relative", 50),
+            height=None,
+        )
         self.window.open(overlay)
 
     def _search(self, search_term):
@@ -1134,19 +1204,31 @@ class ClassicView(Pane):
         self.window.backtrack()
         events = sorted(self.collection.search(search_term))
         event_list = []
-        event_list.extend([
-            urwid.AttrMap(
-                U_Event(event, relative=False, conf=self._conf, delete_status=self.delete_status),
-                'calendar ' + event.calendar, 'reveal focus')
-            for event in events])
+        event_list.extend(
+            [
+                urwid.AttrMap(
+                    U_Event(
+                        event,
+                        relative=False,
+                        conf=self._conf,
+                        delete_status=self.delete_status,
+                    ),
+                    "calendar " + event.calendar,
+                    "reveal focus",
+                )
+                for event in events
+            ]
+        )
         events = EventListBox(
-            urwid.SimpleFocusListWalker(event_list), parent=self.eventscolumn, conf=self._conf,
+            urwid.SimpleFocusListWalker(event_list),
+            parent=self.eventscolumn,
+            conf=self._conf,
             delete_status=self.delete_status,
             toggle_delete_all=self.toggle_delete_all,
-            toggle_delete_instance=self.toggle_delete_instance
+            toggle_delete_instance=self.toggle_delete_instance,
         )
         events = EventColumn(pane=self, elistbox=events)
-        ContainerWidget = linebox[self._conf['view']['frame']]
+        ContainerWidget = linebox[self._conf["view"]["frame"]]
         columns = NColumns(
             [(self.lwidth, self.calendar), ContainerWidget(events)],
             dividechars=0,
@@ -1155,7 +1237,7 @@ class ClassicView(Pane):
         )
         pane = Pane(
             columns,
-            title=f"Search results for \"{search_term}\" (Esc for backtrack)",
+            title=f'Search results for "{search_term}" (Esc for backtrack)',
         )
         pane._conf = self._conf
         columns.set_focus_column(1)
@@ -1185,13 +1267,14 @@ def _urwid_palette_entry(name, color, hmethod):
     :rtype: tuple
     """
     from ..terminal import COLORS
-    if color == '' or color in COLORS or color is None:
+
+    if color == "" or color in COLORS or color is None:
         # Named colors already use urwid names, no need to change anything.
         pass
     elif color.isdigit():
         # Colors from the 256 color palette need to be prefixed with h in
         # urwid.
-        color = 'h' + color
+        color = "h" + color
     else:
         # 24-bit colors are not supported by urwid.
         # Convert it to some color on the 256 color palette that might resemble
@@ -1201,16 +1284,19 @@ def _urwid_palette_entry(name, color, hmethod):
         # the case.
         colors = {}
         # Colorcube
-        colorlevels = (0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff)
+        colorlevels = (0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF)
         for r in range(0, 6):
             for g in range(0, 6):
                 for b in range(0, 6):
-                    colors[r * 36 + g * 6 + b + 16] = \
-                        (colorlevels[r], colorlevels[g], colorlevels[b])
+                    colors[r * 36 + g * 6 + b + 16] = (
+                        colorlevels[r],
+                        colorlevels[g],
+                        colorlevels[b],
+                    )
         # Grayscale
         graylevels = [0x08 + 10 * i for i in range(0, 24)]
         for c in range(0, 24):
-            colors[232 + c] = (graylevels[c], ) * 3
+            colors[232 + c] = (graylevels[c],) * 3
         # Parse the HTML-style color into the variables r, g, b.
         if len(color) == 4:
             # e.g. #ABC, equivalent to #AABBCC
@@ -1233,13 +1319,13 @@ def _urwid_palette_entry(name, color, hmethod):
             if best is None or dist < bestdist:
                 best = index
                 bestdist = dist
-        color = 'h' + str(best)
+        color = "h" + str(best)
     # We unconditionally add the color to the high color slot. It seems to work
     # in lower color terminals as well.
-    if hmethod in ['fg', 'foreground']:
-        return (name, '', '', '', color, '')
+    if hmethod in ["fg", "foreground"]:
+        return (name, "", "", "", color, "")
     else:
-        return (name, '', '', '', '', color)
+        return (name, "", "", "", "", color)
 
 
 def _add_calendar_colors(palette, collection):
@@ -1253,49 +1339,56 @@ def _add_calendar_colors(palette, collection):
     :rtype: list
     """
     for cal in collection.calendars:
-        if cal['color'] == '':
+        if cal["color"] == "":
             # No color set for this calendar, use default_color instead.
             color = collection.default_color
         else:
-            color = cal['color']
-        palette.append(_urwid_palette_entry('calendar ' + cal['name'], color,
-                                            collection.hmethod))
-    palette.append(_urwid_palette_entry('highlight_days_color',
-                                        collection.color, collection.hmethod))
-    palette.append(_urwid_palette_entry('highlight_days_multiple',
-                                        collection.multiple, collection.hmethod))
+            color = cal["color"]
+        palette.append(
+            _urwid_palette_entry("calendar " + cal["name"], color, collection.hmethod)
+        )
+    palette.append(
+        _urwid_palette_entry(
+            "highlight_days_color", collection.color, collection.hmethod
+        )
+    )
+    palette.append(
+        _urwid_palette_entry(
+            "highlight_days_multiple", collection.multiple, collection.hmethod
+        )
+    )
     return palette
 
 
-def start_pane(pane, callback, program_info='', quit_keys=None):
+def start_pane(pane, callback, program_info="", quit_keys=None):
     """Open the user interface with the given initial pane."""
-    quit_keys = quit_keys or ['q']
+    quit_keys = quit_keys or ["q"]
 
     frame = Window(
-        footer=program_info + f' | {quit_keys[0]}: quit, ?: help',
+        footer=program_info + f" | {quit_keys[0]}: quit, ?: help",
         quit_keys=quit_keys,
     )
 
     class LogPaneFormatter(logging.Formatter):
         def get_prefix(self, level):
             if level >= 50:
-                return 'CRITICAL'
+                return "CRITICAL"
             if level >= 40:
-                return 'ERROR'
+                return "ERROR"
             if level >= 30:
-                return 'WARNING'
+                return "WARNING"
             if level >= 20:
-                return 'INFO'
+                return "INFO"
             else:
-                return 'DEBUG'
+                return "DEBUG"
 
         def format(self, record):
-            return (self.get_prefix(record.levelno) + ': ' + record.msg)
+            return self.get_prefix(record.levelno) + ": " + record.msg
 
     class HeaderFormatter(LogPaneFormatter):
         def format(self, record):
             return (
-                super().format(record)[:30] + '... '
+                super().format(record)[:30] + "... "
                 f"[Press `{pane._conf['keybindings']['log'][0]}` to view log]"
             )
 
@@ -1307,7 +1400,9 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
         def emit(self, record):
             frame.alert(self.format(record))
 
-    if len(logger.handlers) > 0 and not isinstance(logger.handlers[-1], logging.FileHandler):
+    if len(logger.handlers) > 0 and not isinstance(
+        logger.handlers[-1], logging.FileHandler
+    ):
         logger.handlers.pop()
 
     pane_handler = LogPaneHandler()
@@ -1320,20 +1415,24 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
 
     frame.open(pane, callback)
     palette = _add_calendar_colors(
-        getattr(colors, pane._conf['view']['theme']), pane.collection)
+        getattr(colors, pane._conf["view"]["theme"]), pane.collection
+    )
     loop = urwid.MainLoop(
-        frame, palette, unhandled_input=frame.on_key_press, pop_ups=True)
+        frame, palette, unhandled_input=frame.on_key_press, pop_ups=True
+    )
     frame.loop = loop
 
     def redraw_today(loop, pane, meta=None):
-        meta = meta or {'last_today': None}
+        meta = meta or {"last_today": None}
         # XXX TODO this currently assumes, today moves forward by exactly one
         # day, but it could either move forward more (suspend-to-disk/ram) or
         # even move backwards
         today = dt.date.today()
-        if meta['last_today'] != today:
-            meta['last_today'] = today
-            pane.calendar.original_widget.reset_styles_range(today - dt.timedelta(days=1), today)
+        if meta["last_today"] != today:
+            meta["last_today"] = today
+            pane.calendar.original_widget.reset_styles_range(
+                today - dt.timedelta(days=1), today
+            )
             pane.eventscolumn.original_widget.update_date_line()
         loop.set_alarm_in(60, redraw_today, pane)
 
@@ -1341,16 +1440,17 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
 
     def check_for_updates(loop, pane):
         if pane.collection.needs_update():
-            pane.window.alert('detected external vdir modification, updating...')
+            pane.window.alert("detected external vdir modification, updating...")
             pane.collection.update_db()
             pane.eventscolumn.base_widget.update(None, None, everything=True)
-            pane.window.alert('detected external vdir modification, updated.')
+            pane.window.alert("detected external vdir modification, updated.")
         loop.set_alarm_in(60, check_for_updates, pane)
 
     loop.set_alarm_in(60, check_for_updates, pane)
     # Make urwid use 256 color mode.
     loop.screen.set_terminal_properties(
-        colors=256, bright_is_bold=pane._conf['view']['bold_for_light_color'])
+        colors=256, bright_is_bold=pane._conf["view"]["bold_for_light_color"]
+    )
 
     def ctrl_c(signum, f):
         raise urwid.ExitMainLoop()
@@ -1360,6 +1460,7 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
         loop.run()
     except Exception:
         import traceback
+
         tb = traceback.format_exc()
         try:  # Try to leave terminal in usable state
             loop.stop()

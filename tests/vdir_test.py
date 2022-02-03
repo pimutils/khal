@@ -29,16 +29,16 @@ from khal.khalendar import vdir
 
 @pytest.mark.xfail
 def test_etag(tmpdir):
-    fpath = os.path.join(str(tmpdir), 'foo')
+    fpath = os.path.join(str(tmpdir), "foo")
 
-    file_ = open(fpath, 'w')
-    file_.write('foo')
+    file_ = open(fpath, "w")
+    file_.write("foo")
     file_.close()
 
     old_etag = vdir.get_etag_from_file(fpath)
 
-    file_ = open(fpath, 'w')
-    file_.write('foo')
+    file_ = open(fpath, "w")
+    file_.write("foo")
     file_.close()
 
     new_etag = vdir.get_etag_from_file(fpath)
@@ -46,22 +46,20 @@ def test_etag(tmpdir):
     try:
         assert old_etag != new_etag
     except AssertionError:
-        pytest.xfail(
-            "Do we need to sleep?"
-        )
+        pytest.xfail("Do we need to sleep?")
 
 
 def test_etag_sync(tmpdir):
-    fpath = os.path.join(str(tmpdir), 'foo')
+    fpath = os.path.join(str(tmpdir), "foo")
 
-    file_ = open(fpath, 'w')
-    file_.write('foo')
+    file_ = open(fpath, "w")
+    file_.write("foo")
     file_.close()
     os.sync()
     old_etag = vdir.get_etag_from_file(fpath)
 
-    file_ = open(fpath, 'w')
-    file_.write('foo')
+    file_ = open(fpath, "w")
+    file_.write("foo")
     file_.close()
 
     new_etag = vdir.get_etag_from_file(fpath)
@@ -70,17 +68,17 @@ def test_etag_sync(tmpdir):
 
 
 def test_etag_sleep(tmpdir, sleep_time):
-    fpath = os.path.join(str(tmpdir), 'foo')
+    fpath = os.path.join(str(tmpdir), "foo")
 
-    file_ = open(fpath, 'w')
-    file_.write('foo')
+    file_ = open(fpath, "w")
+    file_.write("foo")
     file_.close()
 
     old_etag = vdir.get_etag_from_file(fpath)
     time.sleep(sleep_time)
 
-    file_ = open(fpath, 'w')
-    file_.write('foo')
+    file_ = open(fpath, "w")
+    file_.write("foo")
     file_.close()
 
     new_etag = vdir.get_etag_from_file(fpath)
