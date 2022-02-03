@@ -27,7 +27,7 @@ import textwrap
 import re
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
-from typing import List
+from typing import Iterable, List, Tuple
 
 import pytz
 from click import confirm, echo, prompt, style
@@ -47,7 +47,7 @@ from .terminal import merge_columns
 logger = logging.getLogger('khal')
 
 
-def format_day(day, format_string, locale, attributes=None):
+def format_day(day, format_string: str, locale, attributes=None):
     if attributes is None:
         attributes = {}
 
@@ -124,18 +124,19 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
     return merge_columns(calendar_column, event_column, width=lwidth)
 
 
-def start_end_from_daterange(daterange, locale,
-                             default_timedelta_date=dt.timedelta(days=1),
-                             default_timedelta_datetime=dt.timedelta(hours=1)):
+def start_end_from_daterange(
+    daterange: Iterable[str],
+    locale: dict,
+    default_timedelta_date=dt.timedelta(days=1),
+    default_timedelta_datetime=dt.timedelta(hours=1),
+) -> Tuple[dt.datetime, dt.datetime]:
     """
     convert a string description of a daterange into start and end datetime
 
     if no description is given, return (today, today + default_timedelta_date)
 
     :param daterange: an iterable of strings that describes `daterange`
-    :type daterange: tuple
     :param locale: locale settings
-    :type locale: dict
     """
     if not daterange:
         start = dt.datetime(*dt.date.today().timetuple()[:3])
@@ -215,11 +216,22 @@ def get_events_between(
     return event_list
 
 
-def khal_list(collection, daterange=None, conf=None, agenda_format=None,
-              day_format=None, once=False, notstarted=False, width=False,
-              env=None, datepoint=None):
-    assert daterange is not None or datepoint is not None
+def khal_list(
+    collection,
+    daterange: Iterable[str] = None,
+    conf: dict = None,
+    agenda_format=None,
+    day_format: str=None,
+    once=False,
+    notstarted: bool = False,
+    width: bool = False,
+    env=None,
+    datepoint=None,
+):
     """returns a list of all events in `daterange`"""
+    assert daterange is not None or datepoint is not None
+    assert conf is not None
+
     # because empty strings are also Falsish
     if agenda_format is None:
         agenda_format = conf['view']['agenda_event_format']
@@ -254,7 +266,7 @@ def khal_list(collection, daterange=None, conf=None, agenda_format=None,
             )
         logger.debug(f'Getting all events between {start} and {end}')
 
-    event_column = []
+    event_column: List[str] = []
     once = set() if once else None
     if env is None:
         env = {}
