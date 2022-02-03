@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released
 
+* NEW Add support for Python 3.10
+
 0.10.4
 ======
 2021-07-29
