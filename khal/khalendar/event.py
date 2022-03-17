@@ -151,7 +151,7 @@ class Event:
     @classmethod
     def fromString(cls, event_str, ref=None, **kwargs):
         calendar_collection = cal_from_ics(event_str)
-        events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
+        events = [item for item in calendar_collection.walk() if item.name in ['VEVENT', 'VTODO']]
         return cls.fromVEvents(events, ref, **kwargs)
 
     def __lt__(self, other):
@@ -277,7 +277,8 @@ class Event:
                 'range': '\N{Left right arrow}',
                 'range_end': '\N{Rightwards arrow to bar}',
                 'range_start': '\N{Rightwards arrow from bar}',
-                'right_arrow': '\N{Rightwards arrow}'
+                'right_arrow': '\N{Rightwards arrow}',
+                'task': '\N{Pencil}',
             }
         else:
             return {
@@ -286,7 +287,8 @@ class Event:
                 'range': '<->',
                 'range_end': '->|',
                 'range_start': '|->',
-                'right_arrow': '->'
+                'right_arrow': '->',
+                'task': '(T)',
             }
 
     @property
@@ -303,6 +305,24 @@ class Event:
     def start(self):
         """this should return the start date(time) as saved in the event"""
         return self._start
+
+    @property
+    def task(self):
+        """this should return whether or not we are representing a task"""
+        return self._vevents[self.ref].name == 'VTODO'
+
+    @property
+    def task_status(self):
+        """nice representation of a task status"""
+        vstatus = self._vevents[self.ref].get('STATUS', 'NEEDS-ACTION')
+        status = ' '
+        if vstatus == 'COMPLETED':
+            status = 'X'
+        elif vstatus == 'IN-PROGRESS':
+            status = '/'
+        elif vstatus == 'CANCELLED':
+            status = '-'
+        return status
 
     @property
     def end(self):
@@ -427,7 +447,10 @@ class Event:
                 name=name, number=number, suffix=suffix, desc=description, leap=leap,
             )
         else:
-            return self._vevents[self.ref].get('SUMMARY', '')
+            summary = self._vevents[self.ref].get('SUMMARY', '')
+            if self.task:
+                summary = '[{state}] {summary}'.format(state=self.task_status, summary=summary)
+            return summary
 
     def update_summary(self, summary):
         self._vevents[self.ref]['SUMMARY'] = summary
@@ -515,6 +538,14 @@ class Event:
         else:
             alarmstr = ''
         return alarmstr
+
+    @property
+    def _task_str(self):
+        if self.task:
+            taskstr = ' ' + self.symbol_strings['task']
+        else:
+            taskstr = ''
+        return taskstr
 
     def format(self, format_string, relative_to, env=None, colors=True):
         """
@@ -642,6 +673,7 @@ class Event:
         attributes["repeat-symbol"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
         attributes["alarm-symbol"] = self._alarm_str
+        attributes["task-symbol"] = self._task_str
         attributes["title"] = self.summary
         attributes["organizer"] = self.organizer.strip()
         attributes["description"] = self.description.strip()

@@ -35,7 +35,7 @@ import pytz
 from dateutil import parser
 
 from .. import utils
-from ..icalendar import assert_only_one_uid, cal_from_ics
+from ..icalendar import assert_only_one_uid, cal_from_ics, sanitize_vtodo
 from ..icalendar import expand as expand_vevent
 from ..icalendar import sanitize as sanitize_vevent
 from ..icalendar import sort_key as sort_vevent_key
@@ -51,6 +51,11 @@ THISANDFUTURE = 'THISANDFUTURE'
 THISANDPRIOR = 'THISANDPRIOR'
 
 PROTO = 'PROTO'
+
+SANITIZE_MAP = {
+    'VEVENT': sanitize_vevent,
+    'VTODO': sanitize_vtodo,
+}
 
 
 class EventType(IntEnum):
@@ -226,8 +231,8 @@ class SQLiteDb:
                 "If you want to import it, please use `khal import FILE`."
             )
             raise NonUniqueUID
-        vevents = (sanitize_vevent(c, self.locale['default_timezone'], href, calendar) for
-                   c in ical.walk() if c.name == 'VEVENT')
+        vevents = (SANITIZE_MAP[c.name](c, self.locale['default_timezone'], href, calendar) for
+                   c in ical.walk() if c.name in SANITIZE_MAP.keys())
         # Need to delete the whole event in case we are updating a
         # recurring event with an event which is either not recurring any
         # more or has EXDATEs, as those would be left in the recursion

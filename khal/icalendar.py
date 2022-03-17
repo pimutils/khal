@@ -401,6 +401,47 @@ def sanitize(vevent, default_timezone, href='', calendar=''):
     return vevent
 
 
+def sanitize_vtodo(vtodo, default_timezone, href='', calendar=''):
+    """
+    cleanup vtodos so they look like vevents for khal
+
+    :param vtodo: the vtodo that needs to be cleaned
+    :type vtodo: icalendar.cal.Todo
+    :param default_timezone: timezone to apply to start and/or end dates which
+         were supposed to be localized but which timezone was not understood
+         by icalendar
+    :type timezone: pytz.timezone
+    :param href: used for logging to inform user which .ics files are
+        problematic
+    :type href: str
+    :param calendar: used for logging to inform user which .ics files are
+        problematic
+    :type calendar: str
+    :returns: clean vtodo as vevent
+    :rtype: icalendar.cal.Event
+    """
+    vdtstart = vtodo.pop('DTSTART', None)
+    vdue = vtodo.pop('DUE', None)
+
+    # it seems to be common for VTODOs to have DUE but no DTSTART
+    # so we default to that. E.g. NextCloud does something similar
+    if vdtstart is None and vdue is not None:
+        vdtstart = vdue
+
+    # Based loosely on new_event
+    event = icalendar.Event()
+    event.add('dtstart', vdtstart)
+    event.add('due', vdue)
+    # Copy common/necessary attributes
+    for attr in ['uid', 'summary', 'dtend', 'dtstamp', 'description',
+                 'location', 'categories', 'url']:
+        if attr in vtodo:
+            event.add(attr, vtodo.pop(attr))
+
+    # Chain with event sanitation
+    return sanitize(event, default_timezone, href=href, calendar=calendar)
+
+
 def sanitize_timerange(dtstart, dtend, duration=None):
     '''return sensible dtstart and end for events that have an invalid or
     missing DTEND, assuming the event just lasts one hour.'''
