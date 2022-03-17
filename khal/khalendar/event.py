@@ -449,7 +449,7 @@ class Event:
         else:
             summary = self._vevents[self.ref].get('SUMMARY', '')
             if self.task:
-                summary = '[{state}] {summary}'.format(state=self.task_status, summary=summary)
+                summary = f'[{self.task_status}] {summary}'
             return summary
 
     def update_summary(self, summary):
