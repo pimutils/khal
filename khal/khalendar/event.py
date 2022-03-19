@@ -762,7 +762,8 @@ class LocalizedEvent(DatetimeEvent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         try:
-            starttz = getattr(self._vevents[self.ref]['DTSTART'].dt, 'tzinfo', None)
+            sattr = 'DUE' if self.task else 'DTSTART'
+            starttz = getattr(self._vevents[self.ref][sattr].dt, 'tzinfo', None)
         except KeyError:
             msg = (
                 f"Cannot understand event {kwargs.get('href')} from "
