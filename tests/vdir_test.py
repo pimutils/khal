@@ -27,8 +27,10 @@ import pytest
 from khal.khalendar import vdir
 
 
-@pytest.mark.xfail
-def test_etag(tmpdir):
+def test_etag(tmpdir, sleep_time):
+    if sleep_time > 0.01:
+        pytest.xfail("This environment requires sleeping")
+
     fpath = os.path.join(str(tmpdir), 'foo')
 
     file_ = open(fpath, 'w')
@@ -43,15 +45,13 @@ def test_etag(tmpdir):
 
     new_etag = vdir.get_etag_from_file(fpath)
 
-    try:
-        assert old_etag != new_etag
-    except AssertionError:
-        pytest.xfail(
-            "Do we need to sleep?"
-        )
+    assert old_etag != new_etag
 
 
-def test_etag_sync(tmpdir):
+def test_etag_sync(tmpdir, sleep_time):
+    if sleep_time > 0.01:
+        pytest.xfail("This environment requires sleeping")
+
     fpath = os.path.join(str(tmpdir), 'foo')
 
     file_ = open(fpath, 'w')
