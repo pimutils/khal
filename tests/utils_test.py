@@ -2,6 +2,7 @@
 import datetime as dt
 
 from freezegun import freeze_time
+
 try:
     from zoneinfo import ZoneInfo
 except ImportError:

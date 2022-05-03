@@ -26,6 +26,7 @@ calendars. Each calendar is defined by the contents of a vdir, but uses an
 SQLite db for caching (see backend if you're interested).
 """
 import datetime as dt
+
 try:
     from zoneinfo import ZoneInfo
 except ImportError:

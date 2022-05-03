@@ -24,10 +24,12 @@ The SQLite backend implementation.
 
 import contextlib
 import datetime as dt
+
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
     import backports.zoneinfo as ZoneInfo
+
 import logging
 import sqlite3
 from enum import IntEnum

@@ -28,6 +28,7 @@ from hashlib import sha256
 
 import dateutil.rrule
 import icalendar
+
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
