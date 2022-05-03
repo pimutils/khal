@@ -124,9 +124,13 @@ def localize_strip_tz(dates: List[dt.datetime], timezone: dt.tzinfo) -> Iterator
 
 
 def to_unix_time(dtime: dt.datetime) -> float:
-    """convert a datetime object to unix time in UTC (as a float)"""
+    """convert a datetime object to unix time in UTC (as a float)
+
+    if the datetime object is timezone aware, it gets converted to UTC, if it's
+    naive, it gets interpreted as UTC
+    """
     if getattr(dtime, 'tzinfo', None) is not None:
-        dtime = dtime.replace(tzinfo=ZoneInfo("UTC"))
+        dtime = dtime.astimezone(ZoneInfo("UTC"))
     unix_time = timegm(dtime.timetuple())
     return unix_time
 

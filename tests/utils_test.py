@@ -2,6 +2,10 @@
 import datetime as dt
 
 from freezegun import freeze_time
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 
 from khal import utils
 
@@ -119,3 +123,15 @@ def test_get_weekday_occurrence():
     assert utils.get_weekday_occurrence(dt.date(2017, 5, 8)) == (0, 2)
     assert utils.get_weekday_occurrence(dt.date(2017, 5, 28)) == (6, 4)
     assert utils.get_weekday_occurrence(dt.date(2017, 5, 29)) == (0, 5)
+
+
+def test_to_unix_time():
+    time = dt.datetime(2022, 5, 4, 16, 30)
+    assert utils.to_unix_time(time) == 1651681800
+
+    BERLIN = ZoneInfo('Europe/Berlin')
+    local_time = time.replace(tzinfo=BERLIN)
+    assert utils.to_unix_time(local_time) == 1651674600
+
+    time = dt.date(2022, 5, 4)
+    assert utils.to_unix_time(time) == 1651622400
