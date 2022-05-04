@@ -37,7 +37,6 @@ from typing import Optional
 import icalendar
 from click import style
 
-
 from ..exceptions import FatalError
 from ..icalendar import cal_from_ics, delete_instance, invalid_timezone
 from ..parse_datetime import timedelta2str
