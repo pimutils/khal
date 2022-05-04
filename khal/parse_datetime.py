@@ -27,11 +27,13 @@ import logging
 import re
 from calendar import isleap
 from time import strptime
-from typing import List
+from typing import List, Optional, Tuple
 
 import pytz
 
 from khal.exceptions import DateTimeParseError, FatalError
+
+from .custom_types import LocaleConfiguration
 
 logger = logging.getLogger('khal')
 
@@ -180,10 +182,10 @@ def datetimefstr_weekday(dtime_list, timeformat, **kwargs):
 
 def guessdatetimefstr(
     dtime_list: list,
-    locale: dict,
-    default_day: dt.date=None,
+    locale: LocaleConfiguration,
+    default_day: Optional[dt.date]=None,
     in_future=True,
-) -> dt.datetime:
+) -> Tuple[dt.datetime, bool]:
     """
     :param in_future: if set, shortdate(time) events will be set in the future
     """
@@ -218,8 +220,8 @@ def guessdatetimefstr(
             (datetimefstr_weekday, locale['timeformat'], False, False),
             (datefstr_year, locale['dateformat'], True, True),
             (datefstr_year, locale['longdateformat'], True, False),
-            (datefstr_weekday, None, True, False),
-            (datetimefwords, None, False, False),
+            (datefstr_weekday, '', True, False),
+            (datetimefwords, '', False, False),
     ]:
         # if a `short` format contains a year, treat it as a `long` format
         if infer_year and '97' in dt.datetime(1997, 10, 11).strftime(dtformat):

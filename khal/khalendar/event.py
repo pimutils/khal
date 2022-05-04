@@ -56,11 +56,6 @@ class Event:
     allday: bool = False
 
     def __init__(self, vevents, ref: Optional[str] = None, **kwargs):
-        """
-        :type start: datetime.date
-        :param end: end datetime of this event instance in unix time
-        :type end: datetime.date
-        """
         if self.__class__.__name__ == 'Event':
             raise ValueError('do not initialize this class directly')
         if ref is None:

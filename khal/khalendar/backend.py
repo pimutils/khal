@@ -423,22 +423,21 @@ class SQLiteDb:
         except IndexError:
             return None
 
-    def delete(self, href: str, etag: str=None, calendar: str=None):
+    def delete(self, href: str, etag: Any=None, calendar: str='') -> None:
         """
         removes the event from the db,
 
         :param etag: only there for compatibility with vdirsyncer's Storage,
                      we always delete
-        :returns: None
         """
-        assert calendar is not None
+        assert calendar != ''
         for table in ['recs_loc', 'recs_float']:
             sql_s = f'DELETE FROM {table} WHERE href = ? AND calendar = ?;'
             self.sql_ex(sql_s, (href, calendar))
         sql_s = 'DELETE FROM events WHERE href = ? AND calendar = ?;'
         self.sql_ex(sql_s, (href, calendar))
 
-    def deletelike(self, href: str, etag: Any=None, calendar: str=None):
+    def deletelike(self, href: str, etag: Any=None, calendar: str='') -> None:
         """
         removes events from the db that match an SQL 'like' statement,
 
@@ -446,9 +445,8 @@ class SQLiteDb:
                      like '%'
         :param etag: only there for compatibility with vdirsyncer's Storage,
                      we always delete
-        :returns: None
         """
-        assert calendar is not None
+        assert calendar != ''
         for table in ['recs_loc', 'recs_float']:
             sql_s = f'DELETE FROM {table} WHERE href LIKE ? AND calendar = ?;'
             self.sql_ex(sql_s, (href, calendar))

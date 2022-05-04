@@ -243,7 +243,7 @@ class VdirBase:
 
         return etag
 
-    def delete(self, href, etag):
+    def delete(self, href: str, etag: Optional[str]):
         fpath = self._get_filepath(href)
         if not os.path.isfile(fpath):
             raise NotFoundError(href)

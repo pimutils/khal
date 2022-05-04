@@ -264,6 +264,8 @@ class CalendarCollection:
         href, etag, calendar = event.href, event.etag, event.calendar
         event.etag = None
         self.new(event, new_collection)
+        assert href is not None
+        assert calendar is not None
         self.delete(href, etag, calendar=calendar)
 
     def new_event(self, ical: str, collection: str):
