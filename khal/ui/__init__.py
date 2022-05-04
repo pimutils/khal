@@ -968,7 +968,7 @@ class EventDisplay(urwid.WidgetWrap):
         if event.attendees != '':
             lines.append(urwid.Text('Attendees:'))
             for attendee in event.attendees.split(', '):
-                lines.append(urwid.Text('  - {}'.format(attendee)))
+                lines.append(urwid.Text(f'  - {attendee}'))
 
         # start and end time/date
         if event.allday:

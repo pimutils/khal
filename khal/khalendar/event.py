@@ -502,7 +502,7 @@ class Event:
                         vCalAddresses.append(old_attendee)
                         unchanged_attendees.append(attendee)
             for attendee in [a for a in attendees if a not in unchanged_attendees]:
-                item = icalendar.prop.vCalAddress('MAILTO:{}'.format(attendee))
+                item = icalendar.prop.vCalAddress(f'MAILTO:{attendee}')
                 item.params['ROLE'] = icalendar.prop.vText('REQ-PARTICIPANT')
                 item.params['PARTSTAT'] = icalendar.prop.vText('NEEDS-ACTION')
                 item.params['CUTYPE'] = icalendar.prop.vText('INDIVIDUAL')
