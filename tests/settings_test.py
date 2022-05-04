@@ -2,7 +2,7 @@ import datetime as dt
 import os.path
 
 import pytest
-from tzlocal import get_localzone
+from tzlocal import get_localzone as _get_localzone
 from validate import VdtValueError
 
 from khal.settings import get_config
@@ -15,6 +15,12 @@ from khal.settings.utils import (config_checks, get_all_vdirs,
 from .utils import LOCALE_BERLIN
 
 PATH = __file__.rsplit('/', 1)[0] + '/configs/'
+
+
+def get_localzone():
+    # this reproduces the code in settings.util for the time being
+    import pytz
+    return pytz.timezone(str(_get_localzone()))
 
 
 class TestSettings:

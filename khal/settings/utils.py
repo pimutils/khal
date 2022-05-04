@@ -20,10 +20,12 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+import datetime as dt
 import glob
 import logging
 import os
 from os.path import expanduser, expandvars, join
+from typing import Optional
 
 import pytz
 import xdg
@@ -38,13 +40,16 @@ from .exceptions import InvalidSettingsError
 logger = logging.getLogger('khal')
 
 
-def is_timezone(tzstring):
-    """tries to convert tzstring into a pytz timezone
+def is_timezone(tzstring: Optional[str]) -> dt.tzinfo:
+    """tries to convert tzstring into a pytz timezone or return local timezone
 
     raises a VdtvalueError if tzstring is not valid
     """
     if not tzstring:
-        return get_localzone()
+        # later version of tzlocal return zoneinfo (not pytz) timezones
+        # as a lot of our other code can't deal with this yet, we need to force
+        # pytz timezones for the time being
+        return pytz.timezone(str(get_localzone()))
     try:
         return pytz.timezone(tzstring)
     except pytz.UnknownTimeZoneError:
