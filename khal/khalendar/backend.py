@@ -325,7 +325,7 @@ class SQLiteDb:
                 stuple = (vevent_str, etag, href + key, calendar)
                 self.sql_ex(sql_s, stuple)
 
-    def _update_impl(self, vevent: icalendar.cal.Event, href: str, calendar: str) -> None:
+    def _update_impl(self, vevent: icalendar.Event, href: str, calendar: str) -> None:
         """insert `vevent` into the database
 
         expand `vevent`'s recurrence rules (if needed) and insert all instance

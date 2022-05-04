@@ -31,8 +31,10 @@ from typing import Iterable, List, Tuple
 
 try:
     import zoneinfo as ZoneInfo
+    from zoneinfo import ZoneInfoNotFoundError
 except ImportError:  # I am not sure if this is correct for the backport
-    from backports import zoneinfo as ZoneInfo
+    from backports.zoneinfo import ZoneInfo
+    from backport.zoneinfo import ZoneInfoNotFoundError
 from click import confirm, echo, prompt, style
 
 from khal import (__productname__, __version__, calendar_display,
@@ -187,8 +189,8 @@ def get_events_between(
         env = {}
     assert start
     assert end
-    start_local = start.replace(tzinfo=ZoneInfo.ZoneInfo(str(locale['local_timezone'])))
-    end_local = end.replace(tzinfo=ZoneInfo.ZoneInfo(str(locale['local_timezone'])))
+    start_local = start.replace(tzinfo=locale['local_timezone'])
+    end_local = end.replace(tzinfo=locale['local_timezone'])
 
     start = start_local.replace(tzinfo=None)
     end = end_local.replace(tzinfo=None)
@@ -342,12 +344,11 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
 
     while True:
         tz = info.get('timezone') or conf['locale']['default_timezone']
-        timezone = prompt("timezone", default=str(tz))
+        timezone = prompt("timezone", default=tz)
         try:
-            tz = ZoneInfo.ZoneInfo(str(timezone))
-            info['timezone'] = tz
+            info['timezone'] = ZoneInfo.ZoneInfo(str(timezone))  # TODO that str() is probably not needed
             break
-        except ZoneInfo._common.ZoneInfoNotFoundError:
+        except ZoneInfoNotFoundError:
             echo("unknown timezone")
 
     info['description'] = prompt("description (or 'None')", default=info.get('description'))
@@ -553,7 +554,7 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
             format = conf['view']['event_format']
 
     term_width, _ = get_terminal_size()
-    now = dt.datetime.now(tz=ZoneInfo.ZoneInfo(str(conf['locale']['local_timezone'])))
+    now = dt.datetime.now(tz=conf['locale']['local_timezone'])
 
     events = sorted(collection.search(search_string))
     for event in events:

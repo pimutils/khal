@@ -32,9 +32,11 @@ except ImportError:
 import calendar
 import logging
 import os
+from typing import Optional
 
 import icalendar
 from click import style
+
 
 from ..exceptions import FatalError
 from ..icalendar import cal_from_ics, delete_instance, invalid_timezone
@@ -816,20 +818,17 @@ class AllDayEvent(Event):
             return self.end - self.start + dt.timedelta(days=1)
 
 
-def create_timezone(tz, first_date=None, last_date=None):
+def create_timezone(tz: ZoneInfo, first_date: Optional[dt.datetime]=None, last_date: Optional[dt.datetime]=None) -> icalendar.Timezone():
     """
     create an icalendar vtimezone from a pytz.tzinfo object
 
     :param tz: the timezone
-    :type tz: pytz.tzinfo
     :param first_date: the very first datetime that needs to be included in the
     transition times, typically the DTSTART value of the (first recurring)
     event
-    :type first_date: datetime.datetime
     :param last_date: the last datetime that needs to included, typically the
     end of the (very last) event (of a recursion set)
     :returns: timezone information
-    :rtype: icalendar.Timezone()
 
     we currently have a problem here:
 

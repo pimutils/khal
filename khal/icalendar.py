@@ -34,6 +34,8 @@ try:
 except ImportError:
     import backports.zoneinfo as ZoneInfo
 
+from typing import List, Tuple
+
 from .exceptions import UnsupportedRecurrence
 from .parse_datetime import guesstimedeltafstr, rrulefstr
 from .utils import generate_random_uid, localize_strip_tz, to_unix_time
@@ -211,7 +213,7 @@ def ics_from_list(events, tzs, random_uid=False, default_timezone=None):
     return calendar.to_ical().decode('utf-8')
 
 
-def expand(vevent, href=''):
+def expand(vevent: icalendar.Event , href: str='') -> List[Tuple[dt.datetime, dt.datetime]]:
     """
     Constructs a list of start and end dates for all recurring instances of the
     event defined in vevent.
