@@ -269,6 +269,7 @@ class SQLiteDb:
         for key in vcard.keys():
             if key in ['BDAY', 'X-ANNIVERSARY', 'ANNIVERSARY'] or key.endswith('X-ABDATE'):
                 date = vcard[key]
+                uuid = vcard.get('UID')
                 if isinstance(date, list):
                     logger.warning(
                         f'Vcard {href} in collection {calendar} has more than one '
@@ -318,7 +319,12 @@ class SQLiteDb:
                 sql_s = ('INSERT INTO events (item, etag, href, calendar)'
                          ' VALUES (?, ?, ?, ?);')
                 stuple = (vevent_str, etag, href + key, calendar)
-                self.sql_ex(sql_s, stuple)
+                try:
+                    self.sql_ex(sql_s, stuple)
+                except sqlite3.IntegrityError as error:
+                    raise UpdateFailed('Database integrity error creating birthday event '
+                                       'on {} for contact {} (UID: {}): '
+                                       '{}'.format(date, name, uuid, error))
 
     def _update_impl(self, vevent: icalendar.cal.Event, href: str, calendar: str) -> None:
         """insert `vevent` into the database
