@@ -110,6 +110,8 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
         width=rwidth,
         env=env,
     )
+    if not event_column:
+        event_column = [style('No events', bold=True)]
     calendar_column = calendar_display.vertical_month(
         month=start.month,
         year=start.year,
