@@ -6,19 +6,22 @@
 
 /^Summary/ {
   sub(/^Summary[ ]*:[ ]*/, "")
-  summ = $0
+  gsub("'", "'\\''")
+  summ = sprintf("'%s'", $0)
   next
 }
 
 /^Location/ {
   sub(/^Location[ ]*:[ ]*/,"")
-  loc = sprintf("-l \"%s\"", $0)
+  gsub("'", "'\\''")
+  loc = sprintf("'%s'", $0)
   next
 }
 
 /^Desc/ {
   sub(/^Description[ ]*:[ ]*/, "")
-  desc = ":: " $0
+  gsub("'", "'\\''")
+  desc = sprintf("'%s'", $0)
   next
 }
 
@@ -37,7 +40,7 @@
 }
 
 END {
-  print "khal new", loc, d_st, t_st, d_end, t_end, summ, desc | "sh"
+  printf("khal new --location %s %s %s %s %s %s :: %s", loc, d_st, t_st, d_end, t_end, summ, desc) | "sh"
 }
 
 ## IMPORTANT ##
