@@ -110,6 +110,8 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
         width=rwidth,
         env=env,
     )
+    if not event_column:
+        event_column = [style('No events', bold=True)]
     calendar_column = calendar_display.vertical_month(
         month=start.month,
         year=start.year,
@@ -294,8 +296,6 @@ def khal_list(
         event_column.extend(current_events)
         start = dt.datetime(*start.date().timetuple()[:3]) + dt.timedelta(days=1)
 
-    if event_column == []:
-        event_column = [style('No events', bold=True)]
     return event_column
 
 
