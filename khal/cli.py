@@ -325,6 +325,9 @@ def _get_cli():
             )
             if event_column:
                 click.echo('\n'.join(event_column))
+            else:
+                logger.debug('No events found')
+
         except FatalError as error:
             logger.debug(error, exc_info=True)
             logger.fatal(error)
@@ -589,6 +592,8 @@ def _get_cli():
                 )
             if event_column:
                 click.echo('\n'.join(event_column))
+            else:
+                logger.debug('No events found')
         except FatalError as error:
             logger.debug(error, exc_info=True)
             logger.fatal(error)
