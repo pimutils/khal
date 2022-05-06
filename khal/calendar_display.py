@@ -83,15 +83,15 @@ def get_color_list(calendars, default_color, collection):
     return dcolors
 
 
-def str_highlight_day(
-        day, calendars, hmethod, default_color, multiple, color, bold_for_light_color, collection):
+def str_highlight_day(day, calendars, hmethod, default_color, multiple, multiple_on_overflow,
+                      color, bold_for_light_color, collection):
     """returns a string with day highlighted according to configuration
     """
     dstr = str(day.day).rjust(2)
     if color == '':
         dcolors = get_color_list(calendars, default_color, collection)
         if len(dcolors) > 1:
-            if multiple == '':
+            if multiple == '' or (multiple_on_overflow and len(dcolors) == 2):
                 if hmethod == "foreground" or hmethod == "fg":
                     return colored(dstr[:1], fg=dcolors[0],
                                    bold_for_light_color=bold_for_light_color) + \
@@ -115,8 +115,8 @@ def str_highlight_day(
 
 
 def str_week(week, today, collection=None,
-             hmethod=None, default_color=None, multiple=None, color=None,
-             highlight_event_days=False, locale=None, bold_for_light_color=True):
+             hmethod=None, default_color=None, multiple=None, multiple_on_overflow=False,
+             color=None, highlight_event_days=False, locale=None, bold_for_light_color=True):
     """returns a string representing one week,
     if for day == today color is reversed
 
@@ -135,8 +135,9 @@ def str_week(week, today, collection=None,
         elif highlight_event_days:
             devents = list(collection.get_calendars_on(day))
             if len(devents) > 0:
-                day = str_highlight_day(day, devents, hmethod, default_color,
-                                        multiple, color, bold_for_light_color, collection)
+                day = str_highlight_day(day, devents, hmethod, default_color, multiple,
+                                        multiple_on_overflow, color, bold_for_light_color,
+                                        collection)
             else:
                 day = str(day.day).rjust(2)
         else:
@@ -156,6 +157,7 @@ def vertical_month(month=None,
                    hmethod='fg',
                    default_color='',
                    multiple='',
+                   multiple_on_overflow='',
                    color='',
                    highlight_event_days=False,
                    locale=None,
@@ -201,7 +203,8 @@ def vertical_month(month=None,
             else:
                 new_month = len(week if week[0].day <= 7 else [])
             strweek = str_week(week, today, collection, hmethod, default_color,
-                               multiple, color, highlight_event_days, locale, bold_for_light_color)
+                               multiple, multiple_on_overflow, color, highlight_event_days, locale,
+                               bold_for_light_color)
             if new_month:
                 m_name = style(calendar.month_abbr[week[6].month].ljust(month_abbr_len), bold=True)
             elif weeknumber == 'left':

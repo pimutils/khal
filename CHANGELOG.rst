@@ -17,6 +17,9 @@ not released
 * NEW Add support for Python 3.10
 * `search`, `at`, and `list` don't print "No events" anymore if no matching
   events are found
+* NEW Add option to use `multiple` color only when not all calendar colors can
+   be displayed.
+
 
 0.10.4
 ======
