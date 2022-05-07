@@ -15,10 +15,10 @@ not released
 * NEW Add widget to interactive event editor that allows adding attendees as
   comma separated list of email addresses
 * NEW Add support for Python 3.10
-* `search`, `at`, and `list` don't print "No events" anymore if no matching
+* CHANGE `search`, `at`, and `list` don't print "No events" anymore if no matching
   events are found
 * NEW Add option to use `multiple` color only when not all calendar colors can
-   be displayed.
+  be displayed.
 
 
 0.10.4
@@ -30,7 +30,7 @@ not released
 * NEW Add symbol for events with at least one alarm
 * FIX URL can now be set/updated from ikhal
 * FIX Imported events without an end or duration will now last one day if
-   `DTSTART` is a date (as per RFC) or one hour if it is a datetime.
+  `DTSTART` is a date (as per RFC) or one hour if it is a datetime.
 
 0.10.3
 ======
@@ -45,7 +45,7 @@ not released
 * FIX Display all-day events at the top of the day in `ikhal`
 * FIX Keybindings in empty search results no longer crash `ikhal`
 * NEW Possibility to add a blank line before day in `khal` with
-   `blank_line_before_day` option
+  `blank_line_before_day` option
 * FIX `new` keybinding in search no longer crash `ikhal`
 * NEW Improved sorting of events. Sort by `DTSTART`, `DTEND` then `SUMMARY`.
 * NEW Add url input and `{url}` template option
@@ -63,10 +63,10 @@ not released
 * FIX Launching an external editor no longer crashes `ikhal`
 * UPDATED DEPENDENCY urwid>=1.3.0
 * FIX Wrong left pane width calculation in ikal when `frame` is `width` or
-   `color` in configuration.
+  `color` in configuration.
 * CHANGE Remove check for timezones in `UNTIL` that aren't in `DTSTART` and
-   vice-versa. The check wasn't fulfilling its purpose and was raising warnings
-   when no `UNTIL` value was set.
+  vice-versa. The check wasn't fulfilling its purpose and was raising warnings
+  when no `UNTIL` value was set.
 
 0.10.1
 ======
@@ -80,7 +80,7 @@ not released
 2019-03-25
 
 * In contrast to what was stated here before, at release time, khal >0.10.0
-   supported dateutil 2.7
+  supported dateutil 2.7
 
 * NEW DEPENDENCY added click_log  >= 0.2.0
 * NEW DEPENDENCY for Python 3.4: typing

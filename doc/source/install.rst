@@ -4,7 +4,8 @@ Installation
 If khal is packaged for your OS/distribution, using your system's
 standard package manager is probably the easiest way to install khal.
 khal has been packaged for, among others: Arch Linux (stable_ and development_
-versions), Debian_, Fedora_, FreeBSD_, Guix_, and pkgsrc_.
+versions), Debian_, Fedora_, FreeBSD_, Guix_, and pkgsrc_ (or see repology_ for
+a more complete list).
 
 .. _stable: https://www.archlinux.org/packages/community/any/khal/
 .. _development: https://aur.archlinux.org/packages/khal-git/
@@ -13,6 +14,7 @@ versions), Debian_, Fedora_, FreeBSD_, Guix_, and pkgsrc_.
 .. _FreeBSD: https://www.freshports.org/deskutils/py-khal/
 .. _Guix: http://www.gnu.org/software/guix/packages/
 .. _pkgsrc: http://pkgsrc.se/time/khal
+.. _repology: https://repology.org/project/python:khal/versions
 
 If a package isn't available (or it is outdated) you need to fall back to one
 of the methods mentioned below.
@@ -65,7 +67,7 @@ then starting khal from that virtual environment.
 Requirements
 ------------
 
-*khal* is written in python and can run on Python 3.5+. It requires a Python
+*khal* is written in python and can run on Python 3.6+. It requires a Python
 with ``sqlite3`` support enabled (which is usually the case).
 
 If you are installing python via *pip* or from source, be aware that since

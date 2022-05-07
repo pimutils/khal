@@ -44,10 +44,53 @@ working) is via github or via IRC (#pimutils on Libera.Chat).
 
 Documentation
 -------------
-For khal's documentation have a look at the website_ or readthedocs_.
+For khal's documentation have a look at readthedocs_.
 
-.. _website: https://lostpackets.de/khal/
 .. _readthedocs: http://khal.readthedocs.org/
+
+Installation
+------------
+khal is packaged for most `operating systems`__ and should be installable with
+your standard package manager.
+
+.. __: https://repology.org/project/python:khal/versions
+
+For some exemplary OS you can find installation instructions below. Otherwise
+see the documentation_ for more information.
+
+.. _documentation: https://khal.readthedocs.io/en/latest/install.html
+
+Debian/Ubuntu
+~~~~~~~~~~~~~
+
+    apt install khal
+
+Nix
+~~~
+
+    nix-env -i khal
+
+Arch
+~~~~
+
+    pacman -s khal
+
+Brew
+~~~~
+
+    brew install khal
+
+
+FreeBSD
+~~~~~~~
+
+    pkg install py-khal
+
+
+Install latest version
+~~~~~~~~~~~~~~~~~~~~~~
+
+    pip install git+https://github.com/pimutils/khal
 
 
 Alternatives
