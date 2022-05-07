@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2021 khal contributors
+# Copyright (c) 2013-2022 khal contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -30,7 +30,7 @@ except ImportError:
 __productname__ = 'khal'
 __version__ = version
 __author__ = 'Christian Geier'
-__copyright__ = 'Copyright (c) 2013-2021 khal contributors'
+__copyright__ = 'Copyright (c) 2013-2022 khal contributors'
 __author_email__ = 'khal@lostpackets.de'
 __description__ = 'A standards based terminal calendar'
 __license__ = 'Expat/MIT, see COPYING'
