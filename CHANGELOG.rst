@@ -12,6 +12,7 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released
 
+* FIX support for tzlocal >= 4.0
 * NEW Add widget to interactive event editor that allows adding attendees as
   comma separated list of email addresses
 * NEW Add support for Python 3.10
@@ -56,8 +57,8 @@ not released
 
 * NEW Parse `X-ANNIVERSARY`, `ANNIVERSARY` and `X-ABDATE` fields from vcards
 * NEW Add ability to change default event duration with
-   `default_event_duration` and `default_dayevent_duration` for a day-long
-   event
+  `default_event_duration` and `default_dayevent_duration` for a day-long
+  event
 * NEW Add `{uid}` property to template options in `--format`
 * FIX No warning when importing event with Windows timezone format
 * FIX Launching an external editor no longer crashes `ikhal`
