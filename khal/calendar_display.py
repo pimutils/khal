@@ -34,7 +34,7 @@ from .utils import get_month_abbr_len
 setlocale(LC_ALL, '')
 
 
-def get_weekheader(firstweekday):
+def get_weekheader(firstweekday: int):
     mylocale: str
     try:
         mylocale = '.'.join(getlocale(LC_TIME))

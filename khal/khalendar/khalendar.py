@@ -224,7 +224,7 @@ class CalendarCollection:
             self._backend.update(event.raw, event.href, event.etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
-    def delete(self, href: str, etag: str, calendar: str):
+    def delete(self, href: str, etag: Optional[str], calendar: str):
         if self._calendars[calendar]['readonly']:
             raise ReadOnlyCalendarError()
         self._storages[calendar].delete(href, etag)
@@ -239,8 +239,8 @@ class CalendarCollection:
     def _construct_event(self,
                          item: str,
                          href: str,
-                         start: Optional[dt.datetime] = None,
-                         end: Optional[dt.datetime] = None,
+                         start: Optional[Union[dt.datetime, dt.date]] = None,
+                         end: Optional[Union[dt.datetime, dt.date]] = None,
                          ref: str='PROTO',
                          etag: Optional[str]=None,
                          calendar: Optional[str]=None,

@@ -28,7 +28,7 @@ import logging
 import sqlite3
 from enum import IntEnum
 from os import makedirs, path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import icalendar
 import pytz
@@ -89,7 +89,7 @@ class SQLiteDb:
         self._check_table_version()
 
     @contextlib.contextmanager
-    def at_once(self) -> 'SQLiteDb':
+    def at_once(self):
         assert not self._at_once
         self._at_once = True
         try:
@@ -535,10 +535,13 @@ class SQLiteDb:
             yield calendar[0]
 
     def get_floating(self, start: dt.datetime, end: dt.datetime) \
-            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
+            -> Iterable[Tuple[str, str, Union[dt.date, dt.datetime], Union[dt.date, dt.datetime], str, str, str]]:
         """return floating events between `start` and `end`"""
         assert start.tzinfo is None
         assert end.tzinfo is None
+        start_dt: Union[dt.datetime, dt.date]
+        end_dt: Union[dt.datetime, dt.date]
+
         start_u = utils.to_unix_time(start)
         end_u = utils.to_unix_time(end)
         sql_s = (
@@ -553,13 +556,13 @@ class SQLiteDb:
         stuple = tuple(
             [start_u, end_u, start_u, end_u, start_u, end_u] + list(self.calendars))  # type: ignore
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
-        for item, href, start, end, ref, etag, dtype, calendar in result:
-            start = dt.datetime.utcfromtimestamp(start)
-            end = dt.datetime.utcfromtimestamp(end)
+        for item, href, start_s, end_s, ref, etag, dtype, calendar in result:
+            start_dt = dt.datetime.utcfromtimestamp(start_s)
+            end_dt = dt.datetime.utcfromtimestamp(end_s)
             if dtype == EventType.DATE:
-                start = start.date()
-                end = end.date()
-            yield item, href, start, end, ref, etag, calendar
+                start_dt = start_dt.date()
+                end_dt = end_dt.date()
+            yield item, href, start_dt, end_dt, ref, etag, calendar
 
     def get(self, href: str, calendar: str) -> str:
         """returns the ical string matching href and calendar"""

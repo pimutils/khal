@@ -1,5 +1,6 @@
-import datetime as dt
 from typing import Protocol, TypedDict, Union
+
+import pytz
 
 
 class CalendarConfiguration(TypedDict):
@@ -12,8 +13,8 @@ class CalendarConfiguration(TypedDict):
 
 
 class LocaleConfiguration(TypedDict):
-    local_timezone: dt.tzinfo
-    default_timezone: dt.tzinfo
+    local_timezone: pytz.BaseTzInfo
+    default_timezone: pytz.BaseTzInfo
     timeformat: str
     dateformat: str
     longdateformat: str
@@ -25,5 +26,7 @@ class LocaleConfiguration(TypedDict):
 
 
 class SupportsRaw(Protocol):
-    uid: str
+    @property
+    def uid(self) -> str: ...
+    @property
     def raw(self) -> str: ...

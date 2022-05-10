@@ -32,6 +32,7 @@ import pytz
 from click import style
 from pytz.tzinfo import StaticTzInfo
 
+from ..custom_types import LocaleConfiguration
 from ..exceptions import FatalError
 from ..icalendar import cal_from_ics, delete_instance, invalid_timezone
 from ..parse_datetime import timedelta2str
@@ -61,7 +62,7 @@ class Event:
         if ref is None:
             raise ValueError('ref should not be None')
         self._vevents = vevents
-        self._locale = kwargs.pop('locale', None)
+        self._locale: LocaleConfiguration = kwargs.pop('locale', None)
         self.readonly = kwargs.pop('readonly', None)
         self.href: Optional[str] = kwargs.pop('href', None)
         self.etag: Optional[str] = kwargs.pop('etag', None)
