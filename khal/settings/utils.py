@@ -31,8 +31,9 @@ try:
     import zoneinfo as ZoneInfo
 except ImportError:  # I am not sure if this is correct for the backport
     from backports import zoneinfo as ZoneInfo
-import xdg
+
 import pytz
+import xdg
 from tzlocal import get_localzone
 from validate import VdtValueError
 
