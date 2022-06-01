@@ -1,6 +1,7 @@
 import datetime as dt
 
 import icalendar
+
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
@@ -810,7 +811,7 @@ class TestIsAware():
         assert utils.is_aware(dt.datetime.now(tz=BERLIN)) is True
 
     def test_bogota(self):
-        assert utils.is_aware((dt.datetime.now(tz=BOGOTA))) is True
+        assert utils.is_aware(dt.datetime.now(tz=BOGOTA)) is True
 
     def test_utc(self):
         assert utils.is_aware(dt.datetime.now(tz=utc)) is True

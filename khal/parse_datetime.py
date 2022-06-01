@@ -23,16 +23,18 @@
 strings to date(time) or event objects"""
 
 import datetime as dt
+
 try:
     import zoneinfo as ZoneInfo
 except ImportError:  # I am not sure if this is correct for the backport
     from backports import zoneinfo as ZoneInfo
+
 import logging
 import re
 from calendar import isleap
 from time import strptime
 
-from khal.exceptions import FatalError, DateTimeParseError
+from khal.exceptions import DateTimeParseError, FatalError
 
 logger = logging.getLogger('khal')
 

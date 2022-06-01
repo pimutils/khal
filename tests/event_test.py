@@ -1,10 +1,12 @@
 import datetime as dt
 
 import pytest
+
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
     from backports import zoneinfo as ZoneInfo
+
 from freezegun import freeze_time
 from icalendar import Parameters, vCalAddress, vRecur, vText
 
