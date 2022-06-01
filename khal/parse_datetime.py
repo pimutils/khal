@@ -26,8 +26,10 @@ import datetime as dt
 
 try:
     import zoneinfo as ZoneInfo
+    from zoneinfo import ZoneInfoNotFoundError
 except ImportError:  # I am not sure if this is correct for the backport
-    from backports import zoneinfo as ZoneInfo
+    from backports.zoneinfo import ZoneInfo
+    from backports.zoneinfo import ZoneInfoNotFoundError
 
 import logging
 import re

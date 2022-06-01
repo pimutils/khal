@@ -28,7 +28,7 @@ import datetime as dt
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
-    from backports import zoneinfo as ZoneInfo
+    from backports.zoneinfo import ZoneInfo
 
 import logging
 import sqlite3

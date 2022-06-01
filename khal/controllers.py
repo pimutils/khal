@@ -31,8 +31,10 @@ from typing import Iterable, List, Tuple
 
 try:
     import zoneinfo as ZoneInfo
+    from zoneinfo import ZoneInfoNotFoundError
 except ImportError:  # I am not sure if this is correct for the backport
-    from backports import zoneinfo as ZoneInfo
+    from backports.zoneinfo import ZoneInfo
+    from backports.zoneinfo import ZoneInfoNotFoundError
 from click import confirm, echo, prompt, style
 
 from khal import (__productname__, __version__, calendar_display,
