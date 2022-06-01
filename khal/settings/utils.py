@@ -33,7 +33,7 @@ try:
 except ImportError:  # I am not sure if this is correct for the backport
     from backports.zoneinfo import ZoneInfo
     from backports.zoneinfo import ZoneInfoNotFoundError
-import xdg
+
 import pytz
 import xdg
 from tzlocal import get_localzone
