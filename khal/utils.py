@@ -36,8 +36,6 @@ from calendar import month_abbr, timegm
 from textwrap import wrap
 from typing import Iterator, List, Optional, Tuple
 
-import pytz
-
 
 def generate_random_uid() -> str:
     """generate a random uid

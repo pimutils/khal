@@ -29,7 +29,6 @@ try:
 except ImportError:
     from backports import zoneinfo as ZoneInfo
 
-import calendar
 import logging
 import os
 
@@ -886,9 +885,15 @@ def create_timezone(tz, first_date=None, last_date=None):
     # TODO last_date = None, recurring to infinity
 
     first_date = dt.datetime.today() if not first_date else to_naive_utc(first_date)
-    # TODO: determine if there is a way to do this for BST pjk
-    # check to see if timezone is a part of dst by checking if before or after
-    # the transition it has an offset
+    dst = {
+        one[2]: 'DST' in two.__repr__()
+        for one, two in iter(tz._tzinfos.items())
+    }
+    bst = {
+        one[2]: 'BST' in two.__repr__()
+        for one, two in iter(tz._tzinfos.items())
+    }
+
     if first_date.dst() == dt.timedelta(0) and first_date.replace(fold=1).dst() == dt.timedelta(0):
         return _create_timezone_static(tz)
 
@@ -919,7 +924,7 @@ def create_timezone(tz, first_date=None, last_date=None):
                 timezones[name].add('RDATE', ttime)
             continue
 
-        if transition_times[index].dst() != dt.timedelta(0):
+        if dst[name] or bst[name]:
             subcomp = icalendar.TimezoneDaylight()
         else:
             subcomp = icalendar.TimezoneStandard()
