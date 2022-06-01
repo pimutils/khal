@@ -30,6 +30,7 @@ except ImportError:
 
 import logging
 from collections import defaultdict
+from hashlib import sha256
 
 import dateutil.rrule
 import icalendar
@@ -276,7 +277,8 @@ def expand(vevent, href=''):
             rrule._until = dt.datetime(2037, 12, 31)
         else:
             if events_tz and 'Z' in rrule_param.to_ical().decode():
-                rrule._until = rrule._until.replace(tzinfo=ZoneInfo("UTC")).astimezone(events_tz).replace(tzinfo=None)
+                rrule._until = rrule._until.replace(tzinfo=ZoneInfo("UTC"))
+                    .astimezone(events_tz).replace(tzinfo=None)
 
             # rrule._until and dtstart could be dt.date or dt.datetime. They
             # need to be the same for comparison
