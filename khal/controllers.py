@@ -349,7 +349,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
             tz = ZoneInfo.ZoneInfo(str(timezone))
             info['timezone'] = tz
             break
-        except ZoneInfo._common.ZoneInfoNotFoundError:
+        except ZoneInfoNotFoundError:
             echo("unknown timezone")
 
     info['description'] = prompt("description (or 'None')", default=info.get('description'))

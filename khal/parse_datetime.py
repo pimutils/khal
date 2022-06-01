@@ -476,7 +476,7 @@ def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_
                 # next element is a valid Olson db timezone string
                 tz = ZoneInfo.ZoneInfo(str(parts[i]))
                 i += 1
-            except (ZoneInfo._common.ZoneInfoNotFoundError, UnicodeDecodeError, IndexError):
+            except (ZoneInfoNotFoundError, UnicodeDecodeError, IndexError):
                 tz = None
             summary = ' '.join(parts[i:])
             break

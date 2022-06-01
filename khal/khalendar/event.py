@@ -896,13 +896,22 @@ def create_timezone(tz, first_date=None, last_date=None):
     timezone = icalendar.Timezone()
     timezone.add('TZID', tz)
 
-    transition_times = _get_transition_dates_dst_for_daterange(tz, first_date.replace(tzinfo=tz),
-                                                               last_date.replace(tzinfo=tz))
+    first_num, last_num = 0, len(tz._trans_utc) - 1
+    first_tt = tz._trans_utc[0]
+    last_tt = tz._trans_utc[-1]
+    for num, transtime in enumerate(tz._trans_utc):
+        if transtime > first_tt and transtime < first_date:
+            first_num = num
+            first_tt = transtime
+        if transtime < last_tt and transtime > last_date:
+            last_num = num
+            last_tt = transtime
+
     timezones = {}
-    for index in range(1, len(transition_times)):
-        name = transition_times[index].tzname()
+    for num in range(first_num, last_num + 1):
+        name = tz._ttinfos[num][2]
         if name in timezones:
-            ttime = transition_times[index].replace(tzinfo=None)
+            ttime = tz.fromutc(tz._trans_utc[num]).replace(tzinfo=None)
             if 'RDATE' in timezones[name]:
                 timezones[name]['RDATE'].dts.append(
                     icalendar.prop.vDDDTypes(ttime))
@@ -915,14 +924,12 @@ def create_timezone(tz, first_date=None, last_date=None):
         else:
             subcomp = icalendar.TimezoneStandard()
 
-        subcomp.add('TZNAME', name)
+        subcomp.add('TZNAME', tz._ttinfos[num][2])
         subcomp.add(
             'DTSTART',
-            tz.fromutc(transition_times[index]).replace(tzinfo=None)
-        )
-
-        subcomp.add('TZOFFSETTO', transition_times[index].utcoffset())
-        subcomp.add('TZOFFSETFROM', transition_times[index - 1].utcoffset())
+            tz.fromutc(tz._trans_utc[num]).replace(tzinfo=None))
+        subcomp.add('TZOFFSETTO', tz._ttinfos[num][0])
+        subcomp.add('TZOFFSETFROM', tz._ttinfos[num - 1][0])
         timezones[name] = subcomp
 
     for subcomp in timezones.values():
@@ -949,62 +956,3 @@ def _create_timezone_static(tz):
     subcomp.add('TZOFFSETFROM', tz._utcoffset)
     timezone.add_component(subcomp)
     return timezone
-
-
-def _get_transition_dates_dst_for_daterange(tz, start_date, end_date):
-    # TODO: add date range based algorithms for determining the correct dst
-    # time zones where rules exist pjk
-    if start_date.year < 2007:
-        msg = (
-            "Cannot work with start dates prior to 2007 at this time. Date supplied was" +
-            str(start_date) + ".")
-        logger.fatal(msg)
-        raise FatalError(  # because in ikhal you won't see the logger's output
-            msg
-        )
-
-    year = start_date.year - 1
-    years = []
-    while year <= end_date.year + 1:
-        years.append(year)
-        year += 1
-
-    index_of_first_transition_before_start_date = 0
-    index = 0
-    transition_times = []
-    for year in years:
-        marchCal = calendar.monthcalendar(year, 3)
-        first_week = marchCal[0]
-        second_week = marchCal[1]
-        third_week = marchCal[2]
-
-        if first_week[calendar.SUNDAY]:
-            dst_begins = second_week[calendar.SUNDAY]
-        else:
-            dst_begins = third_week[calendar.SUNDAY]
-
-        dst_start = dt.datetime(year, 3, dst_begins, 2, tzinfo=tz)
-        transition_times.append(dst_start)
-        if dst_start < start_date:
-            index_of_first_transition_before_start_date = index
-
-        if end_date < dst_start:
-            break
-
-        novemberCal = calendar.monthcalendar(year, 11)
-        first_week = novemberCal[0]
-        second_week = novemberCal[1]
-
-        if first_week[calendar.SUNDAY]:
-            dst_ends = first_week[calendar.SUNDAY]
-        else:
-            dst_ends = second_week[calendar.SUNDAY]
-
-        dst_end = dt.datetime(year, 11, dst_ends, 2, tzinfo=tz)
-        transition_times.append(dst_end)
-        if end_date < dst_end:
-            break
-
-        index += 1
-
-    return transition_times[index_of_first_transition_before_start_date:]

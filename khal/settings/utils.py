@@ -55,7 +55,7 @@ def is_timezone(tzstring: Optional[str]) -> dt.tzinfo:
         return pytz.timezone(str(get_localzone()))
     try:
         return ZoneInfo.ZoneInfo(str(tzstring))
-    except ZoneInfo._common.ZoneInfoNotFoundError:
+    except ZoneInfoNotFoundError:
         raise VdtValueError(f"Unknown timezone {tzstring}")
 
 
