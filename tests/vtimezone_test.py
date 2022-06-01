@@ -3,7 +3,7 @@ import datetime as dt
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
-    from backports import zoneinfo as ZoneInfo
+    from backports.zoneinfo import ZoneInfo
 from khal.khalendar.event import create_timezone
 
 berlin = ZoneInfo('Europe/Berlin')

@@ -5,7 +5,7 @@ import icalendar
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
-    from backports import zoneinfo as ZoneInfo
+    from backports.zoneinfo import ZoneInfo
 
 from khal import icalendar as icalendar_helpers
 from khal import utils

@@ -5,7 +5,7 @@ import icalendar
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
-    from backports import zoneinfo as ZoneInfo
+    from backports.zoneinfo import ZoneInfo
 
 cal0 = 'a_calendar'
 cal1 = 'foobar'

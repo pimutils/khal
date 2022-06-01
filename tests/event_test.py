@@ -5,7 +5,7 @@ import pytest
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
-    from backports import zoneinfo as ZoneInfo
+    from backports.zoneinfo import ZoneInfo
 
 from freezegun import freeze_time
 from icalendar import Parameters, vCalAddress, vRecur, vText
