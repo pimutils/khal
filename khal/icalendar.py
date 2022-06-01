@@ -22,16 +22,14 @@
 """collection of icalendar helper functions"""
 
 import datetime as dt
-import logging
-from collections import defaultdict
-from hashlib import sha256
-
-import dateutil.rrule
-import icalendar
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
     from backports import zoneinfo as ZoneInfo
+import dateutil.rrule
+import icalendar
+import logging
+from collections import defaultdict
 
 from .exceptions import UnsupportedRecurrence
 from .parse_datetime import guesstimedeltafstr, rrulefstr
