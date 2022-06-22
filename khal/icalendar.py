@@ -502,6 +502,18 @@ def delete_instance(vevent, instance):
             vevent.add('RDATE', rdates)
 
 
+def edit_instance(vevents, instance):
+    """add `instance` to vevents
+
+    if an instance with that recuid already exists, replace it. Also make sure,
+    that recuid is not excluded
+    """
+
+
+
+    return vevents
+
+
 def sort_key(vevent):
     """helper function to determine order of VEVENTS
     so that recurrence-id events come after the corresponding rrule event, etc

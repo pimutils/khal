@@ -643,7 +643,11 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
     if batch or confirm(f"Do you want to import this event into `{calendar_name}`?"):
         try:
             collection.new(Item(vevent), collection=calendar_name)
-        except DuplicateUid:
+        except DuplicateUid as error:
+            uid = str(error)
+            existing_event = collection.get_event(href=uid, calendar=calendar_name)
+            if existing_event.recurring:
+                breakpoint()
             if batch or confirm(
                     "An event with the same UID already exists. Do you want to update it?"):
                 collection.force_update(Item(vevent), collection=calendar_name)

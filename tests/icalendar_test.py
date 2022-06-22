@@ -3,7 +3,7 @@ import textwrap
 
 import icalendar
 
-from khal.icalendar import split_ics
+from khal.icalendar import split_ics, edit_instance
 
 from .utils import LOCALE_BERLIN, _get_text, normalize_component
 
@@ -87,3 +87,13 @@ def test_split_ics_without_uid():
     assert vevents
     vevents2 = split_ics(cal)
     assert vevents[0] == vevents2[0]
+
+
+def test_edit_instance():
+    """test if adding a recuid instance to a recurring event works"""
+    cal = icalendar.Calendar.from_ical(_get_text("event_rrule"))
+    instance = icalendar.Calendar.from_ical(_get_text("event_rrule_recuid_instance_only"))
+    breakpoint()
+    
+
+    updated_instance = edit_instance(cal, instance)
