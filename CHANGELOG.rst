@@ -13,7 +13,9 @@ may want to subscribe to `GitHub's tag feed
 not released
 
 * FIX support for tzlocal >= 4.0
-* FIX ability to show event's calendar in ikhal
+* FIX ability to show an event's calendar in ikhal
+* FIX an error logging for certain broken icalendar events that made ikhal crash
+  after editing those events
 * NEW Add widget to interactive event editor that allows adding attendees as
   comma separated list of email addresses
 * FIX event creation for events after the second next DST transition
