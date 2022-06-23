@@ -1295,7 +1295,7 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
                 return 'DEBUG'
 
         def format(self, record):
-            return (self.get_prefix(record.levelno) + ': ' + record.msg)
+            return f'{self.get_prefix(record.levelno)}: {record.msg}'
 
     class HeaderFormatter(LogPaneFormatter):
         def format(self, record):
