@@ -3,7 +3,7 @@ import textwrap
 
 import icalendar
 
-from khal.icalendar import split_ics, edit_instance
+from khal.icalendar import edit_instance, split_ics
 
 from .utils import LOCALE_BERLIN, _get_text, normalize_component
 
@@ -94,6 +94,6 @@ def test_edit_instance():
     cal = icalendar.Calendar.from_ical(_get_text("event_rrule"))
     instance = icalendar.Calendar.from_ical(_get_text("event_rrule_recuid_instance_only"))
     breakpoint()
-    
+
 
     updated_instance = edit_instance(cal, instance)
