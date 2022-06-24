@@ -50,7 +50,7 @@ or better::
 
 in the unpacked distribution folder.
 
-Since version 0.10, *khal* **only supports python 3.6+**. If you have
+Since version 0.10, *khal* **only supports python 3.8+**. If you have
 python 2 and 3 installed in parallel you might need to use `pip3` instead of
 `pip` and `python3` instead of `python`. In case your operating system cannot
 deal with python 2 and 3 packages concurrently, we suggest installing *khal* in

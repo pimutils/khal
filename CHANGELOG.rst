@@ -7,6 +7,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.11.0
+======
+not released
+
+* DROPPED support for python versions < 3.8
 
 0.10.5
 ======
