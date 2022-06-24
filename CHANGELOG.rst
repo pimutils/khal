@@ -13,6 +13,7 @@ may want to subscribe to `GitHub's tag feed
 not released
 
 * FIX support for tzlocal >= 4.0
+* FIX ability to show event's calendar in ikhal
 * NEW Add widget to interactive event editor that allows adding attendees as
   comma separated list of email addresses
 * NEW Add support for Python 3.10

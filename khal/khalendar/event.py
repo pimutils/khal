@@ -698,6 +698,7 @@ class Event:
             attributes["calendar"] = cal.get("displayname", self.calendar)
         else:
             attributes["calendar-color"] = attributes["calendar"] = ''
+            attributes["calendar"] = self.calendar
 
         if colors:
             attributes['reset'] = style('', reset=True)
