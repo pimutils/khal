@@ -62,6 +62,61 @@ then starting khal from that virtual environment.
 .. _virtualenv: https://virtualenv.pypa.io
 .. _virtualenvwrapper: http://virtualenvwrapper.readthedocs.org/
 
+Shell Completion
+----------------
+khal uses click_ for it's commpand line interface. click can automatically
+generate completion_ files for bash, fish, and zsh which can either be generated
+and sourced each time your shell is started or, generated once, save to a file
+and sourced from there. The latter version is much more efficient.
+
+.. note::
+    If you package khal, please generate and include the completion file in the
+    package if possible.
+
+.. _click: https://click.palletsprojects.com
+.. _completion: https://click.palletsprojects.com/en/8.1.x/shell-completion/
+
+bash
+~~~~
+For bash, you can either add the following line to your ``.bashrc``::
+
+    eval "$(_KHAL_COMPLETE=bash_source khal)"
+
+Or, save the file somewhere::
+
+    _KHAL_COMPLETE=bash_source khal > ~/.khal-complete.bash
+
+and then source it from your ``.bashrc``::
+
+    . ~/.khal-complete.bash
+
+zsh
+~~~
+For zsh, you can either add the following line to your ``.zshrc``::
+
+   eval "$(_KHAL_COMPLETE=zsh_source khal)"
+
+Or, save the file somewhere::
+
+   _KHAL_COMPLETE=zsh_source khal > ~/.khal-complete.zsh
+
+and then source it from your ``.zshrc``::
+
+   . ~/.khal-complete.zsh
+
+fish
+~~~~
+For fish, add this to ``~/.config/fish/completions/khal.fish``::
+
+   eval (env _KHAL_COMPLETE=fish_source khal)
+
+Or save the script to ``~/.config/fish/completions/khal.fish``::
+
+   _KHAL_COMPLETE=fish_source khal > ~/.config/fish/completions/khal.fish
+
+Note, that the latter basically does the same as the former and no efficiency is
+gained.
+
 .. _requirements:
 
 Requirements
