@@ -16,6 +16,8 @@ EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE_BERLIN}
 LIST_FORMAT = '{calendar-color}{cancelled}{start-end-time-style} {title}{repeat-symbol}'
 SEARCH_FORMAT = '{calendar-color}{cancelled}{start-long}{to-style}' + \
     '{end-necessary-long} {title}{repeat-symbol}'
+FORMAT_CALENDAR = ('{calendar-color}{cancelled}{start-end-time-style} ({calendar}) '
+                   '{title} [{location}]{repeat-symbol}')
 
 
 def test_no_initialization():
@@ -45,6 +47,19 @@ def test_raw_dt():
     assert event.duration == dt.timedelta(hours=1)
     assert event.uid == 'V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU'
     assert event.organizer == ''
+
+
+def test_calendar_in_format():
+    """test if the calendar is included in event.format() if specified in the FORMAT
+
+    see #1121
+    """
+    event_dt = _get_text('event_dt_simple')
+    start = BERLIN.localize(dt.datetime(2014, 4, 9, 9, 30))
+    end = BERLIN.localize(dt.datetime(2014, 4, 9, 10, 30))
+    event = Event.fromString(event_dt, start=start, end=end, **EVENT_KWARGS)
+    assert event.format(FORMAT_CALENDAR, dt.date(2014, 4, 9)) == \
+        '09:30-10:30 (foobar) An Event []\x1b[0m'
 
 
 def test_update_simple():
