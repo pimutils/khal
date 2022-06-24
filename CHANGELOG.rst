@@ -21,6 +21,11 @@ not released
   events are found
 * NEW Add option to use `multiple` color only when not all calendar colors can
   be displayed.
+* CHANGE we are not shipping a zsh completion file anymore but provide
+  documentation on how to generate completion files for bash, zsh, and fish
+  (see the install section of the documentation)
+
+  **Packagers**: please generate and ship those completion files if possible
 
 
 0.10.4
