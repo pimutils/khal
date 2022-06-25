@@ -27,6 +27,13 @@ import os
 from os.path import expanduser, expandvars, join
 from typing import Optional
 
+try:
+    import zoneinfo as ZoneInfo
+    from zoneinfo import ZoneInfoNotFoundError
+except ImportError:  # I am not sure if this is correct for the backport
+    from backports.zoneinfo import ZoneInfo
+    from backports.zoneinfo import ZoneInfoNotFoundError
+
 import pytz
 import xdg
 from tzlocal import get_localzone
@@ -51,8 +58,8 @@ def is_timezone(tzstring: Optional[str]) -> dt.tzinfo:
         # pytz timezones for the time being
         return pytz.timezone(str(get_localzone()))
     try:
-        return pytz.timezone(tzstring)
-    except pytz.UnknownTimeZoneError:
+        return ZoneInfo.ZoneInfo(str(tzstring))
+    except ZoneInfoNotFoundError:
         raise VdtValueError(f"Unknown timezone {tzstring}")
 
 

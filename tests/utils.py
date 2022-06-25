@@ -1,7 +1,11 @@
 import os
 
 import icalendar
-import pytz
+
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 
 cal0 = 'a_calendar'
 cal1 = 'foobar'
@@ -10,14 +14,14 @@ cal3 = 'private'
 
 example_cals = [cal0, cal1, cal2, cal3]
 
-BERLIN = pytz.timezone('Europe/Berlin')
-NEW_YORK = pytz.timezone('America/New_York')
-LONDON = pytz.timezone('Europe/London')
-SAMOA = pytz.timezone('Pacific/Samoa')
-SYDNEY = pytz.timezone('Australia/Sydney')
-GMTPLUS3 = pytz.timezone('Etc/GMT+3')
+BERLIN = ZoneInfo('Europe/Berlin')
+NEW_YORK = ZoneInfo('America/New_York')
+LONDON = ZoneInfo('Europe/London')
+SAMOA = ZoneInfo('Pacific/Samoa')
+SYDNEY = ZoneInfo('Australia/Sydney')
+GMTPLUS3 = ZoneInfo('Etc/GMT+3')
 # the lucky people in Bogota don't know the pain that is DST
-BOGOTA = pytz.timezone('America/Bogota')
+BOGOTA = ZoneInfo('America/Bogota')
 
 
 LOCALE_BERLIN = {

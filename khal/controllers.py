@@ -29,7 +29,12 @@ from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
 from typing import Iterable, List, Tuple
 
-import pytz
+try:
+    import zoneinfo as ZoneInfo
+    from zoneinfo import ZoneInfoNotFoundError
+except ImportError:  # I am not sure if this is correct for the backport
+    from backports.zoneinfo import ZoneInfo
+    from backports.zoneinfo import ZoneInfoNotFoundError
 from click import confirm, echo, prompt, style
 
 from khal import (__productname__, __version__, calendar_display,
@@ -188,8 +193,8 @@ def get_events_between(
         env = {}
     assert start
     assert end
-    start_local = locale['local_timezone'].localize(start)
-    end_local = locale['local_timezone'].localize(end)
+    start_local = start.replace(tzinfo=ZoneInfo.ZoneInfo(str(locale['local_timezone'])))
+    end_local = end.replace(tzinfo=ZoneInfo.ZoneInfo(str(locale['local_timezone'])))
 
     start = start_local.replace(tzinfo=None)
     end = end_local.replace(tzinfo=None)
@@ -278,7 +283,7 @@ def khal_list(
     if env is None:
         env = {}
 
-    original_start = conf['locale']['local_timezone'].localize(start)
+    original_start = start.replace(tzinfo=ZoneInfo.ZoneInfo(str(conf['locale']['local_timezone'])))
     while start < end:
         if start.date() == end.date():
             day_end = end
@@ -343,10 +348,10 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         tz = info.get('timezone') or conf['locale']['default_timezone']
         timezone = prompt("timezone", default=str(tz))
         try:
-            tz = pytz.timezone(timezone)
+            tz = ZoneInfo.ZoneInfo(str(timezone))
             info['timezone'] = tz
             break
-        except pytz.UnknownTimeZoneError:
+        except ZoneInfoNotFoundError:
             echo("unknown timezone")
 
     info['description'] = prompt("description (or 'None')", default=info.get('description'))
@@ -552,7 +557,7 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
             format = conf['view']['event_format']
 
     term_width, _ = get_terminal_size()
-    now = conf['locale']['local_timezone'].localize(dt.datetime.now())
+    now = dt.datetime.now(tz=ZoneInfo.ZoneInfo(str(conf['locale']['local_timezone'])))
 
     events = sorted(collection.search(search_string))
     for event in events:

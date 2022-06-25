@@ -1,11 +1,13 @@
 import datetime as dt
 
-import pytz
-
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 from khal.khalendar.event import create_timezone
 
-berlin = pytz.timezone('Europe/Berlin')
-bogota = pytz.timezone('America/Bogota')
+berlin = ZoneInfo('Europe/Berlin')
+bogota = ZoneInfo('America/Bogota')
 
 atime = dt.datetime(2014, 10, 28, 10, 10)
 btime = dt.datetime(2016, 10, 28, 10, 10)

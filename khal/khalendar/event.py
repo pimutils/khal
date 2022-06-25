@@ -23,11 +23,16 @@
 helper functions."""
 
 import datetime as dt
+
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
+
 import logging
 import os
 
 import icalendar
-import pytz
 from click import style
 
 from ..exceptions import FatalError
@@ -126,7 +131,8 @@ class Event:
             if 'RECURRENCE-ID' in event:
                 if invalid_timezone(event['RECURRENCE-ID']):
                     default_timezone = kwargs['locale']['default_timezone']
-                    recur_id = default_timezone.localize(event['RECURRENCE-ID'].dt)
+                    recur_id = event['RECURRENCE-ID'].dt.replace(
+                        tzinfo=ZoneInfo(str(default_timezone)))
                     ident = str(to_unix_time(recur_id))
                 else:
                     ident = str(to_unix_time(event['RECURRENCE-ID'].dt))
@@ -257,7 +263,7 @@ class Event:
         if self.ref == 'PROTO':
             return self.start
         else:
-            return pytz.UTC.localize(dt.datetime.utcfromtimestamp(int(self.ref)))
+            return dt.datetime.utcfromtimestamp(int(self.ref)).replace(tzinfo=ZoneInfo("UTC"))
 
     def increment_sequence(self):
         """update the SEQUENCE number, call before saving this event"""
@@ -377,7 +383,7 @@ class Event:
                 tzs.append(vevent['DTEND'].dt.tzinfo)
 
         for tzinfo in tzs:
-            if tzinfo == pytz.UTC:
+            if tzinfo == ZoneInfo("UTC"):
                 continue
             timezone = create_timezone(tzinfo, self.start)
             calendar.add_component(timezone)
@@ -566,6 +572,7 @@ class Event:
         except TypeError:
             relative_to_start = relative_to_end = relative_to
 
+        local_locale = ZoneInfo(str(self._locale['local_timezone']))
         if isinstance(relative_to_end, dt.datetime):
             relative_to_end = relative_to_end.date()
         if isinstance(relative_to_start, dt.datetime):
@@ -575,17 +582,11 @@ class Event:
             start_local_datetime = self.start_local
             end_local_datetime = self.end_local
         else:
-            start_local_datetime = self._locale['local_timezone'].localize(
-                dt.datetime.combine(self.start, dt.time.min))
-            end_local_datetime = self._locale['local_timezone'].localize(
-                dt.datetime.combine(self.end, dt.time.min))
+            start_local_datetime = dt.datetime.combine(self.start, dt.time.min, local_locale)
+            end_local_datetime = dt.datetime.combine(self.end, dt.time.min, local_locale)
 
-        day_start = self._locale['local_timezone'].localize(
-            dt.datetime.combine(relative_to_start, dt.time.min),
-        )
-        day_end = self._locale['local_timezone'].localize(
-            dt.datetime.combine(relative_to_end, dt.time.max),
-        )
+        day_start = dt.datetime.combine(relative_to_start, dt.time.min, local_locale)
+        day_end = dt.datetime.combine(relative_to_end, dt.time.max, local_locale)
         next_day_start = day_start + dt.timedelta(days=1)
 
         allday = isinstance(self, AllDayEvent)
@@ -793,12 +794,12 @@ class LocalizedEvent(DatetimeEvent):
         if is_aware(self._start):
             self._start = self._start.astimezone(starttz)
         else:
-            self._start = starttz.localize(self._start)
+            self._start = self._start.replace(tzinfo=ZoneInfo(str(starttz)))
 
         if is_aware(self._end):
             self._end = self._end.astimezone(endtz)
         else:
-            self._end = endtz.localize(self._end)
+            self._end = self._end.replace(tzinfo=ZoneInfo(str(endtz)))
 
     @property
     def start_local(self):
@@ -822,11 +823,11 @@ class FloatingEvent(DatetimeEvent):
 
     @property
     def start_local(self):
-        return self._locale['local_timezone'].localize(self.start)
+        return self.start.replace(tzinfo=ZoneInfo(str(self._locale['local_timezone'])))
 
     @property
     def end_local(self):
-        return self._locale['local_timezone'].localize(self.end)
+        return self.end.replace(tzinfo=ZoneInfo(str(self._locale['local_timezone'])))
 
 
 class AllDayEvent(Event):
@@ -882,16 +883,9 @@ def create_timezone(tz, first_date=None, last_date=None):
     easy solution, we'd really need to ship another version of the OLSON DB.
 
     """
-    if isinstance(tz, pytz.tzinfo.StaticTzInfo):
-        return _create_timezone_static(tz)
-
     # TODO last_date = None, recurring to infinity
 
     first_date = dt.datetime.today() if not first_date else to_naive_utc(first_date)
-    last_date = dt.datetime.today() if not last_date else to_naive_utc(last_date)
-    timezone = icalendar.Timezone()
-    timezone.add('TZID', tz)
-
     dst = {
         one[2]: 'DST' in two.__repr__()
         for one, two in iter(tz._tzinfos.items())
@@ -901,11 +895,17 @@ def create_timezone(tz, first_date=None, last_date=None):
         for one, two in iter(tz._tzinfos.items())
     }
 
-    # looking for the first and last transition time we need to include
-    first_num, last_num = 0, len(tz._utc_transition_times) - 1
-    first_tt = tz._utc_transition_times[0]
-    last_tt = tz._utc_transition_times[-1]
-    for num, transtime in enumerate(tz._utc_transition_times):
+    if first_date.dst() == dt.timedelta(0) and first_date.replace(fold=1).dst() == dt.timedelta(0):
+        return _create_timezone_static(tz)
+
+    last_date = dt.datetime.today() if not last_date else to_naive_utc(last_date)
+    timezone = icalendar.Timezone()
+    timezone.add('TZID', tz)
+
+    first_num, last_num = 0, len(tz._trans_utc) - 1
+    first_tt = tz._trans_utc[0]
+    last_tt = tz._trans_utc[-1]
+    for num, transtime in enumerate(tz._trans_utc):
         if transtime > first_tt and transtime < first_date:
             first_num = num
             first_tt = transtime
@@ -915,9 +915,9 @@ def create_timezone(tz, first_date=None, last_date=None):
 
     timezones = {}
     for num in range(first_num, last_num + 1):
-        name = tz._transition_info[num][2]
+        name = tz._ttinfos[num][2]
         if name in timezones:
-            ttime = tz.fromutc(tz._utc_transition_times[num]).replace(tzinfo=None)
+            ttime = tz.fromutc(tz._trans_utc[num]).replace(tzinfo=None)
             if 'RDATE' in timezones[name]:
                 timezones[name]['RDATE'].dts.append(
                     icalendar.prop.vDDDTypes(ttime))
@@ -930,12 +930,12 @@ def create_timezone(tz, first_date=None, last_date=None):
         else:
             subcomp = icalendar.TimezoneStandard()
 
-        subcomp.add('TZNAME', tz._transition_info[num][2])
+        subcomp.add('TZNAME', tz._ttinfos[num][2])
         subcomp.add(
             'DTSTART',
-            tz.fromutc(tz._utc_transition_times[num]).replace(tzinfo=None))
-        subcomp.add('TZOFFSETTO', tz._transition_info[num][0])
-        subcomp.add('TZOFFSETFROM', tz._transition_info[num - 1][0])
+            tz.fromutc(tz._trans_utc[num]).replace(tzinfo=None))
+        subcomp.add('TZOFFSETTO', tz._ttinfos[num][0])
+        subcomp.add('TZOFFSETFROM', tz._ttinfos[num - 1][0])
         timezones[name] = subcomp
 
     for subcomp in timezones.values():
