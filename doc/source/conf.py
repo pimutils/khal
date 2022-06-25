@@ -18,7 +18,7 @@ import khal
 
 try:
     # Available from configobj 5.1.0
-    import configobj.validate
+    import configobj.validate as validate
 except ModuleNotFoundError:
     import validate
 
