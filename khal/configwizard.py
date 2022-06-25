@@ -124,7 +124,7 @@ def choose_default_calendar(vdirs):
     print(f"Configured calendars: {', '.join(names)}")
     default_calendar = prompt(
         "Please type one of the above options",
-        default=names[0],
+        default=names[0] if len(names) > 0 else '',
         type=Choice(names),
     )
     return default_calendar
