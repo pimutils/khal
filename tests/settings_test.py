@@ -235,7 +235,7 @@ def test_config_checks(metavdirs):
     for cal in config['calendars']:
         config['calendars'][cal]['path'] = config['calendars'][cal]['path'][len(metavdirs):]
 
-    assert config == {
+    test_config = {
         'calendars': {
             'home': {
                 'color': None,
@@ -258,14 +258,14 @@ def test_config_checks(metavdirs):
                 'type': 'calendar',
                 'priority': 10,
             },
-            'public': {
+            'public1': {
                 'color': None,
                 'path': '/cal2/public',
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
             },
-            'public1': {
+            'public': {
                 'color': None,
                 'path': '/cal3/public',
                 'readonly': False,
@@ -313,6 +313,9 @@ def test_config_checks(metavdirs):
         'locale': {'default_timezone': 'Europe/Berlin', 'local_timezone': 'Europe/Berlin'},
         'sqlite': {'path': '/tmp'},
     }
+
+    assert config['calendars'] == test_config['calendars']
+    assert config == test_config
 
 
 def test_is_color():
