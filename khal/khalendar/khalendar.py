@@ -224,9 +224,8 @@ class CalendarCollection:
 
     def get_event(self, href: str, calendar: str) -> Event:
         """get an event by its href from the datatbase"""
-        return self._construct_event(
-            self._backend.get(href, calendar), href=href, calendar=calendar,
-        )
+        event_str, etag = self._backend.get_with_etag(href, calendar)
+        return self._construct_event(event_str, etag=etag, href=href, calendar=calendar)
 
     def _construct_event(self,
                          item: str,

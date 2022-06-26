@@ -575,6 +575,13 @@ class SQLiteDb:
         item, etag = self.sql_ex(sql_s, (href, calendar))[0]
         return item
 
+    def get_with_etag(self, href: str, calendar: str) -> Tuple[str, str]:
+        """returns the ical string and its etag matching href and calendar"""
+        assert calendar is not None
+        sql_s = 'SELECT item, etag FROM events WHERE href = ? AND calendar = ?;'
+        item, etag = self.sql_ex(sql_s, (href, calendar))[0]
+        return item, etag
+
     def search(self, search_string: str) \
             -> Iterable[Tuple[str, str, dt.date, dt.date, str, str, str]]:
         """search for events matching `search_string`"""
