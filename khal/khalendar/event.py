@@ -888,18 +888,18 @@ def create_timezone(
 
     dst = {
         one[2]: 'DST' in two.__repr__()
-        for one, two in iter(tz._tzinfos.items())
+        for one, two in iter(tz._tzinfos.items())  # type: ignore
     }
     bst = {
         one[2]: 'BST' in two.__repr__()
-        for one, two in iter(tz._tzinfos.items())
+        for one, two in iter(tz._tzinfos.items())  # type: ignore
     }
 
     # looking for the first and last transition time we need to include
-    first_num, last_num = 0, len(tz._utc_transition_times) - 1
-    first_tt = tz._utc_transition_times[0]
-    last_tt = tz._utc_transition_times[-1]
-    for num, transtime in enumerate(tz._utc_transition_times):
+    first_num, last_num = 0, len(tz._utc_transition_times) - 1  # type: ignore
+    first_tt = tz._utc_transition_times[0]  # type: ignore
+    last_tt = tz._utc_transition_times[-1]  # type: ignore
+    for num, transtime in enumerate(tz._utc_transition_times):  # type: ignore
         if first_date > transtime > first_tt:
             first_num = num
             first_tt = transtime
@@ -909,9 +909,9 @@ def create_timezone(
 
     timezones: Dict[str, icalendar.Component] = {}
     for num in range(first_num, last_num + 1):
-        name = tz._transition_info[num][2]
+        name = tz._transition_info[num][2]  # type: ignore
         if name in timezones:
-            ttime = tz.fromutc(tz._utc_transition_times[num]).replace(tzinfo=None)
+            ttime = tz.fromutc(tz._utc_transition_times[num]).replace(tzinfo=None)  # type: ignore
             if 'RDATE' in timezones[name]:
                 timezones[name]['RDATE'].dts.append(
                     icalendar.prop.vDDDTypes(ttime))
@@ -924,12 +924,12 @@ def create_timezone(
         else:
             subcomp = icalendar.TimezoneStandard()
 
-        subcomp.add('TZNAME', tz._transition_info[num][2])
+        subcomp.add('TZNAME', tz._transition_info[num][2])  # type: ignore
         subcomp.add(
             'DTSTART',
-            tz.fromutc(tz._utc_transition_times[num]).replace(tzinfo=None))
-        subcomp.add('TZOFFSETTO', tz._transition_info[num][0])
-        subcomp.add('TZOFFSETFROM', tz._transition_info[num - 1][0])
+            tz.fromutc(tz._utc_transition_times[num]).replace(tzinfo=None))  # type: ignore
+        subcomp.add('TZOFFSETTO', tz._transition_info[num][0])  # type: ignore
+        subcomp.add('TZOFFSETFROM', tz._transition_info[num - 1][0])  # type: ignore
         timezones[name] = subcomp
 
     for subcomp in timezones.values():
@@ -950,7 +950,7 @@ def _create_timezone_static(tz: StaticTzInfo) -> icalendar.Timezone:
     subcomp.add('TZNAME', tz)
     subcomp.add('DTSTART', dt.datetime(1601, 1, 1))
     subcomp.add('RDATE', dt.datetime(1601, 1, 1))
-    subcomp.add('TZOFFSETTO', tz._utcoffset)
-    subcomp.add('TZOFFSETFROM', tz._utcoffset)
+    subcomp.add('TZOFFSETTO', tz._utcoffset)  # type: ignore
+    subcomp.add('TZOFFSETFROM', tz._utcoffset)  # type: ignore
     timezone.add_component(subcomp)
     return timezone
