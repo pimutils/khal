@@ -376,7 +376,6 @@ def configwizard():
         vdirs = choose_vdir_calendar()
     except OSError as error:
         raise FatalError(error)
-    print()
 
     if not vdirs:
         print("\nWARNING: no vdir configured, khal will not be usable like this!\n")
