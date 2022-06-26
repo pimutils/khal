@@ -846,7 +846,7 @@ class AllDayEvent(Event):
             return self.end - self.start + dt.timedelta(days=1)
 
 
-def create_timezone(tz: pytz.tzinfo.BaseTzInfo, first_date: Optional[dt.datetime]=None, last_date: Optional[dt.datetime]=None) -> icalendar.Timezone:
+def create_timezone(tz: pytz.BaseTzInfo, first_date: Optional[dt.datetime]=None, last_date: Optional[dt.datetime]=None) -> icalendar.Timezone:
     """
     create an icalendar vtimezone from a pytz.tzinfo object
 
