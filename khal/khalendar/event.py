@@ -28,6 +28,8 @@ import os
 from typing import Dict, List, Optional, Type
 
 import icalendar
+import icalendar.cal
+import icalendar.prop
 import pytz
 from click import style
 from pytz.tzinfo import StaticTzInfo
@@ -56,24 +58,34 @@ class Event:
     """
     allday: bool = False
 
-    def __init__(self, vevents, ref: Optional[str] = None, **kwargs):
+    def __init__(self,
+                 vevents,
+                 locale: LocaleConfiguration,
+                 ref: Optional[str] = None,
+                 readonly: bool = False,
+                 href: Optional[str] = None,
+                 etag: Optional[str] = None,
+                 calendar: Optional[str] = None,
+                 color: Optional[str] = None,
+                 start: Optional[dt.datetime] = None,
+                 end: Optional[dt.datetime] = None,
+                 ):
+        """
+        :param start: start datetime of this event instance
+        :param end: end datetime of this event instance
+        """
         if self.__class__.__name__ == 'Event':
             raise ValueError('do not initialize this class directly')
         if ref is None:
             raise ValueError('ref should not be None')
         self._vevents = vevents
-        self._locale: LocaleConfiguration = kwargs.pop('locale', None)
-        self.readonly = kwargs.pop('readonly', None)
-        self.href: Optional[str] = kwargs.pop('href', None)
-        self.etag: Optional[str] = kwargs.pop('etag', None)
-        self.calendar: Optional[str] = kwargs.pop('calendar', None)
-        self.color: Optional[str] = kwargs.pop('color', None)
         self.ref = ref
-
-        # start datetime of this event instance
-        start: Optional[dt.datetime] = kwargs.pop('start', None)
-        # end datetime of this event instance
-        end: Optional[dt.datetime] = kwargs.pop('end', None)
+        self._locale = locale
+        self.readonly = readonly
+        self.href = href
+        self.etag = etag
+        self.calendar = calendar
+        self.color = color
 
         if start is None:
             self._start = self._vevents[self.ref]['DTSTART'].dt
@@ -87,18 +99,12 @@ class Event:
                     self._end = self._start + self._vevents[self.ref]['DURATION'].dt
                 except KeyError:
                     self._end = self._start + dt.timedelta(days=1)
-
         else:
             self._end = end
-        if kwargs:
-            raise TypeError('%s are invalid keyword arguments to this function' % kwargs.keys())
 
     @classmethod
     def _get_type_from_vDDD(cls, start: icalendar.prop.vDDDTypes) -> type:
-        """
-        :type start: icalendar.prop.vDDDTypes
-        :type start: icalendar.prop.vDDDTypes
-        """
+        """infere the type of the class from the START type of the event"""
         if not isinstance(start.dt, dt.datetime):
             return AllDayEvent
         if 'TZID' in start.params or start.dt.tzinfo is not None:
@@ -119,6 +125,7 @@ class Event:
     def fromVEvents(cls,
                     events_list: List[icalendar.cal.Event],
                     ref: Optional[str]=None,
+                    start: Optional[dt.datetime]=None,
                     **kwargs) -> 'Event':
         assert isinstance(events_list, list)
 
@@ -143,11 +150,11 @@ class Event:
         except KeyError:
             pass
 
-        if kwargs.get('start'):
-            instcls = cls._get_type_from_date(kwargs.get('start'))
+        if start:
+            instcls = cls._get_type_from_date(start)
         else:
             instcls = cls._get_type_from_vDDD(vevents[ref]['DTSTART'])
-        return instcls(vevents, ref=ref, **kwargs)
+        return instcls(vevents, ref=ref, start=start, **kwargs)
 
     @classmethod
     def fromString(cls, event_str, ref=None, **kwargs):
@@ -722,7 +729,7 @@ class Event:
         vevent['SEQUENCE'] = 0
         vevent['UID'] = icalendar.vText(new_uid)
         vevent['SUMMARY'] = icalendar.vText(vevent['SUMMARY'] + ' Copy')
-        event = self.fromVEvents([vevent])
+        event = self.fromVEvents([vevent], locale=self._locale)
         event.calendar = self.calendar
         event._locale = self._locale
         return event

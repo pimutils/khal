@@ -282,7 +282,7 @@ def test_event_rrule_this_and_future():
     assert events[5][3] == BERLIN.localize(dt.datetime(2014, 8, 4, 18, 0))
 
     assert 'SUMMARY:Arbeit\n' in events[0][0]
-    for _num, event in enumerate(events[1:]):
+    for event in events[1:]:
         assert 'SUMMARY:Arbeit (lang)\n' in event[0]
 
 

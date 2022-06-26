@@ -402,7 +402,7 @@ class SQLiteDb:
                 stuple_n = (dbstart, dbend, href, ref, dtype, rec_inst, calendar)
                 self.sql_ex(recs_sql_s, stuple_n)
 
-    def get_ctag(self, calendar=str) -> Optional[str]:
+    def get_ctag(self, calendar: str) -> Optional[str]:
         stuple = (calendar, )
         sql_s = 'SELECT ctag FROM calendars WHERE calendar = ?;'
         try:

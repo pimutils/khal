@@ -309,7 +309,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
             info, conf['locale'],
             conf['default']['default_event_duration'],
             conf['default']['default_dayevent_duration'],
-            adjust_reasonably=True, localize=False,
+            adjust_reasonably=True,
         )
     except DateTimeParseError:
         info = {}
@@ -373,7 +373,7 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
         info, conf['locale'],
         conf['default']['default_event_duration'],
         conf['default']['default_dayevent_duration'],
-        adjust_reasonably=True, localize=False
+        adjust_reasonably=True,
     )
     new_from_args(
         collection, calendar_name, conf, format=format, env=env,

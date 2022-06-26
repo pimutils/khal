@@ -27,7 +27,7 @@ import logging
 import re
 from calendar import isleap
 from time import strptime
-from typing import List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import pytz
 
@@ -54,8 +54,13 @@ def timefstr(dtime_list: List[str], timeformat: str) -> dt.datetime:
     return dtstart
 
 
-def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True,
-                 in_future=True):
+def datetimefstr(
+        dtime_list: List[str],
+        dateformat: str,
+        default_day: Optional[dt.date]=None,
+        infer_year:bool=True,
+        in_future:bool=True,
+) -> dt.datetime:
     """converts a datetime (as one or several string elements of a list) to
     a datetimeobject, if infer_year is True, use the `default_day`'s year as
     the year of the return datetimeobject,
@@ -74,8 +79,8 @@ def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True,
     parts = dateformat.count(' ') + 1
     dtstring = ' '.join(dtime_list[0:parts])
     # only time.strptime can parse the 29th of Feb. if no year is given
-    dtstart = strptime(dtstring, dateformat)
-    if infer_year and dtstart.tm_mon == 2 and dtstart.tm_mday == 29 and \
+    dtstart_struct = strptime(dtstring, dateformat)
+    if infer_year and dtstart_struct.tm_mon == 2 and dtstart_struct.tm_mday == 29 and \
             not isleap(default_day.year):
         raise ValueError
 
@@ -83,14 +88,14 @@ def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True,
         dtime_list.pop(0)
 
     if infer_year:
-        dtstart = dt.datetime(*(default_day.timetuple()[:1] + dtstart[1:5]))
+        dtstart = dt.datetime(*(default_day.timetuple()[:1] + dtstart_struct[1:5]))
         if in_future and dtstart < now:
             dtstart = dtstart.replace(year=dtstart.year + 1)
         if dtstart.date() < default_day:
             dtstart = dtstart.replace(year=default_day.year + 1)
         return dtstart
     else:
-        return dt.datetime(*dtstart[:5])
+        return dt.datetime(*dtstart_struct[:5])
 
 
 def weekdaypstr(dayname: str) -> int:
@@ -152,15 +157,12 @@ def calc_day(dayname: str) -> dt.datetime:
     return day
 
 
-def datefstr_weekday(dtime_list, _, **kwargs):
+def datefstr_weekday(dtime_list: List[str], _, **kwargs) -> dt.datetime:
     """interprets first element of a list as a relative date and removes that
     element
 
     :param dtime_list: event description in list form
-    :type dtime_list: list
     :returns: date
-    :rtype: datetime.datetime
-
     """
     if len(dtime_list) == 0:
         raise ValueError()
@@ -169,7 +171,7 @@ def datefstr_weekday(dtime_list, _, **kwargs):
     return day
 
 
-def datetimefstr_weekday(dtime_list, timeformat, **kwargs):
+def datetimefstr_weekday(dtime_list: List[str], timeformat: str, **kwargs) -> dt.datetime:
     if len(dtime_list) == 0:
         raise ValueError()
     day = calc_day(dtime_list[0])
@@ -213,6 +215,10 @@ def guessdatetimefstr(
         return datetimefstr(dtime_list, dtformat, default_day, infer_year, in_future)
 
     dtstart = None
+    fun: Callable[..., dt.datetime]
+    dtformat: str
+    all_day: bool
+    infer_year: bool
     for fun, dtformat, all_day, infer_year in [
             (datefstr_year, locale['datetimeformat'], False, True),
             (datefstr_year, locale['longdatetimeformat'], False, False),
@@ -413,7 +419,7 @@ def rrulefstr(repeat, until, locale, timezone):
     if repeat in ["daily", "weekly", "monthly", "yearly"]:
         rrule_settings = {'freq': repeat}
         if until:
-            until_dt, is_date = guessdatetimefstr(until.split(' '), locale)
+            until_dt, _ = guessdatetimefstr(until.split(' '), locale)
             if timezone:
                 rrule_settings['until'] = until_dt.\
                     replace(tzinfo=timezone).\
@@ -428,7 +434,7 @@ def rrulefstr(repeat, until, locale, timezone):
 
 
 def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_duration,
-                  adjust_reasonably=False, localize=False):
+                  adjust_reasonably=False):
     """parses a string of the form START [END | DELTA] [TIMEZONE] [SUMMARY] [::
     DESCRIPTION] into a dictionary with keys: dtstart, dtend, timezone, allday,
     summary, description

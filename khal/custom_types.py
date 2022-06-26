@@ -36,6 +36,7 @@ class SupportsRaw(Protocol):
         ...
 
 
+# set this to TypeAlias once we support that python version (PEP613)
 EventTuple = Tuple[
     str,
     str,

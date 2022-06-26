@@ -39,7 +39,7 @@ from .terminal import colored
 try:
     from setproctitle import setproctitle
 except ImportError:
-    def setproctitle(x):
+    def setproctitle(_):
         pass
 
 
