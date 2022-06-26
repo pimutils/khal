@@ -214,7 +214,7 @@ class VdirBase:
                 raise
         return href, etag
 
-    def _upload_impl(self, item, href: str):
+    def _upload_impl(self, item, href: str) -> Tuple[str, str]:
         fpath = self._get_filepath(href)
         try:
             with atomic_write(fpath, mode='wb', overwrite=False) as f:

@@ -55,11 +55,11 @@ def timefstr(dtime_list: List[str], timeformat: str) -> dt.datetime:
 
 
 def datetimefstr(
-        dtime_list: List[str],
-        dateformat: str,
-        default_day: Optional[dt.date]=None,
-        infer_year: bool=True,
-        in_future: bool=True,
+    dtime_list: List[str],
+    dateformat: str,
+    default_day: Optional[dt.date]=None,
+    infer_year: bool=True,
+    in_future: bool=True,
 ) -> dt.datetime:
     """converts a datetime (as one or several string elements of a list) to
     a datetimeobject, if infer_year is True, use the `default_day`'s year as
