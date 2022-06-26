@@ -24,7 +24,7 @@ Features
 - fast and easy way to add new events
 - ikhal (interactive khal) lets you browse and edit calendars and events
 - no support for editing the timezones of events yet
-- works with python 3.6+
+- works with python 3.8+
 - khal should run on all major operating systems [1]_
 
 .. [1] except for Microsoft Windows

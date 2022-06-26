@@ -17,7 +17,7 @@ Features
 - ikhal (interactive khal) lets you browse and edit calendars and events
 - only rudimentary support for creating and editing recursion rules
 - you cannot edit the timezones of events
-- works with python 3.6+
+- works with python 3.8+
 - khal should run on all major operating systems [1]_
 
 .. [1] except for Microsoft Windows
