@@ -440,27 +440,27 @@ def _get_cli():
             raise click.UsageError(
                 'When using batch import, please specify a calendar to import '
                 'into or set the `default_calendar` in the config file.')
+        rvalue = 0
+        # Default to stdin:
+        if not ics:
+            ics_strs = ((sys.stdin.read(), 'stdin'),)
+            if not batch:
 
-        try:
-            # Default to stdin:
-            if not ics:
-                ics_strs = (sys.stdin.read(),)
-                if not batch:
+                def isatty(_file):
+                    try:
+                        return _file.isatty()
+                    except Exception:
+                        return False
 
-                    def isatty(_file):
-                        try:
-                            return _file.isatty()
-                        except Exception:
-                            return False
+                if isatty(sys.stdin) and os.stat('/dev/tty').st_mode & stat.S_IFCHR > 0:
+                    sys.stdin = open('/dev/tty')
+                else:
+                    logger.warning('/dev/tty does not exist, importing might not work')
+        else:
+            ics_strs = ((ics_file.read(), ics_file.name) for ics_file in ics)
 
-                    if isatty(sys.stdin) and os.stat('/dev/tty').st_mode & stat.S_IFCHR > 0:
-                        sys.stdin = open('/dev/tty')
-                    else:
-                        logger.warning('/dev/tty does not exist, importing might not work')
-            else:
-                ics_strs = (ics_file.read() for ics_file in ics)
-
-            for ics_str in ics_strs:
+        for ics_str, filename in ics_strs:
+            try:
                 controllers.import_ics(
                     collection,
                     ctx.obj['conf'],
@@ -469,10 +469,14 @@ def _get_cli():
                     random_uid=random_uid,
                     env={"calendars": ctx.obj['conf']['calendars']},
                 )
-        except FatalError as error:
-            logger.debug(error, exc_info=True)
-            logger.fatal(error)
-            sys.exit(1)
+            except FatalError as error:
+                logger.debug(error, exc_info=True)
+                logger.fatal(f"An error occurred when trying to import the file from {filename}")
+                logger.fatal("Events from it will not be available in khal")
+                if not batch:
+                    sys.exit(1)
+                rvalue = 1
+        sys.exit(rvalue)
 
     @cli.command()
     @multi_calendar_option
