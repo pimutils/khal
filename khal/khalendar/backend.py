@@ -83,7 +83,7 @@ class SQLiteDb:
         self.db_path = path.expanduser(db_path)
         self._create_dbdir()
         self.locale = locale
-        self._at_once:bool = False
+        self._at_once: bool = False
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
         self._create_default_tables()
@@ -501,17 +501,18 @@ class SQLiteDb:
             'recs_loc.calendar = events.calendar WHERE '
             '(dtstart >= ? AND dtstart <= ? OR '
             'dtend > ? AND dtend <= ? OR '
+            'dtstart <= ? AND dtend >= ?) AND '
             # insert as many "?" as we have configured calendars
-            f'dtstart <= ? AND dtend >= ?) AND events.calendar in ({",".join("?" * len(self.calendars))}) '
+            f'events.calendar in ({",".join("?" * len(self.calendars))}) '
             'ORDER BY dtstart')
         stuple = (
-                start_timestamp,
-                end_timestamp,
-                start_timestamp,
-                end_timestamp,
-                start_timestamp,
-                end_timestamp,
-            ) + tuple(self.calendars)
+            start_timestamp,
+            end_timestamp,
+            start_timestamp,
+            end_timestamp,
+            start_timestamp,
+            end_timestamp,
+        ) + tuple(self.calendars)
         result = self.sql_ex(sql_s, stuple)
         for item, href, start_timestamp, end_timestamp, ref, etag, _dtype, calendar in result:
             start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start_timestamp))
