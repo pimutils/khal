@@ -27,36 +27,40 @@ import logging
 import re
 from calendar import isleap
 from time import strptime
+from typing import Callable, List, Optional, Tuple
 
 import pytz
 
 from khal.exceptions import DateTimeParseError, FatalError
 
+from .custom_types import LocaleConfiguration
+
 logger = logging.getLogger('khal')
 
 
-def timefstr(dtime_list, timeformat):
+def timefstr(dtime_list: List[str], timeformat: str) -> dt.datetime:
     """converts the first item of a list (a time as a string) to a datetimeobject
 
     where the date is today and the time is given by a string
-    removes "used" elements of list
-
-    :type dtime_list: list(str)
-    :type timeformat: str
-    :rtype: datetime.datetime
+    removes "used" elements of list.
     """
     if len(dtime_list) == 0:
         raise ValueError()
-    time_start = dt.datetime.strptime(dtime_list[0], timeformat)
-    time_start = dt.time(*time_start.timetuple()[3:5])
+    datetime_start = dt.datetime.strptime(dtime_list[0], timeformat)
+    time_start = dt.time(*datetime_start.timetuple()[3:5])
     day_start = dt.date.today()
     dtstart = dt.datetime.combine(day_start, time_start)
     dtime_list.pop(0)
     return dtstart
 
 
-def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True,
-                 in_future=True):
+def datetimefstr(
+    dtime_list: List[str],
+    dateformat: str,
+    default_day: Optional[dt.date]=None,
+    infer_year: bool=True,
+    in_future: bool=True,
+) -> dt.datetime:
     """converts a datetime (as one or several string elements of a list) to
     a datetimeobject, if infer_year is True, use the `default_day`'s year as
     the year of the return datetimeobject,
@@ -75,8 +79,8 @@ def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True,
     parts = dateformat.count(' ') + 1
     dtstring = ' '.join(dtime_list[0:parts])
     # only time.strptime can parse the 29th of Feb. if no year is given
-    dtstart = strptime(dtstring, dateformat)
-    if infer_year and dtstart.tm_mon == 2 and dtstart.tm_mday == 29 and \
+    dtstart_struct = strptime(dtstring, dateformat)
+    if infer_year and dtstart_struct.tm_mon == 2 and dtstart_struct.tm_mday == 29 and \
             not isleap(default_day.year):
         raise ValueError
 
@@ -84,23 +88,21 @@ def datetimefstr(dtime_list, dateformat, default_day=None, infer_year=True,
         dtime_list.pop(0)
 
     if infer_year:
-        dtstart = dt.datetime(*(default_day.timetuple()[:1] + dtstart[1:5]))
+        dtstart = dt.datetime(*(default_day.timetuple()[:1] + dtstart_struct[1:5]))
         if in_future and dtstart < now:
             dtstart = dtstart.replace(year=dtstart.year + 1)
         if dtstart.date() < default_day:
             dtstart = dtstart.replace(year=default_day.year + 1)
         return dtstart
     else:
-        return dt.datetime(*dtstart[:5])
+        return dt.datetime(*dtstart_struct[:5])
 
 
-def weekdaypstr(dayname):
+def weekdaypstr(dayname: str) -> int:
     """converts an (abbreviated) dayname to a number (mon=0, sun=6)
 
     :param dayname: name of abbreviation of the day
-    :type dayname: str
     :return: number of the day in a week
-    :rtype: int
     """
 
     if dayname in ['monday', 'mon']:
@@ -120,7 +122,7 @@ def weekdaypstr(dayname):
     raise ValueError('invalid weekday name `%s`' % dayname)
 
 
-def construct_daynames(date_):
+def construct_daynames(date_: dt.date) -> str:
     """converts datetime.date into a string description
 
     either `Today`, `Tomorrow` or name of weekday.
@@ -133,13 +135,11 @@ def construct_daynames(date_):
         return date_.strftime('%A')
 
 
-def calc_day(dayname):
+def calc_day(dayname: str) -> dt.datetime:
     """converts a relative date's description to a datetime object
 
     :param dayname: relative day name (like 'today' or 'monday')
-    :type dayname: str
     :returns: date
-    :rtype: datetime.datetime
     """
     today = dt.datetime.combine(dt.date.today(), dt.time.min)
     dayname = dayname.lower()
@@ -157,15 +157,14 @@ def calc_day(dayname):
     return day
 
 
-def datefstr_weekday(dtime_list, _, **kwargs):
+def datefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: bool) -> dt.datetime:
     """interprets first element of a list as a relative date and removes that
     element
 
     :param dtime_list: event description in list form
-    :type dtime_list: list
-    :returns: date
-    :rtype: datetime.datetime
+    :param timeformat: only here for compat reasons (having the same function signature)
 
+    :returns: date
     """
     if len(dtime_list) == 0:
         raise ValueError()
@@ -174,7 +173,10 @@ def datefstr_weekday(dtime_list, _, **kwargs):
     return day
 
 
-def datetimefstr_weekday(dtime_list, timeformat, **kwargs):
+def datetimefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: bool) -> dt.datetime:
+    """
+    :param infer_year: only here for compat reasons (having the same function signature)
+    """
     if len(dtime_list) == 0:
         raise ValueError()
     day = calc_day(dtime_list[0])
@@ -185,39 +187,42 @@ def datetimefstr_weekday(dtime_list, timeformat, **kwargs):
     return dtime
 
 
-def guessdatetimefstr(dtime_list, locale, default_day=None, in_future=True):
+def guessdatetimefstr(
+    dtime_list: list,
+    locale: LocaleConfiguration,
+    default_day: Optional[dt.date]=None,
+    in_future=True,
+) -> Tuple[dt.datetime, bool]:
     """
-    :type dtime_list: list
-    :type locale: dict
-    :type default_day: datetime.datetime
     :param in_future: if set, shortdate(time) events will be set in the future
-    :type in_future: bool
-    :rtype: datetime.datetime
     """
     # if now() is called as default param, mocking with freezegun won't work
-    if default_day is None:
-        default_day = dt.datetime.now().date()
+    day = default_day or dt.datetime.now().date()
     # TODO rename in guessdatetimefstrLIST or something saner altogether
 
-    def timefstr_day(dtime_list, timeformat, **kwargs):
+    def timefstr_day(dtime_list: List[str], timeformat: str, infer_year: bool) -> dt.datetime:
         if locale['timeformat'] == '%H:%M' and dtime_list[0] == '24:00':
-            a_date = dt.datetime.combine(default_day, dt.time(0))
+            a_date = dt.datetime.combine(day, dt.time(0))
             dtime_list.pop(0)
         else:
             a_date = timefstr(dtime_list, timeformat)
-            a_date = dt.datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
+            a_date = dt.datetime(*(day.timetuple()[:3] + a_date.timetuple()[3:5]))
         return a_date
 
-    def datetimefwords(dtime_list, _, **kwargs):
+    def datetimefwords(dtime_list: List[str], _: str, infer_year: bool) -> dt.datetime:
         if len(dtime_list) > 0 and dtime_list[0].lower() == 'now':
             dtime_list.pop(0)
             return dt.datetime.now()
         raise ValueError
 
-    def datefstr_year(dtime_list, dtformat, infer_year):
-        return datetimefstr(dtime_list, dtformat, default_day, infer_year, in_future)
+    def datefstr_year(dtime_list: list, dtformat: str, infer_year: bool) -> dt.datetime:
+        return datetimefstr(dtime_list, dtformat, day, infer_year, in_future)
 
     dtstart = None
+    fun: Callable[[List[str], str, bool], dt.datetime]
+    dtformat: str
+    all_day: bool
+    infer_year: bool
     for fun, dtformat, all_day, infer_year in [
             (datefstr_year, locale['datetimeformat'], False, True),
             (datefstr_year, locale['longdatetimeformat'], False, False),
@@ -225,8 +230,8 @@ def guessdatetimefstr(dtime_list, locale, default_day=None, in_future=True):
             (datetimefstr_weekday, locale['timeformat'], False, False),
             (datefstr_year, locale['dateformat'], True, True),
             (datefstr_year, locale['longdateformat'], True, False),
-            (datefstr_weekday, None, True, False),
-            (datetimefwords, None, False, False),
+            (datefstr_weekday, '', True, False),
+            (datetimefwords, '', False, False),
     ]:
         # if a `short` format contains a year, treat it as a `long` format
         if infer_year and '97' in dt.datetime(1997, 10, 11).strftime(dtformat):
@@ -418,7 +423,7 @@ def rrulefstr(repeat, until, locale, timezone):
     if repeat in ["daily", "weekly", "monthly", "yearly"]:
         rrule_settings = {'freq': repeat}
         if until:
-            until_dt, is_date = guessdatetimefstr(until.split(' '), locale)
+            until_dt, _ = guessdatetimefstr(until.split(' '), locale)
             if timezone:
                 rrule_settings['until'] = until_dt.\
                     replace(tzinfo=timezone).\
@@ -433,7 +438,7 @@ def rrulefstr(repeat, until, locale, timezone):
 
 
 def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_duration,
-                  adjust_reasonably=False, localize=False):
+                  adjust_reasonably=False):
     """parses a string of the form START [END | DELTA] [TIMEZONE] [SUMMARY] [::
     DESCRIPTION] into a dictionary with keys: dtstart, dtend, timezone, allday,
     summary, description

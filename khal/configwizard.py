@@ -127,7 +127,7 @@ def get_vdirs_from_vdirsyncer_config():
     """trying to load vdirsyncer's config and read all vdirs from it"""
     print("If you use vdirsyncer to sync with CalDAV servers, we can try to "
           "load its config file and add your calendars to khal's config.")
-    if not confirm("Should we try to load vdirsyncer's config?", default='y'):
+    if not confirm("Should we try to load vdirsyncer's config?", default=True):
         return None
     try:
         from vdirsyncer.cli import config

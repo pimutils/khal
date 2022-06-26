@@ -28,13 +28,15 @@ import logging
 import sqlite3
 from enum import IntEnum
 from os import makedirs, path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import icalendar
+import icalendar.cal
 import pytz
 from dateutil import parser
 
 from .. import utils
+from ..custom_types import EventTuple
 from ..icalendar import assert_only_one_uid, cal_from_ics
 from ..icalendar import expand as expand_vevent
 from ..icalendar import sanitize as sanitize_vevent
@@ -77,11 +79,11 @@ class SQLiteDb:
                  locale: Dict[str, str],
                  ) -> None:
         assert db_path is not None
-        self.calendars = list(calendars)
+        self.calendars: List[str] = list(calendars)
         self.db_path = path.expanduser(db_path)
         self._create_dbdir()
         self.locale = locale
-        self._at_once = False
+        self._at_once: bool = False
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
         self._create_default_tables()
@@ -196,7 +198,12 @@ class SQLiteDb:
             self.conn.commit()
         return result
 
-    def update(self, vevent_str: str, href: str, etag: str='', calendar: str=None) -> None:
+    def update(self,
+               vevent_str: str,
+               href: str,
+               etag: str='',
+               calendar: Optional[str]=None,
+               ) -> None:
         """insert a new or update an existing event into the db
 
         This is mostly a wrapper around two SQL statements, doing some cleanup
@@ -396,7 +403,7 @@ class SQLiteDb:
                 stuple_n = (dbstart, dbend, href, ref, dtype, rec_inst, calendar)
                 self.sql_ex(recs_sql_s, stuple_n)
 
-    def get_ctag(self, calendar=str) -> Optional[str]:
+    def get_ctag(self, calendar: str) -> Optional[str]:
         stuple = (calendar, )
         sql_s = 'SELECT ctag FROM calendars WHERE calendar = ?;'
         try:
@@ -405,7 +412,7 @@ class SQLiteDb:
         except IndexError:
             return None
 
-    def set_ctag(self, ctag: str, calendar: str):
+    def set_ctag(self, ctag: str, calendar: str) -> None:
         stuple = (ctag, calendar, )
         sql_s = 'UPDATE calendars SET ctag = ? WHERE calendar = ?;'
         self.sql_ex(sql_s, stuple)
@@ -414,9 +421,7 @@ class SQLiteDb:
     def get_etag(self, href: str, calendar: str) -> Optional[str]:
         """get etag for href
 
-        type href: str()
         return: etag
-        rtype: str()
         """
         sql_s = 'SELECT etag FROM events WHERE href = ? AND calendar = ?;'
         try:
@@ -425,22 +430,21 @@ class SQLiteDb:
         except IndexError:
             return None
 
-    def delete(self, href: str, etag: Any=None, calendar: str=None):
+    def delete(self, href: str, etag: Any=None, calendar: str='') -> None:
         """
         removes the event from the db,
 
         :param etag: only there for compatibility with vdirsyncer's Storage,
                      we always delete
-        :returns: None
         """
-        assert calendar is not None
+        assert calendar != ''
         for table in ['recs_loc', 'recs_float']:
             sql_s = f'DELETE FROM {table} WHERE href = ? AND calendar = ?;'
             self.sql_ex(sql_s, (href, calendar))
         sql_s = 'DELETE FROM events WHERE href = ? AND calendar = ?;'
         self.sql_ex(sql_s, (href, calendar))
 
-    def deletelike(self, href: str, etag: Any=None, calendar: str=None):
+    def deletelike(self, href: str, etag: Any=None, calendar: str='') -> None:
         """
         removes events from the db that match an SQL 'like' statement,
 
@@ -448,16 +452,15 @@ class SQLiteDb:
                      like '%'
         :param etag: only there for compatibility with vdirsyncer's Storage,
                      we always delete
-        :returns: None
         """
-        assert calendar is not None
+        assert calendar != ''
         for table in ['recs_loc', 'recs_float']:
             sql_s = f'DELETE FROM {table} WHERE href LIKE ? AND calendar = ?;'
             self.sql_ex(sql_s, (href, calendar))
         sql_s = 'DELETE FROM events WHERE href LIKE ? AND calendar = ?;'
         self.sql_ex(sql_s, (href, calendar))
 
-    def list(self, calendar):
+    def list(self, calendar: str) -> List[Tuple[str, str]]:
         """ list all events in `calendar`
 
         used for testing
@@ -486,18 +489,11 @@ class SQLiteDb:
         for calendar in result:
             yield calendar[0]  # result is always an iterable, even if getting only one item
 
-    def get_localized(self, start, end) \
-            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
-        """returns
-        :type start: datetime.datetime
-        :type end: datetime.datetime
-        :param minimal: if set, we do not return an event but a minimal stand in
-        :type minimal: bool
-        """
+    def get_localized(self, start: dt.datetime, end: dt.datetime) -> Iterable[EventTuple]:
         assert start.tzinfo is not None
         assert end.tzinfo is not None
-        start = utils.to_unix_time(start)
-        end = utils.to_unix_time(end)
+        start_timestamp = utils.to_unix_time(start)
+        end_timestamp = utils.to_unix_time(end)
         sql_s = (
             'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
             'FROM recs_loc JOIN events ON '
@@ -505,13 +501,22 @@ class SQLiteDb:
             'recs_loc.calendar = events.calendar WHERE '
             '(dtstart >= ? AND dtstart <= ? OR '
             'dtend > ? AND dtend <= ? OR '
-            'dtstart <= ? AND dtend >= ?) AND events.calendar in ({0}) '
+            'dtstart <= ? AND dtend >= ?) AND '
+            # insert as many "?" as we have configured calendars
+            f'events.calendar in ({",".join("?" * len(self.calendars))}) '
             'ORDER BY dtstart')
-        stuple = tuple([start, end, start, end, start, end] + list(self.calendars))
-        result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
-        for item, href, start, end, ref, etag, _dtype, calendar in result:
-            start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
-            end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
+        stuple = (
+            start_timestamp,
+            end_timestamp,
+            start_timestamp,
+            end_timestamp,
+            start_timestamp,
+            end_timestamp,
+        ) + tuple(self.calendars)
+        result = self.sql_ex(sql_s, stuple)
+        for item, href, start_timestamp, end_timestamp, ref, etag, _dtype, calendar in result:
+            start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start_timestamp))
+            end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end_timestamp))
             yield item, href, start, end, ref, etag, calendar
 
     def get_floating_calendars(self, start: dt.datetime, end: dt.datetime) -> Iterable[str]:
@@ -534,15 +539,13 @@ class SQLiteDb:
         for calendar in result:
             yield calendar[0]
 
-    def get_floating(self, start, end) \
-            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
-        """return floating events between `start` and `end`
-
-        :type start: datetime.datetime
-        :type end: datetime.datetime
-        """
+    def get_floating(self, start: dt.datetime, end: dt.datetime) -> Iterable[EventTuple]:
+        """return floating events between `start` and `end`"""
         assert start.tzinfo is None
         assert end.tzinfo is None
+        start_dt: Union[dt.datetime, dt.date]
+        end_dt: Union[dt.datetime, dt.date]
+
         start_u = utils.to_unix_time(start)
         end_u = utils.to_unix_time(end)
         sql_s = (
@@ -557,13 +560,13 @@ class SQLiteDb:
         stuple = tuple(
             [start_u, end_u, start_u, end_u, start_u, end_u] + list(self.calendars))  # type: ignore
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
-        for item, href, start, end, ref, etag, dtype, calendar in result:
-            start = dt.datetime.utcfromtimestamp(start)
-            end = dt.datetime.utcfromtimestamp(end)
+        for item, href, start_s, end_s, ref, etag, dtype, calendar in result:
+            start_dt = dt.datetime.utcfromtimestamp(start_s)
+            end_dt = dt.datetime.utcfromtimestamp(end_s)
             if dtype == EventType.DATE:
-                start = start.date()
-                end = end.date()
-            yield item, href, start, end, ref, etag, calendar
+                start_dt = start_dt.date()
+                end_dt = end_dt.date()
+            yield item, href, start_dt, end_dt, ref, etag, calendar
 
     def get(self, href: str, calendar: str) -> str:
         """returns the ical string matching href and calendar"""

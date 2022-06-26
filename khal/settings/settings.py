@@ -78,7 +78,7 @@ def find_configuration_file():
 def get_config(
         config_path=None,
         _get_color_from_vdir=get_color_from_vdir,
-        _get_vdir_type=get_vdir_type):
+        _get_vdir_type=get_vdir_type) -> ConfigObj:
     """reads the config file, validates it and return a config dict
 
     :param config_path: path to a custom config file, if none is given the

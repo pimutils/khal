@@ -27,7 +27,7 @@ import re
 import textwrap
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
-from typing import Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List
 
 import pytz
 from click import confirm, echo, prompt, style
@@ -133,10 +133,10 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
 
 def start_end_from_daterange(
     daterange: Iterable[str],
-    locale: dict,
-    default_timedelta_date=dt.timedelta(days=1),
-    default_timedelta_datetime=dt.timedelta(hours=1),
-) -> Tuple[dt.datetime, dt.datetime]:
+    locale: Dict[Any, Any],
+    default_timedelta_date: dt.timedelta=dt.timedelta(days=1),
+    default_timedelta_datetime: dt.timedelta=dt.timedelta(hours=1),
+):
     """
     convert a string description of a daterange into start and end datetime
 
@@ -309,7 +309,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
             info, conf['locale'],
             conf['default']['default_event_duration'],
             conf['default']['default_dayevent_duration'],
-            adjust_reasonably=True, localize=False,
+            adjust_reasonably=True,
         )
     except DateTimeParseError:
         info = {}
@@ -373,7 +373,7 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
         info, conf['locale'],
         conf['default']['default_event_duration'],
         conf['default']['default_dayevent_duration'],
-        adjust_reasonably=True, localize=False
+        adjust_reasonably=True,
     )
     new_from_args(
         collection, calendar_name, conf, format=format, env=env,

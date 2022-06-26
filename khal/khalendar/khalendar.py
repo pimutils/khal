@@ -30,8 +30,10 @@ import itertools
 import logging
 import os
 import os.path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union  # noqa
+from typing import (Any, Dict, Iterable, List, Optional, Set, Tuple,  # noqa
+                    Union)
 
+from ..custom_types import CalendarConfiguration
 from . import backend
 from .event import Event
 from .exceptions import (CouldNotCreateDbDir, DuplicateUid, NonUniqueUID,
@@ -43,7 +45,7 @@ from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
 logger = logging.getLogger('khal')
 
 
-def create_directory(path: str):
+def create_directory(path: str) -> None:
     if not os.path.isdir(path):
         if os.path.exists(path):
             raise RuntimeError(f'{path} is not a directory.')
@@ -60,7 +62,7 @@ class CalendarCollection:
     all calendars are cached in an sqlitedb for performance reasons"""
 
     def __init__(self,
-                 calendars=None,
+                 calendars: Dict[str, CalendarConfiguration],
                  hmethod: str='fg',
                  default_color: str='',
                  multiple: str='',
@@ -74,9 +76,12 @@ class CalendarCollection:
         locale = locale or {}
         assert dbpath is not None
         assert calendars is not None
-        self._calendars = calendars
-        self._default_calendar_name = None  # type: Optional[str]
-        self._storages = {}  # type: Dict[str, Vdir]
+
+        self._calendars: Dict[str, CalendarConfiguration] = calendars
+        self._default_calendar_name: Optional[str] = None
+        self._storages: Dict[str, Vdir] = {}
+        file_ext: str
+
         for name, calendar in self._calendars.items():
             ctype = calendar.get('ctype', 'calendar')
             if ctype == 'calendar':
@@ -101,7 +106,7 @@ class CalendarCollection:
         self.highlight_event_days = highlight_event_days
         self._locale = locale
         self._backend = backend.SQLiteDb(self.names, dbpath, self._locale)
-        self._last_ctags = {}  # type: Dict[str, str]
+        self._last_ctags: Dict[str, str] = {}
         self.update_db()
 
     @property
@@ -109,7 +114,7 @@ class CalendarCollection:
         return [c for c in self._calendars if not self._calendars[c].get('readonly', False)]
 
     @property
-    def calendars(self) -> Iterable[str]:
+    def calendars(self) -> Iterable[CalendarConfiguration]:
         return self._calendars.values()
 
     @property
@@ -167,7 +172,10 @@ class CalendarCollection:
 
     def update(self, event: Event):
         """update `event` in vdir and db"""
-        assert event.etag
+        assert event.etag is not None
+        assert event.calendar is not None
+        assert event.href is not None
+        assert event.raw is not None
         if self._calendars[event.calendar]['readonly']:
             raise ReadOnlyCalendarError()
         with self._backend.at_once():
@@ -177,7 +185,9 @@ class CalendarCollection:
 
     def force_update(self, event: Event, collection: Optional[str]=None):
         """update `event` even if an event with the same uid/href already exists"""
+        href: str
         calendar = collection if collection is not None else event.calendar
+        assert calendar is not None
         if self._calendars[calendar]['readonly']:
             raise ReadOnlyCalendarError()
 
@@ -194,18 +204,17 @@ class CalendarCollection:
     def new(self, event: Event, collection: Optional[str]=None):
         """save a new event to the vdir and the database
 
-        param event: the event that should be updated, will get a new href and
-            etag properties
-        type event: event.Event
+        :param event: the event that should be updated, it will get a new href
+            and etag properties
         """
         calendar = collection if collection is not None else event.calendar
+        assert calendar is not None
         if hasattr(event, 'etag'):
             assert not event.etag
         if self._calendars[calendar]['readonly']:
             raise ReadOnlyCalendarError()
 
         with self._backend.at_once():
-
             try:
                 event.href, event.etag = self._storages[calendar].upload(event)
             except AlreadyExistingError as Error:
@@ -214,7 +223,7 @@ class CalendarCollection:
             self._backend.update(event.raw, event.href, event.etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
-    def delete(self, href: str, etag: str, calendar: str):
+    def delete(self, href: str, etag: Optional[str], calendar: str):
         if self._calendars[calendar]['readonly']:
             raise ReadOnlyCalendarError()
         self._storages[calendar].delete(href, etag)
@@ -229,12 +238,13 @@ class CalendarCollection:
     def _construct_event(self,
                          item: str,
                          href: str,
-                         start: dt.datetime = None,
-                         end: dt.datetime = None,
+                         start: Optional[Union[dt.datetime, dt.date]] = None,
+                         end: Optional[Union[dt.datetime, dt.date]] = None,
                          ref: str='PROTO',
-                         etag: str=None,
-                         calendar: str=None,
+                         etag: Optional[str]=None,
+                         calendar: Optional[str]=None,
                          ) -> Event:
+        assert calendar is not None
         event = Event.fromString(
             item,
             locale=self._locale,
@@ -253,6 +263,8 @@ class CalendarCollection:
         href, etag, calendar = event.href, event.etag, event.calendar
         event.etag = None
         self.new(event, new_collection)
+        assert href is not None
+        assert calendar is not None
         self.delete(href, etag, calendar=calendar)
 
     def new_event(self, ical: str, collection: str):
@@ -261,7 +273,7 @@ class CalendarCollection:
         calendar = collection or self.writable_names[0]
         return Event.fromString(ical, locale=self._locale, calendar=calendar)
 
-    def update_db(self):
+    def update_db(self) -> None:
         """update the db from the vdir,
 
         should be called after every change to the vdir
@@ -307,7 +319,7 @@ class CalendarCollection:
         """implements the actual db update on a per calendar base"""
         local_ctag = self._local_ctag(calendar)
         db_hrefs = {href for href, etag in self._backend.list(calendar)}
-        storage_hrefs = set()
+        storage_hrefs: Set[str] = set()
         bdays = self._calendars[calendar].get('ctype') == 'birthdays'
 
         with self._backend.at_once():
@@ -364,7 +376,7 @@ class CalendarCollection:
             return 'highlight_days_multiple'
         return ('calendar ' + calendars[0], 'calendar ' + calendars[1])
 
-    def get_styles(self, date: dt.date, focus: bool) -> Union[str, None, Tuple[str, str]]:
+    def get_styles(self, date: dt.date, focus: bool) -> Optional[Union[str, Tuple[str, str]]]:
         if focus:
             if date == date.today():
                 return 'today focus'

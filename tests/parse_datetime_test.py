@@ -27,7 +27,8 @@ def _construct_event(info, locale,
     info = eventinfofstr(' '.join(info), locale,
                          dt.timedelta(days=1),
                          dt.timedelta(hours=1),
-                         adjust_reasonably=True, localize=False)
+                         adjust_reasonably=True,
+                         )
     if description is not None:
         info["description"] = description
     event = new_event(
