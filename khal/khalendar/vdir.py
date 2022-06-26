@@ -140,10 +140,6 @@ class Item:
         return uid or None
 
 
-def _normalize_meta_value(value):
-    return to_unicode(value or '').strip()
-
-
 class VdirBase:
     item_class = Item
     default_mode = 0o750
