@@ -29,12 +29,6 @@ class cached_property:
         return result
 
 
-def to_unicode(x, encoding='ascii'):
-    if not isinstance(x, str):
-        return x.decode(encoding)
-    return x
-
-
 def to_bytes(x, encoding='ascii'):
     if not isinstance(x, bytes):
         return x.encode(encoding)
@@ -52,9 +46,9 @@ def _href_safe(uid, safe=SAFE_UID_CHARS):
 
 def _generate_href(uid=None, safe=SAFE_UID_CHARS):
     if not uid:
-        return to_unicode(uuid.uuid4().hex)
+        return str(uuid.uuid4().hex)
     elif not _href_safe(uid, safe):
-        return to_unicode(sha1(uid.encode()).hexdigest())
+        return sha1(uid.encode()).hexdigest()
     else:
         return uid
 
