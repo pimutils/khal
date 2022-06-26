@@ -22,11 +22,10 @@
 import calendar
 import datetime as dt
 from locale import LC_ALL, LC_TIME, getlocale, setlocale
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 from click import style
 
-from .custom_types import CalendarConfiguration, LocaleConfiguration
 from .khalendar import CalendarCollection
 from .terminal import colored
 from .utils import get_month_abbr_len
@@ -61,7 +60,11 @@ def get_calendar_color(calendar: str, default_color: str, collection: CalendarCo
     return collection._calendars[calendar]['color']
 
 
-def get_color_list(calendars: List[str], default_color: str, collection: CalendarCollection) -> List[str]:
+def get_color_list(
+    calendars: List[str],
+    default_color: str,
+    collection: CalendarCollection
+) -> List[str]:
     """Get the list of possible colors for the day, taking into account priority"""
     dcolors = [
         (
@@ -140,7 +143,9 @@ def str_week(
     """
     strweek = ''
     if highlight_event_days and collection is None:
-        raise ValueError('if `highlight_event_days` is True, `collection` must be a CalendarCollection')
+        raise ValueError(
+            'if `highlight_event_days` is True, `collection` must be a CalendarCollection'
+        )
     for day in week:
         if day == today:
             day_str = style(str(day.day).rjust(2), reverse=True)

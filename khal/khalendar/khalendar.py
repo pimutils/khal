@@ -79,7 +79,7 @@ class CalendarCollection:
 
         self._calendars: Dict[str, CalendarConfiguration] = calendars
         self._default_calendar_name: Optional[str] = None
-        self._storages: Dict[str, Vdir] = dict()
+        self._storages: Dict[str, Vdir] = {}
         file_ext: str
 
         for name, calendar in self._calendars.items():
@@ -106,9 +106,8 @@ class CalendarCollection:
         self.highlight_event_days = highlight_event_days
         self._locale = locale
         self._backend = backend.SQLiteDb(self.names, dbpath, self._locale)
-        self._last_ctags: Dict[str, str] = dict()
+        self._last_ctags: Dict[str, str] = {}
         self.update_db()
-
 
     @property
     def writable_names(self) -> List[str]:

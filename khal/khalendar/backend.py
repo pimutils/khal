@@ -41,6 +41,7 @@ from ..icalendar import sanitize as sanitize_vevent
 from ..icalendar import sort_key as sort_vevent_key
 from .exceptions import (CouldNotCreateDbDir, NonUniqueUID,
                          OutdatedDbVersionError, UpdateFailed)
+from ..custom_types import EventTuple
 
 logger = logging.getLogger('khal')
 
@@ -196,7 +197,12 @@ class SQLiteDb:
             self.conn.commit()
         return result
 
-    def update(self, vevent_str: str, href: str, etag: str='', calendar: Optional[str]=None) -> None:
+    def update(self,
+               vevent_str: str,
+               href: str,
+               etag: str='',
+               calendar: Optional[str]=None,
+               ) -> None:
         """insert a new or update an existing event into the db
 
         This is mostly a wrapper around two SQL statements, doing some cleanup
@@ -482,8 +488,7 @@ class SQLiteDb:
         for calendar in result:
             yield calendar[0]  # result is always an iterable, even if getting only one item
 
-    def get_localized(self, start: dt.datetime, end: dt.datetime) \
-            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
+    def get_localized(self, start: dt.datetime, end: dt.datetime) -> Iterable[EventTuple]:
         assert start.tzinfo is not None
         assert end.tzinfo is not None
         start_timestamp = utils.to_unix_time(start)
@@ -534,8 +539,7 @@ class SQLiteDb:
         for calendar in result:
             yield calendar[0]
 
-    def get_floating(self, start: dt.datetime, end: dt.datetime) \
-            -> Iterable[Tuple[str, str, Union[dt.date, dt.datetime], Union[dt.date, dt.datetime], str, str, str]]:
+    def get_floating(self, start: dt.datetime, end: dt.datetime) -> Iterable[EventTuple]:
         """return floating events between `start` and `end`"""
         assert start.tzinfo is None
         assert end.tzinfo is None

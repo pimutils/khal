@@ -116,10 +116,10 @@ class Event:
         return cls
 
     @classmethod
-    def fromVEvents(cls, events_list: List[icalendar.cal.Event], ref: Optional[str]=None, **kwargs) -> 'Event':
-        """
-        :type events: list
-        """
+    def fromVEvents(cls,
+                    events_list: List[icalendar.cal.Event],
+                    ref: Optional[str]=None,
+                    **kwargs) -> 'Event':
         assert isinstance(events_list, list)
 
         vevents = {}
@@ -846,7 +846,11 @@ class AllDayEvent(Event):
             return self.end - self.start + dt.timedelta(days=1)
 
 
-def create_timezone(tz: pytz.BaseTzInfo, first_date: Optional[dt.datetime]=None, last_date: Optional[dt.datetime]=None) -> icalendar.Timezone:
+def create_timezone(
+    tz: pytz.BaseTzInfo,
+    first_date: Optional[dt.datetime]=None,
+    last_date: Optional[dt.datetime]=None
+) -> icalendar.Timezone:
     """
     create an icalendar vtimezone from a pytz.tzinfo object
 

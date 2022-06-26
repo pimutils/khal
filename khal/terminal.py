@@ -51,7 +51,11 @@ COLORS: Dict[str, NamedColor] = {
 }
 
 
-def get_color(fg: Optional[str]=None, bg: Optional[str]=None, bold_for_light_color: bool=False) -> str:
+def get_color(
+    fg: Optional[str]=None,
+    bg: Optional[str]=None,
+    bold_for_light_color: bool=False,
+) -> str:
     """convert foreground and/or background color in ANSI color codes
 
     colors can be a color name from the ANSI color palette (e.g. 'dark green'),
@@ -59,11 +63,8 @@ def get_color(fg: Optional[str]=None, bg: Optional[str]=None, bold_for_light_col
     the style `#00FF00` or `#ABC`
 
     :param fg: foreground color
-    :type fg: str
     :param bg: background color
-    :type bg: str
     :returns: ANSI color code
-    :rtype: str
     """
 
     result = ''
@@ -114,7 +115,12 @@ def get_color(fg: Optional[str]=None, bg: Optional[str]=None, bold_for_light_col
     return result
 
 
-def colored(string: str, fg: Optional[str]=None, bg: Optional[str]=None, bold_for_light_color: bool=True) -> str:
+def colored(
+    string: str,
+    fg: Optional[str]=None,
+    bg: Optional[str]=None,
+    bold_for_light_color: bool=True,
+) -> str:
     """colorize `string` with ANSI color codes
 
      see get_color for description of `fg`, `bg` and `bold_for_light_color`

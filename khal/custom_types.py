@@ -1,4 +1,5 @@
-from typing import Protocol, TypedDict, Union
+from typing import Protocol, TypedDict, Union, Tuple
+import datetime as dt
 
 import pytz
 
@@ -27,6 +28,20 @@ class LocaleConfiguration(TypedDict):
 
 class SupportsRaw(Protocol):
     @property
-    def uid(self) -> str: ...
+    def uid(self) -> str:
+        ...
+
     @property
-    def raw(self) -> str: ...
+    def raw(self) -> str:
+        ...
+
+
+EventTuple = Tuple[
+    str,
+    str,
+    Union[dt.date, dt.datetime],
+    Union[dt.date, dt.datetime],
+    str,
+    str,
+    str,
+]
