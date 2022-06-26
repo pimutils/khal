@@ -605,3 +605,27 @@ def test_sort_event_summary():
     event2 = Event.fromString(event_dt, **EVENT_KWARGS)
     event2.update_summary("ZZZ")
     assert event1 < event2
+
+
+def test_create_timezone_in_future():
+    """Events too far into the future (after the next DST transition) used
+    to be created with invalid timezones"""
+    with freeze_time('2019-03-31'):
+        assert create_timezone(
+            pytz.timezone('Europe/Amsterdam'),
+            dt.datetime(2022, 1, 1, 18, 0)).to_ical().split() == [
+                b'BEGIN:VTIMEZONE',
+                b'TZID:Europe/Amsterdam',
+                b'BEGIN:STANDARD',
+                b'DTSTART;VALUE=DATE-TIME:20211031T020000',
+                b'TZNAME:CET',
+                b'TZOFFSETFROM:+0200',
+                b'TZOFFSETTO:+0100',
+                b'END:STANDARD',
+                b'BEGIN:DAYLIGHT',
+                b'DTSTART;VALUE=DATE-TIME:20220327T030000',
+                b'TZNAME:CEST',
+                b'TZOFFSETFROM:+0100',
+                b'TZOFFSETTO:+0200',
+                b'END:DAYLIGHT',
+                b'END:VTIMEZONE']
