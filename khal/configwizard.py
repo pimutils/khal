@@ -21,14 +21,13 @@
 #
 
 import datetime as dt
+import json
 import logging
 from functools import partial
-import json
 from itertools import zip_longest
-from os.path import (expanduser, expandvars, join, normpath, exists, isdir,
-                     dirname)
-from os import makedirs, environ
-from os.path import expanduser, expandvars, join, normpath, exists, isdir
+from os import environ, makedirs
+from os.path import (dirname, exists, expanduser, expandvars, isdir, join,
+                     normpath)
 from subprocess import call
 
 import xdg
@@ -177,9 +176,9 @@ def find_vdir():
     print("The following calendars were found:")
     synced_vdirs = get_vdirs_from_vdirsyncer_config()
     if synced_vdirs:
-        print("Found {} calendars from vdirsyncer".format(len(synced_vdirs)))
+        print(f"Found {len(synced_vdirs)} calendars from vdirsyncer")
         for name, path, _ in synced_vdirs:
-            print('  {}: {}'.format(name, compressuser(path)))
+            print(f'  {name}: {compressuser(path)}')
         if confirm("Use these calendars for khal?", default=True):
             return synced_vdirs
 
@@ -261,7 +260,7 @@ def get_available_pairno():
         raise FatalError("vdirsyncer config exists, but couldn't import vdirsyncer.")
     vdir_config = config.load_config()
     pairno = 1
-    while 'khal_pair_{}'.format(pairno) in vdir_config.pairs:
+    while f'khal_pair_{pairno}' in vdir_config.pairs:
         pairno += 1
     return pairno
 
@@ -330,7 +329,7 @@ def choose_vdir_calendar():
     ]
     validate = partial(validate_int, min_value=0, max_value=2)
     for i, (desc, func) in enumerate(choices):
-        print('[{}] {}'.format(i, desc))
+        print(f'[{i}] {desc}')
     choice_no = prompt("Please choose one of the above options",
                        value_proc=validate)
     return choices[choice_no][1]()
