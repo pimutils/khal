@@ -13,6 +13,7 @@ not released
 
 * DROPPED support for python versions < 3.8
 * UPDATED REQUIREMENT pytz is now required >= 2018.7
+* FIX deleting of instances of recurring events in ikhal
 * FIX if a `discover` collection is set to "readonly", discovered collections
   will now inherit the readonly property
 * NEW the `configure` command can now set up vdirsyncer
