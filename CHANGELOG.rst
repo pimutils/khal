@@ -10,7 +10,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.10.5
 ======
-not released
+2022-06-26
 
 * FIX support for tzlocal >= 4.0
 * FIX ability to show an event's calendar in ikhal
