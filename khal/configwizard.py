@@ -126,7 +126,7 @@ def choose_time_format():
 def choose_default_calendar(vdirs):
     names = [name for name, _, _ in sorted(vdirs or ())]
     print("Which calendar do you want as a default calendar?")
-    print("(The default calendar is specified, when no calendar is specified.)")
+    print("(The default calendar is used, when no calendar is specified.)")
     print(f"Configured calendars: {', '.join(names)}")
     default_calendar = prompt(
         "Please type one of the above options",
@@ -174,7 +174,7 @@ def find_vdir():
     asks user to confirm it. If not, prompt the user for the path to a single
     vdir.
     """
-    print("The following collections were found:")
+    print("The following calendars were found:")
     synced_vdirs = get_vdirs_from_vdirsyncer_config()
     if synced_vdirs:
         print("Found {} calendars from vdirsyncer".format(len(synced_vdirs)))
