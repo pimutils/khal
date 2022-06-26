@@ -3,6 +3,8 @@ import datetime as dt
 import pytest
 import pytz
 from freezegun import freeze_time
+from hypothesis import event, given
+from hypothesis.strategies import datetimes
 from icalendar import Parameters, vCalAddress, vRecur, vText
 
 from khal.khalendar.event import (AllDayEvent, Event, FloatingEvent,
@@ -629,3 +631,21 @@ def test_create_timezone_in_future():
                 b'TZOFFSETTO:+0200',
                 b'END:DAYLIGHT',
                 b'END:VTIMEZONE']
+
+
+now = dt.datetime.now()
+min_value = now - dt.timedelta(days=3560)
+max_value = now + dt.timedelta(days=3560)
+AMSTERDAM = pytz.timezone('Europe/Amsterdam')
+
+
+@given(datetimes(min_value=min_value, max_value=max_value),
+       datetimes(min_value=min_value, max_value=max_value))
+def test_timezone_creation_with_arbitrary_dates(freeze_ts, event_time):
+    """test if for arbitrary dates from the current date we produce a valid VTIMEZONE"""
+    event(f'freeze_ts == event_time: {freeze_ts == event_time}')
+    with freeze_time(freeze_ts):
+        vtimezone = create_timezone(AMSTERDAM, event_time).to_ical().decode('utf-8')
+    assert len(vtimezone) > 14
+    assert 'BEGIN:STANDARD' in vtimezone
+    assert 'BEGIN:DAYLIGHT' in vtimezone
