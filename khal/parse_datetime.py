@@ -58,8 +58,8 @@ def datetimefstr(
         dtime_list: List[str],
         dateformat: str,
         default_day: Optional[dt.date]=None,
-        infer_year:bool=True,
-        in_future:bool=True,
+        infer_year: bool=True,
+        in_future: bool=True,
 ) -> dt.datetime:
     """converts a datetime (as one or several string elements of a list) to
     a datetimeobject, if infer_year is True, use the `default_day`'s year as
@@ -192,27 +192,26 @@ def guessdatetimefstr(
     :param in_future: if set, shortdate(time) events will be set in the future
     """
     # if now() is called as default param, mocking with freezegun won't work
-    if default_day is None:
-        default_day = dt.datetime.now().date()
+    day = default_day or dt.datetime.now().date()
     # TODO rename in guessdatetimefstrLIST or something saner altogether
 
-    def timefstr_day(dtime_list, timeformat, **kwargs):
+    def timefstr_day(dtime_list: list, timeformat: str, **kwargs) -> dt.datetime:
         if locale['timeformat'] == '%H:%M' and dtime_list[0] == '24:00':
-            a_date = dt.datetime.combine(default_day, dt.time(0))
+            a_date = dt.datetime.combine(day, dt.time(0))
             dtime_list.pop(0)
         else:
             a_date = timefstr(dtime_list, timeformat)
-            a_date = dt.datetime(*(default_day.timetuple()[:3] + a_date.timetuple()[3:5]))
+            a_date = dt.datetime(*(day.timetuple()[:3] + a_date.timetuple()[3:5]))
         return a_date
 
-    def datetimefwords(dtime_list, _, **kwargs):
+    def datetimefwords(dtime_list: list, _, **kwargs) -> dt.datetime:
         if len(dtime_list) > 0 and dtime_list[0].lower() == 'now':
             dtime_list.pop(0)
             return dt.datetime.now()
         raise ValueError
 
-    def datefstr_year(dtime_list, dtformat, infer_year):
-        return datetimefstr(dtime_list, dtformat, default_day, infer_year, in_future)
+    def datefstr_year(dtime_list: list, dtformat: str, infer_year: bool) -> dt.datetime:
+        return datetimefstr(dtime_list, dtformat, day, infer_year, in_future)
 
     dtstart = None
     fun: Callable[..., dt.datetime]
