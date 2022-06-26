@@ -33,14 +33,13 @@ from .utils import get_month_abbr_len
 setlocale(LC_ALL, '')
 
 
-def get_weekheader(firstweekday: int):
-    mylocale: str
+def get_weekheader(firstweekday: int) -> str:
     try:
-        mylocale = '.'.join(getlocale(LC_TIME))
+        mylocale = '.'.join(getlocale(LC_TIME))  # type: ignore
     except TypeError:
         mylocale = 'C'
 
-    _calendar = calendar.LocaleTextCalendar(firstweekday, locale=mylocale)
+    _calendar = calendar.LocaleTextCalendar(firstweekday, locale=mylocale)  # type: ignore
     return _calendar.formatweekheader(2)
 
 
