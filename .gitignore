@@ -17,3 +17,4 @@ doc/source/configspec.rst
 .venv
 env/
 venv/
+.hypothesis/
