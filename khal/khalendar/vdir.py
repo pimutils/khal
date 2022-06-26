@@ -29,12 +29,6 @@ class cached_property:
         return result
 
 
-def to_bytes(x, encoding='ascii'):
-    if not isinstance(x, bytes):
-        return x.encode(encoding)
-    return x
-
-
 SAFE_UID_CHARS = ('abcdefghijklmnopqrstuvwxyz'
                   'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                   '0123456789_.-+@')
