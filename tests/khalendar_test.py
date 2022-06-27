@@ -214,6 +214,7 @@ class TestCollection:
         with freeze_time('2016-1-1'):
             assert normalize_component(event_from_db.raw) == \
                 normalize_component(_get_text('event_dt_simple_inkl_vtimezone'))
+        assert event_from_db.etag
 
     def test_change(self, coll_vdirs):
         """moving an event from one calendar to another"""
