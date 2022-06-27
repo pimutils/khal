@@ -734,7 +734,7 @@ class Event:
         event._locale = self._locale
         return event
 
-    def delete_instance(self, instance):
+    def delete_instance(self, instance: str) -> None:
         """delete an instance from this event"""
         assert self.recurring
         delete_instance(self._vevents['PROTO'], instance)
