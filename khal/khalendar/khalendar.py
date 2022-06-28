@@ -37,24 +37,13 @@ from ..custom_types import CalendarConfiguration
 from ..icalendar import new_event
 from . import backend
 from .event import Event
-from .exceptions import (CouldNotCreateDbDir, DuplicateUid, NonUniqueUID,
+from .exceptions import (DuplicateUid, NonUniqueUID,
                          ReadOnlyCalendarError, UnsupportedFeatureError,
                          UpdateFailed)
 from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
                    get_etag_from_file)
 
 logger = logging.getLogger('khal')
-
-
-def create_directory(path: str) -> None:
-    if not os.path.isdir(path):
-        if os.path.exists(path):
-            raise RuntimeError(f'{path} is not a directory.')
-        try:
-            os.makedirs(path, mode=0o750)
-        except OSError as error:
-            logger.critical(f'failed to create {path}: {error}')
-            raise CouldNotCreateDbDir()
 
 
 class CalendarCollection:
