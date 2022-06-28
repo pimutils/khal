@@ -747,12 +747,11 @@ class EventColumn(urwid.WidgetWrap):
                 return
             # KeyErrors can occur here when we destroy DTSTART,
             # otherwise, even broken .ics files seem to be no problem
-            new_event = Event.fromString(
+            new_event = self.pane.collection.new_event_from_ical(
                 text,
-                locale=self._conf['locale'],
-                href=event.href,
-                calendar=event.calendar,
                 etag=event.etag,
+                collection=event.calendar,
+                href=event.href,
             )
             self.pane.collection.update(new_event)
             update_colors(
