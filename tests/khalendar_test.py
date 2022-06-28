@@ -17,7 +17,8 @@ from khal.khalendar.vdir import Item
 
 from . import utils
 from .utils import (BERLIN, LOCALE_BERLIN, LOCALE_SYDNEY, LONDON, SYDNEY,
-                    DumbItem, _get_text, cal1, cal2, cal3, normalize_component)
+                    CollVdirType, DumbItem, _get_text, cal1, cal2, cal3,
+                    normalize_component)
 
 today = dt.date.today()
 yesterday = today - dt.timedelta(days=1)
@@ -328,6 +329,30 @@ class TestCollection:
                 assert event.etag == etag1
             if event.calendar == cal2:
                 assert event.etag == etag2
+
+    def test_delete_recuid(self, coll_vdirs: CollVdirType):
+        """Testing if we can delete a recuid (add it to exdate)"""
+        coll, _ = coll_vdirs
+        event_str = _get_text('event_rrule_recuid')
+        event = Event.fromString(event_str, calendar=cal1, locale=LOCALE_BERLIN)
+        coll.insert(event, cal1)
+        event = coll.get_event('event_rrule_recurrence_id.ics', cal1)
+
+        event = coll.delete_instance(
+            'event_rrule_recurrence_id.ics',
+            event.etag,
+            calendar=cal1,
+            rec_id=BERLIN.localize(dt.datetime(2014, 7, 14, 5)),
+        )
+        assert 'EXDATE;TZID=Europe/Berlin:20140714T050000' in event.raw.split()
+
+        event = coll.delete_instance(
+            'event_rrule_recurrence_id.ics',
+            event.etag,
+            calendar=cal1,
+            rec_id=BERLIN.localize(dt.datetime(2014, 7, 21, 5)),
+        )
+        assert 'EXDATE;TZID=Europe/Berlin:20140714T050000,20140721T050000' in event.raw.split()
 
     def test_invalid_timezones(self, coll_vdirs):
         """testing if we can delete any of two events in two different

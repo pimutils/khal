@@ -9,11 +9,11 @@ from khal.custom_types import CalendarConfiguration
 from khal.khalendar import CalendarCollection
 from khal.khalendar.vdir import Vdir
 
-from .utils import LOCALE_BERLIN, cal1, example_cals
+from .utils import LOCALE_BERLIN, CollVdirType, cal1, example_cals
 
 
 @pytest.fixture
-def coll_vdirs(tmpdir):
+def coll_vdirs(tmpdir) -> CollVdirType:
     calendars, vdirs = {}, {}
     for name in example_cals:
         path = str(tmpdir) + '/' + name
