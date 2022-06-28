@@ -740,14 +740,14 @@ class EventColumn(urwid.WidgetWrap):
         assert not self.editor
         if external_edit:
             self.pane.window.loop.stop()
-            text = click.edit(event.raw)
+            ics = click.edit(event.raw)
             self.pane.window.loop.start()
-            if text is None:
+            if ics is None:
                 return
             # KeyErrors can occur here when we destroy DTSTART,
             # otherwise, even broken .ics files seem to be no problem
-            new_event = self.pane.collection.new_event_from_ical(
-                text,
+            new_event = self.pane.collection.create_event_from_ics(
+                ics,
                 etag=event.etag,
                 collection=event.calendar,
                 href=event.href,

@@ -276,13 +276,13 @@ class CalendarCollection:
         assert calendar is not None
         self.delete(href, etag, calendar=calendar)
 
-    def new_event_from_ical(self,
-                            ical: str,
-                            collection: str,
-                            etag: Optional[str]=None,
-                            href: Optional[str]=None,
-                            ) -> Event:
-        """creates and returns (but does not insert) new event from ical
+    def create_event_from_ics(self,
+                              ical: str,
+                              collection: str,
+                              etag: Optional[str]=None,
+                               href: Optional[str]=None,
+                              ) -> Event:
+        """creates and returns (but does not insert) a new event from ical
         string"""
         calendar = collection or self.writable_names[0]
         return Event.fromString(ical, locale=self._locale, calendar=calendar, etag=etag, href=href)
