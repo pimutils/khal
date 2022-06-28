@@ -1,5 +1,5 @@
 import datetime as dt
-from typing import Protocol, Tuple, TypedDict, Union
+from typing import List, Protocol, Tuple, TypedDict, Union
 
 import pytz
 
@@ -60,7 +60,6 @@ class RRuleMapType(RRuleMapBase, total=False):
     until: dt.datetime
 
 
-
 class EventCreationTypes(TypedDict):
     dtstart: dt.datetime
     dtend: dt.datetime
@@ -68,9 +67,9 @@ class EventCreationTypes(TypedDict):
     description: str
     allday: bool
     location: str
-    categories: str
+    categories: Union[str, List[str]]
     repeat: str
-    until:str
+    until: str
     alarms: str
-    timezone: dt.tzinfo
+    timezone: pytz.BaseTzInfo
     url: str

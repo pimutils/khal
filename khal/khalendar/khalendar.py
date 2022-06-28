@@ -33,13 +33,12 @@ import os.path
 from typing import (Any, Dict, Iterable, List, Optional, Set, Tuple,  # noqa
                     Union)
 
-from ..icalendar import new_vevent
 from ..custom_types import CalendarConfiguration, EventCreationTypes
+from ..icalendar import new_vevent
 from . import backend
 from .event import Event
-from .exceptions import (DuplicateUid, NonUniqueUID,
-                         ReadOnlyCalendarError, UnsupportedFeatureError,
-                         UpdateFailed)
+from .exceptions import (DuplicateUid, NonUniqueUID, ReadOnlyCalendarError,
+                         UnsupportedFeatureError, UpdateFailed)
 from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
                    get_etag_from_file)
 
@@ -260,13 +259,13 @@ class CalendarCollection:
 
     def create_event_from_ics(self,
                               ical: str,
-                              collection: str,
+                              calendar_name: str,
                               etag: Optional[str]=None,
-                               href: Optional[str]=None,
+                              href: Optional[str]=None,
                               ) -> Event:
         """creates and returns (but does not insert) a new event from ical
         string"""
-        calendar = collection or self.writable_names[0]
+        calendar = calendar_name or self.writable_names[0]
         return Event.fromString(ical, locale=self._locale, calendar=calendar, etag=etag, href=href)
 
     def create_event_from_dict(self,
@@ -275,12 +274,10 @@ class CalendarCollection:
                                ) -> Event:
         """Creates an Event from the method's arguments
         """
-        if 'calendar_name' in event_dict:
-            breakpoint()
         vevent = new_vevent(locale=self._locale, **event_dict)
-    #event = Event.fromVEvents([vevent], calendar=calendar_name, locale=conf['locale'])
-        return self.create_event_from_ics(vevent.to_ical(), calendar_name or self.default_calendar_name)
-
+        calendar_name = calendar_name or self.default_calendar_name
+        assert calendar_name is not None
+        return self.create_event_from_ics(vevent.to_ical(), calendar_name)
 
     def update_db(self) -> None:
         """update the db from the vdir,

@@ -25,7 +25,7 @@ import datetime as dt
 import logging
 from collections import defaultdict
 from hashlib import sha256
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple, Union
 
 import dateutil.rrule
 import icalendar
@@ -77,19 +77,19 @@ def split_ics(ics: str, random_uid: bool=False, default_timezone=None):
 
 
 def new_vevent(locale,
-              dtstart: dt.datetime,
-              dtend: dt.datetime,
-              summary: str,
-              timezone: Optional[pytz.BaseTzInfo]=None,
-              allday: bool=False,
-              description: Optional[str]=None,
-              location: Optional[str]=None,
-              categories: Optional[str]=None,
-              repeat: Optional[str]=None,
-              until=None,
-              alarms: Optional[str]=None,
-              url: Optional[str]=None,
-              ) -> icalendar.Event:
+               dtstart: dt.datetime,
+               dtend: dt.datetime,
+               summary: str,
+               timezone: Optional[pytz.BaseTzInfo]=None,
+               allday: bool=False,
+               description: Optional[str]=None,
+               location: Optional[str]=None,
+               categories: Optional[Union[List[str], str]]=None,
+               repeat: Optional[str]=None,
+               until=None,
+               alarms: Optional[str]=None,
+               url: Optional[str]=None,
+               ) -> icalendar.Event:
     """create a new event
 
     :param dtstart: starttime of that event
@@ -138,7 +138,12 @@ def new_vevent(locale,
     return event
 
 
-def ics_from_list(events: List[icalendar.Event], tzs, random_uid: bool=False, default_timezone=None) -> str:
+def ics_from_list(
+    events: List[icalendar.Event],
+    tzs,
+    random_uid: bool=False,
+    default_timezone=None
+) -> str:
     """convert an iterable of icalendar.Events to an icalendar str
 
     :params events: list of events all with the same uid

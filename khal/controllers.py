@@ -34,7 +34,7 @@ from click import confirm, echo, prompt, style
 
 from khal import (__productname__, __version__, calendar_display,
                   parse_datetime, utils)
-from khal.custom_types import LocaleConfiguration, EventCreationTypes
+from khal.custom_types import EventCreationTypes, LocaleConfiguration
 from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
@@ -404,7 +404,8 @@ def new_from_dict(
     This is a wrapper around CalendarCollection.create_event_from_dict()
     """
     if isinstance(event_args['categories'], str):
-        event_args['categories'] = [event_args['categories'].strip() for category in event_args['categories'].split(',')]
+        event_args['categories'] = [event_args['categories'].strip()
+                                    for category in event_args['categories'].split(',')]
     try:
         event = collection.create_event_from_dict(event_args, calendar_name=calendar_name)
     except ValueError as error:
@@ -422,6 +423,7 @@ def new_from_dict(
             format = conf['view']['event_format']
         echo(event.format(format, dt.datetime.now(), env=env))
     elif conf['default']['print_new'] == 'path':
+        assert event.href
         path = os.path.join(collection._calendars[event.calendar]['path'], event.href)
         echo(path)
     return event
