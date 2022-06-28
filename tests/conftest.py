@@ -5,6 +5,7 @@ from time import sleep
 import pytest
 import pytz
 
+from khal.custom_types import CalendarConfiguration
 from khal.khalendar import CalendarCollection
 from khal.khalendar.vdir import Vdir
 
@@ -18,8 +19,14 @@ def coll_vdirs(tmpdir):
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
         readonly = True if name == 'a_calendar' else False
-        calendars[name] = {'name': name, 'path': path, 'color': 'dark blue',
-                           'readonly': readonly, 'unicode_symbols': True}
+        calendars[name] = CalendarConfiguration(
+            name=name,
+            path=path,
+            readonly=readonly,
+            color='dark blue',
+            priority=10,
+            ctype='calendar',
+        )
         vdirs[name] = Vdir(path, '.ics')
     coll = CalendarCollection(calendars=calendars, dbpath=':memory:', locale=LOCALE_BERLIN)
     coll.default_calendar_name = cal1

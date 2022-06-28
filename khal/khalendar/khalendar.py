@@ -191,9 +191,8 @@ class CalendarCollection:
             self._backend.update(event.raw, href, etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
-    def insert(self, event: Event, collection: Optional[str]=None):
+    def insert(self, event: Event, collection: Optional[str]=None) -> Event:
         """insert a new event to the vdir and the database
-
         :param event: the event that should be inserted, it will get a new href
             and etag properties
         """

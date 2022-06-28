@@ -340,7 +340,7 @@ def expand(vevent, href=''):
 
 
 def assert_only_one_uid(cal: icalendar.Calendar):
-    """assert the all VEVENTs in cal have the same UID"""
+    """assert that all VEVENTs in cal have the same UID"""
     uids = set()
     for item in cal.walk():
         if item.name == 'VEVENT':
@@ -481,10 +481,9 @@ def _get_all_properties(vevent, prop):
     return rdates
 
 
-def delete_instance(vevent: icalendar.Calendar, instance: dt.datetime) -> None:
+def delete_instance(vevent: icalendar.Event, instance: dt.datetime) -> None:
     """remove a recurrence instance from a VEVENT's RRDATE list or add it
     to the EXDATE list
-
     """
     # TODO check where this instance is coming from and only call the
     # appropriate function
