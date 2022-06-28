@@ -126,7 +126,7 @@ class CalendarCollection:
         return self._default_calendar_name
 
     @default_calendar_name.setter
-    def default_calendar_name(self, default: str):
+    def default_calendar_name(self, default: str) -> None:
         if default is None:
             self._default_calendar_name = default
         elif default not in self.names:
@@ -170,7 +170,7 @@ class CalendarCollection:
         )
         return list(set(calendars))
 
-    def update(self, event: Event):
+    def update(self, event: Event) -> None:
         """update `event` in vdir and db"""
         assert event.etag is not None
         assert event.calendar is not None
@@ -183,7 +183,7 @@ class CalendarCollection:
             self._backend.update(event.raw, event.href, event.etag, calendar=event.calendar)
             self._backend.set_ctag(self._local_ctag(event.calendar), calendar=event.calendar)
 
-    def force_update(self, event: Event, collection: Optional[str]=None):
+    def force_update(self, event: Event, collection: Optional[str]=None) -> None:
         """update `event` even if an event with the same uid/href already exists"""
         href: str
         calendar = collection if collection is not None else event.calendar
@@ -259,7 +259,7 @@ class CalendarCollection:
         )
         return event
 
-    def change_collection(self, event: Event, new_collection: str):
+    def change_collection(self, event: Event, new_collection: str) -> None:
         href, etag, calendar = event.href, event.etag, event.calendar
         event.etag = None
         self.new(event, new_collection)
@@ -267,7 +267,7 @@ class CalendarCollection:
         assert calendar is not None
         self.delete(href, etag, calendar=calendar)
 
-    def new_event(self, ical: str, collection: str):
+    def new_event(self, ical: str, collection: str) -> Event:
         """creates and returns (but does not insert) new event from ical
         string"""
         calendar = collection or self.writable_names[0]
@@ -315,7 +315,7 @@ class CalendarCollection:
             self._last_ctags[calendar] = local_ctag
         return local_ctag != self._backend.get_ctag(calendar)
 
-    def _db_update(self, calendar: str):
+    def _db_update(self, calendar: str) -> None:
         """implements the actual db update on a per calendar base"""
         local_ctag = self._local_ctag(calendar)
         db_hrefs = {href for href, etag in self._backend.list(calendar)}

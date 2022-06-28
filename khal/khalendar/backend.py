@@ -613,7 +613,7 @@ class SQLiteDb:
             yield item, href, start, end, ref, etag, calendar
 
 
-def check_support(vevent: icalendar.cal.Event, href: str, calendar: str):
+def check_support(vevent: icalendar.cal.Event, href: str, calendar: str) -> None:
     """test if all icalendar features used in this event are supported,
     raise `UpdateFailed` otherwise.
     :param vevent: event to test
@@ -638,7 +638,7 @@ def check_support(vevent: icalendar.cal.Event, href: str, calendar: str):
         )
 
 
-def check_for_errors(component: icalendar.cal.Component, calendar: str, href: str):
+def check_for_errors(component: icalendar.cal.Component, calendar: str, href: str) -> None:
     """checking if component.errors exists, is not empty and if so warn the user"""
     if hasattr(component, 'errors') and component.errors:
         logger.error(
