@@ -260,6 +260,7 @@ class CalendarCollection:
         return event
 
     def change_collection(self, event: Event, new_collection: str) -> None:
+        """Moves `event` to a new collection (calendar)"""
         href, etag, calendar = event.href, event.etag, event.calendar
         event.etag = None
         self.new(event, new_collection)

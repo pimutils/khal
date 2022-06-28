@@ -867,13 +867,11 @@ class EventColumn(urwid.WidgetWrap):
         except IndexError:
             pass
 
-    def new(self, date, end=None):
+    def new(self, date: dt.datetime, end: Optional[dt.datetime]=None):
         """create a new event on `date` at the next full hour and edit it
 
         :param date: default date for new event
-        :type date: datetime.date
         :param end: optional, date the event ends on (inclusive)
-        :type end: datetime.date
         """
         if not self.pane.collection.writable_names:
             self.pane.window.alert(('alert', 'No writable calendar.'))

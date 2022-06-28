@@ -29,6 +29,7 @@ from hashlib import sha256
 import dateutil.rrule
 import icalendar
 import pytz
+from typing import Optional
 
 from .exceptions import UnsupportedRecurrence
 from .parse_datetime import guesstimedeltafstr, rrulefstr
@@ -77,30 +78,33 @@ def split_ics(ics, random_uid=False, default_timezone=None):
             sorted(events_grouped.items())]
 
 
-def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
-              allday=False, description=None, location=None, categories=None,
-              repeat=None, until=None, alarms=None, url=None):
+def new_event(locale,
+              dtstart: dt.datetime,
+              dtend: dt.datetime,
+              summary: str,
+              timezone: Optional[pytz.BaseTzInfo]=None,
+              allday: bool=False,
+              description: Optional[str]=None,
+              location: Optional[str]=None,
+              categories: Optional[str]=None,
+              repeat: Optional[str]=None,
+              until=None,
+              alarms: Optional[str]=None,
+              url: Optional[str]=None,
+              ) -> icalendar.Event:
     """create a new event
 
     :param dtstart: starttime of that event
-    :type dtstart: datetime
     :param dtend: end time of that event, if this is a *date*, this value is
         interpreted as being the last date the event is scheduled on, i.e.
         the VEVENT DTEND will be *one day later*
-    :type dtend: datetime
     :param summary: description of the event, used in the SUMMARY property
-    :type summary: unicode
     :param timezone: timezone of the event (start and end)
-    :type timezone: pytz.timezone
     :param allday: if set to True, we will not transform dtstart and dtend to
         datetime
-    :type allday: bool
     :param url: url of the event
-    :type url: string
     :returns: event
-    :rtype: icalendar.Event
     """
-
     if dtstart is None:
         raise ValueError("no start given")
     if dtend is None:
@@ -521,6 +525,9 @@ def sort_key(vevent):
 
 
 def cal_from_ics(ics: str) -> icalendar.Calendar:
+    """
+    :param ics: an icalendar format string
+    """
     try:
         cal = icalendar.Calendar.from_ical(ics)
     except ValueError as error:
