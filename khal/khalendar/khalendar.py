@@ -227,8 +227,16 @@ class CalendarCollection:
             raise EtagMissmatch()
         self._backend.delete(href, calendar=calendar)
 
-    def delete_instance(self, href: str, etag: Optional[str], calendar: str, rec_id: str) -> None:
-        """Delete a recurrence instance from an event specified by `href` from `calendar`"""
+    def delete_instance(self,
+                        href: str,
+                        etag: Optional[str],
+                        calendar: str,
+                        rec_id: dt.datetime,
+                        ) -> Event:
+        """Delete a recurrence instance from an event specified by `href` from `calendar`
+
+        returns the updated event
+        """
         if self._calendars[calendar]['readonly']:
             raise ReadOnlyCalendarError()
         event = self.get_event(href, calendar)
@@ -237,6 +245,7 @@ class CalendarCollection:
 
         event.delete_instance(rec_id)
         self.update(event)
+        return event
 
     def get_event(self, href: str, calendar: str) -> Event:
         """get an event by its href from the datatbase"""
