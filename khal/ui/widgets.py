@@ -29,6 +29,8 @@ import re
 
 import urwid
 
+from .calendarwidget import CalendarWidget  # noqa
+
 
 class DateConversionError(Exception):
     pass

@@ -24,10 +24,9 @@ import datetime as dt
 import urwid
 
 from ..utils import get_weekday_occurrence, get_wrapped_text
-from .calendarwidget import CalendarWidget
 from .widgets import (AlarmsEditor, Choice, DateConversionError, DateWidget,
                       ExtendedEdit, NColumns, NListBox, NPile, PositiveIntEdit,
-                      TimeWidget, ValidatedEdit)
+                      TimeWidget, ValidatedEdit, CalendarWidget)
 
 
 class StartEnd:
