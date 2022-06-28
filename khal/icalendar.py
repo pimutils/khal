@@ -76,7 +76,7 @@ def split_ics(ics: str, random_uid: bool=False, default_timezone=None):
             sorted(events_grouped.items())]
 
 
-def new_event(locale,
+def new_vevent(locale,
               dtstart: dt.datetime,
               dtend: dt.datetime,
               summary: str,
@@ -103,13 +103,6 @@ def new_event(locale,
     :param url: url of the event
     :returns: event
     """
-    if dtstart is None:
-        raise ValueError("no start given")
-    if dtend is None:
-        raise ValueError("no end given")
-    if summary is None:
-        raise ValueError("no summary given")
-
     if not allday and timezone is not None:
         dtstart = timezone.localize(dtstart)
         dtend = timezone.localize(dtend)
@@ -520,7 +513,7 @@ def sort_key(vevent: icalendar.Event) -> Tuple[str, float]:
 
 def cal_from_ics(ics: str) -> icalendar.Calendar:
     """
-    :param ics: an icalendar format string
+    :param ics: an icalendar formatted string
     """
     try:
         cal = icalendar.Calendar.from_ical(ics)

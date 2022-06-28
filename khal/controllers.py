@@ -34,7 +34,7 @@ from click import confirm, echo, prompt, style
 
 from khal import (__productname__, __version__, calendar_display,
                   parse_datetime, utils)
-from khal.custom_types import LocaleConfiguration
+from khal.custom_types import LocaleConfiguration, EventCreationTypes
 from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
@@ -42,7 +42,6 @@ from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 
 from .exceptions import ConfigurationError
 from .icalendar import cal_from_ics
-from .icalendar import new_event as new_vevent
 from .icalendar import sort_key as sort_vevent_key
 from .icalendar import split_ics
 from .khalendar.vdir import Item
@@ -305,6 +304,7 @@ def khal_list(
 def new_interactive(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, env=None, url=None):
+    info: EventCreationTypes
     try:
         info = parse_datetime.eventinfofstr(
             info, conf['locale'],
@@ -354,12 +354,16 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
     if info['description'] == 'None':
         info['description'] = ''
 
-    event = new_from_args(
-        collection, calendar_name, conf, format=format, env=env,
-        location=location, categories=categories,
-        repeat=repeat, until=until, alarms=alarms, url=url,
-        **info)
+    info.update({
+        'location': location,
+        'categories': categories,
+        'repeat': repeat,
+        'until': until,
+        'alarms': alarms,
+        'url': url,
+    })
 
+    event = new_from_dict(info, collection, conf, format=format, env=env)
     echo("event saved")
 
     term_width, _ = get_terminal_size()
@@ -376,35 +380,41 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
         conf['default']['default_dayevent_duration'],
         adjust_reasonably=True,
     )
-    new_from_args(
-        collection, calendar_name, conf, format=format, env=env,
-        location=location, categories=categories, repeat=repeat,
-        until=until, alarms=alarms, url=url, **info
-    )
+    info.update({
+        'location': location,
+        'categories': categories,
+        'repeat': repeat,
+        'until': until,
+        'alarms': alarms,
+        'url': url,
+    })
+    new_from_dict(info, collection, conf=conf, format=format, env=env, calendar_name=calendar_name)
 
 
-def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
-                  summary=None, description=None, allday=None, location=None,
-                  categories=None, repeat=None, until=None, alarms=None,
-                  timezone=None, url=None, format=None, env=None):
-    """Create a new event from arguments and add to vdirs"""
-    if isinstance(categories, str):
-        categories = [category.strip() for category in categories.split(',')]
+def new_from_dict(
+    event_args: EventCreationTypes,
+    collection: CalendarCollection,
+    conf,
+    calendar_name: Optional[str]=None,
+    format=None,
+    env=None,
+) -> Event:
+    """Create a new event from arguments and save in vdirs
+
+    This is a wrapper around CalendarCollection.create_event_from_dict()
+    """
+    if isinstance(event_args['categories'], str):
+        event_args['categories'] = [event_args['categories'].strip() for category in event_args['categories'].split(',')]
     try:
-        event = new_vevent(
-            locale=conf['locale'], location=location, categories=categories,
-            repeat=repeat, until=until, alarms=alarms, dtstart=dtstart,
-            dtend=dtend, summary=summary, description=description, timezone=timezone, url=url,
-        )
+        event = collection.create_event_from_dict(event_args, calendar_name=calendar_name)
     except ValueError as error:
         raise FatalError(error)
-    event = Event.fromVEvents([event], calendar=calendar_name, locale=conf['locale'])
 
     try:
         collection.insert(event)
     except ReadOnlyCalendarError:
         raise FatalError(
-            f'ERROR: Cannot modify calendar "{calendar_name}" as it is read-only'
+            f'ERROR: Cannot modify calendar `{calendar_name}` as it is read-only'
         )
 
     if conf['default']['print_new'] == 'event':
@@ -412,10 +422,7 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
             format = conf['view']['event_format']
         echo(event.format(format, dt.datetime.now(), env=env))
     elif conf['default']['print_new'] == 'path':
-        path = os.path.join(
-            collection._calendars[event.calendar]['path'],
-            event.href
-        )
+        path = os.path.join(collection._calendars[event.calendar]['path'], event.href)
         echo(path)
     return event
 

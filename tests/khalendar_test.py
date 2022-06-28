@@ -249,7 +249,7 @@ class TestCollection:
         coll, vdirs = coll_vdirs
         bday = dt.datetime.combine(aday, dt.time.min)
         anend = bday + dt.timedelta(hours=1)
-        event = icalendar_helpers.new_event(
+        event = icalendar_helpers.new_vevent(
             dtstart=bday, dtend=anend, summary="hi", timezone=utils.BERLIN,
             locale=LOCALE_BERLIN,
         )

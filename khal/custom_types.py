@@ -58,3 +58,19 @@ class RRuleMapType(RRuleMapBase, total=False):
     # TODO remove if either `NotRequired` is supported by mypy or the oldest
     # python we support is 3.11 (see PEP 655)
     until: dt.datetime
+
+
+
+class EventCreationTypes(TypedDict):
+    dtstart: dt.datetime
+    dtend: dt.datetime
+    summary: str
+    description: str
+    allday: bool
+    location: str
+    categories: str
+    repeat: str
+    until:str
+    alarms: str
+    timezone: dt.tzinfo
+    url: str
