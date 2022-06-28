@@ -268,7 +268,7 @@ class CalendarCollection:
         assert calendar is not None
         self.delete(href, etag, calendar=calendar)
 
-    def new_event(self, ical: str, collection: str) -> Event:
+    def new_event_from_ical(self, ical: str, collection: str) -> Event:
         """creates and returns (but does not insert) new event from ical
         string"""
         calendar = collection or self.writable_names[0]

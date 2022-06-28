@@ -40,14 +40,14 @@ conf = {'locale': utils.LOCALE_BERLIN,
 class TestGetAgenda:
     def test_new_event(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        event = coll.new_event(event_today, utils.cal1)
+        event = coll.new_event_from_ical(event_today, utils.cal1)
         coll.new(event)
         assert ['                 a meeting :: short description\x1b[0m'] == \
             khal_list(coll, [], conf, agenda_format=event_format, day_format="")
 
     def test_new_event_day_format(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        event = coll.new_event(event_today, utils.cal1)
+        event = coll.new_event_from_ical(event_today, utils.cal1)
         coll.new(event)
         assert ['Today\x1b[0m',
                 '                 a meeting :: short description\x1b[0m'] == \
@@ -59,7 +59,7 @@ class TestGetAgenda:
             event_today = event_allday_template.format(
                 today.strftime('%Y%m%d'), tomorrow.strftime('%Y%m%d'))
             coll, vdirs = coll_vdirs
-            event = coll.new_event(event_today, utils.cal1)
+            event = coll.new_event_from_ical(event_today, utils.cal1)
             coll.new(event)
             out = khal_list(
                 coll, conf=conf, agenda_format=event_format, datepoint=[])
@@ -77,7 +77,7 @@ class TestGetAgenda:
 
     def test_empty_recurrence(self, coll_vdirs):
         coll, vidrs = coll_vdirs
-        coll.new(coll.new_event(dedent(
+        coll.new(coll.new_event_from_ical(dedent(
             'BEGIN:VEVENT\r\n'
             'UID:no_recurrences\r\n'
             'SUMMARY:No recurrences\r\n'

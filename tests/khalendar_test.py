@@ -49,7 +49,7 @@ class TestCalendar:
 
     def test_new_event(self, coll_vdirs):
         coll, vdirs = coll_vdirs
-        event = coll.new_event(event_today, cal1)
+        event = coll.new_event_from_ical(event_today, cal1)
         assert event.calendar == cal1
         coll.new(event)
         events = list(coll.get_events_on(today))
@@ -253,7 +253,7 @@ class TestCollection:
             dtstart=bday, dtend=anend, summary="hi", timezone=utils.BERLIN,
             locale=LOCALE_BERLIN,
         )
-        event = coll.new_event(event.to_ical(), coll.default_calendar_name)
+        event = coll.new_event_from_ical(event.to_ical(), coll.default_calendar_name)
         assert event.allday is False
 
     def test_modify_readonly_calendar(self, coll_vdirs):
@@ -434,7 +434,7 @@ def test_default_calendar(coll_vdirs, sleep_time):
     """test if an update to the vdir is detected by the CalendarCollection"""
     coll, vdirs = coll_vdirs
     vdir = vdirs['foobar']
-    event = coll.new_event(event_today, 'foobar')
+    event = coll.new_event_from_ical(event_today, 'foobar')
 
     assert len(list(coll.get_events_on(today))) == 0
 
@@ -460,7 +460,7 @@ def test_default_calendar(coll_vdirs, sleep_time):
 def test_only_update_old_event(coll_vdirs, monkeypatch, sleep_time):
     coll, vdirs = coll_vdirs
 
-    href_one, etag_one = vdirs[cal1].upload(coll.new_event(dedent("""
+    href_one, etag_one = vdirs[cal1].upload(coll.new_event_from_ical(dedent("""
     BEGIN:VEVENT
     UID:meeting-one
     DTSTART;VALUE=DATE:20140909
@@ -471,7 +471,7 @@ def test_only_update_old_event(coll_vdirs, monkeypatch, sleep_time):
 
     sleep(sleep_time)  # Make sure we get a new etag for meeting-two
 
-    href_two, etag_two = vdirs[cal1].upload(coll.new_event(dedent("""
+    href_two, etag_two = vdirs[cal1].upload(coll.new_event_from_ical(dedent("""
     BEGIN:VEVENT
     UID:meeting-two
     DTSTART;VALUE=DATE:20140910
@@ -493,7 +493,7 @@ def test_only_update_old_event(coll_vdirs, monkeypatch, sleep_time):
         return old_update_vevent(href, calendar)
     monkeypatch.setattr(coll, '_update_vevent', _update_vevent)
 
-    href_three, etag_three = vdirs[cal1].upload(coll.new_event(dedent("""
+    href_three, etag_three = vdirs[cal1].upload(coll.new_event_from_ical(dedent("""
     BEGIN:VEVENT
     UID:meeting-three
     DTSTART;VALUE=DATE:20140911
