@@ -25,7 +25,7 @@ import datetime as dt
 import logging
 from collections import defaultdict
 from hashlib import sha256
-from typing import Optional
+from typing import Optional, List, Tuple
 
 import dateutil.rrule
 import icalendar
@@ -38,14 +38,12 @@ from .utils import generate_random_uid, localize_strip_tz, to_unix_time
 logger = logging.getLogger('khal')
 
 
-def split_ics(ics, random_uid=False, default_timezone=None):
+def split_ics(ics: str, random_uid: bool=False, default_timezone=None):
     """split an ics string into several according to VEVENT's UIDs
 
     and sort the right VTIMEZONEs accordingly
     ignores all other ics components
-    :type ics: str
     :param random_uid: assign random uids to all events
-    :type random_uid: bool
     :rtype list:
     """
     cal = cal_from_ics(ics)
@@ -147,13 +145,11 @@ def new_event(locale,
     return event
 
 
-def ics_from_list(events, tzs, random_uid=False, default_timezone=None):
-    """convert an iterable of icalendar.Events to an icalendar.Calendar
+def ics_from_list(events: List[icalendar.Event], tzs, random_uid: bool=False, default_timezone=None) -> str:
+    """convert an iterable of icalendar.Events to an icalendar str
 
     :params events: list of events all with the same uid
-    :type events: list(icalendar.cal.Event)
     :param random_uid: assign random uids to all events
-    :type random_uid: bool
     :param tzs: collection of timezones
     :type tzs: dict(icalendar.cal.Vtimzone
     """
@@ -485,12 +481,10 @@ def _get_all_properties(vevent, prop):
     return rdates
 
 
-def delete_instance(vevent, instance):
+def delete_instance(vevent: icalendar.Calendar, instance: dt.datetime) -> None:
     """remove a recurrence instance from a VEVENT's RRDATE list or add it
     to the EXDATE list
 
-    :type vevent: icalendar.cal.Event
-    :type instance: datetime.datetime
     """
     # TODO check where this instance is coming from and only call the
     # appropriate function
@@ -506,7 +500,7 @@ def delete_instance(vevent, instance):
             vevent.add('RDATE', rdates)
 
 
-def sort_key(vevent):
+def sort_key(vevent: icalendar.Event) -> Tuple[str, float]:
     """helper function to determine order of VEVENTS
     so that recurrence-id events come after the corresponding rrule event, etc
     :param vevent: icalendar.Event

@@ -422,7 +422,7 @@ def guessrangefstr(daterange: Union[str, List[str]],
 def rrulefstr(repeat: str,
               until: str,
               locale: LocaleConfiguration,
-              timezone: pytz.BaseTzInfo,
+              timezone: Optional[dt.tzinfo],
               ) -> RRuleMapType:
     if repeat in ["daily", "weekly", "monthly", "yearly"]:
         rrule_settings: RRuleMapType = {'freq': repeat}

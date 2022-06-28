@@ -48,7 +48,7 @@ class Event:
     """base Event class for representing a *recurring instance* of an Event
 
     (in case of non-recurring events this distinction is irrelevant)
-    We keep a copy of the start and end time around, because for recurring
+    We keep a copy of this instances start and end time around, because for recurring
     events it might be costly to expand the recursion rules
 
     important distinction for AllDayEvents:
@@ -125,7 +125,7 @@ class Event:
 
     @classmethod
     def fromVEvents(cls,
-                    events_list: List[icalendar.cal.Event],
+                    events_list: List[icalendar.Event],
                     ref: Optional[str]=None,
                     start: Optional[dt.datetime]=None,
                     **kwargs) -> 'Event':
@@ -367,9 +367,7 @@ class Event:
 
     @property
     def raw(self) -> str:
-        """needed for vdirsyncer compatibility
-
-        return text
+        """Creates a VCALENDAR containing VTIMEZONEs
         """
         calendar = self._create_calendar()
         tzs = []

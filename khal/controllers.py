@@ -398,8 +398,7 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
         )
     except ValueError as error:
         raise FatalError(error)
-    event = Event.fromVEvents(
-        [event], calendar=calendar_name, locale=conf['locale'])
+    event = Event.fromVEvents([event], calendar=calendar_name, locale=conf['locale'])
 
     try:
         collection.new(event)
