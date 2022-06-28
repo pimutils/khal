@@ -191,10 +191,10 @@ class CalendarCollection:
             self._backend.update(event.raw, href, etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
-    def new(self, event: Event, collection: Optional[str]=None):
-        """save a new event to the vdir and the database
+    def insert(self, event: Event, collection: Optional[str]=None):
+        """insert a new event to the vdir and the database
 
-        :param event: the event that should be updated, it will get a new href
+        :param event: the event that should be inserted, it will get a new href
             and etag properties
         """
         calendar = collection if collection is not None else event.calendar
@@ -271,7 +271,7 @@ class CalendarCollection:
         """Moves `event` to a new collection (calendar)"""
         href, etag, calendar = event.href, event.etag, event.calendar
         event.etag = None
-        self.new(event, new_collection)
+        self.insert(event, new_collection)
         assert href is not None
         assert calendar is not None
         self.delete(href, etag, calendar=calendar)

@@ -514,7 +514,7 @@ class EventEditor(urwid.WidgetWrap):
             self.event.increment_sequence()
             if self.event.etag is None:  # has not been saved before
                 self.event.calendar = self.calendar_chooser.active['name']
-                self.collection.new(self.event)
+                self.collection.insert(self.event)
             elif self.calendar_chooser.changed:
                 self.collection.change_collection(
                     self.event,

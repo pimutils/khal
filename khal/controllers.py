@@ -401,7 +401,7 @@ def new_from_args(collection, calendar_name, conf, dtstart=None, dtend=None,
     event = Event.fromVEvents([event], calendar=calendar_name, locale=conf['locale'])
 
     try:
-        collection.new(event)
+        collection.insert(event)
     except ReadOnlyCalendarError:
         raise FatalError(
             f'ERROR: Cannot modify calendar "{calendar_name}" as it is read-only'
@@ -642,7 +642,7 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
 
     if batch or confirm(f"Do you want to import this event into `{calendar_name}`?"):
         try:
-            collection.new(Item(vevent), collection=calendar_name)
+            collection.insert(Item(vevent), collection=calendar_name)
         except DuplicateUid:
             if batch or confirm(
                     "An event with the same UID already exists. Do you want to update it?"):
