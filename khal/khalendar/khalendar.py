@@ -41,6 +41,7 @@ from .exceptions import (CouldNotCreateDbDir, DuplicateUid, NonUniqueUID,
                          UpdateFailed)
 from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
                    get_etag_from_file)
+from ..icalendar import new_event
 
 logger = logging.getLogger('khal')
 
@@ -222,6 +223,24 @@ class CalendarCollection:
                 raise DuplicateUid(href)
             self._backend.update(event.raw, event.href, event.etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
+
+    def generate_event(self,
+                       dtstart,
+                       dtend,
+                       summary,
+                       timezone,
+                       locale,
+                       allday=False,
+                       ):
+        event = new_event(
+            dtstart=dtstart,
+            dtend=dtend,
+            summary=summary,
+            timezone=timezone,
+            locale=locale,
+            allday=allday,
+        )
+        return self.new_event_from_ical(event.to_ical(), self.default_calendar_name)
 
     def delete(self, href: str, etag: Optional[str], calendar: str):
         if self._calendars[calendar]['readonly']:

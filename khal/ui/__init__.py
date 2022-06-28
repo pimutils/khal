@@ -27,7 +27,6 @@ import sys
 import click
 import urwid
 
-from .. import icalendar as icalendar_helpers
 from .. import utils
 from ..khalendar.event import Event
 from ..khalendar.exceptions import ReadOnlyCalendarError
@@ -879,20 +878,21 @@ class EventColumn(urwid.WidgetWrap):
         if date is None:
             date = dt.datetime.now()
         if end is None:
-            start = dt.datetime.combine(date, dt.time(dt.datetime.now().hour))
-            end = start + dt.timedelta(minutes=60)
-            event = icalendar_helpers.new_event(
-                dtstart=start, dtend=end, summary='',
-                timezone=self._conf['locale']['default_timezone'],
-                locale=self._conf['locale'],
-            )
-        else:
-            event = icalendar_helpers.new_event(
-                dtstart=date, dtend=end + dt.timedelta(days=1), summary='',
-                allday=True, locale=self._conf['locale'],
-            )
-        event = self.pane.collection.new_event(
-            event.to_ical(), self.pane.collection.default_calendar_name)
+            dtstart = dt.datetime.combine(date, dt.time(dt.datetime.now().hour))
+            dtend = dtstart + dt.timedelta(minutes=60)
+            allday = False
+        else:  # TODO XXX why do we use allday if end is not set???
+            dtstart = date
+            dtend = end + dt.timedelta(days=1)
+            allday = True
+        event = self.pane.collection.generate_event(
+            dtstart=dtstart,
+            dtend=dtend,
+            summary='',
+            timezone=self._conf['locale']['default_timezone'],
+            locale=self._conf['locale'],
+            allday=allday,
+        )
         self.edit(event)
 
     def selectable(self):
