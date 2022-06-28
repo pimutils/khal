@@ -27,13 +27,13 @@ import logging
 import re
 from calendar import isleap
 from time import strptime
-from typing import Callable, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import pytz
 
 from khal.exceptions import DateTimeParseError, FatalError
 
-from .custom_types import LocaleConfiguration
+from .custom_types import LocaleConfiguration, RRuleMapType
 
 logger = logging.getLogger('khal')
 
@@ -188,7 +188,7 @@ def datetimefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: boo
 
 
 def guessdatetimefstr(
-    dtime_list: list,
+    dtime_list: List[str],
     locale: LocaleConfiguration,
     default_day: Optional[dt.date]=None,
     in_future=True,
@@ -215,7 +215,7 @@ def guessdatetimefstr(
             return dt.datetime.now()
         raise ValueError
 
-    def datefstr_year(dtime_list: list, dtformat: str, infer_year: bool) -> dt.datetime:
+    def datefstr_year(dtime_list: List[str], dtformat: str, infer_year: bool) -> dt.datetime:
         return datetimefstr(dtime_list, dtformat, day, infer_year, in_future)
 
     dtstart = None
@@ -250,7 +250,7 @@ def guessdatetimefstr(
     )
 
 
-def timedelta2str(delta):
+def timedelta2str(delta: dt.timedelta) -> str:
     # we deliberately ignore any subsecond deltas
     total_seconds = int(abs(delta).total_seconds())
 
@@ -280,7 +280,7 @@ def timedelta2str(delta):
     return ' '.join(s)
 
 
-def guesstimedeltafstr(delta_string):
+def guesstimedeltafstr(delta_string: str) -> dt.timedelta:
     """parses a timedelta from a string
 
     :param delta_string: string encoding time-delta, e.g. '1h 15m'
@@ -320,11 +320,12 @@ def guesstimedeltafstr(delta_string):
     return res
 
 
-def guessrangefstr(daterange, locale,
-                   default_timedelta_date=dt.timedelta(days=1),
-                   default_timedelta_datetime=dt.timedelta(hours=1),
-                   adjust_reasonably=False,
-                   ):
+def guessrangefstr(daterange: Union[str, List[str]],
+                   locale: LocaleConfiguration,
+                   default_timedelta_date: dt.timedelta=dt.timedelta(days=1),
+                   default_timedelta_datetime: dt.timedelta=dt.timedelta(hours=1),
+                   adjust_reasonably: bool=False,
+                   ) -> Tuple[dt.datetime, dt.datetime, bool]:
     """parses a range string
 
     :param daterange: date1 [date2 | timedelta]
@@ -333,44 +334,43 @@ def guessrangefstr(daterange, locale,
     :returns: start and end of the date(time) range  and if
         this is an all-day time range or not,
         **NOTE**: the end is *exclusive* if this is an allday event
-    :rtype: (datetime, datetime, bool)
-
     """
     range_list = daterange
     if isinstance(daterange, str):
         range_list = daterange.split(' ')
+        assert isinstance(range_list, list)
 
     if range_list == ['week']:
         today_weekday = dt.datetime.today().weekday()
-        start = dt.datetime.today() - dt.timedelta(days=(today_weekday - locale['firstweekday']))
-        end = start + dt.timedelta(days=8)
-        return start, end, True
+        startdt = dt.datetime.today() - dt.timedelta(days=(today_weekday - locale['firstweekday']))
+        enddt = startdt + dt.timedelta(days=8)
+        return startdt, enddt, True
 
     for i in reversed(range(1, len(range_list) + 1)):
-        start = ' '.join(range_list[:i])
-        end = ' '.join(range_list[i:])
+        startstr = ' '.join(range_list[:i])
+        endstr = ' '.join(range_list[i:])
         allday = False
         try:
             # figuring out start
-            split = start.split(" ")
+            split = startstr.split(" ")
             start, allday = guessdatetimefstr(split, locale)
             if len(split) != 0:
                 continue
 
             # and end
-            if len(end) == 0:
+            if len(endstr) == 0:
                 if allday:
                     end = start + default_timedelta_date
                 else:
                     end = start + default_timedelta_datetime
-            elif end.lower() == 'eod':
+            elif endstr.lower() == 'eod':
                 end = dt.datetime.combine(start.date(), dt.time.max)
-            elif end.lower() == 'week':
+            elif endstr.lower() == 'week':
                 start -= dt.timedelta(days=(start.weekday() - locale['firstweekday']))
                 end = start + dt.timedelta(days=8)
             else:
                 try:
-                    delta = guesstimedeltafstr(end)
+                    delta = guesstimedeltafstr(endstr)
                     if allday and delta.total_seconds() % (3600 * 24):
                         # TODO better error class, no logging in here
                         logger.fatal(
@@ -385,7 +385,7 @@ def guessrangefstr(daterange, locale,
 
                     end = start + delta
                 except (ValueError, DateTimeParseError):
-                    split = end.split(" ")
+                    split = endstr.split(" ")
                     end, end_allday = guessdatetimefstr(
                         split, locale, default_day=start.date(), in_future=False)
                     if len(split) != 0:
@@ -419,9 +419,13 @@ def guessrangefstr(daterange, locale,
     )
 
 
-def rrulefstr(repeat, until, locale, timezone):
+def rrulefstr(repeat: str,
+              until: str,
+              locale: LocaleConfiguration,
+              timezone: pytz.BaseTzInfo,
+              ) -> RRuleMapType:
     if repeat in ["daily", "weekly", "monthly", "yearly"]:
-        rrule_settings = {'freq': repeat}
+        rrule_settings: RRuleMapType = {'freq': repeat}
         if until:
             until_dt, _ = guessdatetimefstr(until.split(' '), locale)
             if timezone:
@@ -437,20 +441,15 @@ def rrulefstr(repeat, until, locale, timezone):
         raise FatalError()
 
 
-def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_duration,
-                  adjust_reasonably=False):
+def eventinfofstr(info_string: str,
+                  locale: LocaleConfiguration,
+                  default_event_duration: dt.timedelta,
+                  default_dayevent_duration: dt.timedelta,
+                  adjust_reasonably: bool=False,
+                  ) -> Dict[str, Any]:
     """parses a string of the form START [END | DELTA] [TIMEZONE] [SUMMARY] [::
     DESCRIPTION] into a dictionary with keys: dtstart, dtend, timezone, allday,
     summary, description
-
-    :param info_string:
-    :type info_string: string fitting the form
-    :param locale:
-    :type locale: locale
-    :param adjust_reasonably:
-    :type adjust_reasonably: passed on to guessrangefstr
-    :rtype: dictionary
-
     """
     description = None
     if " :: " in info_string:
@@ -458,10 +457,10 @@ def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_
 
     parts = info_string.split(' ')
     summary = None
-    start = None
-    end = None
-    tz = None
-    allday = False
+    start: Optional[Union[dt.datetime, dt.date]] = None
+    end: Optional[Union[dt.datetime, dt.date]] = None
+    tz: Optional[pytz.BaseTzInfo] = None
+    allday: bool = False
     for i in reversed(range(1, len(parts) + 1)):
         try:
             start, end, allday = guessrangefstr(
@@ -495,10 +494,12 @@ def eventinfofstr(info_string, locale, default_event_duration, default_dayevent_
         tz = locale['default_timezone']
 
     if allday:
+        assert isinstance(start, dt.datetime)
+        assert isinstance(end, dt.datetime)
         start = start.date()
         end = end.date()
 
-    info = {}
+    info: Dict[str, Any] = {}
     info["dtstart"] = start
     info["dtend"] = end
     info["summary"] = summary if summary else None

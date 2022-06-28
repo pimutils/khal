@@ -35,6 +35,8 @@ try:
 except ModuleNotFoundError:
     from validate import Validator
 
+from typing import Callable, List, Optional
+
 from .exceptions import (CannotParseConfigFileError, InvalidSettingsError,
                          NoConfigFile)
 from .utils import (config_checks, expand_db_path, expand_path,
@@ -45,7 +47,7 @@ logger = logging.getLogger('khal')
 SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
 
 
-def find_configuration_file():
+def find_configuration_file() -> Optional[str]:
     """Return the configuration filename.
 
     This function builds the list of paths known by khal and then return the
@@ -76,18 +78,16 @@ def find_configuration_file():
 
 
 def get_config(
-        config_path=None,
-        _get_color_from_vdir=get_color_from_vdir,
-        _get_vdir_type=get_vdir_type) -> ConfigObj:
+        config_path: Optional[str]=None,
+        _get_color_from_vdir: Callable=get_color_from_vdir,
+        _get_vdir_type: Callable=get_vdir_type) -> ConfigObj:
     """reads the config file, validates it and return a config dict
 
     :param config_path: path to a custom config file, if none is given the
                         default locations will be searched
-    :type config_path: str
     :param _get_color_from_vdir: override get_color_from_vdir for testing purposes
     :param _get_vdir_type: override get_vdir_type for testing purposes
     :returns: configuration
-    :rtype: dict
     """
     if config_path is None:
         config_path = find_configuration_file()
@@ -159,7 +159,7 @@ def get_config(
     return user_config
 
 
-def sectionize(sections, depth=1):
+def sectionize(sections: List[str], depth: int=1) -> str:
     """converts list of string into [list][[of]][[[strings]]]"""
     this_part = depth * '[' + sections[0] + depth * ']'
     if len(sections) > 1:

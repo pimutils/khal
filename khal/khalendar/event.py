@@ -25,7 +25,7 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from typing import Dict, List, Optional, Tuple, Type, Union
+from typing import Dict, List, Optional, Type, Union
 
 import icalendar
 import icalendar.cal
@@ -59,7 +59,7 @@ class Event:
     allday: bool = False
 
     def __init__(self,
-                 vevents,
+                 vevents: Dict[str, icalendar.Event],
                  locale: LocaleConfiguration,
                  ref: Optional[str] = None,
                  readonly: bool = False,
@@ -86,6 +86,8 @@ class Event:
         self.etag = etag
         self.calendar = calendar if calendar else ''
         self.color = color
+        self._start: dt.datetime
+        self._end: dt.datetime
 
         if start is None:
             self._start = self._vevents[self.ref]['DTSTART'].dt
@@ -471,24 +473,24 @@ class Event:
         self._vevents[self.ref].subcomponents = components
 
     @property
-    def location(self):
+    def location(self) -> str:
         return self._vevents[self.ref].get('LOCATION', '')
 
-    def update_location(self, location):
+    def update_location(self, location: str) -> None:
         if location:
             self._vevents[self.ref]['LOCATION'] = location
         else:
             self._vevents[self.ref].pop('LOCATION')
 
     @property
-    def attendees(self):
+    def attendees(self) -> str:
         addresses = self._vevents[self.ref].get('ATTENDEE', [])
         if not isinstance(addresses, list):
             addresses = [addresses, ]
         return ", ".join([address.split(':')[-1]
                           for address in addresses])
 
-    def update_attendees(self, attendees):
+    def update_attendees(self, attendees: List[str]):
         assert isinstance(attendees, list)
         attendees = [a.strip().lower() for a in attendees if a != ""]
         if len(attendees) > 0:
@@ -518,20 +520,20 @@ class Event:
             self._vevents[self.ref].pop('ATTENDEE')
 
     @property
-    def categories(self):
+    def categories(self) -> str:
         try:
             return self._vevents[self.ref].get('CATEGORIES', '').to_ical().decode('utf-8')
         except AttributeError:
             return ''
 
-    def update_categories(self, categories):
+    def update_categories(self, categories: List[str]) -> None:
         assert isinstance(categories, list)
         self._vevents[self.ref].pop('CATEGORIES', False)
         if categories:
             self._vevents[self.ref].add('CATEGORIES', categories)
 
     @property
-    def description(self):
+    def description(self) -> str:
         return self._vevents[self.ref].get('DESCRIPTION', '')
 
     def update_description(self, description):
@@ -541,7 +543,7 @@ class Event:
             self._vevents[self.ref].pop('DESCRIPTION')
 
     @property
-    def _recur_str(self):
+    def _recur_str(self) -> str:
         if self.recurring:
             recurstr = ' ' + self.symbol_strings['recurring']
         else:
@@ -549,7 +551,7 @@ class Event:
         return recurstr
 
     @property
-    def _alarm_str(self):
+    def _alarm_str(self) -> str:
         if self.alarms:
             alarmstr = ' ' + self.symbol_strings['alarming']
         else:
@@ -766,6 +768,7 @@ class LocalizedEvent(DatetimeEvent):
     """
     see parent
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         try:

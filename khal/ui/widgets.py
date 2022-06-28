@@ -73,6 +73,7 @@ def goto_end_of_line(text):
 
 class ExtendedEdit(urwid.Edit):
     """A text editing widget supporting some more editing commands"""
+
     def keypress(self, size, key):
         if key == 'ctrl w':
             self._delete_word()
@@ -267,6 +268,7 @@ class SupportsNext:
     _select_first_selectable
     _select_last_selectable
     """
+
     def __init__(self, *args, **kwargs):
         self.outermost = kwargs.get('outermost', False)
         if 'outermost' in kwargs:
@@ -276,6 +278,7 @@ class SupportsNext:
 
 class NextMixin(SupportsNext):
     """Implements SupportsNext for urwid.Pile and urwid.Columns"""
+
     def _select_first_selectable(self):
         """select our first selectable item (recursivly if that item SupportsNext)"""
         i = self._first_selectable()

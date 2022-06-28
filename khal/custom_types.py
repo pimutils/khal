@@ -46,3 +46,15 @@ EventTuple = Tuple[
     str,
     str,
 ]
+
+
+# Only need for RRuleMapType
+class RRuleMapBase(TypedDict):
+    freq: str
+
+
+class RRuleMapType(RRuleMapBase, total=False):
+    # not required keys go in here
+    # TODO remove if either `NotRequired` is supported by mypy or the oldest
+    # python we support is 3.11 (see PEP 655)
+    until: dt.datetime

@@ -28,7 +28,7 @@ import logging
 import sqlite3
 from enum import IntEnum
 from os import makedirs, path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 import icalendar
 import icalendar.cal
@@ -91,7 +91,7 @@ class SQLiteDb:
         self._check_table_version()
 
     @contextlib.contextmanager
-    def at_once(self):
+    def at_once(self) -> Iterator['SQLiteDb']:
         assert not self._at_once
         self._at_once = True
         try:
@@ -653,7 +653,7 @@ def calc_shift_deltas(vevent: icalendar.Event) -> Tuple[dt.timedelta, dt.timedel
     """calculate an event's duration and by how much its start time has shifted
     versus its recurrence-id time
 
-    :param event: an event with an RECURRENCE-ID property
+    :param event: an event with a RECURRENCE-ID property
     """
     assert isinstance(vevent, icalendar.Event)  # REMOVE ME
     start_shift = vevent['DTSTART'].dt - vevent['RECURRENCE-ID'].dt

@@ -520,7 +520,7 @@ def sort_key(vevent):
         return uid, 1
 
 
-def cal_from_ics(ics):
+def cal_from_ics(ics: str) -> icalendar.Calendar:
     try:
         cal = icalendar.Calendar.from_ical(ics)
     except ValueError as error:

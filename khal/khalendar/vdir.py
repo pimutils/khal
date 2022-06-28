@@ -18,6 +18,7 @@ class cached_property:
     '''A read-only @property that is only evaluated once. Only usable on class
     instances' methods.
     '''
+
     def __init__(self, fget, doc=None):
         self.__name__ = fget.__name__
         self.__module__ = fget.__module__

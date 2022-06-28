@@ -27,13 +27,14 @@ import re
 import textwrap
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
-from typing import Any, Dict, Iterable, List
+from typing import List, Optional
 
 import pytz
 from click import confirm, echo, prompt, style
 
 from khal import (__productname__, __version__, calendar_display,
                   parse_datetime, utils)
+from khal.custom_types import LocaleConfiguration
 from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
@@ -132,8 +133,8 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
 
 
 def start_end_from_daterange(
-    daterange: Iterable[str],
-    locale: Dict[Any, Any],
+    daterange: List[str],
+    locale: LocaleConfiguration,
     default_timedelta_date: dt.timedelta=dt.timedelta(days=1),
     default_timedelta_datetime: dt.timedelta=dt.timedelta(hours=1),
 ):
@@ -225,7 +226,7 @@ def get_events_between(
 
 def khal_list(
     collection,
-    daterange: Iterable[str] = None,
+    daterange: Optional[List[str]]=None,
     conf: dict = None,
     agenda_format=None,
     day_format: str=None,

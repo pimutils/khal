@@ -237,6 +237,7 @@ class U_Event(urwid.Text):
 
 class EventListBox(urwid.ListBox):
     """Container for list of U_Events"""
+
     def __init__(
             self, *args, parent, conf,
             delete_status, toggle_delete_instance, toggle_delete_all,
@@ -277,6 +278,7 @@ class EventListBox(urwid.ListBox):
 class DListBox(EventListBox):
     """Container for a DayWalker"""
     # XXX unfortunate naming, there is also DateListBox
+
     def __init__(self, *args, **kwargs):
         dynamic_days = kwargs.pop('dynamic_days', True)
         super().__init__(*args, **kwargs)
@@ -1004,6 +1006,7 @@ class EventDisplay(urwid.WidgetWrap):
 
 class SearchDialog(urwid.WidgetWrap):
     """A Search Dialog Widget"""
+
     def __init__(self, search_func, abort_func):
 
         class Search(Edit):
