@@ -23,20 +23,19 @@ import datetime as dt
 import logging
 import signal
 import sys
+from typing import Optional
 
 import click
 import urwid
 
 from .. import utils
-from ..khalendar.event import Event
 from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
 from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
+from .widgets import CalendarWidget
 from .widgets import ExtendedEdit as Edit
-from .widgets import NColumns, NPile, linebox, CalendarWidget
-
-from typing import Optional
+from .widgets import NColumns, NPile, linebox
 
 logger = logging.getLogger('khal')
 

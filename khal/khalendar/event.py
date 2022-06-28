@@ -159,7 +159,7 @@ class Event:
         return instcls(vevents, ref=ref, start=start, **kwargs)
 
     @classmethod
-    def fromString(cls, event_str, ref=None, **kwargs) -> 'Event':
+    def fromString(cls, event_str: str, ref=None, **kwargs) -> 'Event':
         calendar_collection = cal_from_ics(event_str)
         events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
         return cls.fromVEvents(events, ref, **kwargs)

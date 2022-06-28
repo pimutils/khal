@@ -34,6 +34,7 @@ from typing import (Any, Dict, Iterable, List, Optional, Set, Tuple,  # noqa
                     Union)
 
 from ..custom_types import CalendarConfiguration
+from ..icalendar import new_event
 from . import backend
 from .event import Event
 from .exceptions import (CouldNotCreateDbDir, DuplicateUid, NonUniqueUID,
@@ -41,7 +42,6 @@ from .exceptions import (CouldNotCreateDbDir, DuplicateUid, NonUniqueUID,
                          UpdateFailed)
 from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
                    get_etag_from_file)
-from ..icalendar import new_event
 
 logger = logging.getLogger('khal')
 

@@ -25,11 +25,11 @@ import datetime as dt
 import logging
 from collections import defaultdict
 from hashlib import sha256
+from typing import Optional
 
 import dateutil.rrule
 import icalendar
 import pytz
-from typing import Optional
 
 from .exceptions import UnsupportedRecurrence
 from .parse_datetime import guesstimedeltafstr, rrulefstr
