@@ -363,7 +363,14 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         'url': url,
     })
 
-    event = new_from_dict(info, collection, conf, format=format, env=env, calendar_name=calendar_name)
+    event = new_from_dict(
+        info,
+        collection,
+        conf,
+        format=format,
+        env=env,
+        calendar_name=calendar_name,
+    )
     echo("event saved")
 
     term_width, _ = get_terminal_size()

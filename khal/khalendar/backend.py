@@ -251,7 +251,7 @@ class SQLiteDb:
         self.sql_ex(sql_s, stuple)
 
     def update_vcf_dates(self, vevent_str: str, href: str, etag: str='',
-                         calendar: str=None) -> None:
+                         calendar: Optional[str]=None) -> None:
         """insert events from a vcard into the db
 
         This is will parse BDAY, ANNIVERSARY, X-ANNIVERSARY and X-ABDATE fields.
@@ -576,7 +576,7 @@ class SQLiteDb:
         return item
 
     def search(self, search_string: str) \
-            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
+            -> Iterable[Tuple[str, str, dt.date, dt.date, str, str, str]]:
         """search for events matching `search_string`"""
         sql_s = (
             'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '

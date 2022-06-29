@@ -196,6 +196,10 @@ class CalendarCollection:
         :param event: the event that should be inserted, it will get a new href
             and etag properties
         """
+        # TODO FIXME not all `event`s are actually of type Event, we also uptade
+        # with vdir.Items. Those don't have an .href or .etag property which we
+        # than attach anyway. Works, but pretty ugly and any type checker will
+        # complain.
         calendar = collection if collection is not None else event.calendar
         assert calendar is not None
         if hasattr(event, 'etag'):

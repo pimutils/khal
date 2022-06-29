@@ -21,11 +21,10 @@
 #
 """all functions related to terminal display are collected here"""
 
-from collections import namedtuple
 from itertools import zip_longest
-from typing import Dict, List, Optional
+from typing import Dict, List, NamedTuple, Optional
 
-NamedColor = namedtuple('NamedColor', ['index', 'light'])
+NamedColor = NamedTuple('NamedColor', [('index', int), ('light', bool)])
 
 RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal

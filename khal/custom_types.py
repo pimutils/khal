@@ -1,5 +1,6 @@
 import datetime as dt
-from typing import List, Protocol, Tuple, TypedDict, Union
+import os
+from typing import List, Optional, Protocol, Tuple, TypedDict, Union
 
 import pytz
 
@@ -28,7 +29,7 @@ class LocaleConfiguration(TypedDict):
 
 class SupportsRaw(Protocol):
     @property
-    def uid(self) -> str:
+    def uid(self) -> Optional[str]:
         ...
 
     @property
@@ -66,10 +67,13 @@ class EventCreationTypes(TypedDict):
     summary: str
     description: str
     allday: bool
-    location: str
-    categories: Union[str, List[str]]
-    repeat: str
+    location: Optional[str]
+    categories: Optional[Union[str, List[str]]]
+    repeat: Optional[str]
     until: str
     alarms: str
     timezone: pytz.BaseTzInfo
     url: str
+
+
+PathLike = Union[str, os.PathLike]
