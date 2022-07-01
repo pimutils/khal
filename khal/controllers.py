@@ -608,7 +608,10 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None
     """
     if format is None:
         format = conf['view']['event_format']
-    vevents = split_ics(ics, random_uid, conf['locale']['default_timezone'])
+    try:
+        vevents = split_ics(ics, random_uid, conf['locale']['default_timezone'])
+    except Exception as error:
+        raise FatalError(error)
     for vevent in vevents:
         import_event(vevent, collection, conf['locale'], batch, format, env)
 
