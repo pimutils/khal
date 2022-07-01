@@ -24,7 +24,9 @@
 from itertools import zip_longest
 from typing import Dict, List, NamedTuple, Optional
 
-NamedColor = NamedTuple('NamedColor', [('index', int), ('light', bool)])
+class NamedColor(NamedTuple):
+    index: int
+    light: bool
 
 RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal
