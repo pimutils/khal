@@ -7,17 +7,29 @@ import errno
 import os
 import uuid
 from hashlib import sha1
-from typing import Iterable, Optional, Tuple, Union  # noqa
+from typing import (IO, Callable, Dict, Iterable, Optional, Protocol, Tuple,
+                    Type)
 
 from atomicwrites import atomic_write
 
-from ..custom_types import SupportsRaw
+from ..custom_types import PathLike, SupportsRaw
+
+
+class HasMetaProtocol(Protocol):
+    color_type: Callable
+
+    def get_meta(self, key: str) -> str:
+        ...
+
+    def set_meta(self, key: str, value: str) -> None:
+        ...
 
 
 class cached_property:
     '''A read-only @property that is only evaluated once. Only usable on class
     instances' methods.
     '''
+
     def __init__(self, fget, doc=None):
         self.__name__ = fget.__name__
         self.__module__ = fget.__module__
@@ -36,11 +48,11 @@ SAFE_UID_CHARS = ('abcdefghijklmnopqrstuvwxyz'
                   '0123456789_.-+@')
 
 
-def _href_safe(uid, safe=SAFE_UID_CHARS):
+def _href_safe(uid: str, safe: str=SAFE_UID_CHARS) -> bool:
     return not bool(set(uid) - set(safe))
 
 
-def _generate_href(uid=None, safe=SAFE_UID_CHARS) -> str:
+def _generate_href(uid: Optional[str]=None, safe: str=SAFE_UID_CHARS) -> str:
     if not uid:
         return str(uuid.uuid4().hex)
     elif not _href_safe(uid, safe):
@@ -49,7 +61,7 @@ def _generate_href(uid=None, safe=SAFE_UID_CHARS) -> str:
         return uid
 
 
-def get_etag_from_file(f):
+def get_etag_from_file(f) -> str:
     '''Get mtime-based etag from a filepath, file-like object or raw file
     descriptor.
 
@@ -109,12 +121,12 @@ class AlreadyExistingError(VdirError):
 
 
 class Item:
-    def __init__(self, raw):
+    def __init__(self, raw: str):
         assert isinstance(raw, str)
         self.raw = raw
 
     @cached_property
-    def uid(self):
+    def uid(self) -> Optional[str]:
         uid = ''
         lines = iter(self.raw.splitlines())
         for line in lines:
@@ -134,7 +146,7 @@ class VdirBase:
     item_class = Item
     default_mode = 0o750
 
-    def __init__(self, path: str, fileext: str, encoding='utf-8'):
+    def __init__(self, path: str, fileext: str, encoding: str='utf-8'):
         if not os.path.isdir(path):
             raise CollectionNotFoundError(path)
         self.path = path
@@ -142,7 +154,7 @@ class VdirBase:
         self.fileext = fileext
 
     @classmethod
-    def discover(cls, path, **kwargs):
+    def discover(cls, path: str, **kwargs) -> Iterable['VdirBase']:
         try:
             collections = os.listdir(path)
         except OSError as e:
@@ -156,23 +168,23 @@ class VdirBase:
                 yield cls(path=collection_path, **kwargs)
 
     @classmethod
-    def create(cls, collection_name, **kwargs):
+    def create(cls, collection_name: PathLike, **kwargs: PathLike) -> Dict[str, PathLike]:
         kwargs = dict(kwargs)
         path = kwargs['path']
 
-        path = os.path.join(path, collection_name)
-        if not os.path.exists(path):
-            os.makedirs(path, mode=cls.default_mode)
-        elif not os.path.isdir(path):
-            raise OSError(f'{repr(path)} is not a directory.')
+        pathn = os.path.join(path, collection_name)
+        if not os.path.exists(pathn):
+            os.makedirs(pathn, mode=cls.default_mode)
+        elif not os.path.isdir(pathn):
+            raise OSError(f'{repr(pathn)} is not a directory.')
 
-        kwargs['path'] = path
+        kwargs['path'] = pathn
         return kwargs
 
-    def _get_filepath(self, href) -> str:
+    def _get_filepath(self, href: str) -> str:
         return os.path.join(self.path, href)
 
-    def _get_href(self, uid):
+    def _get_href(self, uid: Optional[str]) -> str:
         return _generate_href(uid) + self.fileext
 
     def list(self) -> Iterable[Tuple[str, str]]:
@@ -195,13 +207,13 @@ class VdirBase:
             else:
                 raise
 
-    def upload(self, item) -> Tuple[str, str]:
+    def upload(self, item: SupportsRaw) -> Tuple[str, str]:
         if not isinstance(item.raw, str):
             raise TypeError('item.raw must be a unicode string.')
 
         try:
             href = self._get_href(item.uid)
-            fpath, etag = self._upload_impl(item, href)
+            _, etag = self._upload_impl(item, href)
         except OSError as e:
             if e.errno in (
                 errno.ENAMETOOLONG,  # Unix
@@ -209,14 +221,15 @@ class VdirBase:
             ):
                 # random href instead of UID-based
                 href = self._get_href(None)
-                fpath, etag = self._upload_impl(item, href)
+                _, etag = self._upload_impl(item, href)
             else:
                 raise
         return href, etag
 
-    def _upload_impl(self, item, href: str) -> Tuple[str, str]:
+    def _upload_impl(self, item: SupportsRaw, href: str) -> Tuple[str, str]:
         fpath = self._get_filepath(href)
         try:
+            f: IO
             with atomic_write(fpath, mode='wb', overwrite=False) as f:
                 f.write(item.raw.encode(self.encoding))
                 return fpath, get_etag_from_file(f)
@@ -243,7 +256,7 @@ class VdirBase:
 
         return etag
 
-    def delete(self, href: str, etag: Optional[str]):
+    def delete(self, href: str, etag: Optional[str]) -> None:
         fpath = self._get_filepath(href)
         if not os.path.isfile(fpath):
             raise NotFoundError(href)
@@ -252,7 +265,7 @@ class VdirBase:
             raise WrongEtagError(etag, actual_etag)
         os.remove(fpath)
 
-    def get_meta(self, key):
+    def get_meta(self, key: str) -> Optional[str]:
         fpath = os.path.join(self.path, key)
         try:
             with open(fpath, 'rb') as f:
@@ -263,7 +276,7 @@ class VdirBase:
             else:
                 raise
 
-    def set_meta(self, key, value):
+    def set_meta(self, key: str, value: str) -> None:
         value = value or ''
         assert isinstance(value, str)
         fpath = os.path.join(self.path, key)
@@ -272,7 +285,7 @@ class VdirBase:
 
 
 class Color:
-    def __init__(self, x):
+    def __init__(self, x: str):
         if not x:
             raise ValueError('Color is false-ish.')
         if not x.startswith('#'):
@@ -280,10 +293,10 @@ class Color:
         if len(x) != 7:
             raise ValueError('Color must not have shortcuts. '
                              '#ffffff instead of #fff')
-        self.raw = x.upper()
+        self.raw: str = x.upper()
 
     @cached_property
-    def rgb(self):
+    def rgb(self) -> Tuple[int, int, int]:
         x = self.raw
 
         r = x[1:3]
@@ -293,27 +306,27 @@ class Color:
         if len(r) == len(g) == len(b) == 2:
             return int(r, 16), int(g, 16), int(b, 16)
         else:
-            raise ValueError(f'Unable to parse color value: {self.value}')
+            raise ValueError(f'Unable to parse color value: {self.raw}')
 
 
-class ColorMixin:
-    color_type = Color
+class ColorMixin():
+    color_type: Type[Color] = Color
 
-    def get_color(self):
+    def get_color(self: HasMetaProtocol) -> Optional[str]:
         try:
             return self.color_type(self.get_meta('color'))
         except ValueError:
             return None
 
-    def set_color(self, value):
+    def set_color(self: HasMetaProtocol, value: str) -> None:
         self.set_meta('color', self.color_type(value).raw)
 
 
 class DisplayNameMixin:
-    def get_displayname(self):
+    def get_displayname(self: HasMetaProtocol) -> str:
         return self.get_meta('displayname')
 
-    def set_displayname(self, value):
+    def set_displayname(self: HasMetaProtocol, value: str) -> None:
         self.set_meta('displayname', value)
 
 

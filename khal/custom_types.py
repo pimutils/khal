@@ -1,5 +1,6 @@
 import datetime as dt
-from typing import Protocol, Tuple, TypedDict, Union
+import os
+from typing import List, Optional, Protocol, Tuple, TypedDict, Union
 
 import pytz
 
@@ -28,7 +29,7 @@ class LocaleConfiguration(TypedDict):
 
 class SupportsRaw(Protocol):
     @property
-    def uid(self) -> str:
+    def uid(self) -> Optional[str]:
         ...
 
     @property
@@ -46,3 +47,33 @@ EventTuple = Tuple[
     str,
     str,
 ]
+
+
+# Only need for RRuleMapType
+class RRuleMapBase(TypedDict):
+    freq: str
+
+
+class RRuleMapType(RRuleMapBase, total=False):
+    # not required keys go in here
+    # TODO remove if either `NotRequired` is supported by mypy or the oldest
+    # python we support is 3.11 (see PEP 655)
+    until: dt.datetime
+
+
+class EventCreationTypes(TypedDict):
+    dtstart: dt.datetime
+    dtend: dt.datetime
+    summary: str
+    description: str
+    allday: bool
+    location: Optional[str]
+    categories: Optional[Union[str, List[str]]]
+    repeat: Optional[str]
+    until: str
+    alarms: str
+    timezone: pytz.BaseTzInfo
+    url: str
+
+
+PathLike = Union[str, os.PathLike]

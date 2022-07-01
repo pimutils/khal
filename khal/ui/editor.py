@@ -24,10 +24,10 @@ import datetime as dt
 import urwid
 
 from ..utils import get_weekday_occurrence, get_wrapped_text
-from .calendarwidget import CalendarWidget
-from .widgets import (AlarmsEditor, Choice, DateConversionError, DateWidget,
-                      ExtendedEdit, NColumns, NListBox, NPile, PositiveIntEdit,
-                      TimeWidget, ValidatedEdit)
+from .widgets import (AlarmsEditor, CalendarWidget, Choice,
+                      DateConversionError, DateWidget, ExtendedEdit, NColumns,
+                      NListBox, NPile, PositiveIntEdit, TimeWidget,
+                      ValidatedEdit)
 
 
 class StartEnd:
@@ -514,7 +514,7 @@ class EventEditor(urwid.WidgetWrap):
             self.event.increment_sequence()
             if self.event.etag is None:  # has not been saved before
                 self.event.calendar = self.calendar_chooser.active['name']
-                self.collection.new(self.event)
+                self.collection.insert(self.event)
             elif self.calendar_chooser.changed:
                 self.collection.change_collection(
                     self.event,

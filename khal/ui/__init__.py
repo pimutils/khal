@@ -23,18 +23,17 @@ import datetime as dt
 import logging
 import signal
 import sys
+from typing import Optional
 
 import click
 import urwid
 
-from .. import icalendar as icalendar_helpers
 from .. import utils
-from ..khalendar.event import Event
 from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
 from .base import Pane, Window
-from .calendarwidget import CalendarWidget
 from .editor import EventEditor, ExportDialog
+from .widgets import CalendarWidget
 from .widgets import ExtendedEdit as Edit
 from .widgets import NColumns, NPile, linebox
 
@@ -237,6 +236,7 @@ class U_Event(urwid.Text):
 
 class EventListBox(urwid.ListBox):
     """Container for list of U_Events"""
+
     def __init__(
             self, *args, parent, conf,
             delete_status, toggle_delete_instance, toggle_delete_all,
@@ -277,6 +277,7 @@ class EventListBox(urwid.ListBox):
 class DListBox(EventListBox):
     """Container for a DayWalker"""
     # XXX unfortunate naming, there is also DateListBox
+
     def __init__(self, *args, **kwargs):
         dynamic_days = kwargs.pop('dynamic_days', True)
         super().__init__(*args, **kwargs)
@@ -739,18 +740,17 @@ class EventColumn(urwid.WidgetWrap):
         assert not self.editor
         if external_edit:
             self.pane.window.loop.stop()
-            text = click.edit(event.raw)
+            ics = click.edit(event.raw)
             self.pane.window.loop.start()
-            if text is None:
+            if ics is None:
                 return
             # KeyErrors can occur here when we destroy DTSTART,
             # otherwise, even broken .ics files seem to be no problem
-            new_event = Event.fromString(
-                text,
-                locale=self._conf['locale'],
-                href=event.href,
-                calendar=event.calendar,
+            new_event = self.pane.collection.create_event_from_ics(
+                ics,
                 etag=event.etag,
+                collection=event.calendar,
+                href=event.href,
             )
             self.pane.collection.update(new_event)
             update_colors(
@@ -865,13 +865,11 @@ class EventColumn(urwid.WidgetWrap):
         except IndexError:
             pass
 
-    def new(self, date, end=None):
+    def new(self, date: dt.datetime, end: Optional[dt.datetime]=None):
         """create a new event on `date` at the next full hour and edit it
 
         :param date: default date for new event
-        :type date: datetime.date
         :param end: optional, date the event ends on (inclusive)
-        :type end: datetime.date
         """
         if not self.pane.collection.writable_names:
             self.pane.window.alert(('alert', 'No writable calendar.'))
@@ -879,20 +877,21 @@ class EventColumn(urwid.WidgetWrap):
         if date is None:
             date = dt.datetime.now()
         if end is None:
-            start = dt.datetime.combine(date, dt.time(dt.datetime.now().hour))
-            end = start + dt.timedelta(minutes=60)
-            event = icalendar_helpers.new_event(
-                dtstart=start, dtend=end, summary='',
-                timezone=self._conf['locale']['default_timezone'],
-                locale=self._conf['locale'],
-            )
-        else:
-            event = icalendar_helpers.new_event(
-                dtstart=date, dtend=end + dt.timedelta(days=1), summary='',
-                allday=True, locale=self._conf['locale'],
-            )
-        event = self.pane.collection.new_event(
-            event.to_ical(), self.pane.collection.default_calendar_name)
+            dtstart = dt.datetime.combine(date, dt.time(dt.datetime.now().hour))
+            dtend = dtstart + dt.timedelta(minutes=60)
+            allday = False
+        else:  # TODO XXX why do we use allday if end is not set???
+            dtstart = date
+            dtend = end + dt.timedelta(days=1)
+            allday = True
+        event = self.pane.collection.generate_event(
+            dtstart=dtstart,
+            dtend=dtend,
+            summary='',
+            timezone=self._conf['locale']['default_timezone'],
+            locale=self._conf['locale'],
+            allday=allday,
+        )
         self.edit(event)
 
     def selectable(self):
@@ -1004,6 +1003,7 @@ class EventDisplay(urwid.WidgetWrap):
 
 class SearchDialog(urwid.WidgetWrap):
     """A Search Dialog Widget"""
+
     def __init__(self, search_func, abort_func):
 
         class Search(Edit):

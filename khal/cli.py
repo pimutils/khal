@@ -32,8 +32,7 @@ import click_log
 
 from . import __version__, controllers, khalendar
 from .exceptions import FatalError
-from .settings import InvalidSettingsError, get_config
-from .settings.exceptions import NoConfigFile
+from .settings import InvalidSettingsError, NoConfigFile, get_config
 from .terminal import colored
 
 try:

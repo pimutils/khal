@@ -25,6 +25,7 @@ import datetime as dt
 import logging
 from collections import defaultdict
 from hashlib import sha256
+from typing import List, Optional, Tuple, Union
 
 import dateutil.rrule
 import icalendar
@@ -37,14 +38,12 @@ from .utils import generate_random_uid, localize_strip_tz, to_unix_time
 logger = logging.getLogger('khal')
 
 
-def split_ics(ics, random_uid=False, default_timezone=None):
+def split_ics(ics: str, random_uid: bool=False, default_timezone=None):
     """split an ics string into several according to VEVENT's UIDs
 
     and sort the right VTIMEZONEs accordingly
     ignores all other ics components
-    :type ics: str
     :param random_uid: assign random uids to all events
-    :type random_uid: bool
     :rtype list:
     """
     cal = cal_from_ics(ics)
@@ -77,37 +76,33 @@ def split_ics(ics, random_uid=False, default_timezone=None):
             sorted(events_grouped.items())]
 
 
-def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
-              allday=False, description=None, location=None, categories=None,
-              repeat=None, until=None, alarms=None, url=None):
+def new_vevent(locale,
+               dtstart: dt.datetime,
+               dtend: dt.datetime,
+               summary: str,
+               timezone: Optional[pytz.BaseTzInfo]=None,
+               allday: bool=False,
+               description: Optional[str]=None,
+               location: Optional[str]=None,
+               categories: Optional[Union[List[str], str]]=None,
+               repeat: Optional[str]=None,
+               until=None,
+               alarms: Optional[str]=None,
+               url: Optional[str]=None,
+               ) -> icalendar.Event:
     """create a new event
 
     :param dtstart: starttime of that event
-    :type dtstart: datetime
     :param dtend: end time of that event, if this is a *date*, this value is
         interpreted as being the last date the event is scheduled on, i.e.
         the VEVENT DTEND will be *one day later*
-    :type dtend: datetime
     :param summary: description of the event, used in the SUMMARY property
-    :type summary: unicode
     :param timezone: timezone of the event (start and end)
-    :type timezone: pytz.timezone
     :param allday: if set to True, we will not transform dtstart and dtend to
         datetime
-    :type allday: bool
     :param url: url of the event
-    :type url: string
     :returns: event
-    :rtype: icalendar.Event
     """
-
-    if dtstart is None:
-        raise ValueError("no start given")
-    if dtend is None:
-        raise ValueError("no end given")
-    if summary is None:
-        raise ValueError("no summary given")
-
     if not allday and timezone is not None:
         dtstart = timezone.localize(dtstart)
         dtend = timezone.localize(dtend)
@@ -143,13 +138,16 @@ def new_event(locale, dtstart=None, dtend=None, summary=None, timezone=None,
     return event
 
 
-def ics_from_list(events, tzs, random_uid=False, default_timezone=None):
-    """convert an iterable of icalendar.Events to an icalendar.Calendar
+def ics_from_list(
+    events: List[icalendar.Event],
+    tzs,
+    random_uid: bool=False,
+    default_timezone=None
+) -> str:
+    """convert an iterable of icalendar.Events to an icalendar str
 
     :params events: list of events all with the same uid
-    :type events: list(icalendar.cal.Event)
     :param random_uid: assign random uids to all events
-    :type random_uid: bool
     :param tzs: collection of timezones
     :type tzs: dict(icalendar.cal.Vtimzone
     """
@@ -481,12 +479,10 @@ def _get_all_properties(vevent, prop):
     return rdates
 
 
-def delete_instance(vevent, instance):
+def delete_instance(vevent: icalendar.Calendar, instance: dt.datetime) -> None:
     """remove a recurrence instance from a VEVENT's RRDATE list or add it
     to the EXDATE list
 
-    :type vevent: icalendar.cal.Event
-    :type instance: datetime.datetime
     """
     # TODO check where this instance is coming from and only call the
     # appropriate function
@@ -502,7 +498,7 @@ def delete_instance(vevent, instance):
             vevent.add('RDATE', rdates)
 
 
-def sort_key(vevent):
+def sort_key(vevent: icalendar.Event) -> Tuple[str, float]:
     """helper function to determine order of VEVENTS
     so that recurrence-id events come after the corresponding rrule event, etc
     :param vevent: icalendar.Event
@@ -520,7 +516,10 @@ def sort_key(vevent):
         return uid, 1
 
 
-def cal_from_ics(ics):
+def cal_from_ics(ics: str) -> icalendar.Calendar:
+    """
+    :param ics: an icalendar formatted string
+    """
     try:
         cal = icalendar.Calendar.from_ical(ics)
     except ValueError as error:

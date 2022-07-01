@@ -25,7 +25,7 @@ import glob
 import logging
 import os
 from os.path import expanduser, expandvars, join
-from typing import Optional
+from typing import Callable, Iterable, List, Literal, Optional, Union
 
 import pytz
 import xdg
@@ -61,20 +61,19 @@ def is_timezone(tzstring: Optional[str]) -> dt.tzinfo:
         raise VdtValueError(f"Unknown timezone {tzstring}")
 
 
-def is_timedelta(string):
+def is_timedelta(string: str) -> dt.timedelta:
     try:
         return guesstimedeltafstr(string)
     except ValueError:
         raise VdtValueError(f"Invalid timedelta: {string}")
 
 
-def weeknumber_option(option):
+def weeknumber_option(option: str) -> Union[str, Literal[False]]:
     """checks if *option* is a valid value
 
     :param option: the option the user set in the config file
     :type option: str
-    :returns: off, left, right
-    :rtype: str/bool
+    :returns: 'off', 'left', 'right' or False
     """
     option = option.lower()
     if option == 'left':
@@ -89,13 +88,11 @@ def weeknumber_option(option):
             "'off', 'left' or 'right'")
 
 
-def monthdisplay_option(option):
+def monthdisplay_option(option: str) -> str:
     """checks if *option* is a valid value
 
     :param option: the option the user set in the config file
-    :type option: str
     :returns: firstday, firstfullweek
-    :rtype: str/bool
     """
     option = option.lower()
     if option == 'firstday':
@@ -109,19 +106,19 @@ def monthdisplay_option(option):
         )
 
 
-def expand_path(path):
+def expand_path(path: str) -> str:
     """expands `~` as well as variable names"""
     return expanduser(expandvars(path))
 
 
-def expand_db_path(path):
+def expand_db_path(path: str) -> str:
     """expands `~` as well as variable names, defaults to $XDG_DATA_HOME"""
     if path is None:
         path = join(xdg.BaseDirectory.xdg_data_home, 'khal', 'khal.db')
     return expanduser(expandvars(path))
 
 
-def is_color(color):
+def is_color(color: str) -> str:
     """checks if color represents a valid color
 
     raises a VdtValueError if color is not valid
@@ -141,7 +138,7 @@ def is_color(color):
     raise VdtValueError(color)
 
 
-def test_default_calendar(config):
+def test_default_calendar(config) -> None:
     """test if config['default']['default_calendar'] is set to a sensible
     value
     """
@@ -159,7 +156,7 @@ def test_default_calendar(config):
         raise InvalidSettingsError()
 
 
-def get_color_from_vdir(path):
+def get_color_from_vdir(path: str) -> Optional[str]:
     try:
         color = Vdir(path, '.ics').get_meta('color')
     except CollectionNotFoundError:
@@ -176,7 +173,7 @@ def get_color_from_vdir(path):
     return color
 
 
-def get_unique_name(path, names):
+def get_unique_name(path: str, names: Iterable[str]) -> str:
     # TODO take care of edge cases, make unique name finding less brain-dead
     try:
         name = Vdir(path, '.ics').get_meta('displayname')
@@ -192,22 +189,24 @@ def get_unique_name(path, names):
     return name
 
 
-def get_all_vdirs(path):
+def get_all_vdirs(path: str) -> Iterable[str]:
     """returns a list of paths, expanded using glob
     """
+    # FIXME currently returns a list of all files in path
     items = glob.glob(path)
     return items
 
 
-def get_vdir_type(_):
+def get_vdir_type(_: str) -> str:
     # TODO implement
     return 'calendar'
 
 
 def config_checks(
-        config,
-        _get_color_from_vdir=get_color_from_vdir,
-        _get_vdir_type=get_vdir_type):
+    config,
+    _get_color_from_vdir: Callable=get_color_from_vdir,
+    _get_vdir_type: Callable=get_vdir_type,
+) -> None:
     """do some tests on the config we cannot do with configobj's validator"""
     if len(config['calendars'].keys()) < 1:
         logger.fatal('Found no calendar section in the config file')
@@ -221,7 +220,7 @@ def config_checks(
             config['locale']['local_timezone'])
 
     # expand calendars with type = discover
-    vdirs_complete = []
+    vdirs_complete: List[str] = []
     vdir_colors_from_config = {}
     for calendar in list(config['calendars'].keys()):
         if not isinstance(config['calendars'][calendar], dict):

@@ -25,7 +25,7 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Optional, Type, Union
 
 import icalendar
 import icalendar.cal
@@ -48,7 +48,7 @@ class Event:
     """base Event class for representing a *recurring instance* of an Event
 
     (in case of non-recurring events this distinction is irrelevant)
-    We keep a copy of the start and end time around, because for recurring
+    We keep a copy of this instances start and end time around, because for recurring
     events it might be costly to expand the recursion rules
 
     important distinction for AllDayEvents:
@@ -59,7 +59,7 @@ class Event:
     allday: bool = False
 
     def __init__(self,
-                 vevents,
+                 vevents: Dict[str, icalendar.Event],
                  locale: LocaleConfiguration,
                  ref: Optional[str] = None,
                  readonly: bool = False,
@@ -84,8 +84,10 @@ class Event:
         self.readonly = readonly
         self.href = href
         self.etag = etag
-        self.calendar = calendar
+        self.calendar = calendar if calendar else ''
         self.color = color
+        self._start: dt.datetime
+        self._end: dt.datetime
 
         if start is None:
             self._start = self._vevents[self.ref]['DTSTART'].dt
@@ -123,7 +125,7 @@ class Event:
 
     @classmethod
     def fromVEvents(cls,
-                    events_list: List[icalendar.cal.Event],
+                    events_list: List[icalendar.Event],
                     ref: Optional[str]=None,
                     start: Optional[dt.datetime]=None,
                     **kwargs) -> 'Event':
@@ -157,12 +159,12 @@ class Event:
         return instcls(vevents, ref=ref, start=start, **kwargs)
 
     @classmethod
-    def fromString(cls, event_str, ref=None, **kwargs):
-        calendar_collection = cal_from_ics(event_str)
+    def fromString(cls, ics: str, ref=None, **kwargs) -> 'Event':
+        calendar_collection = cal_from_ics(ics)
         events = [item for item in calendar_collection.walk() if item.name == 'VEVENT']
         return cls.fromVEvents(events, ref, **kwargs)
 
-    def __lt__(self, other):
+    def __lt__(self, other: 'Event') -> bool:
         start = self.start_local
         other_start = other.start_local
         if isinstance(start, dt.date) and not isinstance(start, dt.datetime):
@@ -199,7 +201,7 @@ class Event:
         except TypeError:
             raise ValueError(f'Cannot compare events {start} and {other_start}')
 
-    def update_start_end(self, start, end):
+    def update_start_end(self, start: dt.datetime, end: dt.datetime) -> None:
         """update start and end time of this event
 
         calling this on a recurring event will lead to the proto instance
@@ -225,7 +227,7 @@ class Event:
             self._vevents[self.ref].add('DURATION', end - start)
 
     @property
-    def recurring(self):
+    def recurring(self) -> bool:
         try:
             rval = 'RRULE' in self._vevents[self.ref] or \
                 'RECURRENCE-ID' in self._vevents[self.ref] or \
@@ -240,26 +242,26 @@ class Event:
             return rval
 
     @property
-    def recurpattern(self):
+    def recurpattern(self) -> str:
         if 'RRULE' in self._vevents[self.ref]:
             return self._vevents[self.ref]['RRULE'].to_ical().decode('utf-8')
         else:
             return ''
 
     @property
-    def recurobject(self):
+    def recurobject(self) -> icalendar.vRecur:
         if 'RRULE' in self._vevents[self.ref]:
             return self._vevents[self.ref]['RRULE']
         else:
             return icalendar.vRecur()
 
-    def update_rrule(self, rrule):
+    def update_rrule(self, rrule: str) -> None:
         self._vevents['PROTO'].pop('RRULE')
         if rrule is not None:
             self._vevents['PROTO'].add('RRULE', rrule)
 
     @property
-    def recurrence_id(self):
+    def recurrence_id(self) -> Union[dt.datetime, str]:
         """return the "original" start date of this event (i.e. their recurrence-id)
         """
         if self.ref == 'PROTO':
@@ -267,7 +269,7 @@ class Event:
         else:
             return pytz.UTC.localize(dt.datetime.utcfromtimestamp(int(self.ref)))
 
-    def increment_sequence(self):
+    def increment_sequence(self) -> None:
         """update the SEQUENCE number, call before saving this event"""
         # TODO we might want to do this automatically in raw() everytime
         # the event has changed, this will f*ck up the tests though
@@ -298,28 +300,28 @@ class Event:
             }
 
     @property
-    def start_local(self):
+    def start_local(self) -> dt.datetime:
         """self.start() localized to local timezone"""
         return self.start
 
     @property
-    def end_local(self):
+    def end_local(self) -> dt.datetime:
         """self.end() localized to local timezone"""
         return self.end
 
     @property
-    def start(self):
+    def start(self) -> dt.datetime:
         """this should return the start date(time) as saved in the event"""
         return self._start
 
     @property
-    def end(self):
+    def end(self) -> dt.datetime:
         """this should return the end date(time) as saved in the event or
         implicitly defined by start and duration"""
         return self._end
 
     @property
-    def duration(self):
+    def duration(self) -> dt.timedelta:
         try:
             return self._vevents[self.ref]['DURATION'].dt
         except KeyError:
@@ -330,7 +332,7 @@ class Event:
         return self._vevents[self.ref]['UID']
 
     @property
-    def organizer(self):
+    def organizer(self) -> str:
         if 'ORGANIZER' not in self._vevents[self.ref]:
             return ''
         organizer = self._vevents[self.ref]['ORGANIZER']
@@ -365,9 +367,7 @@ class Event:
 
     @property
     def raw(self) -> str:
-        """needed for vdirsyncer compatibility
-
-        return text
+        """Creates a VCALENDAR containing VTIMEZONEs
         """
         calendar = self._create_calendar()
         tzs = []
@@ -389,7 +389,7 @@ class Event:
             calendar.add_component(vevent)
         return calendar.to_ical().decode('utf-8')
 
-    def export_ics(self, path):
+    def export_ics(self, path: str) -> None:
         """export event as ICS
         """
         export_path = os.path.expanduser(path)
@@ -432,11 +432,11 @@ class Event:
         else:
             return self._vevents[self.ref].get('SUMMARY', '')
 
-    def update_summary(self, summary):
+    def update_summary(self, summary: str) -> None:
         self._vevents[self.ref]['SUMMARY'] = summary
 
     @staticmethod
-    def _can_handle_alarm(alarm):
+    def _can_handle_alarm(alarm) -> bool:
         """
         Decides whether we can handle a certain alarm.
         """
@@ -471,24 +471,24 @@ class Event:
         self._vevents[self.ref].subcomponents = components
 
     @property
-    def location(self):
+    def location(self) -> str:
         return self._vevents[self.ref].get('LOCATION', '')
 
-    def update_location(self, location):
+    def update_location(self, location: str) -> None:
         if location:
             self._vevents[self.ref]['LOCATION'] = location
         else:
             self._vevents[self.ref].pop('LOCATION')
 
     @property
-    def attendees(self):
+    def attendees(self) -> str:
         addresses = self._vevents[self.ref].get('ATTENDEE', [])
         if not isinstance(addresses, list):
             addresses = [addresses, ]
         return ", ".join([address.split(':')[-1]
                           for address in addresses])
 
-    def update_attendees(self, attendees):
+    def update_attendees(self, attendees: List[str]):
         assert isinstance(attendees, list)
         attendees = [a.strip().lower() for a in attendees if a != ""]
         if len(attendees) > 0:
@@ -518,20 +518,20 @@ class Event:
             self._vevents[self.ref].pop('ATTENDEE')
 
     @property
-    def categories(self):
+    def categories(self) -> str:
         try:
             return self._vevents[self.ref].get('CATEGORIES', '').to_ical().decode('utf-8')
         except AttributeError:
             return ''
 
-    def update_categories(self, categories):
+    def update_categories(self, categories: List[str]) -> None:
         assert isinstance(categories, list)
         self._vevents[self.ref].pop('CATEGORIES', False)
         if categories:
             self._vevents[self.ref].add('CATEGORIES', categories)
 
     @property
-    def description(self):
+    def description(self) -> str:
         return self._vevents[self.ref].get('DESCRIPTION', '')
 
     def update_description(self, description):
@@ -541,7 +541,7 @@ class Event:
             self._vevents[self.ref].pop('DESCRIPTION')
 
     @property
-    def _recur_str(self):
+    def _recur_str(self) -> str:
         if self.recurring:
             recurstr = ' ' + self.symbol_strings['recurring']
         else:
@@ -549,14 +549,14 @@ class Event:
         return recurstr
 
     @property
-    def _alarm_str(self):
+    def _alarm_str(self) -> str:
         if self.alarms:
             alarmstr = ' ' + self.symbol_strings['alarming']
         else:
             alarmstr = ''
         return alarmstr
 
-    def format(self, format_string, relative_to, env=None, colors=True):
+    def format(self, format_string: str, relative_to, env=None, colors: bool=True):
         """
         :param colors: determines if colors codes should be printed or not
         :type colors: bool
@@ -690,7 +690,7 @@ class Event:
             attributes["description-separator"] = " :: "
         attributes["location"] = self.location.strip()
         attributes["attendees"] = self.attendees
-        attributes["all-day"] = allday
+        attributes["all-day"] = str(allday)
         attributes["categories"] = self.categories
         attributes['uid'] = self.uid
         attributes['url'] = self.url
@@ -754,7 +754,7 @@ class Event:
             self._vevents.pop(key)
 
     @property
-    def status(self):
+    def status(self) -> str:
         return self._vevents[self.ref].get('STATUS', '')
 
 
@@ -766,6 +766,7 @@ class LocalizedEvent(DatetimeEvent):
     """
     see parent
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         try:
@@ -801,14 +802,14 @@ class LocalizedEvent(DatetimeEvent):
             self._end = endtz.localize(self._end)
 
     @property
-    def start_local(self):
+    def start_local(self) -> dt.datetime:
         """
         see parent
         """
         return self.start.astimezone(self._locale['local_timezone'])
 
     @property
-    def end_local(self):
+    def end_local(self) -> dt.datetime:
         """
         see parent
         """
@@ -818,22 +819,22 @@ class LocalizedEvent(DatetimeEvent):
 class FloatingEvent(DatetimeEvent):
     """
     """
-    allday = False
+    allday: bool = False
 
     @property
-    def start_local(self):
+    def start_local(self) -> dt.datetime:
         return self._locale['local_timezone'].localize(self.start)
 
     @property
-    def end_local(self):
+    def end_local(self) -> dt.datetime:
         return self._locale['local_timezone'].localize(self.end)
 
 
 class AllDayEvent(Event):
-    allday = True
+    allday: bool = True
 
     @property
-    def end(self):
+    def end(self) -> dt.datetime:
         end = super().end
         if end == self.start:
             # https://github.com/pimutils/khal/issues/129
@@ -846,7 +847,7 @@ class AllDayEvent(Event):
         return end - dt.timedelta(days=1)
 
     @property
-    def duration(self):
+    def duration(self) -> dt.timedelta:
         try:
             return self._vevents[self.ref]['DURATION'].dt
         except KeyError:

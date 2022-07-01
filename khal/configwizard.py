@@ -31,7 +31,7 @@ import xdg
 from click import Choice, UsageError, confirm, prompt
 
 from .exceptions import FatalError
-from .settings import settings
+from .settings import find_configuration_file
 
 logger = logging.getLogger('khal')
 
@@ -210,7 +210,7 @@ def create_config(vdirs, dateformat, timeformat, default_calendar=None):
 
 
 def configwizard():
-    config_file = settings.find_configuration_file()
+    config_file = find_configuration_file()
     if config_file is not None:
         logger.fatal(f"Found an existing config file at {config_file}.")
         logger.fatal(

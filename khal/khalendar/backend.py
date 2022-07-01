@@ -28,7 +28,7 @@ import logging
 import sqlite3
 from enum import IntEnum
 from os import makedirs, path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 import icalendar
 import icalendar.cal
@@ -91,7 +91,7 @@ class SQLiteDb:
         self._check_table_version()
 
     @contextlib.contextmanager
-    def at_once(self):
+    def at_once(self) -> Iterator['SQLiteDb']:
         assert not self._at_once
         self._at_once = True
         try:
@@ -251,7 +251,7 @@ class SQLiteDb:
         self.sql_ex(sql_s, stuple)
 
     def update_vcf_dates(self, vevent_str: str, href: str, etag: str='',
-                         calendar: str=None) -> None:
+                         calendar: Optional[str]=None) -> None:
         """insert events from a vcard into the db
 
         This is will parse BDAY, ANNIVERSARY, X-ANNIVERSARY and X-ABDATE fields.
@@ -576,7 +576,7 @@ class SQLiteDb:
         return item
 
     def search(self, search_string: str) \
-            -> Iterable[Tuple[str, str, dt.datetime, dt.datetime, str, str, str]]:
+            -> Iterable[Tuple[str, str, dt.date, dt.date, str, str, str]]:
         """search for events matching `search_string`"""
         sql_s = (
             'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
@@ -613,7 +613,7 @@ class SQLiteDb:
             yield item, href, start, end, ref, etag, calendar
 
 
-def check_support(vevent: icalendar.cal.Event, href: str, calendar: str):
+def check_support(vevent: icalendar.cal.Event, href: str, calendar: str) -> None:
     """test if all icalendar features used in this event are supported,
     raise `UpdateFailed` otherwise.
     :param vevent: event to test
@@ -638,7 +638,7 @@ def check_support(vevent: icalendar.cal.Event, href: str, calendar: str):
         )
 
 
-def check_for_errors(component: icalendar.cal.Component, calendar: str, href: str):
+def check_for_errors(component: icalendar.cal.Component, calendar: str, href: str) -> None:
     """checking if component.errors exists, is not empty and if so warn the user"""
     if hasattr(component, 'errors') and component.errors:
         logger.error(
@@ -653,7 +653,7 @@ def calc_shift_deltas(vevent: icalendar.Event) -> Tuple[dt.timedelta, dt.timedel
     """calculate an event's duration and by how much its start time has shifted
     versus its recurrence-id time
 
-    :param event: an event with an RECURRENCE-ID property
+    :param event: an event with a RECURRENCE-ID property
     """
     assert isinstance(vevent, icalendar.Event)  # REMOVE ME
     start_shift = vevent['DTSTART'].dt - vevent['RECURRENCE-ID'].dt

@@ -33,27 +33,16 @@ import os.path
 from typing import (Any, Dict, Iterable, List, Optional, Set, Tuple,  # noqa
                     Union)
 
-from ..custom_types import CalendarConfiguration
+from ..custom_types import CalendarConfiguration, EventCreationTypes
+from ..icalendar import new_vevent
 from . import backend
 from .event import Event
-from .exceptions import (CouldNotCreateDbDir, DuplicateUid, NonUniqueUID,
-                         ReadOnlyCalendarError, UnsupportedFeatureError,
-                         UpdateFailed)
+from .exceptions import (DuplicateUid, NonUniqueUID, ReadOnlyCalendarError,
+                         UnsupportedFeatureError, UpdateFailed)
 from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
                    get_etag_from_file)
 
 logger = logging.getLogger('khal')
-
-
-def create_directory(path: str) -> None:
-    if not os.path.isdir(path):
-        if os.path.exists(path):
-            raise RuntimeError(f'{path} is not a directory.')
-        try:
-            os.makedirs(path, mode=0o750)
-        except OSError as error:
-            logger.critical(f'failed to create {path}: {error}')
-            raise CouldNotCreateDbDir()
 
 
 class CalendarCollection:
@@ -126,7 +115,7 @@ class CalendarCollection:
         return self._default_calendar_name
 
     @default_calendar_name.setter
-    def default_calendar_name(self, default: str):
+    def default_calendar_name(self, default: str) -> None:
         if default is None:
             self._default_calendar_name = default
         elif default not in self.names:
@@ -170,7 +159,7 @@ class CalendarCollection:
         )
         return list(set(calendars))
 
-    def update(self, event: Event):
+    def update(self, event: Event) -> None:
         """update `event` in vdir and db"""
         assert event.etag is not None
         assert event.calendar is not None
@@ -183,7 +172,7 @@ class CalendarCollection:
             self._backend.update(event.raw, event.href, event.etag, calendar=event.calendar)
             self._backend.set_ctag(self._local_ctag(event.calendar), calendar=event.calendar)
 
-    def force_update(self, event: Event, collection: Optional[str]=None):
+    def force_update(self, event: Event, collection: Optional[str]=None) -> None:
         """update `event` even if an event with the same uid/href already exists"""
         href: str
         calendar = collection if collection is not None else event.calendar
@@ -201,12 +190,16 @@ class CalendarCollection:
             self._backend.update(event.raw, href, etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
-    def new(self, event: Event, collection: Optional[str]=None):
-        """save a new event to the vdir and the database
+    def insert(self, event: Event, collection: Optional[str]=None):
+        """insert a new event to the vdir and the database
 
-        :param event: the event that should be updated, it will get a new href
+        :param event: the event that should be inserted, it will get a new href
             and etag properties
         """
+        # TODO FIXME not all `event`s are actually of type Event, we also uptade
+        # with vdir.Items. Those don't have an .href or .etag property which we
+        # than attach anyway. Works, but pretty ugly and any type checker will
+        # complain.
         calendar = collection if collection is not None else event.calendar
         assert calendar is not None
         if hasattr(event, 'etag'):
@@ -259,19 +252,36 @@ class CalendarCollection:
         )
         return event
 
-    def change_collection(self, event: Event, new_collection: str):
+    def change_collection(self, event: Event, new_collection: str) -> None:
+        """Moves `event` to a new collection (calendar)"""
         href, etag, calendar = event.href, event.etag, event.calendar
         event.etag = None
-        self.new(event, new_collection)
+        self.insert(event, new_collection)
         assert href is not None
         assert calendar is not None
         self.delete(href, etag, calendar=calendar)
 
-    def new_event(self, ical: str, collection: str):
-        """creates and returns (but does not insert) new event from ical
+    def create_event_from_ics(self,
+                              ical: str,
+                              calendar_name: str,
+                              etag: Optional[str]=None,
+                              href: Optional[str]=None,
+                              ) -> Event:
+        """creates and returns (but does not insert) a new event from ical
         string"""
-        calendar = collection or self.writable_names[0]
-        return Event.fromString(ical, locale=self._locale, calendar=calendar)
+        calendar = calendar_name or self.writable_names[0]
+        return Event.fromString(ical, locale=self._locale, calendar=calendar, etag=etag, href=href)
+
+    def create_event_from_dict(self,
+                               event_dict: EventCreationTypes,
+                               calendar_name: Optional[str] = None,
+                               ) -> Event:
+        """Creates an Event from the method's arguments
+        """
+        vevent = new_vevent(locale=self._locale, **event_dict)
+        calendar_name = calendar_name or self.default_calendar_name
+        assert calendar_name is not None
+        return self.create_event_from_ics(vevent.to_ical(), calendar_name)
 
     def update_db(self) -> None:
         """update the db from the vdir,
@@ -315,7 +325,7 @@ class CalendarCollection:
             self._last_ctags[calendar] = local_ctag
         return local_ctag != self._backend.get_ctag(calendar)
 
-    def _db_update(self, calendar: str):
+    def _db_update(self, calendar: str) -> None:
         """implements the actual db update on a per calendar base"""
         local_ctag = self._local_ctag(calendar)
         db_hrefs = {href for href, etag in self._backend.list(calendar)}

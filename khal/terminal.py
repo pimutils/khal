@@ -21,33 +21,36 @@
 #
 """all functions related to terminal display are collected here"""
 
-from collections import namedtuple
 from itertools import zip_longest
-from typing import Dict, List, Optional
+from typing import Dict, List, NamedTuple, Optional
 
-NamedColor = namedtuple('NamedColor', ['index', 'light'])
+
+class NamedColor(NamedTuple):
+    color_index: int
+    light: bool
+
 
 RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal
 BTEXT = '\x1b[1m'  # bold
 RESET = '\33[0m'
 COLORS: Dict[str, NamedColor] = {
-    'black': NamedColor(index=0, light=False),
-    'dark red': NamedColor(index=1, light=False),
-    'dark green': NamedColor(index=2, light=False),
-    'brown': NamedColor(index=3, light=False),
-    'dark blue': NamedColor(index=4, light=False),
-    'dark magenta': NamedColor(index=5, light=False),
-    'dark cyan': NamedColor(index=6, light=False),
-    'white': NamedColor(index=7, light=False),
-    'light gray': NamedColor(index=7, light=True),
-    'dark gray': NamedColor(index=0, light=True),  # actually light black
-    'light red': NamedColor(index=1, light=True),
-    'light green': NamedColor(index=2, light=True),
-    'yellow': NamedColor(index=3, light=True),
-    'light blue': NamedColor(index=4, light=True),
-    'light magenta': NamedColor(index=5, light=True),
-    'light cyan': NamedColor(index=6, light=True)
+    'black': NamedColor(color_index=0, light=False),
+    'dark red': NamedColor(color_index=1, light=False),
+    'dark green': NamedColor(color_index=2, light=False),
+    'brown': NamedColor(color_index=3, light=False),
+    'dark blue': NamedColor(color_index=4, light=False),
+    'dark magenta': NamedColor(color_index=5, light=False),
+    'dark cyan': NamedColor(color_index=6, light=False),
+    'white': NamedColor(color_index=7, light=False),
+    'light gray': NamedColor(color_index=7, light=True),
+    'dark gray': NamedColor(color_index=0, light=True),  # actually light black
+    'light red': NamedColor(color_index=1, light=True),
+    'light green': NamedColor(color_index=2, light=True),
+    'yellow': NamedColor(color_index=3, light=True),
+    'light blue': NamedColor(color_index=4, light=True),
+    'light magenta': NamedColor(color_index=5, light=True),
+    'light cyan': NamedColor(color_index=6, light=True)
 }
 
 
@@ -75,7 +78,7 @@ def get_color(
                 # 16 color palette
                 if not is_bg:
                     # foreground color
-                    c = 30 + COLORS[colorstring].index
+                    c = 30 + COLORS[colorstring].color_index
                     if COLORS[colorstring].light:
                         if bold_for_light_color:
                             color += '1;'
@@ -83,7 +86,7 @@ def get_color(
                             c += 60
                 else:
                     # background color
-                    c = 40 + COLORS[colorstring].index
+                    c = 40 + COLORS[colorstring].color_index
                     if COLORS[colorstring].light:
                         if not bold_for_light_color:
                             c += 60
