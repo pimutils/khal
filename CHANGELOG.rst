@@ -13,6 +13,8 @@ not released
 
 * DROPPED support for python versions < 3.8
 * UPDATED REQUIREMENT pytz is now required >= 2018.7
+* FIX if a `discover` collection is set to "readonly", discovered collections
+  will now inherit the readonly property
 
 0.10.5
 ======

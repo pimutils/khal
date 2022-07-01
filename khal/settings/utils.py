@@ -25,7 +25,7 @@ import glob
 import logging
 import os
 from os.path import expanduser, expandvars, join
-from typing import Callable, Iterable, List, Literal, Optional, Union
+from typing import Callable, Iterable, Literal, Optional, Union
 
 import pytz
 import xdg
@@ -208,6 +208,7 @@ def config_checks(
     _get_vdir_type: Callable=get_vdir_type,
 ) -> None:
     """do some tests on the config we cannot do with configobj's validator"""
+    # TODO rename or split up, we are also expanding vdirs of type discover
     if len(config['calendars'].keys()) < 1:
         logger.fatal('Found no calendar section in the config file')
         raise InvalidSettingsError()
@@ -220,38 +221,26 @@ def config_checks(
             config['locale']['local_timezone'])
 
     # expand calendars with type = discover
-    vdirs_complete: List[str] = []
-    vdir_colors_from_config = {}
-    for calendar in list(config['calendars'].keys()):
-        if not isinstance(config['calendars'][calendar], dict):
+    # we need a copy of config['calendars'], because we modify config in the body of the loop
+    for cname, cconfig in sorted(config['calendars'].items()):
+        if not isinstance(config['calendars'][cname], dict):
             logger.fatal('Invalid config file, probably missing calendar sections')
             raise InvalidSettingsError
-        if config['calendars'][calendar]['type'] == 'discover':
-            logger.debug(
-                f"discovering calendars in {config['calendars'][calendar]['path']}"
-            )
-            vdirs = get_all_vdirs(config['calendars'][calendar]['path'])
-            vdirs_complete += vdirs
-            if 'color' in config['calendars'][calendar]:
-                for vdir in vdirs:
-                    vdir_colors_from_config[vdir] = config['calendars'][calendar]['color']
-            config['calendars'].pop(calendar)
-    for vdir in sorted(vdirs_complete):
-        calendar = {'path': vdir,
-                    'color': _get_color_from_vdir(vdir),
+        if config['calendars'][cname]['type'] == 'discover':
+            logger.debug(f"discovering calendars in {cconfig['path']}")
+            vdirs_discovered = get_all_vdirs(cconfig['path'])
+            logger.debug(f"found the following vdirs: {vdirs_discovered}")
+            for vdir in vdirs_discovered:
+                vdir_config = {
+                    'path': vdir,
+                    'color': _get_color_from_vdir(vdir) or cconfig.get('color', None),
                     'type': _get_vdir_type(vdir),
-                    'readonly': False,
+                    'readonly': cconfig.get('readonly', False),
                     'priority': 10,
-                    }
-
-        # get color from config if not defined in vdir
-
-        if calendar['color'] is None and vdir in vdir_colors_from_config:
-            logger.debug(f"using collection's color for {vdir}")
-            calendar['color'] = vdir_colors_from_config[vdir]
-
-        name = get_unique_name(vdir, config['calendars'].keys())
-        config['calendars'][name] = calendar
+                }
+                unique_vdir_name = get_unique_name(vdir, config['calendars'].keys())
+                config['calendars'][unique_vdir_name] = vdir_config
+            config['calendars'].pop(cname)
 
     test_default_calendar(config)
     for calendar in config['calendars']:
