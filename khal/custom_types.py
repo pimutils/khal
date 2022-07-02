@@ -62,8 +62,8 @@ class RRuleMapType(RRuleMapBase, total=False):
 
 
 class EventCreationTypes(TypedDict):
-    dtstart: dt.datetime
-    dtend: dt.datetime
+    dtstart: dt.date
+    dtend: dt.date
     summary: str
     description: str
     allday: bool
