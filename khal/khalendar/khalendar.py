@@ -279,7 +279,7 @@ class CalendarCollection:
         """Creates an Event from the method's arguments
         """
         vevent = new_vevent(locale=self._locale, **event_dict)
-        calendar_name = calendar_name or self.default_calendar_name
+        calendar_name = calendar_name or self.default_calendar_name or self.writable_names[0]
         assert calendar_name is not None
         return self.create_event_from_ics(vevent.to_ical(), calendar_name)
 
