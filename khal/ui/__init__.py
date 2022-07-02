@@ -865,12 +865,14 @@ class EventColumn(urwid.WidgetWrap):
         except IndexError:
             pass
 
-    def new(self, date: dt.date, end: Optional[dt.datetime]=None):
+    def new(self, date: dt.date, end: Optional[dt.date]=None):
         """create a new event on `date` at the next full hour and edit it
 
         :param date: default date for new event
         :param end: optional, date the event ends on (inclusive)
         """
+        dtstart: dt.date
+        dtend: dt.date
         if not self.pane.collection.writable_names:
             self.pane.window.alert(('alert', 'No writable calendar.'))
             return
@@ -884,13 +886,13 @@ class EventColumn(urwid.WidgetWrap):
             dtstart = date
             dtend = end + dt.timedelta(days=1)
             allday = True
-        event = self.pane.collection.create_event_from_dict(dict(
-            dtstart=dtstart,
-            dtend=dtend,
-            summary='',
-            timezone=self._conf['locale']['default_timezone'],
-            allday=allday,
-        ))
+        event = self.pane.collection.create_event_from_dict({
+            'dtstart': dtstart,
+            'dtend': dtend,
+            'summary': '',
+            'timezone': self._conf['locale']['default_timezone'],
+            'allday': allday,
+        })
         self.edit(event)
 
     def selectable(self):

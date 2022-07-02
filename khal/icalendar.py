@@ -77,8 +77,8 @@ def split_ics(ics: str, random_uid: bool=False, default_timezone=None):
 
 
 def new_vevent(locale,
-               dtstart: dt.datetime,
-               dtend: dt.datetime,
+               dtstart: dt.date,
+               dtend: dt.date,
                summary: str,
                timezone: Optional[pytz.BaseTzInfo]=None,
                allday: bool=False,
@@ -104,6 +104,8 @@ def new_vevent(locale,
     :returns: event
     """
     if not allday and timezone is not None:
+        assert isinstance(dtstart, dt.datetime)
+        assert isinstance(dtend, dt.datetime)
         dtstart = timezone.localize(dtstart)
         dtend = timezone.localize(dtend)
 
@@ -124,7 +126,7 @@ def new_vevent(locale,
     if url:
         event.add('url', icalendar.vUri(url))
     if repeat and repeat != "none":
-        rrule = rrulefstr(repeat, until, locale, dtstart.tzinfo)
+        rrule = rrulefstr(repeat, until, locale, getattr(dtstart, 'tzinfo', None))
         event.add('rrule', rrule)
     if alarms:
         for alarm in alarms.split(","):
