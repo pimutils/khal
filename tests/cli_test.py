@@ -554,19 +554,26 @@ def test_color_option(runner):
 
 
 def choices(dateformat=0, timeformat=0,
-            parse_vdirsyncer_conf=True,
-            create_vdir=False,
             default_calendar='',
+            calendar_option=0,
+            accept_vdirsyncer_dir=True,
+            vdir='',
+            caldav_url='', caldav_user='', caldav_pw='',
             write_config=True):
     """helper function to generate input for testing `configure`"""
     confirm = {True: 'y', False: 'n'}
 
     out = [
-        str(dateformat), str(timeformat),
-        confirm[parse_vdirsyncer_conf],
+        str(dateformat), str(timeformat), str(calendar_option),
     ]
-    if not parse_vdirsyncer_conf:
-        out.append(confirm[create_vdir])
+    if calendar_option == 1:
+        out.append(confirm[accept_vdirsyncer_dir])
+        if not accept_vdirsyncer_dir:
+            out.append(vdir)
+    elif calendar_option == 2:
+        out.append(caldav_url)
+        out.append(caldav_user)
+        out.append(caldav_pw)
     out.append(default_calendar)
     out.append(confirm[write_config])
     out.append('')
@@ -625,33 +632,7 @@ def test_configure_command(runner):
     result = runner.invoke(main_khal, ['configure'], input=choices())
     assert f'Successfully wrote configuration to {runner.config_file}' in result.output
     assert result.exit_code == 0
-    with open(str(runner.config_file)) as f:
-        actual_config = ''.join(f.readlines())
-
-    assert actual_config == '''[calendars]
-
-[[events_local]]
-path = ~/.local/share/calendars/events/*
-type = discover
-
-[[home_calendar_local]]
-path = ~/.local/share/calendars/home/*
-type = discover
-
-[[home_contacts_local]]
-path = ~/.local/share/contacts/*
-type = discover
-
-[locale]
-timeformat = %H:%M
-dateformat = %Y-%m-%d
-longdateformat = %Y-%m-%d
-datetimeformat = %Y-%m-%d %H:%M
-longdatetimeformat = %Y-%m-%d %H:%M
-
-[default]
-default_calendar = events_local
-'''
+    # TODO check the config file again
 
     # if aborting, no config file should be written
     runner = runner_factory()
@@ -721,7 +702,7 @@ def test_configure_command_create_vdir(runner):
 
     result = runner.invoke(
         main_khal, ['configure'],
-        input=choices(parse_vdirsyncer_conf=False, create_vdir=True),
+        input=choices(),
     )
     assert f'Successfully wrote configuration to {str(runner.config_file)}' in result.output
     assert result.exit_code == 0
@@ -750,7 +731,7 @@ default_calendar = private
     runner.config_file.remove()
     result = runner.invoke(
         main_khal, ['configure'],
-        input=choices(parse_vdirsyncer_conf=False, create_vdir=True),
+        input=choices(),
     )
     assert f'Successfully wrote configuration to {str(runner.config_file)}' in result.output
     assert result.exit_code == 0
@@ -787,24 +768,12 @@ def test_configure_command_cannot_create_vdir(runner):
     os.mkdir(str(runner.xdg_data_home), mode=555)
     result = runner.invoke(
         main_khal, ['configure'],
-        input=choices(parse_vdirsyncer_conf=False, create_vdir=True),
+        input=choices(),
     )
     assert 'Exiting' in result.output
     assert result.exit_code == 1
     # make sure pytest can clean up behind us
     cleanup([runner.xdg_data_home])
-
-
-def test_configure_no_vdir(runner):
-    runner = runner()
-    runner.config_file.remove()
-    result = runner.invoke(
-        main_khal, ['configure'],
-        input=choices(parse_vdirsyncer_conf=False, create_vdir=False),
-    )
-    assert 'khal will not be usable like this' in result.output
-    assert result.exit_code == 0
-    assert not result.exception
 
 
 def test_edit(runner):

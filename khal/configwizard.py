@@ -21,11 +21,14 @@
 #
 
 import datetime as dt
+import json
 import logging
 from functools import partial
 from itertools import zip_longest
-from os import makedirs
-from os.path import exists, expanduser, expandvars, isdir, join, normpath
+from os import environ, makedirs
+from os.path import (dirname, exists, expanduser, expandvars, isdir, join,
+                     normpath)
+from subprocess import call
 
 import xdg
 from click import Choice, UsageError, confirm, prompt
@@ -34,6 +37,15 @@ from .exceptions import FatalError
 from .settings import find_configuration_file
 
 logger = logging.getLogger('khal')
+
+
+def compressuser(path):
+    """Abbreviate home directory to '~', for presenting a path."""
+    home = normpath(expanduser('~'))
+    path = normpath(path)
+    if path.startswith(home):
+        path = '~' + path[len(home):]
+    return path
 
 
 def validate_int(input, min_value, max_value):
@@ -113,7 +125,7 @@ def choose_time_format():
 def choose_default_calendar(vdirs):
     names = [name for name, _, _ in sorted(vdirs or ())]
     print("Which calendar do you want as a default calendar?")
-    print("(The default calendar is specified, when no calendar is specified.)")
+    print("(The default calendar is used when no calendar is specified.)")
     print(f"Configured calendars: {', '.join(names)}")
     default_calendar = prompt(
         "Please type one of the above options",
@@ -125,21 +137,16 @@ def choose_default_calendar(vdirs):
 
 def get_vdirs_from_vdirsyncer_config():
     """trying to load vdirsyncer's config and read all vdirs from it"""
-    print("If you use vdirsyncer to sync with CalDAV servers, we can try to "
-          "load its config file and add your calendars to khal's config.")
-    if not confirm("Should we try to load vdirsyncer's config?", default=True):
-        return None
     try:
         from vdirsyncer.cli import config
         from vdirsyncer.exceptions import UserError
     except ImportError:
-        print("Sorry, cannot import vdirsyncer. Please make sure you have it "
-              "installed.")
+        print("Couldn't load vdirsyncer to discover its calendars.")
         return None
     try:
         vdir_config = config.load_config()
     except UserError as error:
-        print("Sorry, trying to load vdirsyncer failed with the following "
+        print("Sorry, loading vdirsyncer config failed with the following "
               "error message:")
         print(error)
         return None
@@ -153,21 +160,39 @@ def get_vdirs_from_vdirsyncer_config():
             path += '*'
             vdirs.append((storage['instance_name'], path, 'discover'))
     if vdirs == []:
-        print("No usable collections were found")
+        print("No calendars found from vdirsyncer.")
         return None
     else:
-        print("The following collections were found:")
-        for name, path, _ in vdirs:
-            print(f'  {name}: {path}')
         return vdirs
 
 
+def find_vdir():
+    """Use one or more existing vdirs on the system.
+
+    Tries to get data from vdirsyncer if it's installed and configured, and
+    asks user to confirm it. If not, prompt the user for the path to a single
+    vdir.
+    """
+    print("The following calendars were found:")
+    synced_vdirs = get_vdirs_from_vdirsyncer_config()
+    if synced_vdirs:
+        print(f"Found {len(synced_vdirs)} calendars from vdirsyncer")
+        for name, path, _ in synced_vdirs:
+            print(f'  {name}: {compressuser(path)}')
+        if confirm("Use these calendars for khal?", default=True):
+            return synced_vdirs
+
+    vdir_path = prompt("Enter the path to a vdir calendar")
+    vdir_path = normpath(expanduser(expandvars(vdir_path)))
+    return [('private', vdir_path, 'calendar')]
+
+
 def create_vdir(names=None):
+    """create a new vdir, make sure the name doesn't collide with existing names
+
+    :param names: names of existing vdirs
+    """
     names = names or []
-    if not confirm("Do you want to create a local calendar? (You can always "
-                   "set it up to synchronize with a server in vdirsyncer "
-                   "later)."):
-        return None
     name = 'private'
     while True:
         path = join(xdg.BaseDirectory.xdg_data_home, 'khal', 'calendars', name)
@@ -183,6 +208,132 @@ def create_vdir(names=None):
         raise
     print(f"Created new vdir at {path}")
     return [(name, path, 'calendar')]
+
+
+# Parsing and then dumping config naively could lose comments and formatting.
+# Since we don't need to modify existing fields, we can simply append our new
+# config to the end of the file.
+VDS_CONFIG_START = """\
+[general]
+status_path = "~/.local/share/vdirsyncer/status/"
+"""
+
+VDS_CONFIG_TEMPLATE = """
+[pair khal_pair_{pairno}]
+a = "khal_pair_{pairno}_local"
+b = "khal_pair_{pairno}_remote"
+collections = ["from a", "from b"]
+
+[storage khal_pair_{pairno}_local]
+type = "filesystem"
+path = {local_path}
+fileext = ".ics"
+
+[storage khal_pair_{pairno}_remote]
+type = "caldav"
+url = {url}
+username = {username}
+password = {password}
+"""
+
+
+def vdirsyncer_config_path():
+    """Find where vdirsyncer will look for it's config.
+
+    There may or may not already be a file at the returned path.
+    """
+    fname = environ.get('VDIRSYNCER_CONFIG', None)
+    if fname is None:
+        fname = normpath(expanduser('~/.vdirsyncer/config'))
+        if not exists(fname):
+            xdg_config_dir = environ.get('XDG_CONFIG_HOME',
+                                         normpath(expanduser('~/.config/')))
+            fname = join(xdg_config_dir, 'vdirsyncer/config')
+    return fname
+
+
+def get_available_pairno():
+    """Find N so that 'khal_pair_N' is not already used in vdirsyncer config
+    """
+    try:
+        from vdirsyncer.cli import config
+    except ImportError:
+        raise FatalError("vdirsyncer config exists, but couldn't import vdirsyncer.")
+    vdir_config = config.load_config()
+    pairno = 1
+    while f'khal_pair_{pairno}' in vdir_config.pairs:
+        pairno += 1
+    return pairno
+
+
+def create_synced_vdir():
+    """Create a new vdir, and set up vdirsyncer to sync it.
+    """
+    name, path, _ = create_vdir()[0]
+
+    caldav_url = prompt('CalDAV URL')
+    username = prompt('Username')
+    password = prompt('Password', hide_input=True)
+
+    vds_config = vdirsyncer_config_path()
+    if exists(vds_config):
+        # We are adding a pair to vdirsyncer config
+        mode = 'a'
+        new_file = False
+        pairno = get_available_pairno()
+    else:
+        # We're setting up vdirsyncer for the first time
+        mode = 'w'
+        new_file = True
+        pairno = 1
+
+    with open(vds_config, mode) as f:
+        if new_file:
+            f.write(VDS_CONFIG_START)
+
+        f.write(VDS_CONFIG_TEMPLATE.format(
+            local_path=json.dumps(dirname(path)),
+            url=json.dumps(caldav_url),
+            username=json.dumps(username),
+            password=json.dumps(password),
+            pairno=pairno,
+        ))
+    start_syncing()
+    return [(name, path, 'calendar')]
+
+
+def start_syncing():
+    """Run vdirsyncer to sync the newly created vdir with the remote."""
+    print("Syncing calendar...")
+    try:
+        exit_code = call(['vdirsyncer', 'discover'])
+    except FileNotFoundError:
+        print("Could not find vdirsyncer - please set it up manually")
+    else:
+        if exit_code == 0:
+            exit_code = call(['vdirsyncer', 'sync'])
+        if exit_code != 0:
+            print("vdirsyncer failed - please set up sync manually")
+
+    # Add code here to check platform and automatically set up cron or similar
+    print("Please set up your system to run 'vdirsyncer sync' periodically, "
+          "using cron or similar mechanisms.")
+
+
+def choose_vdir_calendar():
+    """query the user for their preferred calendar source"""
+    choices = [
+        ("Create a new calendar on this computer", create_vdir),
+        ("Use a calendar already on this computer (vdir format)", find_vdir),
+        ("Sync a calendar from the internet (CalDAV format, requires vdirsyncer)",
+         create_synced_vdir),
+    ]
+    validate = partial(validate_int, min_value=0, max_value=2)
+    for i, (desc, _func) in enumerate(choices):
+        print(f'[{i}] {desc}')
+    choice_no = prompt("Please choose one of the above options",
+                       value_proc=validate)
+    return choices[choice_no][1]()
 
 
 def create_config(vdirs, dateformat, timeformat, default_calendar=None):
@@ -212,7 +363,7 @@ def create_config(vdirs, dateformat, timeformat, default_calendar=None):
 def configwizard():
     config_file = find_configuration_file()
     if config_file is not None:
-        logger.fatal(f"Found an existing config file at {config_file}.")
+        logger.fatal(f"Found an existing config file at {compressuser(config_file)}.")
         logger.fatal(
             "If you want to create a new configuration file, "
             "please remove the old one first. Exiting.")
@@ -221,13 +372,10 @@ def configwizard():
     print()
     timeformat = choose_time_format()
     print()
-    vdirs = get_vdirs_from_vdirsyncer_config()
-    print()
-    if not vdirs:
-        try:
-            vdirs = create_vdir()
-        except OSError as error:
-            raise FatalError(error)
+    try:
+        vdirs = choose_vdir_calendar()
+    except OSError as error:
+        raise FatalError(error)
 
     if not vdirs:
         print("\nWARNING: no vdir configured, khal will not be usable like this!\n")
@@ -244,7 +392,7 @@ def configwizard():
     )
     config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
     if not confirm(
-            f"Do you want to write the config to {config_path}? "
+            f"Do you want to write the config to {compressuser(config_path)}? "
             "(Choosing `No` will abort)", default=True):
         raise FatalError('User aborted...')
     config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
@@ -253,12 +401,12 @@ def configwizard():
             makedirs(config_dir)
         except OSError as error:
             print(
-                f"Could not write config file at {config_dir} because of "
+                f"Could not write config file at {compressuser(config_dir)} because of "
                 f"{error}. Aborting"
             )
             raise FatalError(error)
         else:
-            print(f'created directory {config_dir}')
+            print(f"created directory {compressuser(config_dir)}")
     with open(config_path, 'w') as config_file:
         config_file.write(config)
-    print(f"Successfully wrote configuration to {config_path}")
+    print(f"Successfully wrote configuration to {compressuser(config_path)}")
