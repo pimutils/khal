@@ -125,7 +125,7 @@ def choose_time_format():
 def choose_default_calendar(vdirs):
     names = [name for name, _, _ in sorted(vdirs or ())]
     print("Which calendar do you want as a default calendar?")
-    print("(The default calendar is used, when no calendar is specified.)")
+    print("(The default calendar is used when no calendar is specified.)")
     print(f"Configured calendars: {', '.join(names)}")
     default_calendar = prompt(
         "Please type one of the above options",
@@ -146,7 +146,7 @@ def get_vdirs_from_vdirsyncer_config():
     try:
         vdir_config = config.load_config()
     except UserError as error:
-        print("Sorry, trying to load vdirsyncer config failed with the following "
+        print("Sorry, loading vdirsyncer config failed with the following "
               "error message:")
         print(error)
         return None
@@ -185,6 +185,7 @@ def find_vdir():
     vdir_path = prompt("Enter the path to a vdir calendar")
     vdir_path = normpath(expanduser(expandvars(vdir_path)))
     return [('private', vdir_path, 'calendar')]
+
 
 def create_vdir(names=None):
     """create a new vdir, make sure the name doesn't collide with existing names
@@ -328,7 +329,7 @@ def choose_vdir_calendar():
          create_synced_vdir),
     ]
     validate = partial(validate_int, min_value=0, max_value=2)
-    for i, (desc, func) in enumerate(choices):
+    for i, (desc, _func) in enumerate(choices):
         print(f'[{i}] {desc}')
     choice_no = prompt("Please choose one of the above options",
                        value_proc=validate)
