@@ -1,11 +1,13 @@
+import datetime as dt
 import random
 import textwrap
 
 import icalendar
+from freezegun import freeze_time
 
-from khal.icalendar import split_ics
+from khal.icalendar import new_vevent, split_ics
 
-from .utils import LOCALE_BERLIN, _get_text, normalize_component
+from .utils import LOCALE_BERLIN, _get_text, _replace_uid, normalize_component
 
 
 def _get_TZIDs(lines):
@@ -23,6 +25,29 @@ def test_normalize_component():
     DTSTART;TZID=Oyrope/Berlin;VALUE=DATE-TIME:20140409T093000
     END:VEVENT
     """))
+
+
+def test_new_vevent():
+    with freeze_time('20220702T1400'):
+        vevent = _replace_uid(new_vevent(
+            LOCALE_BERLIN,
+            dt.date(2022, 7, 2),
+            dt.date(2022, 7, 3),
+            'An Event',
+            allday=True,
+            repeat='weekly',
+        ))
+        assert vevent.to_ical().decode('utf-8') == '\r\n'.join([
+            'BEGIN:VEVENT',
+            'SUMMARY:An Event',
+            'DTSTART;VALUE=DATE:20220702',
+            'DTEND;VALUE=DATE:20220703',
+            'DTSTAMP;VALUE=DATE-TIME:20220702T140000Z',
+            'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
+            'RRULE:FREQ=WEEKLY',
+            'END:VEVENT',
+            ''
+        ])
 
 
 def test_split_ics():
