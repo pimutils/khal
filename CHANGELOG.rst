@@ -15,6 +15,7 @@ not released
 * UPDATED REQUIREMENT pytz is now required >= 2018.7
 * FIX if a `discover` collection is set to "readonly", discovered collections
   will now inherit the readonly property
+* NEW the `configure` command can now set up vdirsyncer
 
 0.10.5
 ======
