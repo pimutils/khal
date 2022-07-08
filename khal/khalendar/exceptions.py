@@ -41,6 +41,12 @@ class ReadOnlyCalendarError(Error):
     khal"""
 
 
+class EtagMissmatch(Error):
+
+    """An event is trying to be modified from khal which has also been externally
+    modified"""
+
+
 class OutdatedDbVersionError(FatalError):
 
     """the db file has an older version and needs to be deleted"""

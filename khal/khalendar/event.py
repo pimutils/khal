@@ -734,8 +734,12 @@ class Event:
         event._locale = self._locale
         return event
 
-    def delete_instance(self, instance):
-        """delete an instance from this event"""
+    def delete_instance(self, instance: dt.datetime) -> None:
+        """delete an instance from this event
+
+        we don't check, if that instance is an instance of the recurrence rules
+        defined in the event
+        """
         assert self.recurring
         delete_instance(self._vevents['PROTO'], instance)
 

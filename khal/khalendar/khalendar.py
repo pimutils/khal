@@ -37,10 +37,11 @@ from ..custom_types import CalendarConfiguration, EventCreationTypes
 from ..icalendar import new_vevent
 from . import backend
 from .event import Event
-from .exceptions import (DuplicateUid, NonUniqueUID, ReadOnlyCalendarError,
-                         UnsupportedFeatureError, UpdateFailed)
+from .exceptions import (DuplicateUid, EtagMissmatch, NonUniqueUID,
+                         ReadOnlyCalendarError, UnsupportedFeatureError,
+                         UpdateFailed)
 from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
-                   get_etag_from_file)
+                   WrongEtagError, get_etag_from_file)
 
 logger = logging.getLogger('khal')
 
@@ -190,9 +191,8 @@ class CalendarCollection:
             self._backend.update(event.raw, href, etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
-    def insert(self, event: Event, collection: Optional[str]=None):
+    def insert(self, event: Event, collection: Optional[str]=None) -> Event:
         """insert a new event to the vdir and the database
-
         :param event: the event that should be inserted, it will get a new href
             and etag properties
         """
@@ -216,17 +216,40 @@ class CalendarCollection:
             self._backend.update(event.raw, event.href, event.etag, calendar=calendar)
             self._backend.set_ctag(self._local_ctag(calendar), calendar=calendar)
 
-    def delete(self, href: str, etag: Optional[str], calendar: str):
+    def delete(self, href: str, etag: Optional[str], calendar: str) -> None:
+        """Delete an event specified by `href` from `calendar`"""
         if self._calendars[calendar]['readonly']:
             raise ReadOnlyCalendarError()
-        self._storages[calendar].delete(href, etag)
+        try:
+            self._storages[calendar].delete(href, etag)
+        except WrongEtagError:
+            raise EtagMissmatch()
         self._backend.delete(href, calendar=calendar)
+
+    def delete_instance(self,
+                        href: str,
+                        etag: Optional[str],
+                        calendar: str,
+                        rec_id: dt.datetime,
+                        ) -> Event:
+        """Delete a recurrence instance from an event specified by `href` from `calendar`
+
+        returns the updated event
+        """
+        if self._calendars[calendar]['readonly']:
+            raise ReadOnlyCalendarError()
+        event = self.get_event(href, calendar)
+        if etag and etag != event.etag:
+            raise EtagMissmatch()
+
+        event.delete_instance(rec_id)
+        self.update(event)
+        return event
 
     def get_event(self, href: str, calendar: str) -> Event:
         """get an event by its href from the datatbase"""
-        return self._construct_event(
-            self._backend.get(href, calendar), href=href, calendar=calendar,
-        )
+        event_str, etag = self._backend.get_with_etag(href, calendar)
+        return self._construct_event(event_str, etag=etag, href=href, calendar=calendar)
 
     def _construct_event(self,
                          item: str,
