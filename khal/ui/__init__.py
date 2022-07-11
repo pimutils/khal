@@ -109,7 +109,7 @@ class DateHeader(SelectableText):
         self._day = day
         self._dateformat = dateformat
         self._conf = conf
-        super().__init__('')
+        super().__init__('', wrap='clip')
         self.update_date_line()
 
     def update_date_line(self):

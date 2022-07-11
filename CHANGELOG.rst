@@ -16,6 +16,8 @@ not released
 * FIX deleting of instances of recurring events in ikhal
 * FIX if a `discover` collection is set to "readonly", discovered collections
   will now inherit the readonly property
+* FIX ikhal will not wrap date headers into the next line in narrow terminals
+  anymore
 * NEW the `configure` command can now set up vdirsyncer
 
 0.10.5
