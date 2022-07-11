@@ -85,7 +85,10 @@ def datetimefstr(
         raise ValueError
 
     for _ in range(parts):
-        dtime_list.pop(0)
+        item = dtime_list.pop(0)
+        if ' ' in item:
+            logger.warn('detected a space in datetime specification, this can lead to errors.')
+            logger.warn('Make sure not to quote your datetime specification.')
 
     if infer_year:
         dtstart = dt.datetime(*(default_day.timetuple()[:1] + dtstart_struct[1:5]))

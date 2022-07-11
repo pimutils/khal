@@ -257,11 +257,13 @@ def khal_list(
         if not datepoint:
             datepoint = ['now']
         try:
+            # hand over a copy of the `datepoint` so error reporting works
+            # (we pop from that list in guessdatetimefstr())
             start, allday = parse_datetime.guessdatetimefstr(
-                datepoint, conf['locale'], dt.date.today(),
+                list(datepoint), conf['locale'], dt.date.today(),
             )
-        except ValueError:
-            raise FatalError('Invalid value of `{' '.join(datepoint)}` for a datetime')
+        except (ValueError, IndexError):
+            raise FatalError(f"Invalid value of {' '.join(datepoint)} for a datetime")
         if allday:
             logger.debug(f'Got date {start}')
             raise FatalError('Please supply a datetime, not a date.')

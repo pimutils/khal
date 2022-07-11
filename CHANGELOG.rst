@@ -19,6 +19,7 @@ not released
 * FIX ikhal will not wrap date headers into the next line in narrow terminals
   anymore
 * NEW the `configure` command can now set up vdirsyncer
+* NEW better error message for misuses of `at` and `list`
 
 0.10.5
 ======
