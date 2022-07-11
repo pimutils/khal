@@ -122,14 +122,19 @@ def choose_time_format():
     return timeformat
 
 
-def choose_default_calendar(vdirs):
+def get_collection_names_from_vdirs(vdirs):
     names = []
     for name, path, vtype in sorted(vdirs or ()):
-        if vtype != 'discover':
-            names.append(name)
-        else:
+        if vtype == 'discover':
             for vpath in utils.get_all_vdirs(utils.expand_path(path)):
                 names.append(utils.get_unique_name(vpath, names))
+        else:
+            names.append(name)
+    return names
+
+
+def choose_default_calendar(vdirs):
+    names = get_collection_names_from_vdirs(vdirs)
 
     print("Which calendar do you want as a default calendar?")
     print("(The default calendar is used when no calendar is specified.)")
