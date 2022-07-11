@@ -24,6 +24,7 @@ import datetime as dt
 import glob
 import logging
 import os
+import pathlib
 from os.path import expanduser, expandvars, join
 from typing import Callable, Iterable, Literal, Optional, Union
 
@@ -189,12 +190,25 @@ def get_unique_name(path: str, names: Iterable[str]) -> str:
     return name
 
 
-def get_all_vdirs(path: str) -> Iterable[str]:
+def get_all_vdirs(expand_path: str) -> Iterable[str]:
     """returns a list of paths, expanded using glob
     """
-    # FIXME currently returns a list of all files in path
-    items = glob.glob(path)
-    return items
+    # FIXME currently returns a list of all directories in path
+    # we add an additional / at the end to make sure we are only getting
+    # directories
+    items = glob.glob(f'{expand_path}/', recursive=True)
+    paths = [pathlib.Path(item) for item in sorted(items, key=len, reverse=True)]
+    leaves = set()
+    parents = set()
+    for path in paths:
+        if path in parents:
+            # we have already seen the current directory as the parent of
+            # another directory, so this directory can't be a vdir
+            continue
+        parents.add(path.parent)
+        leaves.add(path)
+    # sort to make sure that auto generated names are always identical
+    return sorted(os.fspath(path) for path in leaves)
 
 
 def get_vdir_type(_: str) -> str:
