@@ -632,7 +632,25 @@ def test_configure_command(runner):
     result = runner.invoke(main_khal, ['configure'], input=choices())
     assert f'Successfully wrote configuration to {runner.config_file}' in result.output
     assert result.exit_code == 0
-    # TODO check the config file again
+    with open(str(runner.config_file)) as f:
+        actual_config = ''.join(f.readlines())
+
+    assert actual_config == f'''[calendars]
+
+[[private]]
+path = {runner.tmpdir}/vdirs/khal/calendars/private
+type = calendar
+
+[locale]
+timeformat = %H:%M
+dateformat = %Y-%m-%d
+longdateformat = %Y-%m-%d
+datetimeformat = %Y-%m-%d %H:%M
+longdatetimeformat = %Y-%m-%d %H:%M
+
+[default]
+default_calendar = private
+'''
 
     # if aborting, no config file should be written
     runner = runner_factory()
