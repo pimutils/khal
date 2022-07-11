@@ -13,6 +13,37 @@ from .utils import LOCALE_BERLIN, CollVdirType, cal1, example_cals
 
 
 @pytest.fixture
+def metavdirs(tmpdir):
+    tmpdir = str(tmpdir)
+    dirstructure = [
+        '/cal1/public/',
+        '/cal1/private/',
+        '/cal2/public/',
+        '/cal3/public/',
+        '/cal3/work/',
+        '/cal3/home/',
+        '/cal4/cfgcolor/',
+        '/cal4/dircolor/',
+        '/cal4/cfgcolor_again/',
+        '/cal4/cfgcolor_once_more/',
+        '/singlecollection/',
+    ]
+    for one in dirstructure:
+        os.makedirs(tmpdir + one)
+    filestructure = [
+        ('/cal1/public/displayname', 'my calendar'),
+        ('/cal1/public/color', 'dark blue'),
+        ('/cal1/private/displayname', 'my private calendar'),
+        ('/cal1/private/color', '#FF00FF'),
+        ('/cal4/dircolor/color', 'dark blue'),
+    ]
+    for filename, content in filestructure:
+        with open(tmpdir + filename, 'w') as metafile:
+            metafile.write(content)
+    return tmpdir
+
+
+@pytest.fixture
 def coll_vdirs(tmpdir) -> CollVdirType:
     calendars, vdirs = {}, {}
     for name in example_cals:
