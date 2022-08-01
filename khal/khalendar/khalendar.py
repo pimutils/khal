@@ -405,7 +405,7 @@ class CalendarCollection:
             return 'highlight_days_color'
         if len(calendars) == 1:
             return 'calendar ' + calendars[0]
-        if self.multiple != '' and not(self.multiple_on_overflow and len(calendars) == 2):
+        if self.multiple != '' and not (self.multiple_on_overflow and len(calendars) == 2):
             return 'highlight_days_multiple'
         return ('calendar ' + calendars[0], 'calendar ' + calendars[1])
 
