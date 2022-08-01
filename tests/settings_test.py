@@ -172,6 +172,7 @@ def metavdirs(tmpdir):
         '/cal4/dircolor/',
         '/cal4/cfgcolor_again/',
         '/cal4/cfgcolor_once_more/',
+        '/singlecollection/',
     ]
     for one in dirstructure:
         os.makedirs(tmpdir + one)
@@ -198,25 +199,30 @@ def test_broken_color(metavdirs):
 
 
 def test_discover(metavdirs):
-    path = metavdirs
-    vdirs = {vdir[len(path):] for vdir in get_all_vdirs(path + '/*/*')}
-    assert vdirs == {
+    test_vdirs = {
         '/cal1/public', '/cal1/private', '/cal2/public',
         '/cal3/home', '/cal3/public', '/cal3/work',
-        '/cal4/cfgcolor', '/cal4/dircolor', '/cal4/cfgcolor_again', '/cal4/cfgcolor_once_more'
+        '/cal4/cfgcolor', '/cal4/dircolor', '/cal4/cfgcolor_again',
+        '/cal4/cfgcolor_once_more',
+        '/singlecollection',
     }
+    path = metavdirs
+    assert test_vdirs == {vdir[len(path):] for vdir in get_all_vdirs(path + '/**/*/')}
+    assert test_vdirs == {vdir[len(path):] for vdir in get_all_vdirs(path + '/**/')}
+    assert test_vdirs == {vdir[len(path):] for vdir in get_all_vdirs(path + '/**/*')}
 
 
 def test_get_unique_name(metavdirs):
     path = metavdirs
-    vdirs = list(get_all_vdirs(path + '/*/*'))
+    vdirs = list(get_all_vdirs(path + '/**/'))
     names = []
     for vdir in sorted(vdirs):
         names.append(get_unique_name(vdir, names))
-    assert names == [
+    assert sorted(names) == sorted([
         'my private calendar', 'my calendar', 'public', 'home', 'public1',
         'work', 'cfgcolor', 'cfgcolor_again', 'cfgcolor_once_more', 'dircolor',
-    ]
+        'singlecollection',
+    ])
 
 
 def test_config_checks(metavdirs):
@@ -260,14 +266,14 @@ def test_config_checks(metavdirs):
             },
             'public1': {
                 'color': None,
-                'path': '/cal2/public',
+                'path': '/cal3/public',
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
             },
             'public': {
                 'color': None,
-                'path': '/cal3/public',
+                'path': '/cal2/public',
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
