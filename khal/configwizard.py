@@ -34,7 +34,7 @@ import xdg
 from click import Choice, UsageError, confirm, prompt
 
 from .exceptions import FatalError
-from .settings import find_configuration_file
+from .settings import find_configuration_file, utils
 
 logger = logging.getLogger('khal')
 
@@ -122,8 +122,20 @@ def choose_time_format():
     return timeformat
 
 
+def get_collection_names_from_vdirs(vdirs):
+    names = []
+    for name, path, vtype in sorted(vdirs or ()):
+        if vtype == 'discover':
+            for vpath in utils.get_all_vdirs(utils.expand_path(path)):
+                names.append(utils.get_unique_name(vpath, names))
+        else:
+            names.append(name)
+    return names
+
+
 def choose_default_calendar(vdirs):
-    names = [name for name, _, _ in sorted(vdirs or ())]
+    names = get_collection_names_from_vdirs(vdirs)
+
     print("Which calendar do you want as a default calendar?")
     print("(The default calendar is used when no calendar is specified.)")
     print(f"Configured calendars: {', '.join(names)}")

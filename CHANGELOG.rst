@@ -17,7 +17,7 @@ not released
 * FIX if a `discover` collection is set to "readonly", discovered collections
   will now inherit the readonly property
 * FIX ikhal will not wrap date headers into the next line in narrow terminals
-  anymore
+* FIX `configure` should only suggest valid default collection names
 * NEW the `configure` command can now set up vdirsyncer
 * NEW better error message for misuses of `at` and `list`
 * NEW `discover` collection type now supports `**` (arbitrary depths)

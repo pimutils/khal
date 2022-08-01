@@ -158,37 +158,6 @@ default_calendar = home
             config_checks(get_config(conf_path))
 
 
-@pytest.fixture
-def metavdirs(tmpdir):
-    tmpdir = str(tmpdir)
-    dirstructure = [
-        '/cal1/public/',
-        '/cal1/private/',
-        '/cal2/public/',
-        '/cal3/public/',
-        '/cal3/work/',
-        '/cal3/home/',
-        '/cal4/cfgcolor/',
-        '/cal4/dircolor/',
-        '/cal4/cfgcolor_again/',
-        '/cal4/cfgcolor_once_more/',
-        '/singlecollection/',
-    ]
-    for one in dirstructure:
-        os.makedirs(tmpdir + one)
-    filestructure = [
-        ('/cal1/public/displayname', 'my calendar'),
-        ('/cal1/public/color', 'dark blue'),
-        ('/cal1/private/displayname', 'my private calendar'),
-        ('/cal1/private/color', '#FF00FF'),
-        ('/cal4/dircolor/color', 'dark blue'),
-    ]
-    for filename, content in filestructure:
-        with open(tmpdir + filename, 'w') as metafile:
-            metafile.write(content)
-    return tmpdir
-
-
 def test_broken_color(metavdirs):
     path = metavdirs
     newvdir = path + '/cal5/'
