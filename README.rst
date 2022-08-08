@@ -73,7 +73,7 @@ Nix
 Arch
 ~~~~
 
-    pacman -s khal
+    pacman -S khal
 
 Brew
 ~~~~
