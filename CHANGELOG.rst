@@ -8,6 +8,12 @@ may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
 
+0.10.6
+======
+not released
+
+* FIX support in tests for pytz version numbers of the format year.month.minor
+
 0.10.5
 ======
 2022-06-26
