@@ -6,6 +6,7 @@ from freezegun import freeze_time
 from hypothesis import event, given
 from hypothesis.strategies import datetimes
 from icalendar import Parameters, vCalAddress, vRecur, vText
+from packaging import version
 
 from khal.khalendar.event import (AllDayEvent, Event, FloatingEvent,
                                   LocalizedEvent, create_timezone)
@@ -341,12 +342,12 @@ def test_event_dt_long():
         '09.04.2014 09:30-12.04.2014 10:30 An Event\x1b[0m'
 
 
-def test_event_no_dst(pytz_version):
+def test_event_no_dst():
     """test the creation of a corect VTIMEZONE for timezones with no dst"""
     event_no_dst = _get_text('event_no_dst')
     cal_no_dst = _get_text('cal_no_dst')
     event = Event.fromString(event_no_dst, calendar='foobar', locale=LOCALE_BOGOTA)
-    if pytz_version > (2017, 1):
+    if version.parse(pytz.__version__) > version.Version('2017.1'):
         cal_no_dst = cal_no_dst.replace(
             'TZNAME:COT',
             'RDATE:20380118T221407\r\nTZNAME:-05'

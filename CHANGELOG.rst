@@ -13,6 +13,8 @@ not released
 
 * DROPPED support for python versions < 3.8
 * UPDATED REQUIREMENT pytz is now required >= 2018.7
+* NEW test REQUIREMENT: packaging
+* FIX support in tests for pytz version numbers of the format year.month.minor
 * FIX deleting of instances of recurring events in ikhal
 * FIX if a `discover` collection is set to "readonly", discovered collections
   will now inherit the readonly property

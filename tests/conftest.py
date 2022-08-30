@@ -3,7 +3,6 @@ import os
 from time import sleep
 
 import pytest
-import pytz
 
 from khal.custom_types import CalendarConfiguration
 from khal.khalendar import CalendarCollection
@@ -142,13 +141,6 @@ def sleep_time(tmpdir_factory):
         'Filesystem does not seem to save modified times of files. \n'
         'Cannot run tests that depend on this.'
     )
-
-
-@pytest.fixture(scope='session')
-def pytz_version():
-    """Return the version of pytz as a tuple."""
-    year, month = pytz.__version__.split('.')
-    return int(year), int(month)
 
 
 @pytest.fixture
