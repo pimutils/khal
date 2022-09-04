@@ -1,6 +1,7 @@
 import datetime as dt
 
 import pytz
+from packaging import version
 
 from khal.khalendar.event import create_timezone
 
@@ -63,7 +64,7 @@ def test_berlin_rdate():
     assert vberlin_dst in vberlin
 
 
-def test_bogota(pytz_version):
+def test_bogota():
     vbogota = [b'BEGIN:VTIMEZONE',
                b'TZID:America/Bogota',
                b'BEGIN:STANDARD',
@@ -74,7 +75,7 @@ def test_bogota(pytz_version):
                b'END:STANDARD',
                b'END:VTIMEZONE',
                b'']
-    if pytz_version > (2017, 1):
+    if version.parse(pytz.__version__) > version.Version('2017.1'):
         vbogota[4] = b'TZNAME:-05'
         vbogota.insert(4, b'RDATE:20380118T221407')
 

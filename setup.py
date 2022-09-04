@@ -27,6 +27,7 @@ requirements = [
 test_requirements = [
     'freezegun',
     'hypothesis',
+    'packaging',
     'vdirsyncer',
 ]
 
