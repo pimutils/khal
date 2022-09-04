@@ -109,7 +109,11 @@ def sleep_time(tmpdir_factory):
 @pytest.fixture(scope='session')
 def pytz_version():
     """Return the version of pytz as a tuple."""
-    year, month = pytz.__version__.split('.')
+    split = pytz.__version__.split('.')
+    # split might have more than two elements, e.g., with pytz 2022.2.1
+    year = split[0]
+    month = split[1]
+
     return int(year), int(month)
 
 
