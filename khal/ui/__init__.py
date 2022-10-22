@@ -1115,7 +1115,7 @@ class ClassicView(Pane):
             self.collection.delete(href, etag, account)
         for part, rec_id in self._deleted[INSTANCES]:
             account, href, etag = part.split('\n', 2)
-            self.collection.delete_instance(href, etag, account, rec_id)
+            self.collection.delete_instance(href, None, account, rec_id)
 
     def keypress(self, size, key):
         binds = self._conf['keybindings']
