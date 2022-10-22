@@ -243,9 +243,6 @@ class VdirBase:
         fpath = self._get_filepath(href)
         if not os.path.exists(fpath):
             raise NotFoundError(item.uid)
-        actual_etag = get_etag_from_file(fpath)
-        if etag != actual_etag:
-            raise WrongEtagError(etag, actual_etag)
 
         if not isinstance(item.raw, str):
             raise TypeError('item.raw must be a unicode string.')
