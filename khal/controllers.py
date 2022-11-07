@@ -584,6 +584,32 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
         if not edit_event(event, collection, locale, allow_quit=True, width=term_width):
             return
 
+def export(collection, search_string, export_ics, locale, allow_past=False, conf=None):
+    now = conf['locale']['local_timezone'].localize(dt.datetime.now())
+
+    events = sorted(collection.search(search_string))
+    exported = []
+    if events:
+        sl = events[0].raw.split('\n')
+        header = '\n'.join(sl[:3]) + '\n' # 3 first lines of first event
+        footer = '\n'.join(sl[-2:]) # last line of first event
+        export_ics.write(header)
+        for event in events:
+            if not allow_past:
+                if event.allday and event.end < now.date():
+                    continue
+                elif not event.allday and event.end_local < now:
+                    continue
+              # skip repeated events already exported
+            if event.uid in exported:
+                continue
+            else:
+                exported.append(event.uid)
+            sl = event.raw.split('\n')
+            export_ics.write('\n'.join(sl[3:-2]) + '\n')
+        export_ics.write(footer)
+    if not export_ics.name == "<stdout>":
+        echo('Exported {} events to output file "{}"'.format(len(exported), export_ics.name))
 
 def interactive(collection, conf):
     """start the interactive user interface"""

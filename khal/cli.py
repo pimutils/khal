@@ -633,6 +633,37 @@ def _get_cli():
 
     @cli.command()
     @multi_calendar_option
+    @click.option('--show-past', help=('Include events that have already occurred in the search'),
+                  is_flag=True)
+    @click.option('--export-ics', '-e',
+                  type=click.File('w'),
+                  default='-',
+                  metavar='FILE',
+                  help=('The file name to export the events into. Use "-" to output to stdout.'))
+    @click.argument('search_string', nargs=-1)
+    @click.pass_context
+
+    def export(ctx, search_string, export_ics, show_past, include_calendar, exclude_calendar):
+        '''Export events matching the search string. Prints to stdout by default.'''
+        try:
+            controllers.export(
+                build_collection(
+                    ctx.obj['conf'],
+                    multi_calendar_select(ctx, include_calendar, exclude_calendar)
+                ),
+                ' '.join(search_string),
+                export_ics,
+                allow_past=show_past,
+                locale=ctx.obj['conf']['locale'],
+                conf=ctx.obj['conf']
+            )
+        except FatalError as error:
+            logger.debug(error, exc_info=True)
+            logger.fatal(error)
+            sys.exit(1)
+
+    @cli.command()
+    @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
     @click.option('--day-format', '-df',
