@@ -642,7 +642,6 @@ def _get_cli():
                   help=('The file name to export the events into. Use "-" to output to stdout.'))
     @click.argument('search_string', nargs=-1)
     @click.pass_context
-
     def export(ctx, search_string, export_ics, show_past, include_calendar, exclude_calendar):
         '''Export events matching the search string. Prints to stdout by default.'''
         try:
