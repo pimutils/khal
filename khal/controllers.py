@@ -610,7 +610,7 @@ def export(collection, search_string, export_ics, locale, allow_past=False, conf
             export_ics.write('\n'.join(sl[3:-2]) + '\n')
         export_ics.write(footer)
     if not export_ics.name == "<stdout>":
-        echo('Exported {} events to output file "{}"'.format(len(exported), export_ics.name))
+        echo(f'Exported {len(exported)} events to output file "{export_ics.name}"')
 
 
 def interactive(collection, conf):
