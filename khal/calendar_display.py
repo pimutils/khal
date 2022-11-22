@@ -233,9 +233,6 @@ def vertical_month(month: Optional[int]=None,
 
             if new_month:
                 index_first_day = [day.day for day in week].index(1)
-                strweek = str_week(week, today, collection, hmethod, default_color,
-                               multiple, multiple_on_overflow, color, highlight_event_days, locale,
-                               bold_for_light_color)
                 strweek1 = strweek[:3*index_first_day]
                 strweek2 = strweek[3*index_first_day:]
                 sweek1 = ' ' * month_abbr_len + strweek1 + ' ' * len(strweek2) + w_number
