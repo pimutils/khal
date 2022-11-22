@@ -231,12 +231,21 @@ def vertical_month(month: Optional[int]=None,
             else:
                 w_number = ''
 
-            if new_month: # Splitting the first week into two lines
+            if new_month and monthdisplay == 'firstday':
                 index_first_day = [day.day for day in week].index(1)
                 strweek1 = strweek[:3*index_first_day]
                 strweek2 = strweek[3*index_first_day:]
                 sweek1 = ' ' * month_abbr_len + strweek1 + ' ' * len(strweek2) + w_number
                 sweek2 = m_name + ' ' * len(strweek1) + strweek2 + w_number
+                if sweek2 != khal[-1]:
+                    khal.append(sweek1)
+                    khal.append(sweek2)
+            elif monthdisplay == 'firstfullweek' and len([day for day in week if day.day == 1]):
+                index_first_day = [day.day for day in week].index(1)
+                strweek1 = strweek[:3*index_first_day]
+                strweek2 = strweek[3*index_first_day:]
+                sweek1 = ' ' * month_abbr_len + strweek1 + ' ' * len(strweek2) + w_number
+                sweek2 = ' ' * month_abbr_len + ' ' * len(strweek1) + strweek2 + w_number
                 if sweek2 != khal[-1]:
                     khal.append(sweek1)
                     khal.append(sweek2)
