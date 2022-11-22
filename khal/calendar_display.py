@@ -231,7 +231,7 @@ def vertical_month(month: Optional[int]=None,
             else:
                 w_number = ''
 
-            if new_month:
+            if new_month: # Splitting the first week into two lines
                 index_first_day = [day.day for day in week].index(1)
                 strweek1 = strweek[:3*index_first_day]
                 strweek2 = strweek[3*index_first_day:]

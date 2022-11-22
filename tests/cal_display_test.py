@@ -31,8 +31,8 @@ def test_str_week():
             dt.date(2012, 6, 11),
             dt.date(2012, 6, 12),
             dt.date(2012, 6, 13)]
-    assert str_week(week, aday) == ' 6  7  8  9 10 11 12 13 '
-    assert str_week(week, bday) == ' 6  7 \x1b[7m 8\x1b[0m  9 10 11 12 13 '
+    assert str_week(week, aday) == '06 07 08 09 10 11 12 13 '
+    assert str_week(week, bday) == '06 07 \x1b[7m08\x1b[0m 09 10 11 12 13 '
 
 
 class testCollection():
@@ -99,20 +99,24 @@ def test_get_color_list():
 
 example1 = [
     '\x1b[1m    Mo Tu We Th Fr Sa Su \x1b[0m',
-    '\x1b[1mDec \x1b[0m28 29 30  1  2  3  4 ',
-    '     5  6  7  8  9 10 11 ',
+    '    28 29 30             ',
+    '\x1b[1mDec \x1b[0m         01 02 03 04 ',
+    '    05 06 07 08 09 10 11 ',
     '    \x1b[7m12\x1b[0m 13 14 15 16 17 18 ',
     '    19 20 21 22 23 24 25 ',
-    '\x1b[1mJan \x1b[0m26 27 28 29 30 31  1 ',
-    '     2  3  4  5  6  7  8 ',
-    '     9 10 11 12 13 14 15 ',
+    '    26 27 28 29 30 31    ',
+    '\x1b[1mJan \x1b[0m                  01 ',
+    '    02 03 04 05 06 07 08 ',
+    '    09 10 11 12 13 14 15 ',
     '    16 17 18 19 20 21 22 ',
     '    23 24 25 26 27 28 29 ',
-    '\x1b[1mFeb \x1b[0m30 31  1  2  3  4  5 ',
-    '     6  7  8  9 10 11 12 ',
+    '    31                   ',
+    '\x1b[1mFeb \x1b[0m30    01 02 03 04 05 ',
+    '    06 07 08 09 10 11 12 ',
     '    13 14 15 16 17 18 19 ',
     '    20 21 22 23 24 25 26 ',
-    '\x1b[1mMar \x1b[0m27 28 29  1  2  3  4 ']
+    '    27 28 29             ',
+    '\x1b[1mMar \x1b[0m         01 02 03 04 ']
 
 example2 = [
     '\x1b[1m    Mo Tu We Th Fr Sa Su \x1b[0m',
