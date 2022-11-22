@@ -147,7 +147,7 @@ def str_week(
         )
     for day in week:
         if day == today:
-            day_str = style(str(day.day).rjust(2), reverse=True)
+            day_str = style(str(day.day).rjust(2,'0'), reverse=True)
         elif highlight_event_days:
             assert collection is not None
             devents = list(collection.get_calendars_on(day))
@@ -158,9 +158,9 @@ def str_week(
                     collection,
                 )
             else:
-                day_str = str(day.day).rjust(2)
+                day_str = str(day.day).rjust(2,'0')
         else:
-            day_str = str(day.day).rjust(2)
+            day_str = str(day.day).rjust(2,'0')
         strweek = strweek + day_str + ' '
     return strweek
 
@@ -231,9 +231,22 @@ def vertical_month(month: Optional[int]=None,
             else:
                 w_number = ''
 
-            sweek = m_name + strweek + w_number
-            if sweek != khal[-1]:
-                khal.append(sweek)
+            if new_month:
+                index_first_day = [day.day for day in week].index(1)
+                strweek = str_week(week, today, collection, hmethod, default_color,
+                               multiple, multiple_on_overflow, color, highlight_event_days, locale,
+                               bold_for_light_color)
+                strweek1 = strweek[:3*index_first_day]
+                strweek2 = strweek[3*index_first_day:]
+                sweek1 = ' ' * month_abbr_len + strweek1 + ' ' * len(strweek2) + w_number
+                sweek2 = m_name + ' ' * len(strweek1) + strweek2 + w_number
+                if sweek2 != khal[-1]:
+                    khal.append(sweek1)
+                    khal.append(sweek2)
+            else:
+                sweek = m_name + strweek + w_number
+                if sweek != khal[-1]:
+                    khal.append(sweek)
         month = month + 1
         if month > 12:
             month = 1
