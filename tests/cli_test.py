@@ -248,6 +248,7 @@ def test_calendar(runner):
         assert result.exit_code == 0
         output = '\n'.join([
             "    Mo Tu We Th Fr Sa Su     No events",
+            "                                     ",
             "Jun 01 02 03 04 05 06 07     ",
             "    08 09 10 11 12 13 14     ",
             "    15 16 17 18 19 20 21     ",
@@ -278,6 +279,7 @@ def test_long_calendar(runner):
         assert result.exit_code == 0
         output = '\n'.join([
             "    Mo Tu We Th Fr Sa Su     No events",
+            "                                     ",
             "Jun 01 02 03 04 05 06 07     ",
             "    08 09 10 11 12 13 14     ",
             "    15 16 17 18 19 20 21     ",
