@@ -80,6 +80,10 @@ Brew
 
     brew install khal
 
+Fedora
+~~~~
+
+    dnf install khal
 
 FreeBSD
 ~~~~~~~
