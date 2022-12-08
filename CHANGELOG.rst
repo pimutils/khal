@@ -594,3 +594,29 @@ released on 2014-09-03
   documentation for details
 * local_timezone and default_timezone will now be set to the timezone the
   computer is set to (if they are not set in the configuration file)
+0.2.0
+=====
+released on 2022-12-08
+
+* new format of the calendar (issue 809)
+* new command navigate allows the user to navigate by week, month and year to list the events (issue 535)
+* This command takes theses following options: 
+  * agenda_format :The format of the events. 
+  * week: the number of the week ; I
+  * month: The number of the month ;
+  * year : The year. 
+  * day-format: The format of the day line. 
+  * once: to print each event only once
+  * notstarted: to print only events that have not started
+* If the user indicates the week, the month and the year (For example —week=1 —month=12 —year=2022), 
+The command allows the user to list all the events of the chosen week. (All the events registered between the dates 
+01-12-2022 and 04-12-2022)
+* If the user indicates only the week=n
+The command allows the user to list all the events of the nth week of the current month and year (if week is between 1 and 5)
+The command allows the user to list all the events of the nth week of the year (if week is between 6 and 53).
+* If the user indicates the week=n and the year
+The command allows the user to list all the events of the nth week of the chosen year.
+* If the user indicates the month 
+The command allows the user to list all the events of the chosen month.
+* If the user indicates the year
+The command allows the user to list all the events of the chosen year.
