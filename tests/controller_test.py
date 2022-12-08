@@ -5,7 +5,7 @@ import pytest
 from freezegun import freeze_time
 
 from khal import exceptions
-from khal.controllers import import_ics, khal_list, start_end_from_daterange
+from khal.controllers import import_ics, khal_list, start_end_from_daterange, parsing_daterange
 from khal.khalendar.vdir import Item
 
 from . import utils
@@ -180,3 +180,18 @@ def test_start_end_empty_default():
             default_timedelta_date=dt.timedelta(days=3),
             default_timedelta_datetime=dt.timedelta(hours=1),
         )
+
+def test_parsing_daterange():
+        daterange_test1 = parsing_daterange(utils.LOCALE_BERLIN['dateformat'], 1 , 12, 2022)
+        assert daterange_test1 == ('01.12.','04.12.')
+        daterange_test2 = parsing_daterange(utils.LOCALE_BERLIN['longdateformat'], 2 , 12, 2022)
+        assert daterange_test2 == ('05.12.2022','11.12.2022')
+        daterange_test3 = parsing_daterange(utils.LOCALE_NEW_YORK['dateformat'], 3 , 12, 2022)
+        assert daterange_test3 == ('2022/12/12','2022/12/18')
+        daterange_test4 = parsing_daterange('%d-%m-%Y', 4 , 12, 2022)
+        assert daterange_test4 == ('19-12-2022','25-12-2022')
+        daterange_test5 = parsing_daterange('%d-%m-%Y', 5 , 12, 2022)
+        assert daterange_test5 == ('26-12-2022','31-12-2022')
+
+
+
