@@ -5,7 +5,8 @@ import pytest
 from freezegun import freeze_time
 
 from khal import exceptions
-from khal.controllers import import_ics, khal_list, start_end_from_daterange, parsing_daterange
+from khal.controllers import (import_ics, khal_list, parsing_daterange,
+                              start_end_from_daterange)
 from khal.khalendar.vdir import Item
 
 from . import utils
@@ -192,6 +193,3 @@ def test_parsing_daterange():
         assert daterange_test4 == ('19-12-2022','25-12-2022')
         daterange_test5 = parsing_daterange('%d-%m-%Y', 5 , 12, 2022)
         assert daterange_test5 == ('26-12-2022','31-12-2022')
-
-
-

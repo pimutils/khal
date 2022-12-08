@@ -40,7 +40,6 @@ from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 
-
 from .exceptions import ConfigurationError
 from .icalendar import cal_from_ics
 from .icalendar import sort_key as sort_vevent_key
@@ -224,7 +223,7 @@ def get_events_between(
 
     return event_list
 # returns a couple of strings based on the date format, the first one is the first day of the indicated week number month number and year
-# the second is the final day of the week 
+# the second is the final day of the week
 def parsing_daterange(
     dateformat,
     week_number:int,
@@ -273,7 +272,7 @@ def parsing_daterange(
             date2 = dt.datetime(year_number,month_number,1) + tdelta
             second_date = date2.strftime(dateformat)
         daterange = first_date,second_date
-        return daterange 
+        return daterange
 
 
 def khal_list(

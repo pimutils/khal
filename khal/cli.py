@@ -19,19 +19,19 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+import calendar as cl
 import datetime as dt
 import logging
 import os
 import stat
 import sys
 import textwrap
-import calendar as cl
 from shutil import get_terminal_size
 
 import click
 import click_log
 
-from . import __version__, controllers, khalendar,configwizard
+from . import __version__, configwizard, controllers, khalendar
 from .exceptions import FatalError
 from .settings import InvalidSettingsError, NoConfigFile, get_config
 from .terminal import colored
@@ -335,7 +335,7 @@ def _get_cli():
             logger.fatal(error)
             sys.exit(1)
 
-    
+
     @cli.command("navigate")
     @multi_calendar_option
     @click.option('--agenda_format', '-f',
@@ -354,12 +354,12 @@ def _get_cli():
     @click.option('--notstarted', help=('Print only events that have not started.'),
                   is_flag=True)
     @click.pass_context
-    def knavigate(ctx, include_calendar, exclude_calendar,week, month,year, agenda_format, notstarted, day_format, once): 
+    def knavigate(ctx, include_calendar, exclude_calendar,week, month,year, agenda_format, notstarted, day_format, once):
         """List all events navigating by week, month or year."""
         try:
             dateformat = ctx.obj['conf']['locale']['dateformat']
             cal = cl.Calendar(0)
-           # in the case we only gave the week 
+           # in the case we only gave the week
             if week is not None and month is None and year is None:
                 week_number = int(week)
                 # if the given week is between 1 and 5, it list the events of the week of the current month
@@ -370,21 +370,21 @@ def _get_cli():
                 # if the given week n is superior to 5, the week is considered as the nth week of the current year
                 if  5 < week_number < 54 :
                     year_number = dt.datetime.today().year
-                    a = week_number * 7 
-                    strt_date = dt.date(year_number, 1, 1) 
+                    a = week_number * 7
+                    strt_date = dt.date(year_number, 1, 1)
                     date1 = strt_date + dt.timedelta(a -7)
                     date2 = strt_date + dt.timedelta(a - 1)
                     first_date = date1.strftime(dateformat)
                     second_date = date2.strftime(dateformat)
                     dateRange = first_date, second_date
-                # week must be inferior to 54 
+                # week must be inferior to 54
                 if week_number >= 54:
                     raise click.BadParameter('The week option has to be inferior to 54'
                     'The value 1 stands for the first week of the current month, the value 2 stands for the second week and so on...'
                     'if the week chosen has a value superior to five, this will be applied to the current year; The value 6 stands'
                     'for the sixth week of the current year and so on...'
                     )
-            # in the case we gave week and year  
+            # in the case we gave week and year
             if week is not None and month is None and year is not None :
                 week_number = int(week)
                 year_number = int(year)
@@ -395,7 +395,7 @@ def _get_cli():
                     init += 1
                 if (week_number < 52 and init > 1) or (week_number < 53 and init == 0) :
                     a = week_number * 7
-                    if (init == 0) : 
+                    if (init == 0) :
                         strt_date = dt.date(year_number, 1, 1)
                     else :
                         strt_date = dt.date(year_number, 1, 8 - init)
