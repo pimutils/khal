@@ -116,7 +116,7 @@ def test_direct_modification(runner):
     args = ['list', '--format', format, '--day-format', '', '09.04.2014']
     result = runner.invoke(main_khal, args)
     assert not result.exception
-    assert result.output == '09:30-10:30: An Event\n'
+    assert result.output == "09:30-10:30: An Event\n"
 
     os.remove(str(event))
     result = runner.invoke(main_khal, ['list'])
@@ -142,6 +142,7 @@ def test_simple(runner):
     assert '18:00' in result.output
     # test show_all_days default value
     assert 'Tomorrow:' not in result.output
+    print(result.exception)
     assert not result.exception
 
 
@@ -200,7 +201,7 @@ Tomorrow, 02.06.2015
 ↔ long event
 ↦ two day event
 10:00-13:00 three hour event
-Wednesday, 03.06.2015
+Mercredi, 03.06.2015
 ↔ long event
 ↔ two day event
 """
@@ -212,7 +213,7 @@ Wednesday, 03.06.2015
 Tomorrow, 02.06.2015
 ↦ two day event
 10:00-13:00 three hour event
-Wednesday, 03.06.2015
+Mercredi, 03.06.2015
 ↔ two day event
 """
         assert not result.exception
@@ -247,21 +248,21 @@ def test_calendar(runner):
         assert not result.exception
         assert result.exit_code == 0
         output = '\n'.join([
-            "    Mo Tu We Th Fr Sa Su     No events",
-            "Jun  1  2  3  4  5  6  7     ",
-            "     8  9 10 11 12 13 14     ",
+            "    Lu Ma Me Je Ve Sa Di     No events",
+            "jui 01 02 03 04 05 06 07     ",
+            "    08 09 10 11 12 13 14     ",
             "    15 16 17 18 19 20 21     ",
             "    22 23 24 25 26 27 28     ",
-            "Jul 29 30  1  2  3  4  5     ",
-            "     6  7  8  9 10 11 12     ",
+            "jul 29 30 01 02 03 04 05     ",
+            "    06 07 08 09 10 11 12     ",
             "    13 14 15 16 17 18 19     ",
             "    20 21 22 23 24 25 26     ",
-            "Aug 27 28 29 30 31  1  2     ",
-            "     3  4  5  6  7  8  9     ",
+            "aoû 27 28 29 30 31 01 02     ",
+            "    03 04 05 06 07 08 09     ",
             "    10 11 12 13 14 15 16     ",
             "    17 18 19 20 21 22 23     ",
             "    24 25 26 27 28 29 30     ",
-            "Sep 31  1  2  3  4  5  6     ",
+            "sep 31 01 02 03 04 05 06     ",
             "",
         ])
         assert result.output == output
@@ -274,25 +275,25 @@ def test_long_calendar(runner):
         assert not result.exception
         assert result.exit_code == 0
         output = '\n'.join([
-            "    Mo Tu We Th Fr Sa Su     No events",
-            "Jun  1  2  3  4  5  6  7     ",
-            "     8  9 10 11 12 13 14     ",
+            "    Lu Ma Me Je Ve Sa Di     No events",
+            "jui 01 02 03 04 05 06 07     ",
+            "    08 09 10 11 12 13 14     ",
             "    15 16 17 18 19 20 21     ",
             "    22 23 24 25 26 27 28     ",
-            "Jul 29 30  1  2  3  4  5     ",
-            "     6  7  8  9 10 11 12     ",
+            "jul 29 30 01 02 03 04 05     ",
+            "    06 07 08 09 10 11 12     ",
             "    13 14 15 16 17 18 19     ",
             "    20 21 22 23 24 25 26     ",
-            "Aug 27 28 29 30 31  1  2     ",
-            "     3  4  5  6  7  8  9     ",
+            "aoû 27 28 29 30 31 01 02     ",
+            "    03 04 05 06 07 08 09     ",
             "    10 11 12 13 14 15 16     ",
             "    17 18 19 20 21 22 23     ",
             "    24 25 26 27 28 29 30     ",
-            "Sep 31  1  2  3  4  5  6     ",
-            "     7  8  9 10 11 12 13     ",
+            "sep 31 01 02 03 04 05 06     ",
+            "    07 08 09 10 11 12 13     ",
             "    14 15 16 17 18 19 20     ",
             "    21 22 23 24 25 26 27     ",
-            "Oct 28 29 30  1  2  3  4     ",
+            "oct 28 29 30 01 02 03 04     ",
             "",
         ])
         assert result.output == output
@@ -401,18 +402,19 @@ def test_at_day_format(runner):
 
 
 def test_list(runner):
-    runner = runner(days=2)
+    runner = runner()
     now = dt.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(
         main_khal,
         f'new {now} 18:00 myevent'.split())
     format = '{red}{start-end-time-style}{reset} {title} :: {description}'
-    args = ['--color', 'list', '--format', format, '--day-format', 'header', '18:30']
+    args = ['--color', 'list', '--format', format, '--day-format', '{name}', '18:30']
     result = runner.invoke(main_khal, args)
-    expected = 'header\x1b[0m\n\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n'
+    expected = 'Today\x1b[0m\n\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n'
+    print(config_template)
+    print(result.output)
     assert not result.exception
     assert result.output.startswith(expected)
-
 
 def test_search(runner):
     runner = runner(days=2)
@@ -923,3 +925,16 @@ def test_list_now(runner, tmpdir):
 
     result = runner.invoke(main_khal, ['list', 'now'])
     assert not result.exception
+
+def test_navigate(runner):
+    with freeze_time('2022-12-05'):
+        runner = runner()
+        now = dt.datetime.now().strftime('%d.%m.%Y')
+        result = runner.invoke(main_khal, f'new {now} 18:00 myevent'.split())
+        format = '{red}{start-end-time-style}{reset} {title} :: {description}'
+        args = ['—color', 'navigate','--agenda_format',format,'--week','1','--day-format','header']
+        result = runner.invoke(main_khal, args)
+        expected = 'header\x1b[0m\n\x1b[31m18:00-19:00\x1b[0m myevent :: \x1b[0m\n'
+        assert not result.exception
+        assert result.exit_code == 0
+        assert result.output == ''
