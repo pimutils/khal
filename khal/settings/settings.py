@@ -23,7 +23,7 @@
 import logging
 import os
 
-import xdg.BaseDirectory
+import xdg
 from configobj import (ConfigObj, ConfigObjError, flatten_errors,
                        get_extra_values)
 
