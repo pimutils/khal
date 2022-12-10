@@ -612,7 +612,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
                                 get_styles=self.get_styles)
             return [week]
 
-        
+
 
     def _construct_month(self,
                          year=dt.date.today().year,
