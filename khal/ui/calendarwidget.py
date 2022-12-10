@@ -151,8 +151,8 @@ class DateCColumns(urwid.Columns):
         return f'<DateCColumns from {d1} to {d2}>'
 
     def _clear_cursor(self):
-        old_pos = self.focus_position
         try:
+            old_pos = self.focus_position
             self.contents[old_pos][0].set_styles(
                 self.get_styles(self.contents[old_pos][0].date, False))
         except AttributeError:
@@ -177,12 +177,9 @@ class DateCColumns(urwid.Columns):
 
     def set_focus_date(self, a_date):
         for num, day in enumerate(self.contents[1:8], 1):
-            try:
-                if day[0].date == a_date:
-                    self._set_focus_position(num)
-                    return None
-            except AttributeError:
-                pass
+            if day[0].date == a_date:
+                self._set_focus_position(num)
+                return None
         raise ValueError('%s not found in this week' % a_date)
 
     def get_date_column(self, a_date):
@@ -221,7 +218,18 @@ class DateCColumns(urwid.Columns):
 
         key = super().keypress(size, key)
 
-        # make sure we don't leave the calendar
+        # make sure we land on a date
+        end_month,start_month=False,False
+        if old_pos<7:
+            try:
+                self.contents[old_pos+1].date
+            except AttributeError:
+                end_month = True
+        if old_pos>1:
+            try:
+                self.contents[old_pos-1].date
+            except AttributeError:
+                start_month = True
         if old_pos == 7 and key == 'right':
             self.focus_position = 1
             exit_row = True
@@ -229,6 +237,14 @@ class DateCColumns(urwid.Columns):
         elif old_pos == 1 and key == 'left':
             self.focus_position = 7
             exit_row = True
+            key = 'up'
+        elif end_month and key == 'right':
+            exit_row = True
+            self.focus_position = old_pos+1
+            key = 'down'
+        elif start_month and key == 'left':
+            exit_row = True
+            self.focus_position = old_pos-1
             key = 'up'
         elif key in self.keybindings['view']:  # XXX make this more generic
             self.focus_position = old_pos
@@ -269,9 +285,12 @@ class CListBox(urwid.ListBox):
     def mouse_event(self, *args):
         size, event, button, col, row, focus = args
 
-        if event == 'mouse press' and button == 1:
-            self.focus.focus.set_styles(
-                self.focus.get_styles(self.body.focus_date, False))
+        try:
+            if event == 'mouse press' and button == 1:
+                self.focus.focus.set_styles(
+                    self.focus.get_styles(self.body.focus_date, False))
+        except AttributeError:
+            pass
         return super().mouse_event(*args)
 
     def _date(self, row, column):
@@ -452,15 +471,21 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         # rough estimate of difference in lines, i.e. full weeks, we might be
         # off by as much as one week though
         week_diff = int((self.focus_date - a_day).days / 7)
-        new_focus = self.focus - week_diff
+        month_diff = self.focus_date.month - a_day.month + 12*(
+            self.focus_date.year - a_day.year) # adding one line per month as well
+        diff = week_diff + month_diff # an estimation of the line difference
+        new_focus = self.focus - diff
         # in case new_focus is 1 we will later try set the focus to 0 which
         # will lead to an autoprepend which will f*ck up our estimation,
         # therefore better autoprepending anyway, even if it might not be
         # necessary
         if new_focus <= 1:
             self._autoprepend()
-            week_diff = int((self.focus_date - a_day).days / 7)
-            new_focus = self.focus - week_diff
+            week_diff = int((self.focus_date - a_day).days / 7) # adding one line per week
+            month_diff = self.focus_date.month - a_day.month + 12*(
+                self.focus_date.year - a_day.year) # adding one line per month as well
+            diff = week_diff + month_diff # an estimation of the line difference
+            new_focus = self.focus - diff
         for offset in [0, -1, 1]:  # we might be off by a week
             row = new_focus + offset
             try:
@@ -621,7 +646,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         for _number, week in enumerate(plain_weeks):
             for part_week in self._construct_week(week):
                 weeks.append(part_week)
-        # Tests wether the last element of the month is a date or a filler PAS BONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+        # Tests wether the last element of the month is a date or a filler
         try:
             if self.weeknumbers == 'right':
                 widget,_ = weeks[-2].contents[-2]
