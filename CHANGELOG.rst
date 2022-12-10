@@ -11,6 +11,8 @@ may want to subscribe to `GitHub's tag feed
 ======
 not released
 
+* NEW visual separation between months
+* NEW date format for calendar view : first days of the month now start with a 0
 * DROPPED support for python versions < 3.8
 * UPDATED REQUIREMENT pytz is now required >= 2018.7
 * NEW test REQUIREMENT: packaging
