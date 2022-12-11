@@ -226,9 +226,9 @@ def get_events_between(
 def khal_list(
     collection,
     daterange: Optional[List[str]]=None,
-    conf: Optional[dict] = None,
+    conf: dict = None,
     agenda_format=None,
-    day_format: Optional[str]=None,
+    day_format: str=None,
     once=False,
     notstarted: bool = False,
     width: bool = False,

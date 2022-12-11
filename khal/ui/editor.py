@@ -341,6 +341,9 @@ class EventEditor(urwid.WidgetWrap):
         self.attendees = event.attendees
         self.categories = event.categories
         self.url = event.url
+        
+        self.Class = event.Class
+
         self.startendeditor = StartEndEditor(
             event.start_local, event.end_local, self._conf,
             self.start_datechange, self.end_datechange,
@@ -389,6 +392,11 @@ class EventEditor(urwid.WidgetWrap):
         self.url = urwid.AttrMap(ExtendedEdit(
             caption=('', 'URL:         '), edit_text=self.url), 'edit'
         )
+
+        self.Class = urwid.AttrMap(ExtendedEdit(
+            caption=('', 'CLASS [Private or Public]:          '), edit_text=self.Class), 'edit'
+        )
+
         self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
             self.summary,
@@ -398,6 +406,7 @@ class EventEditor(urwid.WidgetWrap):
             self.categories,
             self.description,
             self.url,
+            self.Class,
             divider,
             self.attendees,
             divider,
@@ -439,6 +448,10 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if get_wrapped_text(self.url) != self.event.url:
             return True
+
+        if get_wrapped_text(self.Class) != self.event.Class:
+            return True
+        
         if get_wrapped_text(self.attendees) != self.event.attendees:
             return True
         if self.startendeditor.changed or self.calendar_chooser.changed:
@@ -456,6 +469,7 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_attendees(get_wrapped_text(self.attendees).split(','))
         self.event.update_categories(get_wrapped_text(self.categories).split(','))
         self.event.update_url(get_wrapped_text(self.url))
+        self.event.update_Class(get_wrapped_text(self.Class))
 
         if self.startendeditor.changed:
             self.event.update_start_end(
