@@ -341,7 +341,7 @@ class EventEditor(urwid.WidgetWrap):
         self.attendees = event.attendees
         self.categories = event.categories
         self.url = event.url
-        
+
         self.Class = event.Class
 
         self.startendeditor = StartEndEditor(
@@ -451,7 +451,7 @@ class EventEditor(urwid.WidgetWrap):
 
         if get_wrapped_text(self.Class) != self.event.Class:
             return True
-        
+
         if get_wrapped_text(self.attendees) != self.event.attendees:
             return True
         if self.startendeditor.changed or self.calendar_chooser.changed:

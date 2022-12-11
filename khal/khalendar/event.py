@@ -349,7 +349,7 @@ class Event:
         if 'CLASS' not in self._vevents[self.ref]:
             return ''
         return self._vevents[self.ref]['CLASS']
-        
+
     def update_Class(self, Class: str) -> None:
         if Class:
             self._vevents[self.ref]['CLASS'] = Class
