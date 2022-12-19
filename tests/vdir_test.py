@@ -59,6 +59,7 @@ def test_etag_sync(tmpdir, sleep_time):
     file_.close()
     os.sync()
     old_etag = vdir.get_etag_from_file(fpath)
+    time.sleep(0.002)  # to work with filesystems that only have millisecond accuracy
 
     file_ = open(fpath, 'w')
     file_.write('foo')
