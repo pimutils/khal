@@ -68,7 +68,7 @@ def test_bogota():
     vbogota = [b'BEGIN:VTIMEZONE',
                b'TZID:America/Bogota',
                b'BEGIN:STANDARD',
-               b'DTSTART:19930403T230000',
+               b'DTSTART:19930206T230000',
                b'TZNAME:COT',
                b'TZOFFSETFROM:-0400',
                b'TZOFFSETTO:-0500',
