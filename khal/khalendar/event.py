@@ -300,6 +300,14 @@ class Event:
             }
 
     @property
+    def allowed_busystatus(self) -> Dict[str, str]:
+        return {'BUSY': 'Busy',
+                'FREE': 'Free',
+                'TENTATIVE': 'Tentative',
+                'WORKINGELSEWHERE': 'Work elsewhere',
+                'OOF': 'Out of office'}
+
+    @property
     def start_local(self) -> dt.datetime:
         """self.start() localized to local timezone"""
         return self.start
@@ -342,6 +350,27 @@ class Event:
             return f'{cn} ({email})'
         else:
             return email
+
+    @property
+    def busystatus(self) -> str:
+        if 'X-MICROSOFT-CDO-BUSYSTATUS' not in self._vevents[self.ref]:
+            return 'BUSY'
+        return self._vevents[self.ref]['X-MICROSOFT-CDO-BUSYSTATUS']
+
+    @property
+    def busystatus_formatted(self) -> str:
+        if 'X-MICROSOFT-CDO-BUSYSTATUS' not in self._vevents[self.ref]:
+            return ''
+        busystatus = self._vevents[self.ref]['X-MICROSOFT-CDO-BUSYSTATUS']
+        if busystatus not in self.allowed_busystatus.keys():
+            return ''
+        return self.allowed_busystatus[busystatus]
+
+    def update_busystatus(self, busystatus: str) -> None:
+        if busystatus and busystatus in self.allowed_busystatus.keys():
+            self._vevents[self.ref]['X-MICROSOFT-CDO-BUSYSTATUS'] = busystatus
+        else:
+            self._vevents[self.ref].pop('X-MICROSOFT-CDO-BUSYSTATUS')
 
     @property
     def url(self) -> str:
