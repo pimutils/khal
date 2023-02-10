@@ -209,7 +209,7 @@ class Event:
 
         beware, this methods performs some open heart surgery
         """
-        if type(start) != type(end):  # flake8: noqa
+        if type(start) != type(end):
             raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
         self.__class__ = self._get_type_from_date(start)
 

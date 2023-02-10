@@ -13,19 +13,6 @@ repos:
     hooks:
       - id: isort
         name: isort (python)
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-        additional_dependencies:
-          - flake8-comprehensions
-          - flake8-bugbear
-        exclude: doc/source/conf.py
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.3.1
-    hooks:
-    -   id: pyupgrade
-        args: [--py36-plus]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.0.0
     hooks:
@@ -37,3 +24,8 @@ repos:
           - types-pytz
           - types-setuptools
           - types-python-dateutil
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.0.244'
+    hooks:
+      - id: ruff
+        args: ["--fix"]
