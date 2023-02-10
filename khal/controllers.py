@@ -32,8 +32,7 @@ from typing import List, Optional
 import pytz
 from click import confirm, echo, prompt, style
 
-from khal import (__productname__, __version__, calendar_display,
-                  parse_datetime, utils)
+from khal import __productname__, __version__, calendar_display, parse_datetime, utils
 from khal.custom_types import EventCreationTypes, LocaleConfiguration
 from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
@@ -41,9 +40,8 @@ from khal.khalendar.event import Event
 from khal.khalendar.exceptions import DuplicateUid, ReadOnlyCalendarError
 
 from .exceptions import ConfigurationError
-from .icalendar import cal_from_ics
+from .icalendar import cal_from_ics, split_ics
 from .icalendar import sort_key as sort_vevent_key
-from .icalendar import split_ics
 from .khalendar.vdir import Item
 from .terminal import merge_columns
 
