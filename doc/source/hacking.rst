@@ -127,7 +127,7 @@ Code Style
 khal's source code should adhere to the rules laid out in :pep:`008`, except
 for allowing line lengths of up to 100 characters if it improves
 overall legibility (use your judgement).  This can be checked by installing and
-running flake8_ (run with :command:`flake8` from khal's source directory), which
+running ruff_ (run with :command:`ruff` from khal's source directory), which
 will also be run with tox and GitHub Actions, see section above.
 
 We try to document the parameters functions and methods accept, including their
@@ -148,7 +148,7 @@ identifiers, e.g., in dictionary keys::
 .. _tox: https://tox.readthedocs.org/
 .. _pytest: http://pytest.org/
 .. _pytest-cov: https://pypi.python.org/pypi/pytest-cov
-.. _flake8: http://flake8.pycqa.org/
+.. _ruff: https://github.com/charliermarsh/ruff
 .. _sphinx: http://www.sphinx-doc.org
 .. _restructuredtext: http://www.sphinx-doc.org/en/1.5.1/rest.html
 .. _ipdb: https://pypi.python.org/pypi/ipdb
