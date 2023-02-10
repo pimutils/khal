@@ -30,18 +30,27 @@ import itertools
 import logging
 import os
 import os.path
-from typing import (Any, Dict, Iterable, List, Optional, Set, Tuple,  # noqa
-                    Union)
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union  # noqa
 
 from ..custom_types import CalendarConfiguration, EventCreationTypes
 from ..icalendar import new_vevent
 from . import backend
 from .event import Event
-from .exceptions import (DuplicateUid, EtagMissmatch, NonUniqueUID,
-                         ReadOnlyCalendarError, UnsupportedFeatureError,
-                         UpdateFailed)
-from .vdir import (AlreadyExistingError, CollectionNotFoundError, Vdir,
-                   WrongEtagError, get_etag_from_file)
+from .exceptions import (
+    DuplicateUid,
+    EtagMissmatch,
+    NonUniqueUID,
+    ReadOnlyCalendarError,
+    UnsupportedFeatureError,
+    UpdateFailed,
+)
+from .vdir import (
+    AlreadyExistingError,
+    CollectionNotFoundError,
+    Vdir,
+    WrongEtagError,
+    get_etag_from_file,
+)
 
 logger = logging.getLogger('khal')
 

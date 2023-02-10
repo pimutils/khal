@@ -41,8 +41,7 @@ from ..icalendar import assert_only_one_uid, cal_from_ics
 from ..icalendar import expand as expand_vevent
 from ..icalendar import sanitize as sanitize_vevent
 from ..icalendar import sort_key as sort_vevent_key
-from .exceptions import (CouldNotCreateDbDir, NonUniqueUID,
-                         OutdatedDbVersionError, UpdateFailed)
+from .exceptions import CouldNotCreateDbDir, NonUniqueUID, OutdatedDbVersionError, UpdateFailed
 
 logger = logging.getLogger('khal')
 

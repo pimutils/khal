@@ -16,9 +16,20 @@ from khal.khalendar.event import Event
 from khal.khalendar.vdir import Item
 
 from . import utils
-from .utils import (BERLIN, LOCALE_BERLIN, LOCALE_SYDNEY, LONDON, SYDNEY,
-                    CollVdirType, DumbItem, _get_text, cal1, cal2, cal3,
-                    normalize_component)
+from .utils import (
+    BERLIN,
+    LOCALE_BERLIN,
+    LOCALE_SYDNEY,
+    LONDON,
+    SYDNEY,
+    CollVdirType,
+    DumbItem,
+    _get_text,
+    cal1,
+    cal2,
+    cal3,
+    normalize_component,
+)
 
 today = dt.date.today()
 yesterday = today - dt.timedelta(days=1)

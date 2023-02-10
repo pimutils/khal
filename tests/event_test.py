@@ -8,11 +8,19 @@ from hypothesis.strategies import datetimes
 from icalendar import Parameters, vCalAddress, vRecur, vText
 from packaging import version
 
-from khal.khalendar.event import (AllDayEvent, Event, FloatingEvent,
-                                  LocalizedEvent, create_timezone)
+from khal.khalendar.event import AllDayEvent, Event, FloatingEvent, LocalizedEvent, create_timezone
 
-from .utils import (BERLIN, BOGOTA, GMTPLUS3, LOCALE_BERLIN, LOCALE_BOGOTA,
-                    LOCALE_MIXED, NEW_YORK, _get_text, normalize_component)
+from .utils import (
+    BERLIN,
+    BOGOTA,
+    GMTPLUS3,
+    LOCALE_BERLIN,
+    LOCALE_BOGOTA,
+    LOCALE_MIXED,
+    NEW_YORK,
+    _get_text,
+    normalize_component,
+)
 
 EVENT_KWARGS = {'calendar': 'foobar', 'locale': LOCALE_BERLIN}
 

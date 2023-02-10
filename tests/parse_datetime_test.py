@@ -6,13 +6,23 @@ from freezegun import freeze_time
 
 from khal.exceptions import DateTimeParseError, FatalError
 from khal.icalendar import new_vevent
-from khal.parse_datetime import (construct_daynames, eventinfofstr,
-                                 guessdatetimefstr, guessrangefstr,
-                                 guesstimedeltafstr, timedelta2str,
-                                 weekdaypstr)
+from khal.parse_datetime import (
+    construct_daynames,
+    eventinfofstr,
+    guessdatetimefstr,
+    guessrangefstr,
+    guesstimedeltafstr,
+    timedelta2str,
+    weekdaypstr,
+)
 
-from .utils import (LOCALE_BERLIN, LOCALE_FLOATING, LOCALE_NEW_YORK,
-                    _replace_uid, normalize_component)
+from .utils import (
+    LOCALE_BERLIN,
+    LOCALE_FLOATING,
+    LOCALE_NEW_YORK,
+    _replace_uid,
+    normalize_component,
+)
 
 
 def _create_testcases(*cases):

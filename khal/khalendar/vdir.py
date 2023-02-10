@@ -7,8 +7,7 @@ import errno
 import os
 import uuid
 from hashlib import sha1
-from typing import (IO, Callable, Dict, Iterable, Optional, Protocol, Tuple,
-                    Type)
+from typing import IO, Callable, Dict, Iterable, Optional, Protocol, Tuple, Type
 
 from atomicwrites import atomic_write
 

@@ -26,8 +26,7 @@ import logging
 from functools import partial
 from itertools import zip_longest
 from os import environ, makedirs
-from os.path import (dirname, exists, expanduser, expandvars, isdir, join,
-                     normpath)
+from os.path import dirname, exists, expanduser, expandvars, isdir, join, normpath
 from subprocess import call
 
 import xdg
