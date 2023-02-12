@@ -584,4 +584,4 @@ def test_description_and_location_and_categories():
                                  location='in the office',
                                  categories=['boring meeting'],
                                  locale=LOCALE_BERLIN)
-        assert _replace_uid(event).to_ical() == vevent
+        assert _replace_uid(event).to_ical().decode() == vevent.decode()
