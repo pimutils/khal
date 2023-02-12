@@ -15,7 +15,7 @@ btime = dt.datetime(2016, 10, 28, 10, 10)
 def test_berlin():
     vberlin_std = b'\r\n'.join(
         [b'BEGIN:STANDARD',
-         b'DTSTART;VALUE=DATE-TIME:20141026T020000',
+         b'DTSTART:20141026T020000',
          b'TZNAME:CET',
          b'TZOFFSETFROM:+0200',
          b'TZOFFSETTO:+0100',
@@ -24,7 +24,7 @@ def test_berlin():
 
     vberlin_dst = b'\r\n'.join(
         [b'BEGIN:DAYLIGHT',
-         b'DTSTART;VALUE=DATE-TIME:20150329T030000',
+         b'DTSTART:20150329T030000',
          b'TZNAME:CEST',
          b'TZOFFSETFROM:+0100',
          b'TZOFFSETTO:+0200',
@@ -40,7 +40,7 @@ def test_berlin():
 def test_berlin_rdate():
     vberlin_std = b'\r\n'.join(
         [b'BEGIN:STANDARD',
-         b'DTSTART;VALUE=DATE-TIME:20141026T020000',
+         b'DTSTART:20141026T020000',
          b'RDATE:20151025T020000,20161030T020000',
          b'TZNAME:CET',
          b'TZOFFSETFROM:+0200',
@@ -50,7 +50,7 @@ def test_berlin_rdate():
 
     vberlin_dst = b'\r\n'.join(
         [b'BEGIN:DAYLIGHT',
-         b'DTSTART;VALUE=DATE-TIME:20150329T030000',
+         b'DTSTART:20150329T030000',
          b'RDATE:20160327T030000',
          b'TZNAME:CEST',
          b'TZOFFSETFROM:+0100',
