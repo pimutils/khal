@@ -52,7 +52,7 @@ def _create_vevent(*args):
          ('SUMMARY', 'SUMMARY:Äwesöme Event'),
          ('DTSTART', 'DTSTART;VALUE=DATE:20131025'),
          ('DTEND', 'DTEND;VALUE=DATE:20131026'),
-         ('DTSTAMP', 'DTSTAMP;VALUE=DATE-TIME:20140216T120000Z'),
+         ('DTSTAMP', 'DTSTAMP:20140216T120000Z'),
          ('UID', 'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA')])
 
     for row in args:
@@ -569,8 +569,8 @@ test_set_description_and_location_and_categories = _create_testcases(
     # today
     ('8:00 Äwesöme Event',
      _create_vevent(
-         'DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T080000',
-         'DTEND;TZID=Europe/Berlin;VALUE=DATE-TIME:20140216T090000',
+         'DTSTART;TZID=Europe/Berlin:20140216T080000',
+         'DTEND;TZID=Europe/Berlin:20140216T090000',
          'CATEGORIES:boring meeting',
          'DESCRIPTION:please describe the event',
          'LOCATION:in the office')))
