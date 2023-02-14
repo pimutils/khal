@@ -18,11 +18,11 @@ def _get_TZIDs(lines):
 def test_normalize_component():
     assert normalize_component(textwrap.dedent("""
     BEGIN:VEVENT
-    DTSTART;TZID=Europe/Berlin;VALUE=DATE-TIME:20140409T093000
+    DTSTART;TZID=Europe/Berlin:20140409T093000
     END:VEVENT
     """)) != normalize_component(textwrap.dedent("""
     BEGIN:VEVENT
-    DTSTART;TZID=Oyrope/Berlin;VALUE=DATE-TIME:20140409T093000
+    DTSTART;TZID=Oyrope/Berlin:20140409T093000
     END:VEVENT
     """))
 
@@ -42,7 +42,7 @@ def test_new_vevent():
             'SUMMARY:An Event',
             'DTSTART;VALUE=DATE:20220702',
             'DTEND;VALUE=DATE:20220703',
-            'DTSTAMP;VALUE=DATE-TIME:20220702T140000Z',
+            'DTSTAMP:20220702T140000Z',
             'UID:E41JRQX2DB4P1AQZI86BAT7NHPBHPRIIHQKA',
             'RRULE:FREQ=WEEKLY',
             'END:VEVENT',

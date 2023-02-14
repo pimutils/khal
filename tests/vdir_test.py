@@ -21,16 +21,12 @@
 
 import os
 import time
-
-import pytest
+from time import sleep
 
 from khal.khalendar import vdir
 
 
 def test_etag(tmpdir, sleep_time):
-    if sleep_time > 0.01:
-        pytest.xfail("This environment requires sleeping")
-
     fpath = os.path.join(str(tmpdir), 'foo')
 
     file_ = open(fpath, 'w')
@@ -38,6 +34,7 @@ def test_etag(tmpdir, sleep_time):
     file_.close()
 
     old_etag = vdir.get_etag_from_file(fpath)
+    sleep(sleep_time)
 
     file_ = open(fpath, 'w')
     file_.write('foo')
@@ -49,9 +46,6 @@ def test_etag(tmpdir, sleep_time):
 
 
 def test_etag_sync(tmpdir, sleep_time):
-    if sleep_time > 0.01:
-        pytest.xfail("This environment requires sleeping")
-
     fpath = os.path.join(str(tmpdir), 'foo')
 
     file_ = open(fpath, 'w')
@@ -59,6 +53,7 @@ def test_etag_sync(tmpdir, sleep_time):
     file_.close()
     os.sync()
     old_etag = vdir.get_etag_from_file(fpath)
+    sleep(sleep_time)
 
     file_ = open(fpath, 'w')
     file_.write('foo')
