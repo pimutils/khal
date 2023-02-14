@@ -28,5 +28,5 @@ monthdisplay = firstday
 
 [default]
 default_calendar = home
-timedelta = 2 # the default timedelta that list uses
+timedelta = 2d # the default timedelta that list uses
 highlight_event_days = True  # the default is False
