@@ -77,6 +77,7 @@ def test_bogota():
                b'']
     if version.parse(pytz.__version__) > version.Version('2017.1'):
         vbogota[4] = b'TZNAME:-05'
-        vbogota.insert(4, b'RDATE:20380118T221407')
+        if version.parse(pytz.__version__) < version.Version('2022.7'):
+            vbogota.insert(4, b'RDATE:20380118T221407')
 
     assert create_timezone(bogota, atime, atime).to_ical().split(b'\r\n') == vbogota
