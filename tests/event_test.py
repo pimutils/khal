@@ -348,10 +348,16 @@ def test_event_no_dst():
     cal_no_dst = _get_text('cal_no_dst')
     event = Event.fromString(event_no_dst, calendar='foobar', locale=LOCALE_BOGOTA)
     if version.parse(pytz.__version__) > version.Version('2017.1'):
-        cal_no_dst = cal_no_dst.replace(
-            'TZNAME:COT',
-            'RDATE:20380118T221407\r\nTZNAME:-05'
-        )
+        if version.parse(pytz.__version__) < version.Version('2022.7'):
+            cal_no_dst = cal_no_dst.replace(
+                'TZNAME:COT',
+                'RDATE:20380118T221407\r\nTZNAME:-05'
+            )
+        else:
+            cal_no_dst = cal_no_dst.replace(
+                'TZNAME:COT',
+                'TZNAME:-05'
+            )
 
     assert normalize_component(event.raw) == normalize_component(cal_no_dst)
     assert event.format(SEARCH_FORMAT, dt.date(2014, 4, 10)) == \
