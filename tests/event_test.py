@@ -348,10 +348,16 @@ def test_event_no_dst():
     cal_no_dst = _get_text('cal_no_dst')
     event = Event.fromString(event_no_dst, calendar='foobar', locale=LOCALE_BOGOTA)
     if version.parse(pytz.__version__) > version.Version('2017.1'):
-        cal_no_dst = cal_no_dst.replace(
-            'TZNAME:COT',
-            'RDATE:20380118T221407\r\nTZNAME:-05'
-        )
+        if version.parse(pytz.__version__) < version.Version('2022.7'):
+            cal_no_dst = cal_no_dst.replace(
+                'TZNAME:COT',
+                'RDATE:20380118T221407\r\nTZNAME:-05'
+            )
+        else:
+            cal_no_dst = cal_no_dst.replace(
+                'TZNAME:COT',
+                'TZNAME:-05'
+            )
 
     assert normalize_component(event.raw) == normalize_component(cal_no_dst)
     assert event.format(SEARCH_FORMAT, dt.date(2014, 4, 10)) == \
@@ -370,7 +376,7 @@ def test_event_raw_UTC():
         '''SUMMARY:An Event''',
         '''DTSTART:20140409T093000Z''',
         '''DTEND:20140409T103000Z''',
-        '''DTSTAMP;VALUE=DATE-TIME:20140401T234817Z''',
+        '''DTSTAMP:20140401T234817Z''',
         '''UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU''',
         '''END:VEVENT''',
         '''END:VCALENDAR\r\n'''])
@@ -539,7 +545,7 @@ def test_create_timezone_static():
         b'BEGIN:VTIMEZONE',
         b'TZID:Etc/GMT-8',
         b'BEGIN:STANDARD',
-        b'DTSTART;VALUE=DATE-TIME:16010101T000000',
+        b'DTSTART:16010101T000000',
         b'RDATE:16010101T000000',
         b'TZNAME:Etc/GMT-8',
         b'TZOFFSETFROM:+0800',
@@ -560,7 +566,7 @@ PRODID:-//PIMUTILS.ORG//NONSGML khal / icalendar //EN
 BEGIN:VTIMEZONE
 TZID:Etc/GMT+3
 BEGIN:STANDARD
-DTSTART;VALUE=DATE-TIME:16010101T000000
+DTSTART:16010101T000000
 RDATE:16010101T000000
 TZNAME:Etc/GMT+3
 TZOFFSETFROM:-0300
@@ -569,9 +575,9 @@ END:STANDARD
 END:VTIMEZONE
 BEGIN:VEVENT
 SUMMARY:An Event
-DTSTART;TZID=Etc/GMT+3;VALUE=DATE-TIME:20140409T093000
-DTEND;TZID=Etc/GMT+3;VALUE=DATE-TIME:20140409T103000
-DTSTAMP;VALUE=DATE-TIME:20140401T234817Z
+DTSTART;TZID=Etc/GMT+3:20140409T093000
+DTEND;TZID=Etc/GMT+3:20140409T103000
+DTSTAMP:20140401T234817Z
 UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU
 END:VEVENT
 END:VCALENDAR"""
@@ -620,13 +626,13 @@ def test_create_timezone_in_future():
                 b'BEGIN:VTIMEZONE',
                 b'TZID:Europe/Amsterdam',
                 b'BEGIN:STANDARD',
-                b'DTSTART;VALUE=DATE-TIME:20211031T020000',
+                b'DTSTART:20211031T020000',
                 b'TZNAME:CET',
                 b'TZOFFSETFROM:+0200',
                 b'TZOFFSETTO:+0100',
                 b'END:STANDARD',
                 b'BEGIN:DAYLIGHT',
-                b'DTSTART;VALUE=DATE-TIME:20220327T030000',
+                b'DTSTART:20220327T030000',
                 b'TZNAME:CEST',
                 b'TZOFFSETFROM:+0100',
                 b'TZOFFSETTO:+0200',
