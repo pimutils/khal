@@ -23,6 +23,7 @@ not released
 * NEW the `configure` command can now set up vdirsyncer
 * NEW better error message for misuses of `at` and `list`
 * NEW `discover` collection type now supports `**` (arbitrary depths)
+* NEW Add testing for Python 3.11
 
 0.10.5
 ======
