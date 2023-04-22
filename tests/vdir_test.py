@@ -20,7 +20,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import os
-import time
 from time import sleep
 
 from khal.khalendar import vdir
@@ -54,25 +53,6 @@ def test_etag_sync(tmpdir, sleep_time):
     os.sync()
     old_etag = vdir.get_etag_from_file(fpath)
     sleep(sleep_time)
-
-    file_ = open(fpath, 'w')
-    file_.write('foo')
-    file_.close()
-
-    new_etag = vdir.get_etag_from_file(fpath)
-
-    assert old_etag != new_etag
-
-
-def test_etag_sleep(tmpdir, sleep_time):
-    fpath = os.path.join(str(tmpdir), 'foo')
-
-    file_ = open(fpath, 'w')
-    file_.write('foo')
-    file_.close()
-
-    old_etag = vdir.get_etag_from_file(fpath)
-    time.sleep(sleep_time)
 
     file_ = open(fpath, 'w')
     file_.write('foo')
