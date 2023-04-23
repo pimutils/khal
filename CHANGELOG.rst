@@ -7,6 +7,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.11.1
+======
+2023-04-23
+
+* FIX README.rst formatting to allow upload to PyPI
+
 0.11.0
 ======
 2023-04-23
