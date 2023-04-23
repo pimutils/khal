@@ -9,7 +9,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.11.0
 ======
-not released
+2023-04-23
 
 * DROPPED support for python versions < 3.8
 * UPDATED REQUIREMENT pytz is now required >= 2018.7
