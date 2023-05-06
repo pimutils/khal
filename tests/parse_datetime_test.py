@@ -183,6 +183,9 @@ class TestGuessTimedeltafstr:
     def test_seconds(self):
         assert dt.timedelta(seconds=10) == guesstimedeltafstr('10s')
 
+    def test_decimal(self):
+        assert dt.timedelta(hours=1.5) == guesstimedeltafstr('1.5h')
+
     def test_negative(self):
         assert dt.timedelta(minutes=-10) == guesstimedeltafstr('-10m')
 

@@ -291,7 +291,7 @@ def guesstimedeltafstr(delta_string: str) -> dt.timedelta:
     :rtype: datetime.timedelta
     """
 
-    tups = re.split(r'(-?\d+)', delta_string)
+    tups = re.split(r'(-?\d+\.?\d*)', delta_string)
     if not re.match(r'^\s*$', tups[0]):
         raise ValueError('Invalid beginning of timedelta string "%s": "%s"'
                          % (delta_string, tups[0]))
@@ -300,22 +300,22 @@ def guesstimedeltafstr(delta_string: str) -> dt.timedelta:
 
     for num, unit in zip(tups[0::2], tups[1::2]):
         try:
-            numint = int(num)
+            numfloat = float(num)
         except ValueError:
             raise DateTimeParseError(
                 f'Invalid number in timedelta string "{delta_string}": "{num}"')
 
         ulower = unit.lower().strip()
         if ulower == 'd' or ulower == 'day' or ulower == 'days':
-            res += dt.timedelta(days=numint)
+            res += dt.timedelta(days=numfloat)
         elif ulower == 'h' or ulower == 'hour' or ulower == 'hours':
-            res += dt.timedelta(hours=numint)
+            res += dt.timedelta(hours=numfloat)
         elif (ulower == 'm' or ulower == 'minute' or ulower == 'minutes' or
               ulower == 'min'):
-            res += dt.timedelta(minutes=numint)
+            res += dt.timedelta(minutes=numfloat)
         elif (ulower == 's' or ulower == 'second' or ulower == 'seconds' or
               ulower == 'sec'):
-            res += dt.timedelta(seconds=numint)
+            res += dt.timedelta(seconds=numfloat)
         else:
             raise ValueError('Invalid unit in timedelta string "%s": "%s"'
                              % (delta_string, unit))
