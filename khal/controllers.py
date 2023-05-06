@@ -156,6 +156,7 @@ def start_end_from_daterange(
     return start, end
 
 
+
 def get_events_between(
     collection: CalendarCollection,
     locale: dict,
@@ -221,14 +222,65 @@ def get_events_between(
             seen.add(event.uid)
 
     return event_list
+# returns a couple of strings based on the date format, the first one is the first day of the indicated week number month number and year
+# the second is the final day of the week
+def parsing_daterange(
+    dateformat,
+    week_number:int,
+    month_number:int,
+    year_number:int,
+):
+    assert week_number is not None
+    assert month_number is not None
+    assert year_number is not None
+
+
+    first_date=''
+    second_date=''
+
+    if week_number is not None and month_number is not None and year_number is not None:
+
+        first_day_week = dt.date(year_number, month_number, 1).isoweekday()
+        init = 7-first_day_week+1
+        if week_number == 1:
+            date1 = dt.datetime(year_number,month_number,1)
+            first_date = date1.strftime(dateformat)
+            date2 = dt.datetime(year_number,month_number,init)
+            second_date = date2.strftime(dateformat)
+        if week_number == 2:
+            date1 = dt.datetime(year_number,month_number,init+1)
+            first_date = date1.strftime(dateformat)
+            date2 = dt.datetime(year_number,month_number,init+7)
+            second_date = date2.strftime(dateformat)
+        if week_number == 3:
+            date1 = dt.datetime(year_number,month_number,init+8)
+            first_date = date1.strftime(dateformat)
+            date2 = dt.datetime(year_number,month_number,init+14)
+            second_date = date2.strftime(dateformat)
+        if week_number == 4:
+            date1 = dt.datetime(year_number,month_number,init+15)
+            first_date = date1.strftime(dateformat)
+            date2 = dt.datetime(year_number,month_number,init+21)
+            second_date = date2.strftime(dateformat)
+        if week_number == 5:
+            date1 = dt.datetime(year_number,month_number,init+22)
+            first_date = date1.strftime(dateformat)
+            if month_number != 12:
+                tdelta = (dt.date(year_number,month_number+1,1)-dt.date(year_number,month_number,2))
+            if month_number == 12:
+                tdelta = (dt.date(year_number+1,1,1)-dt.date(year_number,month_number,2))
+            date2 = dt.datetime(year_number,month_number,1) + tdelta
+            second_date = date2.strftime(dateformat)
+        daterange = first_date,second_date
+        return daterange
 
 
 def khal_list(
     collection,
     daterange: Optional[List[str]]=None,
-    conf: Optional[dict] = None,
+    conf: dict = None,
     agenda_format=None,
-    day_format: Optional[str]=None,
+    day_format: str=None,
     once=False,
     notstarted: bool = False,
     width: bool = False,

@@ -92,7 +92,7 @@ def str_highlight_day(
 ) -> str:
     """returns a string with day highlighted according to configuration
     """
-    dstr = str(day.day).rjust(2)
+    dstr = str(day.day).rjust(2,'0')
     if color == '':
         dcolors = get_color_list(calendars, default_color, collection)
         if len(dcolors) > 1:
@@ -147,7 +147,7 @@ def str_week(
         )
     for day in week:
         if day == today:
-            day_str = style(str(day.day).rjust(2), reverse=True)
+            day_str = style(str(day.day).rjust(2,'0'), reverse=True)
         elif highlight_event_days:
             assert collection is not None
             devents = list(collection.get_calendars_on(day))
@@ -158,9 +158,9 @@ def str_week(
                     collection,
                 )
             else:
-                day_str = str(day.day).rjust(2)
+                day_str = str(day.day).rjust(2,'0')
         else:
-            day_str = str(day.day).rjust(2)
+            day_str = str(day.day).rjust(2,'0')
         strweek = strweek + day_str + ' '
     return strweek
 
