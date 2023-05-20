@@ -7,6 +7,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+
+0.11.2
+======
+not released yet
+
+* FIX khal `at` also uses `event_format` not `agenda_event_format`
+
 0.11.1
 ======
 2023-04-23

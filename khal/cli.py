@@ -645,6 +645,8 @@ def _get_cli():
         '''Print all events at a specific datetime (defaults to now).'''
         if not datetime:
             datetime = ("now",)
+        if format is None:
+            format = ctx.obj['conf']['view']['event_format']
         try:
             rows = controllers.khal_list(
                 build_collection(

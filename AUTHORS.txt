@@ -47,3 +47,4 @@ Fred Thomsen - me [at] fredthomsen [dot] net - http://fredthomsen.net
 Robin Schubert
 Axel Gschaider - axel.gschaider [at] posteo [dot] de
 Anuragh - kpanuragh [at] gmail [dot] com
+Henning Ullrich - github {at] henning-ullrich [dot] de
