@@ -69,7 +69,7 @@ light = [
 
     ('reveal focus', 'black', 'dark cyan', 'standout'),
     ('today focus', 'white', 'dark cyan', 'standout'),
-    ('today', 'black', 'light gray', 'dark cyan'),
+    ('today', 'black', 'light gray'),
 
     ('date header', '', 'white'),
     ('date header focused', 'white', 'dark gray', ('bold', 'standout')),
