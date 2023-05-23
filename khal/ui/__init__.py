@@ -749,7 +749,7 @@ class EventColumn(urwid.WidgetWrap):
             new_event = self.pane.collection.create_event_from_ics(
                 ics,
                 etag=event.etag,
-                collection=event.calendar,
+                calendar_name=event.calendar,
                 href=event.href,
             )
             self.pane.collection.update(new_event)
