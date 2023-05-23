@@ -72,8 +72,18 @@ def split_ics(ics: str, random_uid: bool=False, default_timezone=None):
             events_grouped[item['UID']].append(item)
         else:
             continue
-    return [ics_from_list(events, tzs, random_uid, default_timezone) for uid, events in
-            sorted(events_grouped.items())]
+    out = []
+    saved_exception = None
+    for uid, events in sorted(events_grouped.items()):
+        try:
+            ics = ics_from_list(events, tzs, random_uid, default_timezone)
+        except Exception as exception:
+            logger.warn(f'Error when trying to import the event {uid}')
+            saved_exception = exception
+        out.append(ics)
+    if saved_exception:
+        raise saved_exception
+    return out
 
 
 def new_vevent(locale,
@@ -418,6 +428,9 @@ def sanitize_timerange(dtstart, dtend, duration=None):
                 "Assuming it's the same timezone as the end time"
             )
             dtstart = dtend.tzinfo.localize(dtstart)
+    if dtend is not None and type(dtstart) != type(dtend):
+        raise ValueError(
+            'The event\'s end time (DTEND) and start time (DTSTART) are not of the same type.')
 
     if dtend is None and duration is None:
         if isinstance(dtstart, dt.datetime):
