@@ -146,7 +146,8 @@ class DateCColumns(urwid.Columns):
         self.contents[old_pos][0].set_styles(
             self.get_styles(self.contents[old_pos][0].date, False))
 
-    def _set_focus_position(self, position):
+    @urwid.Columns.focus_position.setter
+    def focus_position(self, position: int) -> None:
         """calls on_date_change before calling super()._set_focus_position"""
         # do not call when building up the interface, lots of potentially
         # expensive calls made here
@@ -157,7 +158,7 @@ class DateCColumns(urwid.Columns):
             self.contents[position][0].set_styles(
                 self.get_styles(self.contents[position][0].date, True))
             self.on_date_change(self.contents[position][0].date)
-        super()._set_focus_position(position)
+        urwid.Columns.focus_position.fset(self, position)
 
     def set_focus_date(self, a_date):
         for num, day in enumerate(self.contents[1:8], 1):
@@ -174,13 +175,6 @@ class DateCColumns(urwid.Columns):
             if day[0].date == a_date:
                 return num
         raise ValueError('%s not found in this week' % a_date)
-
-    focus_position = property(
-        urwid.Columns._get_focus_position,
-        _set_focus_position,
-        doc=('Index of child widget in focus. Raises IndexError if read when '
-             'CColumns is empty, or when set to an invalid index.')
-    )
 
     def keypress(self, size, key):
         """only leave calendar area on pressing 'tab' or 'enter'"""
