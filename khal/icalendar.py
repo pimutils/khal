@@ -80,7 +80,8 @@ def split_ics(ics: str, random_uid: bool=False, default_timezone=None):
         except Exception as exception:
             logger.warn(f'Error when trying to import the event {uid}')
             saved_exception = exception
-        out.append(ics)
+        else:
+            out.append(ics)
     if saved_exception:
         raise saved_exception
     return out
