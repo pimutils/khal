@@ -848,7 +848,7 @@ class EventColumn(urwid.WidgetWrap):
         # up on disk but not be displayed in khal
         event = self.focus_event.event.duplicate()
         try:
-            self.pane.collection.new(event)
+            self.pane.collection.insert(event)
         except ReadOnlyCalendarError:
             event.calendar = self.pane.collection.default_calendar_name or \
                 self.pane.collection.writable_names[0]
