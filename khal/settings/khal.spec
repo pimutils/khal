@@ -291,6 +291,10 @@ monthdisplay = monthdisplay(default='firstday')
 # The syntax is the same as for :option:`--format`.
 event_format = string(default='{calendar-color}{cancelled}{start}-{end} {title}{repeat-symbol}{alarm-symbol}{description-separator}{description}{reset}')
 
+# Minimum number of months displayed by calendar command
+# default is 3 months
+min_calendar_display = integer(default=3)
+
 # When highlight_event_days is enabled, this section specifies how
 # the highlighting/coloring of days is handled.
 [highlight_days]

@@ -14,6 +14,8 @@ not released yet
 
 * FIX khal `at` also uses `event_format` not `agenda_event_format`
 * FIX duplicating an event using `p` in ikhal
+* NEW Add ability to change the minimum number of months displayed with
+  `min_calendar_display`
 
 0.11.1
 ======
