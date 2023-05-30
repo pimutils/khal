@@ -293,8 +293,7 @@ def guesstimedeltafstr(delta_string: str) -> dt.timedelta:
 
     tups = re.split(r'(-?\d+)', delta_string)
     if not re.match(r'^\s*$', tups[0]):
-        raise ValueError('Invalid beginning of timedelta string "%s": "%s"'
-                         % (delta_string, tups[0]))
+        raise ValueError(f'Invalid beginning of timedelta string "{delta_string}": "{tups[0]}"')
     tups = tups[1:]
     res = dt.timedelta()
 
@@ -317,8 +316,7 @@ def guesstimedeltafstr(delta_string: str) -> dt.timedelta:
               ulower == 'sec'):
             res += dt.timedelta(seconds=numint)
         else:
-            raise ValueError('Invalid unit in timedelta string "%s": "%s"'
-                             % (delta_string, unit))
+            raise ValueError(f'Invalid unit in timedelta string "{delta_string}": "{unit}"')
 
     return res
 
