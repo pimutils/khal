@@ -61,3 +61,22 @@ def test_set_focus_date_weekstart_6():
             day = today + dt.timedelta(days=diff)
             frame.set_focus_date(day)
             assert frame.focus_date == day
+
+
+def test_set_focus_far_future():
+    future_date = dt.date.today() + dt.timedelta(days=1000)
+    frame = CalendarWidget(on_date_change=lambda _: None,
+                           keybindings=keybindings,
+                           on_press=on_press,
+                           weeknumbers='right')
+    frame.set_focus_date(future_date)
+    assert frame.focus_date == future_date
+
+def test_set_focus_far_past():
+    future_date = dt.date.today() - dt.timedelta(days=1000)
+    frame = CalendarWidget(on_date_change=lambda _: None,
+                           keybindings=keybindings,
+                           on_press=on_press,
+                           weeknumbers='right')
+    frame.set_focus_date(future_date)
+    assert frame.focus_date == future_date
