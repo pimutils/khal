@@ -111,10 +111,11 @@ def calendar(collection, agenda_format=None, notstarted=False, once=False, dater
     )
     if not event_column:
         event_column = [style('No events', bold=True)]
+    month_count = (end.year - start.year) * 12 + end.month - start.month + 1
     calendar_column = calendar_display.vertical_month(
         month=start.month,
         year=start.year,
-        count=max(3, (end.year - start.year) * 12 + end.month - start.month + 1),
+        count=max(conf['view']['min_calendar_display'], month_count),
         firstweekday=firstweekday, weeknumber=weeknumber,
         monthdisplay=monthdisplay,
         collection=collection,
