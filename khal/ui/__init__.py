@@ -19,6 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import contextlib
 import datetime as dt
 import logging
 import signal
@@ -292,10 +293,9 @@ class DListBox(EventListBox):
 
     def ensure_date(self, day):
         """ensure an entry for `day` exists and bring it into focus"""
-        try:
+        with contextlib.suppress(IndexError):
             self._old_focus = self.focus_position
-        except IndexError:
-            pass
+
         rval = self.body.ensure_date(day)
         self.clean()
         return rval
@@ -312,10 +312,9 @@ class DListBox(EventListBox):
         rval = super().keypress(size, key)
         self.clean()
         if key in ['up', 'down']:
-            try:
+            with contextlib.suppress(IndexError):
                 self._old_focus = self.focus_position
-            except IndexError:
-                pass
+
             day = self.body[self.body.focus].date
 
             # we need to save DateListBox.selected_date and reset it later, because
@@ -855,10 +854,9 @@ class EventColumn(urwid.WidgetWrap):
         if isinstance(end_date, dt.datetime):
             end_date = end_date.date()
         self.pane.eventscolumn.base_widget.update(start_date, end_date, event.recurring)
-        try:
+        with contextlib.suppress(IndexError):
             self._old_focus = self.focus_position
-        except IndexError:
-            pass
+
 
     def new(self, date: dt.date, end: Optional[dt.date]=None):
         """create a new event on `date` at the next full hour and edit it
@@ -1354,9 +1352,10 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
     except Exception:
         import traceback
         tb = traceback.format_exc()
-        try:  # Try to leave terminal in usable state
+
+        # Try to leave terminal in usable state
+        with contextlib.suppress(Exception):
             loop.stop()
-        except Exception:
-            pass
+
         print(tb)
         sys.exit(1)

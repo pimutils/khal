@@ -23,6 +23,7 @@
 """this module should contain classes that are specific to ikhal, more
 general widgets should go in widgets.py"""
 
+import contextlib
 import logging
 import threading
 import time
@@ -266,8 +267,7 @@ class AlertDaemon(threading.Thread):
         while True:
             _event.wait()
             _sleep(3)
-            try:
+            with contextlib.suppress(_exception):
                 _set_msg(None)
-            except _exception:
-                pass
+
             _event.clear()
