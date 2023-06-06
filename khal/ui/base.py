@@ -202,9 +202,7 @@ class Window(urwid.Frame):
 
     def on_key_press(self, key):
         """Handle application-wide key strokes."""
-        if key in self.quit_keys:
-            self.backtrack()
-        elif key == 'esc' and not self.is_top_level():
+        if (key in self.quit_keys) or (key == 'esc' and not self.is_top_level()):
             self.backtrack()
         return key
 
