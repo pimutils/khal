@@ -165,10 +165,9 @@ class U_Event(urwid.Text):
         :param event: the encapsulated event
         :type event: khal.event.Event
         """
-        if relative:
-            if isinstance(this_date, dt.datetime) or not isinstance(this_date, dt.date):
-                raise ValueError(f'`this_date` is of type `{type(this_date)}`, '
-                                 'should be `datetime.date`')
+        if relative and (isinstance(this_date, dt.datetime) or not isinstance(this_date, dt.date)):
+            raise ValueError(f'`this_date` is of type `{type(this_date)}`, '
+                             'should be `datetime.date`')
         self.event = event
         self.delete_status = delete_status
         self.this_date = this_date

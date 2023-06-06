@@ -87,9 +87,8 @@ def get_color(
                 else:
                     # background color
                     c = 40 + COLORS[colorstring].color_index
-                    if COLORS[colorstring].light:
-                        if not bold_for_light_color:
-                            c += 60
+                    if COLORS[colorstring].light and not bold_for_light_color:
+                        c += 60
                 color += str(c)
             elif colorstring.isdigit():
                 # 256 color palette

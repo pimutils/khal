@@ -564,9 +564,8 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
 
 
 def edit(collection, search_string, locale, format=None, allow_past=False, conf=None):
-    if conf is not None:
-        if format is None:
-            format = conf['view']['event_format']
+    if conf is not None and format is None:
+        format = conf['view']['event_format']
 
     term_width, _ = get_terminal_size()
     now = conf['locale']['local_timezone'].localize(dt.datetime.now())

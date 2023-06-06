@@ -433,11 +433,11 @@ class ValidatedEdit(urwid.WidgetWrap):
 
     def keypress(self, size, key):
         if (
-                key in ['up', 'down', 'tab', 'shift tab'] or
-                (key in ['right'] and self.edit_pos >= len(self.edit_text)) or
-                (key in ['left'] and self.edit_pos == 0)):
-            if not self._validate():
-                return
+            key in ['up', 'down', 'tab', 'shift tab'] or
+            (key in ['right'] and self.edit_pos >= len(self.edit_text)) or
+            (key in ['left'] and self.edit_pos == 0)
+        ) and not self._validate():
+            return
         return super().keypress(size, key)
 
 
