@@ -356,10 +356,7 @@ def assert_only_one_uid(cal: icalendar.Calendar):
     for item in cal.walk():
         if item.name == 'VEVENT':
             uids.add(item['UID'])
-    if len(uids) > 1:
-        return False
-    else:
-        return True
+    return len(uids) <= 1
 
 
 def sanitize(vevent, default_timezone, href='', calendar=''):
@@ -468,10 +465,7 @@ def sanitize_rrule(vevent):
 
 def invalid_timezone(prop):
     """check if an icalendar property has a timezone attached we don't understand"""
-    if hasattr(prop.dt, 'tzinfo') and prop.dt.tzinfo is None and 'TZID' in prop.params:
-        return True
-    else:
-        return False
+    return bool(hasattr(prop.dt, 'tzinfo') and prop.dt.tzinfo is None and 'TZID' in prop.params)
 
 
 def _get_all_properties(vevent, prop):

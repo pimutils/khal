@@ -143,10 +143,7 @@ def to_naive_utc(dtime: dt.datetime) -> dt.datetime:
 
 def is_aware(dtime: dt.datetime) -> bool:
     """test if a datetime instance is timezone aware"""
-    if dtime.tzinfo is not None and dtime.tzinfo.utcoffset(dtime) is not None:
-        return True
-    else:
-        return False
+    return bool(dtime.tzinfo is not None and dtime.tzinfo.utcoffset(dtime) is not None)
 
 
 def relative_timedelta_str(day: dt.date) -> str:

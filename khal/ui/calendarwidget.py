@@ -103,10 +103,7 @@ class Date(urwid.WidgetWrap):
 
     @property
     def marked(self):
-        if 'mark' in [self.halves[0].attr_map[None], self.halves[1].attr_map[None]]:
-            return True
-        else:
-            return False
+        return 'mark' in [self.halves[0].attr_map[None], self.halves[1].attr_map[None]]
 
     @classmethod
     def selectable(cls):

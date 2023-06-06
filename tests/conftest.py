@@ -48,7 +48,7 @@ def coll_vdirs(tmpdir) -> CollVdirType:
     for name in example_cals:
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
-        readonly = True if name == 'a_calendar' else False
+        readonly = name == 'a_calendar'
         calendars[name] = CalendarConfiguration(
             name=name,
             path=path,
@@ -69,7 +69,7 @@ def coll_vdirs_birthday(tmpdir):
     for name in example_cals:
         path = str(tmpdir) + '/' + name
         os.makedirs(path, mode=0o770)
-        readonly = True if name == 'a_calendar' else False
+        readonly = name == 'a_calendar'
         calendars[name] = {'name': name, 'path': path, 'color': 'dark blue',
                            'readonly': readonly, 'unicode_symbols': True, 'ctype': 'birthdays'}
         vdirs[name] = Vdir(path, '.vcf')
