@@ -342,10 +342,7 @@ class SQLiteDb:
         """
         # TODO FIXME this function is a steaming pile of shit
         rec_id = vevent.get(RECURRENCE_ID)
-        if rec_id is None:
-            rrange = None
-        else:
-            rrange = rec_id.params.get('RANGE')
+        rrange = None if rec_id is None else rec_id.params.get('RANGE')
 
         # testing on datetime.date won't work as datetime is a child of date
         if not isinstance(vevent['DTSTART'].dt, dt.datetime):

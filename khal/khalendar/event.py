@@ -414,10 +414,7 @@ class Event:
         if date:
             number = self.start_local.year - int(date[:4])
             name = self._vevents[self.ref].get('x-fname', None)
-            if int(date[4:6]) == 2 and int(date[6:8]) == 29:
-                leap = ' (29th of Feb.)'
-            else:
-                leap = ''
+            leap = ' (29th of Feb.)' if int(date[4:6]) == 2 and int(date[6:8]) == 29 else ''
             if (number - 1) % 10 == 0 and number != 11:
                 suffix = 'st'
             elif (number - 2) % 10 == 0 and number != 12:
@@ -542,18 +539,12 @@ class Event:
 
     @property
     def _recur_str(self) -> str:
-        if self.recurring:
-            recurstr = ' ' + self.symbol_strings['recurring']
-        else:
-            recurstr = ''
+        recurstr = ' ' + self.symbol_strings['recurring'] if self.recurring else ''
         return recurstr
 
     @property
     def _alarm_str(self) -> str:
-        if self.alarms:
-            alarmstr = ' ' + self.symbol_strings['alarming']
-        else:
-            alarmstr = ''
+        alarmstr = ' ' + self.symbol_strings['alarming'] if self.alarms else ''
         return alarmstr
 
     def format(self, format_string: str, relative_to, env=None, colors: bool=True):

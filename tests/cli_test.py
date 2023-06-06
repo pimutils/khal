@@ -47,10 +47,7 @@ def runner(tmpdir, monkeypatch):
     monkeypatch.setattr('xdg.BaseDirectory.xdg_config_dirs', [str(xdg_config_home)])
 
     def inner(print_new=False, default_calendar=True, days=2, **kwargs):
-        if default_calendar:
-            default_calendar = 'default_calendar = one'
-        else:
-            default_calendar = ''
+        default_calendar = 'default_calendar = one' if default_calendar else ''
         if not os.path.exists(str(xdg_config_home.join('khal'))):
             os.makedirs(str(xdg_config_home.join('khal')))
         config_file.write(config_template.format(

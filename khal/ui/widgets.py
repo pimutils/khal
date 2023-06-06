@@ -536,10 +536,7 @@ class AlarmsEditor(urwid.WidgetWrap):
 
         def get_alarm(self):
             direction = self.direction.active
-            if direction == 'before':
-                prefix = -1
-            else:
-                prefix = 1
+            prefix = -1 if direction == "before" else 1
             return (prefix * self.duration.get_timedelta(), self.description.get_edit_text())
 
     def __init__(self, event):

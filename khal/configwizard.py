@@ -392,10 +392,7 @@ def configwizard():
         print("\nWARNING: no vdir configured, khal will not be usable like this!\n")
 
     print()
-    if vdirs:
-        default_calendar = choose_default_calendar(vdirs)
-    else:
-        default_calendar = None
+    default_calendar = choose_default_calendar(vdirs) if vdirs else None
 
     config = create_config(
         vdirs, dateformat=dateformat, timeformat=timeformat,

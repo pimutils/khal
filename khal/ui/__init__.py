@@ -213,10 +213,7 @@ class U_Event(urwid.Text):
         else:
             date_ = self.event.start.date()
         text = self.event.format(format_, date_, colors=False)
-        if self._conf['locale']['unicode_symbols']:
-            newline = ' \N{LEFTWARDS ARROW WITH HOOK} '
-        else:
-            newline = ' -- '
+        newline = ' ↩ ' if self._conf['locale']['unicode_symbols'] else ' -- '
 
         self.set_text(mark + ' ' + text.replace('\n', newline))
 
@@ -1045,10 +1042,7 @@ class ClassicView(Pane):
         self._deleted = {ALL: [], INSTANCES: []}
 
         ContainerWidget = linebox[self._conf['view']['frame']]
-        if self._conf['view']['dynamic_days']:
-            Walker = DayWalker
-        else:
-            Walker = StaticDayWalker
+        Walker = DayWalker if self._conf['view']['dynamic_days'] else StaticDayWalker
         daywalker = Walker(
             dt.date.today(), eventcolumn=self, conf=self._conf,
             delete_status=self.delete_status, collection=self.collection,
@@ -1256,11 +1250,8 @@ def _add_calendar_colors(palette, collection):
     :rtype: list
     """
     for cal in collection.calendars:
-        if cal['color'] == '':
-            # No color set for this calendar, use default_color instead.
-            color = collection.default_color
-        else:
-            color = cal['color']
+        # If no color set for this calendar, use default_color instead.
+        color = collection.default_color if cal['color'] == '' else cal['color']
         palette.append(_urwid_palette_entry('calendar ' + cal['name'], color,
                                             collection.hmethod))
     palette.append(_urwid_palette_entry('highlight_days_color',

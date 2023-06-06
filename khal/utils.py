@@ -150,10 +150,7 @@ def relative_timedelta_str(day: dt.date) -> str:
     """Converts the timespan from `day` to today into a human readable string.
     """
     days = (day - dt.date.today()).days
-    if days < 0:
-        direction = 'ago'
-    else:
-        direction = 'from now'
+    direction = 'ago' if days < 0 else 'from now'
     approx = ''
     if abs(days) < 7:
         unit = 'day'
