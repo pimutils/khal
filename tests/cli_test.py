@@ -431,6 +431,14 @@ def test_no_default_new(runner):
             "please provide one explicitly.") in result.output
     assert result.exit_code == 2
 
+def test_print_bad_ics(runner):
+    """Attempt to print a .ics that is malformed, but does not have a DST-related error."""
+    runner = runner()
+    result = runner.invoke(main_khal, ['printics', _get_ics_filepath('non_dst_error')])
+    assert result.exception
+    expected = ValueError("Invalid iCalendar duration: PT-2H")
+    assert expected.__class__ == result.exception.__class__
+    assert expected.args == result.exception.args
 
 def test_import(runner, monkeypatch):
     runner = runner()

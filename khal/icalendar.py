@@ -547,4 +547,6 @@ def cal_from_ics(ics: str) -> icalendar.Calendar:
             icalendar.vUTCOffset.ignore_exceptions = True
             cal = icalendar.Calendar.from_ical(ics)
             icalendar.vUTCOffset.ignore_exceptions = False
+        else:
+            raise
     return cal
