@@ -131,7 +131,7 @@ def is_color(color: str) -> str:
     # 4) a color index from the 256 color palette
     # 5) an HTML-style color code
     if (color in ['', 'auto'] or
-            color in COLORS.keys() or
+            color in COLORS or
             (color.isdigit() and int(color) >= 0 and int(color) <= 255) or
             (color.startswith('#') and (len(color) in [4, 7, 9]) and
              all(c in '01234567890abcdefABCDEF' for c in color[1:]))):

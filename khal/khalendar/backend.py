@@ -272,7 +272,7 @@ class SQLiteDb:
         self.deletelike(href + '%', calendar=calendar)
         ical = cal_from_ics(vevent_str)
         vcard = ical.walk()[0]
-        for key in vcard.keys():
+        for key in vcard:
             if key in ['BDAY', 'X-ANNIVERSARY', 'ANNIVERSARY'] or key.endswith('X-ABDATE'):
                 date = vcard[key]
                 uuid = vcard.get('UID')
@@ -674,11 +674,11 @@ def get_vcard_event_description(vcard: icalendar.cal.Component, key: str) -> str
         return 'anniversary'
     elif key.endswith('X-ABDATE'):
         desc_key = key[:-8] + 'X-ABLABEL'
-        if desc_key in vcard.keys():
+        if desc_key in vcard:
             return vcard[desc_key]
         else:
             desc_key = key[:-8] + 'X-ABLabel'
-            if desc_key in vcard.keys():
+            if desc_key in vcard:
                 return vcard[desc_key]
             else:
                 return 'custom event from vcard'
