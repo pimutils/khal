@@ -697,11 +697,11 @@ def test_print_ics_command(runner):
     result = runner.invoke(main_khal, [
         'printics', '-f', form, _get_ics_filepath('cal_dt_two_tz')])
     assert not result.exception
-    assert 25 == len(result.output.split('\t'))
+    assert len(result.output.split('\t')) == 25
     result = runner.invoke(main_khal, [
         'printics', '-f', form, _get_ics_filepath('cal_dt_two_tz')])
     assert not result.exception
-    assert 25 == len(result.output.split('\t'))
+    assert len(result.output.split('\t')) == 25
 
 
 def test_printics_read_from_stdin(runner):

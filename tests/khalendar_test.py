@@ -628,4 +628,4 @@ def test_birthdays_no_year(coll_vdirs_birthday, sleep_time):
     coll.update_db()
     events = list(coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59)))
     assert len(events) == 1
-    assert 'Unix\'s birthday' == events[0].summary
+    assert events[0].summary == 'Unix\'s birthday'
