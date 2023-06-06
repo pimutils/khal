@@ -200,7 +200,7 @@ def get_events_between(
         # yes the logic could be simplified, but I believe it's easier
         # to understand what's going on here this way
         if notstarted:
-            if event.allday and event.start < original_start.date():
+            if event.allday and event.start < original_start.date():  # noqa: SIM114
                 continue
             elif not event.allday and event.start_local < original_start:
                 continue
@@ -573,7 +573,7 @@ def edit(collection, search_string, locale, format=None, allow_past=False, conf=
     events = sorted(collection.search(search_string))
     for event in events:
         if not allow_past:
-            if event.allday and event.end < now.date():
+            if event.allday and event.end < now.date(): # noqa: SIM114 (this is easier to read)
                 continue
             elif not event.allday and event.end_local < now:
                 continue

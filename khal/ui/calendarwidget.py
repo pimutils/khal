@@ -477,7 +477,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
                   if today is in this week
         :rtype: tuple(urwid.CColumns, bool)
         """
-        if self.monthdisplay == 'firstday' and 1 in (day.day for day in week):
+        if self.monthdisplay == 'firstday' and 1 in (day.day for day in week):  # noqa: SIM114
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
             attr = 'monthname'
         elif self.monthdisplay == 'firstfullweek' and week[0].day <= 7:
