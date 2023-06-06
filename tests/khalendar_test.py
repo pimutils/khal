@@ -576,12 +576,15 @@ def test_birthdays(coll_vdirs_birthday, sleep_time):
     sleep(sleep_time)  # Make sure we get a new ctag on upload
     vdirs[cal1].upload(DumbItem(card, 'unix'))
     coll.update_db()
-    assert 'Unix\'s 41st birthday' == list(
-        coll.get_floating(dt.datetime(2012, 3, 11), dt.datetime(2012, 3, 11)))[0].summary
-    assert 'Unix\'s 42nd birthday' == list(
-        coll.get_floating(dt.datetime(2013, 3, 11), dt.datetime(2013, 3, 11)))[0].summary
-    assert 'Unix\'s 43rd birthday' == list(
-        coll.get_floating(dt.datetime(2014, 3, 11), dt.datetime(2014, 3, 11)))[0].summary
+
+    floating_2012 = coll.get_floating(dt.datetime(2012, 3, 11), dt.datetime(2012, 3, 11))
+    assert list(floating_2012)[0].summary == 'Unix\'s 41st birthday'
+
+    floating_2013 = coll.get_floating(dt.datetime(2013, 3, 11), dt.datetime(2013, 3, 11))
+    assert list(floating_2013)[0].summary == 'Unix\'s 42nd birthday'
+
+    floating_2014 = coll.get_floating(dt.datetime(2014, 3, 11), dt.datetime(2014, 3, 11))
+    assert list(floating_2014)[0].summary == 'Unix\'s 43rd birthday'
 
 
 def test_birthdays_29feb(coll_vdirs_birthday, sleep_time):
