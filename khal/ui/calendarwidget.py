@@ -437,7 +437,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         last_month = date_last_month.month
         last_year = date_last_month.year
         month = last_month % 12 + 1
-        year = last_year if not last_month == 12 else last_year + 1
+        year = last_year if last_month != 12 else last_year + 1
         weeks = self._construct_month(year, month, clean_first_row=True)
         self.extend(weeks)
 
