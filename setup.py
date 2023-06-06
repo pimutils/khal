@@ -35,10 +35,13 @@ extra_requirements = {
     'proctitle': ['setproctitle'],
 }
 
+with open('README.rst') as f:
+    readme = f.read()
+
 setup(
     name='khal',
     description='A standards based terminal calendar',
-    long_description=open('README.rst').read(),
+    long_description=readme,
     author='khal contributors',
     author_email='khal@lostpackets.de',
     url='http://lostpackets.de/khal/',

@@ -117,9 +117,8 @@ def _get_ics_filepath(event_name):
 
 def _get_all_vevents_file(event_path):
     directory = '/'.join(__file__.split('/')[:-1]) + '/ics/'
-    ical = icalendar.Calendar.from_ical(
-        open(os.path.join(directory, event_path + '.ics'), 'rb').read()
-    )
+    with open(os.path.join(directory, event_path + '.ics'), 'rb') as f:
+        ical = icalendar.Calendar.from_ical(f.read())
     for component in ical.walk():
         if component.name == 'VEVENT':
             yield component

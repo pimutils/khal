@@ -453,7 +453,7 @@ def _get_cli():
                         return False
 
                 if isatty(sys.stdin) and os.stat('/dev/tty').st_mode & stat.S_IFCHR > 0:
-                    sys.stdin = open('/dev/tty')
+                    sys.stdin = open('/dev/tty')  # noqa SIM115: context handler not feasible here
                 else:
                     logger.warning('/dev/tty does not exist, importing might not work')
         else:
