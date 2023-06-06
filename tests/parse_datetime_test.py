@@ -463,9 +463,8 @@ test_set_leap_year = _create_testcases(
 
 def test_leap_year():
     for data_list, vevent in test_set_leap_year:
-        with freeze_time('1999-1-1'):
-            with pytest.raises(DateTimeParseError):
-                event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
+        with freeze_time('1999-1-1'), pytest.raises(DateTimeParseError):
+            event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
         with freeze_time('2016-1-1 20:21:22'):
             event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
             assert _replace_uid(event).to_ical() == vevent
