@@ -24,7 +24,6 @@ from ..exceptions import Error
 
 class InvalidSettingsError(Error):
     """Invalid Settings detected"""
-    pass
 
 
 class CannotParseConfigFileError(InvalidSettingsError):
