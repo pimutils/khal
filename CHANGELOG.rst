@@ -16,6 +16,7 @@ not released yet
 * FIX duplicating an event using `p` in ikhal
 * NEW Add ability to change the minimum number of months displayed with
   `min_calendar_display`
+* FIX ikhal don't crash when jumping long distances in time
 
 0.11.1
 ======
