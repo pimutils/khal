@@ -17,6 +17,9 @@ not released yet
 * NEW Add ability to change the minimum number of months displayed with
   `min_calendar_display`
 * FIX ikhal don't crash when jumping long distances in time
+* FIX do not use urwid's private methods, would crash with latest urwid version
+* FIX light colorscheme in ikhal, would crash with recent urwid versions
+* FIX better error messages when we cannot import an event
 
 0.11.1
 ======
