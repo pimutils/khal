@@ -418,14 +418,14 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         # will lead to an autoprepend which will f*ck up our estimation,
         # therefore better autoprepending anyway, even if it might not be
         # necessary
-        if new_focus <= 1:
+        while new_focus <= 1:
             self._autoprepend()
             week_diff = int((self.focus_date - a_day).days / 7)
             new_focus = self.focus - week_diff
         for offset in [0, -1, 1]:  # we might be off by a week
             row = new_focus + offset
             try:
-                if row >= len(self):
+                while row >= len(self):
                     self._autoextend()
                 column = self[row].get_date_column(a_day)
                 return row, column
