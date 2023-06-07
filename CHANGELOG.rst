@@ -10,7 +10,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.11.2
 ======
-not released yet
+2023-06-07
 
 * FIX khal `at` also uses `event_format` not `agenda_event_format`
 * FIX duplicating an event using `p` in ikhal
