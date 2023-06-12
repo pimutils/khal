@@ -44,3 +44,85 @@ jobs:
         # Fake a TTY
         shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'
         run: "python -m tox"
+---
+- name: Codecov
+  # You may pin to the exact commit or the version.
+  # uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d
+  uses: codecov/codecov-action@v3.1.4
+  with:
+    # Repository upload token - get it from codecov.io. Required only for private repositories
+    token: # optional
+    # Path to coverage file to upload
+    file: # optional
+    # Comma-separated list of files to upload
+    files: # optional
+    # Directory to search for coverage reports.
+    directory: # optional
+    # Flag upload to group coverage metrics (e.g. unittests | integration | ui,chrome)
+    flags: # optional
+    # Specify the path of a full Codecov report to re-upload
+    full_report: # optional
+    # The commit SHA of the parent for which you are uploading coverage. If not present, the parent will be determined using the API of your repository provider.  When using the repository providers API, the parent is determined via finding the closest ancestor to the commit.
+    commit_parent: # optional
+    # Don't upload files to Codecov
+    dry_run: # optional
+    # Environment variables to tag the upload with (e.g. PYTHON | OS,PYTHON)
+    env_vars: # optional
+    # Specify whether or not CI build should fail if Codecov runs into an error during upload
+    fail_ci_if_error: # optional
+    # Comma-separated list, see the README for options and their usage. Options include `network`, `fixes`, `search`.
+    functionalities: # optional
+    # Run with gcov support
+    gcov: # optional
+    # Extra arguments to pass to gcov
+    gcov_args: # optional
+    # gcov executable to run. Defaults to gcov
+    gcov_executable: # optional
+    # Paths to ignore during gcov gathering
+    gcov_ignore: # optional
+    # Paths to include during gcov gathering
+    gcov_include: # optional
+    # Move discovered coverage reports to the trash
+    move_coverage_to_trash: # optional
+    # User defined upload name. Visible in Codecov UI
+    name: # optional
+    # Specify a filter on the files listed in the network section of the Codecov report. Useful for upload-specific path fixing
+    network_filter: # optional
+    # Specify a prefix on files listed in the network section of the Codecov report. Useful to help resolve path fixing
+    network_prefix: # optional
+    # Override the assumed OS. Options are aarch64 | alpine | linux | macos | windows.
+    os: # optional
+    # Specify the branch name
+    override_branch: # optional
+    # Specify the build number
+    override_build: # optional
+    # Specify the commit SHA
+    override_commit: # optional
+    # Specify the pull request number
+    override_pr: # optional
+    # Specify the git tag
+    override_tag: # optional
+    # Used when not in git/hg project to identify project root directory
+    root_dir: # optional
+    # Specify the slug manually (Enterprise use)
+    slug: # optional
+    # Run with swift coverage support
+    swift: # optional
+    # Specify the swift project to speed up coverage conversion
+    swift_project: # optional
+    # The upstream http proxy server to connect through
+    upstream_proxy: # optional
+    # Change the upload host (Enterprise use)
+    url: # optional
+    # Specify whether the Codecov output should be verbose
+    verbose: # optional
+    # Specify which version of the Codecov Uploader should be used. Defaults to `latest`
+    version: # optional
+    # Directory in which to execute codecov.sh
+    working-directory: # optional
+    # Run with xcode support
+    xcode: # optional
+    # Specify the xcode archive path. Likely specified as the -resultBundlePath and should end in .xcresult
+    xcode_archive_path: # optional
+    # Add additional uploader args that may be missing in the Action
+    xtra_args: # optional
