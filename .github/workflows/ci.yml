@@ -124,4 +124,3 @@ jobs:
           # Specify the xcode archive path. Likely specified as the -resultBundlePath and should end in .xcresult
           xcode_archive_path: # optional
           # Add additional uploader args that may be missing in the Action
-        xtra_args: # optional
