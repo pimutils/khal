@@ -47,6 +47,7 @@ jobs:
   coverage:
     name: "Upload coverage"
     runs-on: "ubuntu-latest"
+    needs: tests
     steps:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
