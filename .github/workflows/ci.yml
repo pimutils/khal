@@ -44,6 +44,10 @@ jobs:
         # Fake a TTY
         shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'
         run: "python -m tox"
+  coverage:
+    name: "Upload coverage"
+    runs-on: "ubuntu-latest"
+    steps:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
