@@ -33,7 +33,7 @@ import pytz
 from click import confirm, echo, prompt, style
 
 from khal import __productname__, __version__, calendar_display, parse_datetime, utils
-from khal.custom_types import EventCreationTypes, LocaleConfiguration
+from khal.custom_types import EventCreationTypes, LocaleConfiguration, WeekNumbersType, MonthDisplayType
 from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
@@ -48,7 +48,7 @@ from .terminal import merge_columns
 logger = logging.getLogger('khal')
 
 
-def format_day(day, format_string: str, locale, attributes=None):
+def format_day(day: dt.date, format_string: str, locale, attributes=None):
     if attributes is None:
         attributes = {}
 
@@ -68,23 +68,28 @@ def format_day(day, format_string: str, locale, attributes=None):
         raise KeyError("cannot format day with: %s" % format_string)
 
 
-def calendar(collection, agenda_format=None, notstarted=False, once=False, daterange=None,
-             day_format=None,
-             locale=None,
-             conf=None,
-             firstweekday=0,
-             weeknumber=False,
-             monthdisplay='firstday',
-             hmethod='fg',
-             default_color='',
-             multiple='',
-             multiple_on_overflow=False,
-             color='',
-             highlight_event_days=0,
-             full=False,
-             bold_for_light_color=True,
-             env=None,
-             ):
+def calendar(
+    collection: CalendarCollection,
+    agenda_format=None,
+    notstarted: bool=False,
+    once=False,
+    daterange=None,
+    day_format=None,
+    locale=None,
+    conf=None,
+    firstweekday: int=0,
+    weeknumber: WeekNumbersType=False,
+    monthdisplay: MonthDisplayType='firstday',
+    hmethod: str='fg',
+    default_color: str='',
+    multiple='',
+    multiple_on_overflow: bool=False,
+    color='',
+    highlight_event_days=0,
+    full=False,
+    bold_for_light_color: bool=True,
+    env=None,
+    ):
     term_width, _ = get_terminal_size()
     lwidth = 27 if conf['locale']['weeknumbers'] == 'right' else 25
     rwidth = term_width - lwidth - 4
@@ -163,7 +168,7 @@ def get_events_between(
     agenda_format: str,
     notstarted: bool,
     env: dict,
-    width,
+    width: Optional[int],
     seen,
     original_start: dt.datetime,
 ) -> List[str]:
@@ -230,7 +235,7 @@ def khal_list(
     day_format: Optional[str]=None,
     once=False,
     notstarted: bool = False,
-    width: bool = False,
+    width: Optional[int] = None,
     env=None,
     datepoint=None,
 ):
