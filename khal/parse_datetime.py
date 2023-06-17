@@ -287,8 +287,6 @@ def guesstimedeltafstr(delta_string: str) -> dt.timedelta:
     """parses a timedelta from a string
 
     :param delta_string: string encoding time-delta, e.g. '1h 15m'
-    :type delta_string: str
-    :rtype: datetime.timedelta
     """
 
     tups = re.split(r'(-?\d+)', delta_string)
@@ -330,7 +328,6 @@ def guessrangefstr(daterange: Union[str, List[str]],
     """parses a range string
 
     :param daterange: date1 [date2 | timedelta]
-    :type daterange: str or list
     :param locale:
     :returns: start and end of the date(time) range  and if
         this is an all-day time range or not,

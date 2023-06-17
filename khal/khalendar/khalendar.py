@@ -32,7 +32,7 @@ import os
 import os.path
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union  # noqa
 
-from ..custom_types import CalendarConfiguration, EventCreationTypes
+from ..custom_types import CalendarConfiguration, EventCreationTypes, LocaleConfiguration
 from ..icalendar import new_vevent
 from . import backend
 from .event import Event
@@ -69,10 +69,10 @@ class CalendarCollection:
                  color: str='',
                  priority: int=10,
                  highlight_event_days: bool=False,
-                 locale: Optional[Dict[str, Any]]=None,
+                 locale: Optional[LocaleConfiguration]=None,
                  dbpath: Optional[str]=None,
                  ) -> None:
-        locale = locale or {}
+        assert locale
         assert dbpath is not None
         assert calendars is not None
 
