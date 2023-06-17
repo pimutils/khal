@@ -175,6 +175,7 @@ def build_collection(conf, selection):
                     'color': cal['color'],
                     'priority': cal['priority'],
                     'ctype': cal['type'],
+                    'address': cal['address'],
                 }
         collection = khalendar.CalendarCollection(
             calendars=props,

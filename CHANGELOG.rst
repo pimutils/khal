@@ -25,6 +25,10 @@ not released yet
 * NEW event format option `status-symbol` which represents the status of an
   event with a symbol (e.g. `✓` for confirmed, `✗` for cancelled, `?` for
   tentative)
+* NEW event format option `partstat-symbol` which represents the participation
+  status of an event with a symbol (e.g. `✓` for accepted, `✗` for declined,
+  `?` for tentative); partication status is shown for the email address
+  configured for the event's calendar
 
 0.11.2
 ======

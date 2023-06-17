@@ -695,3 +695,37 @@ def test_parameters_description():
     assert event.description == (
         'Hey, \n\nJust setting aside some dedicated time to talk about redacted.'
     )
+
+def test_partstat():
+    FORMAT_CALENDAR = (
+        '{calendar-color}{partstat-symbol}{status-symbol}{start-end-time-style} ({calendar}) '
+        '{title} [{location}]{repeat-symbol}'
+    )
+
+    event = Event.fromString(
+        _get_text('event_dt_partstat'), address='jdoe@example.com', **EVENT_KWARGS)
+    assert event.partstat == 'ACCEPTED'
+    assert human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9))) == \
+        '✔09:30-10:30 (foobar) An Event []\x1b[0m'
+
+    event = Event.fromString(
+        _get_text('event_dt_partstat'), address='another@example.com', **EVENT_KWARGS)
+    assert event.partstat == 'DECLINED'
+    assert human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9))) == \
+        '❌09:30-10:30 (foobar) An Event []\x1b[0m'
+
+    event = Event.fromString(
+        _get_text('event_dt_partstat'), address='jqpublic@example.com', **EVENT_KWARGS)
+    assert event.partstat == 'ACCEPTED'
+    assert human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9))) == \
+        '✔09:30-10:30 (foobar) An Event []\x1b[0m'
+
+@pytest.mark.xfail
+def test_partstat_deligated():
+    event = Event.fromString(
+        _get_text('event_dt_partstat'), address='hcabot@example.com', **EVENT_KWARGS)
+    assert event.partstat == 'ACCEPTED'
+
+    event = Event.fromString(
+        _get_text('event_dt_partstat'), address='iamboss@example.com', **EVENT_KWARGS)
+    assert event.partstat == 'ACCEPTED'

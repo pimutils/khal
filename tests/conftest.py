@@ -56,6 +56,7 @@ def coll_vdirs(tmpdir) -> CollVdirType:
             color='dark blue',
             priority=10,
             ctype='calendar',
+            address='user@example.com',
         )
         vdirs[name] = Vdir(path, '.ics')
     coll = CalendarCollection(calendars=calendars, dbpath=':memory:', locale=LOCALE_BERLIN)
@@ -71,7 +72,8 @@ def coll_vdirs_birthday(tmpdir):
         os.makedirs(path, mode=0o770)
         readonly = True if name == 'a_calendar' else False
         calendars[name] = {'name': name, 'path': path, 'color': 'dark blue',
-                           'readonly': readonly, 'unicode_symbols': True, 'ctype': 'birthdays'}
+                           'readonly': readonly, 'unicode_symbols': True, 'ctype': 'birthdays',
+                           'address': 'user@example.com'}
         vdirs[name] = Vdir(path, '.vcf')
     coll = CalendarCollection(calendars=calendars, dbpath=':memory:', locale=LOCALE_BERLIN)
     coll.default_calendar_name = cal1

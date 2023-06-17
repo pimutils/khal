@@ -68,7 +68,8 @@ class Event:
                  color: Optional[str] = None,
                  start: Optional[dt.datetime] = None,
                  end: Optional[dt.datetime] = None,
-                 ) -> None:
+                 address: str = '',
+                 ):
         """
         :param start: start datetime of this event instance
         :param end: end datetime of this event instance
@@ -87,6 +88,7 @@ class Event:
         self.color = color
         self._start: dt.datetime
         self._end: dt.datetime
+        self.address = address
 
         if start is None:
             self._start = self._vevents[self.ref]['DTSTART'].dt
@@ -290,6 +292,8 @@ class Event:
                 'cancelled': '\N{Cross mark}',
                 'confirmed': '\N{Heavy check mark}',
                 'tentative': '\N{White question mark ornament}',
+                'declined': '\N{Cross mark}',
+                'accepted': '\N{Heavy check mark}',
             }
         else:
             return {
@@ -302,6 +306,8 @@ class Event:
                 'cancelled': 'X',
                 'confirmed': 'V',
                 'tentative': '?',
+                'declined': 'X',
+                'accepted': 'V',
             }
 
     @property
@@ -563,14 +569,27 @@ class Event:
     @property
     def _status_str(self) -> str:
         if self.status == 'CANCELLED':
-            statusstr = ' ' + self.symbol_strings['cancelled']
+            statusstr = self.symbol_strings['cancelled']
         elif self.status == 'TENTATIVE':
-            statusstr = ' ' + self.symbol_strings['tentative']
+            statusstr = self.symbol_strings['tentative']
         elif self.status == 'CONFIRMED':
-            statusstr = ' ' + self.symbol_strings['confirmed']
+            statusstr = self.symbol_strings['confirmed']
         else:
             statusstr = ''
         return statusstr
+
+    @property
+    def _partstat_str(self) -> str:
+        partstat = self.partstat
+        if partstat == 'ACCEPTED':
+            partstatstr = self.symbol_strings['accepted']
+        elif partstat == 'TENTATIVE':
+            partstatstr = self.symbol_strings['tentative']
+        elif partstat == 'DECLINED':
+            partstatstr = self.symbol_strings['declined']
+        else:
+            partstatstr = ''
+        return partstatstr
 
     def attributes(
             self,
@@ -703,6 +722,7 @@ class Event:
         attributes["repeat-pattern"] = self.recurpattern
         attributes["alarm-symbol"] = self._alarm_str
         attributes["status-symbol"] = self._status_str
+        attributes["partstat-symbol"] = self._partstat_str
         attributes["title"] = self.summary
         attributes["organizer"] = self.organizer.strip()
         attributes["description"] = self.description.strip()
@@ -784,6 +804,13 @@ class Event:
     @property
     def status(self) -> str:
         return self._vevents[self.ref].get('STATUS', '')
+
+    @property
+    def partstat(self) -> Optional[str]:
+        for attendee in self._vevents[self.ref].get('ATTENDEE', []):
+            print(attendee)
+            if attendee == 'mailto:' + self.address:
+                return attendee.params.get('PARTSTAT', '')
 
 
 class DatetimeEvent(Event):

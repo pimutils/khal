@@ -284,6 +284,7 @@ class CalendarCollection:
             ref=ref,
             color=self._calendars[calendar]['color'],
             readonly=self._calendars[calendar]['readonly'],
+            address=self._calendars[calendar]['address'],
         )
         return event
 

@@ -40,10 +40,14 @@ class TestSettings:
         )
         comp_config = {
             'calendars': {
-                'home': {'path': os.path.expanduser('~/.calendars/home/'),
-                         'readonly': False, 'color': None, 'priority': 10, 'type': 'calendar', 'address': ''},
-                'work': {'path': os.path.expanduser('~/.calendars/work/'),
-                         'readonly': False, 'color': None, 'priority': 10, 'type': 'calendar', 'address': ''},
+                'home': {
+                    'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False,
+                    'color': None, 'priority': 10, 'type': 'calendar', 'address': '',
+                },
+                'work': {
+                    'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False,
+                    'color': None, 'priority': 10, 'type': 'calendar', 'address': '',
+                },
             },
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': LOCALE_BERLIN,

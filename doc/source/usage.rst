@@ -153,6 +153,9 @@ Several options are common to almost all of :program:`khal`'s commands
     status-symbol
        The status of the event as a symbol, `✓` or `✗` or `?`.
 
+    partstat-symbol
+        The participation status of the event as a symbol, `✓` or `✗` or `?`.
+
    cancelled
        The string `CANCELLED` (plus one blank) if the event's status is
        cancelled, otherwise nothing.
