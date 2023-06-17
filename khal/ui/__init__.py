@@ -113,7 +113,7 @@ class DateHeader(SelectableText):
         super().__init__('', wrap='clip')
         self.update_date_line()
 
-    def update_date_line(self):
+    def update_date_line(self) -> None:
         """update self, so that the timedelta is accurate
 
         to be called after a date change
@@ -144,7 +144,7 @@ class DateHeader(SelectableText):
             day=daystr,
         )
 
-    def keypress(self, _, key):
+    def keypress(self, _, key: str) -> str:
         binds = self._conf['keybindings']
         if key in binds['left']:
             key = 'left'
@@ -244,8 +244,8 @@ class EventListBox(urwid.ListBox):
             delete_status, toggle_delete_instance, toggle_delete_all,
             set_focus_date_callback=None,
             **kwargs):
-        self._init = True
-        self.parent = parent
+        self._init: bool = True
+        self.parent: 'ClassicView' = parent
         self.delete_status = delete_status
         self.toggle_delete_instance = toggle_delete_instance
         self.toggle_delete_all = toggle_delete_all
@@ -641,7 +641,7 @@ class EventColumn(urwid.WidgetWrap):
         self.delete_status = pane.delete_status
         self.toggle_delete_all = pane.toggle_delete_all
         self.toggle_delete_instance = pane.toggle_delete_instance
-        self.dlistbox = elistbox
+        self.dlistbox: DateListBox = elistbox
         self.container = urwid.Pile([self.dlistbox])
         urwid.WidgetWrap.__init__(self, self.container)
 
