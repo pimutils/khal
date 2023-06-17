@@ -295,7 +295,11 @@ class DListBox(EventListBox):
     def clean(self):
         """reset event most recently in focus"""
         if self._old_focus is not None:
-            self.body[self._old_focus].body[0].set_attr_map({None: 'date'})
+            try:
+                self.body[self._old_focus].body[0].set_attr_map({None: 'date'})
+            except IndexError:
+                # after reseting the EventList, the old focus might not exist
+                pass
 
     def ensure_date(self, day: dt.date) -> None:
         """ensure an entry for `day` exists and bring it into focus"""
