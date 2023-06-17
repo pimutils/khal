@@ -26,6 +26,7 @@ if they are large, into their own files
 """
 import datetime as dt
 import re
+from typing import Tuple, Optional
 
 import urwid
 
@@ -76,7 +77,7 @@ def goto_end_of_line(text):
 class ExtendedEdit(urwid.Edit):
     """A text editing widget supporting some more editing commands"""
 
-    def keypress(self, size, key):
+    def keypress(self, size, key: str) -> Optional[Tuple[Tuple[int, int], str]]:
         if key == 'ctrl w':
             self._delete_word()
         elif key == 'ctrl u':
@@ -121,7 +122,7 @@ class ExtendedEdit(urwid.Edit):
 
 class DateTimeWidget(ExtendedEdit):
 
-    def __init__(self, dateformat, on_date_change=lambda x: None, **kwargs):
+    def __init__(self, dateformat: str, on_date_change=lambda x: None, **kwargs):
         self.dateformat = dateformat
         self.on_date_change = on_date_change
         super().__init__(wrap='any', **kwargs)
@@ -165,11 +166,8 @@ class DateTimeWidget(ExtendedEdit):
         except DateConversionError:
             pass
 
-    def set_value(self, new_date):
-        """set a new value for this widget
-
-        :type new_date: datetime.date
-        """
+    def set_value(self, new_date: dt.date):
+        """set a new value for this widget"""
         self.set_edit_text(new_date.strftime(self.dateformat))
 
 

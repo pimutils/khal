@@ -23,12 +23,14 @@ import datetime as dt
 import logging
 import signal
 import sys
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union, Dict, List
+from enum import IntEnum
 
 import click
 import urwid
 
 from .. import utils
+from ..khalendar import CalendarCollection
 from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
 from .base import Pane, Window
@@ -72,8 +74,9 @@ logger = logging.getLogger('khal')
 #   │ └─────────────────┘  └──────────────────────────────────┘ │
 #   └───────────────────────────────────────────────────────────┘
 
-ALL = 1
-INSTANCES = 2
+class DeletionType(IntEnum):
+    ALL = 0
+    INSTANCES = 1
 
 
 class DateConversionError(Exception):
@@ -173,7 +176,7 @@ class U_Event(urwid.Text):
         super().__init__('', wrap='clip')
         self.set_title()
 
-    def get_cursor_coords(self, size):
+    def get_cursor_coords(self, size) -> Tuple[int, int]:
         return 0, 0
 
     def render(self, size, focus=False):
@@ -184,20 +187,24 @@ class U_Event(urwid.Text):
         return canv
 
     @classmethod
-    def selectable(cls):
+    def selectable(cls) -> bool:
         return True
 
     @property
-    def uid(self):
+    def uid(self) -> str:
         return self.event.calendar + '\n' + \
             str(self.event.href) + '\n' + str(self.event.etag)
 
     @property
-    def recuid(self):
+    def recuid(self) -> Tuple[str, str]:
         return (self.uid, self.event.recurrence_id)
 
-    def set_title(self, mark=' '):
-        mark = {ALL: 'D', INSTANCES: 'd', False: ''}[self.delete_status(self.recuid)]
+    def set_title(self, mark: str=' ') -> None:
+        mark = {
+            DeletionType.ALL: 'D',
+            DeletionType.INSTANCES: 'd',
+            None: '',
+        }[self.delete_status(self.recuid)]
         if self.relative:
             format_ = self._conf['view']['agenda_event_format']
         else:
@@ -216,7 +223,7 @@ class U_Event(urwid.Text):
 
         self.set_text(mark + ' ' + text.replace('\n', newline))
 
-    def keypress(self, _, key):
+    def keypress(self, _, key: str) -> str:
         binds = self._conf['keybindings']
         if key in binds['left']:
             key = 'left'
@@ -251,7 +258,7 @@ class EventListBox(urwid.ListBox):
         return super().keypress(size, key)
 
     @property
-    def focus_event(self):
+    def focus_event(self) -> Optional[U_Event]:
         if self.focus is None:
             return None
         else:
@@ -290,15 +297,14 @@ class DListBox(EventListBox):
         if self._old_focus is not None:
             self.body[self._old_focus].body[0].set_attr_map({None: 'date'})
 
-    def ensure_date(self, day):
+    def ensure_date(self, day: dt.date) -> None:
         """ensure an entry for `day` exists and bring it into focus"""
         try:
             self._old_focus = self.focus_position
         except IndexError:
             pass
-        rval = self.body.ensure_date(day)
+        self.body.ensure_date(day)
         self.clean()
-        return rval
 
     def keypress(self, size, key):
         if key in self._conf['keybindings']['up']:
@@ -332,7 +338,7 @@ class DListBox(EventListBox):
         return self.body.focus_event
 
     @property
-    def current_date(self):
+    def current_date(self) -> dt.date:
         return self.body.current_day
 
     def refresh_titles(self, start, end, recurring):
@@ -475,23 +481,23 @@ class DayWalker(urwid.SimpleFocusListWalker):
             (len(event_list) + 1) if self.events else 1
         )
 
-    def selectable(self):
+    def selectable(self) -> bool:
         """mark this widget as selectable"""
         return True
 
     @property
-    def focus_event(self):
+    def focus_event(self) -> U_Event:
         return self[self.focus].original_widget.focus_event
 
     @property
-    def current_day(self):
+    def current_day(self) -> dt.date:
         return self[self.focus].original_widget.date
 
 
 class StaticDayWalker(DayWalker):
     """Only show events for a fixed number of days."""
 
-    def ensure_date(self, day):
+    def ensure_date(self, day: dt.date) -> None:
         """make sure a DateListBox for `day` exists, update it and bring it into focus"""
         # TODO cache events for each day and update as needed
         num_days = max(1, self._conf['default']['timedelta'].days)
@@ -536,8 +542,9 @@ class StaticDayWalker(DayWalker):
 
 
 class DateListBox(urwid.ListBox):
-    """A ListBox container for a SimpleFocusListWalker, that contains one day
-    worth of events"""
+    """A ListBox container containing all events for one specific date
+    used with a SimpleFocusListWalker
+    """
 
     selected_date = None
 
@@ -602,7 +609,7 @@ class EventColumn(urwid.WidgetWrap):
         self._conf = pane._conf
         self.divider = urwid.Divider('─')
         self.editor = False
-        self._current_date = None
+        self._last_focused_date: Optional[dt.date] = None
         self._eventshown = False
         self.event_width = int(self.pane._conf['view']['event_view_weighting'])
         self.delete_status = pane.delete_status
@@ -633,12 +640,12 @@ class EventColumn(urwid.WidgetWrap):
         self.focus_date = date
 
     @property
-    def focus_date(self):
-        return self._current_date
+    def focus_date(self) -> dt.date:
+        return self.dlistbox.current_date
 
     @focus_date.setter
-    def focus_date(self, date):
-        self._current_date = date
+    def focus_date(self, date: dt.date) -> None:
+        self._last_focused_date = date
         self.dlistbox.ensure_date(date)
 
     def update(self, min_date, max_date, everything):
@@ -791,9 +798,9 @@ class EventColumn(urwid.WidgetWrap):
             return
         status = self.delete_status(event.recuid)
         refresh = True
-        if status == ALL:
+        if status == DeletionType.ALL:
             self.toggle_delete_all(event.recuid)
-        elif status == INSTANCES:
+        elif status == DeletionType.INSTANCES:
             self.toggle_delete_instance(event.recuid)
         elif event.event.recurring:
             # FIXME if in search results, original pane is used for overlay, not search results
@@ -1013,13 +1020,13 @@ class ClassicView(Pane):
     on the right
     """
 
-    def __init__(self, collection, conf=None, title='', description=''):
+    def __init__(self, collection, conf=None, title: str='', description: str=''):
         self.init = True
         # Will be set when opening the view inside a Window
         self.window = None
         self._conf = conf
         self.collection = collection
-        self._deleted = {ALL: [], INSTANCES: []}
+        self._deleted: Dict[int, List[str]] = {DeletionType.ALL: [], DeletionType.INSTANCES: []}
 
         ContainerWidget = linebox[self._conf['view']['frame']]
         if self._conf['view']['dynamic_days']:
@@ -1063,26 +1070,26 @@ class ClassicView(Pane):
         )
         Pane.__init__(self, columns, title=title, description=description)
 
-    def delete_status(self, uid):
-        if uid[0] in self._deleted[ALL]:
-            return ALL
-        elif uid in self._deleted[INSTANCES]:
-            return INSTANCES
+    def delete_status(self, uid: str) -> Optional[DeletionType]:
+        if uid[0] in self._deleted[DeletionType.ALL]:
+            return DeletionType.ALL
+        elif uid in self._deleted[DeletionType.INSTANCES]:
+            return DeletionType.INSTANCES
         else:
-            return False
+            return None
 
-    def toggle_delete_all(self, recuid):
+    def toggle_delete_all(self, recuid: Tuple[str, str]) -> None:
         uid, _ = recuid
-        if uid in self._deleted[ALL]:
-            self._deleted[ALL].remove(uid)
+        if uid in self._deleted[DeletionType.ALL]:
+            self._deleted[DeletionType.ALL].remove(uid)
         else:
-            self._deleted[ALL].append(uid)
+            self._deleted[DeletionType.ALL].append(uid)
 
-    def toggle_delete_instance(self, uid):
-        if uid in self._deleted[INSTANCES]:
-            self._deleted[INSTANCES].remove(uid)
+    def toggle_delete_instance(self, uid: str) -> None:
+        if uid in self._deleted[DeletionType.INSTANCES]:
+            self._deleted[DeletionType.INSTANCES].remove(uid)
         else:
-            self._deleted[INSTANCES].append(uid)
+            self._deleted[DeletionType.INSTANCES].append(uid)
 
     def cleanup(self, data):
         """delete all events marked for deletion"""
@@ -1092,16 +1099,16 @@ class ClassicView(Pane):
         # We therefore keep track of the etags of the events we already
         # deleted.
         updated_etags = {}
-        for part in self._deleted[ALL]:
+        for part in self._deleted[DeletionType.ALL]:
             account, href, etag = part.split('\n', 2)
             self.collection.delete(href, etag, account)
-        for part, rec_id in self._deleted[INSTANCES]:
+        for part, rec_id in self._deleted[DeletionType.INSTANCES]:
             account, href, etag = part.split('\n', 2)
             etag = updated_etags.get(href) or etag
             event = self.collection.delete_instance(href, etag, account, rec_id)
             updated_etags[event.href] = event.etag
 
-    def keypress(self, size, key):
+    def keypress(self, size, key: str):
         binds = self._conf['keybindings']
         if key in binds['search']:
             self.search()
@@ -1117,7 +1124,7 @@ class ClassicView(Pane):
             height=None)
         self.window.open(overlay)
 
-    def _search(self, search_term):
+    def _search(self, search_term: str):
         """search for events matching `search_term"""
         self.window.backtrack()
         events = sorted(self.collection.search(search_term))
@@ -1228,15 +1235,12 @@ def _urwid_palette_entry(
         return (name, '', '', '', '', color)
 
 
-def _add_calendar_colors(palette, collection):
+def _add_calendar_colors(palette: List, collection: CalendarCollection) -> List:
     """Add the colors for the defined calendars to the palette.
 
     :param palette: the base palette
-    :type palette: list
     :param collection:
-    :type collection: CalendarCollection
     :returns: the modified palette
-    :rtype: list
     """
     for cal in collection.calendars:
         if cal['color'] == '':
