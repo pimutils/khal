@@ -242,6 +242,7 @@ class CListBox(urwid.ListBox):
         self.on_press = walker.on_press
         self._marked: Optional[MarkType] = None
         self._pos_old: Optional[Tuple[int, int]] = None
+        self.body: 'CalendarWalker'
         super().__init__(walker)
 
     @property
@@ -381,8 +382,6 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
                  monthdisplay: Literal['firstday', 'firstfullweek']='firstday',
                  initial: Optional[dt.date]=None,
                  ) -> None:
-        if initial is None:
-            initial = dt.date.today()
         self.firstweekday = firstweekday
         self.weeknumbers = weeknumbers
         self.monthdisplay = monthdisplay
@@ -390,6 +389,11 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         self.on_press = on_press
         self.keybindings = keybindings
         self.get_styles = get_styles
+        self.reset(initial)
+
+    def reset(self, initial: Optional[dt.date]=None) -> None:
+        if initial is None:
+            initial = dt.date.today()
         weeks = self._construct_month(initial.year, initial.month)
         urwid.SimpleFocusListWalker.__init__(self, weeks)
 
@@ -402,6 +406,19 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             position += no_additional_weeks
         urwid.SimpleFocusListWalker.set_focus(self, position)
 
+    def days_to_next_already_loaded(self, day: dt.date) -> int:
+        """return the number of weeks from the focus to the next week that is already loaded"""
+        if len(self) == 0:
+            return 0
+        elif self.earliest_date <= day <= self.latest_date:
+            return 0
+        elif day <= self.earliest_date:
+            return (self.earliest_date - day).days
+        elif self.latest_date <= day:
+            return (day - self.latest_date).days
+        else:
+            raise ValueError("This should not happen")
+
     @property
     def focus_date(self) -> dt.date:
         """return the date the focus is currently set to"""
@@ -409,6 +426,8 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
     def set_focus_date(self, a_day: dt.date) -> None:
         """set the focus to `a_day`"""
+        if self.days_to_next_already_loaded(a_day) > 200:   # arbitrary number
+            self.reset(a_day)
         row, column = self.get_date_pos(a_day)
         self.set_focus(row)
         self[self.focus]._set_focus_position(column)
