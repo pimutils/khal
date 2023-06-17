@@ -364,12 +364,21 @@ class DayWalker(urwid.SimpleFocusListWalker):
         super().__init__([])
         self.ensure_date(this_date)
 
-    def ensure_date(self, day):
+
+    def reset(self):
+        """delete all events contained in this DayWalker"""
+        self.clear()
+        self._last_day = None
+        self._first_day = None
+
+
+    def ensure_date(self, day: dt.date) -> None:
         """make sure a DateListBox for `day` exists, update it and bring it into focus"""
         # TODO this function gets called twice on every date change, not necessary but
         # isn't very costly either
+        if self.days_to_next_already_loaded(day) > 200:  # arbitrary number
+            self.reset()
         item_no = None
-
         if len(self) == 0:
             pile = self._get_events(day)
             self.append(pile)
@@ -388,6 +397,19 @@ class DayWalker(urwid.SimpleFocusListWalker):
         assert self[item_no].date == day
         self[item_no].set_selected_date(day)
         self.set_focus(item_no)
+
+    def days_to_next_already_loaded(self, day: dt.date) -> int:
+        """return number of days until `day` is already loaded into the CalendarWidget"""
+        if len(self) == 0:
+            return 0
+        elif self[0].date <= day <= self[-1].date:
+            return 0
+        elif day <= self[0].date:
+            return (self[0].date - day).days
+        elif self[-1].date <= day:
+            return (day - self[-1].date).days
+        else:
+            raise ValueError("This should not happen")
 
     def update_events_ondate(self, day):
         """refresh the contents of the day's DateListBox"""
