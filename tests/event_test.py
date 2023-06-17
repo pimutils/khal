@@ -326,6 +326,15 @@ def test_event_rd():
     assert event.recurring is True
 
 
+def test_status_confirmed():
+    event = Event.fromString(_get_text('event_dt_status_confirmed'), **EVENT_KWARGS)
+    assert event.status == 'CONFIRMED'
+    FORMAT_CALENDAR = ('{calendar-color}{status-symbol}{start-end-time-style} ({calendar}) '
+                       '{title} [{location}]{repeat-symbol}')
+
+    assert event.format(FORMAT_CALENDAR, dt.date(2014, 4, 9)) == \
+        ' ✔09:30-10:30 (foobar) An Event []\x1b[0m'
+
 def test_event_d_long():
     event_d_long = _get_text('event_d_long')
     event = Event.fromString(event_d_long, **EVENT_KWARGS)

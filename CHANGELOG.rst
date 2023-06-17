@@ -22,6 +22,9 @@ not released yet
 * NEW Add default alarms configuration option
 * FIX defaults for `default_event_duration` and `default_dayevent_duration`
   where mixed up, `default_dayevent_duration` is the default for all-day events
+* NEW event format option `status-symbol` which represents the status of an
+  event with a symbol (e.g. `✓` for confirmed, `✗` for cancelled, `?` for
+  tentative)
 
 0.11.2
 ======

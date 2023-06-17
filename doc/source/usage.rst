@@ -150,6 +150,9 @@ Several options are common to almost all of :program:`khal`'s commands
        The status of the event (if this event has one), something like
        `CONFIRMED` or `CANCELLED`.
 
+    status-symbol
+       The status of the event as a symbol, `✓` or `✗` or `?`.
+
    cancelled
        The string `CANCELLED` (plus one blank) if the event's status is
        cancelled, otherwise nothing.

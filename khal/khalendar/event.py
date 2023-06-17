@@ -286,7 +286,10 @@ class Event:
                 'range': '\N{Left right arrow}',
                 'range_end': '\N{Rightwards arrow to bar}',
                 'range_start': '\N{Rightwards arrow from bar}',
-                'right_arrow': '\N{Rightwards arrow}'
+                'right_arrow': '\N{Rightwards arrow}',
+                'cancelled': '\N{Cross mark}',
+                'confirmed': '\N{Heavy check mark}',
+                'tentative': '\N{White question mark ornament}',
             }
         else:
             return {
@@ -295,7 +298,10 @@ class Event:
                 'range': '<->',
                 'range_end': '->|',
                 'range_start': '|->',
-                'right_arrow': '->'
+                'right_arrow': '->',
+                'cancelled': 'X',
+                'confirmed': 'V',
+                'tentative': '?',
             }
 
     @property
@@ -554,6 +560,18 @@ class Event:
             alarmstr = ''
         return alarmstr
 
+    @property
+    def _status_str(self) -> str:
+        if self.status == 'CANCELLED':
+            statusstr = ' ' + self.symbol_strings['cancelled']
+        elif self.status == 'TENTATIVE':
+            statusstr = ' ' + self.symbol_strings['tentative']
+        elif self.status == 'CONFIRMED':
+            statusstr = ' ' + self.symbol_strings['confirmed']
+        else:
+            statusstr = ''
+        return statusstr
+
     def attributes(
             self,
             relative_to: Union[Tuple[dt.date, dt.date], dt.date],
@@ -684,6 +702,7 @@ class Event:
         attributes["repeat-symbol"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
         attributes["alarm-symbol"] = self._alarm_str
+        attributes["status-symbol"] = self._status_str
         attributes["title"] = self.summary
         attributes["organizer"] = self.organizer.strip()
         attributes["description"] = self.description.strip()
