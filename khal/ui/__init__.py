@@ -23,7 +23,7 @@ import datetime as dt
 import logging
 import signal
 import sys
-from typing import Optional
+from typing import Optional, Tuple
 
 import click
 import urwid
@@ -99,11 +99,10 @@ class SelectableText(urwid.Text):
 
 
 class DateHeader(SelectableText):
-    def __init__(self, day, dateformat, conf):
+    def __init__(self, day: dt.date, dateformat: str, conf):
         """
-        :type day: datetime.date
-        :type dateformat: format to print `day` in
-        :type dateformat: str
+        :param day: the date that is represented by this DateHeader instance
+        :param dateformat: format to print `day` in
         """
         self._day = day
         self._dateformat = dateformat
@@ -118,14 +117,11 @@ class DateHeader(SelectableText):
         """
         self.set_text(self.relative_day(self._day, self._dateformat))
 
-    def relative_day(self, day, dtformat):
+    def relative_day(self, day: dt.date, dtformat: str) -> str:
         """convert day into a string with its weekday and relative distance to today
 
         :param day: day to be converted
-        :type: day: datetime.day
         :param dtformat: the format day is to be printed in, passed to strftime
-        :type dtformat: str
-        :rtype: str
         """
 
         weekday = day.strftime('%A')
@@ -393,15 +389,11 @@ class DayWalker(urwid.SimpleFocusListWalker):
         assert self[offset].date == day
         self[offset] = self._get_events(day)
 
-    def refresh_titles(self, start, end, everything):
+    def refresh_titles(self, start: dt.date, end: dt.date, everything: bool):
         """refresh events' titles
 
         if `everything` is True, reset all titles, otherwise only
         those between `start` and `end`
-
-        :type start: datetime.date
-        :type end: datetime.date
-        :type bool: bool
         """
         start = start.date() if isinstance(start, dt.datetime) else start
         end = end.date() if isinstance(end, dt.datetime) else end
@@ -418,12 +410,8 @@ class DayWalker(urwid.SimpleFocusListWalker):
         for index in range(offset, offset + length + 1):
             self[index].refresh_titles()
 
-    def update_range(self, start, end, everything=False):
-        """refresh contents of all days between start and end (inclusive)
-
-        :type start: datetime.date
-        :type end: datetime.date
-        """
+    def update_range(self, start: dt.date, end: dt.date, everything: bool=False):
+        """refresh contents of all days between start and end (inclusive)"""
         start = start.date() if isinstance(start, dt.datetime) else start
         end = end.date() if isinstance(end, dt.datetime) else end
 
@@ -467,11 +455,8 @@ class DayWalker(urwid.SimpleFocusListWalker):
         pile = self._get_events(self._first_day)
         self.insert(0, pile)
 
-    def _get_events(self, day):
-        """get all events on day, return a DateListBox of `U_Event()`s
-
-        :type day: datetime.date
-        """
+    def _get_events(self, day: dt.date) -> urwid.Widget:
+        """get all events on day, return a DateListBox of `U_Event()`s """
         event_list = []
         date_header = DateHeader(
             day=day,
@@ -523,25 +508,18 @@ class StaticDayWalker(DayWalker):
         """refresh the contents of the day's DateListBox"""
         self[0] = self._get_events(day)
 
-    def refresh_titles(self, start, end, everything):
+    def refresh_titles(self, start: dt.date, end: dt.date, everything: bool) -> None:
         """refresh events' titles
 
         if `everything` is True, reset all titles, otherwise only
         those between `start` and `end`
-
-        :type start: datetime.date
-        :type end: datetime.date
-        :type bool: bool
         """
+        # TODO: why are we not using the arguments?
         for one in self:
             one.refresh_titles()
 
-    def update_range(self, start, end, everything=False):
-        """refresh contents of all days between start and end (inclusive)
-
-        :type start: datetime.date
-        :type end: datetime.date
-        """
+    def update_range(self, start: dt.date, end: dt.date, everything: bool=False):
+        """refresh contents of all days between start and end (inclusive)"""
         start = start.date() if isinstance(start, dt.datetime) else start
         end = end.date() if isinstance(end, dt.datetime) else end
 
@@ -584,11 +562,10 @@ class DateListBox(urwid.ListBox):
     def reset_style(self):
         self.body[0].set_attr_map({None: 'date header'})
 
-    def set_selected_date(self, day):
+    def set_selected_date(self, day: dt.date) -> None:
         """Mark `day` as selected
 
         :param day: day to mark as selected
-        :type day: datetime.date
         """
         DateListBox.selected_date = day
         # we need to touch the title's content to make sure
@@ -688,13 +665,12 @@ class EventColumn(urwid.WidgetWrap):
         """refresh titles in DateListBoxes"""
         self.dlistbox.update_date_line()
 
-    def edit(self, event, always_save=False, external_edit=False):
+    def edit(self, event, always_save: bool=False, external_edit: bool=False) -> None:
         """create an EventEditor and display it
 
         :param event: event to edit
         :type event: khal.event.Event
         :param always_save: even save the event if it hasn't changed
-        :type always_save: bool
         """
         if event.readonly:
             self.pane.window.alert(
@@ -710,12 +686,10 @@ class EventColumn(urwid.WidgetWrap):
         else:
             original_end = event.end_local
 
-        def update_colors(new_start, new_end, everything=False):
+        def update_colors(new_start: dt.date, new_end: dt.date, everything: bool=False):
             """reset colors in the calendar widget and dates in DayWalker
             between min(new_start, original_start)
 
-            :type new_start: datetime.date
-            :type new_end: datetime.date
             :param everything: set to True if event is a recurring one, than everything
                   gets reseted
             """
@@ -840,7 +814,7 @@ class EventColumn(urwid.WidgetWrap):
                 event.event.start_local, event.event.end_local, event.event.recurring)
             event.set_title()  # if we are in search results, refresh_titles doesn't work properly
 
-    def duplicate(self):
+    def duplicate(self) -> None:
         """duplicate the event in focus"""
         # TODO copying from birthday calendars is currently problematic
         # because their title is determined by X-BIRTHDAY and X-FNAME properties
@@ -864,11 +838,11 @@ class EventColumn(urwid.WidgetWrap):
         except IndexError:
             pass
 
-    def new(self, date: dt.date, end: Optional[dt.date]=None):
+    def new(self, date: dt.date, end: Optional[dt.date]=None) -> None:
         """create a new event on `date` at the next full hour and edit it
 
         :param date: default date for new event
-        :param end: optional, date the event ends on (inclusive)
+        :param end: date the event ends on (inclusive)
         """
         dtstart: dt.date
         dtend: dt.date
@@ -1188,15 +1162,13 @@ class ClassicView(Pane):
         self.eventscolumn.original_widget.new(date, end)
 
 
-def _urwid_palette_entry(name, color, hmethod):
+def _urwid_palette_entry(
+    name: str, color: str, hmethod: str) -> Tuple[str, str, str, str, str, str]:
     """Create an urwid compatible palette entry.
 
     :param name: name of the new attribute in the palette
-    :type name: string
     :param color: color for the new attribute
-    :type color: string
     :returns: an urwid palette entry
-    :rtype: tuple
     """
     from ..terminal import COLORS
     if color == '' or color in COLORS or color is None:
