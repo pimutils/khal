@@ -756,6 +756,8 @@ class RecurrenceEditor(urwid.WidgetWrap):
 
     @property
     def changed(self):
+        # TODO this often gives false positives which leads to redraws of all
+        # events shown
         return self._rrule != self.rrule()  # TODO do this properly
 
     def rrule(self):
