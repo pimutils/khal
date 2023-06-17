@@ -26,7 +26,7 @@ if they are large, into their own files
 """
 import datetime as dt
 import re
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import urwid
 

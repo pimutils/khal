@@ -1,6 +1,6 @@
 import datetime as dt
 import os
-from typing import List, Optional, Protocol, Tuple, TypedDict, Union, Literal
+from typing import List, Literal, Optional, Protocol, Tuple, TypedDict, Union
 
 import pytz
 

@@ -23,8 +23,8 @@ import datetime as dt
 import logging
 import signal
 import sys
-from typing import Optional, Tuple, Union, Dict, List
 from enum import IntEnum
+from typing import Dict, List, Optional, Tuple
 
 import click
 import urwid

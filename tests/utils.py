@@ -4,9 +4,9 @@ from typing import Dict, Tuple
 import icalendar
 import pytz
 
+from khal.custom_types import LocaleConfiguration
 from khal.khalendar import CalendarCollection
 from khal.khalendar.vdir import Vdir
-from khal.custom_types import  LocaleConfiguration
 
 CollVdirType = Tuple[CalendarCollection, Dict[str, Vdir]]
 

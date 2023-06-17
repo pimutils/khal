@@ -20,7 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import datetime as dt
-from typing import Callable, Dict, List, Optional, Literal
+from typing import Callable, Dict, List, Literal, Optional
 
 import urwid
 

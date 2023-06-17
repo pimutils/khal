@@ -33,7 +33,12 @@ import pytz
 from click import confirm, echo, prompt, style
 
 from khal import __productname__, __version__, calendar_display, parse_datetime, utils
-from khal.custom_types import EventCreationTypes, LocaleConfiguration, WeekNumbersType, MonthDisplayType
+from khal.custom_types import (
+    EventCreationTypes,
+    LocaleConfiguration,
+    MonthDisplayType,
+    WeekNumbersType,
+)
 from khal.exceptions import DateTimeParseError, FatalError
 from khal.khalendar import CalendarCollection
 from khal.khalendar.event import Event
