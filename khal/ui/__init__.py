@@ -519,6 +519,13 @@ class DayWalker(urwid.SimpleFocusListWalker):
     def current_day(self) -> dt.date:
         return self[self.focus].original_widget.date
 
+    @property
+    def first_date(self) -> dt.date:
+        return self[0].original_widget.date
+
+    @property
+    def last_date(self) -> dt.date:
+        return self[-1].original_widget.date
 
 class StaticDayWalker(DayWalker):
     """Only show events for a fixed number of days."""
@@ -684,6 +691,9 @@ class EventColumn(urwid.WidgetWrap):
             min_date = self.pane.calendar.base_widget.walker.earliest_date
             max_date = self.pane.calendar.base_widget.walker.latest_date
         self.pane.base_widget.calendar.base_widget.reset_styles_range(min_date, max_date)
+        if everything:
+            min_date = self.dlistbox.body.first_date
+            max_date = self.dlistbox.body.last_date
         self.dlistbox.body.update_range(min_date, max_date)
 
     def refresh_titles(self, min_date, max_date, everything):
