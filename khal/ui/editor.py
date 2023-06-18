@@ -37,6 +37,9 @@ from .widgets import (
     PositiveIntEdit,
     TimeWidget,
     ValidatedEdit,
+    button,
+    CPadding,
+    CAttrMap,
 )
 
 
@@ -361,48 +364,50 @@ class EventEditor(urwid.WidgetWrap):
             self.event.recurobject, self._conf, event.start_local,
         )
         self.summary = urwid.AttrMap(ExtendedEdit(
-            caption=('', 'Title:       '), edit_text=event.summary), 'edit'
+            caption=('caption', 'Title:       '), edit_text=event.summary), 'edit'
         )
 
         divider = urwid.Divider(' ')
 
         def decorate_choice(c):
             return ('calendar ' + c['name'], c['name'])
-
-        self.calendar_chooser = Choice(
+        self.calendar_chooser= CAttrMap(Choice(
             [self.collection._calendars[c] for c in self.collection.writable_names],
             self.collection._calendars[self.event.calendar],
             decorate_choice
-        )
+        ), 'caption')
+
         self.description = urwid.AttrMap(
             ExtendedEdit(
-                caption=('', 'Description:  '),
+                caption=('caption', 'Description: '),
                 edit_text=self.description,
                 multiline=True
             ),
             'edit'
         )
         self.location = urwid.AttrMap(ExtendedEdit(
-            caption=('', 'Location:     '), edit_text=self.location), 'edit'
+            caption=('caption', 'Location:    '), edit_text=self.location), 'edit'
         )
         self.categories = urwid.AttrMap(ExtendedEdit(
-            caption=('', 'Categories:   '), edit_text=self.categories), 'edit'
+            caption=('caption', 'Categories:  '), edit_text=self.categories), 'edit'
         )
         self.attendees = urwid.AttrMap(
             ExtendedEdit(
-                caption=('', 'Attendees: '),
+                caption=('caption', 'Attendees:   '),
                 edit_text=self.attendees,
                 multiline=True
             ),
             'edit'
         )
         self.url = urwid.AttrMap(ExtendedEdit(
-            caption=('', 'URL:         '), edit_text=self.url), 'edit'
+            caption=('caption', 'URL:         '), edit_text=self.url), 'edit'
         )
         self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
             self.summary,
-            urwid.Columns([(12, self.calendar_chooser)]),
+            urwid.Columns([(13, urwid.AttrMap(urwid.Text('Calendar:'), 'caption')),
+                           (12, self.calendar_chooser)],
+                          ),
             divider,
             self.location,
             self.categories,
@@ -416,8 +421,8 @@ class EventEditor(urwid.WidgetWrap):
             divider,
             self.alarms,
             divider,
-            urwid.Columns([(12, urwid.Button('Save', on_press=self.save))]),
-            urwid.Columns([(12, urwid.Button('Export', on_press=self.export))])
+            urwid.Columns([(12, button('Save', on_press=self.save, padding_left=0, padding_right=0))]),
+            urwid.Columns([(12, button('Export', on_press=self.export, padding_left=0, padding_right=0))])
         ]), outermost=True)
         self._always_save = always_save
         urwid.WidgetWrap.__init__(self, self.pile)
@@ -523,7 +528,7 @@ class EventEditor(urwid.WidgetWrap):
             self.event.allday = self.startendeditor.allday
             self.event.increment_sequence()
             if self.event.etag is None:  # has not been saved before
-                self.event.calendar = self.calendar_chooser.active['name']
+                self.event.calendar = self.calendar_chooser.original_widget.active['name']
                 self.collection.insert(self.event)
             elif self.calendar_chooser.changed:
                 self.collection.change_collection(
@@ -594,18 +599,18 @@ class RecurrenceEditor(urwid.WidgetWrap):
             self._until = "Forever"
 
         recurrence = self._rrule['freq'][0].lower() if self._rrule else "weekly"
-        self.recurrence_choice = Choice(
+        self.recurrence_choice = CPadding(CAttrMap(Choice(
             ["daily", "weekly", "monthly", "yearly"],
             recurrence,
             callback=self.rebuild,
-        )
+        ), 'popupper'), align='center', left=2, right=2)
         self.interval_edit = PositiveIntEdit(
-            caption='every:',
+            caption=('caption', 'every:'),
             edit_text=str(self._rrule.get('INTERVAL', [1])[0]),
         )
-        self.until_choice = Choice(
+        self.until_choice = CPadding(CAttrMap(Choice(
             ["Forever", "Until", "Repetitions"], self._until, callback=self.rebuild,
-        )
+        ), 'popupper'), align='center', left=2, right=2)
 
         count = str(self._rrule.get('COUNT', [1])[0])
         self.repetitions_edit = PositiveIntEdit(edit_text=count)
@@ -721,8 +726,8 @@ class RecurrenceEditor(urwid.WidgetWrap):
     def _rebuild_edit(self):
         firstline = NColumns([
             (13, self.repeat_box),
-            (11, self.recurrence_choice),
-            (11, self.interval_edit),
+            (18, self.recurrence_choice),
+            (13, self.interval_edit),
         ])
         lines = [firstline]
 
@@ -731,9 +736,9 @@ class RecurrenceEditor(urwid.WidgetWrap):
         if self.recurrence_choice.active == "monthly":
             lines.append(self.monthly_choice)
 
-        nextline = [(16, self.until_choice)]
+        nextline = [(20, self.until_choice.original_widget)]
         if self.until_choice.active == "Until":
-            nextline.append((20, self.until_edit))
+            nextline.append((24, self.until_edit))
         elif self.until_choice.active == "Repetitions":
             nextline.append((4, self.repetitions_edit))
         lines.append(NColumns(nextline))
