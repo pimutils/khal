@@ -33,7 +33,7 @@ from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
 from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
-from .widgets import CalendarWidget, NColumns, NPile, linebox
+from .widgets import CalendarWidget, NColumns, NPile, linebox, button
 from .widgets import ExtendedEdit as Edit
 
 logger = logging.getLogger('khal')
@@ -1021,9 +1021,12 @@ class SearchDialog(urwid.WidgetWrap):
 
         lines = []
         lines.append(urwid.Text('Please enter a search term (Escape cancels):'))
-        lines.append(search_field)
-        buttons = NColumns([urwid.Button('Search', on_press=this_func),
-                            urwid.Button('Abort', on_press=abort_func)])
+        lines.append(urwid.AttrMap(search_field, 'edit', 'edit focused'))
+        lines.append(urwid.Text(''))
+        buttons = NColumns([
+            button('Search', on_press=this_func, padding_left=0),
+            button('Abort', on_press=abort_func, padding_right=0),
+        ])
         lines.append(buttons)
         content = NPile(lines, outermost=True)
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
