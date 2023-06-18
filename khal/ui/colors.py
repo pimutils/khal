@@ -55,6 +55,8 @@ dark = [
     ('editbx', 'light gray', 'dark blue'),
     ('editcp', 'black', 'light gray', 'standout'),
     ('popupbg', 'white', 'black', 'bold'),
+    ('popupper', 'white', 'dark cyan'),
+    ('caption', 'white', '', 'bold'),
 ]
 light = [
     ('header', 'black', 'white'),
@@ -91,4 +93,6 @@ light = [
     ('editbx', 'light gray', 'dark blue'),
     ('editcp', 'black', 'light gray', 'standout'),
     ('popupbg', 'white', 'black', 'bold'),
+    ('popupper', 'black', 'light gray'),
+    ('caption', 'black', '', ''),
 ]
