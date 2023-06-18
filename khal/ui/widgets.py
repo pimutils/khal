@@ -249,7 +249,12 @@ class ChoiceList(urwid.WidgetWrap):
         buttons = []
         for c in parent.choices:
             buttons.append(
-                button(parent._decorate(c), attr_map='popupbg', on_press=self.set_choice, user_data=c)
+                button(
+                    parent._decorate(c),
+                    attr_map='popupbg',
+                    on_press=self.set_choice,
+                    user_data=c,
+                )
             )
 
         pile = NPile(buttons, outermost=True)

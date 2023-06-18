@@ -421,8 +421,12 @@ class EventEditor(urwid.WidgetWrap):
             divider,
             self.alarms,
             divider,
-            urwid.Columns([(12, button('Save', on_press=self.save, padding_left=0, padding_right=0))]),
-            urwid.Columns([(12, button('Export', on_press=self.export, padding_left=0, padding_right=0))])
+            urwid.Columns(
+                [(12, button('Save', on_press=self.save, padding_left=0, padding_right=0))]
+            ),
+            urwid.Columns(
+                [(12, button('Export', on_press=self.export, padding_left=0, padding_right=0))],
+            )
         ]), outermost=True)
         self._always_save = always_save
         urwid.WidgetWrap.__init__(self, self.pile)
