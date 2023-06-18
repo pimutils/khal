@@ -693,3 +693,26 @@ linebox = {
     'width': FocusLineBoxWidth,
     'False': urwid.WidgetPlaceholder,
 }
+
+def button(*args,
+           attr_map: str='button', focus_map='button focused',
+           padding_left=0, padding_right=0,
+           **kwargs):
+    """wrapping an urwid button in attrmap and padding"""
+    button_ = urwid.Button(*args, **kwargs)
+    button_ = urwid.AttrMap(button_, attr_map=attr_map, focus_map=focus_map)
+    button_ = urwid.Padding(button_, left=padding_left, right=padding_right)
+    return button_
+
+
+class CAttrMap(urwid.AttrMap):
+    """A variant of AttrMap that exposes the active property of the original widget"""
+    @property
+    def active(self):
+        return self.original_widget.active
+
+class CPadding(urwid.Padding):
+    """A variant of Patting that exposes the active property of the original widget"""
+    @property
+    def active(self):
+        return self.original_widget.active
