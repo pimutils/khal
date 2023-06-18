@@ -27,7 +27,9 @@ from ..utils import get_weekday_occurrence, get_wrapped_text
 from .widgets import (
     AlarmsEditor,
     CalendarWidget,
+    CAttrMap,
     Choice,
+    CPadding,
     DateConversionError,
     DateWidget,
     ExtendedEdit,
@@ -38,8 +40,6 @@ from .widgets import (
     TimeWidget,
     ValidatedEdit,
     button,
-    CPadding,
-    CAttrMap,
 )
 
 

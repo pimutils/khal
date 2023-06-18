@@ -33,7 +33,7 @@ from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
 from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
-from .widgets import CalendarWidget, NColumns, NPile, linebox, button
+from .widgets import CalendarWidget, NColumns, NPile, button, linebox
 from .widgets import ExtendedEdit as Edit
 
 logger = logging.getLogger('khal')
