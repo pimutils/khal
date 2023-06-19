@@ -710,13 +710,22 @@ def button(*args,
 
 
 class CAttrMap(urwid.AttrMap):
-    """A variant of AttrMap that exposes the active property of the original widget"""
+    """A variant of AttrMap that exposes the some properties of the original widget"""
     @property
     def active(self):
         return self.original_widget.active
 
+    @property
+    def changed(self):
+        return self.original_widget.changed
+
+
 class CPadding(urwid.Padding):
-    """A variant of Patting that exposes the active property of the original widget"""
+    """A variant of Patting that exposes some properties of the original widget"""
     @property
     def active(self):
         return self.original_widget.active
+
+    @property
+    def changed(self):
+        return self.original_widget.changed
