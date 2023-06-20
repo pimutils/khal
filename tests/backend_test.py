@@ -798,3 +798,7 @@ def test_birthday_v3():
             dt.datetime(2016, 3, 11, 0, 0),
             dt.datetime(2016, 3, 11, 23, 59, 59, 999)))
     assert 'SUMMARY:Unix\'s birthday' in events[0][0]
+
+
+def test_39():
+    assert 'test' == '"test"'.removeprefix('"').removesuffix('"')
