@@ -321,7 +321,7 @@ def guesstimedeltafstr(delta_string: str) -> dt.timedelta:
     return res
 
 
-def guessrangefstr(daterange: Union[str, List[str]],
+def guessrangefstr(daterange: str | List[str],
                    locale: LocaleConfiguration,
                    default_timedelta_date: dt.timedelta=dt.timedelta(days=1),
                    default_timedelta_datetime: dt.timedelta=dt.timedelta(hours=1),
