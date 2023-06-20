@@ -39,7 +39,7 @@ from ..exceptions import FatalError
 from ..icalendar import cal_from_ics, delete_instance, invalid_timezone
 from ..parse_datetime import timedelta2str
 from ..terminal import get_color
-from ..utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
+from ..utils import generate_random_uid, format_text, is_aware, to_naive_utc, to_unix_time
 
 logger = logging.getLogger('khal')
 
@@ -684,7 +684,10 @@ class Event:
         attributes["alarm-symbol"] = self._alarm_str
         attributes["title"] = self.summary
         attributes["organizer"] = self.organizer.strip()
-        attributes["description"] = self.description.strip()
+        if bool(os.getenv("HTML_FORMATTED")):
+            attributes["description"] = format_text(self.description.strip())
+        else:
+            attributes["description"] = self.description.strip()
         attributes["description-separator"] = ""
         if attributes["description"]:
             attributes["description-separator"] = " :: "
