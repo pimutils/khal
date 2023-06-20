@@ -24,3 +24,8 @@ repos:
     hooks:
       - id: ruff
         args: ["--fix"]
+  - repo: https://github.com/netromdk/vermin
+    rev: 58fe25f0a3bdaeefe7a2a021bee2938f5465ccde
+    hooks:
+      - id: vermin
+        args: ['-t=3.8-', '--violations']
