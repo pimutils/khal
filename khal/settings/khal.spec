@@ -324,3 +324,21 @@ multiple_on_overflow = boolean(default=False)
 # actually disables highlighting for events that should use the
 # default color.
 default_color = color(default='')
+
+# Override ikhal's color theme with a custom palette. This is useful to style
+# certain elements of ikhal individually.
+# Palette entries take the form of `key = foreground, background, mono,
+# foreground_high, background_high` where foreground and background are used in
+# "low color mode"  and foreground_high and background_high are used in "high
+# color mode" and mono if only monocolor is supported. If you don't want to set
+# a value for a certain color, use an empty string (`''`).
+# Valid entries for low color mode are listed on the urwid website_.
+# _http://urwid.org/manual/displayattributes.html#standard-foreground-colors For
+# high color mode you can use any valid 24-bit color value, e.g. `'#ff0000'`.
+# NOTE: 24-bit colors must be enclosed in single quotes to be parsed correctly,
+# otherwise the `#` will be interpreted as a comment.
+# Most modern terminals should support high color mode.
+# Example entry: `header = light red, default, default, #ff0000, default`
+# See the default palettes in `khal/ui/colors.py` for all available keys.
+# If you can't theme an element in ikhal, please open an issue on github.
+[palette]
