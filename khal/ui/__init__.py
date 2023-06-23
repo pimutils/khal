@@ -1387,9 +1387,9 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
         loop.set_alarm_in(60, check_for_updates, pane)
 
     loop.set_alarm_in(60, check_for_updates, pane)
-    # Make urwid use 256 color mode.
+    # Make urwid use 2**24 color mode.
     loop.screen.set_terminal_properties(
-        colors=256, bright_is_bold=pane._conf['view']['bold_for_light_color'])
+        colors=2**24, bright_is_bold=pane._conf['view']['bold_for_light_color'])
 
     def ctrl_c(signum, f):
         raise urwid.ExitMainLoop()
