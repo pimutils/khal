@@ -24,6 +24,7 @@ dark = [
     ('header', 'white', 'black'),
     ('footer', 'white', 'black'),
     ('line header', 'black', 'white', 'bold'),
+    ('alt header', 'white', '', 'bold'),
     ('bright', 'dark blue', 'white', ('bold', 'standout')),
     ('list', 'black', 'white'),
     ('list focused', 'white', 'light blue', 'bold'),
@@ -54,11 +55,14 @@ dark = [
     ('editbx', 'light gray', 'dark blue'),
     ('editcp', 'black', 'light gray', 'standout'),
     ('popupbg', 'white', 'black', 'bold'),
+    ('popupper', 'white', 'dark cyan'),
+    ('caption', 'white', '', 'bold'),
 ]
 light = [
     ('header', 'black', 'white'),
     ('footer', 'black', 'white'),
     ('line header', 'black', 'white', 'bold'),
+    ('alt header', 'black', '', 'bold'),
     ('bright', 'dark blue', 'white', ('bold', 'standout')),
     ('list', 'black', 'white'),
     ('list focused', 'white', 'light blue', 'bold'),
@@ -89,4 +93,6 @@ light = [
     ('editbx', 'light gray', 'dark blue'),
     ('editcp', 'black', 'light gray', 'standout'),
     ('popupbg', 'white', 'black', 'bold'),
+    ('popupper', 'black', 'light gray'),
+    ('caption', 'black', '', ''),
 ]

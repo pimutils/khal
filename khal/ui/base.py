@@ -26,6 +26,7 @@ general widgets should go in widgets.py"""
 import logging
 import threading
 import time
+from typing import Callable, List, Optional, Tuple, Union
 
 import urwid
 
@@ -77,16 +78,20 @@ class Pane(urwid.WidgetWrap):
         overlay = urwid.Overlay(content, self, 'center', ('relative', 70), ('relative', 70), None)
         self.window.open(overlay)
 
-    def scrollable_dialog(self, text, buttons=None, title="Press `ESC` to close this window"):
+    def scrollable_dialog(self,
+                          text: Union[str, List[urwid.Text]],
+                          buttons: Optional[List[Tuple[str, Callable]]]=None,
+                          title="Press `ESC` to close this window",
+                          ) -> None:
         """Open a scrollable dialog box.
 
         :param text: Text to appear as the body of the Dialog box
-        :type text: str
-        :param buttons: list of tuples of button labels and functions to call
-            when the button is pressed
-        :type buttons: list(str, callable)
+        :param buttons: button labels and functions to call when the button is pressed
         """
-        body = urwid.ListBox([urwid.Text(line) for line in text.splitlines()])
+        if isinstance(text, str):
+            body = urwid.ListBox([urwid.Text(line) for line in text.splitlines()])
+        else:
+            body = urwid.ListBox(text)
         if buttons:
             buttons = NColumns(
                 [urwid.Button(label, on_press=func) for label, func in buttons],
@@ -115,12 +120,11 @@ class Pane(urwid.WidgetWrap):
 
     def show_keybindings(self):
         lines = []
-        lines.append('  Command              Keys')
-        lines.append('  =======              ====')
+        lines.append(urwid.AttrMap(urwid.Text('  Command              Keys'), 'alt header'))
         for command, keys in self._conf['keybindings'].items():
-            lines.append(f'  {command:20} {keys}')
+            lines.append(urwid.Text(f'  {command:20} {", ".join(keys)}'))
         self.scrollable_dialog(
-            '\n'.join(lines),
+            lines,
             title="Press `ESC` to close this window, arrows to scroll",
         )
 

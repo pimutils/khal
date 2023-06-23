@@ -249,8 +249,12 @@ class ChoiceList(urwid.WidgetWrap):
         buttons = []
         for c in parent.choices:
             buttons.append(
-                urwid.Button(parent._decorate(c),
-                             on_press=self.set_choice, user_data=c)
+                button(
+                    parent._decorate(c),
+                    attr_map='popupbg',
+                    on_press=self.set_choice,
+                    user_data=c,
+                )
             )
 
         pile = NPile(buttons, outermost=True)
@@ -693,3 +697,35 @@ linebox = {
     'width': FocusLineBoxWidth,
     'False': urwid.WidgetPlaceholder,
 }
+
+def button(*args,
+           attr_map: str='button', focus_map='button focused',
+           padding_left=0, padding_right=0,
+           **kwargs):
+    """wrapping an urwid button in attrmap and padding"""
+    button_ = urwid.Button(*args, **kwargs)
+    button_ = urwid.AttrMap(button_, attr_map=attr_map, focus_map=focus_map)
+    button_ = urwid.Padding(button_, left=padding_left, right=padding_right)
+    return button_
+
+
+class CAttrMap(urwid.AttrMap):
+    """A variant of AttrMap that exposes the some properties of the original widget"""
+    @property
+    def active(self):
+        return self.original_widget.active
+
+    @property
+    def changed(self):
+        return self.original_widget.changed
+
+
+class CPadding(urwid.Padding):
+    """A variant of Patting that exposes some properties of the original widget"""
+    @property
+    def active(self):
+        return self.original_widget.active
+
+    @property
+    def changed(self):
+        return self.original_widget.changed
