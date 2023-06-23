@@ -1109,12 +1109,20 @@ class ClassicView(Pane):
 
     def cleanup(self, data):
         """delete all events marked for deletion"""
+        # If we delete several recuids from the same vevent, the etag will
+        # change after each deletion. As we check for matching etags before
+        # deleting, deleting any subsequent recuids will fail.
+        # We therefore keep track of the etags of the events we already
+        # deleted.
+        updated_etags = {}
         for part in self._deleted[ALL]:
             account, href, etag = part.split('\n', 2)
             self.collection.delete(href, etag, account)
         for part, rec_id in self._deleted[INSTANCES]:
             account, href, etag = part.split('\n', 2)
-            self.collection.delete_instance(href, etag, account, rec_id)
+            etag = updated_etags.get(href) or etag
+            event = self.collection.delete_instance(href, etag, account, rec_id)
+            updated_etags[event.href] = event.etag
 
     def keypress(self, size, key):
         binds = self._conf['keybindings']
