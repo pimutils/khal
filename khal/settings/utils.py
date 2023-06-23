@@ -69,11 +69,10 @@ def is_timedelta(string: str) -> dt.timedelta:
         raise VdtValueError(f"Invalid timedelta: {string}")
 
 
-def weeknumber_option(option: str) -> Union[str, Literal[False]]:
+def weeknumber_option(option: str) -> Union[Literal['left', 'right'], Literal[False]]:
     """checks if *option* is a valid value
 
     :param option: the option the user set in the config file
-    :type option: str
     :returns: 'off', 'left', 'right' or False
     """
     option = option.lower()
@@ -89,11 +88,10 @@ def weeknumber_option(option: str) -> Union[str, Literal[False]]:
             "'off', 'left' or 'right'")
 
 
-def monthdisplay_option(option: str) -> str:
+def monthdisplay_option(option: str) -> Literal['firstday', 'firstfullweek']:
     """checks if *option* is a valid value
 
     :param option: the option the user set in the config file
-    :returns: firstday, firstfullweek
     """
     option = option.lower()
     if option == 'firstday':

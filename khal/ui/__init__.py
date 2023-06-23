@@ -1202,8 +1202,7 @@ class ClassicView(Pane):
         self.eventscolumn.original_widget.new(date, end)
 
 
-def _urwid_palette_entry(
-    name: str, color: str, hmethod: str) -> Tuple[str, str, str, str, str, str]:
+def _urwid_palette_entry(name: str, color: str, hmethod: str) -> Tuple[str, str, str, str, str, str]:
     """Create an urwid compatible palette entry.
 
     :param name: name of the new attribute in the palette
