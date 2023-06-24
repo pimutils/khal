@@ -29,6 +29,7 @@ from shutil import get_terminal_size
 
 import click
 import click_log
+import xdg
 
 from . import __version__, controllers, khalendar
 from .exceptions import FatalError
@@ -252,6 +253,7 @@ def _get_cli():
             logger = logging.getLogger('khal')
             logger.handlers = [logging.FileHandler(ctx.logfilepath)]
         prepare_context(ctx, config)
+        find_load_plugins()
 
     @cli.command()
     @multi_calendar_option
@@ -512,15 +514,21 @@ def _get_cli():
     def interactive_cli(ctx, config, include_calendar, exclude_calendar, mouse):
         '''Interactive UI. Also launchable via `khal interactive`.'''
         prepare_context(ctx, config)
+        find_load_plugins()
         if mouse is not None:
             ctx.obj['conf']['default']['enable_mouse'] = mouse
-        controllers.interactive(
-            build_collection(
-                ctx.obj['conf'],
-                multi_calendar_select(ctx, include_calendar, exclude_calendar)
-            ),
-            ctx.obj['conf']
-        )
+        try:
+            controllers.interactive(
+                build_collection(
+                    ctx.obj['conf'],
+                    multi_calendar_select(ctx, include_calendar, exclude_calendar)
+                ),
+                ctx.obj['conf']
+            )
+        except FatalError as error:
+            logger.debug(error, exc_info=True)
+            logger.fatal(error)
+            sys.exit(1)
 
     @cli.command()
     @multi_calendar_option
@@ -697,6 +705,19 @@ def _get_cli():
             sys.exit(1)
 
     return cli, interactive_cli
+
+def find_load_plugins():
+    """Find and load all plugins in the plugin directory."""
+    # check all folders in $XDG_DATA_HOME/khal/plugins if they contain a
+    # __init__.py file. If so, import them.
+    plugin_dir = os.path.join(xdg.BaseDirectory.xdg_data_home, 'khal', 'plugins')
+    if not os.path.isdir(plugin_dir):
+        return
+    sys.path.append(plugin_dir)
+    for plugin in os.listdir(plugin_dir):
+        if os.path.isfile(os.path.join(plugin_dir, plugin, '__init__.py')):
+            logger.debug(f'loading plugin {plugin}')
+            __import__(plugin)
 
 
 main_khal, main_ikhal = _get_cli()
