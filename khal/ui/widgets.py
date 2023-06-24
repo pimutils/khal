@@ -582,29 +582,31 @@ class AlarmsEditor(urwid.WidgetWrap):
 
 class FocusLineBoxWidth(urwid.WidgetDecoration, urwid.WidgetWrap):
     def __init__(self, widget) -> None:
-        hline = urwid.Divider('─')
-        hline_focus = urwid.Divider('━')
-        self._vline = urwid.SolidFill('│')
-        self._vline_focus = urwid.SolidFill('┃')
+        # we cheat here with the attrs, if we use thick dividers we apply the
+        # focus attr group. We probably should fix this in render()
+        hline = urwid.AttrMap(urwid.Divider('─'), 'frame')
+        hline_focus = urwid.AttrMap(urwid.Divider('━'), 'frame focus')
+        self._vline = urwid.AttrMap(urwid.SolidFill('│'), 'frame')
+        self._vline_focus = urwid.AttrMap(urwid.SolidFill('┃'), 'frame focus')
         self._topline = urwid.Columns([
-            ('fixed', 1, urwid.Text('┌')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┌'), 'frame')),
             hline,
-            ('fixed', 1, urwid.Text('┐')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┐'), 'frame')),
         ])
         self._topline_focus = urwid.Columns([
-            ('fixed', 1, urwid.Text('┏')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┏'), 'frame focus')),
             hline_focus,
-            ('fixed', 1, urwid.Text('┓')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┓'), 'frame focus')),
         ])
         self._bottomline = urwid.Columns([
-            ('fixed', 1, urwid.Text('└')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('└'), 'frame')),
             hline,
-            ('fixed', 1, urwid.Text('┘')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┘'), 'frame')),
         ])
         self._bottomline_focus = urwid.Columns([
-            ('fixed', 1, urwid.Text('┗')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┗'), 'frame focus')),
             hline_focus,
-            ('fixed', 1, urwid.Text('┛')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┛'), 'frame focus')),
         ])
         self._middle = urwid.Columns(
             [('fixed', 1, self._vline), widget, ('fixed', 1, self._vline)],
