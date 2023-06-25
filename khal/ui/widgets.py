@@ -712,14 +712,9 @@ def button(*args,
 
 
 class CAttrMap(urwid.AttrMap):
-    """A variant of AttrMap that exposes the some properties of the original widget"""
-    @property
-    def active(self):
-        return self.original_widget.active
-
-    @property
-    def changed(self):
-        return self.original_widget.changed
+    """A variant of AttrMap that exposes all properties of the original widget"""
+    def __getattr__(self, name):
+        return getattr(self.original_widget, name)
 
 
 class CPadding(urwid.Padding):
