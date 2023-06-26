@@ -24,7 +24,7 @@ import logging
 import signal
 import sys
 from enum import IntEnum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
 import click
 import urwid
@@ -1202,11 +1202,20 @@ class ClassicView(Pane):
         self.eventscolumn.original_widget.new(date, end)
 
 
-def _urwid_palette_entry(name: str, color: str, hmethod: str) -> Tuple[str, str, str, str, str, str]:
+def _urwid_palette_entry(
+    name: str, color: str, hmethod: str, color_mode: Literal['256color', 'rgb'],
+    foreground: str = '', background: str = '',
+) -> Tuple[str, str, str, str, str, str]:
     """Create an urwid compatible palette entry.
 
     :param name: name of the new attribute in the palette
     :param color: color for the new attribute
+    :param hmethod: which highlighting mode to use, foreground or background
+    :param color_mode: which color mode we are in, if we are in 256-color mode,
+    we transform 24-bit/RGB colors to a (somewhat) matching 256-color set color
+    :param foreground: the foreground color to apply if we use background highlighting method
+    :param background: the background color to apply if we use foreground highlighting method
+
     :returns: an urwid palette entry
     """
     from ..terminal import COLORS
@@ -1217,9 +1226,8 @@ def _urwid_palette_entry(name: str, color: str, hmethod: str) -> Tuple[str, str,
         # Colors from the 256 color palette need to be prefixed with h in
         # urwid.
         color = 'h' + color
-    else:
-        # 24-bit colors are not supported by urwid.
-        # Convert it to some color on the 256 color palette that might resemble
+    elif color_mode == '256color':
+        # Convert to some color on the 256 color palette that might resemble
         # the 24-bit color.
         # First, generate the palette (indices 16-255 only). This assumes, that
         # the terminal actually uses the same palette, which may or may not be
@@ -1262,9 +1270,9 @@ def _urwid_palette_entry(name: str, color: str, hmethod: str) -> Tuple[str, str,
     # We unconditionally add the color to the high color slot. It seems to work
     # in lower color terminals as well.
     if hmethod in ['fg', 'foreground']:
-        return (name, '', '', '', color, '')
+        return (name, '', '', '', color, background)
     else:
-        return (name, '', '', '', '', color)
+        return (name, '', '', '', foreground, color)
 
 
 def _add_calendar_colors(palette: List, collection: CalendarCollection) -> List:
