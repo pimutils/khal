@@ -369,7 +369,7 @@ class EventEditor(urwid.WidgetWrap):
             self.event.recurobject, self._conf, event.start_local,
         )
         self.summary = urwid.AttrMap(ExtendedEdit(
-            caption=('caption', 'Title:       '), edit_text=event.summary), 'edit'
+            caption=('caption', 'Title:       '), edit_text=event.summary), 'edit', 'edit focus',
         )
 
         divider = urwid.Divider(' ')
@@ -388,13 +388,13 @@ class EventEditor(urwid.WidgetWrap):
                 edit_text=self.description,
                 multiline=True
             ),
-            'edit'
+            'edit', 'edit focus',
         )
         self.location = urwid.AttrMap(ExtendedEdit(
-            caption=('caption', 'Location:    '), edit_text=self.location), 'edit'
+            caption=('caption', 'Location:    '), edit_text=self.location), 'edit', 'edit focus',
         )
         self.categories = urwid.AttrMap(ExtendedEdit(
-            caption=('caption', 'Categories:  '), edit_text=self.categories), 'edit'
+            caption=('caption', 'Categories:  '), edit_text=self.categories), 'edit', 'edit focus',
         )
         self.attendees = urwid.AttrMap(
             ExtendedEdit(
@@ -402,10 +402,10 @@ class EventEditor(urwid.WidgetWrap):
                 edit_text=self.attendees,
                 multiline=True
             ),
-            'edit'
+            'edit', 'edit focus',
         )
         self.url = urwid.AttrMap(ExtendedEdit(
-            caption=('caption', 'URL:         '), edit_text=self.url), 'edit'
+            caption=('caption', 'URL:         '), edit_text=self.url), 'edit', 'edit focus',
         )
         self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([

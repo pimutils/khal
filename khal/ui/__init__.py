@@ -772,7 +772,7 @@ class EventColumn(urwid.WidgetWrap):
             )
         else:
             self.editor = True
-            editor = EventEditor(self.pane, event, update_colors, always_save=always_save)
+            editor = CAttrMap(EventEditor(self.pane, event, update_colors, always_save=always_save), 'editor', 'editor focus')
 
             ContainerWidget = linebox[self.pane._conf['view']['frame']]
             new_pane = urwid.Columns([
