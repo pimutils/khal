@@ -1275,29 +1275,44 @@ def _urwid_palette_entry(
         return (name, '', '', '', foreground, color)
 
 
-def _add_calendar_colors(palette: List, collection: CalendarCollection) -> List:
+def _add_calendar_colors(
+    palette: List[Tuple[str, ...]],
+    collection: 'CalendarCollection',
+    color_mode: Literal['256colors', 'rgb'],
+    base: Optional[str] = None,
+    attr_template: str = 'calendar {}',
+) -> List[Tuple[str, ...]]:
     """Add the colors for the defined calendars to the palette.
+
+    We support setting a fixed background or foreground color that we extract
+    from a giving attribute
 
     :param palette: the base palette
     :param collection:
+    :param color_mode: which color mode we are in
+    :param base: the attribute to extract the background and foreground color from
+    :param attr_template: the template to use for the attribute name
     :returns: the modified palette
     """
+    bg_color, fg_color = '', ''
+    for attr in palette:
+        if base and attr[0] == base:
+            bg_color = attr[5]
+            fg_color = attr[4]
+
     for cal in collection.calendars:
         if cal['color'] == '':
             # No color set for this calendar, use default_color instead.
             color = collection.default_color
         else:
             color = cal['color']
-        palette.append(_urwid_palette_entry('calendar ' + cal['name'], color,
-                                            collection.hmethod))
-    palette.append(_urwid_palette_entry('highlight_days_color',
-                                        collection.color, collection.hmethod))
-    palette.append(_urwid_palette_entry('highlight_days_multiple',
-                                        collection.multiple, collection.hmethod))
+        palette.append(_urwid_palette_entry('calendar ' + cal['name'], color, collection.hmethod, color_mode=color_mode, foreground=fg_color, background=bg_color))
+    palette.append(_urwid_palette_entry('highlight_days_color', collection.color, collection.hmethod, color_mode=color_mode, foreground=fg_color, background=bg_color))
+    palette.append(_urwid_palette_entry('highlight_days_multiple', collection.multiple, collection.hmethod, color_mode=color_mode, foreground=fg_color, background=bg_color))
     return palette
 
 
-def start_pane(pane, callback, program_info='', quit_keys=None):
+def start_pane(pane, callback, program_info='', quit_keys=None, color_mode: Literal['rgb', '256colors']='rgb'):
     """Open the user interface with the given initial pane."""
     quit_keys = quit_keys or ['q']
 
@@ -1349,7 +1364,7 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
     logger.addHandler(header_handler)
 
     frame.open(pane, callback)
-    palette = _add_calendar_colors(getattr(colors, pane._conf['view']['theme']), pane.collection)
+    palette = _add_calendar_colors(getattr(colors, pane._conf['view']['theme']), pane.collection, color_mode=color_mode)
 
     def merge_palettes(pallete_a, pallete_b) -> List[Tuple[str, str, str, str, str]]:
         """Merge two palettes together, with the second palette taking priority."""
@@ -1394,9 +1409,9 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
         loop.set_alarm_in(60, check_for_updates, pane)
 
     loop.set_alarm_in(60, check_for_updates, pane)
-    # Make urwid use 2**24 color mode.
-    loop.screen.set_terminal_properties(
-        colors=2**24, bright_is_bold=pane._conf['view']['bold_for_light_color'])
+
+    colors_ = 2**24 if color_mode == 'rgb' else 256
+    loop.screen.set_terminal_properties(colors=colors_, bright_is_bold=pane._conf['view']['bold_for_light_color'])
 
     def ctrl_c(signum, f):
         raise urwid.ExitMainLoop()
