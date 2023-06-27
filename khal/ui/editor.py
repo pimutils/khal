@@ -20,7 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import datetime as dt
-from typing import Callable, Dict, List, Literal, Optional
+from typing import Callable, Dict, List, Literal, Optional, Tuple
 
 import urwid
 
@@ -43,7 +43,6 @@ from .widgets import (
     button,
 )
 
-from typing import Dict, List, Tuple
 
 class StartEnd:
 
@@ -56,7 +55,7 @@ class StartEnd:
 
 
 class CalendarPopUp(urwid.PopUpLauncher):
-    def __init__(self, widget, on_date_change, weeknumbers=False,
+    def __init__(self, widget, on_date_change, weeknumbers: Literal['left', 'right', False]=False,
                  firstweekday=0, monthdisplay='firstday', keybindings=None) -> None:
         self._on_date_change = on_date_change
         self._weeknumbers = weeknumbers
@@ -127,10 +126,13 @@ class DateEdit(urwid.WidgetWrap):
             on_date_change=on_date_change)
         wrapped = CalendarPopUp(self._edit, on_date_change, weeknumbers,
                                 firstweekday, monthdisplay, keybindings)
-        padded = CAttrMap(urwid.Padding(wrapped, align='left', width=datewidth, left=0, right=1), 'calendar', 'calendar focus')
+        padded = CAttrMap(
+            urwid.Padding(wrapped, align='left', width=datewidth, left=0, right=1),
+            'calendar', 'calendar focus',
+        )
         super().__init__(padded)
 
-    def _validate(self, text):
+    def _validate(self, text: str):
         try:
             _date = dt.datetime.strptime(text, self._dateformat).date()
         except ValueError:
@@ -376,8 +378,9 @@ class EventEditor(urwid.WidgetWrap):
 
         divider = urwid.Divider(' ')
 
-        def decorate_choice(c):
-            return ('calendar ' + c['name'], c['name'])
+        def decorate_choice(c) -> Tuple[str, str]:
+            return ('calendar ' + c['name'] + ' popup', c['name'])
+
         self.calendar_chooser= CAttrMap(Choice(
             [self.collection._calendars[c] for c in self.collection.writable_names],
             self.collection._calendars[self.event.calendar],
