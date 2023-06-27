@@ -134,7 +134,7 @@ def _replace_uid(event):
     return event
 
 
-class DumbItem():
+class DumbItem:
     def __init__(self, raw, uid):
         self.raw = raw
         self.uid = uid
