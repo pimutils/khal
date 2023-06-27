@@ -447,7 +447,7 @@ def test_import(runner, monkeypatch):
     assert result.exit_code == 2
     assert 'Can\'t use "--include-calendar" / "-a" more than once' in result.output
 
-    class FakeImport():
+    class FakeImport:
         args, kwargs = None, None
 
         def clean(self):
@@ -508,7 +508,7 @@ def test_import_invalid_choice_and_prefix(runner):
 def test_import_from_stdin(runner, monkeypatch):
     ics_data = 'This is some really fake icalendar data'
 
-    class FakeImport():
+    class FakeImport:
         args, kwargs = None, None
         call_count = 0
 
@@ -588,7 +588,7 @@ def choices(dateformat=0, timeformat=0,
     return '\n'.join(out)
 
 
-class Config():
+class Config:
     """helper class for mocking vdirsyncer's config objects"""
     # TODO crate a vdir config on disk and let vdirsyncer actually read it
     storages = {

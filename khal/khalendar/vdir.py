@@ -308,7 +308,7 @@ class Color:
             raise ValueError(f'Unable to parse color value: {self.raw}')
 
 
-class ColorMixin():
+class ColorMixin:
     color_type: Type[Color] = Color
 
     def get_color(self: HasMetaProtocol) -> Optional[str]:
