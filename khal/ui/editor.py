@@ -43,6 +43,7 @@ from .widgets import (
     button,
 )
 
+from typing import Dict, List, Tuple
 
 class StartEnd:
 
@@ -88,7 +89,8 @@ class CalendarPopUp(urwid.PopUpLauncher):
                 weeknumbers=self._weeknumbers,
                 monthdisplay=self._monthdisplay,
                 initial=initial_date)
-            pop_up = urwid.LineBox(pop_up)
+            pop_up = CAttrMap(pop_up, 'calendar', ' calendar focus')
+            pop_up = CAttrMap(urwid.LineBox(pop_up), 'calendar', 'calendar focus')
             return pop_up
 
     def get_pop_up_parameters(self):
@@ -125,7 +127,7 @@ class DateEdit(urwid.WidgetWrap):
             on_date_change=on_date_change)
         wrapped = CalendarPopUp(self._edit, on_date_change, weeknumbers,
                                 firstweekday, monthdisplay, keybindings)
-        padded = urwid.Padding(wrapped, align='left', width=datewidth, left=0, right=1)
+        padded = CAttrMap(urwid.Padding(wrapped, align='left', width=datewidth, left=0, right=1), 'calendar', 'calendar focus')
         super().__init__(padded)
 
     def _validate(self, text):

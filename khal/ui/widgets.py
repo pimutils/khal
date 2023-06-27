@@ -252,6 +252,7 @@ class ChoiceList(urwid.WidgetWrap):
                 button(
                     parent._decorate(c),
                     attr_map='popupbg',
+                    focus_map='popupbg focus',
                     on_press=self.set_choice,
                     user_data=c,
                 )
@@ -533,7 +534,7 @@ class AlarmsEditor(urwid.WidgetWrap):
                 (21, self.duration),
                 (14, urwid.Padding(self.direction, right=1)),
                 self.description,
-                (10, urwid.Button('Delete', on_press=delete_handler, user_data=self)),
+                (10, button('Delete', on_press=delete_handler, user_data=self)),
             ])
 
             urwid.WidgetWrap.__init__(self, self.columns)
@@ -552,7 +553,7 @@ class AlarmsEditor(urwid.WidgetWrap):
         self.pile = NPile(
             [urwid.Text('Alarms:')] +
             [self.AlarmEditor(a, self.remove_alarm) for a in event.alarms] +
-            [urwid.Columns([(12, urwid.Button('Add', on_press=self.add_alarm))])])
+            [urwid.Columns([(12, button('Add', on_press=self.add_alarm))])])
 
         urwid.WidgetWrap.__init__(self, self.pile)
 
@@ -701,7 +702,7 @@ linebox = {
 }
 
 def button(*args,
-           attr_map: str='button', focus_map='button focused',
+           attr_map: str='button', focus_map='button focus',
            padding_left=0, padding_right=0,
            **kwargs):
     """wrapping an urwid button in attrmap and padding"""
