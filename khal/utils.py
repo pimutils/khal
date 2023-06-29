@@ -31,7 +31,6 @@ from textwrap import wrap
 from typing import Iterator, List, Optional, Tuple
 
 import pytz
-
 from markdownify import markdownify as md
 
 

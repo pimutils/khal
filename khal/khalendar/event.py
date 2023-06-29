@@ -39,7 +39,7 @@ from ..exceptions import FatalError
 from ..icalendar import cal_from_ics, delete_instance, invalid_timezone
 from ..parse_datetime import timedelta2str
 from ..terminal import get_color
-from ..utils import generate_random_uid, format_text, is_aware, to_naive_utc, to_unix_time
+from ..utils import format_text, generate_random_uid, is_aware, to_naive_utc, to_unix_time
 
 logger = logging.getLogger('khal')
 
