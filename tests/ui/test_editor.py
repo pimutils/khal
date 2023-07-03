@@ -26,7 +26,7 @@ def test_popup(monkeypatch):
 
     #405
     """
-    class FakeCalendar():
+    class FakeCalendar:
         def store(self, *args, **kwargs):
             self.args = args
             self.kwargs = kwargs

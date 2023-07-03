@@ -807,7 +807,7 @@ class TestSanitize:
         assert vevent['DTEND'].dt - vevent['DTSTART'].dt == dt.timedelta(hours=1)
 
 
-class TestIsAware():
+class TestIsAware:
     def test_naive(self):
         assert utils.is_aware(dt.datetime.now()) is False
 
