@@ -18,3 +18,4 @@ doc/source/configspec.rst
 env/
 venv/
 .hypothesis/
+.python-version
