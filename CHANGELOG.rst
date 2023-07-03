@@ -7,6 +7,13 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.11.3
+======
+not released yet
+
+* optimization in ikhal when editing events in the far future or past
+* FIX an issue in ikhal with updating the view of the event list after editing
+  an event
 
 0.11.2
 ======

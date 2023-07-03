@@ -28,7 +28,7 @@ import logging
 import sqlite3
 from enum import IntEnum
 from os import makedirs, path
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
 
 import icalendar
 import icalendar.cal
@@ -36,7 +36,7 @@ import pytz
 from dateutil import parser
 
 from .. import utils
-from ..custom_types import EventTuple
+from ..custom_types import EventTuple, LocaleConfiguration
 from ..icalendar import assert_only_one_uid, cal_from_ics
 from ..icalendar import expand as expand_vevent
 from ..icalendar import sanitize as sanitize_vevent
@@ -75,7 +75,7 @@ class SQLiteDb:
     def __init__(self,
                  calendars: Iterable[str],
                  db_path: Optional[str],
-                 locale: Dict[str, str],
+                 locale: LocaleConfiguration,
                  ) -> None:
         assert db_path is not None
         self.calendars: List[str] = list(calendars)

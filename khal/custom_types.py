@@ -1,6 +1,6 @@
 import datetime as dt
 import os
-from typing import List, Optional, Protocol, Tuple, TypedDict, Union
+from typing import List, Literal, Optional, Protocol, Tuple, TypedDict, Union
 
 import pytz
 
@@ -77,3 +77,6 @@ class EventCreationTypes(TypedDict):
 
 
 PathLike = Union[str, os.PathLike]
+
+WeekNumbersType = Literal['left', 'right', False]
+MonthDisplayType = Literal['firstday', 'firstfullweek']

@@ -4,6 +4,7 @@ from typing import Dict, Tuple
 import icalendar
 import pytz
 
+from khal.custom_types import LocaleConfiguration
 from khal.khalendar import CalendarCollection
 from khal.khalendar.vdir import Vdir
 
@@ -26,7 +27,7 @@ GMTPLUS3 = pytz.timezone('Etc/GMT+3')
 BOGOTA = pytz.timezone('America/Bogota')
 
 
-LOCALE_BERLIN = {
+LOCALE_BERLIN: LocaleConfiguration = {
     'default_timezone': BERLIN,
     'local_timezone': BERLIN,
     'dateformat': '%d.%m.',
@@ -39,7 +40,7 @@ LOCALE_BERLIN = {
     'weeknumbers': False,
 }
 
-LOCALE_NEW_YORK = {
+LOCALE_NEW_YORK: LocaleConfiguration = {
     'default_timezone': NEW_YORK,
     'local_timezone': NEW_YORK,
     'timeformat': '%H:%M',

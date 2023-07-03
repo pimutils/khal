@@ -20,6 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import datetime as dt
+from typing import Callable, Dict, List, Literal, Optional
 
 import urwid
 
@@ -103,10 +104,14 @@ class DateEdit(urwid.WidgetWrap):
     """
 
     def __init__(
-            self, startdt=None, dateformat='%Y-%m-%d',
-            on_date_change=lambda _: None,
-            weeknumbers=False, firstweekday=0, monthdisplay='firstday',
-            keybindings=None,
+        self,
+        startdt: dt.date,
+        dateformat: str='%Y-%m-%d',
+        on_date_change: Callable=lambda _: None,
+        weeknumbers: Literal['left', 'right', False]=False,
+        firstweekday: int=0,
+        monthdisplay: Literal['firstday', 'firstfullweek']='firstday',
+        keybindings: Optional[Dict[str, List[str]]] = None,
     ):
         datewidth = len(startdt.strftime(dateformat)) + 1
         self._dateformat = dateformat
@@ -751,6 +756,8 @@ class RecurrenceEditor(urwid.WidgetWrap):
 
     @property
     def changed(self):
+        # TODO this often gives false positives which leads to redraws of all
+        # events shown
         return self._rrule != self.rrule()  # TODO do this properly
 
     def rrule(self):
