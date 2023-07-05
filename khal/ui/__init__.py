@@ -644,7 +644,7 @@ class EventColumn(urwid.WidgetWrap):
         self.delete_status = pane.delete_status
         self.toggle_delete_all = pane.toggle_delete_all
         self.toggle_delete_instance = pane.toggle_delete_instance
-        self.dlistbox: DateListBox = elistbox
+        self.dlistbox: DListBox = elistbox
         self.container = urwid.Pile([self.dlistbox])
         urwid.WidgetWrap.__init__(self, self.container)
 
