@@ -38,6 +38,7 @@ from ..custom_types import LocaleConfiguration
 from ..exceptions import FatalError
 from ..icalendar import cal_from_ics, delete_instance, invalid_timezone
 from ..parse_datetime import timedelta2str
+from ..plugins import FORMATTERS
 from ..utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
 
 logger = logging.getLogger('khal')
@@ -725,7 +726,14 @@ class Event:
         attributes["partstat-symbol"] = self._partstat_str
         attributes["title"] = self.summary
         attributes["organizer"] = self.organizer.strip()
-        attributes["description"] = self.description.strip()
+
+        formatters = FORMATTERS.values()
+        if len(formatters) == 1:
+            fmt = list(formatters)[0]
+        else:
+            def fmt(s): return s.strip()
+
+        attributes["description"] = fmt(self.description)
         attributes["description-separator"] = ""
         if attributes["description"]:
             attributes["description-separator"] = " :: "

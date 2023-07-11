@@ -30,7 +30,7 @@ from shutil import get_terminal_size
 import click
 import click_log
 
-from . import __version__, controllers, khalendar
+from . import __version__, controllers, khalendar, plugins
 from .exceptions import FatalError
 from .settings import InvalidSettingsError, NoConfigFile, get_config
 from .terminal import colored
@@ -323,6 +323,9 @@ def _get_cli():
               daterange, once, notstarted, json, format, day_format):
         """List all events between a start (default: today) and (optional)
         end datetime."""
+        enabled_eventformatters = plugins.FORMATTERS
+        logger.warn("TODO: register user given format string as a plugin")
+        logger.debug(f'{enabled_eventformatters}')
         try:
             event_column = controllers.khal_list(
                 build_collection(
