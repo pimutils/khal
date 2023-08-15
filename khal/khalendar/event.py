@@ -426,9 +426,7 @@ class Event:
                 suffix = 'rd'
             else:
                 suffix = 'th'
-            return '{name}\'s {number}{suffix} {desc}{leap}'.format(
-                name=name, number=number, suffix=suffix, desc=description, leap=leap,
-            )
+            return f'{name}\'s {number}{suffix} {description}{leap}'
         else:
             return self._vevents[self.ref].get('SUMMARY', '')
 

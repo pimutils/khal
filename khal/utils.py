@@ -174,12 +174,7 @@ def relative_timedelta_str(day: dt.date) -> str:
     if count > 1:
         unit += 's'
 
-    return '{approx}{count} {unit} {direction}'.format(
-        approx=approx,
-        count=count,
-        unit=unit,
-        direction=direction,
-    )
+    return f'{approx}{count} {unit} {direction}'
 
 
 def get_wrapped_text(widget):
