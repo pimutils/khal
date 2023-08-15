@@ -329,8 +329,8 @@ class SQLiteDb:
                     self.sql_ex(sql_s, stuple)
                 except sqlite3.IntegrityError as error:
                     raise UpdateFailed('Database integrity error creating birthday event '
-                                       'on {} for contact {} (UID: {}): '
-                                       '{}'.format(date, name, uuid, error))
+                                       f'on {date} for contact {name} (UID: {uuid}): '
+                                       f'{error}')
 
     def _update_impl(self, vevent: icalendar.cal.Event, href: str, calendar: str) -> None:
         """insert `vevent` into the database

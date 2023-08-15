@@ -355,14 +355,12 @@ def create_config(vdirs, dateformat, timeformat, default_calendar=None):
         config.append(f'type = {type_}')
 
     config.append('\n[locale]')
-    config.append('timeformat = {timeformat}\n'
-                  'dateformat = {dateformat}\n'
-                  'longdateformat = {longdateformat}\n'
-                  'datetimeformat = {dateformat} {timeformat}\n'
-                  'longdatetimeformat = {longdateformat} {timeformat}\n'
-                  .format(timeformat=timeformat,
-                          dateformat=dateformat,
-                          longdateformat=dateformat))
+    config.append(f'timeformat = {timeformat}\n'
+                  f'dateformat = {dateformat}\n'
+                  f'longdateformat = {dateformat}\n'
+                  f'datetimeformat = {dateformat} {timeformat}\n'
+                  f'longdatetimeformat = {dateformat} {timeformat}\n'
+                  )
     if default_calendar:
         config.append('[default]')
         config.append(f'default_calendar = {default_calendar}\n')

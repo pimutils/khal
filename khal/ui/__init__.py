@@ -138,11 +138,7 @@ class DateHeader(SelectableText):
 
         approx_delta = utils.relative_timedelta_str(day)
 
-        return '{weekday}, {day} ({approx_delta})'.format(
-            weekday=weekday,
-            approx_delta=approx_delta,
-            day=daystr,
-        )
+        return f'{weekday}, {daystr} ({approx_delta})'
 
     def keypress(self, _, key: str) -> str:
         binds = self._conf['keybindings']
