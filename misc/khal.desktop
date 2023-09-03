@@ -6,5 +6,3 @@ Comment=Terminal CLI calendar application
 Exec=ikhal
 Terminal=true
 Type=Application
-
-MimeType=text/calendar
