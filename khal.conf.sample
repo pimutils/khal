@@ -30,3 +30,4 @@ monthdisplay = firstday
 default_calendar = home
 timedelta = 2d # the default timedelta that list uses
 highlight_event_days = True  # the default is False
+enable_mouse = True  # mouse is enabled by default in interactive mode

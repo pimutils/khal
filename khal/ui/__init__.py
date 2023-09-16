@@ -1344,7 +1344,12 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
     palette = _add_calendar_colors(
         getattr(colors, pane._conf['view']['theme']), pane.collection)
     loop = urwid.MainLoop(
-        frame, palette, unhandled_input=frame.on_key_press, pop_ups=True)
+        widget=frame,
+        palette=palette,
+        unhandled_input=frame.on_key_press,
+        pop_ups=True,
+        handle_mouse=pane._conf['default']['enable_mouse'],
+    )
     frame.loop = loop
 
     def redraw_today(loop, pane, meta=None):
