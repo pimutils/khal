@@ -3,3 +3,8 @@ select = ["E", "F", "W", "I", "B0", "UP", "C4"]
 ignore = ["B008"]
 line-length = 100
 target-version = "py38"
+
+[tool.coverage.report]
+exclude_lines = [
+    "if TYPE_CHECKING:",
+]
