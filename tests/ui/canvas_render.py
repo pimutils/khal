@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 
 import click
@@ -6,16 +8,16 @@ import click
 class CanvasTranslator:
     """Translates a canvas object into a printable string."""
 
-    def __init__(self, canvas, palette=None):
+    def __init__(self, canvas, palette: dict[str, str] | None = None) -> None:
         """currently only support foreground colors, so palette is
         a dictionary of attributes and foreground colors"""
         self._canvas = canvas
-        self._palette = {}
+        self._palette : dict[str, tuple[bool, str]]= {}
         if palette:
             for key, color in palette.items():
                 self.add_color(key, color)
 
-    def add_color(self, key, color):
+    def add_color(self, key: str, color: str) -> None:
         if color.startswith('#'):  # RGB colour
             r = color[1:3]
             g = color[3:5]
@@ -30,7 +32,7 @@ class CanvasTranslator:
 
         self._palette[key] = value  # (is_ansi, color)
 
-    def transform(self):
+    def transform(self) -> str:
         self.output = io.StringIO()
         for row in self._canvas.content():
             # self.spaces = 0
