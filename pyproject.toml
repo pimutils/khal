@@ -8,3 +8,6 @@ target-version = "py38"
 exclude_lines = [
     "if TYPE_CHECKING:",
 ]
+
+[tool.mypy]
+ignore_missing_imports = true
