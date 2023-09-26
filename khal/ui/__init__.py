@@ -1156,8 +1156,9 @@ class ClassicView(Pane):
             height=None)
         self.window.open(overlay)
 
-    def _search(self, search_term: str):
+    def _search(self, search_term: str) -> None:
         """search for events matching `search_term"""
+        assert self.window is not None
         self.window.backtrack()
         events = sorted(self.collection.search(search_term))
         event_list = []
@@ -1311,7 +1312,7 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
             else:
                 return 'DEBUG'
 
-        def format(self, record):
+        def format(self, record) -> str:
             return f'{self.get_prefix(record.levelno)}: {record.msg}'
 
     class HeaderFormatter(LogPaneFormatter):
