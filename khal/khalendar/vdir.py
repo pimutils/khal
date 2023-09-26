@@ -29,7 +29,7 @@ class cached_property:
     instances' methods.
     '''
 
-    def __init__(self, fget, doc=None):
+    def __init__(self, fget, doc=None) -> None:
         self.__name__ = fget.__name__
         self.__module__ = fget.__module__
         self.__doc__ = doc or fget.__doc__
@@ -94,7 +94,7 @@ def get_etag_from_file(f) -> str:
 
 
 class VdirError(IOError):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         for key, value in kwargs.items():
             if getattr(self, key, object()) not in [None, '']:  # pragma: no cover
                 raise TypeError(f'Invalid argument: {key}')
@@ -120,7 +120,7 @@ class AlreadyExistingError(VdirError):
 
 
 class Item:
-    def __init__(self, raw: str):
+    def __init__(self, raw: str) -> None:
         assert isinstance(raw, str)
         self.raw = raw
 
@@ -145,7 +145,7 @@ class VdirBase:
     item_class = Item
     default_mode = 0o750
 
-    def __init__(self, path: str, fileext: str, encoding: str='utf-8'):
+    def __init__(self, path: str, fileext: str, encoding: str='utf-8') -> None:
         if not os.path.isdir(path):
             raise CollectionNotFoundError(path)
         self.path = path
@@ -284,7 +284,7 @@ class VdirBase:
 
 
 class Color:
-    def __init__(self, x: str):
+    def __init__(self, x: str) -> None:
         if not x:
             raise ValueError('Color is false-ish.')
         if not x.startswith('#'):

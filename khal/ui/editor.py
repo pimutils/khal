@@ -46,7 +46,7 @@ from .widgets import (
 
 class StartEnd:
 
-    def __init__(self, startdate, starttime, enddate, endtime):
+    def __init__(self, startdate, starttime, enddate, endtime) -> None:
         """collecting some common properties"""
         self.startdate = startdate
         self.starttime = starttime
@@ -56,7 +56,7 @@ class StartEnd:
 
 class CalendarPopUp(urwid.PopUpLauncher):
     def __init__(self, widget, on_date_change, weeknumbers=False,
-                 firstweekday=0, monthdisplay='firstday', keybindings=None):
+                 firstweekday=0, monthdisplay='firstday', keybindings=None) -> None:
         self._on_date_change = on_date_change
         self._weeknumbers = weeknumbers
         self._monthdisplay = monthdisplay
@@ -112,7 +112,7 @@ class DateEdit(urwid.WidgetWrap):
         firstweekday: int=0,
         monthdisplay: Literal['firstday', 'firstfullweek']='firstday',
         keybindings: Optional[Dict[str, List[str]]] = None,
-    ):
+    ) -> None:
         datewidth = len(startdt.strftime(dateformat)) + 1
         self._dateformat = dateformat
         if startdt is None:
@@ -161,7 +161,7 @@ class StartEndEditor(urwid.WidgetWrap):
                  on_start_date_change=lambda x: None,
                  on_end_date_change=lambda x: None,
 
-                 ):
+                 ) -> None:
         """
         :type start: datetime.datetime
         :type end: datetime.datetime
@@ -336,7 +336,7 @@ class StartEndEditor(urwid.WidgetWrap):
 class EventEditor(urwid.WidgetWrap):
     """Widget that allows Editing one `Event()`"""
 
-    def __init__(self, pane, event, save_callback=None, always_save=False):
+    def __init__(self, pane, event, save_callback=None, always_save=False) -> None:
         """
         :type event: khal.event.Event
         :param save_callback: call when saving event with new start and end
@@ -572,7 +572,7 @@ WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']  # TODO use locale and res
 
 
 class WeekDaySelector(urwid.WidgetWrap):
-    def __init__(self, startdt, selected_days):
+    def __init__(self, startdt, selected_days) -> None:
 
         self._weekday_boxes = {day: urwid.CheckBox(day, state=False) for day in WEEKDAYS}
         weekday = startdt.weekday()
@@ -590,7 +590,7 @@ class WeekDaySelector(urwid.WidgetWrap):
 
 class RecurrenceEditor(urwid.WidgetWrap):
 
-    def __init__(self, rrule, conf, startdt):
+    def __init__(self, rrule, conf, startdt) -> None:
         self._conf = conf
         self._startdt = startdt
         self._rrule = rrule
@@ -797,7 +797,7 @@ class RecurrenceEditor(urwid.WidgetWrap):
 
 
 class ExportDialog(urwid.WidgetWrap):
-    def __init__(self, this_func, abort_func, event):
+    def __init__(self, this_func, abort_func, event) -> None:
         lines = []
         lines.append(urwid.Text('Export event as ICS file'))
         lines.append(urwid.Text(''))

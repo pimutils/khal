@@ -41,7 +41,7 @@ class Pane(urwid.WidgetWrap):
 
     """An abstract Pane to be used in a Window object."""
 
-    def __init__(self, widget, title=None, description=None):
+    def __init__(self, widget, title=None, description=None) -> None:
         self.widget = widget
         urwid.WidgetWrap.__init__(self, widget)
         self._title = title or ''

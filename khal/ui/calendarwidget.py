@@ -57,7 +57,7 @@ class DatePart(urwid.Text):
 
     """used in the Date widget (single digit)"""
 
-    def __init__(self, digit: str):
+    def __init__(self, digit: str) -> None:
         super().__init__(digit)
 
     @classmethod
@@ -82,7 +82,7 @@ class Date(urwid.WidgetWrap):
 
     """used in the main calendar for dates (a number)"""
 
-    def __init__(self, date: dt.date, get_styles: GetStylesSignature):
+    def __init__(self, date: dt.date, get_styles: GetStylesSignature) -> None:
         dstr = str(date.day).rjust(2)
         self.halves = [urwid.AttrMap(DatePart(dstr[:1]), None, None),
                        urwid.AttrMap(DatePart(dstr[1:]), None, None)]
@@ -142,7 +142,7 @@ class DateCColumns(urwid.Columns):
                  on_press: OnPressType,
                  keybindings: Dict[str, List[str]],
                  get_styles: GetStylesSignature,
-                 **kwargs):
+                 **kwargs) -> None:
         self.on_date_change = on_date_change
         self.on_press = on_press
         self.keybindings = keybindings
@@ -236,7 +236,7 @@ class CListBox(urwid.ListBox):
     it should contain a `CalendarWalker` instance which it autoextends on
     rendering, if needed """
 
-    def __init__(self, walker: 'CalendarWalker'):
+    def __init__(self, walker: 'CalendarWalker') -> None:
         self._init: bool = True
         self.keybindings = walker.keybindings
         self.on_press = walker.on_press
@@ -595,7 +595,7 @@ class CalendarWidget(urwid.WidgetWrap):
                  monthdisplay: Literal['firstday', 'firstfullweek']='firstday',
                  get_styles: Optional[GetStylesSignature]=None,
                  initial: Optional[dt.date]=None,
-                 ):
+                 ) -> None:
         """A calendar widget that can be used in urwid applications
 
         :param on_date_change: a function that is called every time the selected

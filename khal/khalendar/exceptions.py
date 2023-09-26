@@ -28,7 +28,7 @@ class UnsupportedRruleExceptionError(UnsupportedFeatureError):
 
     """we do not support exceptions that do not delete events yet"""
 
-    def __init__(self, message=''):
+    def __init__(self, message='') -> None:
         x = 'This kind of recurrence exception is currently unsupported'
         if message:
             x += f': {message.strip()}'

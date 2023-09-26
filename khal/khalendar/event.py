@@ -69,7 +69,7 @@ class Event:
                  color: Optional[str] = None,
                  start: Optional[dt.datetime] = None,
                  end: Optional[dt.datetime] = None,
-                 ):
+                 ) -> None:
         """
         :param start: start datetime of this event instance
         :param end: end datetime of this event instance
@@ -769,7 +769,7 @@ class LocalizedEvent(DatetimeEvent):
     see parent
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         try:
             starttz = getattr(self._vevents[self.ref]['DTSTART'].dt, 'tzinfo', None)
