@@ -91,6 +91,8 @@ class ExtendedEdit(urwid.Edit):
         else:
             return super().keypress(size, key)
 
+        return None
+
     def _delete_word(self):
         """delete word before cursor"""
         text = self.get_edit_text()
