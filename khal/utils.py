@@ -31,6 +31,7 @@ from textwrap import wrap
 from typing import Iterator, List, Optional, Tuple
 
 import pytz
+from markdownify import markdownify as md
 
 
 def generate_random_uid() -> str:
@@ -76,6 +77,17 @@ def find_unmatched_sgr(string: str) -> Optional[str]:
         return sgr
     else:
         return None
+
+
+def format_text(raw_data: str) -> str:
+    md_opts = {
+        "convert": ["br", "li", "a"],
+        "escape_asterisks": False,
+        "escape_underscores": False,
+        "wrap": True,
+    }
+    html_data = "\n".join(("<html>", raw_data, "</html>"))
+    return md(html_data, **md_opts)
 
 
 def color_wrap(text: str, width: int = 70) -> List[str]:
