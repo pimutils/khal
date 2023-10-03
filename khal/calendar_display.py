@@ -130,7 +130,7 @@ def str_week(
     color: str='',
     highlight_event_days: bool=False,
     locale=None,
-    bold_for_light_color=True,
+    bold_for_light_color: bool=True,
 ) -> str:
     """returns a string representing one week,
     if for day == today color is reversed
@@ -178,9 +178,9 @@ def vertical_month(month: Optional[int]=None,
                    multiple: str='',
                    multiple_on_overflow: bool=False,
                    color: str='',
-                   highlight_event_days=False,
+                   highlight_event_days: bool=False,
                    locale=None,
-                   bold_for_light_color=True,
+                   bold_for_light_color: bool=True,
                    ) -> List[str]:
     """
     returns a list() of str() of weeks for a vertical arranged calendar

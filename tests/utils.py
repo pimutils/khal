@@ -136,6 +136,6 @@ def _replace_uid(event):
 
 
 class DumbItem:
-    def __init__(self, raw, uid):
+    def __init__(self, raw, uid) -> None:
         self.raw = raw
         self.uid = uid

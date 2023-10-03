@@ -41,10 +41,10 @@ def test_str_week():
 
 
 class testCollection:
-    def __init__(self):
-        self._calendars = {}
+    def __init__(self) -> None:
+        self._calendars : dict[str, dict]= {}
 
-    def addCalendar(self, name, color, priority):
+    def addCalendar(self, name: str , color: str, priority: int) -> None:
         self._calendars[name] = {'color': color, 'priority': priority}
 
 
