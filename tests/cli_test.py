@@ -14,7 +14,7 @@ from .utils import _get_ics_filepath, _get_text
 
 class CustomCliRunner(CliRunner):
     def __init__(self, config_file, db=None, calendars=None,
-                 xdg_data_home=None, xdg_config_home=None, tmpdir=None, **kwargs):
+                 xdg_data_home=None, xdg_config_home=None, tmpdir=None, **kwargs) -> None:
         self.config_file = config_file
         self.db = db
         self.calendars = calendars

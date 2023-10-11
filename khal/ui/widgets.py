@@ -91,6 +91,8 @@ class ExtendedEdit(urwid.Edit):
         else:
             return super().keypress(size, key)
 
+        return None
+
     def _delete_word(self):
         """delete word before cursor"""
         text = self.get_edit_text()
@@ -122,7 +124,7 @@ class ExtendedEdit(urwid.Edit):
 
 class DateTimeWidget(ExtendedEdit):
 
-    def __init__(self, dateformat: str, on_date_change=lambda x: None, **kwargs):
+    def __init__(self, dateformat: str, on_date_change=lambda x: None, **kwargs) -> None:
         self.dateformat = dateformat
         self.on_date_change = on_date_change
         super().__init__(wrap='any', **kwargs)
@@ -200,7 +202,7 @@ class TimeWidget(DateTimeWidget):
 class Choice(urwid.PopUpLauncher):
     def __init__(
             self, choices, active, decorate_func=None, overlay_width=32, callback=lambda: None,
-    ):
+    ) -> None:
         self.choices = choices
         self._callback = callback
         self._decorate = decorate_func or (lambda x: x)
@@ -241,7 +243,7 @@ class ChoiceList(urwid.WidgetWrap):
     """A pile of Button() widgets, intended to be used with Choice()"""
     signals = ['close']
 
-    def __init__(self, parent, callback=lambda: None):
+    def __init__(self, parent, callback=lambda: None) -> None:
         self.parent = parent
         self._callback = callback
         buttons = []
@@ -273,7 +275,7 @@ class SupportsNext:
     _select_last_selectable
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self.outermost = kwargs.get('outermost', False)
         if 'outermost' in kwargs:
             kwargs.pop('outermost')
@@ -396,7 +398,7 @@ class NListBox(SupportsNext, urwid.ListBox):
 
 
 class ValidatedEdit(urwid.WidgetWrap):
-    def __init__(self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs):
+    def __init__(self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs) -> None:
         assert validate
         self._validate_func = validate
         self._original_widget = urwid.AttrMap(EditWidget(*args, **kwargs), 'edit', 'edit focused')
@@ -444,7 +446,7 @@ class ValidatedEdit(urwid.WidgetWrap):
 
 
 class PositiveIntEdit(ValidatedEdit):
-    def __init__(self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs):
+    def __init__(self, *args, EditWidget=ExtendedEdit, validate=False, **kwargs) -> None:
         """Variant of Validated Edit that only accepts positive integers."""
         super().__init__(*args, validate=self._unsigned_int, **kwargs)
 
@@ -476,7 +478,7 @@ class DurationWidget(urwid.WidgetWrap):
         seconds = int(seconds % 60)
         return days, hours, minutes, seconds
 
-    def __init__(self, dt):
+    def __init__(self, dt) -> None:
         days, hours, minutes, seconds = self._convert_timedelta(dt)
 
         self.days_edit = ValidatedEdit(
@@ -513,7 +515,7 @@ class AlarmsEditor(urwid.WidgetWrap):
 
     class AlarmEditor(urwid.WidgetWrap):
 
-        def __init__(self, alarm, delete_handler):
+        def __init__(self, alarm, delete_handler) -> None:
             duration, description = alarm
             if duration.total_seconds() > 0:
                 direction = 'after'
@@ -544,7 +546,7 @@ class AlarmsEditor(urwid.WidgetWrap):
                 prefix = 1
             return (prefix * self.duration.get_timedelta(), self.description.get_edit_text())
 
-    def __init__(self, event):
+    def __init__(self, event) -> None:
         self.event = event
 
         self.pile = NPile(
@@ -579,7 +581,7 @@ class AlarmsEditor(urwid.WidgetWrap):
 
 
 class FocusLineBoxWidth(urwid.WidgetDecoration, urwid.WidgetWrap):
-    def __init__(self, widget):
+    def __init__(self, widget) -> None:
         hline = urwid.Divider('─')
         hline_focus = urwid.Divider('━')
         self._vline = urwid.SolidFill('│')
@@ -632,7 +634,7 @@ class FocusLineBoxWidth(urwid.WidgetDecoration, urwid.WidgetWrap):
 
 
 class FocusLineBoxColor(urwid.WidgetDecoration, urwid.WidgetWrap):
-    def __init__(self, widget):
+    def __init__(self, widget) -> None:
         hline = urwid.Divider('─')
         self._vline = urwid.AttrMap(urwid.SolidFill('│'), 'frame')
         self._topline = urwid.AttrMap(
@@ -675,7 +677,7 @@ class FocusLineBoxColor(urwid.WidgetDecoration, urwid.WidgetWrap):
 
 
 class FocusLineBoxTop(urwid.WidgetDecoration, urwid.WidgetWrap):
-    def __init__(self, widget):
+    def __init__(self, widget) -> None:
         topline = urwid.AttrMap(urwid.Divider('━'), 'frame')
         self._all = urwid.Pile([('flow', topline), widget], focus_item=1)
         urwid.WidgetWrap.__init__(self, self._all)

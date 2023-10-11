@@ -102,7 +102,7 @@ class SelectableText(urwid.Text):
 
 
 class DateHeader(SelectableText):
-    def __init__(self, day: dt.date, dateformat: str, conf):
+    def __init__(self, day: dt.date, dateformat: str, conf) -> None:
         """
         :param day: the date that is represented by this DateHeader instance
         :param dateformat: format to print `day` in
@@ -154,7 +154,7 @@ class DateHeader(SelectableText):
 
 
 class U_Event(urwid.Text):
-    def __init__(self, event, conf, delete_status, this_date=None, relative=True):
+    def __init__(self, event, conf, delete_status, this_date=None, relative=True) -> None:
         """representation of an event in EventList
 
         :param event: the encapsulated event
@@ -239,7 +239,7 @@ class EventListBox(urwid.ListBox):
             self, *args, parent, conf,
             delete_status, toggle_delete_instance, toggle_delete_all,
             set_focus_date_callback=None,
-            **kwargs):
+            **kwargs) -> None:
         self._init: bool = True
         self.parent: 'ClassicView' = parent
         self.delete_status = delete_status
@@ -276,7 +276,7 @@ class DListBox(EventListBox):
     """Container for a DayWalker"""
     # XXX unfortunate naming, there is also DateListBox
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         dynamic_days = kwargs.pop('dynamic_days', True)
         super().__init__(*args, **kwargs)
         self._init = dynamic_days
@@ -352,7 +352,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
     """A list Walker that contains a list of DateListBox objects, each representing
     one day and associated events"""
 
-    def __init__(self, this_date, eventcolumn, conf, collection, delete_status):
+    def __init__(self, this_date, eventcolumn, conf, collection, delete_status) -> None:
         self.eventcolumn = eventcolumn
         self._conf = conf
         self.delete_status = delete_status
@@ -577,11 +577,11 @@ class DateListBox(urwid.ListBox):
 
     selected_date = None
 
-    def __init__(self, content, date):
+    def __init__(self, content, date) -> None:
         self.date = date
         super().__init__(content)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<DateListBox {self.date}>'
 
     __str__ = __repr__
@@ -633,7 +633,7 @@ class EventColumn(urwid.WidgetWrap):
     Handles modifying events, showing events' details and editing them
     """
 
-    def __init__(self, elistbox, pane):
+    def __init__(self, elistbox, pane) -> None:
         self.pane = pane
         self._conf = pane._conf
         self.divider = urwid.Divider('─')
@@ -955,7 +955,7 @@ class EventColumn(urwid.WidgetWrap):
 class EventDisplay(urwid.WidgetWrap):
     """A widget showing one Event()'s details """
 
-    def __init__(self, conf, event, collection=None):
+    def __init__(self, conf, event, collection=None) -> None:
         self._conf = conf
         self.collection = collection
         self.event = event
@@ -1017,7 +1017,7 @@ class EventDisplay(urwid.WidgetWrap):
 class SearchDialog(urwid.WidgetWrap):
     """A Search Dialog Widget"""
 
-    def __init__(self, search_func, abort_func):
+    def __init__(self, search_func, abort_func) -> None:
 
         class Search(Edit):
 
@@ -1052,7 +1052,7 @@ class ClassicView(Pane):
     on the right
     """
 
-    def __init__(self, collection, conf=None, title: str='', description: str=''):
+    def __init__(self, collection, conf=None, title: str='', description: str='') -> None:
         self.init = True
         # Will be set when opening the view inside a Window
         self.window = None
@@ -1156,8 +1156,9 @@ class ClassicView(Pane):
             height=None)
         self.window.open(overlay)
 
-    def _search(self, search_term: str):
+    def _search(self, search_term: str) -> None:
         """search for events matching `search_term"""
+        assert self.window is not None
         self.window.backtrack()
         events = sorted(self.collection.search(search_term))
         event_list = []
@@ -1311,7 +1312,7 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
             else:
                 return 'DEBUG'
 
-        def format(self, record):
+        def format(self, record) -> str:
             return f'{self.get_prefix(record.levelno)}: {record.msg}'
 
     class HeaderFormatter(LogPaneFormatter):

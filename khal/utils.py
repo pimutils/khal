@@ -31,6 +31,7 @@ from textwrap import wrap
 from typing import Iterator, List, Optional, Tuple
 
 import pytz
+import urwid
 
 
 def generate_random_uid() -> str:
@@ -177,5 +178,5 @@ def relative_timedelta_str(day: dt.date) -> str:
     return f'{approx}{count} {unit} {direction}'
 
 
-def get_wrapped_text(widget):
+def get_wrapped_text(widget: urwid.AttrMap) -> str:
     return widget.original_widget.get_edit_text()
