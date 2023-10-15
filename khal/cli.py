@@ -94,7 +94,7 @@ def multi_calendar_option(f):
 
 
 def no_mouse_option(f):
-    o = click.option('--no-mouse', is_flag=True,
+    o = click.option('--mouse/--no-mouse', is_flag=True, default=True
                      help='Disable mouse in interactive UI')
     return o(f)
 
