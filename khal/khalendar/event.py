@@ -524,6 +524,7 @@ class Event:
 
     def update_categories(self, categories: List[str]) -> None:
         assert isinstance(categories, list)
+        categories = [c.strip() for c in categories if c != ""]
         self._vevents[self.ref].pop('CATEGORIES', False)
         if categories:
             self._vevents[self.ref].add('CATEGORIES', categories)
