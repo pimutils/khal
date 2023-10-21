@@ -96,6 +96,7 @@ def new_vevent(locale,
                location: Optional[str]=None,
                categories: Optional[Union[List[str], str]]=None,
                repeat: Optional[str]=None,
+               Class: Optional[str]=None,
                until=None,
                alarms: Optional[str]=None,
                url: Optional[str]=None,
@@ -135,9 +136,14 @@ def new_vevent(locale,
         event.add('categories', categories)
     if url:
         event.add('url', icalendar.vUri(url))
+
     if repeat and repeat != "none":
         rrule = rrulefstr(repeat, until, locale, getattr(dtstart, 'tzinfo', None))
         event.add('rrule', rrule)
+
+    if Class and Class !="none":
+        event.add('CLASS',Class)
+
     if alarms:
         for alarm in alarms.split(","):
             alarm = alarm.strip()
@@ -510,7 +516,7 @@ def delete_instance(vevent: icalendar.Event, instance: dt.datetime) -> None:
         vevent.pop('EXDATE')
         vevent.add('EXDATE', exdates)
     if 'RDATE' in vevent:
-        rdates = [one for one in _get_all_properties(vevent, 'RDATE') if one != instance]
+        rdates = [one for one in _get_allz_properties(vevent, 'RDATE') if one != instance]
         vevent.pop('RDATE')
         if rdates != []:
             vevent.add('RDATE', rdates)

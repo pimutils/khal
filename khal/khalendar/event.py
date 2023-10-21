@@ -343,11 +343,25 @@ class Event:
         else:
             return email
 
+
+    @property
+    def Class(self) -> str:
+        if 'CLASS' not in self._vevents[self.ref]:
+            return ''
+        return self._vevents[self.ref]['CLASS']
+
+    def update_Class(self, Class: str) -> None:
+        if Class:
+            self._vevents[self.ref]['CLASS'] = Class
+        else:
+            self._vevents[self.ref].pop('CLASS')
+
     @property
     def url(self) -> str:
         if 'URL' not in self._vevents[self.ref]:
             return ''
         return self._vevents[self.ref]['URL']
+
 
     def update_url(self, url: str) -> None:
         if url:
@@ -693,6 +707,7 @@ class Event:
         attributes["categories"] = self.categories
         attributes['uid'] = self.uid
         attributes['url'] = self.url
+        attributes['CLASS'] = self.Class
 
         if "calendars" in env and self.calendar in env["calendars"]:
             cal = env["calendars"][self.calendar]
