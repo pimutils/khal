@@ -168,6 +168,9 @@ Several options are common to almost all of :program:`khal`'s commands
    url
        The URL embedded in the event, otherwise nothing.
 
+   url-separator
+        A separator: " :: " that appears when there is a url.
+
    By default, all-day events have no times. To see a start and end time anyway simply
    add `-full` to the end of any template with start/end, for instance
    `start-time` becomes `start-time-full` and will always show start and end times (instead
