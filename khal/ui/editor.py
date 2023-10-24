@@ -808,8 +808,8 @@ class ExportDialog(urwid.WidgetWrap):
             caption='Location: ', edit_text="~/%s.ics" % event.summary.strip())
         lines.append(export_location)
         lines.append(urwid.Divider(' '))
-        lines.append(
-            urwid.Button('Save', on_press=this_func, user_data=export_location)
-        )
+        lines.append(CAttrMap(
+            urwid.Button('Save', on_press=this_func, user_data=export_location),
+            'button', 'button focus'))
         content = NPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))
