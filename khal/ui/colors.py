@@ -19,13 +19,14 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from typing import Dict, List, Tuple
 
 dark = [
     ('header', 'white', 'black'),
     ('footer', 'white', 'black'),
     ('line header', 'black', 'white', 'bold'),
     ('alt header', 'white', '', 'bold'),
-    ('bright', 'dark blue', 'white', ('bold', 'standout')),
+    ('bright', 'dark blue', 'white', 'bold,standout'),
     ('list', 'black', 'white'),
     ('list focused', 'white', 'light blue', 'bold'),
     ('edit', 'black', 'white'),
@@ -67,7 +68,7 @@ light = [
     ('footer', 'black', 'white'),
     ('line header', 'black', 'white', 'bold'),
     ('alt header', 'black', '', 'bold'),
-    ('bright', 'dark blue', 'white', ('bold', 'standout')),
+    ('bright', 'dark blue', 'white', 'bold,standout'),
     ('list', 'black', 'white'),
     ('list focused', 'white', 'light blue', 'bold'),
     ('edit', 'black', 'white'),
@@ -80,7 +81,7 @@ light = [
     ('today', 'black', 'light gray'),
 
     ('date header', '', 'white'),
-    ('date header focused', 'white', 'dark gray', ('bold', 'standout')),
+    ('date header focused', 'white', 'dark gray', 'bold,standout'),
     ('date header selected', 'dark gray', 'light cyan'),
 
     ('dayname', 'dark gray', 'white'),
@@ -104,3 +105,5 @@ light = [
     ('popupper', 'black', 'light gray'),
     ('caption', 'black', '', ''),
 ]
+
+themes: Dict[str, List[Tuple[str, ...]]] = {'light': light, 'dark': dark}
