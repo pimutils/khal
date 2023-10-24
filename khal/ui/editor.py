@@ -161,14 +161,15 @@ class DateEdit(urwid.WidgetWrap):
 class StartEndEditor(urwid.WidgetWrap):
     """Widget for editing start and end times (of an event)."""
 
-    def __init__(self, start, end, conf,
+    def __init__(self,
+                 start: dt.datetime,
+                 end: dt.datetime,
+                 conf,
                  on_start_date_change=lambda x: None,
                  on_end_date_change=lambda x: None,
 
                  ) -> None:
         """
-        :type start: datetime.datetime
-        :type end: datetime.datetime
         :param on_start_date_change: a callable that gets called everytime a new
             start date is entered, with that new date as an argument
         :param on_end_date_change: same as for on_start_date_change, just for the
@@ -260,7 +261,7 @@ class StartEndEditor(urwid.WidgetWrap):
         self._enddt = self.localize_end(dt.datetime.combine(date, self._end_time))
         self.on_end_date_change(date)
 
-    def toggle(self, checkbox, state):
+    def toggle(self, checkbox, state: bool):
         """change from allday to datetime event
 
         :param checkbox: the checkbox instance that is used for toggling, gets
@@ -268,7 +269,6 @@ class StartEndEditor(urwid.WidgetWrap):
         :type checkbox: checkbox
         :param state: state the event will toggle to;
                       True if allday event, False if datetime
-        :type state: bool
         """
 
         if self.allday is True and state is False:
@@ -340,14 +340,12 @@ class StartEndEditor(urwid.WidgetWrap):
 class EventEditor(urwid.WidgetWrap):
     """Widget that allows Editing one `Event()`"""
 
-    def __init__(self, pane, event, save_callback=None, always_save=False) -> None:
+    def __init__(self, pane, event: 'khal.event.Event', save_callback=None, always_save: bool=False) -> None:
         """
-        :type event: khal.event.Event
         :param save_callback: call when saving event with new start and end
              dates and recursiveness of original and edited event as parameters
         :type save_callback: callable
         :param always_save: save event even if it has not changed
-        :type always_save: bool
         """
         self.pane = pane
         self.event = event
@@ -559,7 +557,7 @@ class EventEditor(urwid.WidgetWrap):
         self._abort_confirmed = False
         self.pane.window.backtrack()
 
-    def keypress(self, size, key):
+    def keypress(self, size: Tuple[int], key: str) -> Optional[str]:
         if key in ['esc'] and self.changed and not self._abort_confirmed:
             self.pane.window.alert(
                 ('light red', 'Unsaved changes! Hit ESC again to discard.'))
