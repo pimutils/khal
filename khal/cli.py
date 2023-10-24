@@ -93,6 +93,16 @@ def multi_calendar_option(f):
     return d(a(f))
 
 
+def mouse_option(f):
+    o = click.option(
+        '--mouse/--no-mouse',
+        is_flag=True,
+        default=None,
+        help='Disable mouse in interactive UI'
+    )
+    return o(f)
+
+
 def _select_one_calendar_callback(ctx, option, calendar):
     if isinstance(calendar, tuple):
         if len(calendar) > 1:
@@ -480,9 +490,12 @@ def _get_cli():
 
     @cli.command()
     @multi_calendar_option
+    @mouse_option
     @click.pass_context
-    def interactive(ctx, include_calendar, exclude_calendar):
+    def interactive(ctx, include_calendar, exclude_calendar, mouse):
         '''Interactive UI. Also launchable via `ikhal`.'''
+        if mouse is not None:
+            ctx.obj['conf']['default']['enable_mouse'] = mouse
         controllers.interactive(
             build_collection(
                 ctx.obj['conf'],
@@ -494,10 +507,13 @@ def _get_cli():
     @click.command()
     @global_options
     @multi_calendar_option
+    @mouse_option
     @click.pass_context
-    def interactive_cli(ctx, config, include_calendar, exclude_calendar):
+    def interactive_cli(ctx, config, include_calendar, exclude_calendar, mouse):
         '''Interactive UI. Also launchable via `khal interactive`.'''
         prepare_context(ctx, config)
+        if mouse is not None:
+            ctx.obj['conf']['default']['enable_mouse'] = mouse
         controllers.interactive(
             build_collection(
                 ctx.obj['conf'],

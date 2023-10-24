@@ -216,6 +216,10 @@ default_event_duration = timedelta(default='1d')
 # Define the default duration for an event ('khal new' only)
 default_dayevent_duration = timedelta(default='1h')
 
+# Whether the mouse should be enabled in interactive mode ('khal interactive' and
+# 'ikhal' only)
+enable_mouse = boolean(default=True)
+
 
 # The view section contains configuration options that effect the visual appearance
 # when using khal and ikhal.
