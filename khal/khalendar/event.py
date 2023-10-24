@@ -693,6 +693,9 @@ class Event:
         attributes["categories"] = self.categories
         attributes['uid'] = self.uid
         attributes['url'] = self.url
+        attributes['url-separator'] = ""
+        if attributes['url']:
+            attributes['url-separator'] = " :: "
 
         if "calendars" in env and self.calendar in env["calendars"]:
             cal = env["calendars"][self.calendar]
