@@ -1304,8 +1304,12 @@ def _add_calendar_colors(
     bg_color, fg_color = '', ''
     for attr in palette:
         if base and attr[0] == base:
-            bg_color = attr[5]
-            fg_color = attr[4]
+            if color_mode == 'rgb' and len(attr) >= 5:
+                bg_color = attr[5]
+                fg_color = attr[4]
+            else:
+                bg_color = attr[2]
+                fg_color = attr[1]
 
     for cal in collection.calendars:
         if cal['color'] == '':
