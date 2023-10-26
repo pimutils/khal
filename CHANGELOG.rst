@@ -14,6 +14,8 @@ not released yet
 * optimization in ikhal when editing events in the far future or past
 * FIX an issue in ikhal with updating the view of the event list after editing
   an event
+* NEW properties of ikhal themes (dark and light) can now be overriden from the
+  config file (via the new [palette] section, check the documenation)
 
 0.11.2
 ======

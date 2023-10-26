@@ -20,7 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import datetime as dt
-from typing import Callable, Dict, List, Literal, Optional
+from typing import TYPE_CHECKING, Callable, Dict, List, Literal, Optional, Tuple
 
 import urwid
 
@@ -43,6 +43,8 @@ from .widgets import (
     button,
 )
 
+if TYPE_CHECKING:
+    import khal.khalendar.event
 
 class StartEnd:
 
@@ -55,7 +57,7 @@ class StartEnd:
 
 
 class CalendarPopUp(urwid.PopUpLauncher):
-    def __init__(self, widget, on_date_change, weeknumbers=False,
+    def __init__(self, widget, on_date_change, weeknumbers: Literal['left', 'right', False]=False,
                  firstweekday=0, monthdisplay='firstday', keybindings=None) -> None:
         self._on_date_change = on_date_change
         self._weeknumbers = weeknumbers
@@ -88,7 +90,8 @@ class CalendarPopUp(urwid.PopUpLauncher):
                 weeknumbers=self._weeknumbers,
                 monthdisplay=self._monthdisplay,
                 initial=initial_date)
-            pop_up = urwid.LineBox(pop_up)
+            pop_up = CAttrMap(pop_up, 'calendar', ' calendar focus')
+            pop_up = CAttrMap(urwid.LineBox(pop_up), 'calendar', 'calendar focus')
             return pop_up
 
     def get_pop_up_parameters(self):
@@ -125,10 +128,13 @@ class DateEdit(urwid.WidgetWrap):
             on_date_change=on_date_change)
         wrapped = CalendarPopUp(self._edit, on_date_change, weeknumbers,
                                 firstweekday, monthdisplay, keybindings)
-        padded = urwid.Padding(wrapped, align='left', width=datewidth, left=0, right=1)
+        padded = CAttrMap(
+            urwid.Padding(wrapped, align='left', width=datewidth, left=0, right=1),
+            'calendar', 'calendar focus',
+        )
         super().__init__(padded)
 
-    def _validate(self, text):
+    def _validate(self, text: str):
         try:
             _date = dt.datetime.strptime(text, self._dateformat).date()
         except ValueError:
@@ -157,14 +163,15 @@ class DateEdit(urwid.WidgetWrap):
 class StartEndEditor(urwid.WidgetWrap):
     """Widget for editing start and end times (of an event)."""
 
-    def __init__(self, start, end, conf,
+    def __init__(self,
+                 start: dt.datetime,
+                 end: dt.datetime,
+                 conf,
                  on_start_date_change=lambda x: None,
                  on_end_date_change=lambda x: None,
 
                  ) -> None:
         """
-        :type start: datetime.datetime
-        :type end: datetime.datetime
         :param on_start_date_change: a callable that gets called everytime a new
             start date is entered, with that new date as an argument
         :param on_end_date_change: same as for on_start_date_change, just for the
@@ -172,8 +179,10 @@ class StartEndEditor(urwid.WidgetWrap):
         """
         self.allday = not isinstance(start, dt.datetime)
         self.conf = conf
-        self._startdt, self._original_start = start, start
-        self._enddt, self._original_end = end, end
+        self._startdt: dt.date = start
+        self._original_start: dt.date = start
+        self._enddt: dt.date = end
+        self._original_end: dt.date = end
         self.on_start_date_change = on_start_date_change
         self.on_end_date_change = on_end_date_change
         self._datewidth = len(start.strftime(self.conf['locale']['longdateformat']))
@@ -256,7 +265,7 @@ class StartEndEditor(urwid.WidgetWrap):
         self._enddt = self.localize_end(dt.datetime.combine(date, self._end_time))
         self.on_end_date_change(date)
 
-    def toggle(self, checkbox, state):
+    def toggle(self, checkbox, state: bool):
         """change from allday to datetime event
 
         :param checkbox: the checkbox instance that is used for toggling, gets
@@ -264,13 +273,14 @@ class StartEndEditor(urwid.WidgetWrap):
         :type checkbox: checkbox
         :param state: state the event will toggle to;
                       True if allday event, False if datetime
-        :type state: bool
         """
 
         if self.allday is True and state is False:
             self._startdt = dt.datetime.combine(self._startdt, dt.datetime.min.time())
             self._enddt = dt.datetime.combine(self._enddt, dt.datetime.min.time())
         elif self.allday is False and state is True:
+            assert isinstance(self._startdt, dt.datetime)
+            assert isinstance(self._enddt, dt.datetime)
             self._startdt = self._startdt.date()
             self._enddt = self._enddt.date()
         self.allday = state
@@ -336,14 +346,18 @@ class StartEndEditor(urwid.WidgetWrap):
 class EventEditor(urwid.WidgetWrap):
     """Widget that allows Editing one `Event()`"""
 
-    def __init__(self, pane, event, save_callback=None, always_save=False) -> None:
+    def __init__(
+        self,
+        pane,
+        event: 'khal.khalendar.event.Event',
+        save_callback=None,
+        always_save: bool=False,
+    ) -> None:
         """
-        :type event: khal.event.Event
         :param save_callback: call when saving event with new start and end
              dates and recursiveness of original and edited event as parameters
         :type save_callback: callable
         :param always_save: save event even if it has not changed
-        :type always_save: bool
         """
         self.pane = pane
         self.event = event
@@ -369,13 +383,14 @@ class EventEditor(urwid.WidgetWrap):
             self.event.recurobject, self._conf, event.start_local,
         )
         self.summary = urwid.AttrMap(ExtendedEdit(
-            caption=('caption', 'Title:       '), edit_text=event.summary), 'edit'
+            caption=('caption', 'Title:       '), edit_text=event.summary), 'edit', 'edit focus',
         )
 
         divider = urwid.Divider(' ')
 
-        def decorate_choice(c):
-            return ('calendar ' + c['name'], c['name'])
+        def decorate_choice(c) -> Tuple[str, str]:
+            return ('calendar ' + c['name'] + ' popup', c['name'])
+
         self.calendar_chooser= CAttrMap(Choice(
             [self.collection._calendars[c] for c in self.collection.writable_names],
             self.collection._calendars[self.event.calendar],
@@ -388,13 +403,13 @@ class EventEditor(urwid.WidgetWrap):
                 edit_text=self.description,
                 multiline=True
             ),
-            'edit'
+            'edit', 'edit focus',
         )
         self.location = urwid.AttrMap(ExtendedEdit(
-            caption=('caption', 'Location:    '), edit_text=self.location), 'edit'
+            caption=('caption', 'Location:    '), edit_text=self.location), 'edit', 'edit focus',
         )
         self.categories = urwid.AttrMap(ExtendedEdit(
-            caption=('caption', 'Categories:  '), edit_text=self.categories), 'edit'
+            caption=('caption', 'Categories:  '), edit_text=self.categories), 'edit', 'edit focus',
         )
         self.attendees = urwid.AttrMap(
             ExtendedEdit(
@@ -402,10 +417,10 @@ class EventEditor(urwid.WidgetWrap):
                 edit_text=self.attendees,
                 multiline=True
             ),
-            'edit'
+            'edit', 'edit focus',
         )
         self.url = urwid.AttrMap(ExtendedEdit(
-            caption=('caption', 'URL:         '), edit_text=self.url), 'edit'
+            caption=('caption', 'URL:         '), edit_text=self.url), 'edit', 'edit focus',
         )
         self.alarms = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
@@ -554,17 +569,17 @@ class EventEditor(urwid.WidgetWrap):
         self._abort_confirmed = False
         self.pane.window.backtrack()
 
-    def keypress(self, size, key):
+    def keypress(self, size: Tuple[int], key: str) -> Optional[str]:
         if key in ['esc'] and self.changed and not self._abort_confirmed:
             self.pane.window.alert(
                 ('light red', 'Unsaved changes! Hit ESC again to discard.'))
             self._abort_confirmed = True
-            return
+            return None
         else:
             self._abort_confirmed = False
         if key in self.pane._conf['keybindings']['save']:
             self.save(None)
-            return
+            return None
         return super().keypress(size, key)
 
 
@@ -805,8 +820,8 @@ class ExportDialog(urwid.WidgetWrap):
             caption='Location: ', edit_text="~/%s.ics" % event.summary.strip())
         lines.append(export_location)
         lines.append(urwid.Divider(' '))
-        lines.append(
-            urwid.Button('Save', on_press=this_func, user_data=export_location)
-        )
+        lines.append(CAttrMap(
+            urwid.Button('Save', on_press=this_func, user_data=export_location),
+            'button', 'button focus'))
         content = NPile(lines)
         urwid.WidgetWrap.__init__(self, urwid.LineBox(content))

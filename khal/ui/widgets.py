@@ -26,7 +26,7 @@ if they are large, into their own files
 """
 import datetime as dt
 import re
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import urwid
 
@@ -77,7 +77,7 @@ def goto_end_of_line(text):
 class ExtendedEdit(urwid.Edit):
     """A text editing widget supporting some more editing commands"""
 
-    def keypress(self, size, key: str) -> Optional[Tuple[Tuple[int, int], str]]:
+    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
         if key == 'ctrl w':
             self._delete_word()
         elif key == 'ctrl u':
@@ -201,7 +201,8 @@ class TimeWidget(DateTimeWidget):
 
 class Choice(urwid.PopUpLauncher):
     def __init__(
-            self, choices, active, decorate_func=None, overlay_width=32, callback=lambda: None,
+        self, choices: List[str], active: str,
+        decorate_func=None, overlay_width: int=32, callback=lambda: None,
     ) -> None:
         self.choices = choices
         self._callback = callback
@@ -211,9 +212,7 @@ class Choice(urwid.PopUpLauncher):
 
     def create_pop_up(self):
         pop_up = ChoiceList(self, callback=self._callback)
-        urwid.connect_signal(
-            pop_up, 'close', lambda button: self.close_pop_up(),
-        )
+        urwid.connect_signal(pop_up, 'close', lambda button: self.close_pop_up())
         return pop_up
 
     def get_pop_up_parameters(self):
@@ -235,8 +234,7 @@ class Choice(urwid.PopUpLauncher):
         self._active = val
         self.button = urwid.Button(self._decorate(self._active))
         urwid.PopUpLauncher.__init__(self, self.button)
-        urwid.connect_signal(self.button, 'click',
-                             lambda button: self.open_pop_up())
+        urwid.connect_signal(self.button, 'click', lambda button: self.open_pop_up())
 
 
 class ChoiceList(urwid.WidgetWrap):
@@ -252,6 +250,7 @@ class ChoiceList(urwid.WidgetWrap):
                 button(
                     parent._decorate(c),
                     attr_map='popupbg',
+                    focus_map='popupbg focus',
                     on_press=self.set_choice,
                     user_data=c,
                 )
@@ -533,7 +532,7 @@ class AlarmsEditor(urwid.WidgetWrap):
                 (21, self.duration),
                 (14, urwid.Padding(self.direction, right=1)),
                 self.description,
-                (10, urwid.Button('Delete', on_press=delete_handler, user_data=self)),
+                (10, button('Delete', on_press=delete_handler, user_data=self)),
             ])
 
             urwid.WidgetWrap.__init__(self, self.columns)
@@ -552,7 +551,7 @@ class AlarmsEditor(urwid.WidgetWrap):
         self.pile = NPile(
             [urwid.Text('Alarms:')] +
             [self.AlarmEditor(a, self.remove_alarm) for a in event.alarms] +
-            [urwid.Columns([(12, urwid.Button('Add', on_press=self.add_alarm))])])
+            [urwid.Columns([(12, button('Add', on_press=self.add_alarm))])])
 
         urwid.WidgetWrap.__init__(self, self.pile)
 
@@ -582,29 +581,31 @@ class AlarmsEditor(urwid.WidgetWrap):
 
 class FocusLineBoxWidth(urwid.WidgetDecoration, urwid.WidgetWrap):
     def __init__(self, widget) -> None:
-        hline = urwid.Divider('─')
-        hline_focus = urwid.Divider('━')
-        self._vline = urwid.SolidFill('│')
-        self._vline_focus = urwid.SolidFill('┃')
+        # we cheat here with the attrs, if we use thick dividers we apply the
+        # focus attr group. We probably should fix this in render()
+        hline = urwid.AttrMap(urwid.Divider('─'), 'frame')
+        hline_focus = urwid.AttrMap(urwid.Divider('━'), 'frame focus')
+        self._vline = urwid.AttrMap(urwid.SolidFill('│'), 'frame')
+        self._vline_focus = urwid.AttrMap(urwid.SolidFill('┃'), 'frame focus')
         self._topline = urwid.Columns([
-            ('fixed', 1, urwid.Text('┌')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┌'), 'frame')),
             hline,
-            ('fixed', 1, urwid.Text('┐')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┐'), 'frame')),
         ])
         self._topline_focus = urwid.Columns([
-            ('fixed', 1, urwid.Text('┏')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┏'), 'frame focus')),
             hline_focus,
-            ('fixed', 1, urwid.Text('┓')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┓'), 'frame focus')),
         ])
         self._bottomline = urwid.Columns([
-            ('fixed', 1, urwid.Text('└')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('└'), 'frame')),
             hline,
-            ('fixed', 1, urwid.Text('┘')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┘'), 'frame')),
         ])
         self._bottomline_focus = urwid.Columns([
-            ('fixed', 1, urwid.Text('┗')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┗'), 'frame focus')),
             hline_focus,
-            ('fixed', 1, urwid.Text('┛')),
+            ('fixed', 1, urwid.AttrMap(urwid.Text('┛'), 'frame focus')),
         ])
         self._middle = urwid.Columns(
             [('fixed', 1, self._vline), widget, ('fixed', 1, self._vline)],
@@ -699,7 +700,7 @@ linebox = {
 }
 
 def button(*args,
-           attr_map: str='button', focus_map='button focused',
+           attr_map: str='button', focus_map='button focus',
            padding_left=0, padding_right=0,
            **kwargs):
     """wrapping an urwid button in attrmap and padding"""
@@ -710,14 +711,9 @@ def button(*args,
 
 
 class CAttrMap(urwid.AttrMap):
-    """A variant of AttrMap that exposes the some properties of the original widget"""
-    @property
-    def active(self):
-        return self.original_widget.active
-
-    @property
-    def changed(self):
-        return self.original_widget.changed
+    """A variant of AttrMap that exposes all properties of the original widget"""
+    def __getattr__(self, name):
+        return getattr(self.original_widget, name)
 
 
 class CPadding(urwid.Padding):

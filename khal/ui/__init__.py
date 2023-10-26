@@ -24,7 +24,7 @@ import logging
 import signal
 import sys
 from enum import IntEnum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
 import click
 import urwid
@@ -35,7 +35,7 @@ from ..khalendar.exceptions import ReadOnlyCalendarError
 from . import colors
 from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
-from .widgets import CalendarWidget, NColumns, NPile, button, linebox
+from .widgets import CalendarWidget, CAttrMap, NColumns, NPile, button, linebox
 from .widgets import ExtendedEdit as Edit
 
 logger = logging.getLogger('khal')
@@ -84,13 +84,13 @@ class DateConversionError(Exception):
 
 
 class SelectableText(urwid.Text):
-    def selectable(self):
+    def selectable(self) -> bool:
         return True
 
-    def keypress(self, size, key):
+    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
         return key
 
-    def get_cursor_coords(self, size):
+    def get_cursor_coords(self, size: Tuple[int]) -> Tuple[int, int]:
         return 0, 0
 
     def render(self, size, focus=False):
@@ -140,7 +140,7 @@ class DateHeader(SelectableText):
 
         return f'{weekday}, {daystr} ({approx_delta})'
 
-    def keypress(self, _, key: str) -> str:
+    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
         binds = self._conf['keybindings']
         if key in binds['left']:
             key = 'left'
@@ -219,7 +219,7 @@ class U_Event(urwid.Text):
 
         self.set_text(mark + ' ' + text.replace('\n', newline))
 
-    def keypress(self, _, key: str) -> str:
+    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
         binds = self._conf['keybindings']
         if key in binds['left']:
             key = 'left'
@@ -250,7 +250,7 @@ class EventListBox(urwid.ListBox):
         self.set_focus_date_callback = set_focus_date_callback
         super().__init__(*args, **kwargs)
 
-    def keypress(self, size, key):
+    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
         return super().keypress(size, key)
 
     @property
@@ -306,7 +306,7 @@ class DListBox(EventListBox):
         self.body.ensure_date(day)
         self.clean()
 
-    def keypress(self, size, key):
+    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
         if key in self._conf['keybindings']['up']:
             key = 'up'
         if key in self._conf['keybindings']['down']:
@@ -610,7 +610,7 @@ class DateListBox(urwid.ListBox):
         title.set_text(title.get_text()[0])
 
     @property
-    def focus_event(self):
+    def focus_event(self) -> Optional[U_Event]:
         if self.body.focus == 0:
             return None
         else:
@@ -639,17 +639,17 @@ class EventColumn(urwid.WidgetWrap):
         self.divider = urwid.Divider('─')
         self.editor = False
         self._last_focused_date: Optional[dt.date] = None
-        self._eventshown = False
+        self._eventshown: Optional[Tuple[str, str]] = None
         self.event_width = int(self.pane._conf['view']['event_view_weighting'])
         self.delete_status = pane.delete_status
         self.toggle_delete_all = pane.toggle_delete_all
         self.toggle_delete_instance = pane.toggle_delete_instance
-        self.dlistbox: DateListBox = elistbox
+        self.dlistbox: DListBox = elistbox
         self.container = urwid.Pile([self.dlistbox])
         urwid.WidgetWrap.__init__(self, self.container)
 
     @property
-    def focus_event(self):
+    def focus_event(self) -> Optional[U_Event]:
         """returns the event currently in focus"""
         return self.dlistbox.focus_event
 
@@ -677,7 +677,7 @@ class EventColumn(urwid.WidgetWrap):
         self._last_focused_date = date
         self.dlistbox.ensure_date(date)
 
-    def update(self, min_date, max_date, everything):
+    def update(self, min_date, max_date: dt.date, everything: bool):
         """update DateListBox
 
         if `everything` is True, reset all displayed dates, else only those between
@@ -692,7 +692,7 @@ class EventColumn(urwid.WidgetWrap):
             max_date = self.dlistbox.body.last_date
         self.dlistbox.body.update_range(min_date, max_date)
 
-    def refresh_titles(self, min_date, max_date, everything):
+    def refresh_titles(self, min_date: dt.date, max_date: dt.date, everything: bool) -> None:
         """refresh titles in DateListBoxes
 
         if `everything` is True, reset all displayed dates, else only those between
@@ -700,7 +700,7 @@ class EventColumn(urwid.WidgetWrap):
         """
         self.dlistbox.refresh_titles(min_date, max_date, everything)
 
-    def update_date_line(self):
+    def update_date_line(self) -> None:
         """refresh titles in DateListBoxes"""
         self.dlistbox.update_date_line()
 
@@ -776,9 +776,9 @@ class EventColumn(urwid.WidgetWrap):
 
             ContainerWidget = linebox[self.pane._conf['view']['frame']]
             new_pane = urwid.Columns([
-                ('weight', 2, ContainerWidget(editor)),
-                ('weight', 1, ContainerWidget(self.dlistbox))
-            ], dividechars=2, focus_column=0)
+                ('weight', 2, CAttrMap(ContainerWidget(editor), 'editor', 'editor focus')),
+                ('weight', 1, CAttrMap(ContainerWidget(self.dlistbox), 'reveal focus')),
+            ], dividechars=0, focus_column=0)
             new_pane.title = editor.title
 
             def teardown(data):
@@ -859,6 +859,8 @@ class EventColumn(urwid.WidgetWrap):
         # because their title is determined by X-BIRTHDAY and X-FNAME properties
         # which are also copied. If the events' summary is edited it will show
         # up on disk but not be displayed in khal
+        if self.focus_event is None:
+            return None
         event = self.focus_event.event.duplicate()
         try:
             self.pane.collection.insert(event)
@@ -910,9 +912,9 @@ class EventColumn(urwid.WidgetWrap):
     def selectable(self):
         return True
 
-    def keypress(self, size, key):
+    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
         prev_shown = self._eventshown
-        self._eventshown = False
+        self._eventshown = None
         self.clear_event_view()
 
         if key in self._conf['keybindings']['new']:
@@ -1021,9 +1023,10 @@ class SearchDialog(urwid.WidgetWrap):
 
         class Search(Edit):
 
-            def keypress(self, size, key):
+            def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
                 if key == 'enter':
                     search_func(self.text)
+                    return None
                 else:
                     return super().keypress(size, key)
 
@@ -1076,8 +1079,13 @@ class ClassicView(Pane):
             toggle_delete_instance=self.toggle_delete_instance,
             dynamic_days=self._conf['view']['dynamic_days'],
         )
-        self.eventscolumn = ContainerWidget(EventColumn(pane=self, elistbox=elistbox))
-        calendar = CalendarWidget(
+        self.eventscolumn = ContainerWidget(
+            CAttrMap(EventColumn(pane=self, elistbox=elistbox),
+                     'eventcolumn',
+                     'eventcolumn focus',
+                     ),
+        )
+        calendar = CAttrMap(CalendarWidget(
             on_date_change=self.eventscolumn.original_widget.set_focus_date,
             keybindings=self._conf['keybindings'],
             on_press={key: self.new_event for key in self._conf['keybindings']['new']},
@@ -1085,7 +1093,7 @@ class ClassicView(Pane):
             weeknumbers=self._conf['locale']['weeknumbers'],
             monthdisplay=self._conf['view']['monthdisplay'],
             get_styles=collection.get_styles
-        )
+        ), 'calendar', 'calendar focus')
         if self._conf['view']['dynamic_days']:
             elistbox.set_focus_date_callback = calendar.set_focus_date
         else:
@@ -1140,7 +1148,7 @@ class ClassicView(Pane):
             event = self.collection.delete_instance(href, etag, account, rec_id)
             updated_etags[event.href] = event.etag
 
-    def keypress(self, size, key: str):
+    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
         binds = self._conf['keybindings']
         if key in binds['search']:
             self.search()
@@ -1203,11 +1211,19 @@ class ClassicView(Pane):
 
 
 def _urwid_palette_entry(
-    name: str, color: str, hmethod: str) -> Tuple[str, str, str, str, str, str]:
+    name: str, color: str, hmethod: str, color_mode: Literal['256colors', 'rgb'],
+    foreground: str = '', background: str = '',
+) -> Tuple[str, str, str, str, str, str]:
     """Create an urwid compatible palette entry.
 
     :param name: name of the new attribute in the palette
     :param color: color for the new attribute
+    :param hmethod: which highlighting mode to use, foreground or background
+    :param color_mode: which color mode we are in, if we are in 256-color mode,
+    we transform 24-bit/RGB colors to a (somewhat) matching 256-color set color
+    :param foreground: the foreground color to apply if we use background highlighting method
+    :param background: the background color to apply if we use foreground highlighting method
+
     :returns: an urwid palette entry
     """
     from ..terminal import COLORS
@@ -1218,9 +1234,8 @@ def _urwid_palette_entry(
         # Colors from the 256 color palette need to be prefixed with h in
         # urwid.
         color = 'h' + color
-    else:
-        # 24-bit colors are not supported by urwid.
-        # Convert it to some color on the 256 color palette that might resemble
+    elif color_mode == '256color':
+        # Convert to some color on the 256 color palette that might resemble
         # the 24-bit color.
         # First, generate the palette (indices 16-255 only). This assumes, that
         # the terminal actually uses the same palette, which may or may not be
@@ -1263,34 +1278,83 @@ def _urwid_palette_entry(
     # We unconditionally add the color to the high color slot. It seems to work
     # in lower color terminals as well.
     if hmethod in ['fg', 'foreground']:
-        return (name, '', '', '', color, '')
+        return (name, '', '', '', color, background)
     else:
-        return (name, '', '', '', '', color)
+        return (name, '', '', '', foreground, color)
 
 
-def _add_calendar_colors(palette: List, collection: CalendarCollection) -> List:
+def _add_calendar_colors(
+    palette: List[Tuple[str, ...]],
+    collection: 'CalendarCollection',
+    color_mode: Literal['256colors', 'rgb'],
+    base: Optional[str] = None,
+    attr_template: str = 'calendar {}',
+) -> List[Tuple[str, ...]]:
     """Add the colors for the defined calendars to the palette.
+
+    We support setting a fixed background or foreground color that we extract
+    from a giving attribute
 
     :param palette: the base palette
     :param collection:
+    :param color_mode: which color mode we are in
+    :param base: the attribute to extract the background and foreground color from
+    :param attr_template: the template to use for the attribute name
     :returns: the modified palette
     """
+    bg_color, fg_color = '', ''
+    for attr in palette:
+        if base and attr[0] == base:
+            if color_mode == 'rgb' and len(attr) >= 5:
+                bg_color = attr[5]
+                fg_color = attr[4]
+            else:
+                bg_color = attr[2]
+                fg_color = attr[1]
+
     for cal in collection.calendars:
         if cal['color'] == '':
             # No color set for this calendar, use default_color instead.
             color = collection.default_color
         else:
             color = cal['color']
-        palette.append(_urwid_palette_entry('calendar ' + cal['name'], color,
-                                            collection.hmethod))
-    palette.append(_urwid_palette_entry('highlight_days_color',
-                                        collection.color, collection.hmethod))
-    palette.append(_urwid_palette_entry('highlight_days_multiple',
-                                        collection.multiple, collection.hmethod))
+        entry = _urwid_palette_entry(
+            attr_template.format(cal['name']),
+            color,
+            collection.hmethod,
+            color_mode=color_mode,
+            foreground=fg_color,
+            background=bg_color,
+        )
+        palette.append(entry)
+
+    entry = _urwid_palette_entry(
+        'highlight_days_color',
+        collection.color,
+        collection.hmethod,
+        color_mode=color_mode,
+        foreground=fg_color,
+        background=bg_color,
+    )
+    palette.append(entry)
+    entry = _urwid_palette_entry('highlight_days_multiple',
+        collection.multiple,
+        collection.hmethod,
+        color_mode=color_mode,
+        foreground=fg_color,
+        background=bg_color)
+    palette.append(entry)
+
     return palette
 
 
-def start_pane(pane, callback, program_info='', quit_keys=None):
+def start_pane(
+        pane,
+        callback,
+        program_info='',
+        quit_keys=None,
+        color_mode: Literal['rgb', '256colors']='rgb',
+):
     """Open the user interface with the given initial pane."""
     quit_keys = quit_keys or ['q']
 
@@ -1342,8 +1406,27 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
     logger.addHandler(header_handler)
 
     frame.open(pane, callback)
+    theme = getattr(colors, pane._conf['view']['theme'])
     palette = _add_calendar_colors(
-        getattr(colors, pane._conf['view']['theme']), pane.collection)
+        theme, pane.collection, color_mode=color_mode,
+        base='calendar', attr_template='calendar {}',
+    )
+    palette = _add_calendar_colors(
+        palette, pane.collection, color_mode=color_mode,
+        base='popupbg', attr_template='calendar {} popup',
+    )
+
+    def merge_palettes(pallete_a, pallete_b) -> List[Tuple[str, ...]]:
+        """Merge two palettes together, with the second palette taking priority."""
+        merged = {}
+        for entry in pallete_a:
+            merged[entry[0]] = entry
+        for entry in pallete_b:
+            merged[entry[0]] = entry
+        return list(merged.values())
+
+    overwrite = [(key, *values) for key, values in pane._conf['palette'].items()]
+    palette = merge_palettes(palette, overwrite)
     loop = urwid.MainLoop(
         widget=frame,
         palette=palette,
@@ -1376,9 +1459,11 @@ def start_pane(pane, callback, program_info='', quit_keys=None):
         loop.set_alarm_in(60, check_for_updates, pane)
 
     loop.set_alarm_in(60, check_for_updates, pane)
-    # Make urwid use 256 color mode.
+
+    colors_ = 2**24 if color_mode == 'rgb' else 256
     loop.screen.set_terminal_properties(
-        colors=256, bright_is_bold=pane._conf['view']['bold_for_light_color'])
+        colors=colors_, bright_is_bold=pane._conf['view']['bold_for_light_color'],
+    )
 
     def ctrl_c(signum, f):
         raise urwid.ExitMainLoop()
