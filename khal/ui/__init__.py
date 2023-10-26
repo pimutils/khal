@@ -639,7 +639,7 @@ class EventColumn(urwid.WidgetWrap):
         self.divider = urwid.Divider('─')
         self.editor = False
         self._last_focused_date: Optional[dt.date] = None
-        self._eventshown = False
+        self._eventshown: Optional[Tuple[str, str]] = None
         self.event_width = int(self.pane._conf['view']['event_view_weighting'])
         self.delete_status = pane.delete_status
         self.toggle_delete_all = pane.toggle_delete_all
@@ -914,7 +914,7 @@ class EventColumn(urwid.WidgetWrap):
 
     def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
         prev_shown = self._eventshown
-        self._eventshown = False
+        self._eventshown = None
         self.clear_event_view()
 
         if key in self._conf['keybindings']['new']:
@@ -1026,6 +1026,7 @@ class SearchDialog(urwid.WidgetWrap):
             def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
                 if key == 'enter':
                     search_func(self.text)
+                    return None
                 else:
                     return super().keypress(size, key)
 

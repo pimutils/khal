@@ -20,7 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import datetime as dt
-from typing import Callable, Dict, List, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, List, Literal, Optional, Tuple
 
 import urwid
 
@@ -43,6 +43,8 @@ from .widgets import (
     button,
 )
 
+if TYPE_CHECKING:
+    import khal.khalendar.event
 
 class StartEnd:
 
@@ -177,8 +179,10 @@ class StartEndEditor(urwid.WidgetWrap):
         """
         self.allday = not isinstance(start, dt.datetime)
         self.conf = conf
-        self._startdt, self._original_start = start, start
-        self._enddt, self._original_end = end, end
+        self._startdt: dt.date = start
+        self._original_start: dt.date = start
+        self._enddt: dt.date = end
+        self._original_end: dt.date = end
         self.on_start_date_change = on_start_date_change
         self.on_end_date_change = on_end_date_change
         self._datewidth = len(start.strftime(self.conf['locale']['longdateformat']))
@@ -275,6 +279,8 @@ class StartEndEditor(urwid.WidgetWrap):
             self._startdt = dt.datetime.combine(self._startdt, dt.datetime.min.time())
             self._enddt = dt.datetime.combine(self._enddt, dt.datetime.min.time())
         elif self.allday is False and state is True:
+            assert isinstance(self._startdt, dt.datetime)
+            assert isinstance(self._enddt, dt.datetime)
             self._startdt = self._startdt.date()
             self._enddt = self._enddt.date()
         self.allday = state
@@ -340,7 +346,13 @@ class StartEndEditor(urwid.WidgetWrap):
 class EventEditor(urwid.WidgetWrap):
     """Widget that allows Editing one `Event()`"""
 
-    def __init__(self, pane, event: 'khal.event.Event', save_callback=None, always_save: bool=False) -> None:
+    def __init__(
+        self,
+        pane,
+        event: 'khal.khalendar.event.Event',
+        save_callback=None,
+        always_save: bool=False,
+    ) -> None:
         """
         :param save_callback: call when saving event with new start and end
              dates and recursiveness of original and edited event as parameters
@@ -562,12 +574,12 @@ class EventEditor(urwid.WidgetWrap):
             self.pane.window.alert(
                 ('light red', 'Unsaved changes! Hit ESC again to discard.'))
             self._abort_confirmed = True
-            return
+            return None
         else:
             self._abort_confirmed = False
         if key in self.pane._conf['keybindings']['save']:
             self.save(None)
-            return
+            return None
         return super().keypress(size, key)
 
 
