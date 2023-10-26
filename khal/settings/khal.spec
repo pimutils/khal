@@ -257,7 +257,7 @@ blank_line_before_day = boolean(default=False)
 # `khal/settings/khal.spec` in the section `[default]` of the property `theme`.
 #
 # __ http://urwid.org/manual/displayattributes.html
-# .. _github: # https://github.com/pimutils/khal/issues
+# .. _github: https://github.com/pimutils/khal/issues
 theme = option('dark', 'light', default='dark')
 
 # Whether to show a visible frame (with *box drawing* characters) around some
@@ -332,13 +332,28 @@ default_color = color(default='')
 # "low color mode"  and foreground_high and background_high are used in "high
 # color mode" and mono if only monocolor is supported. If you don't want to set
 # a value for a certain color, use an empty string (`''`).
-# Valid entries for low color mode are listed on the urwid website_.
-# _http://urwid.org/manual/displayattributes.html#standard-foreground-colors For
+# Valid entries for low color mode are listed on the `urwid website
+# <http://urwid.org/manual/displayattributes.html#standard-foreground-colors>`_. For
 # high color mode you can use any valid 24-bit color value, e.g. `'#ff0000'`.
-# NOTE: 24-bit colors must be enclosed in single quotes to be parsed correctly,
-# otherwise the `#` will be interpreted as a comment.
+#
+# .. note::
+#     24-bit colors must be enclosed in single quotes to be parsed correctly,
+#     otherwise the `#` will be interpreted as a comment.
+#
 # Most modern terminals should support high color mode.
-# Example entry: `header = light red, default, default, #ff0000, default`
+#
+# Example entry (particular ugly):
+#
+# .. highlight:: ini
+#
+# ::
+#
+#  [palette]
+#  header = light red, default, default, '#ff0000', default
+#  edit = '', '', 'bold', '#FF00FF', '#12FF14'
+#  footer = '', '', '', '#121233', '#656599'
+#
 # See the default palettes in `khal/ui/colors.py` for all available keys.
-# If you can't theme an element in ikhal, please open an issue on github.
+# If you can't theme an element in ikhal, please open an issue on `github
+# <https://github.com/pimutils/khal/issues/new/choose>`_.
 [palette]
