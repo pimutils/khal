@@ -245,7 +245,7 @@ def khal_list(
     width: Optional[int] = None,
     env=None,
     datepoint=None,
-    json: Optional[Iterable] = None,
+    json: Optional[List] = None,
 ):
     """returns a list of all events in `daterange`"""
     assert daterange is not None or datepoint is not None
