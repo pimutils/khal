@@ -9,8 +9,6 @@ from icalendar import Parameters, vCalAddress, vRecur, vText
 from packaging import version
 
 from khal.khalendar.event import AllDayEvent, Event, FloatingEvent, LocalizedEvent, create_timezone
-from khal.khalendar.event import (AllDayEvent, Event, FloatingEvent,
-                                  LocalizedEvent, create_timezone)
 from khal.controllers import human_formatter
 
 from .utils import (
