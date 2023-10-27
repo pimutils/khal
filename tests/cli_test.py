@@ -462,7 +462,7 @@ def test_list_json(runner):
     now = dt.datetime.now().strftime('%d.%m.%Y')
     result = runner.invoke(
         main_khal,
-        'new {} 18:00 myevent'.format(now).split())
+        f'new {now} 18:00 myevent'.split())
     args = ['list', '--json', 'start-end-time-style',
             '--json', 'title', '--json', 'description', '18:30']
     result = runner.invoke(main_khal, args)
@@ -484,7 +484,7 @@ def test_search(runner):
 def test_search_json(runner):
     runner = runner(days=2)
     now = dt.datetime.now().strftime('%d.%m.%Y')
-    result = runner.invoke(main_khal, 'new {} 18:00 myevent'.format(now).split())
+    result = runner.invoke(main_khal, f'new {now} 18:00 myevent'.split())
     result = runner.invoke(main_khal, ['search', '--json', 'start-end-time-style',
                                        '--json', 'title', '--json', 'description', 'myevent'])
     assert not result.exception
