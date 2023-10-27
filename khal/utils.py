@@ -34,6 +34,7 @@ from typing import Iterator, List, Optional, Tuple
 import pytz
 import urwid
 from click import style
+
 from .terminal import get_color
 
 
