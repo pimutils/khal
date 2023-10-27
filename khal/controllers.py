@@ -32,7 +32,7 @@ from typing import Callable, Iterable, List, Optional
 import pytz
 from click import confirm, echo, prompt, style
 
-from khal import __productname__, __version__, calendar_display, parse_datetime, utils
+from khal import __productname__, __version__, calendar_display, parse_datetime
 from khal.custom_types import (
     EventCreationTypes,
     LocaleConfiguration,
@@ -49,7 +49,7 @@ from .icalendar import cal_from_ics, split_ics
 from .icalendar import sort_key as sort_vevent_key
 from .khalendar.vdir import Item
 from .terminal import merge_columns
-from .utils import (human_formatter, json_formatter)
+from .utils import human_formatter, json_formatter
 
 logger = logging.getLogger('khal')
 
