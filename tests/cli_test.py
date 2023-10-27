@@ -1,9 +1,9 @@
 import datetime as dt
+import json
 import os
 import re
 import sys
 import traceback
-import json
 
 import pytest
 from click.testing import CliRunner
