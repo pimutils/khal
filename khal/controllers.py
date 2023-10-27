@@ -418,7 +418,15 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
         'alarms': alarms,
         'url': url,
     })
-    new_from_dict(info, collection, conf=conf, format=format, env=env, calendar_name=calendar_name, json=json)
+    new_from_dict(
+        info,
+        collection,
+        conf=conf,
+        format=format,
+        env=env,
+        calendar_name=calendar_name,
+        json=json,
+    )
 
 
 def new_from_dict(
