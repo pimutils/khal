@@ -248,6 +248,17 @@ The `--once` option only allows events to appear once even if they are on
 multiple days. With the `--notstarted` option only events are shown that start
 after `START`.
 
+**Some examples**
+
+Including or excluding specific calendars:
+
+* `khal list -d soccer` will display events, in list form, from every calendar except "soccer."
+* `khal list -a soccer` will display events, in list form, from only the "soccer" calendar.
+
+Working with date ranges:
+
+* `khal list -a soccer today 30d` will show all events in next 30 days (from the "soccer" calendar).
+* `khal list 2019-12-01 31d` will show all all events for the 31 days following Dec 1, 2019.
 
 at
 **
