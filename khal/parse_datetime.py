@@ -289,7 +289,7 @@ def guesstimedeltafstr(delta_string: str) -> dt.timedelta:
     :param delta_string: string encoding time-delta, e.g. '1h 15m'
     """
 
-    tups = re.split(r'(-?\d+)', delta_string)
+    tups = re.split(r'(-?\+?\d+)', delta_string)
     if not re.match(r'^\s*$', tups[0]):
         raise ValueError(f'Invalid beginning of timedelta string "{delta_string}": "{tups[0]}"')
     tups = tups[1:]
@@ -297,6 +297,8 @@ def guesstimedeltafstr(delta_string: str) -> dt.timedelta:
 
     for num, unit in zip(tups[0::2], tups[1::2]):
         try:
+            if num[0] == '+':
+                num = num[1:]
             numint = int(num)
         except ValueError:
             raise DateTimeParseError(
