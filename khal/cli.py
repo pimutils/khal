@@ -32,11 +32,11 @@ import click_log
 import xdg
 
 from . import __version__, controllers, khalendar
+from .api import _plugin_commands
 from .exceptions import FatalError
 from .settings import InvalidSettingsError, NoConfigFile, get_config
 from .terminal import colored
 from .utils import human_formatter, json_formatter
-from .api import _plugin_commands
 
 try:
     from setproctitle import setproctitle
