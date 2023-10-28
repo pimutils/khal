@@ -60,10 +60,6 @@ def time_args(f):
 def multi_calendar_select(ctx, include_calendars, exclude_calendars):
     if include_calendars and exclude_calendars:
         raise click.UsageError('Can\'t use both -a and -d.')
-    # if not isinstance(include_calendars, tuple):
-        # include_calendars = (include_calendars,)
-    # if not isinstance(exclude_calendars, tuple):
-        # exclude_calendars = (exclude_calendars,)
 
     selection = set()
 
