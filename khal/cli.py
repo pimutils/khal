@@ -36,6 +36,7 @@ from .exceptions import FatalError
 from .settings import InvalidSettingsError, NoConfigFile, get_config
 from .terminal import colored
 from .utils import human_formatter, json_formatter
+from .api import _plugin_commands
 
 try:
     from setproctitle import setproctitle
@@ -236,7 +237,19 @@ def stringify_conf(conf):
     return '\n'.join(out)
 
 
-@click.group()
+class _KhalGroup(click.Group):
+    def list_commands(self, ctx):
+        return super().list_commands(ctx) + list(_plugin_commands.keys())
+
+    def get_command(self, ctx, name):
+        if name in _plugin_commands:
+            print(f'found command {name} as a plugin')
+            return _plugin_commands[name]
+        return super().get_command(ctx, name)
+
+
+
+@click.group(cls=_KhalGroup)
 @click_log.simple_verbosity_option('khal')
 @global_options
 @click.pass_context
@@ -723,8 +736,9 @@ def find_load_plugins():
     sys.path.append(plugin_dir)
     for plugin in os.listdir(plugin_dir):
         if os.path.isfile(os.path.join(plugin_dir, plugin, '__init__.py')):
-            logger.debug(f'loading plugin {plugin}')
+            logger.debug(f'loading plugin {plugin} at {plugin_dir}')
             __import__(plugin)
 
+find_load_plugins()
 
 main_khal, main_ikhal = cli, interactive_cli
