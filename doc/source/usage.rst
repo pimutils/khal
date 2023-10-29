@@ -171,8 +171,21 @@ Several options are common to almost all of :program:`khal`'s commands
    url-separator
         A separator: " :: " that appears when there is a url.
 
+   duration
+       The duration of the event in terms of days, hours, months, and seconds
+       (abbreviated to `d`, `h`, `m`, and `s` respectively).
+
+   repeat-pattern
+       The raw iCal recurrence rule if the event is repeating.
+
+   all-day
+       A boolean indicating whether it is an all-day event or not.
+
+   categories
+       The categories of the event.
+
    By default, all-day events have no times. To see a start and end time anyway simply
-   add `-full` to the end of any template with start/end, for instance
+   add `-full` to the end of any template with start/end or duration, for instance
    `start-time` becomes `start-time-full` and will always show start and end times (instead
    of being empty for all-day events).
 
@@ -189,6 +202,40 @@ Several options are common to almost all of :program:`khal`'s commands
    ::
 
            khal list --format "{title} {description}"
+
+
+.. option:: --json FIELD ...
+
+   Works similar to :option:`--format`, but instead of defining a format string a JSON
+   object is created for each specified field. The matching events are collected into
+   a JSON array. This option accepts the following subset of :option:`--format`
+   template options
+
+   ::
+
+           title, description, uid, start, start-long, start-date,
+           start-date-long, start-time, end, end-long, end-date,
+           end-date-long, end-time, start-full, start-long-full,
+           start-date-full, start-date-long-full, start-time-full,
+           end-full, end-long-full, end-date-full, end-date-long-full,
+           end-time-full, repeat-symbol, location, calendar,
+           calendar-color, start-style, to-style, end-style,
+           start-end-time-style, end-necessary, end-necessary-long,
+           status, cancelled, organizer, url, duration, duration-full,
+           repeat-pattern, all-day, categories
+
+
+   Note that `calendar-color` will be the actual color name rather than the ANSI color code,
+   and the `repeat-symbol`, `status`, and `cancelled` values will have leading/trailing
+   whitespace stripped.  Additionally, if only the special value `all` is specified then
+   all fields will be enabled.
+
+   Below is an example command which prints a JSON list of objects containing the title and
+   description of all events today.
+
+   ::
+
+           khal list --json title --json description
 
 
 .. option:: --day-format DAYFORMAT
@@ -231,8 +278,9 @@ shows all events scheduled for a given date (or datetime) range, with custom
 formatting:
 ::
 
-        khal list [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
-        [--day-format DAYFORMAT] [--once] [--notstarted] [START [END | DELTA] ]
+        khal list [-a CALENDAR ... | -d CALENDAR ...]
+        [--format FORMAT] [--json FIELD ...] [--day-format DAYFORMAT]
+        [--once] [--notstarted] [START [END | DELTA] ]
 
 START and END can both be given as dates, datetimes or times (it is assumed
 today is meant in the case of only a given time) in the formats configured in
@@ -270,7 +318,8 @@ start.
 
 ::
 
-        khal at [-a CALENDAR ... | -d CALENDAR ...] [--format FORMAT]
+        khal at [-a CALENDAR ... | -d CALENDAR ...]
+        [--format FORMAT] [--json FIELD ...]
         [--notstarted] [[START DATE] TIME | now]
 
 calendar

@@ -31,7 +31,7 @@ import urwid
 
 from .. import utils
 from ..khalendar import CalendarCollection
-from ..khalendar.exceptions import ReadOnlyCalendarError
+from ..khalendar.exceptions import FatalError, ReadOnlyCalendarError
 from . import colors
 from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
@@ -205,13 +205,14 @@ class U_Event(urwid.Text):
             format_ = self._conf['view']['agenda_event_format']
         else:
             format_ = self._conf['view']['event_format']
+        formatter_ = utils.human_formatter(format_, colors=False)
         if self.this_date:
             date_ = self.this_date
         elif self.event.allday:
             date_ = self.event.start
         else:
             date_ = self.event.start.date()
-        text = self.event.format(format_, date_, colors=False)
+        text = formatter_(self.event.attributes(date_, colors=False))
         if self._conf['locale']['unicode_symbols']:
             newline = ' \N{LEFTWARDS ARROW WITH HOOK} '
         else:
@@ -1356,6 +1357,17 @@ def start_pane(
         color_mode: Literal['rgb', '256colors']='rgb',
 ):
     """Open the user interface with the given initial pane."""
+
+    # we can't use configobj to do validation of theme for us, because when the
+    # config is passed, we haven't loaded plugins yet. We could load plugins
+    # earlier, but then logging wouldn't work at plugin loading time.
+    # We do this early, so that logger messages still get shown in a regular way
+    theme = colors.themes.get(pane._conf['view']['theme'])
+    if theme is None:
+        logger.fatal(f'Invalid theme {pane._conf["view"]["theme"]} configured')
+        logger.fatal(f'Available themes are: {", ".join(colors.themes.keys())}')
+        raise FatalError
+
     quit_keys = quit_keys or ['q']
 
     frame = Window(
@@ -1406,7 +1418,6 @@ def start_pane(
     logger.addHandler(header_handler)
 
     frame.open(pane, callback)
-    theme = getattr(colors, pane._conf['view']['theme'])
     palette = _add_calendar_colors(
         theme, pane.collection, color_mode=color_mode,
         base='calendar', attr_template='calendar {}',

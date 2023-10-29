@@ -107,3 +107,7 @@ light = [
 ]
 
 themes: Dict[str, List[Tuple[str, ...]]] = {'light': light, 'dark': dark}
+
+
+def register_color_theme(name: str, theme: List[Tuple[str, ...]]):
+    themes[name] = theme

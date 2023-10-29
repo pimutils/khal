@@ -10,6 +10,7 @@ from freezegun import freeze_time
 import khal.khalendar.exceptions
 import khal.utils
 from khal import icalendar as icalendar_helpers
+from khal.controllers import human_formatter
 from khal.khalendar import CalendarCollection
 from khal.khalendar.backend import CouldNotCreateDbDir
 from khal.khalendar.event import Event
@@ -314,10 +315,10 @@ class TestCollection:
         coll.insert(event, cal1)
         events = sorted(coll.search('Event'))
         assert len(events) == 2
-        assert events[0].format(
-            '{start} {end} {title}', dt.date.today()) == '30.06. 07:30 30.06. 12:00 Arbeit\x1b[0m'
-        assert events[1].format(
-            '{start} {end} {title}', dt.date.today()) == '07.07. 08:30 07.07. 12:00 Arbeit\x1b[0m'
+        assert human_formatter('{start} {end} {title}')(events[0].attributes(
+            dt.date.today())) == '30.06. 07:30 30.06. 12:00 Arbeit\x1b[0m'
+        assert human_formatter('{start} {end} {title}')(events[1].attributes(
+            dt.date.today())) == '07.07. 08:30 07.07. 12:00 Arbeit\x1b[0m'
 
     def test_delete_two_events(self, coll_vdirs, sleep_time):
         """testing if we can delete any of two events in two different
@@ -374,7 +375,7 @@ class TestCollection:
         coll.insert(event, cal1)
         events = sorted(coll.search('Event'))
         assert len(events) == 1
-        assert events[0].format('{start} {end} {title}', dt.date.today()) == \
+        assert human_formatter('{start} {end} {title}')(events[0].attributes(dt.date.today())) == \
             '02.12. 08:00 02.12. 09:30 Some event\x1b[0m'
 
     def test_multi_uid_vdir(self, coll_vdirs, caplog, fix_caplog, sleep_time):
