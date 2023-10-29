@@ -161,12 +161,6 @@ def get_config(
             section = sectionize(section)
             logger.warning(
                 f'unknown key or subsection "{value}" in section "{section}"')
-
-            deprecated = [{'value': 'default_command', 'section': 'default'}]
-            for d in deprecated:
-                if (value == d['value']) and (section == d['section']):
-                    logger.warning(f'Key "{value}" in section "{section}" was '
-                                   'deprecated. See the FAQ to find out when and why!')
     return user_config
 
 
