@@ -1,5 +1,4 @@
-from collections.abc import Callable, Mapping
-from typing import Dict, List, Tuple
+from typing import Callable, Dict, List, Mapping, Tuple
 
 from khal._compat import importlib_metadata
 
@@ -9,7 +8,7 @@ from khal._compat import importlib_metadata
 #   https://setuptools.pypa.io/en/latest/userguide/entry_point.html
 
 
-def _load_formatters() -> dict[str, Callable[[str], str]]:
+def _load_formatters() -> Dict[str, Callable[[str], str]]:
     formatter_entrypoints = importlib_metadata.entry_points(group="khal.formatter")
     return {ep.name: ep.load() for ep in formatter_entrypoints}
 
@@ -22,8 +21,9 @@ def _load_color_themes() -> Dict[str, List[Tuple[str, ...]]]:
 
 THEMES: Dict[str, List[Tuple[str, ...]],] = _load_color_themes()
 
-def _load_commands() -> dict[str, Callable]:
+
+def _load_commands() -> Dict[str, Callable]:
     command_entrypoints = importlib_metadata.entry_points(group="khal.commands")
     return {ep.name: ep.load() for ep in command_entrypoints}
 
-COMMANDS: dict[str, Callable] = _load_commands()
+COMMANDS: Dict[str, Callable] = _load_commands()
