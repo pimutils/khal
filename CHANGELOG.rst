@@ -17,6 +17,7 @@ not released yet
 * NEW properties of ikhal themes (dark and light) can now be overriden from the
   config file (via the new [palette] section, check the documenation)
 * NEW timedelta strings can now have a leading `+`, e.g. `+1d`
+* NEW Add `--json` option to output event data as JSON objects
 
 0.11.2
 ======

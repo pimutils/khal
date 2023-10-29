@@ -1,13 +1,16 @@
 import datetime as dt
+import json
 import os
 import re
 import sys
+import traceback
 
 import pytest
 from click.testing import CliRunner
 from freezegun import freeze_time
 
 from khal.cli import main_ikhal, main_khal
+from khal.utils import CONTENT_ATTRIBUTES
 
 from .utils import _get_ics_filepath, _get_text
 
@@ -387,6 +390,46 @@ def test_at(runner):
     assert result.output.startswith('myevent')
 
 
+def test_at_json(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    end_date = dt.datetime.now() + dt.timedelta(days=10)
+    result = runner.invoke(
+        main_khal,
+        'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+    args = ['--color', 'at', '--json', 'start-time', '--json', 'title', '18:30']
+    result = runner.invoke(main_khal, args)
+    assert not result.exception
+    assert result.output.startswith('[{"start-time": "", "title": "myevent"}]')
+
+
+def test_at_json_default_fields(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    end_date = dt.datetime.now() + dt.timedelta(days=10)
+    result = runner.invoke(
+        main_khal,
+        'new {} {} 18:00 myevent'.format(now, end_date.strftime('%d.%m.%Y')).split())
+    args = ['--color', 'at', '--json', 'all', '18:30']
+    result = runner.invoke(main_khal, args)
+    assert not result.exception
+    output_fields = json.loads(result.output)[0].keys()
+    assert all(x in output_fields for x in CONTENT_ATTRIBUTES)
+
+
+def test_at_json_strip(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['import', _get_ics_filepath(
+        'event_rrule_recuid_cancelled')], input='0\ny\n')
+    assert not result.exception
+    result = runner.invoke(main_khal, ['at', '--json', 'repeat-symbol',
+                           '--json', 'status', '--json', 'cancelled', '14.07.2014', '07:00'])
+    traceback.print_tb(result.exc_info[2])
+    assert not result.exception
+    assert result.output.startswith(
+        '[{"repeat-symbol": "⟳", "status": "CANCELLED", "cancelled": "CANCELLED"}]')
+
+
 def test_at_day_format(runner):
     runner = runner(days=2)
     now = dt.datetime.now().strftime('%d.%m.%Y')
@@ -414,6 +457,20 @@ def test_list(runner):
     assert result.output.startswith(expected)
 
 
+def test_list_json(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    result = runner.invoke(
+        main_khal,
+        f'new {now} 18:00 myevent'.split())
+    args = ['list', '--json', 'start-end-time-style',
+            '--json', 'title', '--json', 'description', '18:30']
+    result = runner.invoke(main_khal, args)
+    expected = '[{"start-end-time-style": "18:00-19:00", "title": "myevent", "description": ""}]'
+    assert not result.exception
+    assert result.output.startswith(expected)
+
+
 def test_search(runner):
     runner = runner(days=2)
     now = dt.datetime.now().strftime('%d.%m.%Y')
@@ -422,6 +479,16 @@ def test_search(runner):
     result = runner.invoke(main_khal, ['--color', 'search', '--format', format, 'myevent'])
     assert not result.exception
     assert result.output.startswith('\x1b[34m\x1b[31m18:00')
+
+
+def test_search_json(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    result = runner.invoke(main_khal, f'new {now} 18:00 myevent'.split())
+    result = runner.invoke(main_khal, ['search', '--json', 'start-end-time-style',
+                                       '--json', 'title', '--json', 'description', 'myevent'])
+    assert not result.exception
+    assert result.output.startswith('[{"start-end-time-style": "18:00')
 
 
 def test_no_default_new(runner):
@@ -838,7 +905,27 @@ def test_new(runner):
     assert result.output.startswith(str(runner.tmpdir))
 
 
-@freeze_time('2015-6-1 8:00')
+def test_new_format(runner):
+    runner = runner(print_new='event')
+
+    format = '{start-end-time-style}: {title}'
+    result = runner.invoke(main_khal, ['new', '13.03.2016 12:00', '3d',
+                           '--format', format, 'Visit'])
+    assert not result.exception
+    assert result.output.startswith('→12:00: Visit')
+
+
+def test_new_json(runner):
+    runner = runner(print_new='event')
+
+    result = runner.invoke(main_khal, ['new', '13.03.2016 12:00', '3d',
+                           '--json', 'start-end-time-style', '--json', 'title', 'Visit'])
+    assert not result.exception
+    assert result.output.startswith(
+        '[{"start-end-time-style": "→12:00", "title": "Visit"}]')
+
+
+@ freeze_time('2015-6-1 8:00')
 def test_new_interactive(runner):
     runner = runner(print_new='path')
 

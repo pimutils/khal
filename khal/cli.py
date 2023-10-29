@@ -34,6 +34,7 @@ from . import __version__, controllers, khalendar
 from .exceptions import FatalError
 from .settings import InvalidSettingsError, NoConfigFile, get_config
 from .terminal import colored
+from .utils import human_formatter, json_formatter
 
 try:
     from setproctitle import setproctitle
@@ -313,11 +314,12 @@ def _get_cli():
                   )
     @click.option('--notstarted', help=('Print only events that have not started.'),
                   is_flag=True)
+    @click.option('--json', help=("Fields to output in json"), multiple=True)
     @click.argument('DATERANGE', nargs=-1, required=False,
                     metavar='[DATETIME [DATETIME | RANGE]]')
     @click.pass_context
     def klist(ctx, include_calendar, exclude_calendar,
-              daterange, once, notstarted, format, day_format):
+              daterange, once, notstarted, json, format, day_format):
         """List all events between a start (default: today) and (optional)
         end datetime."""
         try:
@@ -332,7 +334,8 @@ def _get_cli():
                 once=once,
                 notstarted=notstarted,
                 conf=ctx.obj['conf'],
-                env={"calendars": ctx.obj['conf']['calendars']}
+                env={"calendars": ctx.obj['conf']['calendars']},
+                json=json
             )
             if event_column:
                 click.echo('\n'.join(event_column))
@@ -358,6 +361,7 @@ def _get_cli():
                   help=('Stop an event repeating on this date.'))
     @click.option('--format', '-f',
                   help=('The format to print the event.'))
+    @click.option('--json', help=("Fields to output in json"), multiple=True)
     @click.option('--alarms', '-m',
                   help=('Alarm times for the new event as DELTAs comma separated'))
     @click.option('--url', help=("URI for the event."))
@@ -365,7 +369,7 @@ def _get_cli():
                     nargs=-1)
     @click.pass_context
     def new(ctx, calendar, info, location, categories, repeat, until, alarms, url, format,
-            interactive):
+            json, interactive):
         '''Create a new event from arguments.
 
         START and END can be either dates, times or datetimes, please have a
@@ -413,6 +417,7 @@ def _get_cli():
                 alarms=alarms,
                 url=url,
                 format=format,
+                json=json
             )
         except FatalError as error:
             logger.debug(error, exc_info=True)
@@ -583,9 +588,10 @@ def _get_cli():
     @multi_calendar_option
     @click.option('--format', '-f',
                   help=('The format of the events.'))
+    @click.option('--json', help=("Fields to output in json"), multiple=True)
     @click.argument('search_string')
     @click.pass_context
-    def search(ctx, format, search_string, include_calendar, exclude_calendar):
+    def search(ctx, format, json, search_string, include_calendar, exclude_calendar):
         '''Search for events matching SEARCH_STRING.
 
         For recurring events, only the master event and different overwritten
@@ -604,8 +610,13 @@ def _get_cli():
             term_width, _ = get_terminal_size()
             now = dt.datetime.now()
             env = {"calendars": ctx.obj['conf']['calendars']}
+            if len(json) == 0:
+                formatter = human_formatter(format)
+            else:
+                formatter = json_formatter(json)
             for event in events:
-                desc = textwrap.wrap(event.format(format, relative_to=now, env=env), term_width)
+                desc = textwrap.wrap(formatter(
+                    event.attributes(relative_to=now, env=env)), term_width)
                 event_column.extend(
                     [colored(d, event.color,
                              bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
@@ -655,9 +666,10 @@ def _get_cli():
                   help=('The format of the day line.'))
     @click.option('--notstarted', help=('Print only events that have not started'),
                   is_flag=True)
+    @click.option('--json', help=("Fields to output in json"), multiple=True)
     @click.argument('DATETIME', nargs=-1, required=False, metavar='[[START DATE] TIME | now]')
     @click.pass_context
-    def at(ctx, datetime, notstarted, format, day_format, include_calendar, exclude_calendar):
+    def at(ctx, datetime, notstarted, format, day_format, json, include_calendar, exclude_calendar):
         '''Print all events at a specific datetime (defaults to now).'''
         if not datetime:
             datetime = ("now",)
@@ -675,7 +687,8 @@ def _get_cli():
                 once=True,
                 notstarted=notstarted,
                 conf=ctx.obj['conf'],
-                env={"calendars": ctx.obj['conf']['calendars']}
+                env={"calendars": ctx.obj['conf']['calendars']},
+                json=json
             )
             if rows:
                 click.echo('\n'.join(rows))
