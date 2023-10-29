@@ -1,4 +1,4 @@
-__all__ = ("importlib_metadata", "Protocol", "Literal", "tomllib")
+__all__ = ["importlib_metadata"]
 
 import sys
 
