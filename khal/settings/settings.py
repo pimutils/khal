@@ -153,6 +153,10 @@ def get_config(
     for section, value in extras:
         if section == ():
             logger.warning(f'unknown section "{value}" in config file')
+        elif section == ('palette',):
+            # we don't validate the palette section, because there is no way to
+            # automatically extract valid attributes from the ui module
+            continue
         else:
             section = sectionize(section)
             logger.warning(
