@@ -25,7 +25,7 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from typing import Dict, List, Optional, Tuple, Type, Union
+from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 
 import icalendar
 import icalendar.cal
@@ -729,9 +729,9 @@ class Event:
 
         formatters = FORMATTERS.values()
         if len(formatters) == 1:
-            fmt = list(formatters)[0]
+            fmt: Callable[[str], str] = list(formatters)[0]
         else:
-            def fmt(s): return s.strip()
+            def fmt(s: str) -> str: return s.strip()
 
         attributes["description"] = fmt(self.description)
         attributes["description-separator"] = ""
