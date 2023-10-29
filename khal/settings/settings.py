@@ -153,16 +153,14 @@ def get_config(
     for section, value in extras:
         if section == ():
             logger.warning(f'unknown section "{value}" in config file')
+        elif section == ('palette',):
+            # we don't validate the palette section, because there is no way to
+            # automatically extract valid attributes from the ui module
+            continue
         else:
             section = sectionize(section)
             logger.warning(
                 f'unknown key or subsection "{value}" in section "{section}"')
-
-            deprecated = [{'value': 'default_command', 'section': 'default'}]
-            for d in deprecated:
-                if (value == d['value']) and (section == d['section']):
-                    logger.warning(f'Key "{value}" in section "{section}" was '
-                                   'deprecated. See the FAQ to find out when and why!')
     return user_config
 
 
