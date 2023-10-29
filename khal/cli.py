@@ -176,7 +176,7 @@ def klist(ctx, include_calendar, exclude_calendar,
     """List all events between a start (default: today) and (optional)
     end datetime."""
     enabled_eventformatters = plugins.FORMATTERS
-    logger.warn("TODO: register user given format string as a plugin")
+   # TODO: register user given format string as a plugin
     logger.debug(f'{enabled_eventformatters}')
     try:
         event_column = controllers.khal_list(
