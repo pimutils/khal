@@ -30,12 +30,22 @@ from shutil import get_terminal_size
 import click
 import click_log
 
-from . import __version__, controllers, khalendar, plugins
+from . import controllers, plugins
+from .cli_utils import (
+    _select_one_calendar_callback,
+    build_collection,
+    calendar_option,
+    global_options,
+    logger,
+    mouse_option,
+    multi_calendar_option,
+    multi_calendar_select,
+    prepare_context,
+)
 from .exceptions import FatalError
-from .settings import InvalidSettingsError, NoConfigFile, get_config
+from .plugins import COMMANDS
 from .terminal import colored
 from .utils import human_formatter, json_formatter
-from .plugins import COMMANDS
 
 try:
     from setproctitle import setproctitle
@@ -44,7 +54,6 @@ except ImportError:
         pass
 
 
-logger = logging.getLogger('khal')
 click_log.basic_config('khal')
 
 days_option = click.option('--days', default=None, type=int, help='How many days to include.')
@@ -55,170 +64,6 @@ dates_arg = click.argument('dates', nargs=-1)
 
 def time_args(f):
     return dates_arg(events_option(week_option(days_option(f))))
-
-
-def multi_calendar_select(ctx, include_calendars, exclude_calendars):
-    if include_calendars and exclude_calendars:
-        raise click.UsageError('Can\'t use both -a and -d.')
-
-    selection = set()
-
-    if include_calendars:
-        for cal_name in include_calendars:
-            if cal_name not in ctx.obj['conf']['calendars']:
-                raise click.BadParameter(
-                    f'Unknown calendar {cal_name}, run `khal printcalendars` '
-                    'to get a list of all configured calendars.'
-                )
-
-        selection.update(include_calendars)
-    elif exclude_calendars:
-        selection.update(ctx.obj['conf']['calendars'].keys())
-        for value in exclude_calendars:
-            selection.remove(value)
-
-    return selection or None
-
-
-def multi_calendar_option(f):
-    a = click.option('--include-calendar', '-a', multiple=True, metavar='CAL',
-                     help=('Include the given calendar. Can be specified '
-                           'multiple times.'))
-    d = click.option('--exclude-calendar', '-d', multiple=True, metavar='CAL',
-                     help=('Exclude the given calendar. Can be specified '
-                           'multiple times.'))
-
-    return d(a(f))
-
-
-def mouse_option(f):
-    o = click.option(
-        '--mouse/--no-mouse',
-        is_flag=True,
-        default=None,
-        help='Disable mouse in interactive UI'
-    )
-    return o(f)
-
-
-def _select_one_calendar_callback(ctx, option, calendar):
-    if isinstance(calendar, tuple):
-        if len(calendar) > 1:
-            raise click.UsageError(
-                'Can\'t use "--include-calendar" / "-a" more than once for this command.')
-        elif len(calendar) == 1:
-            calendar = calendar[0]
-    return _calendar_select_callback(ctx, option, calendar)
-
-
-def _calendar_select_callback(ctx, option, calendar):
-    if calendar and calendar not in ctx.obj['conf']['calendars']:
-        raise click.BadParameter(
-            f'Unknown calendar {calendar}, run `khal printcalendars` to get a '
-            'list of all configured calendars.'
-        )
-    return calendar
-
-
-def calendar_option(f):
-    return click.option('--calendar', '-a', metavar='CAL', callback=_calendar_select_callback)(f)
-
-
-def global_options(f):
-    def color_callback(ctx, option, value):
-        ctx.color = value
-
-    def logfile_callback(ctx, option, path):
-        ctx.logfilepath = path
-
-    config = click.option(
-        '--config', '-c',
-        help='The config file to use.',
-        default=None, metavar='PATH'
-    )
-    color = click.option(
-        '--color/--no-color',
-        help=('Use colored/uncolored output. Default is to only enable colors '
-              'when not part of a pipe.'),
-        expose_value=False, default=None,
-        callback=color_callback
-    )
-
-    logfile = click.option(
-        '--logfile', '-l',
-        help='The logfile to use [defaults to stdout]',
-        type=click.Path(),
-        callback=logfile_callback,
-        default=None,
-        expose_value=False,
-        metavar='LOGFILE',
-    )
-
-    version = click.version_option(version=__version__)
-
-    return logfile(config(color(version(f))))
-
-
-def build_collection(conf, selection):
-    """build and return a khalendar.CalendarCollection from the configuration"""
-    try:
-        props = {}
-        for name, cal in conf['calendars'].items():
-            if selection is None or name in selection:
-                props[name] = {
-                    'name': name,
-                    'path': cal['path'],
-                    'readonly': cal['readonly'],
-                    'color': cal['color'],
-                    'priority': cal['priority'],
-                    'ctype': cal['type'],
-                    'addresses': cal['addresses'] if 'addresses' in cal else '',
-                }
-        collection = khalendar.CalendarCollection(
-            calendars=props,
-            color=conf['highlight_days']['color'],
-            locale=conf['locale'],
-            dbpath=conf['sqlite']['path'],
-            hmethod=conf['highlight_days']['method'],
-            default_color=conf['highlight_days']['default_color'],
-            multiple=conf['highlight_days']['multiple'],
-            multiple_on_overflow=conf['highlight_days']['multiple_on_overflow'],
-            highlight_event_days=conf['default']['highlight_event_days'],
-        )
-    except FatalError as error:
-        logger.debug(error, exc_info=True)
-        logger.fatal(error)
-        sys.exit(1)
-
-    collection._default_calendar_name = conf['default']['default_calendar']
-    return collection
-
-
-class _NoConfig:
-    def __getitem__(self, key):
-        logger.fatal(
-            'Cannot find a config file. If you have no configuration file '
-            'yet, you might want to run `khal configure`.')
-        sys.exit(1)
-
-
-def prepare_context(ctx, config):
-    assert ctx.obj is None
-
-    logger.debug('khal %s' % __version__)
-    try:
-        conf = get_config(config)
-    except NoConfigFile:
-        conf = _NoConfig()
-    except InvalidSettingsError:
-        logger.info('If your configuration file used to work, please have a '
-                    'look at the Changelog to see what changed.')
-        sys.exit(1)
-    else:
-        logger.debug('Using config:')
-        logger.debug(stringify_conf(conf))
-
-    ctx.obj = {'conf_path': config, 'conf': conf}
 
 
 def stringify_conf(conf):
@@ -248,7 +93,7 @@ class _KhalGroup(click.Group):
         return super().get_command(ctx, name)
 
 
-@click.group()
+@click.group(cls=_KhalGroup)
 @click_log.simple_verbosity_option('khal')
 @global_options
 @click.pass_context
