@@ -35,6 +35,7 @@ from .exceptions import FatalError
 from .settings import InvalidSettingsError, NoConfigFile, get_config
 from .terminal import colored
 from .utils import human_formatter, json_formatter
+from .plugins import COMMANDS
 
 try:
     from setproctitle import setproctitle
@@ -59,10 +60,6 @@ def time_args(f):
 def multi_calendar_select(ctx, include_calendars, exclude_calendars):
     if include_calendars and exclude_calendars:
         raise click.UsageError('Can\'t use both -a and -d.')
-    # if not isinstance(include_calendars, tuple):
-        # include_calendars = (include_calendars,)
-    # if not isinstance(exclude_calendars, tuple):
-        # exclude_calendars = (exclude_calendars,)
 
     selection = set()
 
@@ -238,6 +235,17 @@ def stringify_conf(conf):
             else:
                 out.append(f'  {subkey}: {subvalue}')
     return '\n'.join(out)
+
+
+class _KhalGroup(click.Group):
+    def list_commands(self, ctx):
+        return super().list_commands(ctx) + list(COMMANDS.keys())
+
+    def get_command(self, ctx, name):
+        if name in COMMANDS:
+            logger.debug(f'found command {name} as a plugin')
+            return COMMANDS[name]
+        return super().get_command(ctx, name)
 
 
 @click.group()

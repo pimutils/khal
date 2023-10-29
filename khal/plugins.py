@@ -21,3 +21,9 @@ def _load_color_themes() -> Dict[str, List[Tuple[str, ...]]]:
     return {ep.name: ep.load() for ep in color_theme_entrypoints}
 
 THEMES: Dict[str, List[Tuple[str, ...]],] = _load_color_themes()
+
+def _load_commands() -> dict[str, Callable]:
+    command_entrypoints = importlib_metadata.entry_points(group="khal.commands")
+    return {ep.name: ep.load() for ep in command_entrypoints}
+
+COMMANDS: dict[str, Callable] = _load_commands()
