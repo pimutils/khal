@@ -37,6 +37,7 @@ from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
 from .widgets import CalendarWidget, CAttrMap, NColumns, NPile, button, linebox
 from .widgets import ExtendedEdit as Edit
+from ..parse_datetime import timedelta2str
 
 logger = logging.getLogger('khal')
 
@@ -907,7 +908,7 @@ class EventColumn(urwid.WidgetWrap):
             'summary': '',
             'timezone': self._conf['locale']['default_timezone'],
             'allday': allday,
-            'alarms': self._conf['default']['default_event_alarm'],
+            'alarms': timedelta2str(self._conf['default']['default_event_alarm']),
         })
         self.edit(event)
 

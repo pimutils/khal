@@ -50,6 +50,7 @@ from .icalendar import sort_key as sort_vevent_key
 from .khalendar.vdir import Item
 from .terminal import merge_columns
 from .utils import human_formatter, json_formatter
+from .parse_datetime import timedelta2str
 
 logger = logging.getLogger('khal')
 
@@ -411,9 +412,9 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
     )
     if alarms is None:
         if info['allday']:
-            alarms = conf['default']['default_dayevent_alarm']
+            alarms = timedelta2str(conf['default']['default_dayevent_alarm'])
         else:
-            alarms = conf['default']['default_event_alarm']
+            alarms = timedelta2str(conf['default']['default_event_alarm'])
     info.update({
         'location': location,
         'categories': categories,

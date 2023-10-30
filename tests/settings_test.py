@@ -54,8 +54,8 @@ class TestSettings:
                 'timedelta': dt.timedelta(days=2),
                 'default_event_duration': dt.timedelta(days=1),
                 'default_dayevent_duration': dt.timedelta(hours=1),
-                'default_event_alarm': '',
-                'default_dayevent_alarm': '',
+                'default_event_alarm': dt.timedelta(0),
+                'default_dayevent_alarm': dt.timedelta(0),
                 'show_all_days': False,
                 'enable_mouse': True,
             }
@@ -107,8 +107,8 @@ class TestSettings:
                 'default_dayevent_duration': dt.timedelta(hours=1),
                 'show_all_days': False,
                 'enable_mouse': True,
-                'default_event_alarm': '',
-                'default_dayevent_alarm': '',
+                'default_event_alarm': dt.timedelta(0),
+                'default_dayevent_alarm': dt.timedelta(0),
             }
         }
         for key in comp_config:

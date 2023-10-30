@@ -474,9 +474,10 @@ class EventEditor(urwid.WidgetWrap):
         if not hasattr(self, 'alarmseditor'):
             return
 
-        from ..utils import alarmstr2trigger
-        default_event_alarm = list(alarmstr2trigger(self._conf['default']['default_event_alarm']))[0]
-        default_dayevent_alarm = list(alarmstr2trigger(self._conf['default']['default_dayevent_alarm']))[0]
+        # to make the alarms before the event, we need to set it them to
+        # negative values
+        default_event_alarm = -1 * self._conf['default']['default_event_alarm']
+        default_dayevent_alarm =-1 *  self._conf['default']['default_dayevent_alarm']
         alarms = self.alarmseditor.get_alarms()
         if len(alarms) == 1:
             timedelta = alarms[0][0]
