@@ -48,9 +48,9 @@ from .exceptions import ConfigurationError
 from .icalendar import cal_from_ics, split_ics
 from .icalendar import sort_key as sort_vevent_key
 from .khalendar.vdir import Item
+from .parse_datetime import timedelta2str
 from .terminal import merge_columns
 from .utils import human_formatter, json_formatter
-from .parse_datetime import timedelta2str
 
 logger = logging.getLogger('khal')
 

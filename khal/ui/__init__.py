@@ -32,12 +32,12 @@ import urwid
 from .. import utils
 from ..khalendar import CalendarCollection
 from ..khalendar.exceptions import ReadOnlyCalendarError
+from ..parse_datetime import timedelta2str
 from . import colors
 from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
 from .widgets import CalendarWidget, CAttrMap, NColumns, NPile, button, linebox
 from .widgets import ExtendedEdit as Edit
-from ..parse_datetime import timedelta2str
 
 logger = logging.getLogger('khal')
 

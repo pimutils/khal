@@ -36,9 +36,8 @@ import pytz
 import urwid
 from click import style
 
-from .terminal import get_color
 from .parse_datetime import guesstimedeltafstr
-
+from .terminal import get_color
 
 
 def generate_random_uid() -> str:

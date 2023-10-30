@@ -32,8 +32,8 @@ import icalendar
 import pytz
 
 from .exceptions import UnsupportedRecurrence
-from .parse_datetime import guesstimedeltafstr, rrulefstr
-from .utils import generate_random_uid, localize_strip_tz, to_unix_time, str2alarm
+from .parse_datetime import rrulefstr
+from .utils import generate_random_uid, localize_strip_tz, str2alarm, to_unix_time
 
 logger = logging.getLogger('khal')
 
