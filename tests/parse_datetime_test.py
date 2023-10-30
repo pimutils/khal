@@ -35,8 +35,8 @@ def _construct_event(info, locale,
                      location=None, categories=None, repeat=None, until=None,
                      alarm=None, **kwargs):
     info = eventinfofstr(' '.join(info), locale,
-                         dt.timedelta(days=1),
-                         dt.timedelta(hours=1),
+                         default_event_duration=dt.timedelta(hours=1),
+                         default_dayevent_duration=dt.timedelta(days=1),
                          adjust_reasonably=True,
                          )
     if description is not None:
