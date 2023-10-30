@@ -422,7 +422,7 @@ class EventEditor(urwid.WidgetWrap):
         self.url = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'URL:         '), edit_text=self.url), 'edit', 'edit focus',
         )
-        self.alarms = AlarmsEditor(self.event)
+        self.alarmseditor: AlarmsEditor = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
             self.summary,
             urwid.Columns([(13, urwid.AttrMap(urwid.Text('Calendar:'), 'caption')),
@@ -439,7 +439,7 @@ class EventEditor(urwid.WidgetWrap):
             self.startendeditor,
             self.recurrenceeditor,
             divider,
-            self.alarms,
+            self.alarmseditor,
             divider,
             urwid.Columns(
                 [(12, button('Save', on_press=self.save, padding_left=0, padding_right=0))]
@@ -457,6 +457,31 @@ class EventEditor(urwid.WidgetWrap):
 
     def end_datechange(self, date):
         self.pane.eventscolumn.original_widget.set_focus_date(date)
+
+    def type_change(self, allday: bool) -> None:
+        """when the event type changes, we might want to change the default alarms
+
+        :params allday: True if the event is now an allday event, False if it isn't
+        """
+        # test if self.alarmseditor exists
+        if not hasattr(self, 'alarmseditor'):
+            return
+
+        from ..utils import alarmstr2trigger
+        default_event_alarm = list(alarmstr2trigger(self._conf['default']['default_event_alarm']))[0]
+        default_dayevent_alarm = list(alarmstr2trigger(self._conf['default']['default_dayevent_alarm']))[0]
+        alarms = self.alarmseditor.get_alarms()
+        if len(alarms) == 1:
+            timedelta = alarms[0][0]
+            if allday and timedelta == default_event_alarm:
+                self.alarmseditor.clear()
+                self.alarmseditor.add_alarm(None, default_dayevent_alarm)
+            elif (not allday) and timedelta == default_dayevent_alarm:
+                self.alarmseditor.clear()
+                self.alarmseditor.add_alarm(None, default_event_alarm)
+            else:
+                # either there were more than one alarm or the alarm was not the default
+                pass
 
     @property
     def title(self):  # Window title
@@ -484,7 +509,7 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if self.recurrenceeditor.changed:
             return True
-        if self.alarms.changed:
+        if self.alarmseditor.changed:
             return True
         return False
 
@@ -503,8 +528,8 @@ class EventEditor(urwid.WidgetWrap):
             rrule = self.recurrenceeditor.active
             self.event.update_rrule(rrule)
 
-        if self.alarms.changed:
-            self.event.update_alarms(self.alarms.get_alarms())
+        if self.alarmseditor.changed:
+            self.event.update_alarms(self.alarmseditor.get_alarms())
 
     def export(self, button):
         """
