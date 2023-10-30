@@ -477,8 +477,8 @@ class DurationWidget(urwid.WidgetWrap):
         seconds = int(seconds % 60)
         return days, hours, minutes, seconds
 
-    def __init__(self, dt) -> None:
-        days, hours, minutes, seconds = self._convert_timedelta(dt)
+    def __init__(self, timedelta: dt.timedelta) -> None:
+        days, hours, minutes, seconds = self._convert_timedelta(timedelta)
 
         self.days_edit = ValidatedEdit(
             edit_text=str(days), validate=self.unsigned_int, align='right')
@@ -502,7 +502,7 @@ class DurationWidget(urwid.WidgetWrap):
 
         urwid.WidgetWrap.__init__(self, self.columns)
 
-    def get_timedelta(self):
+    def get_timedelta(self) -> dt.timedelta:
         return dt.timedelta(
             seconds=int(self.seconds_edit.get_edit_text()) +
             int(self.minutes_edit.get_edit_text()) * 60 +
@@ -514,7 +514,7 @@ class AlarmsEditor(urwid.WidgetWrap):
 
     class AlarmEditor(urwid.WidgetWrap):
 
-        def __init__(self, alarm, delete_handler) -> None:
+        def __init__(self, alarm: Tuple[dt.timedelta, str], delete_handler) -> None:
             duration, description = alarm
             if duration.total_seconds() > 0:
                 direction = 'after'
