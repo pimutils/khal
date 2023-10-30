@@ -465,8 +465,8 @@ def eventinfofstr(info_string: str,
         try:
             start, end, allday = guessrangefstr(
                 ' '.join(parts[0:i]), locale,
-                default_event_duration,
-                default_dayevent_duration,
+                default_timedelta_datetime=default_event_duration,
+                default_timedelta_date=default_dayevent_duration,
                 adjust_reasonably=adjust_reasonably,
             )
         except (ValueError, DateTimeParseError):
