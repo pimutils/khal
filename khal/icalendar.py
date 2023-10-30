@@ -33,7 +33,7 @@ import pytz
 
 from .exceptions import UnsupportedRecurrence
 from .parse_datetime import guesstimedeltafstr, rrulefstr
-from .utils import generate_random_uid, localize_strip_tz, to_unix_time
+from .utils import generate_random_uid, localize_strip_tz, to_unix_time, str2alarm
 
 logger = logging.getLogger('khal')
 
@@ -139,14 +139,8 @@ def new_vevent(locale,
         rrule = rrulefstr(repeat, until, locale, getattr(dtstart, 'tzinfo', None))
         event.add('rrule', rrule)
     if alarms:
-        for alarm in alarms.split(","):
-            alarm = alarm.strip()
-            alarm_trig = -1 * guesstimedeltafstr(alarm)
-            new_alarm = icalendar.Alarm()
-            new_alarm.add('ACTION', 'DISPLAY')
-            new_alarm.add('TRIGGER', alarm_trig)
-            new_alarm.add('DESCRIPTION', description)
-            event.add_component(new_alarm)
+        for alarm in str2alarm(alarms, description or ''):
+            event.add_component(alarm)
     return event
 
 

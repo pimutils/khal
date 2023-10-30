@@ -31,11 +31,14 @@ from calendar import month_abbr, timegm
 from textwrap import wrap
 from typing import Iterator, List, Optional, Tuple
 
+import icalendar
 import pytz
 import urwid
 from click import style
 
 from .terminal import get_color
+from .parse_datetime import guesstimedeltafstr
+
 
 
 def generate_random_uid() -> str:
@@ -255,3 +258,21 @@ def json_formatter(fields):
         else:
             return results
     return fmt
+
+
+def alarmstr2trigger(alarms: str) -> Iterator[dt.timedelta]:
+    """convert a comma separated list of alarm strings to dt.timedelta"""
+    for alarm in alarms.split(","):
+        alarm = alarm.strip()
+        alarm_trig = -1 * guesstimedeltafstr(alarm)
+        yield alarm_trig
+
+
+def str2alarm(alarms: str, description: str) -> Iterator[icalendar.Alarm]:
+    """convert a comma separated list of alarm strings to icalendar.Alarm"""
+    for alarm_trig in alarmstr2trigger(alarms):
+        new_alarm = icalendar.Alarm()
+        new_alarm.add('ACTION', 'DISPLAY')
+        new_alarm.add('TRIGGER', alarm_trig)
+        new_alarm.add('DESCRIPTION', description)
+        yield new_alarm

@@ -907,6 +907,7 @@ class EventColumn(urwid.WidgetWrap):
             'summary': '',
             'timezone': self._conf['locale']['default_timezone'],
             'allday': allday,
+            'alarms': self._conf['default']['default_event_alarm'],
         })
         self.edit(event)
 

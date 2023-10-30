@@ -169,13 +169,16 @@ class StartEndEditor(urwid.WidgetWrap):
                  conf,
                  on_start_date_change=lambda x: None,
                  on_end_date_change=lambda x: None,
-
+                 on_type_change: Callable[[bool], None]=lambda _: None,
                  ) -> None:
         """
         :param on_start_date_change: a callable that gets called everytime a new
             start date is entered, with that new date as an argument
         :param on_end_date_change: same as for on_start_date_change, just for the
             end date
+        :param on_type_change: callback that gets called when the event type
+            (allday or datetime) changes, gets passed True if toggled to allday
+            and False if toggled to daytime
         """
         self.allday = not isinstance(start, dt.datetime)
         self.conf = conf
@@ -185,6 +188,7 @@ class StartEndEditor(urwid.WidgetWrap):
         self._original_end: dt.date = end
         self.on_start_date_change = on_start_date_change
         self.on_end_date_change = on_end_date_change
+        self.on_type_change = on_type_change
         self._datewidth = len(start.strftime(self.conf['locale']['longdateformat']))
         self._timewidth = len(start.strftime(self.conf['locale']['timeformat']))
         # this will contain the widgets for [start|end] [date|time]
@@ -299,11 +303,13 @@ class StartEndEditor(urwid.WidgetWrap):
             self.conf['keybindings'],
         )
 
-        if state is True:
+        if state is True:  # allday event
+            self.on_type_change(True)
             timewidth = 1
             self.widgets.starttime = urwid.Text('')
             self.widgets.endtime = urwid.Text('')
-        elif state is False:
+        elif state is False:  # datetime event
+            self.on_type_change(False)
             timewidth = self._timewidth + 1
             raw_start_time_widget = ValidatedEdit(
                 dateformat=self.conf['locale']['timeformat'],
@@ -376,6 +382,7 @@ class EventEditor(urwid.WidgetWrap):
         self.startendeditor = StartEndEditor(
             event.start_local, event.end_local, self._conf,
             self.start_datechange, self.end_datechange,
+            self.type_change,
         )
         # TODO make sure recurrence rules cannot be edited if we only
         # edit one instance (or this and future) (once we support that)
