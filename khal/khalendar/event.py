@@ -68,7 +68,7 @@ class Event:
                  color: Optional[str] = None,
                  start: Optional[dt.datetime] = None,
                  end: Optional[dt.datetime] = None,
-                 address: str = '',
+                 addresses: Optional[List[str]] =None,
                  ):
         """
         :param start: start datetime of this event instance
@@ -88,7 +88,7 @@ class Event:
         self.color = color
         self._start: dt.datetime
         self._end: dt.datetime
-        self.address = address
+        self.addresses = addresses if addresses else []
 
         if start is None:
             self._start = self._vevents[self.ref]['DTSTART'].dt
@@ -808,9 +808,10 @@ class Event:
     @property
     def partstat(self) -> Optional[str]:
         for attendee in self._vevents[self.ref].get('ATTENDEE', []):
-            print(attendee)
-            if attendee == 'mailto:' + self.address:
-                return attendee.params.get('PARTSTAT', '')
+            for address in self.addresses:
+                if attendee == 'mailto:' + address:
+                    return attendee.params.get('PARTSTAT', '')
+        return None
 
 
 class DatetimeEvent(Event):

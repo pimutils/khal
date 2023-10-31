@@ -332,8 +332,8 @@ def test_status_confirmed():
     FORMAT_CALENDAR = ('{calendar-color}{status-symbol}{start-end-time-style} ({calendar}) '
                        '{title} [{location}]{repeat-symbol}')
 
-    assert event.format(FORMAT_CALENDAR, dt.date(2014, 4, 9)) == \
-        ' ✔09:30-10:30 (foobar) An Event []\x1b[0m'
+    assert human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9))) == \
+        '✔09:30-10:30 (foobar) An Event []\x1b[0m'
 
 def test_event_d_long():
     event_d_long = _get_text('event_d_long')
@@ -703,19 +703,19 @@ def test_partstat():
     )
 
     event = Event.fromString(
-        _get_text('event_dt_partstat'), address='jdoe@example.com', **EVENT_KWARGS)
+        _get_text('event_dt_partstat'), addresses=['jdoe@example.com'], **EVENT_KWARGS)
     assert event.partstat == 'ACCEPTED'
     assert human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9))) == \
         '✔09:30-10:30 (foobar) An Event []\x1b[0m'
 
     event = Event.fromString(
-        _get_text('event_dt_partstat'), address='another@example.com', **EVENT_KWARGS)
+        _get_text('event_dt_partstat'), addresses=['another@example.com'], **EVENT_KWARGS)
     assert event.partstat == 'DECLINED'
     assert human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9))) == \
         '❌09:30-10:30 (foobar) An Event []\x1b[0m'
 
     event = Event.fromString(
-        _get_text('event_dt_partstat'), address='jqpublic@example.com', **EVENT_KWARGS)
+        _get_text('event_dt_partstat'), addresses=['jqpublic@example.com'], **EVENT_KWARGS)
     assert event.partstat == 'ACCEPTED'
     assert human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9))) == \
         '✔09:30-10:30 (foobar) An Event []\x1b[0m'
@@ -723,9 +723,9 @@ def test_partstat():
 @pytest.mark.xfail
 def test_partstat_deligated():
     event = Event.fromString(
-        _get_text('event_dt_partstat'), address='hcabot@example.com', **EVENT_KWARGS)
+        _get_text('event_dt_partstat'), addresses=['hcabot@example.com'], **EVENT_KWARGS)
     assert event.partstat == 'ACCEPTED'
 
     event = Event.fromString(
-        _get_text('event_dt_partstat'), address='iamboss@example.com', **EVENT_KWARGS)
+        _get_text('event_dt_partstat'), addresses=['iamboss@example.com'], **EVENT_KWARGS)
     assert event.partstat == 'ACCEPTED'

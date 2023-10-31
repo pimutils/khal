@@ -12,7 +12,7 @@ class CalendarConfiguration(TypedDict):
     color: str
     priority: int
     ctype: str
-    address: str
+    addresses: str
 
 
 class LocaleConfiguration(TypedDict):

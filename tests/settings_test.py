@@ -42,11 +42,11 @@ class TestSettings:
             'calendars': {
                 'home': {
                     'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False,
-                    'color': None, 'priority': 10, 'type': 'calendar', 'address': '',
+                    'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
                 },
                 'work': {
                     'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False,
-                    'color': None, 'priority': 10, 'type': 'calendar', 'address': '',
+                    'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
                 },
             },
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
@@ -85,10 +85,10 @@ class TestSettings:
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'),
                          'color': 'dark green', 'readonly': False, 'priority': 20,
-                         'type': 'calendar', 'address': ''},
+                         'type': 'calendar', 'addresses': ['']},
                 'work': {'path': os.path.expanduser('~/.calendars/work/'),
                          'readonly': True, 'color': None, 'priority': 10,
-                         'type': 'calendar', 'address': 'user@example.com'}},
+                         'type': 'calendar', 'addresses': ['user@example.com']}},
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
                 'local_timezone': get_localzone(),

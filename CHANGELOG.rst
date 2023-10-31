@@ -27,7 +27,7 @@ not released yet
   tentative)
 * NEW event format option `partstat-symbol` which represents the participation
   status of an event with a symbol (e.g. `✓` for accepted, `✗` for declined,
-  `?` for tentative); partication status is shown for the email address
+  `?` for tentative); partication status is shown for the email addresses
   configured for the event's calendar
 
 0.11.2

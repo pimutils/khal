@@ -71,9 +71,10 @@ readonly = boolean(default=False)
 # *calendars* subsection will be used.
 type = option('calendar', 'birthdays', 'discover', default='calendar')
 
-# The email address associated with this account. For now it is only used to
-# check what participation status ("PARTSTAT") belongs to the user.
-address = string(default='')
+# All email addresses associated with this account, separated by commas.
+# For now it is only used to check what participation status ("PARTSTAT")
+# belongs to the user.
+addresses = force_list(default='')
 
 [sqlite]
 # khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
