@@ -255,8 +255,7 @@ def khal_list(
     if agenda_format is None:
         agenda_format = conf['view']['agenda_event_format']
 
-    json_mode = json is not None and len(json) > 0
-    if json_mode:
+    if json:
         formatter = json_formatter(json)
         colors = False
     else:
@@ -313,7 +312,7 @@ def khal_list(
             seen=once,
             colors=colors,
         )
-        if day_format and (conf['default']['show_all_days'] or current_events) and not json_mode:
+        if day_format and (conf['default']['show_all_days'] or current_events) and not json:
             if len(event_column) != 0 and conf['view']['blank_line_before_day']:
                 event_column.append('')
             event_column.append(format_day(start.date(), day_format, conf['locale']))

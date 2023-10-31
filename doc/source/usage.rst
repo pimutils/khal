@@ -209,9 +209,7 @@ Several options are common to almost all of :program:`khal`'s commands
    Works similar to :option:`--format`, but instead of defining a format string a JSON
    object is created for each specified field. The matching events are collected into
    a JSON array. This option accepts the following subset of :option:`--format`
-   template options
-
-   ::
+   template options::
 
            title, description, uid, start, start-long, start-date,
            start-date-long, start-time, end, end-long, end-date,
@@ -233,7 +231,7 @@ Several options are common to almost all of :program:`khal`'s commands
    Below is an example command which prints a JSON list of objects containing the title and
    description of all events today.
 
-   ::
+    .. code-block:: console
 
            khal list --json title --json description
 
@@ -275,8 +273,7 @@ Commands
 list
 ****
 shows all events scheduled for a given date (or datetime) range, with custom
-formatting:
-::
+formatting::
 
         khal list [-a CALENDAR ... | -d CALENDAR ...]
         [--format FORMAT] [--json FIELD ...] [--day-format DAYFORMAT]
