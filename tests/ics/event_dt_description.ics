@@ -1,0 +1,8 @@
+BEGIN:VEVENT
+SUMMARY:An Event
+DESCRIPTION;LANG=en_US:Hey, \n\nJust setting aside some dedicated time to talk about redacted.
+DTSTART:20230409T093000
+DTEND:20230409T103000
+DTSTAMP:20230401T234817Z
+UID:floating_with_description_and_parameter
+END:VEVENT

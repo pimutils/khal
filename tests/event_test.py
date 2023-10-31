@@ -678,3 +678,11 @@ def test_timezone_creation_with_arbitrary_dates(freeze_ts, event_time):
     assert len(vtimezone) > 14
     assert 'BEGIN:STANDARD' in vtimezone
     assert 'BEGIN:DAYLIGHT' in vtimezone
+
+
+def test_parameters_description():
+    """test if we support DESCRIPTION properties with parameters"""
+    event = Event.fromString(_get_text('event_dt_description'), **EVENT_KWARGS)
+    assert event.description == (
+        'Hey, \n\nJust setting aside some dedicated time to talk about redacted.'
+    )
