@@ -400,13 +400,22 @@ def printcalendars(ctx, include_calendar, exclude_calendar):
 
 @cli.command()
 @click.pass_context
-def printformats(ctx):
+@click.option(
+    '--now',
+    help=('Print the current date and time in the local timezone instead.'),
+    is_flag=True,
+)
+def printformats(ctx, now: bool):
     '''Print a date in all formats.
 
     Print the date 2013-12-21 21:45 in all configured date(time)
     formats to check if these locale settings are configured to ones
     liking.'''
     time = dt.datetime(2013, 12, 21, 21, 45)
+    if now:
+        import pytz
+        time = dt.datetime.utcnow()
+        time = pytz.UTC.localize(time).astimezone(ctx.obj['conf']['locale']['local_timezone'])
     try:
         for strftime_format in [
                 'longdatetimeformat', 'datetimeformat', 'longdateformat',
@@ -567,3 +576,4 @@ def configure(ctx):
 
 
 main_khal, main_ikhal = cli, interactive_cli
+
