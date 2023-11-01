@@ -258,7 +258,7 @@ blank_line_before_day = boolean(default=False)
 #
 # __ http://urwid.org/manual/displayattributes.html
 # .. _github: https://github.com/pimutils/khal/issues
-theme = option('dark', 'light', default='dark')
+theme = string(default='dark')
 
 # Whether to show a visible frame (with *box drawing* characters) around some
 # (groups of) elements or not. There are currently several different frame
