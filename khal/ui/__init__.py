@@ -29,9 +29,9 @@ from typing import Dict, List, Literal, Optional, Tuple
 import click
 import urwid
 
-from .. import utils
+from .. import plugins, utils
 from ..khalendar import CalendarCollection
-from ..khalendar.exceptions import ReadOnlyCalendarError
+from ..khalendar.exceptions import FatalError, ReadOnlyCalendarError
 from . import colors
 from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
@@ -1357,6 +1357,17 @@ def start_pane(
         color_mode: Literal['rgb', '256colors']='rgb',
 ):
     """Open the user interface with the given initial pane."""
+    # We don't validate the themes in settings.spec but instead here
+    # first try to load built-in themes, then try to load themes from
+    # plugins
+    theme = colors.themes.get(pane._conf['view']['theme'])
+    if theme is None:
+        theme = plugins.THEMES.get(pane._conf['view']['theme'])
+    if theme is None:
+        logger.fatal(f'Invalid theme {pane._conf["view"]["theme"]} configured')
+        logger.fatal(f'Available themes are: {", ".join(colors.themes.keys())}')
+        raise FatalError
+
     quit_keys = quit_keys or ['q']
 
     frame = Window(
@@ -1407,7 +1418,6 @@ def start_pane(
     logger.addHandler(header_handler)
 
     frame.open(pane, callback)
-    theme = getattr(colors, pane._conf['view']['theme'])
     palette = _add_calendar_colors(
         theme, pane.collection, color_mode=color_mode,
         base='calendar', attr_template='calendar {}',
