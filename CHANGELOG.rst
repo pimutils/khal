@@ -13,6 +13,7 @@ not released yet
 
 * UPDATED REQUIREMENT urwid is now required >= 2.1.0
 * FIX support urwid 2.4.2
+* NEW REQUIREMENT for tests on python >= 3.12: pkg_resources
 * optimization in ikhal when editing events in the far future or past
 * FIX an issue in ikhal with updating the view of the event list after editing
   an event
