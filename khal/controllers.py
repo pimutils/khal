@@ -27,7 +27,7 @@ import re
 import textwrap
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Tuple
 
 import pytz
 from click import confirm, echo, prompt, style
@@ -148,7 +148,7 @@ def start_end_from_daterange(
     locale: LocaleConfiguration,
     default_timedelta_date: dt.timedelta=dt.timedelta(days=1),
     default_timedelta_datetime: dt.timedelta=dt.timedelta(hours=1),
-):
+) -> Tuple[dt.datetime, dt.datetime]:
     """
     convert a string description of a daterange into start and end datetime
 
@@ -158,7 +158,8 @@ def start_end_from_daterange(
     :param locale: locale settings
     """
     if not daterange:
-        start = dt.datetime(*dt.date.today().timetuple()[:3])
+        today = dt.datetime.now(locale['local_timezone']).date()
+        start = dt.datetime.combine(today, dt.time.min)
         end = start + default_timedelta_date
     else:
         start, end, allday = parse_datetime.guessrangefstr(
