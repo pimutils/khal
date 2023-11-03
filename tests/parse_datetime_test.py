@@ -108,12 +108,47 @@ def test_weekdaypstr_invalid():
         weekdaypstr('foobar')
 
 
-def test_construct_daynames():
-    with freeze_time('2016-9-19'):
-        assert construct_daynames(dt.date(2016, 9, 19), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Today'
-        assert construct_daynames(dt.date(2016, 9, 20), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Tomorrow'
-        assert construct_daynames(dt.date(2016, 9, 21), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Wednesday'
+class TestConstructDayNames:
+    def test_construct_daynames(self):
+        with freeze_time('2016-9-19'):
+            assert construct_daynames(dt.date(2016, 9, 18), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Sunday'
+            assert construct_daynames(dt.date(2016, 9, 19), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Today'
+            assert construct_daynames(dt.date(2016, 9, 20), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Tomorrow'
+            assert construct_daynames(dt.date(2016, 9, 21), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Wednesday'
 
+    # freeztime freezes to UTC but construct_daynames should give as back the
+    # daynames relative the the user's local timezone
+    def test_construct_daynames_with_datetime(self):
+        with freeze_time('2016-9-19 22:53'):
+            assert construct_daynames(dt.date(2016, 9, 18), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Sunday'
+            assert construct_daynames(dt.date(2016, 9, 19), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Monday'
+            assert construct_daynames(dt.date(2016, 9, 20), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Today'
+            assert construct_daynames(dt.date(2016, 9, 21), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Tomorrow'
+            assert construct_daynames(dt.date(2016, 9, 22), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Thursday'
+
+    def test_construct_daynames_los_angeles(self):
+        with freeze_time('2016-9-19 22:53'):
+            assert construct_daynames(dt.date(2016, 9, 18), local_timezone=pytz.timezone('America/Los_Angeles')) == 'Sunday'
+            assert construct_daynames(dt.date(2016, 9, 19), local_timezone=pytz.timezone('America/Los_Angeles')) == 'Today'
+            assert construct_daynames(dt.date(2016, 9, 20), local_timezone=pytz.timezone('America/Los_Angeles')) == 'Tomorrow'
+            assert construct_daynames(dt.date(2016, 9, 21), local_timezone=pytz.timezone('America/Los_Angeles')) == 'Wednesday'
+            assert construct_daynames(dt.date(2016, 9, 22), local_timezone=pytz.timezone('America/Los_Angeles')) == 'Thursday'
+
+    def test_construct_daynames_los_angeles_morning(self):
+        with freeze_time('2016-9-19 06:30'):
+            assert construct_daynames(dt.date(2016, 9, 18), local_timezone=pytz.timezone('America/Los_Angeles')) == 'Today'
+            assert construct_daynames(dt.date(2016, 9, 19), local_timezone=pytz.timezone('America/Los_Angeles')) == 'Tomorrow'
+            assert construct_daynames(dt.date(2016, 9, 20), local_timezone=pytz.timezone('America/Los_Angeles')) == 'Tuesday'
+            assert construct_daynames(dt.date(2016, 9, 21), local_timezone=pytz.timezone('America/Los_Angeles')) == 'Wednesday'
+            assert construct_daynames(dt.date(2016, 9, 22), local_timezone=pytz.timezone('America/Los_Angeles')) == 'Thursday'
+
+    def test_construct_daynames_auckland(self):
+        with freeze_time('2016-9-19 22:53'):
+            assert construct_daynames(dt.date(2016, 9, 18), local_timezone=pytz.timezone('Pacific/Auckland')) == 'Sunday'
+            assert construct_daynames(dt.date(2016, 9, 19), local_timezone=pytz.timezone('Pacific/Auckland')) == 'Monday'
+            assert construct_daynames(dt.date(2016, 9, 20), local_timezone=pytz.timezone('Pacific/Auckland')) == 'Today'
+            assert construct_daynames(dt.date(2016, 9, 21), local_timezone=pytz.timezone('Pacific/Auckland')) == 'Tomorrow'
+            assert construct_daynames(dt.date(2016, 9, 22), local_timezone=pytz.timezone('Pacific/Auckland')) == 'Thursday'
 
 class TestGuessDatetimefstr:
 
