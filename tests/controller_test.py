@@ -143,40 +143,42 @@ class TestImport:
             utils.BERLIN.localize(dt.datetime(2015, 6, 2, 16, 0))
 
 
-def test_start_end():
-    with freeze_time('2016-04-10'):
-        start = dt.datetime(2016, 4, 10, 0, 0)
-        end = dt.datetime(2016, 4, 11, 0, 0)
-        assert (start, end) == start_end_from_daterange(('today',), locale=utils.LOCALE_BERLIN)
+class TestStartEndFromDaterange:
+    def test_start_end(self):
+        with freeze_time('2016-04-10'):
+            start = dt.datetime(2016, 4, 10, 0, 0)
+            end = dt.datetime(2016, 4, 11, 0, 0)
+            assert (start, end) == start_end_from_daterange(('today',), locale=utils.LOCALE_BERLIN)
 
 
-def test_start_end_default_delta():
-    with freeze_time('2016-04-10'):
-        start = dt.datetime(2016, 4, 10, 0, 0)
-        end = dt.datetime(2016, 4, 11, 0, 0)
-        assert (start, end) == start_end_from_daterange(('today',), utils.LOCALE_BERLIN)
+    def test_start_end_default_delta(self):
+        with freeze_time('2016-04-10'):
+            start = dt.datetime(2016, 4, 10, 0, 0)
+            end = dt.datetime(2016, 4, 11, 0, 0)
+            assert (start, end) == start_end_from_daterange(('today',), utils.LOCALE_BERLIN)
 
 
-def test_start_end_delta():
-    with freeze_time('2016-04-10'):
-        start = dt.datetime(2016, 4, 10, 0, 0)
-        end = dt.datetime(2016, 4, 12, 0, 0)
-        assert (start, end) == start_end_from_daterange(('today', '2d'), utils.LOCALE_BERLIN)
+    def test_start_end_delta(self):
+        with freeze_time('2016-04-10'):
+            start = dt.datetime(2016, 4, 10, 0, 0)
+            end = dt.datetime(2016, 4, 12, 0, 0)
+            assert (start, end) == start_end_from_daterange(('today', '2d'), utils.LOCALE_BERLIN)
 
 
-def test_start_end_empty():
-    with freeze_time('2016-04-10'):
-        start = dt.datetime(2016, 4, 10, 0, 0)
-        end = dt.datetime(2016, 4, 11, 0, 0)
-        assert (start, end) == start_end_from_daterange([], utils.LOCALE_BERLIN)
+    def test_start_end_empty(self):
+        with freeze_time('2016-04-10'):
+            start = dt.datetime(2016, 4, 10, 0, 0)
+            end = dt.datetime(2016, 4, 11, 0, 0)
+            assert (start, end) == start_end_from_daterange([], utils.LOCALE_BERLIN)
 
 
-def test_start_end_empty_default():
-    with freeze_time('2016-04-10'):
-        start = dt.datetime(2016, 4, 10, 0, 0)
-        end = dt.datetime(2016, 4, 13, 0, 0)
-        assert (start, end) == start_end_from_daterange(
-            [], utils.LOCALE_BERLIN,
-            default_timedelta_date=dt.timedelta(days=3),
-            default_timedelta_datetime=dt.timedelta(hours=1),
-        )
+    def test_start_end_empty_default(self):
+        with freeze_time('2016-04-10'):
+            start = dt.datetime(2016, 4, 10, 0, 0)
+            end = dt.datetime(2016, 4, 13, 0, 0)
+            assert (start, end) == start_end_from_daterange(
+                [], utils.LOCALE_BERLIN,
+                default_timedelta_date=dt.timedelta(days=3),
+                default_timedelta_datetime=dt.timedelta(hours=1),
+            )
+
