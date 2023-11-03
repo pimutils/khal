@@ -62,7 +62,7 @@ def format_day(day: dt.date, format_string: str, locale, attributes=None):
     attributes["date"] = day.strftime(locale['dateformat'])
     attributes["date-long"] = day.strftime(locale['longdateformat'])
 
-    attributes["name"] = parse_datetime.construct_daynames(day)
+    attributes["name"] = parse_datetime.construct_daynames(day, local_timezone=locale['local_timezone'])
 
     colors = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
     for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
