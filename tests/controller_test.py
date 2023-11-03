@@ -182,3 +182,8 @@ class TestStartEndFromDaterange:
                 default_timedelta_datetime=dt.timedelta(hours=1),
             )
 
+    def test_start_end_berlin(self):
+        with freeze_time('2016-04-10 23:30'):
+            start = dt.datetime(2016, 4, 10, 0, 0)
+            end = dt.datetime(2016, 4, 11, 0, 0)
+            assert (start, end) == start_end_from_daterange(('today',), locale=utils.LOCALE_BERLIN)
