@@ -16,6 +16,5 @@ python:
       extra_requirements:
         - docs
 
-
 # This is the default, you can omit this
 formats: []
