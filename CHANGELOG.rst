@@ -18,6 +18,9 @@ not released yet
   config file (via the new [palette] section, check the documenation)
 * NEW timedelta strings can now have a leading `+`, e.g. `+1d`
 * NEW Add `--json` option to output event data as JSON objects
+* NEW Add default alarms configuration option
+* FIX defaults for `default_event_duration` and `default_dayevent_duration`
+  where mixed up, `default_dayevent_duration` is the default for all-day events
 
 0.11.2
 ======

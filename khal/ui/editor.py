@@ -169,13 +169,16 @@ class StartEndEditor(urwid.WidgetWrap):
                  conf,
                  on_start_date_change=lambda x: None,
                  on_end_date_change=lambda x: None,
-
+                 on_type_change: Callable[[bool], None]=lambda _: None,
                  ) -> None:
         """
         :param on_start_date_change: a callable that gets called everytime a new
             start date is entered, with that new date as an argument
         :param on_end_date_change: same as for on_start_date_change, just for the
             end date
+        :param on_type_change: callback that gets called when the event type
+            (allday or datetime) changes, gets passed True if toggled to allday
+            and False if toggled to daytime
         """
         self.allday = not isinstance(start, dt.datetime)
         self.conf = conf
@@ -185,6 +188,7 @@ class StartEndEditor(urwid.WidgetWrap):
         self._original_end: dt.date = end
         self.on_start_date_change = on_start_date_change
         self.on_end_date_change = on_end_date_change
+        self.on_type_change = on_type_change
         self._datewidth = len(start.strftime(self.conf['locale']['longdateformat']))
         self._timewidth = len(start.strftime(self.conf['locale']['timeformat']))
         # this will contain the widgets for [start|end] [date|time]
@@ -299,11 +303,13 @@ class StartEndEditor(urwid.WidgetWrap):
             self.conf['keybindings'],
         )
 
-        if state is True:
+        if state is True:  # allday event
+            self.on_type_change(True)
             timewidth = 1
             self.widgets.starttime = urwid.Text('')
             self.widgets.endtime = urwid.Text('')
-        elif state is False:
+        elif state is False:  # datetime event
+            self.on_type_change(False)
             timewidth = self._timewidth + 1
             raw_start_time_widget = ValidatedEdit(
                 dateformat=self.conf['locale']['timeformat'],
@@ -376,6 +382,7 @@ class EventEditor(urwid.WidgetWrap):
         self.startendeditor = StartEndEditor(
             event.start_local, event.end_local, self._conf,
             self.start_datechange, self.end_datechange,
+            self.type_change,
         )
         # TODO make sure recurrence rules cannot be edited if we only
         # edit one instance (or this and future) (once we support that)
@@ -422,7 +429,7 @@ class EventEditor(urwid.WidgetWrap):
         self.url = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'URL:         '), edit_text=self.url), 'edit', 'edit focus',
         )
-        self.alarms = AlarmsEditor(self.event)
+        self.alarmseditor: AlarmsEditor = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
             self.summary,
             urwid.Columns([(13, urwid.AttrMap(urwid.Text('Calendar:'), 'caption')),
@@ -439,7 +446,7 @@ class EventEditor(urwid.WidgetWrap):
             self.startendeditor,
             self.recurrenceeditor,
             divider,
-            self.alarms,
+            self.alarmseditor,
             divider,
             urwid.Columns(
                 [(12, button('Save', on_press=self.save, padding_left=0, padding_right=0))]
@@ -457,6 +464,32 @@ class EventEditor(urwid.WidgetWrap):
 
     def end_datechange(self, date):
         self.pane.eventscolumn.original_widget.set_focus_date(date)
+
+    def type_change(self, allday: bool) -> None:
+        """when the event type changes, we might want to change the default alarms
+
+        :params allday: True if the event is now an allday event, False if it isn't
+        """
+        # test if self.alarmseditor exists
+        if not hasattr(self, 'alarmseditor'):
+            return
+
+        # to make the alarms before the event, we need to set it them to
+        # negative values
+        default_event_alarm = -1 * self._conf['default']['default_event_alarm']
+        default_dayevent_alarm =-1 *  self._conf['default']['default_dayevent_alarm']
+        alarms = self.alarmseditor.get_alarms()
+        if len(alarms) == 1:
+            timedelta = alarms[0][0]
+            if allday and timedelta == default_event_alarm:
+                self.alarmseditor.clear()
+                self.alarmseditor.add_alarm(None, default_dayevent_alarm)
+            elif (not allday) and timedelta == default_dayevent_alarm:
+                self.alarmseditor.clear()
+                self.alarmseditor.add_alarm(None, default_event_alarm)
+            else:
+                # either there were more than one alarm or the alarm was not the default
+                pass
 
     @property
     def title(self):  # Window title
@@ -484,7 +517,7 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if self.recurrenceeditor.changed:
             return True
-        if self.alarms.changed:
+        if self.alarmseditor.changed:
             return True
         return False
 
@@ -503,8 +536,8 @@ class EventEditor(urwid.WidgetWrap):
             rrule = self.recurrenceeditor.active
             self.event.update_rrule(rrule)
 
-        if self.alarms.changed:
-            self.event.update_alarms(self.alarms.get_alarms())
+        if self.alarmseditor.changed:
+            self.event.update_alarms(self.alarmseditor.get_alarms())
 
     def export(self, button):
         """

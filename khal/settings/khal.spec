@@ -210,11 +210,17 @@ highlight_event_days = boolean(default=False)
 timedelta = timedelta(default='2d')
 
 
-# Define the defaut duration for a day-long event ('khal new' only)
-default_event_duration = timedelta(default='1d')
-
 # Define the default duration for an event ('khal new' only)
-default_dayevent_duration = timedelta(default='1h')
+default_event_duration = timedelta(default='1h')
+
+# Define the defaut duration for a day-long event ('khal new' only)
+default_dayevent_duration = timedelta(default='1d')
+
+# Define the default alarm for new events, e.g. '15m'
+default_event_alarm = timedelta(default='')
+
+# Define the default alarm for new all dayevents, e.g. '12h'
+default_dayevent_alarm = timedelta(default='')
 
 # Whether the mouse should be enabled in interactive mode ('khal interactive' and
 # 'ikhal' only)

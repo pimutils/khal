@@ -48,6 +48,7 @@ from .exceptions import ConfigurationError
 from .icalendar import cal_from_ics, split_ics
 from .icalendar import sort_key as sort_vevent_key
 from .khalendar.vdir import Item
+from .parse_datetime import timedelta2str
 from .terminal import merge_columns
 from .utils import human_formatter, json_formatter
 
@@ -329,8 +330,8 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
     try:
         info = parse_datetime.eventinfofstr(
             info, conf['locale'],
-            conf['default']['default_event_duration'],
-            conf['default']['default_dayevent_duration'],
+            default_event_duration=conf['default']['default_event_duration'],
+            default_dayevent_duration=conf['default']['default_dayevent_duration'],
             adjust_reasonably=True,
         )
     except DateTimeParseError:
@@ -409,6 +410,11 @@ def new_from_string(collection, calendar_name, conf, info, location=None,
         conf['default']['default_dayevent_duration'],
         adjust_reasonably=True,
     )
+    if alarms is None:
+        if info['allday']:
+            alarms = timedelta2str(conf['default']['default_dayevent_alarm'])
+        else:
+            alarms = timedelta2str(conf['default']['default_event_alarm'])
     info.update({
         'location': location,
         'categories': categories,

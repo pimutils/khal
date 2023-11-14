@@ -25,7 +25,7 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from typing import Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 import icalendar
 import icalendar.cal
@@ -441,7 +441,7 @@ class Event:
             isinstance(alarm.get('TRIGGER').dt, dt.timedelta)
 
     @property
-    def alarms(self):
+    def alarms(self) -> List[Tuple[dt.timedelta, str]]:
         """
         Returns a list of all alarms in th original event that we can handle. Unknown types of
         alarms are ignored.
@@ -450,7 +450,7 @@ class Event:
                 for a in self._vevents[self.ref].subcomponents
                 if a.name == 'VALARM' and self._can_handle_alarm(a)]
 
-    def update_alarms(self, alarms):
+    def update_alarms(self, alarms: List[Tuple[dt.timedelta, str]]) -> None:
         """
         Replaces all alarms in the event that can be handled with the ones provided.
         """
@@ -532,7 +532,7 @@ class Event:
     def description(self) -> str:
         return self._vevents[self.ref].get('DESCRIPTION', '')
 
-    def update_description(self, description):
+    def update_description(self, description: str):
         if description:
             self._vevents[self.ref]['DESCRIPTION'] = description
         else:
@@ -554,16 +554,21 @@ class Event:
             alarmstr = ''
         return alarmstr
 
-    def attributes(self, relative_to, env=None, colors: bool=True):
+    def attributes(
+            self,
+            relative_to: Union[Tuple[dt.date, dt.date], dt.date],
+            env=None,
+            colors: bool=True,
+    ):
         """
         :param colors: determines if colors codes should be printed or not
         """
         env = env or {}
 
         attributes = {}
-        try:
+        if isinstance(relative_to, tuple):
             relative_to_start, relative_to_end = relative_to
-        except TypeError:
+        else:
             relative_to_start = relative_to_end = relative_to
 
         if isinstance(relative_to_end, dt.datetime):
