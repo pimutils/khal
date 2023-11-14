@@ -1,3 +1,64 @@
+[project]
+name = "khal"
+dynamic = ["version"]
+description = "A standards based terminal calendar"
+readme = "README.rst"
+authors = [
+  {name = "khal contributors", email = "khal@lostpackets.de"},
+]
+license = {file = "LICENSE"}
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: MIT License",
+  "Environment :: Console :: Curses",
+  "Intended Audience :: End Users/Desktop",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Utilities",
+  "Topic :: Communications",
+]
+dependencies = [
+    "click>=3.2",
+    "click_log>=0.2.0",
+    "icalendar>=4.0.3",
+    "urwid>=1.3.0",
+    "pyxdg",
+    "pytz",
+    "python-dateutil",
+    "configobj",
+    "atomicwrites>=0.1.7",
+    "tzlocal>=1.0",
+]
+[project.optional-dependencies]
+proctitle = [
+  "setproctitle"
+]
+test = [
+  "freezegun",
+  "hypothesis",
+  "packaging",
+  "vdirsyncer",
+]
+
+[project.urls]
+homepage = "http://lostpackets.de/khal/"
+repository = "https://github.com/pimutils/khal"
+
+[project.scripts]
+khal = "khal.cli:main_khal"
+ikhal = "khal.cli:main_ikhal"
+
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+requires-python = ">=3.8,<3.12"
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.setuptools_scm]
+version_file = "khal/version.py"
+
 [tool.ruff]
 select = ["E", "F", "W", "I", "B0", "UP", "C4"]
 ignore = ["B008"]
