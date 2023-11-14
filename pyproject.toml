@@ -39,6 +39,11 @@ test = [
   "packaging",
   "vdirsyncer",
 ]
+docs = [
+  "sphinx!=1.6.1",
+  "sphinxcontrib-newsfeed",
+  "sphinx-rtd-theme",
+]
 
 [project.urls]
 homepage = "http://lostpackets.de/khal/"
