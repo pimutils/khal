@@ -12,7 +12,7 @@ build:
 python:
   install:
     - requirements: doc/requirements.txt
-    - method: setuptools
+    - method: pip
       path: .
 
 # This is the default, you can omit this
