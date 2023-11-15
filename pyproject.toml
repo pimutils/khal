@@ -1,7 +1,7 @@
 [project]
 name = "khal"
 dynamic = ["version"]
-description = "A standards based terminal calendar"
+description = "Standards based terminal calendar"
 readme = "README.rst"
 authors = [
   {name = "khal contributors", email = "khal@lostpackets.de"},
