@@ -191,7 +191,7 @@ def get_wrapped_text(widget: urwid.AttrMap) -> str:
 def human_formatter(format_string, width=None, colors=True):
     """Create a formatter that formats events to be human readable."""
     def fmt(rows):
-        single = type(rows) == dict
+        single = isinstance(rows, dict)
         if single:
             rows = [rows]
         results = []
@@ -233,7 +233,7 @@ def json_formatter(fields):
         fields = CONTENT_ATTRIBUTES
 
     def fmt(rows):
-        single = type(rows) == dict
+        single = isinstance(rows, dict)
         if single:
             rows = [rows]
 
