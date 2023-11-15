@@ -291,7 +291,7 @@ class Event:
                 'right_arrow': '\N{Rightwards arrow}',
                 'cancelled': '\N{Cross mark}',
                 'confirmed': '\N{Heavy check mark}',
-                'tentative': '\N{White question mark ornament}',
+                'tentative': '?',
                 'declined': '\N{Cross mark}',
                 'accepted': '\N{Heavy check mark}',
             }
