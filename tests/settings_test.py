@@ -40,10 +40,14 @@ class TestSettings:
         )
         comp_config = {
             'calendars': {
-                'home': {'path': os.path.expanduser('~/.calendars/home/'),
-                         'readonly': False, 'color': None, 'priority': 10, 'type': 'calendar'},
-                'work': {'path': os.path.expanduser('~/.calendars/work/'),
-                         'readonly': False, 'color': None, 'priority': 10, 'type': 'calendar'},
+                'home': {
+                    'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False,
+                    'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
+                },
+                'work': {
+                    'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False,
+                    'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
+                },
             },
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': LOCALE_BERLIN,
@@ -81,10 +85,10 @@ class TestSettings:
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'),
                          'color': 'dark green', 'readonly': False, 'priority': 20,
-                         'type': 'calendar'},
+                         'type': 'calendar', 'addresses': ['']},
                 'work': {'path': os.path.expanduser('~/.calendars/work/'),
                          'readonly': True, 'color': None, 'priority': 10,
-                         'type': 'calendar'}},
+                         'type': 'calendar', 'addresses': ['user@example.com']}},
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
                 'local_timezone': get_localzone(),

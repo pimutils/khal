@@ -68,7 +68,8 @@ class Event:
                  color: Optional[str] = None,
                  start: Optional[dt.datetime] = None,
                  end: Optional[dt.datetime] = None,
-                 ) -> None:
+                 addresses: Optional[List[str]] =None,
+                 ):
         """
         :param start: start datetime of this event instance
         :param end: end datetime of this event instance
@@ -87,6 +88,7 @@ class Event:
         self.color = color
         self._start: dt.datetime
         self._end: dt.datetime
+        self.addresses = addresses if addresses else []
 
         if start is None:
             self._start = self._vevents[self.ref]['DTSTART'].dt
@@ -286,7 +288,12 @@ class Event:
                 'range': '\N{Left right arrow}',
                 'range_end': '\N{Rightwards arrow to bar}',
                 'range_start': '\N{Rightwards arrow from bar}',
-                'right_arrow': '\N{Rightwards arrow}'
+                'right_arrow': '\N{Rightwards arrow}',
+                'cancelled': '\N{Cross mark}',
+                'confirmed': '\N{Heavy check mark}',
+                'tentative': '?',
+                'declined': '\N{Cross mark}',
+                'accepted': '\N{Heavy check mark}',
             }
         else:
             return {
@@ -295,7 +302,12 @@ class Event:
                 'range': '<->',
                 'range_end': '->|',
                 'range_start': '|->',
-                'right_arrow': '->'
+                'right_arrow': '->',
+                'cancelled': 'X',
+                'confirmed': 'V',
+                'tentative': '?',
+                'declined': 'X',
+                'accepted': 'V',
             }
 
     @property
@@ -554,6 +566,31 @@ class Event:
             alarmstr = ''
         return alarmstr
 
+    @property
+    def _status_str(self) -> str:
+        if self.status == 'CANCELLED':
+            statusstr = self.symbol_strings['cancelled']
+        elif self.status == 'TENTATIVE':
+            statusstr = self.symbol_strings['tentative']
+        elif self.status == 'CONFIRMED':
+            statusstr = self.symbol_strings['confirmed']
+        else:
+            statusstr = ''
+        return statusstr
+
+    @property
+    def _partstat_str(self) -> str:
+        partstat = self.partstat
+        if partstat == 'ACCEPTED':
+            partstatstr = self.symbol_strings['accepted']
+        elif partstat == 'TENTATIVE':
+            partstatstr = self.symbol_strings['tentative']
+        elif partstat == 'DECLINED':
+            partstatstr = self.symbol_strings['declined']
+        else:
+            partstatstr = ''
+        return partstatstr
+
     def attributes(
             self,
             relative_to: Union[Tuple[dt.date, dt.date], dt.date],
@@ -684,6 +721,8 @@ class Event:
         attributes["repeat-symbol"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
         attributes["alarm-symbol"] = self._alarm_str
+        attributes["status-symbol"] = self._status_str
+        attributes["partstat-symbol"] = self._partstat_str
         attributes["title"] = self.summary
         attributes["organizer"] = self.organizer.strip()
         attributes["description"] = self.description.strip()
@@ -765,6 +804,14 @@ class Event:
     @property
     def status(self) -> str:
         return self._vevents[self.ref].get('STATUS', '')
+
+    @property
+    def partstat(self) -> Optional[str]:
+        for attendee in self._vevents[self.ref].get('ATTENDEE', []):
+            for address in self.addresses:
+                if attendee == 'mailto:' + address:
+                    return attendee.params.get('PARTSTAT', '')
+        return None
 
 
 class DatetimeEvent(Event):
