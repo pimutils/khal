@@ -9,12 +9,6 @@ PALETTE = [("reveal_focus",              "black",            "light cyan",   "st
            ("ilb_barInactive_focus",     "light cyan",       "dark gray"),
            ("ilb_barInactive_offFocus",  "black",            "dark gray")]
 
-def get_mails():
-  res = subprocess.check_output(["bash", "-c", "khard email gmail | tail -n +2"])  
-  maildata = [re.split(r"\s{2,}", x) for x in res.decode("utf-8").split("\n")]
-  mails = ["%s <%s>" % (x[0], x[2]) for x in maildata if len(x) > 1]
-  return mails
-
 
 class MailPopup(urwid.PopUpLauncher):
   command_map = urwid.CommandMap()
@@ -55,14 +49,21 @@ class MailPopup(urwid.PopUpLauncher):
       current = self.get_current_mailpart()
       if len([x for x in self.maillist if current.lower() in x.lower()]) == 0:
         return
+      if len(current) == 0:
+        return
       self.open_pop_up()
       self.popup_visible = True
 
   def keycallback(self, size, key):
+    cmd = self.command_map[key]
+    if cmd == 'menu':
+      self.popup_visible = False
+      self.close_pop_up()
     self.widget.keypress((20,), key)
     self.justcompleted = False
-    num_candidates = self.listbox.update_mails(self.get_current_mailpart())
-    if num_candidates == 0:
+    cmp = self.get_current_mailpart()
+    num_candidates = self.listbox.update_mails(cmp)
+    if num_candidates == 0 or len(cmp) == 0:
       self.popup_visible = False
       self.close_pop_up()
 
@@ -135,8 +136,10 @@ class AutocompleteEdit(urwid.Edit):
 
 
 class AttendeeWidget(urwid.WidgetWrap):
-  def __init__(self):
-    self.mails = get_mails()
+  def __init__(self, mails):
+    self.mails = mails
+    if self.mails is None:
+      self.mails = []
     self.acedit = AutocompleteEdit()
     self.mp = MailPopup(self.acedit, self.mails)
     super().__init__(self.mp)

@@ -176,6 +176,7 @@ def build_collection(conf, selection):
                     'priority': cal['priority'],
                     'ctype': cal['type'],
                     'addresses': cal['addresses'],
+                    'address_adapter': cal['address_adapter']
                 }
         collection = khalendar.CalendarCollection(
             calendars=props,
