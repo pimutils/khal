@@ -34,6 +34,7 @@ dependencies = [
     "configobj",
     "atomicwrites>=0.1.7",
     "tzlocal>=1.0",
+    "additional_urwid_widgets>=0.4.1"
 ]
 [project.optional-dependencies]
 proctitle = [
