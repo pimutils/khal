@@ -43,10 +43,12 @@ class TestSettings:
                 'home': {
                     'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False,
                     'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
+                    'address_adapter': None 
                 },
                 'work': {
                     'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False,
                     'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
+                    'address_adapter': None
                 },
             },
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
@@ -85,10 +87,12 @@ class TestSettings:
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'),
                          'color': 'dark green', 'readonly': False, 'priority': 20,
-                         'type': 'calendar', 'addresses': ['']},
+                         'type': 'calendar', 'addresses': [''],
+                         'address_adapter': None},
                 'work': {'path': os.path.expanduser('~/.calendars/work/'),
                          'readonly': True, 'color': None, 'priority': 10,
-                         'type': 'calendar', 'addresses': ['user@example.com']}},
+                         'type': 'calendar', 'addresses': ['user@example.com'],
+                         'address_adapter': 'a'}},
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
                 'local_timezone': get_localzone(),
@@ -230,6 +234,7 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
+                'address_adapter': None,
             },
             'my calendar': {
                 'color': 'dark blue',
@@ -237,6 +242,7 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
+                'address_adapter': None,
             },
             'my private calendar': {
                 'color': '#FF00FF',
@@ -244,6 +250,7 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
+                'address_adapter': None,
             },
             'public1': {
                 'color': None,
@@ -251,6 +258,7 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
+                'address_adapter': None,
             },
             'public': {
                 'color': None,
@@ -258,6 +266,7 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
+                'address_adapter': None,
             },
             'work': {
                 'color': None,
@@ -265,6 +274,7 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
+                'address_adapter': None,
             },
             'cfgcolor': {
                 'color': 'dark blue',
@@ -272,6 +282,7 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
+                'address_adapter': None,
             },
             'dircolor': {
                 'color': 'dark blue',
@@ -279,6 +290,7 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
+                'address_adapter': None,
             },
             'cfgcolor_again': {
                 'color': 'dark blue',
@@ -286,6 +298,7 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
+                'address_adapter': None,
             },
             'cfgcolor_once_more': {
                 'color': 'dark blue',
@@ -293,6 +306,7 @@ def test_config_checks(metavdirs):
                 'readonly': False,
                 'type': 'calendar',
                 'priority': 10,
+                'address_adapter': None,
             },
 
         },
