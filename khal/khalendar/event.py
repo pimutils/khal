@@ -54,6 +54,18 @@ class Attendee:
             self.cn = None
             self.mail = defline.strip().lower()
 
+    @staticmethod
+    def format_vcard(vcard):
+        data = str(vcard).split(":")
+        if len(data) > 1:
+            mail = data[1]
+        else:
+            mail = str(vcard)
+        cn = mail
+        if "CN" in vcard.params:
+            cn = vcard.params["CN"]
+        return "%s <%s>" % (cn, mail)
+
 
 class Event:
     """base Event class for representing a *recurring instance* of an Event
@@ -505,9 +517,8 @@ class Event:
     def attendees(self) -> str:
         addresses = self._vevents[self.ref].get('ATTENDEE', [])
         if not isinstance(addresses, list):
-            addresses = [addresses, ]
-        return ", ".join([address.split(':')[-1]
-                          for address in addresses])
+            return addresses
+        return ", ".join([Attendee.format_vcard(address) for address in addresses])
 
     def update_attendees(self, attendees: List[str]):
         assert isinstance(attendees, list)
