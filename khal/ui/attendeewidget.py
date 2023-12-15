@@ -151,4 +151,3 @@ class AttendeeWidget(urwid.WidgetWrap):
         if self.mails is None:
             self.mails = []
         self.mp.change_mail_list(mails)
-
