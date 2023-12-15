@@ -43,6 +43,8 @@ from .widgets import (
     button,
 )
 
+from .attendeewidget import AttendeeWidget
+
 if TYPE_CHECKING:
     import khal.khalendar.event
 
@@ -418,14 +420,15 @@ class EventEditor(urwid.WidgetWrap):
         self.categories = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'Categories:  '), edit_text=self.categories), 'edit', 'edit focus',
         )
-        self.attendees = urwid.AttrMap(
-            ExtendedEdit(
-                caption=('caption', 'Attendees:   '),
-                edit_text=self.attendees,
-                multiline=True
-            ),
-            'edit', 'edit focus',
-        )
+#        self.attendees = urwid.AttrMap(
+#            ExtendedEdit(
+#                caption=('caption', 'Attendees:   '),
+#                edit_text=self.attendees,
+#                multiline=True
+#            ),
+#            'edit', 'edit focus',
+#        )
+        self.attendees = urwid.AttrMap(AttendeeWidget(), 'edit', 'edit focus')
         self.url = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'URL:         '), edit_text=self.url), 'edit', 'edit focus',
         )
