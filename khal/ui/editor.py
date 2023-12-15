@@ -420,14 +420,6 @@ class EventEditor(urwid.WidgetWrap):
         self.categories = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'Categories:  '), edit_text=self.categories), 'edit', 'edit focus',
         )
-#        self.attendees = urwid.AttrMap(
-#            ExtendedEdit(
-#                caption=('caption', 'Attendees:   '),
-#                edit_text=self.attendees,
-#                multiline=True
-#            ),
-#            'edit', 'edit focus',
-#        )
         self.attendees = urwid.AttrMap(AttendeeWidget(), 'edit', 'edit focus')
         self.url = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'URL:         '), edit_text=self.url), 'edit', 'edit focus',
@@ -528,7 +520,7 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_summary(get_wrapped_text(self.summary))
         self.event.update_description(get_wrapped_text(self.description))
         self.event.update_location(get_wrapped_text(self.location))
-        self.event.update_attendees(get_wrapped_text(self.attendees).split(','))
+        self.event.update_attendees(self.attendees._original_widget.get_attendees().split(','))
         self.event.update_categories(get_wrapped_text(self.categories).split(','))
         self.event.update_url(get_wrapped_text(self.url))
 
