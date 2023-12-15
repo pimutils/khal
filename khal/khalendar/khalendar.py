@@ -30,6 +30,8 @@ import itertools
 import logging
 import os
 import os.path
+import subprocess
+import re
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union  # noqa
 
 from ..custom_types import CalendarConfiguration, EventCreationTypes, LocaleConfiguration
@@ -104,9 +106,12 @@ class CalendarCollection:
         self.priority = priority
         self.highlight_event_days = highlight_event_days
         self._locale = locale
+        self._contacts: Dict[str, List[str]] = {} # List of mail addresses of contacts
         self._backend = backend.SQLiteDb(self.names, dbpath, self._locale)
         self._last_ctags: Dict[str, str] = {}
         self.update_db()
+        for calendar in self._calendars.keys():
+            self._contacts_update(calendar)
 
     @property
     def writable_names(self) -> List[str]:
@@ -361,12 +366,24 @@ class CalendarCollection:
             self._last_ctags[calendar] = local_ctag
         return local_ctag != self._backend.get_ctag(calendar)
 
+    def _contacts_update(self, calendar: str) -> None:
+        adaptercommand = self._calendars[calendar].get('address_adapter')
+        if adaptercommand is None:
+            self._contacts[calendar] = []
+        else:
+            res = subprocess.check_output(["bash", "-c", adaptercommand])
+            maildata = [re.split(r"\s{2,}", x) for x in res.decode("utf-8").split("\n")]  
+            mails = ["%s <%s>" % (x[0], x[2]) for x in maildata if len(x) > 1]            
+            self._contacts[calendar] = mails
+
+
     def _db_update(self, calendar: str) -> None:
         """implements the actual db update on a per calendar base"""
         local_ctag = self._local_ctag(calendar)
         db_hrefs = {href for href, etag in self._backend.list(calendar)}
         storage_hrefs: Set[str] = set()
         bdays = self._calendars[calendar].get('ctype') == 'birthdays'
+        self._contacts_update(calendar)
 
         with self._backend.at_once():
             for href, etag in self._storages[calendar].list():

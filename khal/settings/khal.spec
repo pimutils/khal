@@ -76,6 +76,8 @@ type = option('calendar', 'birthdays', 'discover', default='calendar')
 # belongs to the user.
 addresses = force_list(default='')
 
+address_adapter = string(default=None)
+
 [sqlite]
 # khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
 path = expand_db_path(default=None)
@@ -231,6 +233,7 @@ default_dayevent_alarm = timedelta(default='')
 # 'ikhal' only)
 enable_mouse = boolean(default=True)
 
+address_adapter = string(default=None)
 
 # The view section contains configuration options that effect the visual appearance
 # when using khal and ikhal.

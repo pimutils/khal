@@ -260,6 +260,7 @@ def config_checks(
                     'type': _get_vdir_type(vdir),
                     'readonly': cconfig.get('readonly', False),
                     'priority': 10,
+		    'address_adapter': cconfig.get('address_adapter', None),
                 }
                 unique_vdir_name = get_unique_name(vdir, config['calendars'].keys())
                 config['calendars'][unique_vdir_name] = vdir_config
