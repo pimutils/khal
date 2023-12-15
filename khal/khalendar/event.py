@@ -48,7 +48,7 @@ logger = logging.getLogger('khal')
 class Attendee:
     def __init__(self, defline):
         m = re.match(r"(?P<name>.*)\<(?P<mail>.*)\>", defline)
-        if m.group("name") is not None and m.group("mail") is not None:
+        if m is not None and m.group("name") is not None and m.group("mail") is not None:
             self.cn = m.group("name").strip()
             self.mail = m.group("mail").strip().lower()
         else:

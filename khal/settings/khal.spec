@@ -76,6 +76,12 @@ type = option('calendar', 'birthdays', 'discover', default='calendar')
 # belongs to the user.
 addresses = force_list(default='')
 
+# The address adapter is a command that will be run using "bash -c" to get
+# a list of addresses for autocompletion in the attendee field of a new event
+# in interactive mode. This expects the same output as "khard email | tail -n +2"
+# since it has only been developed with khard in mind - but other providers
+# should be configurable to create the same output, or the parser could
+# be extended (see _contacts_update in CalenderCollection in khalendar.py)
 address_adapter = string(default=None)
 
 [sqlite]
@@ -232,8 +238,6 @@ default_dayevent_alarm = timedelta(default='')
 # Whether the mouse should be enabled in interactive mode ('khal interactive' and
 # 'ikhal' only)
 enable_mouse = boolean(default=True)
-
-address_adapter = string(default=None)
 
 # The view section contains configuration options that effect the visual appearance
 # when using khal and ikhal.
