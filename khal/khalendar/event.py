@@ -64,7 +64,7 @@ class Attendee:
         cn = mail
         if "CN" in vcard.params:
             cn = vcard.params["CN"]
-        return "%s <%s>" % (cn, mail)
+        return f"{cn} <{mail}>"
 
 
 class Event:

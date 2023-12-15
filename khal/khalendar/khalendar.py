@@ -30,8 +30,8 @@ import itertools
 import logging
 import os
 import os.path
-import subprocess
 import re
+import subprocess
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union  # noqa
 
 from ..custom_types import CalendarConfiguration, EventCreationTypes, LocaleConfiguration
@@ -372,8 +372,8 @@ class CalendarCollection:
             self._contacts[calendar] = []
         else:
             res = subprocess.check_output(["bash", "-c", adaptercommand])
-            maildata = [re.split(r"\s{2,}", x) for x in res.decode("utf-8").split("\n")]  
-            mails = ["%s <%s>" % (x[0], x[2]) for x in maildata if len(x) > 1]            
+            maildata = [re.split(r"\s{2,}", x) for x in res.decode("utf-8").split("\n")]
+            mails = [f"{x[0]} <{x[2]}>" for x in maildata if len(x) > 1]
             self._contacts[calendar] = mails
 
 
