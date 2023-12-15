@@ -403,7 +403,8 @@ class EventEditor(urwid.WidgetWrap):
         self.calendar_chooser= CAttrMap(Choice(
             [self.collection._calendars[c] for c in self.collection.writable_names],
             self.collection._calendars[self.event.calendar],
-            decorate_choice
+            decorate_choice,
+	    callback = self.account_change
         ), 'caption')
 
         self.description = urwid.AttrMap(
@@ -420,7 +421,7 @@ class EventEditor(urwid.WidgetWrap):
         self.categories = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'Categories:  '), edit_text=self.categories), 'edit', 'edit focus',
         )
-        self.attendees = urwid.AttrMap(AttendeeWidget(self.collection._contacts[self.event.calendar]), 'edit', 'edit focus')
+        self.attendees = urwid.AttrMap(AttendeeWidget(self.event.attendees, self.collection._contacts[self.event.calendar]), 'edit', 'edit focus')
         self.url = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'URL:         '), edit_text=self.url), 'edit', 'edit focus',
         )
@@ -485,6 +486,10 @@ class EventEditor(urwid.WidgetWrap):
             else:
                 # either there were more than one alarm or the alarm was not the default
                 pass
+
+    def account_change(self):
+       newaccount = self.calendar_chooser._original_widget.active
+       self.attendees._original_widget.change_mail_list(self.collection._contacts[newaccount["name"]])
 
     @property
     def title(self):  # Window title

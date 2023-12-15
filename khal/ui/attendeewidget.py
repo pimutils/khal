@@ -12,7 +12,8 @@ PALETTE = [("reveal_focus",              "black",            "light cyan",   "st
 
 class MailPopup(urwid.PopUpLauncher):
   command_map = urwid.CommandMap()
-  own_commands = []
+  own_commands = ["cursor left", "cursor right", 
+                  "cursor max left", "cursor max right"]
 
   def __init__(self, widget, maillist):
     self.maillist = maillist
@@ -20,6 +21,9 @@ class MailPopup(urwid.PopUpLauncher):
     self.popup_visible = False
     self.justcompleted = False
     super().__init__(widget)
+
+  def change_mail_list(self, mails):
+    self.maillist = mails
 
   def get_current_mailpart(self):
     mails = self.widget.get_edit_text().split(",")
@@ -37,7 +41,7 @@ class MailPopup(urwid.PopUpLauncher):
 
   def keypress(self, size, key):
     cmd = self.command_map[key]
-    if cmd is not None and cmd not in self.own_commands:
+    if cmd is not None and cmd not in self.own_commands and key != " ":
       return key
     if self.justcompleted and key not in ", ":
       self.widget.keypress(size, ",")
@@ -136,16 +140,25 @@ class AutocompleteEdit(urwid.Edit):
 
 
 class AttendeeWidget(urwid.WidgetWrap):
-  def __init__(self, mails):
+  def __init__(self, initial_attendees, mails):
     self.mails = mails
     if self.mails is None:
       self.mails = []
+    if initial_attendees is None:
+      initial_attendees = ""
     self.acedit = AutocompleteEdit()
+    self.acedit.set_edit_text(initial_attendees)
     self.mp = MailPopup(self.acedit, self.mails)
     super().__init__(self.mp)
 
   def get_attendees(self):
     return self.acedit.get_edit_text()
+
+  def change_mail_list(self, mails):
+    self.mails = mails
+    if self.mails is None:
+      self.mails = []
+    self.mp.change_mail_list(mails)
 
 
 if __name__ == "__main__":
