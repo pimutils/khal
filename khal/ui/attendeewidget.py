@@ -17,6 +17,9 @@ def get_mails():
 
 
 class MailPopup(urwid.PopUpLauncher):
+  command_map = urwid.CommandMap()
+  own_commands = []
+
   def __init__(self, widget, maillist):
     self.maillist = maillist
     self.widget = widget
@@ -39,19 +42,29 @@ class MailPopup(urwid.PopUpLauncher):
     return len(mails)
 
   def keypress(self, size, key):
+    cmd = self.command_map[key]
+    if cmd is not None and cmd not in self.own_commands:
+      return key
     if self.justcompleted and key not in ", ":
       self.widget.keypress(size, ",")
       self.widget.keypress(size, " ")
     self.widget.keypress(size, key)
     self.justcompleted = False
     if not self.popup_visible:
+      # Only open the popup list if there will be at least 1 address displayed
+      current = self.get_current_mailpart()
+      if len([x for x in self.maillist if current.lower() in x.lower()]) == 0:
+        return
       self.open_pop_up()
       self.popup_visible = True
 
   def keycallback(self, size, key):
     self.widget.keypress((20,), key)
     self.justcompleted = False
-    self.listbox.update_mails(self.get_current_mailpart())
+    num_candidates = self.listbox.update_mails(self.get_current_mailpart())
+    if num_candidates == 0:
+      self.popup_visible = False
+      self.close_pop_up()
 
   def donecallback(self, text):
     self.widget.set_edit_text(self.complete_mail(text))
@@ -62,8 +75,9 @@ class MailPopup(urwid.PopUpLauncher):
     self.justcompleted = True
 
   def create_pop_up(self):
+    current_mailpart = self.get_current_mailpart()
     self.listbox = MailListBox(self.maillist, self.keycallback,
-                               self.donecallback)
+                               self.donecallback, current_mailpart)
     return urwid.WidgetWrap(self.listbox)
 
   def get_pop_up_parameters(self):
@@ -88,12 +102,14 @@ class MailListBox(IndicativeListBox):
   command_map = urwid.CommandMap()
   own_commands = [urwid.CURSOR_DOWN, urwid.CURSOR_UP, urwid.ACTIVATE]
 
-  def __init__(self, mails, keycallback, donecallback, **args):
+  def __init__(self, mails, keycallback, donecallback, current_mailpart, **args):
     self.mails = [MailListItem(x) for x in mails]
-    mailsBody = [urwid.AttrMap(x, None, "reveal_focus") for x in self.mails]
+    mailsBody = [urwid.AttrMap(x, None, "list focused") for x in self.mails]
     self.keycallback = keycallback
     self.donecallback = donecallback
     super().__init__(mailsBody, **args)
+    if len(current_mailpart) != 0:
+      self.update_mails(current_mailpart)
 
   def keypress(self, size, key):
     cmd = self.command_map[key]
@@ -108,8 +124,9 @@ class MailListBox(IndicativeListBox):
     new_body = []
     for mail in self.mails:
       if new_edit_text.lower() in mail.get_text()[0].lower():
-        new_body += [urwid.AttrMap(mail, None, "reveal_focus")]
+        new_body += [urwid.AttrMap(mail, None, "list focused")]
     self.set_body(new_body)
+    return len(new_body)
 
 
 class AutocompleteEdit(urwid.Edit):
@@ -123,6 +140,9 @@ class AttendeeWidget(urwid.WidgetWrap):
     self.acedit = AutocompleteEdit()
     self.mp = MailPopup(self.acedit, self.mails)
     super().__init__(self.mp)
+
+  def get_attendees(self):
+    return self.acedit.get_edit_text()
 
 
 if __name__ == "__main__":
