@@ -84,10 +84,10 @@ addresses = force_list(default='')
 # be extended (see _contacts_update in CalenderCollection in khalendar.py).
 # The following options are possible:
 #
-# * None: No autocompletion for this calendar 
-# * "default": Use the autocompletion addresses from address_adapter in the 
+# * None: No autocompletion for this calendar
+# * "default": Use the autocompletion addresses from address_adapter in the
 #              [default] configuration section (default)
-# * "<some command>": Use the output of <some command> as contacts for 
+# * "<some command>": Use the output of <some command> as contacts for
 #                     autocompletion
 address_adapter = string(default="default")
 
@@ -250,11 +250,11 @@ enable_mouse = boolean(default=True)
 # a list of addresses for autocompletion in the attendee field of a new event
 # in interactive mode. The address_adapter defined in this section will be used
 # for auto-completion of attendees in all calendars that have their
-# address_adapter set to "default". 
+# address_adapter set to "default".
 # The following options are possible:
 #
-# * None: No autocompletion 
-# * "<some command>": Use the output of <some command> as contacts for 
+# * None: No autocompletion
+# * "<some command>": Use the output of <some command> as contacts for
 #                     autocompletion. Default:
 #                     "khard email | tail -n +2"
 address_adapter = string(default="khard email | tail -n +2")
