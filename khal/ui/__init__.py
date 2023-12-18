@@ -1065,6 +1065,8 @@ class ClassicView(Pane):
         self._conf = conf
         self.collection = collection
         self._deleted: Dict[int, List[str]] = {DeletionType.ALL: [], DeletionType.INSTANCES: []}
+        if conf is not None:
+            self.collection.update_default_contacts(self._conf['default']['address_adapter'])
 
         ContainerWidget = linebox[self._conf['view']['frame']]
         if self._conf['view']['dynamic_days']:

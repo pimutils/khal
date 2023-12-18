@@ -32,6 +32,7 @@ import os
 import os.path
 import subprocess
 import re
+from subprocess import CalledProcessError
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union  # noqa
 
 from ..custom_types import CalendarConfiguration, EventCreationTypes, LocaleConfiguration
@@ -100,6 +101,7 @@ class CalendarCollection:
 
         self.hmethod = hmethod
         self.default_color = default_color
+        self.default_contacts = []
         self.multiple = multiple
         self.multiple_on_overflow = multiple_on_overflow
         self.color = color
@@ -370,12 +372,28 @@ class CalendarCollection:
         adaptercommand = self._calendars[calendar].get('address_adapter')
         if adaptercommand is None:
             self._contacts[calendar] = []
+        if adaptercommand == "default":
+            self._contacts[calendar] = self.default_contacts
         else:
-            res = subprocess.check_output(["bash", "-c", adaptercommand])
-            maildata = [re.split(r"\s{2,}", x) for x in res.decode("utf-8").split("\n")]  
-            mails = ["%s <%s>" % (x[0], x[2]) for x in maildata if len(x) > 1]            
-            self._contacts[calendar] = mails
+            self._contacts[calendar] = CalendarCollection._get_contacts(adaptercommand)
 
+    @staticmethod
+    def _get_contacts(adaptercommand: str) -> List[str]:
+        # Check for both None and "None" because ConfigObj likes to stringify
+        # configuration
+        if adaptercommand is None or adaptercommand == "None":
+            return []
+        try:
+            res = subprocess.check_output(["bash", "-c", adaptercommand])
+            maildata = [re.split(r"\s{2,}", x) for x in res.decode("utf-8").split("\n")]
+            mails = [f"{x[0]} <{x[2]}>" for x in maildata if len(x) > 1]
+            return mails
+        except CalledProcessError:
+            return []
+
+    def update_default_contacts(self, command: str) -> None:
+        self.default_contacts.clear()
+        self.default_contacts += CalendarCollection._get_contacts(command)
 
     def _db_update(self, calendar: str) -> None:
         """implements the actual db update on a per calendar base"""
