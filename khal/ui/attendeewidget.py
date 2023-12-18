@@ -154,4 +154,3 @@ class AttendeeWidget(urwid.WidgetWrap):
 
     def get_edit_text(self):
         return self.acedit.get_edit_text()
-
