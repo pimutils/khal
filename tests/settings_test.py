@@ -43,12 +43,12 @@ class TestSettings:
                 'home': {
                     'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False,
                     'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
-                    'address_adapter': None
+                    'address_adapter': 'default'
                 },
                 'work': {
                     'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False,
                     'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
-                    'address_adapter': None
+                    'address_adapter': 'default'
                 },
             },
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
@@ -64,6 +64,7 @@ class TestSettings:
                 'default_dayevent_alarm': dt.timedelta(0),
                 'show_all_days': False,
                 'enable_mouse': True,
+                'address_adapter': 'khard email | tail -n +2',
             }
         }
         for key in comp_config:
@@ -88,7 +89,7 @@ class TestSettings:
                 'home': {'path': os.path.expanduser('~/.calendars/home/'),
                          'color': 'dark green', 'readonly': False, 'priority': 20,
                          'type': 'calendar', 'addresses': [''],
-                         'address_adapter': None},
+                         'address_adapter': 'default'},
                 'work': {'path': os.path.expanduser('~/.calendars/work/'),
                          'readonly': True, 'color': None, 'priority': 10,
                          'type': 'calendar', 'addresses': ['user@example.com'],
@@ -117,6 +118,7 @@ class TestSettings:
                 'enable_mouse': True,
                 'default_event_alarm': dt.timedelta(0),
                 'default_dayevent_alarm': dt.timedelta(0),
+                'address_adapter': 'khard email | tail -n +2',
             }
         }
         for key in comp_config:
