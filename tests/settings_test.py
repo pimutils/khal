@@ -43,7 +43,7 @@ class TestSettings:
                 'home': {
                     'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False,
                     'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
-                    'address_adapter': None 
+                    'address_adapter': None
                 },
                 'work': {
                     'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False,
