@@ -545,7 +545,8 @@ def test_event_attendees():
     assert str(event._vevents[event.ref].get('ATTENDEE', [])[0]) == "MAILTO:this-does@not-exist.de"
 
     event.update_attendees(["this-does@not-exist.de", "also-does@not-exist.de"])
-    assert event.attendees == "this-does@not-exist.de <this-does@not-exist.de>, also-does@not-exist.de <also-does@not-exist.de>"
+    assert event.attendees == "this-does@not-exist.de <this-does@not-exist.de>, " \
+            "also-does@not-exist.de <also-does@not-exist.de>"
 
     assert isinstance(event._vevents[event.ref].get('ATTENDEE', []), list)
     assert len(event._vevents[event.ref].get('ATTENDEE', [])) == 2
@@ -561,7 +562,8 @@ def test_event_attendees():
     )
     event._vevents[event.ref]['ATTENDEE'] = [new_address, ]
     event.update_attendees(["another.mailaddress@not-exist.de", "mail.address@not-exist.de"])
-    assert event.attendees == "Real Name <mail.address@not-exist.de>, another.mailaddress@not-exist.de <another.mailaddress@not-exist.de>"
+    assert event.attendees == "Real Name <mail.address@not-exist.de>, "\
+            "another.mailaddress@not-exist.de <another.mailaddress@not-exist.de>"
     address = [a for a in event._vevents[event.ref].get('ATTENDEE', [])
                if str(a) == "MAILTO:mail.address@not-exist.de"]
     assert len(address) == 1

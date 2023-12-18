@@ -523,21 +523,21 @@ class Event:
 
     def update_attendees(self, attendees: List[str]):
         assert isinstance(attendees, list)
-        attendees = [Attendee(a) for a in attendees if a != ""]
-        if len(attendees) > 0:
+        attendees_o : List[Attendee] = [Attendee(a) for a in attendees if a != ""]
+        if len(attendees_o) > 0:
             # first check for overlaps in existing attendees.
             # Existing vCalAddress objects will be copied, non-existing
             # vCalAddress objects will be created and appended.
             old_attendees = self._vevents[self.ref].get('ATTENDEE', [])
             unchanged_attendees = []
             vCalAddresses = []
-            for attendee in attendees:
+            for attendee in attendees_o:
                 for old_attendee in old_attendees:
                     old_email = old_attendee.lstrip("MAILTO:").lower()
                     if attendee.mail == old_email:
                         vCalAddresses.append(old_attendee)
                         unchanged_attendees.append(attendee)
-            for attendee in [a for a in attendees if a not in unchanged_attendees]:
+            for attendee in [a for a in attendees_o if a not in unchanged_attendees]:
                 item = icalendar.prop.vCalAddress(f'MAILTO:{attendee.mail}')
                 if attendee.cn is not None:
                     item.params['CN'] = attendee.cn

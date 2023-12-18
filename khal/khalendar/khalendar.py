@@ -101,7 +101,7 @@ class CalendarCollection:
 
         self.hmethod = hmethod
         self.default_color = default_color
-        self.default_contacts = []
+        self.default_contacts : List[str] = []
         self.multiple = multiple
         self.multiple_on_overflow = multiple_on_overflow
         self.color = color
@@ -112,8 +112,8 @@ class CalendarCollection:
         self._backend = backend.SQLiteDb(self.names, dbpath, self._locale)
         self._last_ctags: Dict[str, str] = {}
         self.update_db()
-        for calendar in self._calendars.keys():
-            self._contacts_update(calendar)
+        for cname in self._calendars.keys():
+            self._contacts_update(cname)
 
     @property
     def writable_names(self) -> List[str]:
@@ -369,9 +369,9 @@ class CalendarCollection:
         return local_ctag != self._backend.get_ctag(calendar)
 
     def _contacts_update(self, calendar: str) -> None:
-        adaptercommand = self._calendars[calendar].get('address_adapter')
-        if adaptercommand is None:
+        if self._calendars[calendar].get('address_adapter') is None:
             self._contacts[calendar] = []
+        adaptercommand = str(self._calendars[calendar].get('address_adapter'))
         if adaptercommand == "default":
             self._contacts[calendar] = self.default_contacts
         else:
