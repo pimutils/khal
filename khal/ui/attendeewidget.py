@@ -152,3 +152,6 @@ class AttendeeWidget(urwid.WidgetWrap):
             self.mails = []
         self.mp.change_mail_list(mails)
 
+    def get_edit_text(self):
+        return self.acedit.get_edit_text()
+
