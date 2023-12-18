@@ -168,3 +168,6 @@ if __name__ == "__main__":
   loop = urwid.MainLoop(urwid.Filler(mp), PALETTE, pop_ups=True)
   loop.run()
 
+    def get_edit_text(self):
+        return self.acedit.get_edit_text()
+
