@@ -57,15 +57,15 @@ SPECPATH = os.path.join(os.path.dirname(__file__), 'khal.spec')
 def find_configuration_file() -> Optional[str]:
     """Return the configuration filename.
 
-    This function builds the list of paths known by khal and then return the
-    first one which exists. The first paths searched are the ones described in
-    the XDG Base Directory Standard, e.g. ~/.config/khal/config.
-    """
-    DEFAULT_PATH = __productname__
+    Check all the paths for configuration files defined in the XDG Base Directory
+    Standard, and return the first one that exists, if any.
 
-    paths = [os.path.join(path, DEFAULT_PATH, 'config')
-             for path in xdg.BaseDirectory.xdg_config_dirs]
-    for path in paths:
+    For the common case, this will return ~/.config/khal/config, assuming that it
+    exists.
+    """
+
+    for dir in xdg.BaseDirectory.xdg_config_dirs:
+        path = os.path.join(dir, __productname__, 'config')
         if os.path.exists(path):
             return path
 
