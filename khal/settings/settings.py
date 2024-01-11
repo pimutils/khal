@@ -64,7 +64,7 @@ def find_configuration_file() -> Optional[str]:
     """
     DEFAULT_PATH = __productname__
 
-    paths = [os.path.join(path, os.path.join(DEFAULT_PATH, 'config'))
+    paths = [os.path.join(path, DEFAULT_PATH, 'config')
              for path in xdg.BaseDirectory.xdg_config_dirs]
     for path in paths:
         if os.path.exists(path):
