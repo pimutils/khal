@@ -59,8 +59,7 @@ def find_configuration_file() -> Optional[str]:
 
     This function builds the list of paths known by khal and then return the
     first one which exists. The first paths searched are the ones described in
-    the XDG Base Directory Standard, e.g. ~/.config/khal/config, additionally
-    ~/.config/khal/khal.conf is searched (deprecated).
+    the XDG Base Directory Standard, e.g. ~/.config/khal/config.
     """
     DEFAULT_PATH = __productname__
 
