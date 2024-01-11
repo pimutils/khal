@@ -64,7 +64,7 @@ class CalendarPopUp(urwid.PopUpLauncher):
         self._monthdisplay = monthdisplay
         self._firstweekday = firstweekday
         self._keybindings = {} if keybindings is None else keybindings
-        self.__super.__init__(widget)
+        super().__init__(widget)
 
     def keypress(self, size, key):
         if key == 'enter':

@@ -258,7 +258,7 @@ class ChoiceList(urwid.WidgetWrap):
 
         pile = NPile(buttons, outermost=True)
         num = [num for num, elem in enumerate(parent.choices) if elem == parent.active][0]
-        pile.set_focus(num)
+        pile.focus_position = num
         fill = urwid.Filler(pile)
         urwid.WidgetWrap.__init__(self, urwid.AttrMap(fill, 'popupbg'))
 
@@ -287,14 +287,14 @@ class NextMixin(SupportsNext):
     def _select_first_selectable(self):
         """select our first selectable item (recursivly if that item SupportsNext)"""
         i = self._first_selectable()
-        self.set_focus(i)
+        self.focus_position = i
         if isinstance(self.contents[i][0], SupportsNext):
             self.contents[i][0]._select_first_selectable()
 
     def _select_last_selectable(self):
         """select our last selectable item (recursivly if that item SupportsNext)"""
         i = self._last_selectable()
-        self.set_focus(i)
+        self.focus_position = i
         if isinstance(self._contents[i][0], SupportsNext):
             self.contents[i][0]._select_last_selectable()
 
@@ -321,7 +321,7 @@ class NextMixin(SupportsNext):
             else:
                 for i in range(self.focus_position + 1, len(self._contents)):
                     if self._contents[i][0].selectable():
-                        self.set_focus(i)
+                        self.focus_position = i
                         if isinstance(self._contents[i][0], SupportsNext):
                             self._contents[i][0]._select_first_selectable()
                         break
@@ -333,7 +333,7 @@ class NextMixin(SupportsNext):
             else:
                 for i in range(self.focus_position - 1, 0 - 1, -1):
                     if self._contents[i][0].selectable():
-                        self.set_focus(i)
+                        self.focus_position = i
                         if isinstance(self._contents[i][0], SupportsNext):
                             self._contents[i][0]._select_last_selectable()
                         break
@@ -355,14 +355,14 @@ class NListBox(SupportsNext, urwid.ListBox):
     def _select_first_selectable(self):
         """select our first selectable item (recursivly if that item SupportsNext)"""
         i = self._first_selectable()
-        self.set_focus(i)
+        self.focus_position = i
         if isinstance(self.body[i], SupportsNext):
             self.body[i]._select_first_selectable()
 
     def _select_last_selectable(self):
         """select our last selectable item (recursivly if that item SupportsNext)"""
         i = self._last_selectable()
-        self.set_focus(i)
+        self.focus_position = i
         if isinstance(self.body[i], SupportsNext):
             self.body[i]._select_last_selectable()
 

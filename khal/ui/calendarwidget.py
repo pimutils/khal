@@ -165,7 +165,7 @@ class DateCColumns(urwid.Columns):
 
     @focus_position.setter
     def focus_position(self, position: int) -> None:
-        """calls on_date_change before calling super()._set_focus_position"""
+        """calls on_date_change before setting super().focus_position"""
         # do not call when building up the interface, lots of potentially
         # expensive calls made here
         if self._init:
@@ -180,7 +180,7 @@ class DateCColumns(urwid.Columns):
     def set_focus_date(self, a_date: dt.date) -> None:
         for num, day in enumerate(self.contents[1:8], 1):
             if day[0].date == a_date:
-                self._set_focus_position(num)
+                self.focus_position = num
                 return None
         raise ValueError('%s not found in this week' % a_date)
 
@@ -430,7 +430,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             self.reset(a_day)
         row, column = self.get_date_pos(a_day)
         self.set_focus(row)
-        self[self.focus]._set_focus_position(column)
+        self[self.focus].focus_position = (column)
 
     @property
     def earliest_date(self) -> dt.date:
