@@ -70,16 +70,6 @@ def find_configuration_file() -> Optional[str]:
         if os.path.exists(path):
             return path
 
-    # remove this part for v0.11.0
-    for path in paths:
-        if os.path.exists(path):
-            logger.warning(
-                f'Deprecation Warning: configuration file path `{path}` will '
-                'not be supported from v0.11.0 onwards, please move it to '
-                f'`{xdg.BaseDirectory.xdg_config_dirs[0]}/khal/config`.'
-            )
-            return path
-
     return None
 
 
