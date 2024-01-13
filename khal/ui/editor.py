@@ -105,7 +105,7 @@ class DateEdit(urwid.WidgetWrap):
             weeknumbers=False, firstweekday=0, monthdisplay='firstday',
             keybindings=None,
     ):
-        datewidth = len(startdt.strftime(dateformat)) + 1
+        datewidth = len(startdt.strftime(dateformat))
         self._dateformat = dateformat
         if startdt is None:
             startdt = dt.date.today()
