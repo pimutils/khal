@@ -7,6 +7,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.11.3
+======
+2024-02-12
+
+* FIX support urwid 2.4.2
 
 0.11.2
 ======
