@@ -112,7 +112,7 @@ generate the html documentation as well as the man page from the same sources.
 After install `sphinx` and `sphinxcontrib-newsfeed` you should be able to build
 the documentation with :command:`make html` and :command:`make man` respectively
 from the root of the :file:`doc` directory (note that this requires `GNU make`,
-so on some system running :command:`gmake` make be required).
+so on some system running :command:`gmake` may be required).
 
 If you make any changes to how a user would interact with khal, please change or
 add the relevant section(s) in the documentation, which uses the
