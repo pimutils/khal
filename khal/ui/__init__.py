@@ -1321,6 +1321,14 @@ def _add_calendar_colors(
             color = collection.default_color
         else:
             color = cal['color']
+
+        # In case the color contains an alpha value, remove it for urwid.
+        # eg '#RRGGBBAA' -> '#RRGGBB' and '#RGBA' -> '#RGB'.
+        if len(color) == 9:
+            color = color[0:7]
+        elif len(color) == 5:
+            color = color[0:4]
+
         entry = _urwid_palette_entry(
             attr_template.format(cal['name']),
             color,
