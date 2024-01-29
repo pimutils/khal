@@ -33,6 +33,7 @@ dependencies = [
     "configobj",
     "atomicwrites>=0.1.7",
     "tzlocal>=1.0",
+    "additional_urwid_widgets>=0.4.1"
 ]
 [project.optional-dependencies]
 proctitle = [
@@ -61,7 +62,6 @@ ikhal = "khal.cli:main_ikhal"
 [build-system]
 requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
-requires-python = ">=3.8,<3.12"
 
 [tool.setuptools.packages]
 find = {}

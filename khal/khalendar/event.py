@@ -25,6 +25,7 @@ helper functions."""
 import datetime as dt
 import logging
 import os
+import re
 from typing import Dict, List, Optional, Tuple, Type, Union
 
 import icalendar
@@ -41,6 +42,29 @@ from ..parse_datetime import timedelta2str
 from ..utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
 
 logger = logging.getLogger('khal')
+
+
+class Attendee:
+    def __init__(self, defline):
+        m = re.match(r"(?P<name>.*)\<(?P<mail>.*)\>", defline)
+        if m is not None and m.group("name") is not None and m.group("mail") is not None:
+            self.cn = m.group("name").strip()
+            self.mail = m.group("mail").strip().lower()
+        else:
+            self.cn = None
+            self.mail = defline.strip().lower()
+
+    @staticmethod
+    def format_vcard(vcard):
+        data = str(vcard).split(":")
+        if len(data) > 1:
+            mail = data[1]
+        else:
+            mail = str(vcard)
+        cn = mail
+        if "CN" in vcard.params:
+            cn = vcard.params["CN"]
+        return f"{cn} <{mail}>"
 
 
 class Event:
@@ -493,28 +517,29 @@ class Event:
     def attendees(self) -> str:
         addresses = self._vevents[self.ref].get('ATTENDEE', [])
         if not isinstance(addresses, list):
-            addresses = [addresses, ]
-        return ", ".join([address.split(':')[-1]
-                          for address in addresses])
+            return addresses
+        return ", ".join([Attendee.format_vcard(address) for address in addresses])
 
     def update_attendees(self, attendees: List[str]):
         assert isinstance(attendees, list)
-        attendees = [a.strip().lower() for a in attendees if a != ""]
-        if len(attendees) > 0:
+        attendees_o : List[Attendee] = [Attendee(a) for a in attendees if a != ""]
+        if len(attendees_o) > 0:
             # first check for overlaps in existing attendees.
             # Existing vCalAddress objects will be copied, non-existing
             # vCalAddress objects will be created and appended.
             old_attendees = self._vevents[self.ref].get('ATTENDEE', [])
             unchanged_attendees = []
             vCalAddresses = []
-            for attendee in attendees:
+            for attendee in attendees_o:
                 for old_attendee in old_attendees:
                     old_email = old_attendee.lstrip("MAILTO:").lower()
-                    if attendee == old_email:
+                    if attendee.mail == old_email:
                         vCalAddresses.append(old_attendee)
                         unchanged_attendees.append(attendee)
-            for attendee in [a for a in attendees if a not in unchanged_attendees]:
-                item = icalendar.prop.vCalAddress(f'MAILTO:{attendee}')
+            for attendee in [a for a in attendees_o if a not in unchanged_attendees]:
+                item = icalendar.prop.vCalAddress(f'MAILTO:{attendee.mail}')
+                if attendee.cn is not None:
+                    item.params['CN'] = attendee.cn
                 item.params['ROLE'] = icalendar.prop.vText('REQ-PARTICIPANT')
                 item.params['PARTSTAT'] = icalendar.prop.vText('NEEDS-ACTION')
                 item.params['CUTYPE'] = icalendar.prop.vText('INDIVIDUAL')
