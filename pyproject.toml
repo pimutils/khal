@@ -19,6 +19,7 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Topic :: Communications",
   "Topic :: Utilities",
 ]
@@ -39,10 +40,12 @@ proctitle = [
   "setproctitle"
 ]
 test = [
+  "pytest",
   "freezegun",
   "hypothesis",
   "packaging",
   "vdirsyncer",
+  "setuptools",  # python > 3.12 does not ship pkg_resources anymore
 ]
 docs = [
   "sphinx!=1.6.1",
