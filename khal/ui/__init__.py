@@ -1324,9 +1324,9 @@ def _add_calendar_colors(
 
         # In case the color contains an alpha value, remove it for urwid.
         # eg '#RRGGBBAA' -> '#RRGGBB' and '#RGBA' -> '#RGB'.
-        if len(color) == 9:
+        if color and len(color) == 9 and color[0] == '#':
             color = color[0:7]
-        elif len(color) == 5:
+        elif color and len(color) == 5 and color[0] == '#':
             color = color[0:4]
 
         entry = _urwid_palette_entry(
