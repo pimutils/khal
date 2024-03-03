@@ -793,7 +793,7 @@ class EventColumn(urwid.WidgetWrap):
             bottom_w = self.pane,
             align = 'center',
             width = ('relative', 50),
-            valign = ('relative', 50),
+            valign = 'top',
             height = 10,
         )
         self.pane.window.open(overlay)
