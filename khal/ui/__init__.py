@@ -785,13 +785,17 @@ class EventColumn(urwid.WidgetWrap):
                 self.pane.window.alert('Event successfully exported')
 
         overlay = urwid.Overlay(
-            ExportDialog(
+            top_w = ExportDialog(
                 export_this,
                 self.pane.window.backtrack,
                 self.focus_event.event,
             ),
-            self.pane,
-            'center', ('relative', 50), ('relative', 50), None)
+            bottom_w = self.pane,
+            align = 'center',
+            width = ('relative', 50),
+            valign = ('relative', 50),
+            height = 10,
+        )
         self.pane.window.open(overlay)
 
     def toggle_delete(self):
