@@ -110,9 +110,9 @@ def test_weekdaypstr_invalid():
 
 def test_construct_daynames():
     with freeze_time('2016-9-19'):
-        assert construct_daynames(dt.date(2016, 9, 19)) == 'Today'
-        assert construct_daynames(dt.date(2016, 9, 20)) == 'Tomorrow'
-        assert construct_daynames(dt.date(2016, 9, 21)) == 'Wednesday'
+        assert construct_daynames(dt.date(2016, 9, 19), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Today'
+        assert construct_daynames(dt.date(2016, 9, 20), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Tomorrow'
+        assert construct_daynames(dt.date(2016, 9, 21), local_timezone=LOCALE_BERLIN['local_timezone']) == 'Wednesday'
 
 
 class TestGuessDatetimefstr:

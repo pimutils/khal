@@ -125,14 +125,15 @@ def weekdaypstr(dayname: str) -> int:
     raise ValueError('invalid weekday name `%s`' % dayname)
 
 
-def construct_daynames(date_: dt.date) -> str:
+def construct_daynames(date_: dt.date, local_timezone) -> str:
     """converts datetime.date into a string description
 
     either `Today`, `Tomorrow` or name of weekday.
     """
-    if date_ == dt.date.today():
+    today = dt.datetime.now(local_timezone).date()
+    if date_ == today:
         return 'Today'
-    elif date_ == dt.date.today() + dt.timedelta(days=1):
+    elif date_ == today + dt.timedelta(days=1):
         return 'Tomorrow'
     else:
         return date_.strftime('%A')
