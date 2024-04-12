@@ -54,6 +54,9 @@ docs = [
   "sphinx-rtd-theme",
 ]
 
+# install all optional dependencies
+all = ["khal[proctitle,test,docs]"]
+
 [project.urls]
 homepage = "http://lostpackets.de/khal/"
 repository = "https://github.com/pimutils/khal"
