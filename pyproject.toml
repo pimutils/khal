@@ -46,6 +46,7 @@ test = [
   "packaging",
   "vdirsyncer",
   "setuptools",  # python > 3.12 does not ship pkg_resources anymore
+  "importlib-metadata; python_version <= '3.9'",  # importlib.metadata is in stdlib since 3.10
 ]
 docs = [
   "sphinx!=1.6.1",
