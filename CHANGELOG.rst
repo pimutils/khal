@@ -31,6 +31,7 @@ not released yet
   status of an event with a symbol (e.g. `✓` for accepted, `✗` for declined,
   `?` for tentative); partication status is shown for the email addresses
   configured for the event's calendar
+* NEW support for color theme, command, and formatter plugins
 
 0.11.2
 ======
