@@ -255,21 +255,10 @@ blank_line_before_day = boolean(default=False)
 
 # Choose a color theme for khal.
 #
-# This is very much work in progress. Help is really welcome! The two currently
-# available color schemes (*dark* and *light*) are defined in
-# *khal/ui/colors.py*, you can either help improve those or create a new one
-# (see below). As ikhal uses urwid, have a look at `urwid's documentation`__
-# for how to set colors and/or at the existing schemes. If you cannot change
-# the color of an element (or have any other problems) please open an issue on
-# github_.
-#
-# If you want to create your own color scheme, copy the structure of the
-# existing ones, give it a new and unique name and also add it as an option in
-# `khal/settings/khal.spec` in the section `[default]` of the property `theme`.
-#
-# __ http://urwid.org/manual/displayattributes.html
-# .. _github: https://github.com/pimutils/khal/issues
-theme = option('dark', 'light', default='dark')
+# Khal ships with two color themes, *dark* and *light*.  Additionally, plugins
+# might supply different color schemes.
+# You can also define your own color theme in the [palette] section.
+theme = string(default='dark')
 
 # Whether to show a visible frame (with *box drawing* characters) around some
 # (groups of) elements or not. There are currently several different frame
