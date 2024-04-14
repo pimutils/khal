@@ -2,6 +2,7 @@ import datetime as dt
 from collections import OrderedDict
 
 import pytest
+import pytz
 from freezegun import freeze_time
 
 from khal.exceptions import DateTimeParseError, FatalError
