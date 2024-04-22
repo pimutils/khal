@@ -38,7 +38,7 @@ from .custom_types import LocaleConfiguration, RRuleMapType
 logger = logging.getLogger('khal')
 
 
-def timefstr(dtime_list: List[str], timeformat: str) -> dt.datetime:
+def timefstr(dtime_list: List[str], timeformat: str, timezone: dt.tzinfo) -> dt.datetime:
     """converts the first item of a list (a time as a string) to a datetimeobject
 
     where the date is today and the time is given by a string
@@ -48,8 +48,8 @@ def timefstr(dtime_list: List[str], timeformat: str) -> dt.datetime:
         raise ValueError()
     datetime_start = dt.datetime.strptime(dtime_list[0], timeformat)
     time_start = dt.time(*datetime_start.timetuple()[3:5])
-    day_start = dt.date.today()
-    dtstart = dt.datetime.combine(day_start, time_start)
+    today = dt.datetime.now(timezone).date()
+    dtstart = dt.datetime.combine(today, time_start).replace(tzinfo=timezone)
     dtime_list.pop(0)
     return dtstart
 
@@ -60,10 +60,11 @@ def datetimefstr(
     default_day: Optional[dt.date]=None,
     infer_year: bool=True,
     in_future: bool=True,
+    timezone: dt.tzinfo=pytz.UTC,
 ) -> dt.datetime:
     """converts a datetime (as one or several string elements of a list) to
     a datetimeobject, if infer_year is True, use the `default_day`'s year as
-    the year of the return datetimeobject,
+    the year of the returned datetimeobject,
 
     removes "used" elements of list
 
@@ -73,7 +74,7 @@ def datetimefstr(
              dateformat = '%d.%m. %H:%M'
     """
     # if now() is called as default param, mocking with freezegun won't work
-    now = dt.datetime.now()
+    now = dt.datetime.now(timezone)
     if default_day is None:
         default_day = now.date()
     parts = dateformat.count(' ') + 1
@@ -92,13 +93,17 @@ def datetimefstr(
 
     if infer_year:
         dtstart = dt.datetime(*(default_day.timetuple()[:1] + dtstart_struct[1:5]))
+        dtstart = dtstart.astimezone(timezone)
         if in_future and dtstart < now:
             dtstart = dtstart.replace(year=dtstart.year + 1)
         if dtstart.date() < default_day:
             dtstart = dtstart.replace(year=default_day.year + 1)
+        assert dtstart.tzinfo is not None
         return dtstart
     else:
-        return dt.datetime(*dtstart_struct[:5])
+        rdt = dt.datetime(*dtstart_struct[:5]).replace(tzinfo=timezone)
+        assert rdt.tzinfo is not None
+        return rdt
 
 
 def weekdaypstr(dayname: str) -> int:
@@ -125,12 +130,12 @@ def weekdaypstr(dayname: str) -> int:
     raise ValueError('invalid weekday name `%s`' % dayname)
 
 
-def construct_daynames(date_: dt.date, local_timezone) -> str:
+def construct_daynames(date_: dt.date, timezone: dt.tzinfo) -> str:
     """converts datetime.date into a string description
 
     either `Today`, `Tomorrow` or name of weekday.
     """
-    today = dt.datetime.now(local_timezone).date()
+    today = dt.datetime.now(timezone).date()
     if date_ == today:
         return 'Today'
     elif date_ == today + dt.timedelta(days=1):
@@ -139,13 +144,14 @@ def construct_daynames(date_: dt.date, local_timezone) -> str:
         return date_.strftime('%A')
 
 
-def calc_day(dayname: str) -> dt.datetime:
+def calc_day(dayname: str, timezone: dt.tzinfo) -> dt.datetime:
     """converts a relative date's description to a datetime object
 
     :param dayname: relative day name (like 'today' or 'monday')
+    :param timezone: timezone to use for the calculation
     :returns: date
     """
-    today = dt.datetime.combine(dt.date.today(), dt.time.min)
+    today = dt.datetime.combine(dt.date.today(), dt.time.min).replace(tzinfo=timezone)
     dayname = dayname.lower()
     if dayname == 'today':
         return today
@@ -161,7 +167,7 @@ def calc_day(dayname: str) -> dt.datetime:
     return day
 
 
-def datefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: bool) -> dt.datetime:
+def datefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: bool, timezone: dt.tzinfo) -> dt.datetime:
     """interprets first element of a list as a relative date and removes that
     element
 
@@ -172,22 +178,22 @@ def datefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: bool) -
     """
     if len(dtime_list) == 0:
         raise ValueError()
-    day = calc_day(dtime_list[0])
+    day = calc_day(dtime_list[0], timezone=timezone)
     dtime_list.pop(0)
     return day
 
 
-def datetimefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: bool) -> dt.datetime:
+def datetimefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: bool, timezone: dt.tzinfo) -> dt.datetime:
     """
     :param infer_year: only here for compat reasons (having the same function signature)
     """
     if len(dtime_list) == 0:
         raise ValueError()
-    day = calc_day(dtime_list[0])
-    this_time = timefstr(dtime_list[1:], timeformat)
+    day = calc_day(dtime_list[0], timezone=timezone)
+    this_time = timefstr(dtime_list[1:], timeformat, timezone)
     dtime_list.pop(0)
-    dtime_list.pop(0)  # we need to pop twice as timefstr gets a copy
-    dtime = dt.datetime.combine(day, this_time.time())
+    dtime_list.pop(0)  # we need to pop twice as timefstr gets a copy and does't remove a used element
+    dtime = dt.datetime.combine(day, this_time.time()).replace(tzinfo=timezone)
     return dtime
 
 
@@ -200,27 +206,33 @@ def guessdatetimefstr(
     """
     :param in_future: if set, shortdate(time) events will be set in the future
     """
+    orig = list(dtime_list)   # TODO remove this line -- only for debugging
     # if now() is called as default param, mocking with freezegun won't work
-    day = default_day or dt.datetime.now().date()
+    day = default_day or dt.datetime.now(locale['local_timezone']).date()
     # TODO rename in guessdatetimefstrLIST or something saner altogether
 
-    def timefstr_day(dtime_list: List[str], timeformat: str, infer_year: bool) -> dt.datetime:
+    def timefstr_day(dtime_list: List[str], timeformat: str, infer_year: bool, timezone: dt.tzinfo) -> dt.datetime:
         if locale['timeformat'] == '%H:%M' and dtime_list[0] == '24:00':
-            a_date = dt.datetime.combine(day, dt.time(0))
+            a_date = dt.datetime.combine(day, dt.time(0)).replace(tzinfo=timezone)
             dtime_list.pop(0)
         else:
-            a_date = timefstr(dtime_list, timeformat)
-            a_date = dt.datetime(*(day.timetuple()[:3] + a_date.timetuple()[3:5]))
+            a_date = timefstr(dtime_list, timeformat, timezone=timezone)
+            a_date = dt.datetime(*(day.timetuple()[:3] + a_date.timetuple()[3:5])).replace(tzinfo=timezone)
+        assert a_date.tzinfo is not None
         return a_date
 
-    def datetimefwords(dtime_list: List[str], _: str, infer_year: bool) -> dt.datetime:
+    def datetimefwords(dtime_list: List[str], _: str, infer_year: bool, timezone: dt.tzinfo) -> dt.datetime:
+        """converts words to datetimes
+
+        for now, this only knows "now"
+        """
         if len(dtime_list) > 0 and dtime_list[0].lower() == 'now':
             dtime_list.pop(0)
-            return dt.datetime.now()
+            return dt.datetime.now(timezone)
         raise ValueError
 
-    def datefstr_year(dtime_list: List[str], dtformat: str, infer_year: bool) -> dt.datetime:
-        return datetimefstr(dtime_list, dtformat, day, infer_year, in_future)
+    def datefstr_year(dtime_list: List[str], dtformat: str, infer_year: bool, timezone: dt.tzinfo) -> dt.datetime:
+        return datetimefstr(dtime_list, dtformat, day, infer_year, in_future, timezone)
 
     dtstart = None
     fun: Callable[[List[str], str, bool], dt.datetime]
@@ -241,10 +253,12 @@ def guessdatetimefstr(
         if infer_year and '97' in dt.datetime(1997, 10, 11).strftime(dtformat):
             infer_year = False
         try:
-            dtstart = fun(dtime_list, dtformat, infer_year=infer_year)
+            timezone = locale['local_timezone']
+            dtstart = fun(dtime_list, dtformat, infer_year=infer_year, timezone=timezone)
         except (ValueError, DateTimeParseError):
             pass
         else:
+            assert dtstart.tzinfo is not None
             return dtstart, all_day
     raise DateTimeParseError(
         f"Could not parse \"{dtime_list}\".\nPlease check your configuration "
@@ -341,9 +355,13 @@ def guessrangefstr(daterange: Union[str, List[str]],
         range_list = daterange.split(' ')
         assert isinstance(range_list, list)
 
+    orig = list(range_list)  # TODO remove this line -- only for debugging
+
     if range_list == ['week']:
         today_weekday = dt.datetime.today().weekday()
-        startdt = dt.datetime.today() - dt.timedelta(days=(today_weekday - locale['firstweekday']))
+        today = dt.datetime.now(locale['local_timezone']).date()
+        today = dt.datetime.combine(today, dt.time.min).replace(tzinfo=locale['local_timezone'])
+        startdt = today - dt.timedelta(days=(today_weekday - locale['firstweekday']))
         enddt = startdt + dt.timedelta(days=8)
         return startdt, enddt, True
 
@@ -365,7 +383,7 @@ def guessrangefstr(daterange: Union[str, List[str]],
                 else:
                     end = start + default_timedelta_datetime
             elif endstr.lower() == 'eod':
-                end = dt.datetime.combine(start.date(), dt.time.max)
+                end = dt.datetime.combine(start.date(), dt.time.max).replace(tzinfo=locale['local_timezone'])
             elif endstr.lower() == 'week':
                 start -= dt.timedelta(days=(start.weekday() - locale['firstweekday']))
                 end = start + dt.timedelta(days=8)
@@ -397,7 +415,7 @@ def guessrangefstr(daterange: Union[str, List[str]],
             if adjust_reasonably:
                 if allday:
                     # test if end's year is this year, but start's year is not
-                    today = dt.datetime.today()
+                    today = dt.datetime.now(locale['default_timezone']).date()
                     if end.year == today.year and start.year != today.year:
                         end = dt.datetime(start.year, *end.timetuple()[1:6])
 
@@ -405,9 +423,14 @@ def guessrangefstr(daterange: Union[str, List[str]],
                         end = dt.datetime(end.year + 1, *end.timetuple()[1:6])
 
                 if end < start:
-                    end = dt.datetime(*start.timetuple()[0:3] + end.timetuple()[3:5])
+                    # if end is before start date we are using the year, month and day of start
+                    # and the time of end to create a new end date
+                    end = dt.datetime(*start.timetuple()[0:3] + end.timetuple()[3:5]).replace(tzinfo=locale['local_timezone'])
                 if end < start:
+                    # if end is still before start date we are adding a day
                     end = end + dt.timedelta(days=1)
+            assert start.tzinfo is not None
+            assert end.tzinfo is not None
             return start, end, allday
         except (ValueError, DateTimeParseError):
             pass
@@ -423,18 +446,13 @@ def guessrangefstr(daterange: Union[str, List[str]],
 def rrulefstr(repeat: str,
               until: str,
               locale: LocaleConfiguration,
-              timezone: Optional[dt.tzinfo],
               ) -> RRuleMapType:
     if repeat in ["daily", "weekly", "monthly", "yearly"]:
         rrule_settings: RRuleMapType = {'freq': repeat}
         if until:
             until_dt, _ = guessdatetimefstr(until.split(' '), locale)
-            if timezone:
-                rrule_settings['until'] = until_dt.\
-                    replace(tzinfo=timezone).\
-                    astimezone(pytz.UTC)
-            else:
-                rrule_settings['until'] = until_dt
+            assert until_dt.tzinfo is not None
+            rrule_settings['until'] = until_dt
         return rrule_settings
     else:
         logger.fatal("Invalid value for the repeat option. \
