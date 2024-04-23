@@ -32,6 +32,8 @@ not released yet
   `?` for tentative); partication status is shown for the email addresses
   configured for the event's calendar
 * NEW support for color theme, command, and formatter plugins
+* FIX an issue where ikhal would forget changes to time or date fields if you
+  left the field with page up/down or meta+enter
 
 0.11.2
 ======
