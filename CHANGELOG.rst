@@ -7,12 +7,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
-0.11.3
+0.11.4
 ======
 not released yet
 
 * UPDATED REQUIREMENT urwid is now required >= 2.1.0
-* FIX support urwid 2.4.2
 * NEW REQUIREMENT for tests on python >= 3.12: pkg_resources
 * optimization in ikhal when editing events in the far future or past
 * FIX an issue in ikhal with updating the view of the event list after editing
@@ -34,6 +33,12 @@ not released yet
 * NEW support for color theme, command, and formatter plugins
 * FIX an issue where ikhal would forget changes to time or date fields if you
   left the field with page up/down or meta+enter
+
+0.11.3
+======
+2024-02-12
+
+* FIX support urwid 2.4.2
 
 0.11.2
 ======
