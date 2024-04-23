@@ -610,10 +610,11 @@ class EventEditor(urwid.WidgetWrap):
             return None
         else:
             self._abort_confirmed = False
+        return_value = super().keypress(size, key)
         if key in self.pane._conf['keybindings']['save']:
             self.save(None)
             return None
-        return super().keypress(size, key)
+        return return_value
 
 
 WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']  # TODO use locale and respect weekdaystart
