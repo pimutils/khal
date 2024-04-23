@@ -35,8 +35,8 @@ Plugins
 -------
 
 Khal now supports plugins, currently for supporting new commands (`example
-command plugin`_), formatting (`example formatting plugin`), and
-colors (`example color plugin`).
+command plugin`_), formatting (`example formatting plugin`_), and
+colors (`example color plugin`_).
 
 If you want to develop a new feature, please check if it can be implemented as
 a plugin.  If you are unsure, please ask us, we will gladly help you and, if
