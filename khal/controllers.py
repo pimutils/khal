@@ -62,7 +62,7 @@ def format_day(day: dt.date, format_string: str, locale, attributes=None):
     attributes["date"] = day.strftime(locale['dateformat'])
     attributes["date-long"] = day.strftime(locale['longdateformat'])
 
-    attributes["name"] = parse_datetime.construct_daynames(day, local_timezone=locale['local_timezone'])
+    attributes["name"] = parse_datetime.construct_daynames(day, timezone=locale['local_timezone'])
 
     colors = {"reset": style("", reset=True), "bold": style("", bold=True, reset=False)}
     for c in ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"]:
@@ -204,8 +204,11 @@ def get_events_between(
         env = {}
     assert start
     assert end
-    start_local = locale['local_timezone'].localize(start)
-    end_local = locale['local_timezone'].localize(end)
+    assert start.tzinfo is not None
+    assert end.tzinfo is not None
+
+    start_local = start
+    end_local = end
 
     start = start_local.replace(tzinfo=None)
     end = end_local.replace(tzinfo=None)
@@ -273,6 +276,8 @@ def khal_list(
             default_timedelta_datetime=conf['default']['timedelta'],
         )
         logger.debug(f'Getting all events between {start} and {end}')
+        assert start.tzinfo is not None
+        assert end.tzinfo is not None
 
     elif datepoint is not None:
         if not datepoint:
@@ -295,18 +300,23 @@ def khal_list(
                 bold=True,
             )
         logger.debug(f'Getting all events between {start} and {end}')
+        assert start.tzinfo is not None
+        assert end.tzinfo is not None
+    else:
+        raise ValueError('Something has gone wrong')
 
     event_column: List[str] = []
     once = set() if once else None
     if env is None:
         env = {}
 
-    original_start = conf['locale']['local_timezone'].localize(start)
+    original_start = start
     while start < end:
         if start.date() == end.date():
             day_end = end
         else:
             day_end = dt.datetime.combine(start.date(), dt.time.max)
+        day_end = day_end.replace(tzinfo=start.tzinfo)
         current_events = get_events_between(
             collection, locale=conf['locale'], formatter=formatter, start=start,
             end=day_end, notstarted=notstarted, original_start=original_start,
@@ -320,6 +330,7 @@ def khal_list(
             event_column.append(format_day(start.date(), day_format, conf['locale']))
         event_column.extend(current_events)
         start = dt.datetime(*start.date().timetuple()[:3]) + dt.timedelta(days=1)
+        start = start.replace(tzinfo=original_start.tzinfo)
 
     return event_column
 
