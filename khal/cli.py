@@ -576,4 +576,3 @@ def configure(ctx):
 
 
 main_khal, main_ikhal = cli, interactive_cli
-
