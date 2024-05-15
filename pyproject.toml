@@ -23,6 +23,7 @@ classifiers = [
   "Topic :: Communications",
   "Topic :: Utilities",
 ]
+requires-python = ">=3.8,<3.12"
 dependencies = [
     "click>=3.2",
     "click_log>=0.2.0",
@@ -68,7 +69,6 @@ ikhal = "khal.cli:main_ikhal"
 [build-system]
 requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
-requires-python = ">=3.8,<3.12"
 
 [tool.setuptools.packages]
 find = {}
