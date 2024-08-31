@@ -2,6 +2,7 @@ import datetime as dt
 from collections import OrderedDict
 
 import pytest
+import pytz
 from freezegun import freeze_time
 
 from khal.exceptions import DateTimeParseError, FatalError
@@ -24,6 +25,8 @@ from .utils import (
     normalize_component,
 )
 
+BERLIN = pytz.timezone('Europe/Berlin')
+
 
 def _create_testcases(*cases):
     return [(userinput, ('\r\n'.join(output) + '\r\n').encode('utf-8'))
@@ -34,11 +37,14 @@ def _construct_event(info, locale,
                      defaulttimelen=60, defaultdatelen=1, description=None,
                      location=None, categories=None, repeat=None, until=None,
                      alarm=None, **kwargs):
+    orig = list(info)
     info = eventinfofstr(' '.join(info), locale,
                          default_event_duration=dt.timedelta(hours=1),
                          default_dayevent_duration=dt.timedelta(days=1),
                          adjust_reasonably=True,
                          )
+    if 'America/New_York' in orig:
+        breakpoint()
     if description is not None:
         info["description"] = description
     event = new_vevent(
@@ -108,49 +114,84 @@ def test_weekdaypstr_invalid():
         weekdaypstr('foobar')
 
 
-def test_construct_daynames():
-    with freeze_time('2016-9-19'):
-        assert construct_daynames(dt.date(2016, 9, 19)) == 'Today'
-        assert construct_daynames(dt.date(2016, 9, 20)) == 'Tomorrow'
-        assert construct_daynames(dt.date(2016, 9, 21)) == 'Wednesday'
+class TestConstructDayNames:
+    def test_construct_daynames(self):
+        with freeze_time('2016-9-19'):
+            assert construct_daynames(dt.date(2016, 9, 18), timezone=LOCALE_BERLIN['local_timezone']) == 'Sunday'
+            assert construct_daynames(dt.date(2016, 9, 19), timezone=LOCALE_BERLIN['local_timezone']) == 'Today'
+            assert construct_daynames(dt.date(2016, 9, 20), timezone=LOCALE_BERLIN['local_timezone']) == 'Tomorrow'
+            assert construct_daynames(dt.date(2016, 9, 21), timezone=LOCALE_BERLIN['local_timezone']) == 'Wednesday'
 
+    # freeztime freezes to UTC but construct_daynames should give as back the
+    # daynames relative the the user's local timezone
+    def test_construct_daynames_with_datetime(self):
+        with freeze_time('2016-9-19 22:53'):
+            assert construct_daynames(dt.date(2016, 9, 18), timezone=LOCALE_BERLIN['local_timezone']) == 'Sunday'
+            assert construct_daynames(dt.date(2016, 9, 19), timezone=LOCALE_BERLIN['local_timezone']) == 'Monday'
+            assert construct_daynames(dt.date(2016, 9, 20), timezone=LOCALE_BERLIN['local_timezone']) == 'Today'
+            assert construct_daynames(dt.date(2016, 9, 21), timezone=LOCALE_BERLIN['local_timezone']) == 'Tomorrow'
+            assert construct_daynames(dt.date(2016, 9, 22), timezone=LOCALE_BERLIN['local_timezone']) == 'Thursday'
+
+    def test_construct_daynames_los_angeles(self):
+        with freeze_time('2016-9-19 22:53'):
+            assert construct_daynames(dt.date(2016, 9, 18), timezone=pytz.timezone('America/Los_Angeles')) == 'Sunday'
+            assert construct_daynames(dt.date(2016, 9, 19), timezone=pytz.timezone('America/Los_Angeles')) == 'Today'
+            assert construct_daynames(dt.date(2016, 9, 20), timezone=pytz.timezone('America/Los_Angeles')) == 'Tomorrow'
+            assert construct_daynames(dt.date(2016, 9, 21), timezone=pytz.timezone('America/Los_Angeles')) == 'Wednesday'
+            assert construct_daynames(dt.date(2016, 9, 22), timezone=pytz.timezone('America/Los_Angeles')) == 'Thursday'
+
+    def test_construct_daynames_los_angeles_morning(self):
+        with freeze_time('2016-9-19 06:30'):
+            assert construct_daynames(dt.date(2016, 9, 18), timezone=pytz.timezone('America/Los_Angeles')) == 'Today'
+            assert construct_daynames(dt.date(2016, 9, 19), timezone=pytz.timezone('America/Los_Angeles')) == 'Tomorrow'
+            assert construct_daynames(dt.date(2016, 9, 20), timezone=pytz.timezone('America/Los_Angeles')) == 'Tuesday'
+            assert construct_daynames(dt.date(2016, 9, 21), timezone=pytz.timezone('America/Los_Angeles')) == 'Wednesday'
+            assert construct_daynames(dt.date(2016, 9, 22), timezone=pytz.timezone('America/Los_Angeles')) == 'Thursday'
+
+    def test_construct_daynames_auckland(self):
+        with freeze_time('2016-9-19 22:53'):
+            assert construct_daynames(dt.date(2016, 9, 18), timezone=pytz.timezone('Pacific/Auckland')) == 'Sunday'
+            assert construct_daynames(dt.date(2016, 9, 19), timezone=pytz.timezone('Pacific/Auckland')) == 'Monday'
+            assert construct_daynames(dt.date(2016, 9, 20), timezone=pytz.timezone('Pacific/Auckland')) == 'Today'
+            assert construct_daynames(dt.date(2016, 9, 21), timezone=pytz.timezone('Pacific/Auckland')) == 'Tomorrow'
+            assert construct_daynames(dt.date(2016, 9, 22), timezone=pytz.timezone('Pacific/Auckland')) == 'Thursday'
 
 class TestGuessDatetimefstr:
 
     @freeze_time('2016-9-19T8:00')
     def test_today(self):
-        assert (dt.datetime(2016, 9, 19, 13), False) == \
-            guessdatetimefstr(['today', '13:00'], LOCALE_BERLIN)
-        assert dt.date.today() == guessdatetimefstr(['today'], LOCALE_BERLIN)[0].date()
+        assert (dt.datetime(2016, 9, 19, 13, tzinfo=BERLIN), False) == guessdatetimefstr(['today', '13:00'], LOCALE_BERLIN)
+        assert (dt.datetime(2016, 9, 19, tzinfo=BERLIN), True) == guessdatetimefstr(['today'], LOCALE_BERLIN)
 
     @freeze_time('2016-9-19T8:00')
     def test_tomorrow(self):
-        assert (dt.datetime(2016, 9, 20, 16), False) == \
+        assert (dt.datetime(2016, 9, 20, 16, tzinfo=BERLIN), False) == \
             guessdatetimefstr('tomorrow 16:00 16:00'.split(), locale=LOCALE_BERLIN)
 
     @freeze_time('2016-9-19T8:00')
     def test_time_tomorrow(self):
-        assert (dt.datetime(2016, 9, 20, 16), False) == \
+        assert (dt.datetime(2016, 9, 20, 16, tzinfo=BERLIN), False) == \
             guessdatetimefstr(
                 '16:00'.split(), locale=LOCALE_BERLIN, default_day=dt.date(2016, 9, 20))
 
     @freeze_time('2016-9-19T8:00')
     def test_time_yesterday(self):
-        assert (dt.datetime(2016, 9, 18, 16), False) == guessdatetimefstr(
+        assert (dt.datetime(2016, 9, 18, 16, tzinfo=BERLIN), False) == guessdatetimefstr(
             'Yesterday 16:00'.split(),
             locale=LOCALE_BERLIN,
             default_day=dt.datetime.today())
 
-    @freeze_time('2016-9-19')
+    @freeze_time('2016-9-19 ')
     def test_time_weekday(self):
-        assert (dt.datetime(2016, 9, 23, 16), False) == guessdatetimefstr(
+        assert (dt.datetime(2016, 9, 23, 16, tzinfo=BERLIN), False) == guessdatetimefstr(
             'Friday 16:00'.split(),
             locale=LOCALE_BERLIN,
             default_day=dt.datetime.today())
 
-    @freeze_time('2016-9-19 17:53')
+    time_to_freeze = dt.datetime(2016, 9, 19, 17, 53, tzinfo=BERLIN)
+    @freeze_time(time_to_freeze)
     def test_time_now(self):
-        assert (dt.datetime(2016, 9, 19, 17, 53), False) == guessdatetimefstr(
+        assert (dt.datetime(2016, 9, 19, 17, 53, tzinfo=BERLIN), False) == guessdatetimefstr(
             'now'.split(), locale=LOCALE_BERLIN, default_day=dt.datetime.today())
 
     @freeze_time('2016-12-30 17:53')
@@ -162,10 +203,11 @@ class TestGuessDatetimefstr:
             'longdateformat': '',
             'datetimeformat': '%Y-%m-%d %H:%M',
             'longdatetimeformat': '',
+            'local_timezone': LOCALE_BERLIN['local_timezone'],
         }
-        assert (dt.datetime(2017, 1, 1), True) == guessdatetimefstr(
+        assert (dt.datetime(2017, 1, 1, tzinfo=BERLIN), True) == guessdatetimefstr(
             '2017-1-1'.split(), locale=locale, default_day=dt.datetime.today())
-        assert (dt.datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
+        assert (dt.datetime(2017, 1, 1, 16, 30, tzinfo=BERLIN), False) == guessdatetimefstr(
             '2017-1-1 16:30'.split(), locale=locale, default_day=dt.datetime.today())
 
     @freeze_time('2016-12-30 17:53')
@@ -178,10 +220,11 @@ class TestGuessDatetimefstr:
             'longdateformat': '%Y-%m-%d',
             'datetimeformat': '%Y-%m-%d %H:%M',
             'longdatetimeformat': '%Y-%m-%d %H:%M',
+            'local_timezone': LOCALE_BERLIN['local_timezone'],
         }
-        assert (dt.datetime(2017, 1, 1), True) == guessdatetimefstr(
+        assert (dt.datetime(2017, 1, 1, tzinfo=BERLIN), True) == guessdatetimefstr(
             '2017-1-1'.split(), locale=locale, default_day=dt.datetime.today())
-        assert (dt.datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
+        assert (dt.datetime(2017, 1, 1, 16, 30, tzinfo=BERLIN), False) == guessdatetimefstr(
             '2017-1-1 16:30'.split(), locale=locale, default_day=dt.datetime.today())
 
 
@@ -238,55 +281,55 @@ class TestGuessRangefstr:
 
     @freeze_time('2016-9-19')
     def test_today(self):
-        assert (dt.datetime(2016, 9, 19, 13), dt.datetime(2016, 9, 19, 14), False) == \
+        assert (dt.datetime(2016, 9, 19, 13, tzinfo=BERLIN), dt.datetime(2016, 9, 19, 14, tzinfo=BERLIN), False) == \
             guessrangefstr('13:00 14:00', locale=LOCALE_BERLIN)
-        assert (dt.datetime(2016, 9, 19), dt.datetime(2016, 9, 21), True) == \
+        assert (dt.datetime(2016, 9, 19, tzinfo=BERLIN), dt.datetime(2016, 9, 21, tzinfo=BERLIN), True) == \
             guessrangefstr('today tomorrow', LOCALE_BERLIN)
 
     @freeze_time('2016-9-19 16:34')
     def test_tomorrow(self):
         # XXX remove this funtionality, we shouldn't support this anyway
-        assert (dt.datetime(2016, 9, 19), dt.datetime(2016, 9, 21, 16), True) == \
+        assert (dt.datetime(2016, 9, 19, tzinfo=BERLIN), dt.datetime(2016, 9, 21, 16, tzinfo=BERLIN), True) == \
             guessrangefstr('today tomorrow 16:00', locale=LOCALE_BERLIN)
 
     @freeze_time('2016-9-19 13:34')
     def test_time_tomorrow(self):
-        assert (dt.datetime(2016, 9, 19, 16), dt.datetime(2016, 9, 19, 17), False) == \
+        assert (dt.datetime(2016, 9, 19, 16, tzinfo=BERLIN), dt.datetime(2016, 9, 19, 17, tzinfo=BERLIN), False) == \
             guessrangefstr('16:00', locale=LOCALE_BERLIN)
-        assert (dt.datetime(2016, 9, 19, 16), dt.datetime(2016, 9, 19, 17), False) == \
+        assert (dt.datetime(2016, 9, 19, 16, tzinfo=BERLIN), dt.datetime(2016, 9, 19, 17, tzinfo=BERLIN), False) == \
             guessrangefstr('16:00 17:00', locale=LOCALE_BERLIN)
 
     def test_start_and_end_date(self):
-        assert (dt.datetime(2016, 1, 1), dt.datetime(2017, 1, 2), True) == \
+        assert (dt.datetime(2016, 1, 1, tzinfo=BERLIN), dt.datetime(2017, 1, 2, tzinfo=BERLIN), True) == \
             guessrangefstr('1.1.2016 1.1.2017', locale=LOCALE_BERLIN)
 
     def test_start_and_no_end_date(self):
-        assert (dt.datetime(2016, 1, 1), dt.datetime(2016, 1, 2), True) == \
+        assert (dt.datetime(2016, 1, 1, tzinfo=BERLIN),  dt.datetime(2016, 1, 2, tzinfo=BERLIN), True) == \
             guessrangefstr('1.1.2016', locale=LOCALE_BERLIN)
 
     def test_start_and_end_date_time(self):
-        assert (dt.datetime(2016, 1, 1, 10), dt.datetime(2017, 1, 1, 22), False) == \
+        assert (dt.datetime(2016, 1, 1, 10, tzinfo=BERLIN), dt.datetime(2017, 1, 1, 22, tzinfo=BERLIN), False) == \
             guessrangefstr(
                 '1.1.2016 10:00 1.1.2017 22:00', locale=LOCALE_BERLIN)
 
     def test_start_and_eod(self):
-        start, end = dt.datetime(2016, 1, 1, 10), dt.datetime(2016, 1, 1, 23, 59, 59, 999999)
+        start, end = dt.datetime(2016, 1, 1, 10, tzinfo=BERLIN), dt.datetime(2016, 1, 1, 23, 59, 59, 999999, tzinfo=BERLIN)
         assert (start, end, False) == guessrangefstr('1.1.2016 10:00 eod', locale=LOCALE_BERLIN)
 
     def test_start_and_week(self):
-        assert (dt.datetime(2015, 12, 28), dt.datetime(2016, 1, 5), True) == \
+        assert (dt.datetime(2015, 12, 28, tzinfo=BERLIN), dt.datetime(2016, 1, 5, tzinfo=BERLIN), True) == \
             guessrangefstr('1.1.2016 week', locale=LOCALE_BERLIN)
 
     def test_start_and_delta_1d(self):
-        assert (dt.datetime(2016, 1, 1), dt.datetime(2016, 1, 2), True) == \
+        assert (dt.datetime(2016, 1, 1, tzinfo=BERLIN), dt.datetime(2016, 1, 2, tzinfo=BERLIN), True) == \
             guessrangefstr('1.1.2016 1d', locale=LOCALE_BERLIN)
 
     def test_start_and_delta_3d(self):
-        assert (dt.datetime(2016, 1, 1), dt.datetime(2016, 1, 4), True) == \
+        assert (dt.datetime(2016, 1, 1, tzinfo=BERLIN), dt.datetime(2016, 1, 4, tzinfo=BERLIN), True) == \
             guessrangefstr('1.1.2016 3d', locale=LOCALE_BERLIN)
 
     def test_start_dt_and_delta(self):
-        assert (dt.datetime(2016, 1, 1, 10), dt.datetime(2016, 1, 4, 10), False) == \
+        assert (dt.datetime(2016, 1, 1, 10, tzinfo=BERLIN), dt.datetime(2016, 1, 4, 10, tzinfo=BERLIN), False) == \
             guessrangefstr('1.1.2016 10:00 3d', locale=LOCALE_BERLIN)
 
     def test_start_allday_and_delta_datetime(self):
@@ -299,7 +342,7 @@ class TestGuessRangefstr:
 
     @freeze_time('20160216')
     def test_week(self):
-        assert (dt.datetime(2016, 2, 15), dt.datetime(2016, 2, 23), True) == \
+        assert (dt.datetime(2016, 2, 15, tzinfo=BERLIN), dt.datetime(2016, 2, 23, tzinfo=BERLIN), True) == \
             guessrangefstr('week', locale=LOCALE_BERLIN)
 
     def test_invalid(self):
@@ -327,8 +370,9 @@ class TestGuessRangefstr:
             'longdateformat': '%Y-%m-%d',
             'datetimeformat': '%Y-%m-%d %H:%M',
             'longdatetimeformat': '%Y-%m-%d %H:%M',
+            'local_timezone': LOCALE_BERLIN['local_timezone'],
         }
-        assert (dt.datetime(2017, 1, 1), dt.datetime(2017, 1, 2), True) == \
+        assert (dt.datetime(2017, 1, 1, tzinfo=BERLIN), dt.datetime(2017, 1, 2, tzinfo=BERLIN), True) == \
             guessrangefstr('2017-1-1 2017-1-1', locale=locale)
 
 
