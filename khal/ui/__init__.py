@@ -243,7 +243,7 @@ class EventListBox(urwid.ListBox):
             set_focus_date_callback=None,
             **kwargs) -> None:
         self._init: bool = True
-        self.parent: 'ClassicView' = parent
+        self.parent: ClassicView = parent
         self.delete_status = delete_status
         self.toggle_delete_instance = toggle_delete_instance
         self.toggle_delete_all = toggle_delete_all
