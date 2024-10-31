@@ -59,8 +59,8 @@ def split_ics(ics: str, random_uid: bool=False, default_timezone=None) -> list:
         # Standard Time' for 'Pacific/Auckland' in Olson format), we convert any
         # Windows format timezones to Olson.
         if item.name == 'VTIMEZONE':
-            if item['TZID'] in icalendar.windows_to_olson.WINDOWS_TO_OLSON:
-                key = icalendar.windows_to_olson.WINDOWS_TO_OLSON[item['TZID']]
+            if item['TZID'] in icalendar.timezone.windows_to_olson.WINDOWS_TO_OLSON:
+                key = icalendar.timezone.windows_to_olson.WINDOWS_TO_OLSON[item['TZID']]
             else:
                 key = item['TZID']
             tzs[key] = item
