@@ -7,6 +7,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.13.0
+======
+unreleased
+* UPDATED REQUIREMENT icalendar is now required >= 6.0.0
+
 0.12.0
 ======
 2025-04-14
