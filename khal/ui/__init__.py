@@ -754,7 +754,7 @@ class EventColumn(urwid.WidgetWrap):
         assert not self.editor
         if external_edit:
             self.pane.window.loop.stop()
-            ics = click.edit(event.raw)
+            ics = click.edit(event.raw, extension=".ics")
             self.pane.window.loop.start()
             if ics is None:
                 return
