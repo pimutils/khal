@@ -358,7 +358,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         try:
             start, end, allday = parse_datetime.guessrangefstr(
                 daterange, conf['locale'], adjust_reasonably=True)
-            
+
             echo(f"Start time: {start}")
             echo(f"End time: {end}")
 
