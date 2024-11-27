@@ -27,7 +27,7 @@ requires-python = ">=3.8,<3.13"
 dependencies = [
     "click>=3.2",
     "click_log>=0.2.0",
-    "icalendar>=4.0.3",
+    "icalendar>=6.0.0",
     "urwid>=2.6.15",
     "pyxdg",
     "pytz",
