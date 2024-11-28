@@ -7,6 +7,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+#########
+In controllers.py I modified the new_interactive() function to give the possibility
+of revising the date range, without having to start again, and to give a hint as
+to what was wrong with the given range. And after entering a valid date, we are
+given a reminder of the dates entered
+#########
 0.11.4
 ======
 not released yet
