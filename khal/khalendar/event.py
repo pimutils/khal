@@ -32,15 +32,14 @@ import icalendar.cal
 import icalendar.prop
 import pytz
 from click import style
-from pytz.tzinfo import StaticTzInfo
+from zoneinfo import ZoneInfo
 
 from ..custom_types import LocaleConfiguration
 from ..exceptions import FatalError
 from ..icalendar import cal_from_ics, delete_instance, invalid_timezone
 from ..parse_datetime import timedelta2str
 from ..plugins import FORMATTERS
-from ..utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
-from zoneinfo import ZoneInfo
+from ..utils import generate_random_uid, is_aware, to_unix_time
 
 logger = logging.getLogger('khal')
 
@@ -952,11 +951,11 @@ def create_timezone(
 
     # Handle timezones based on their type
     transitions = []
-    
+
     if isinstance(tz, ZoneInfo):
         # Handle ZoneInfo transitions manually since it doesn't have _transitions
         transitions = _get_zoneinfo_transitions(tz, first_date, last_date)
-        
+
     elif isinstance(tz, pytz.BaseTzInfo):
         # Use pytz's transitions
         transitions = tz._utc_transition_times  # Avoid using internal attributes directly.
@@ -969,7 +968,7 @@ def create_timezone(
             else icalendar.TimezoneStandard()
         )
         subcomp.add("DTSTART", start)
-        
+
         # Check if offset is a timedelta (this happens in some cases, like if the transition is not timezone-aware)
         if isinstance(offset, dt.timedelta):
             subcomp.add("TZOFFSETFROM", offset)
@@ -977,7 +976,7 @@ def create_timezone(
         elif isinstance(offset, pytz.tzinfo.DstTzInfo):
             subcomp.add("TZOFFSETFROM", offset.utcoffset)
             subcomp.add("TZOFFSETTO", offset.dst if offset.dst else offset.utcoffset)
-        
+
         subcomp.add("TZNAME", offset)
         timezone.add_component(subcomp)
 
@@ -1010,14 +1009,14 @@ def _get_zoneinfo_transitions(tz: ZoneInfo, first_date: dt.datetime, last_date: 
     # For example, you could manually simulate transitions based on historical knowledge
     # of the time zone, or use a library like `backports.zoneinfo` to fetch transitions.
     # But for simplicity, this is left as a stub for now.
-    
+
     # Here we simulate adding some transitions based on the ZoneInfo timezone.
     # You could insert actual logic here based on your needs.
-    
+
     # Example: simulate a "standard time" to "daylight saving time" transition
     start = first_date
     end = last_date
     offset = dt.timedelta(hours=1)  # Example offset
     transitions.append((start, end, offset))
-    
+
     return transitions
