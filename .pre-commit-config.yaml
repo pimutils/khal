@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
@@ -9,7 +9,7 @@ repos:
       - id: check-added-large-files
       - id: debug-statements
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.7.0
+    rev: v1.13.0
     hooks:
       - id: mypy
         additional_dependencies:
@@ -20,12 +20,12 @@ repos:
           - types-setuptools
           - types-python-dateutil
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.1.5'
+    rev: 'v0.8.1'
     hooks:
       - id: ruff
         args: ["--fix"]
   - repo: https://github.com/netromdk/vermin
-    rev: v1.5.2
+    rev: v1.6.0
     hooks:
       - id: vermin
         args: ['-t=3.8-', '--violations']
