@@ -370,12 +370,12 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         except DateTimeParseError as e:
             echo(f"Invalid datetime range: {e}"
                  f"\nexpects dates in the format: ")
-            example_start_datetimeformat = dt.datetime.now().strftime(conf['locale']['datetimeformat'])
-            example_start_dateformat = dt.datetime.now().strftime(conf['locale']['dateformat'])
-            example_start_timeformat = dt.datetime.now().strftime(conf['locale']['timeformat'])
-            echo(f"{example_start_datetimeformat}"
-                 f"\n{example_start_dateformat}"
-                 f"\n{example_start_timeformat}")
+            example_start_dtformat = dt.datetime.now().strftime(conf['locale']['datetimeformat'])
+            example_start_dformat = dt.datetime.now().strftime(conf['locale']['dateformat'])
+            example_start_tformat = dt.datetime.now().strftime(conf['locale']['timeformat'])
+            echo(f"{example_start_dtformat}"
+                 f"\n{example_start_dformat}"
+                 f"\n{example_start_tformat}")
 
     while True:
         tz = info.get('timezone') or conf['locale']['default_timezone']
