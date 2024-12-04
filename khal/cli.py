@@ -29,6 +29,7 @@ from shutil import get_terminal_size
 
 import click
 import click_log
+from .icalendar import extract_rrule_details
 
 from . import controllers, plugins
 from .cli_utils import (
@@ -61,6 +62,15 @@ week_option = click.option('--week', '-w', help='Include all events in one week.
 events_option = click.option('--events', default=None, type=int, help='How many events to include.')
 dates_arg = click.argument('dates', nargs=-1)
 
+#formater les événements
+def format_event_with_recurrence(event, format_str):
+    """
+    Format an event, replacing {repeat} or {repeat-details} with recurrence details.
+    """
+    if "{repeat}" in format_str or "{repeat-details}" in format_str:
+        recurrence = extract_rrule_details(event.raw)
+        format_str = format_str.replace("{repeat}", recurrence).replace("{repeat-details}", recurrence)
+    return format_str
 
 def time_args(f):
     return dates_arg(events_option(week_option(days_option(f))))
@@ -193,6 +203,13 @@ def klist(ctx, include_calendar, exclude_calendar,
             env={"calendars": ctx.obj['conf']['calendars']},
             json=json
         )
+        if event_column:
+            formatted_events = [
+                format_event_with_recurrence(event, format) for event in event_column
+            ]
+            click.echo('\n'.join(formatted_events))
+        else:
+            logger.debug('No events found')
         if event_column:
             click.echo('\n'.join(event_column))
         else:

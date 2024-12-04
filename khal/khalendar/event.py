@@ -39,7 +39,9 @@ from ..exceptions import FatalError
 from ..icalendar import cal_from_ics, delete_instance, invalid_timezone
 from ..parse_datetime import timedelta2str
 from ..plugins import FORMATTERS
-from ..utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
+from ..utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time   
+from icalendar import Event as ICalendarEvent
+from dateutil.rrule import rrulestr
 
 logger = logging.getLogger('khal')
 
@@ -57,7 +59,7 @@ class Event:
         icalendar standard would have the end date be one day later)
     """
     allday: bool = False
-
+    
     def __init__(self,
                  vevents: Dict[str, icalendar.Event],
                  locale: LocaleConfiguration,

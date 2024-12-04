@@ -326,16 +326,33 @@ def khal_list(
 def new_interactive(collection, calendar_name, conf, info, location=None,
                     categories=None, repeat=None, until=None, alarms=None,
                     format=None, json=None, env=None, url=None):
-    info: EventCreationTypes
-    try:
-        info = parse_datetime.eventinfofstr(
-            info, conf['locale'],
-            default_event_duration=conf['default']['default_event_duration'],
-            default_dayevent_duration=conf['default']['default_dayevent_duration'],
-            adjust_reasonably=True,
-        )
-    except DateTimeParseError:
+    # Vérifiez si info est une chaîne ou un dictionnaire, puis initialisez en conséquence
+    if isinstance(info, dict):
+        info_string = f"{info.get('summary', '')} {info.get('datetime_range', '')}"
+    elif isinstance(info, str):
+        info_string = info
+        info = {}  # Réinitialisez `info` en dictionnaire après conversion
+    else:
+        info_string = ""
         info = {}
+
+    while True:
+        try:
+            # Passez une chaîne correctement formatée à `eventinfofstr`
+            parsed_info = parse_datetime.eventinfofstr(
+                info_string.strip(),
+                conf['locale'],
+                default_event_duration=conf['default']['default_event_duration'],
+                default_dayevent_duration=conf['default']['default_dayevent_duration'],
+                adjust_reasonably=True,
+            )
+            info.update(parsed_info)  # Mettez à jour `info` avec les données parsées
+            break  # Sortir de la boucle si tout est valide
+        except DateTimeParseError as e:
+            echo(f"Error parsing information: {e}. Please correct the fields.")
+            summary = prompt('summary', default=info.get('summary', '')).strip()
+            datetime_range = prompt('datetime range', default=info.get('datetime_range', '')).strip()
+            info_string = f"{summary} {datetime_range}"
 
     while True:
         summary = info.get('summary')
@@ -344,7 +361,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         info['summary'] = prompt('summary', default=summary)
         if info['summary']:
             break
-        echo("a summary is required")
+        echo("A summary is required.")
 
     while True:
         range_string = None
@@ -353,14 +370,16 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
             end_string = info["dtend"].strftime(conf['locale']['datetimeformat'])
             range_string = start_string + ' ' + end_string
         daterange = prompt("datetime range", default=range_string)
-        start, end, allday = parse_datetime.guessrangefstr(
-            daterange, conf['locale'], adjust_reasonably=True)
-        info['dtstart'] = start
-        info['dtend'] = end
-        info['allday'] = allday
-        if info['dtstart'] and info['dtend']:
+        try:
+            start, end, allday = parse_datetime.guessrangefstr(
+                daterange, conf['locale'], adjust_reasonably=True
+            )
+            info['dtstart'] = start
+            info['dtend'] = end
+            info['allday'] = allday
             break
-        echo("invalid datetime range")
+        except ValueError:
+            echo("Invalid datetime range, please try again.")
 
     while True:
         tz = info.get('timezone') or conf['locale']['default_timezone']
@@ -370,9 +389,9 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
             info['timezone'] = tz
             break
         except pytz.UnknownTimeZoneError:
-            echo("unknown timezone")
+            echo("Unknown timezone, please enter a valid timezone.")
 
-    info['description'] = prompt("description (or 'None')", default=info.get('description'))
+    info['description'] = prompt("description (or 'None')", default=info.get('description', ''))
     if info['description'] == 'None':
         info['description'] = ''
 
@@ -394,7 +413,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         calendar_name=calendar_name,
         json=json,
     )
-    echo("event saved")
+    echo("Event saved.")
 
     term_width, _ = get_terminal_size()
     edit_event(event, collection, conf['locale'], width=term_width)
