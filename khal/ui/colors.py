@@ -107,3 +107,4 @@ light = [
 ]
 
 themes: Dict[str, List[Tuple[str, ...]]] = {'light': light, 'dark': dark}
+
