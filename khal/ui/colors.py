@@ -59,7 +59,7 @@ dark = [
 
     ('editbx', 'light gray', 'dark blue'),
     ('editcp', 'black', 'light gray', 'standout'),
-    ('popupbg', 'white', 'white', 'bold'),
+    ('popupbg', 'white', 'black', 'bold'),
     ('popupper', 'white', 'dark cyan'),
     ('caption', 'white', '', 'bold'),
 ]
@@ -107,4 +107,3 @@ light = [
 ]
 
 themes: Dict[str, List[Tuple[str, ...]]] = {'light': light, 'dark': dark}
-
