@@ -38,16 +38,6 @@ from .utils import generate_random_uid, localize_strip_tz, str2alarm, to_unix_ti
 logger = logging.getLogger('khal')
 
 
-def extract_rrule_details(vevent):
-    """
-    Extract recurrence rule (RRULE) details from an event.
-    Returns a string representation of the rule for display.
-    """
-    rrule = vevent.get('RRULE')
-    if not rrule:
-        return "No recurrence"
-    return rrule.to_ical().decode()
-
 def split_ics(ics: str, random_uid: bool=False, default_timezone=None) -> List:
     """split an ics string into several according to VEVENT's UIDs
 
