@@ -1,10 +1,5 @@
-import sys
-import os
-
-# Add the project root to PYTHONPATH
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
+#!/usr/bin/env python
 from khal.cli import main_khal
 
-if __name__ == "__main__":
-    main_khal()
+if _name_ == "_main_":
+    main_khal()
