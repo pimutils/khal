@@ -242,7 +242,7 @@ class CListBox(urwid.ListBox):
         self.on_press = walker.on_press
         self._marked: Optional[MarkType] = None
         self._pos_old: Optional[Tuple[int, int]] = None
-        self.body: 'CalendarWalker'
+        self.body: CalendarWalker
         super().__init__(walker)
 
     @property
