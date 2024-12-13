@@ -355,12 +355,15 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
 
         daterange = prompt("datetime range", default=range_string)
 
+        print(collection.get_calendars_on)
+        
         try:
             start, end, allday = parse_datetime.guessrangefstr(
                 daterange, conf['locale'], adjust_reasonably=True)
             
             echo(f"Start time: {start}")
             echo(f"End time: {end}")
+            echo(khal_list(collection, [daterange], conf=conf, env=env))
 
             info['dtstart'] = start
             info['dtend'] = end
