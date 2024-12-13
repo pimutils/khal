@@ -461,7 +461,12 @@ def search(ctx, format, json, search_string, include_calendar, exclude_calendar)
             ctx.obj['conf'],
             multi_calendar_select(ctx, include_calendar, exclude_calendar)
         )
-        events = sorted(collection.search(search_string))
+
+        terms = search_string.split()
+        events = [event for event in collection if all(term in event for term in terms)]
+
+        #events = sorted(collection.search(search_string))
+        events = sorted(events)
         event_column = []
         term_width, _ = get_terminal_size()
         now = dt.datetime.now()

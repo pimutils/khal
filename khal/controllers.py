@@ -352,15 +352,33 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
             start_string = info["dtstart"].strftime(conf['locale']['datetimeformat'])
             end_string = info["dtend"].strftime(conf['locale']['datetimeformat'])
             range_string = start_string + ' ' + end_string
+
         daterange = prompt("datetime range", default=range_string)
-        start, end, allday = parse_datetime.guessrangefstr(
-            daterange, conf['locale'], adjust_reasonably=True)
-        info['dtstart'] = start
-        info['dtend'] = end
-        info['allday'] = allday
-        if info['dtstart'] and info['dtend']:
+
+        print(collection.get_calendars_on)
+
+        try:
+            start, end, allday = parse_datetime.guessrangefstr(
+                daterange, conf['locale'], adjust_reasonably=True)
+
+            echo(f"Start time: {start}")
+            echo(f"End time: {end}")
+            echo(khal_list(collection, [daterange], conf=conf, env=env))
+
+            info['dtstart'] = start
+            info['dtend'] = end
+            info['allday'] = allday
             break
-        echo("invalid datetime range")
+
+        except DateTimeParseError as e:
+            echo(f"Invalid datetime range: {e}"
+                 f"\nexpects dates in the format: ")
+            example_start_dtformat = dt.datetime.now().strftime(conf['locale']['datetimeformat'])
+            example_start_dformat = dt.datetime.now().strftime(conf['locale']['dateformat'])
+            example_start_tformat = dt.datetime.now().strftime(conf['locale']['timeformat'])
+            echo(f"{example_start_dtformat}"
+                 f"\n{example_start_dformat}"
+                 f"\n{example_start_tformat}")
 
     while True:
         tz = info.get('timezone') or conf['locale']['default_timezone']
