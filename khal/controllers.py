@@ -356,7 +356,7 @@ def new_interactive(collection, calendar_name, conf, info, location=None,
         daterange = prompt("datetime range", default=range_string)
 
         print(collection.get_calendars_on)
-        
+
         try:
             start, end, allday = parse_datetime.guessrangefstr(
                 daterange, conf['locale'], adjust_reasonably=True)
