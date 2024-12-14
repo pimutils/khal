@@ -445,9 +445,9 @@ def printics(ctx, ics, format):
 @click.option('--format', '-f',
               help=('The format of the events.'))
 @click.option('--json', help=("Fields to output in json"), multiple=True)
-@click.argument('search_string')
+@click.argument('search_strings', nargs=-1)
 @click.pass_context
-def search(ctx, format, json, search_string, include_calendar, exclude_calendar):
+def search(ctx, format, json, search_strings, include_calendar, exclude_calendar):
     '''Search for events matching SEARCH_STRING.
 
     For recurring events, only the master event and different overwritten
@@ -461,7 +461,10 @@ def search(ctx, format, json, search_string, include_calendar, exclude_calendar)
             ctx.obj['conf'],
             multi_calendar_select(ctx, include_calendar, exclude_calendar)
         )
-        events = sorted(collection.search(search_string))
+        all_events = set()
+        for term in search_strings:
+            all_events.update(collection.search(term))
+        events = sorted(all_events)
         event_column = []
         term_width, _ = get_terminal_size()
         now = dt.datetime.now()
@@ -470,14 +473,18 @@ def search(ctx, format, json, search_string, include_calendar, exclude_calendar)
             formatter = human_formatter(format)
         else:
             formatter = json_formatter(json)
+        events_set = set()
         for event in events:
             desc = textwrap.wrap(formatter(
                 event.attributes(relative_to=now, env=env)), term_width)
-            event_column.extend(
-                [colored(d, event.color,
-                         bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
-                 for d in desc]
-            )
+            event_key = ' '.join(desc)
+            if event_key not in events_set:
+                events_set.add(event_key)
+                event_column.extend(
+                    [colored(d, event.color,
+                             bold_for_light_color=ctx.obj['conf']['view']['bold_for_light_color'])
+                     for d in desc]
+                )
         if event_column:
             click.echo('\n'.join(event_column))
         else:
