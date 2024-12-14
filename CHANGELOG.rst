@@ -7,6 +7,29 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+####################################
+Added Multi-Keyword Search Capability
+
+Support for multi-keyword search:
+The search in command cli.py has been updated to accept a list of search terms 
+(SEARCH_STRINGS) instead of a single term (SEARCH_STRING). This allows users 
+to search for events matching one or more specified keywords.
+
+Key Changes:
+
+Replaced search_string argument:
+The single search_string argument has been replaced with search_strings, 
+enabling variable-length keyword input (nargs=-1).
+Each search term is processed in a loop, and matching results are added to a 
+unified set of events.
+
+Consolidation of search results:
+Events matching each keyword are combined using a set (all_events) to eliminate 
+duplicates.
+A new event_set is introduced to ensure that events with identical descriptions 
+are displayed only once.
+The final results are sorted and displayed.
+
 0.11.4
 ======
 not released yet

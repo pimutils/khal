@@ -1018,3 +1018,29 @@ def test_list_now(runner, tmpdir):
 
     result = runner.invoke(main_khal, ['list', 'now'])
     assert not result.exception
+
+def test_multi_keyword_search(runner):
+    """
+    Test the multi-keyword search functionality with event deduplication.
+    """
+    runner = runner()
+    
+    result = runner.invoke(main_khal, "new 14.12.2024 10:00-11:00 meeting conference".split())
+    assert not result.exception
+    result = runner.invoke(main_khal, "new 14.12.2024 12:00-13:00 birthday".split())
+    assert not result.exception
+    result = runner.invoke(main_khal, "new 14.12.2024 10:00-11:00 duplicate meeting".split())
+    assert not result.exception
+
+    search_args = ['search', 'meeting', 'conference']
+    result = runner.invoke(main_khal, search_args)
+
+    expected_output = [
+        "14.12.2024 10:00-11:00: meeting conference",
+        "14.12.2024 10:00-11:00 duplicate meeting"
+    ]
+    output_lines = result.output.strip().split('\n')
+    assert sorted(output_lines) == sorted(expected_output), (
+        f"Expected: {expected_output}, Got: {output_lines}"
+    )
+    assert not result.exception
