@@ -570,7 +570,7 @@ def at(ctx, datetime, notstarted, format, day_format, json, include_calendar, ex
 def configure(ctx, config):
     """Helper for initial configuration of khal."""
     config_path = config or ctx.obj.get('config')
-   
+
 
     from . import configwizard
     try:

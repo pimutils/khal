@@ -20,20 +20,21 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os
 import datetime as dt
 import json
 import logging
+import os
 from functools import partial
 from itertools import zip_longest
 from os import environ, makedirs
-from os.path import dirname, exists, expanduser, expandvars, isdir, join, normpath
+from os.path import dirname, exists, expanduser, expandvars, join, normpath
 from subprocess import call
+
 import xdg
 from click import Choice, UsageError, confirm, prompt
 
 from .exceptions import FatalError
-from .settings import find_configuration_file, utils
+from .settings import utils
 
 logger = logging.getLogger('khal')
 
@@ -369,7 +370,6 @@ def create_config(vdirs, dateformat, timeformat, default_calendar=None):
     return config
 
 
-import errno
 
 def configwizard(config_path=None):
     """Interactive configuration wizard."""
@@ -401,4 +401,3 @@ def configwizard(config_path=None):
     with open(config_path, 'w') as config_file:
         config_file.write(config)
     print(f"Successfully wrote configuration to {compressuser(config_path)}")
-
