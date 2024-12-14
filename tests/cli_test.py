@@ -1024,7 +1024,7 @@ def test_multi_keyword_search(runner):
     Test the multi-keyword search functionality with event deduplication.
     """
     runner = runner()
-    
+
     result = runner.invoke(main_khal, "new 14.12.2024 10:00-11:00 meeting conference".split())
     assert not result.exception
     result = runner.invoke(main_khal, "new 14.12.2024 12:00-13:00 birthday".split())
