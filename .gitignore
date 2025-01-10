@@ -15,6 +15,7 @@ doc/source/configspec.rst
 .mypy_cache/
 .env
 .venv
+.venv*
 env/
 venv/
 .hypothesis/

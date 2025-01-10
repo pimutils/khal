@@ -130,11 +130,12 @@ class DateHeader(SelectableText):
 
         weekday = day.strftime('%A')
         daystr = day.strftime(dtformat)
-        if day == dt.date.today():
+        today = dt.datetime.now(self._conf['locale']['local_timezone']).date()
+        if day == today:
             return f'Today ({weekday}, {daystr})'
-        elif day == dt.date.today() + dt.timedelta(days=1):
+        elif day == today + dt.timedelta(days=1):
             return f'Tomorrow ({weekday}, {daystr})'
-        elif day == dt.date.today() - dt.timedelta(days=1):
+        elif day == today - dt.timedelta(days=1):
             return f'Yesterday ({weekday}, {daystr})'
 
         approx_delta = utils.relative_timedelta_str(day)
