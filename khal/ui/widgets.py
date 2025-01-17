@@ -562,7 +562,7 @@ class AlarmsEditor(urwid.WidgetWrap):
         """clear the alarm list"""
         self.pile.contents.clear()
 
-    def add_alarm(self, button, timedelta: Optional[dt.timedelta]):
+    def add_alarm(self, button, timedelta: Optional[dt.timedelta] = None):
         if timedelta is None:
             timedelta = dt.timedelta(0)
         self.pile.contents.insert(
