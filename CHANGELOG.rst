@@ -33,6 +33,7 @@ not released yet
 * NEW support for color theme, command, and formatter plugins
 * FIX an issue where ikhal would forget changes to time or date fields if you
   left the field with page up/down or meta+enter
+* NEW support python 3.13
 
 0.11.3
 ======
