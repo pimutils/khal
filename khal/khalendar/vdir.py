@@ -3,13 +3,13 @@ Based off https://github.com/pimutils/python-vdir, which is itself based off
 vdirsyncer.
 '''
 
+import contextlib
 import errno
 import os
+import tempfile
 import uuid
 from hashlib import sha1
 from typing import IO, Callable, Dict, Iterable, Optional, Protocol, Tuple, Type
-
-from atomicwrites import atomic_write
 
 from ..custom_types import PathLike, SupportsRaw
 
@@ -141,6 +141,27 @@ class Item:
         return uid or None
 
 
+@contextlib.contextmanager
+def atomic_write(dest, overwrite=False):
+    fd, src = tempfile.mkstemp(prefix=os.path.basename(dest), dir=os.path.dirname(dest))
+    file = os.fdopen(fd, mode='wb')
+
+    try:
+        yield file
+    except Exception:
+        os.unlink(src)
+        raise
+    else:
+        file.flush()
+        file.close()
+
+        if overwrite:
+            os.rename(src, dest)
+        else:
+            os.link(src, dest)
+            os.unlink(src)
+
+
 class VdirBase:
     item_class = Item
     default_mode = 0o750
@@ -229,7 +250,7 @@ class VdirBase:
         fpath = self._get_filepath(href)
         try:
             f: IO
-            with atomic_write(fpath, mode='wb', overwrite=False) as f:
+            with atomic_write(fpath, overwrite=False) as f:
                 f.write(item.raw.encode(self.encoding))
                 return fpath, get_etag_from_file(f)
         except OSError as e:
@@ -249,7 +270,7 @@ class VdirBase:
         if not isinstance(item.raw, str):
             raise TypeError('item.raw must be a unicode string.')
 
-        with atomic_write(fpath, mode='wb', overwrite=True) as f:
+        with atomic_write(fpath, overwrite=True) as f:
             f.write(item.raw.encode(self.encoding))
             etag = get_etag_from_file(f)
 
@@ -279,7 +300,7 @@ class VdirBase:
         value = value or ''
         assert isinstance(value, str)
         fpath = os.path.join(self.path, key)
-        with atomic_write(fpath, mode='wb', overwrite=True) as f:
+        with atomic_write(fpath, overwrite=True) as f:
             f.write(value.encode(self.encoding))
 
 

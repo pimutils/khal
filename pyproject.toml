@@ -34,7 +34,6 @@ dependencies = [
     "pytz",
     "python-dateutil",
     "configobj",
-    "atomicwrites>=0.1.7",
     "tzlocal>=1.0",
 ]
 [project.optional-dependencies]
