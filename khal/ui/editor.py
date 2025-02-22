@@ -430,12 +430,10 @@ class EventEditor(urwid.WidgetWrap):
         self.url = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'URL:         '), edit_text=self.url), 'edit', 'edit focus',
         )
-        self.organizer = urwid.AttrMap(
-            ExtendedEdit(
-                caption=("caption", "Organizer:   "), edit_text=self.organizer
-            ),
-            "edit",
-            "edit focus",
+        if len(self.organizer) == 0:
+            default_organizer = self._conf["default"]["default_organizer"]
+            if default_organizer:
+                self.organizer = default_organizer
         self.organizer = urwid.AttrMap(ExtendedEdit(
             caption=("caption", "Organizer:   "), edit_text=self.organizer), "edit", "edit focus",
         )
