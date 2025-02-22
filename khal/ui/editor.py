@@ -431,9 +431,16 @@ class EventEditor(urwid.WidgetWrap):
             caption=('caption', 'URL:         '), edit_text=self.url), 'edit', 'edit focus',
         )
         if len(self.organizer) == 0:
-            default_organizer = self._conf["default"]["default_organizer"]
-            if default_organizer:
-                self.organizer = default_organizer
+            default_calendar = self.event.calendar
+            account_organizer = self._conf["calendars"][default_calendar].get(
+                "organizer", default=None
+            )
+            if account_organizer:
+                self.organizer = account_organizer
+            else:
+                default_organizer = self._conf["default"]["default_organizer"]
+                if default_organizer:
+                    self.organizer = default_organizer
         self.organizer = urwid.AttrMap(ExtendedEdit(
             caption=("caption", "Organizer:   "), edit_text=self.organizer), "edit", "edit focus",
         )

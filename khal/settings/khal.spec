@@ -76,6 +76,10 @@ type = option('calendar', 'birthdays', 'discover', default='calendar')
 # belongs to the user.
 addresses = force_list(default='')
 
+# The organizer email to use when inviting attendees.
+# 'MAILTO:' is automatically prepended to the email address.
+organizer = string(default=None)
+
 [sqlite]
 # khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
 path = expand_db_path(default=None)
