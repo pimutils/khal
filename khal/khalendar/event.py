@@ -355,6 +355,11 @@ class Event:
         else:
             return email
 
+    def update_organizer(self, organizer: str) -> None:
+        if len(self.attendees) > 0:
+            email = organizer.lstrip("MAILTO:").lower()
+            self._vevents[self.ref]['ORGANIZER'] = f"MAILTO:{email}"
+
     @property
     def url(self) -> str:
         if 'URL' not in self._vevents[self.ref]:
