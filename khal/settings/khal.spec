@@ -197,6 +197,10 @@ quit = force_list(default=list('q', 'Q'))
 # new event). If this is not set, such operations require an explicit value.
 default_calendar = string(default=None)
 
+# The organizer email to use when inviting attendees.
+# 'MAILTO:' is automatically prepended to the email address.
+default_organizer = string(default=None)
+
 # By default, khal displays only dates with events in `list` or `calendar`
 # view.  Setting this to *True* will show all days, even when there is no event
 # scheduled on that day.
