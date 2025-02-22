@@ -43,16 +43,19 @@ class TestSettings:
                 'home': {
                     'path': os.path.expanduser('~/.calendars/home/'), 'readonly': False,
                     'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
+                    'organizer': None,
                 },
                 'work': {
                     'path': os.path.expanduser('~/.calendars/work/'), 'readonly': False,
                     'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
+                    'organizer': None,
                 },
             },
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': LOCALE_BERLIN,
             'default': {
                 'default_calendar': None,
+                'default_organizer': None,
                 'print_new': 'False',
                 'highlight_event_days': False,
                 'timedelta': dt.timedelta(days=2),
@@ -85,10 +88,11 @@ class TestSettings:
             'calendars': {
                 'home': {'path': os.path.expanduser('~/.calendars/home/'),
                          'color': 'dark green', 'readonly': False, 'priority': 20,
-                         'type': 'calendar', 'addresses': ['']},
+                         'type': 'calendar', 'addresses': [''], 'organizer': None},
                 'work': {'path': os.path.expanduser('~/.calendars/work/'),
                          'readonly': True, 'color': None, 'priority': 10,
-                         'type': 'calendar', 'addresses': ['user@example.com']}},
+                         'type': 'calendar', 'addresses': ['user@example.com'],
+                         'organizer': None}},
             'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
             'locale': {
                 'local_timezone': get_localzone(),
@@ -104,6 +108,7 @@ class TestSettings:
             },
             'default': {
                 'default_calendar': None,
+                'default_organizer': None,
                 'print_new': 'False',
                 'highlight_event_days': False,
                 'timedelta': dt.timedelta(days=2),
