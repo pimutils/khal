@@ -7,6 +7,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.11.5
+======
+unreleased
+
+* FIX Don't install tests module.
+
 0.11.4
 ======
 2025-04-10
