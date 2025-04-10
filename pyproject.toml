@@ -7,7 +7,7 @@ authors = [
   {name = "khal contributors", email = "khal@lostpackets.de"},
 ]
 license = "MIT"
-license-files = ["LICENSE"]
+license-files = ["doc/source/license.rst"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Environment :: Console :: Curses",
