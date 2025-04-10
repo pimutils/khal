@@ -18,17 +18,17 @@ not released yet
   an event
 * NEW properties of ikhal themes (dark and light) can now be overriden from the
   config file (via the new [palette] section, check the documenation)
-* NEW timedelta strings can now have a leading `+`, e.g. `+1d`
-* NEW Add `--json` option to output event data as JSON objects
+* NEW timedelta strings can now have a leading ``+``, e.g. ``+1d``
+* NEW Add ``--json`` option to output event data as JSON objects
 * NEW Add default alarms configuration option
-* FIX defaults for `default_event_duration` and `default_dayevent_duration`
-  where mixed up, `default_dayevent_duration` is the default for all-day events
-* NEW event format option `status-symbol` which represents the status of an
-  event with a symbol (e.g. `✓` for confirmed, `✗` for cancelled, `?` for
+* FIX defaults for ``default_event_duration`` and ``default_dayevent_duration``
+  where mixed up, ``default_dayevent_duration`` is the default for all-day events
+* NEW event format option ``status-symbol`` which represents the status of an
+  event with a symbol (e.g. ``✓`` for confirmed, ``✗`` for cancelled, ``?`` for
   tentative)
-* NEW event format option `partstat-symbol` which represents the participation
-  status of an event with a symbol (e.g. `✓` for accepted, `✗` for declined,
-  `?` for tentative); partication status is shown for the email addresses
+* NEW event format option ``partstat-symbol`` which represents the participation
+  status of an event with a symbol (e.g. ``✓`` for accepted, ``✗`` for declined,
+  ``?`` for tentative); partication status is shown for the email addresses
   configured for the event's calendar
 * NEW support for color theme, command, and formatter plugins
 * FIX an issue where ikhal would forget changes to time or date fields if you
