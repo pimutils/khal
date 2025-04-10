@@ -34,6 +34,10 @@ not released yet
 * FIX an issue where ikhal would forget changes to time or date fields if you
   left the field with page up/down or meta+enter
 * NEW support python 3.13
+* CHANGE various UI improvments to ikhal.
+* FIX Deleting multiple of instances of a recurring event in ikhal
+* NEW Add ``enable_mouse`` configuration option.
+* CHANGE the ``atomicwrites`` library is no longer required.
 
 0.11.3
 ======
