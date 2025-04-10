@@ -6,7 +6,8 @@ readme = "README.rst"
 authors = [
   {name = "khal contributors", email = "khal@lostpackets.de"},
 ]
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Environment :: Console :: Curses",
