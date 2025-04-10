@@ -9,7 +9,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.11.4
 ======
-not released yet
+2025-04-10
 
 * UPDATED REQUIREMENT urwid is now required >= 2.6.15
 * NEW REQUIREMENT for tests on python >= 3.12: pkg_resources
