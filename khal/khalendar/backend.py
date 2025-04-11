@@ -26,9 +26,10 @@ import contextlib
 import datetime as dt
 import logging
 import sqlite3
+from collections.abc import Iterable, Iterator
 from enum import IntEnum
 from os import makedirs, path
-from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import icalendar
 import icalendar.cal
@@ -78,7 +79,7 @@ class SQLiteDb:
                  locale: LocaleConfiguration,
                  ) -> None:
         assert db_path is not None
-        self.calendars: List[str] = list(calendars)
+        self.calendars: list[str] = list(calendars)
         self.db_path = path.expanduser(db_path)
         self._create_dbdir()
         self.locale = locale
@@ -189,7 +190,7 @@ class SQLiteDb:
                 stuple = (cal, '')
                 self.sql_ex(sql_s, stuple)
 
-    def sql_ex(self, statement: str, stuple: tuple) -> List:
+    def sql_ex(self, statement: str, stuple: tuple) -> list:
         """wrapper for sql statements, does a "fetchall" """
         self.cursor.execute(statement, stuple)
         result = self.cursor.fetchall()
@@ -459,7 +460,7 @@ class SQLiteDb:
         sql_s = 'DELETE FROM events WHERE href LIKE ? AND calendar = ?;'
         self.sql_ex(sql_s, (href, calendar))
 
-    def list(self, calendar: str) -> List[Tuple[str, str]]:
+    def list(self, calendar: str) -> list[tuple[str, str]]:
         """ list all events in `calendar`
 
         used for testing
@@ -574,7 +575,7 @@ class SQLiteDb:
         item, etag = self.sql_ex(sql_s, (href, calendar))[0]
         return item
 
-    def get_with_etag(self, href: str, calendar: str) -> Tuple[str, str]:
+    def get_with_etag(self, href: str, calendar: str) -> tuple[str, str]:
         """returns the ical string and its etag matching href and calendar"""
         assert calendar is not None
         sql_s = 'SELECT item, etag FROM events WHERE href = ? AND calendar = ?;'
@@ -582,7 +583,7 @@ class SQLiteDb:
         return item, etag
 
     def search(self, search_string: str) \
-            -> Iterable[Tuple[str, str, dt.date, dt.date, str, str, str]]:
+            -> Iterable[tuple[str, str, dt.date, dt.date, str, str, str]]:
         """search for events matching `search_string`"""
         sql_s = (
             'SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar '
@@ -655,7 +656,7 @@ def check_for_errors(component: icalendar.cal.Component, calendar: str, href: st
         logger.error('This might lead to this event being shown wrongly or not at all.')
 
 
-def calc_shift_deltas(vevent: icalendar.Event) -> Tuple[dt.timedelta, dt.timedelta]:
+def calc_shift_deltas(vevent: icalendar.Event) -> tuple[dt.timedelta, dt.timedelta]:
     """calculate an event's duration and by how much its start time has shifted
     versus its recurrence-id time
 

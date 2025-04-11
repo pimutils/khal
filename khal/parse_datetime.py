@@ -27,7 +27,7 @@ import logging
 import re
 from calendar import isleap
 from time import strptime
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 import pytz
 
@@ -38,7 +38,7 @@ from .custom_types import LocaleConfiguration, RRuleMapType
 logger = logging.getLogger('khal')
 
 
-def timefstr(dtime_list: List[str], timeformat: str) -> dt.datetime:
+def timefstr(dtime_list: list[str], timeformat: str) -> dt.datetime:
     """converts the first item of a list (a time as a string) to a datetimeobject
 
     where the date is today and the time is given by a string
@@ -55,7 +55,7 @@ def timefstr(dtime_list: List[str], timeformat: str) -> dt.datetime:
 
 
 def datetimefstr(
-    dtime_list: List[str],
+    dtime_list: list[str],
     dateformat: str,
     default_day: Optional[dt.date]=None,
     infer_year: bool=True,
@@ -160,7 +160,7 @@ def calc_day(dayname: str) -> dt.datetime:
     return day
 
 
-def datefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: bool) -> dt.datetime:
+def datefstr_weekday(dtime_list: list[str], timeformat: str, infer_year: bool) -> dt.datetime:
     """interprets first element of a list as a relative date and removes that
     element
 
@@ -176,7 +176,7 @@ def datefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: bool) -
     return day
 
 
-def datetimefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: bool) -> dt.datetime:
+def datetimefstr_weekday(dtime_list: list[str], timeformat: str, infer_year: bool) -> dt.datetime:
     """
     :param infer_year: only here for compat reasons (having the same function signature)
     """
@@ -191,11 +191,11 @@ def datetimefstr_weekday(dtime_list: List[str], timeformat: str, infer_year: boo
 
 
 def guessdatetimefstr(
-    dtime_list: List[str],
+    dtime_list: list[str],
     locale: LocaleConfiguration,
     default_day: Optional[dt.date]=None,
     in_future=True,
-) -> Tuple[dt.datetime, bool]:
+) -> tuple[dt.datetime, bool]:
     """
     :param in_future: if set, shortdate(time) events will be set in the future
     """
@@ -203,7 +203,7 @@ def guessdatetimefstr(
     day = default_day or dt.datetime.now().date()
     # TODO rename in guessdatetimefstrLIST or something saner altogether
 
-    def timefstr_day(dtime_list: List[str], timeformat: str, infer_year: bool) -> dt.datetime:
+    def timefstr_day(dtime_list: list[str], timeformat: str, infer_year: bool) -> dt.datetime:
         if locale['timeformat'] == '%H:%M' and dtime_list[0] == '24:00':
             a_date = dt.datetime.combine(day, dt.time(0))
             dtime_list.pop(0)
@@ -212,17 +212,17 @@ def guessdatetimefstr(
             a_date = dt.datetime(*(day.timetuple()[:3] + a_date.timetuple()[3:5]))
         return a_date
 
-    def datetimefwords(dtime_list: List[str], _: str, infer_year: bool) -> dt.datetime:
+    def datetimefwords(dtime_list: list[str], _: str, infer_year: bool) -> dt.datetime:
         if len(dtime_list) > 0 and dtime_list[0].lower() == 'now':
             dtime_list.pop(0)
             return dt.datetime.now()
         raise ValueError
 
-    def datefstr_year(dtime_list: List[str], dtformat: str, infer_year: bool) -> dt.datetime:
+    def datefstr_year(dtime_list: list[str], dtformat: str, infer_year: bool) -> dt.datetime:
         return datetimefstr(dtime_list, dtformat, day, infer_year, in_future)
 
     dtstart = None
-    fun: Callable[[List[str], str, bool], dt.datetime]
+    fun: Callable[[list[str], str, bool], dt.datetime]
     dtformat: str
     all_day: bool
     infer_year: bool
@@ -321,12 +321,12 @@ def guesstimedeltafstr(delta_string: str) -> dt.timedelta:
     return res
 
 
-def guessrangefstr(daterange: Union[str, List[str]],
+def guessrangefstr(daterange: Union[str, list[str]],
                    locale: LocaleConfiguration,
                    default_timedelta_date: dt.timedelta=dt.timedelta(days=1),
                    default_timedelta_datetime: dt.timedelta=dt.timedelta(hours=1),
                    adjust_reasonably: bool=False,
-                   ) -> Tuple[dt.datetime, dt.datetime, bool]:
+                   ) -> tuple[dt.datetime, dt.datetime, bool]:
     """parses a range string
 
     :param daterange: date1 [date2 | timedelta]
@@ -446,7 +446,7 @@ def eventinfofstr(info_string: str,
                   default_event_duration: dt.timedelta,
                   default_dayevent_duration: dt.timedelta,
                   adjust_reasonably: bool=False,
-                  ) -> Dict[str, Any]:
+                  ) -> dict[str, Any]:
     """parses a string of the form START [END | DELTA] [TIMEZONE] [SUMMARY] [::
     DESCRIPTION] into a dictionary with keys: dtstart, dtend, timezone, allday,
     summary, description
@@ -499,7 +499,7 @@ def eventinfofstr(info_string: str,
         start = start.date()
         end = end.date()
 
-    info: Dict[str, Any] = {}
+    info: dict[str, Any] = {}
     info["dtstart"] = start
     info["dtend"] = end
     info["summary"] = summary if summary else None

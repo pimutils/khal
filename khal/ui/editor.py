@@ -20,7 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import datetime as dt
-from typing import TYPE_CHECKING, Callable, Dict, List, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, Literal, Optional
 
 import urwid
 
@@ -114,7 +114,7 @@ class DateEdit(urwid.WidgetWrap):
         weeknumbers: Literal['left', 'right', False]=False,
         firstweekday: int=0,
         monthdisplay: Literal['firstday', 'firstfullweek']='firstday',
-        keybindings: Optional[Dict[str, List[str]]] = None,
+        keybindings: Optional[dict[str, list[str]]] = None,
     ) -> None:
         datewidth = len(startdt.strftime(dateformat))
         self._dateformat = dateformat
@@ -395,7 +395,7 @@ class EventEditor(urwid.WidgetWrap):
 
         divider = urwid.Divider(' ')
 
-        def decorate_choice(c) -> Tuple[str, str]:
+        def decorate_choice(c) -> tuple[str, str]:
             return ('calendar ' + c['name'] + ' popup', c['name'])
 
         self.calendar_chooser= CAttrMap(Choice(
@@ -602,7 +602,7 @@ class EventEditor(urwid.WidgetWrap):
         self._abort_confirmed = False
         self.pane.window.backtrack()
 
-    def keypress(self, size: Tuple[int], key: str) -> Optional[str]:
+    def keypress(self, size: tuple[int], key: str) -> Optional[str]:
         if key in ['esc'] and self.changed and not self._abort_confirmed:
             self.pane.window.alert(
                 ('light red', 'Unsaved changes! Hit ESC again to discard.'))

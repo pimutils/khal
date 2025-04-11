@@ -26,7 +26,7 @@ if they are large, into their own files
 """
 import datetime as dt
 import re
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import urwid
 
@@ -77,7 +77,7 @@ def goto_end_of_line(text):
 class ExtendedEdit(urwid.Edit):
     """A text editing widget supporting some more editing commands"""
 
-    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
+    def keypress(self, size: tuple[int], key: Optional[str]) -> Optional[str]:
         if key == 'ctrl w':
             self._delete_word()
         elif key == 'ctrl u':
@@ -202,7 +202,7 @@ class TimeWidget(DateTimeWidget):
 
 class Choice(urwid.PopUpLauncher):
     def __init__(
-        self, choices: List[str], active: str,
+        self, choices: list[str], active: str,
         decorate_func=None, overlay_width: int=32, callback=lambda: None,
     ) -> None:
         self.choices = choices
@@ -516,7 +516,7 @@ class AlarmsEditor(urwid.WidgetWrap):
 
     class AlarmEditor(urwid.WidgetWrap):
 
-        def __init__(self, alarm: Tuple[dt.timedelta, str], delete_handler) -> None:
+        def __init__(self, alarm: tuple[dt.timedelta, str], delete_handler) -> None:
             duration, description = alarm
             if duration.total_seconds() > 0:
                 direction = 'after'

@@ -25,7 +25,7 @@ import datetime as dt
 import logging
 from collections import defaultdict
 from hashlib import sha256
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import dateutil.rrule
 import icalendar
@@ -38,7 +38,7 @@ from .utils import generate_random_uid, localize_strip_tz, str2alarm, to_unix_ti
 logger = logging.getLogger('khal')
 
 
-def split_ics(ics: str, random_uid: bool=False, default_timezone=None) -> List:
+def split_ics(ics: str, random_uid: bool=False, default_timezone=None) -> list:
     """split an ics string into several according to VEVENT's UIDs
 
     and sort the right VTIMEZONEs accordingly
@@ -94,7 +94,7 @@ def new_vevent(locale,
                allday: bool=False,
                description: Optional[str]=None,
                location: Optional[str]=None,
-               categories: Optional[Union[List[str], str]]=None,
+               categories: Optional[Union[list[str], str]]=None,
                repeat: Optional[str]=None,
                until=None,
                alarms: Optional[str]=None,
@@ -145,7 +145,7 @@ def new_vevent(locale,
 
 
 def ics_from_list(
-    events: List[icalendar.Event],
+    events: list[icalendar.Event],
     tzs,
     random_uid: bool=False,
     default_timezone=None
@@ -213,7 +213,7 @@ def ics_from_list(
 def expand(
     vevent: icalendar.Event,
     href: str='',
-) -> Optional[List[Tuple[dt.datetime, dt.datetime]]]:
+) -> Optional[list[tuple[dt.datetime, dt.datetime]]]:
     """
     Constructs a list of start and end dates for all recurring instances of the
     event defined in vevent.
@@ -510,7 +510,7 @@ def delete_instance(vevent: icalendar.Event, instance: dt.datetime) -> None:
             vevent.add('RDATE', rdates)
 
 
-def sort_key(vevent: icalendar.Event) -> Tuple[str, float]:
+def sort_key(vevent: icalendar.Event) -> tuple[str, float]:
     """helper function to determine order of VEVENTS
     so that recurrence-id events come after the corresponding rrule event, etc
     :param vevent: icalendar.Event

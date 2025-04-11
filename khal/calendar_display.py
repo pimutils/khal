@@ -22,7 +22,7 @@
 import calendar
 import datetime as dt
 from locale import LC_ALL, LC_TIME, getlocale, setlocale
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from click import style
 
@@ -60,10 +60,10 @@ def get_calendar_color(calendar: str, default_color: str, collection: CalendarCo
 
 
 def get_color_list(
-    calendars: List[str],
+    calendars: list[str],
     default_color: str,
     collection: CalendarCollection
-) -> List[str]:
+) -> list[str]:
     """Get the list of possible colors for the day, taking into account priority"""
     dcolors = [
         (
@@ -81,7 +81,7 @@ def get_color_list(
 
 def str_highlight_day(
     day: dt.date,
-    calendars: List[str],
+    calendars: list[str],
     hmethod: Optional[str],
     default_color: str,
     multiple: str,
@@ -120,7 +120,7 @@ def str_highlight_day(
 
 
 def str_week(
-    week: List[dt.date],
+    week: list[dt.date],
     today: dt.date,
     collection: Optional[CalendarCollection]=None,
     hmethod: Optional[str]=None,
@@ -181,7 +181,7 @@ def vertical_month(month: Optional[int]=None,
                    highlight_event_days: bool=False,
                    locale=None,
                    bold_for_light_color: bool=True,
-                   ) -> List[str]:
+                   ) -> list[str]:
     """
     returns a list() of str() of weeks for a vertical arranged calendar
 

@@ -34,7 +34,7 @@ try:
 except ModuleNotFoundError:
     from validate import Validator
 
-from typing import Callable, List, Optional
+from typing import Callable, Optional
 
 from .exceptions import CannotParseConfigFileError, InvalidSettingsError, NoConfigFile
 from .utils import (
@@ -152,7 +152,7 @@ def get_config(
     return user_config
 
 
-def sectionize(sections: List[str], depth: int=1) -> str:
+def sectionize(sections: list[str], depth: int=1) -> str:
     """converts list of string into [list][[of]][[[strings]]]"""
     this_part = depth * '[' + sections[0] + depth * ']'
     if len(sections) > 1:

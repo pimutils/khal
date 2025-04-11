@@ -25,8 +25,9 @@ import glob
 import logging
 import os
 import pathlib
+from collections.abc import Iterable
 from os.path import expanduser, expandvars, join
-from typing import Callable, Iterable, Literal, Optional, Union
+from typing import Callable, Literal, Optional, Union
 
 import pytz
 import xdg

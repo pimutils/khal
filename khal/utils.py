@@ -28,8 +28,9 @@ import random
 import re
 import string
 from calendar import month_abbr, timegm
+from collections.abc import Iterator
 from textwrap import wrap
-from typing import Iterator, List, Optional, Tuple
+from typing import Optional
 
 import icalendar
 import pytz
@@ -58,7 +59,7 @@ ansi_sgr = re.compile(r'\x1b\['
                       'm')
 
 
-def find_last_reset(string: str) -> Tuple[int, int, str]:
+def find_last_reset(string: str) -> tuple[int, int, str]:
     for match in re.finditer(ansi_reset, string):  # noqa B007: this is actually used below.
         pass
     try:
@@ -67,7 +68,7 @@ def find_last_reset(string: str) -> Tuple[int, int, str]:
         return -2, -1, ''
 
 
-def find_last_sgr(string: str) -> Tuple[int, int, str]:
+def find_last_sgr(string: str) -> tuple[int, int, str]:
     for match in re.finditer(ansi_sgr, string):  # noqa B007: this is actually used below.
         pass
     try:
@@ -85,7 +86,7 @@ def find_unmatched_sgr(string: str) -> Optional[str]:
         return None
 
 
-def color_wrap(text: str, width: int = 70) -> List[str]:
+def color_wrap(text: str, width: int = 70) -> list[str]:
     """A variant of wrap that takes SGR codes (somewhat) into account.
 
     This doesn't actually adjust the length, but makes sure that
@@ -103,7 +104,7 @@ def color_wrap(text: str, width: int = 70) -> List[str]:
     return lines
 
 
-def get_weekday_occurrence(day: dt.date) -> Tuple[int, int]:
+def get_weekday_occurrence(day: dt.date) -> tuple[int, int]:
     """Calculate how often this weekday has already occurred in a given month.
 
     :returns: weekday (0=Monday, ..., 6=Sunday), occurrence
@@ -119,7 +120,7 @@ def get_month_abbr_len() -> int:
     return max(len(month_abbr[i]) for i in range(1, 13)) + 1
 
 
-def localize_strip_tz(dates: List[dt.datetime], timezone: dt.tzinfo) -> Iterator[dt.datetime]:
+def localize_strip_tz(dates: list[dt.datetime], timezone: dt.tzinfo) -> Iterator[dt.datetime]:
     """converts a list of dates to timezone, than removes tz info"""
     for one_date in dates:
         if getattr(one_date, 'tzinfo', None) is not None:

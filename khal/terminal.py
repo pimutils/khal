@@ -22,7 +22,7 @@
 """all functions related to terminal display are collected here"""
 
 from itertools import zip_longest
-from typing import Dict, List, NamedTuple, Optional
+from typing import NamedTuple, Optional
 
 
 class NamedColor(NamedTuple):
@@ -34,7 +34,7 @@ RTEXT = '\x1b[7m'  # reverse
 NTEXT = '\x1b[0m'  # normal
 BTEXT = '\x1b[1m'  # bold
 RESET = '\33[0m'
-COLORS: Dict[str, NamedColor] = {
+COLORS: dict[str, NamedColor] = {
     'black': NamedColor(color_index=0, light=False),
     'dark red': NamedColor(color_index=1, light=False),
     'dark green': NamedColor(color_index=2, light=False),
@@ -137,7 +137,7 @@ def colored(
     return result
 
 
-def merge_columns(lcolumn: List[str], rcolumn: List[str], width: int=25) -> List[str]:
+def merge_columns(lcolumn: list[str], rcolumn: list[str], width: int=25) -> list[str]:
     """merge two lists elementwise together
 
     Wrap right columns to terminal width.

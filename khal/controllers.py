@@ -27,7 +27,7 @@ import re
 import textwrap
 from collections import OrderedDict, defaultdict
 from shutil import get_terminal_size
-from typing import Callable, List, Optional
+from typing import Callable, Optional
 
 import pytz
 from click import confirm, echo, prompt, style
@@ -144,7 +144,7 @@ def calendar(
 
 
 def start_end_from_daterange(
-    daterange: List[str],
+    daterange: list[str],
     locale: LocaleConfiguration,
     default_timedelta_date: dt.timedelta=dt.timedelta(days=1),
     default_timedelta_datetime: dt.timedelta=dt.timedelta(hours=1),
@@ -179,7 +179,7 @@ def get_events_between(
     original_start: dt.datetime,
     seen=None,
     colors: bool = True,
-) -> List[str]:
+) -> list[str]:
     """returns a list of events scheduled between start and end. Start and end
     are strings or datetimes (of some kind).
 
@@ -237,7 +237,7 @@ def get_events_between(
 
 def khal_list(
     collection,
-    daterange: Optional[List[str]] = None,
+    daterange: Optional[list[str]] = None,
     conf: Optional[dict] = None,
     agenda_format=None,
     day_format: Optional[str]=None,
@@ -246,7 +246,7 @@ def khal_list(
     width: Optional[int] = None,
     env=None,
     datepoint=None,
-    json: Optional[List] = None,
+    json: Optional[list] = None,
 ):
     """returns a list of all events in `daterange`"""
     assert daterange is not None or datepoint is not None
@@ -295,7 +295,7 @@ def khal_list(
             )
         logger.debug(f'Getting all events between {start} and {end}')
 
-    event_column: List[str] = []
+    event_column: list[str] = []
     once = set() if once else None
     if env is None:
         env = {}

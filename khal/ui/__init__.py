@@ -24,7 +24,7 @@ import logging
 import signal
 import sys
 from enum import IntEnum
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Literal, Optional
 
 import click
 import urwid
@@ -88,10 +88,10 @@ class SelectableText(urwid.Text):
     def selectable(self) -> bool:
         return True
 
-    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
+    def keypress(self, size: tuple[int], key: Optional[str]) -> Optional[str]:
         return key
 
-    def get_cursor_coords(self, size: Tuple[int]) -> Tuple[int, int]:
+    def get_cursor_coords(self, size: tuple[int]) -> tuple[int, int]:
         return 0, 0
 
     def render(self, size, focus=False):
@@ -141,7 +141,7 @@ class DateHeader(SelectableText):
 
         return f'{weekday}, {daystr} ({approx_delta})'
 
-    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
+    def keypress(self, size: tuple[int], key: Optional[str]) -> Optional[str]:
         binds = self._conf['keybindings']
         if key in binds['left']:
             key = 'left'
@@ -173,7 +173,7 @@ class U_Event(urwid.Text):
         super().__init__('', wrap='clip')
         self.set_title()
 
-    def get_cursor_coords(self, size) -> Tuple[int, int]:
+    def get_cursor_coords(self, size) -> tuple[int, int]:
         return 0, 0
 
     def render(self, size, focus=False):
@@ -193,7 +193,7 @@ class U_Event(urwid.Text):
             str(self.event.href) + '\n' + str(self.event.etag)
 
     @property
-    def recuid(self) -> Tuple[str, str]:
+    def recuid(self) -> tuple[str, str]:
         return (self.uid, self.event.recurrence_id)
 
     def set_title(self, mark: str=' ') -> None:
@@ -221,7 +221,7 @@ class U_Event(urwid.Text):
 
         self.set_text(mark + ' ' + text.replace('\n', newline))
 
-    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
+    def keypress(self, size: tuple[int], key: Optional[str]) -> Optional[str]:
         binds = self._conf['keybindings']
         if key in binds['left']:
             key = 'left'
@@ -252,7 +252,7 @@ class EventListBox(urwid.ListBox):
         self.set_focus_date_callback = set_focus_date_callback
         super().__init__(*args, **kwargs)
 
-    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
+    def keypress(self, size: tuple[int], key: Optional[str]) -> Optional[str]:
         return super().keypress(size, key)
 
     @property
@@ -308,7 +308,7 @@ class DListBox(EventListBox):
         self.body.ensure_date(day)
         self.clean()
 
-    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
+    def keypress(self, size: tuple[int], key: Optional[str]) -> Optional[str]:
         if key in self._conf['keybindings']['up']:
             key = 'up'
         if key in self._conf['keybindings']['down']:
@@ -641,7 +641,7 @@ class EventColumn(urwid.WidgetWrap):
         self.divider = urwid.Divider('─')
         self.editor = False
         self._last_focused_date: Optional[dt.date] = None
-        self._eventshown: Optional[Tuple[str, str]] = None
+        self._eventshown: Optional[tuple[str, str]] = None
         self.event_width = int(self.pane._conf['view']['event_view_weighting'])
         self.delete_status = pane.delete_status
         self.toggle_delete_all = pane.toggle_delete_all
@@ -915,7 +915,7 @@ class EventColumn(urwid.WidgetWrap):
     def selectable(self):
         return True
 
-    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
+    def keypress(self, size: tuple[int], key: Optional[str]) -> Optional[str]:
         prev_shown = self._eventshown
         self._eventshown = None
         self.clear_event_view()
@@ -1026,7 +1026,7 @@ class SearchDialog(urwid.WidgetWrap):
 
         class Search(Edit):
 
-            def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
+            def keypress(self, size: tuple[int], key: Optional[str]) -> Optional[str]:
                 if key == 'enter':
                     search_func(self.text)
                     return None
@@ -1064,7 +1064,7 @@ class ClassicView(Pane):
         self.window = None
         self._conf = conf
         self.collection = collection
-        self._deleted: Dict[int, List[str]] = {DeletionType.ALL: [], DeletionType.INSTANCES: []}
+        self._deleted: dict[int, list[str]] = {DeletionType.ALL: [], DeletionType.INSTANCES: []}
 
         ContainerWidget = linebox[self._conf['view']['frame']]
         if self._conf['view']['dynamic_days']:
@@ -1121,7 +1121,7 @@ class ClassicView(Pane):
         else:
             return None
 
-    def toggle_delete_all(self, recuid: Tuple[str, str]) -> None:
+    def toggle_delete_all(self, recuid: tuple[str, str]) -> None:
         uid, _ = recuid
         if uid in self._deleted[DeletionType.ALL]:
             self._deleted[DeletionType.ALL].remove(uid)
@@ -1151,7 +1151,7 @@ class ClassicView(Pane):
             event = self.collection.delete_instance(href, etag, account, rec_id)
             updated_etags[event.href] = event.etag
 
-    def keypress(self, size: Tuple[int], key: Optional[str]) -> Optional[str]:
+    def keypress(self, size: tuple[int], key: Optional[str]) -> Optional[str]:
         binds = self._conf['keybindings']
         if key in binds['search']:
             self.search()
@@ -1216,7 +1216,7 @@ class ClassicView(Pane):
 def _urwid_palette_entry(
     name: str, color: str, hmethod: str, color_mode: Literal['256colors', 'rgb'],
     foreground: str = '', background: str = '',
-) -> Tuple[str, str, str, str, str, str]:
+) -> tuple[str, str, str, str, str, str]:
     """Create an urwid compatible palette entry.
 
     :param name: name of the new attribute in the palette
@@ -1287,12 +1287,12 @@ def _urwid_palette_entry(
 
 
 def _add_calendar_colors(
-    palette: List[Tuple[str, ...]],
+    palette: list[tuple[str, ...]],
     collection: 'CalendarCollection',
     color_mode: Literal['256colors', 'rgb'],
     base: Optional[str] = None,
     attr_template: str = 'calendar {}',
-) -> List[Tuple[str, ...]]:
+) -> list[tuple[str, ...]]:
     """Add the colors for the defined calendars to the palette.
 
     We support setting a fixed background or foreground color that we extract
@@ -1437,7 +1437,7 @@ def start_pane(
         base='popupbg', attr_template='calendar {} popup',
     )
 
-    def merge_palettes(pallete_a, pallete_b) -> List[Tuple[str, ...]]:
+    def merge_palettes(pallete_a, pallete_b) -> list[tuple[str, ...]]:
         """Merge two palettes together, with the second palette taking priority."""
         merged = {}
         for entry in pallete_a:

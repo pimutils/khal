@@ -8,8 +8,9 @@ import errno
 import os
 import tempfile
 import uuid
+from collections.abc import Iterable
 from hashlib import sha1
-from typing import IO, Callable, Dict, Iterable, Optional, Protocol, Tuple, Type
+from typing import IO, Callable, Optional, Protocol
 
 from ..custom_types import PathLike, SupportsRaw
 
@@ -188,7 +189,7 @@ class VdirBase:
                 yield cls(path=collection_path, **kwargs)
 
     @classmethod
-    def create(cls, collection_name: PathLike, **kwargs: PathLike) -> Dict[str, PathLike]:
+    def create(cls, collection_name: PathLike, **kwargs: PathLike) -> dict[str, PathLike]:
         kwargs = dict(kwargs)
         path = kwargs['path']
 
@@ -207,13 +208,13 @@ class VdirBase:
     def _get_href(self, uid: Optional[str]) -> str:
         return _generate_href(uid) + self.fileext
 
-    def list(self) -> Iterable[Tuple[str, str]]:
+    def list(self) -> Iterable[tuple[str, str]]:
         for fname in os.listdir(self.path):
             fpath = os.path.join(self.path, fname)
             if os.path.isfile(fpath) and fname.endswith(self.fileext):
                 yield fname, get_etag_from_file(fpath)
 
-    def get(self, href: str) -> Tuple[Item, str]:
+    def get(self, href: str) -> tuple[Item, str]:
         fpath = self._get_filepath(href)
         try:
             with open(fpath, 'rb') as f:
@@ -227,7 +228,7 @@ class VdirBase:
             else:
                 raise
 
-    def upload(self, item: SupportsRaw) -> Tuple[str, str]:
+    def upload(self, item: SupportsRaw) -> tuple[str, str]:
         if not isinstance(item.raw, str):
             raise TypeError('item.raw must be a unicode string.')
 
@@ -246,7 +247,7 @@ class VdirBase:
                 raise
         return href, etag
 
-    def _upload_impl(self, item: SupportsRaw, href: str) -> Tuple[str, str]:
+    def _upload_impl(self, item: SupportsRaw, href: str) -> tuple[str, str]:
         fpath = self._get_filepath(href)
         try:
             f: IO
@@ -316,7 +317,7 @@ class Color:
         self.raw: str = x.upper()
 
     @cached_property
-    def rgb(self) -> Tuple[int, int, int]:
+    def rgb(self) -> tuple[int, int, int]:
         x = self.raw
 
         r = x[1:3]
@@ -330,7 +331,7 @@ class Color:
 
 
 class ColorMixin:
-    color_type: Type[Color] = Color
+    color_type: type[Color] = Color
 
     def get_color(self: HasMetaProtocol) -> Optional[str]:
         try:

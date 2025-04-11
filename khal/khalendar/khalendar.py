@@ -61,7 +61,7 @@ class CalendarCollection:
     all calendars are cached in an sqlitedb for performance reasons"""
 
     def __init__(self,
-                 calendars: Dict[str, CalendarConfiguration],
+                 calendars: dict[str, CalendarConfiguration],
                  hmethod: str='fg',
                  default_color: str='',
                  multiple: str='',
@@ -76,9 +76,9 @@ class CalendarCollection:
         assert dbpath is not None
         assert calendars is not None
 
-        self._calendars: Dict[str, CalendarConfiguration] = calendars
+        self._calendars: dict[str, CalendarConfiguration] = calendars
         self._default_calendar_name: Optional[str] = None
-        self._storages: Dict[str, Vdir] = {}
+        self._storages: dict[str, Vdir] = {}
         file_ext: str
 
         for name, calendar in self._calendars.items():
@@ -105,11 +105,11 @@ class CalendarCollection:
         self.highlight_event_days = highlight_event_days
         self._locale = locale
         self._backend = backend.SQLiteDb(self.names, dbpath, self._locale)
-        self._last_ctags: Dict[str, str] = {}
+        self._last_ctags: dict[str, str] = {}
         self.update_db()
 
     @property
-    def writable_names(self) -> List[str]:
+    def writable_names(self) -> list[str]:
         return [c for c in self._calendars if not self._calendars[c].get('readonly', False)]
 
     @property
@@ -159,7 +159,7 @@ class CalendarCollection:
         localized_events = self.get_localized(localize(start), localize(end))
         return itertools.chain(localized_events, floating_events)
 
-    def get_calendars_on(self, day: dt.date) -> List[str]:
+    def get_calendars_on(self, day: dt.date) -> list[str]:
         start = dt.datetime.combine(day, dt.time.min)
         end = dt.datetime.combine(day, dt.time.max)
         localize = self._locale['local_timezone'].localize
@@ -365,7 +365,7 @@ class CalendarCollection:
         """implements the actual db update on a per calendar base"""
         local_ctag = self._local_ctag(calendar)
         db_hrefs = {href for href, etag in self._backend.list(calendar)}
-        storage_hrefs: Set[str] = set()
+        storage_hrefs: set[str] = set()
         bdays = self._calendars[calendar].get('ctype') == 'birthdays'
 
         with self._backend.at_once():
@@ -410,7 +410,7 @@ class CalendarCollection:
         """search for the db for events matching `search_string`"""
         return (self._construct_event(*args) for args in self._backend.search(search_string))
 
-    def get_day_styles(self, day: dt.date, focus: bool) -> Optional[Union[str, Tuple[str, str]]]:
+    def get_day_styles(self, day: dt.date, focus: bool) -> Optional[Union[str, tuple[str, str]]]:
         calendars = self.get_calendars_on(day)
         if len(calendars) == 0:
             return None
@@ -422,7 +422,7 @@ class CalendarCollection:
             return 'highlight_days_multiple'
         return ('calendar ' + calendars[0], 'calendar ' + calendars[1])
 
-    def get_styles(self, date: dt.date, focus: bool) -> Optional[Union[str, Tuple[str, str]]]:
+    def get_styles(self, date: dt.date, focus: bool) -> Optional[Union[str, tuple[str, str]]]:
         if focus:
             if date == date.today():
                 return 'today focus'

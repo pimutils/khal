@@ -25,7 +25,7 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from typing import Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import Callable, Optional, Union
 
 import icalendar
 import icalendar.cal
@@ -59,7 +59,7 @@ class Event:
     allday: bool = False
 
     def __init__(self,
-                 vevents: Dict[str, icalendar.Event],
+                 vevents: dict[str, icalendar.Event],
                  locale: LocaleConfiguration,
                  ref: Optional[str] = None,
                  readonly: bool = False,
@@ -69,7 +69,7 @@ class Event:
                  color: Optional[str] = None,
                  start: Optional[dt.datetime] = None,
                  end: Optional[dt.datetime] = None,
-                 addresses: Optional[List[str]] =None,
+                 addresses: Optional[list[str]] =None,
                  ):
         """
         :param start: start datetime of this event instance
@@ -116,7 +116,7 @@ class Event:
         return FloatingEvent
 
     @classmethod
-    def _get_type_from_date(cls, start: dt.datetime) -> Type['Event']:
+    def _get_type_from_date(cls, start: dt.datetime) -> type['Event']:
         if hasattr(start, 'tzinfo') and start.tzinfo is not None:
             cls = LocalizedEvent
         elif isinstance(start, dt.datetime):
@@ -127,7 +127,7 @@ class Event:
 
     @classmethod
     def fromVEvents(cls,
-                    events_list: List[icalendar.Event],
+                    events_list: list[icalendar.Event],
                     ref: Optional[str]=None,
                     start: Optional[dt.datetime]=None,
                     **kwargs) -> 'Event':
@@ -281,7 +281,7 @@ class Event:
             self._vevents[self.ref]['SEQUENCE'] = 0
 
     @property
-    def symbol_strings(self) -> Dict[str, str]:
+    def symbol_strings(self) -> dict[str, str]:
         if self._locale['unicode_symbols']:
             return {
                 'recurring': '\N{Clockwise gapped circle arrow}',
@@ -454,7 +454,7 @@ class Event:
             isinstance(alarm.get('TRIGGER').dt, dt.timedelta)
 
     @property
-    def alarms(self) -> List[Tuple[dt.timedelta, str]]:
+    def alarms(self) -> list[tuple[dt.timedelta, str]]:
         """
         Returns a list of all alarms in th original event that we can handle. Unknown types of
         alarms are ignored.
@@ -463,7 +463,7 @@ class Event:
                 for a in self._vevents[self.ref].subcomponents
                 if a.name == 'VALARM' and self._can_handle_alarm(a)]
 
-    def update_alarms(self, alarms: List[Tuple[dt.timedelta, str]]) -> None:
+    def update_alarms(self, alarms: list[tuple[dt.timedelta, str]]) -> None:
         """
         Replaces all alarms in the event that can be handled with the ones provided.
         """
@@ -498,7 +498,7 @@ class Event:
         return ", ".join([address.split(':')[-1]
                           for address in addresses])
 
-    def update_attendees(self, attendees: List[str]):
+    def update_attendees(self, attendees: list[str]):
         assert isinstance(attendees, list)
         attendees = [a.strip().lower() for a in attendees if a != ""]
         if len(attendees) > 0:
@@ -534,7 +534,7 @@ class Event:
         except AttributeError:
             return ''
 
-    def update_categories(self, categories: List[str]) -> None:
+    def update_categories(self, categories: list[str]) -> None:
         assert isinstance(categories, list)
         categories = [c.strip() for c in categories if c != ""]
         self._vevents[self.ref].pop('CATEGORIES', False)
@@ -594,7 +594,7 @@ class Event:
 
     def attributes(
             self,
-            relative_to: Union[Tuple[dt.date, dt.date], dt.date],
+            relative_to: Union[tuple[dt.date, dt.date], dt.date],
             env=None,
             colors: bool=True,
     ):
@@ -979,7 +979,7 @@ def create_timezone(
             last_num = num
             last_tt = transtime
 
-    timezones: Dict[str, icalendar.Component] = {}
+    timezones: dict[str, icalendar.Component] = {}
     for num in range(first_num, last_num + 1):
         name = tz._transition_info[num][2]  # type: ignore
         if name in timezones:

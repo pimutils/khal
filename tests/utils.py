@@ -1,5 +1,4 @@
 import os
-from typing import Dict, Tuple
 
 import icalendar
 import pytz
@@ -8,7 +7,7 @@ from khal.custom_types import LocaleConfiguration
 from khal.khalendar import CalendarCollection
 from khal.khalendar.vdir import Vdir
 
-CollVdirType = Tuple[CalendarCollection, Dict[str, Vdir]]
+CollVdirType = tuple[CalendarCollection, dict[str, Vdir]]
 
 cal0 = 'a_calendar'
 cal1 = 'foobar'
