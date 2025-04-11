@@ -27,4 +27,4 @@ repos:
     rev: v1.5.2
     hooks:
       - id: vermin
-        args: ['-t=3.8-', '--violations']
+        args: ['-t=3.9-', '--violations']

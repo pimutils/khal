@@ -7,11 +7,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
-0.11.5
+0.12.0
 ======
 unreleased
 
 * FIX Don't install tests module.
+* DROPPED support for python versions < 3.9.
 
 0.11.4
 ======
