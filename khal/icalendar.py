@@ -116,8 +116,8 @@ def new_vevent(locale,
     if not allday and timezone is not None:
         assert isinstance(dtstart, dt.datetime)
         assert isinstance(dtend, dt.datetime)
-        dtstart = timezone.localize(dtstart)
-        dtend = timezone.localize(dtend)
+        assert dtstart.tzinfo is not None
+        assert dtend.tzinfo is not None
 
     event = icalendar.Event()
     event.add('dtstart', dtstart)
@@ -136,7 +136,7 @@ def new_vevent(locale,
     if url:
         event.add('url', icalendar.vUri(url))
     if repeat and repeat != "none":
-        rrule = rrulefstr(repeat, until, locale, getattr(dtstart, 'tzinfo', None))
+        rrule = rrulefstr(repeat, until, locale)
         event.add('rrule', rrule)
     if alarms:
         for alarm in str2alarm(alarms, description or ''):

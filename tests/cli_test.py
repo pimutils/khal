@@ -1018,3 +1018,71 @@ def test_list_now(runner, tmpdir):
 
     result = runner.invoke(main_khal, ['list', 'now'])
     assert not result.exception
+
+
+@freeze_time('2019-01-22 06:30:00', tz_offset=0)
+def test_reproduce_836(runner, tmpdir):
+    # while it is already 2019-01-22 in UTC, it is still 2019-01-21 in
+    # America/Los_Angeles
+    import datetime as dt
+    print(dt.datetime.now())
+    import pytz
+    local_tz = pytz.timezone('America/Los_Angeles')
+    print(dt.datetime.now(local_tz))
+    runner = runner()
+
+
+    xdg_config_home = tmpdir.join('.config')
+    config_file = xdg_config_home.join('khal').join('config')
+    config_file.write("""
+        [calendars]
+        [[one]]
+        path = {}
+        color = dark blue
+        [[two]]
+        path = {}
+        color = dark green
+        [[three]]
+        path = {}
+        [locale]
+        dateformat = %Y-%m-%d
+        longdateformat = %Y-%m-%d
+        datetimeformat = %Y-%m-%d %H:%M
+        longdatetimeformat = %Y-%m-%d %H:%M
+        timeformat = %H:%M
+        default_timezone = America/Los_Angeles
+        local_timezone = America/Los_Angeles
+    """.format(
+        tmpdir.join('calendar'),
+        tmpdir.join('calendar2'),
+        tmpdir.join('calendar3'),
+    ))
+
+    print(runner.invoke(main_khal, 'printformats --now'.split()).output)
+
+    result = runner.invoke(main_khal, 'new -a one 2019-01-20 23:00 24:00 Meeting on 20st at 23:00'.split())
+    result = runner.invoke(main_khal, 'new -a one 2019-01-21 23:00 24:00 Meeting on 21st at 23:00'.split())
+    result = runner.invoke(main_khal, 'new -a one 2019-01-22 17:00 20:00 Meeting on 22nd at 17:00'.split())
+    result = runner.invoke(main_khal, 'new -a one 23:00 Meeting today at 23:00'.split())
+
+    print('$ khal calendar 2019-01-20')
+    result = runner.invoke(main_khal, ['list', '2019-01-20'])
+    print(result.output)
+    assert result.output.startswith('Sunday, 2019-01-20')
+
+    print('$ khal calendar 2019-01-21')
+    result = runner.invoke(main_khal, ['list', '2019-01-21'])
+    print(result.output)
+    assert result.output.startswith('Today, 2019-01-21')
+
+    print('$ khal calendar 2019-01-22')
+    result = runner.invoke(main_khal, ['list', '2019-01-22'])
+    print(result.output)
+    assert result.output.startswith('Tomorrow, 2019-01-22')
+
+    # this part tests, if the default start (today) is also correctly set to the
+    # 21st
+    print('$ khal calendar')
+    result = runner.invoke(main_khal, ['list'])
+    print(result.output)
+    assert result.output.startswith('Today, 2019-01-21')
