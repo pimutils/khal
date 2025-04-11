@@ -1,0 +1,29 @@
+# Push new version to PyPI.
+#
+# Usage: hut builds submit publish-release.yaml --follow
+
+image: alpine/edge
+packages:
+  - py3-build
+  - py3-pip
+  - py3-setuptools
+  - py3-setuptools_scm
+  - py3-wheel
+  - twine
+sources:
+  - https://github.com/pimutils/khal
+secrets:
+  - 18ea84e2-ada3-4aea-b823-309a367c8359 # PyPI token.
+environment:
+  CI: true
+tasks:
+  - check-tag: |
+      cd khal
+      git fetch --tags
+
+      # Stop here unless this is a tag.
+      git describe --exact-match --tags || complete-build
+  - publish: |
+      cd khal
+      python -m build --no-isolation
+      twine upload --non-interactive dist/*
