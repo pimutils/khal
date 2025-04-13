@@ -9,7 +9,7 @@ may want to subscribe to `GitHub's tag feed
 
 0.12.0
 ======
-unreleased
+2025-04-14
 
 * FIX Don't install tests module.
 * DROPPED support for python versions < 3.9.
