@@ -7,6 +7,12 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.13.1
+======
+unreleased
+
+* CHANGE the ``pkg_resources`` library is no longer required.
+
 0.13.0
 ======
 2025-04-15

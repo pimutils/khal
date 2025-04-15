@@ -2,7 +2,6 @@ import datetime as dt
 from operator import itemgetter
 
 import icalendar
-import pkg_resources
 import pytest
 
 from khal.khalendar import backend
@@ -598,13 +597,6 @@ def test_check_support():
     ical = icalendar.Calendar.from_ical(event_rrule_this_and_prior)
     with pytest.raises(UpdateFailed):
         [backend.check_support(event, '', '') for event in ical.walk()]
-
-    # icalendar 3.9.2 changed how it deals with unsupported components
-    if pkg_resources.get_distribution('icalendar').parsed_version \
-       <= pkg_resources.parse_version('3.9.1'):
-        ical = icalendar.Calendar.from_ical(event_rdate_period)
-        with pytest.raises(UpdateFailed):
-            [backend.check_support(event, '', '') for event in ical.walk()]
 
 
 def test_check_support_rdate_no_values():
