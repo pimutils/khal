@@ -9,7 +9,8 @@ may want to subscribe to `GitHub's tag feed
 
 0.13.0
 ======
-unreleased
+2025-04-15
+
 * UPDATED DEPENDENCY icalendar >= 6.0.0 is now required
 * UPDATED DEPENDENCY setuptools >= 77 is now required
 
