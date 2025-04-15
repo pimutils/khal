@@ -10,7 +10,8 @@ may want to subscribe to `GitHub's tag feed
 0.13.0
 ======
 unreleased
-* UPDATED REQUIREMENT icalendar is now required >= 6.0.0
+* UPDATED DEPENDENCY icalendar >= 6.0.0 is now required
+* UPDATED DEPENDENCY setuptools >= 77 is now required
 
 0.12.0
 ======
