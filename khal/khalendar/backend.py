@@ -515,8 +515,8 @@ class SQLiteDb:
         ) + tuple(self.calendars)
         result = self.sql_ex(sql_s, stuple)
         for item, href, start_timestamp, end_timestamp, ref, etag, _dtype, calendar in result:
-            start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start_timestamp))
-            end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end_timestamp))
+            start = dt.datetime.fromtimestamp(start_timestamp, pytz.UTC)
+            end = dt.datetime.fromtimestamp(end_timestamp, pytz.UTC)
             yield item, href, start, end, ref, etag, calendar
 
     def get_floating_calendars(self, start: dt.datetime, end: dt.datetime) -> Iterable[str]:
@@ -561,8 +561,8 @@ class SQLiteDb:
             [start_u, end_u, start_u, end_u, start_u, end_u] + list(self.calendars))  # type: ignore
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for item, href, start_s, end_s, ref, etag, dtype, calendar in result:
-            start_dt = dt.datetime.utcfromtimestamp(start_s)
-            end_dt = dt.datetime.utcfromtimestamp(end_s)
+            start_dt = dt.datetime.fromtimestamp(start_s, pytz.UTC).replace(tzinfo=None)
+            end_dt = dt.datetime.fromtimestamp(end_s, pytz.UTC).replace(tzinfo=None)
             if dtype == EventType.DATE:
                 start_dt = start_dt.date()
                 end_dt = end_dt.date()
@@ -595,8 +595,8 @@ class SQLiteDb:
         stuple = tuple([f'%{search_string}%'] + list(self.calendars))
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
-            start = pytz.UTC.localize(dt.datetime.utcfromtimestamp(start))
-            end = pytz.UTC.localize(dt.datetime.utcfromtimestamp(end))
+            start = dt.datetime.fromtimestamp(start, pytz.UTC)
+            end = dt.datetime.fromtimestamp(end, pytz.UTC)
             if dtype == EventType.DATE:
                 start = start.date()
                 end = end.date()
@@ -612,8 +612,8 @@ class SQLiteDb:
         stuple = tuple([f'%{search_string}%'] + list(self.calendars))
         result = self.sql_ex(sql_s.format(','.join(["?"] * len(self.calendars))), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
-            start = dt.datetime.utcfromtimestamp(start)
-            end = dt.datetime.utcfromtimestamp(end)
+            start = dt.datetime.fromtimestamp(start, pytz.UTC).replace(tzinfo=None)
+            end = dt.datetime.fromtimestamp(end, pytz.UTC).replace(tzinfo=None)
             if dtype == EventType.DATE:
                 start = start.date()
                 end = end.date()

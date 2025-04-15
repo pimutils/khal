@@ -269,7 +269,7 @@ class Event:
         if self.ref == 'PROTO':
             return self.start
         else:
-            return pytz.UTC.localize(dt.datetime.utcfromtimestamp(int(self.ref)))
+            return dt.datetime.fromtimestamp(int(self.ref), pytz.UTC)
 
     def increment_sequence(self) -> None:
         """update the SEQUENCE number, call before saving this event"""
