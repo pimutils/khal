@@ -190,7 +190,7 @@ class _NoConfig:
 def prepare_context(ctx, config):
     assert ctx.obj is None
 
-    logger.debug('khal %s' % __version__)
+    logger.debug('khal %s', __version__)
     try:
         conf = get_config(config)
     except NoConfigFile:
