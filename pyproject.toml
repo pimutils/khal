@@ -75,10 +75,12 @@ include = ["khal*"]
 version_file = "khal/version.py"
 
 [tool.ruff]
-select = ["E", "F", "W", "I", "B0", "UP", "C4"]
-ignore = ["B008"]
 line-length = 100
 target-version = "py39"
+
+[tool.ruff.lint]
+ignore = ["B008"]
+select = ["E", "F", "W", "I", "B0", "UP", "C4"]
 
 [tool.coverage.report]
 exclude_lines = [
