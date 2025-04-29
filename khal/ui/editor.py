@@ -74,7 +74,7 @@ class CalendarPopUp(urwid.PopUpLauncher):
 
     def create_pop_up(self):
         def on_change(new_date):
-            self._get_base_widget().set_value(new_date)
+            self.base_widget.set_value(new_date)
             self._on_date_change(new_date)
 
         on_press = {'enter': lambda _, __: self.close_pop_up(),
