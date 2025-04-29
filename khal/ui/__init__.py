@@ -243,7 +243,7 @@ class EventListBox(urwid.ListBox):
             set_focus_date_callback=None,
             **kwargs) -> None:
         self._init: bool = True
-        self.parent: 'ClassicView' = parent
+        self.parent: ClassicView = parent
         self.delete_status = delete_status
         self.toggle_delete_instance = toggle_delete_instance
         self.toggle_delete_all = toggle_delete_all
@@ -1091,7 +1091,7 @@ class ClassicView(Pane):
         calendar = CAttrMap(CalendarWidget(
             on_date_change=self.eventscolumn.original_widget.set_focus_date,
             keybindings=self._conf['keybindings'],
-            on_press={key: self.new_event for key in self._conf['keybindings']['new']},
+            on_press=dict.fromkeys(self._conf['keybindings']['new'], self.new_event),
             firstweekday=self._conf['locale']['firstweekday'],
             weeknumbers=self._conf['locale']['weeknumbers'],
             monthdisplay=self._conf['view']['monthdisplay'],
