@@ -122,7 +122,7 @@ def weekdaypstr(dayname: str) -> int:
         return 5
     if dayname in ['sunday', 'sun']:
         return 6
-    raise ValueError('invalid weekday name `%s`' % dayname)
+    raise ValueError(f'invalid weekday name `{dayname}`')
 
 
 def construct_daynames(date_: dt.date) -> str:

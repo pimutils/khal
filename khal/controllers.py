@@ -72,7 +72,7 @@ def format_day(day: dt.date, format_string: str, locale, attributes=None):
     try:
         return format_string.format(**attributes) + colors["reset"]
     except (KeyError, IndexError):
-        raise KeyError("cannot format day with: %s" % format_string)
+        raise KeyError(f"cannot format day with: {format_string}")
 
 
 def calendar(

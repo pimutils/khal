@@ -551,7 +551,7 @@ class EventEditor(urwid.WidgetWrap):
                 self.pane.window.backtrack()
                 self.pane.window.alert(
                     ('light red',
-                     'Failed to save event: %s' % e))
+                     f'Failed to save event: {e}'))
                 return
 
             self.pane.window.backtrack()
@@ -851,7 +851,7 @@ class ExportDialog(urwid.WidgetWrap):
         lines.append(urwid.Text('Export event as ICS file'))
         lines.append(urwid.Text(''))
         export_location = ExtendedEdit(
-            caption='Location: ', edit_text="~/%s.ics" % event.summary.strip())
+            caption='Location: ', edit_text=f"~/{event.summary.strip()}.ics")
         lines.append(export_location)
         lines.append(urwid.Divider(' '))
         lines.append(CAttrMap(

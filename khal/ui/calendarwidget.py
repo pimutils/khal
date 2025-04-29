@@ -182,7 +182,7 @@ class DateCColumns(urwid.Columns):
             if day[0].date == a_date:
                 self.focus_position = num
                 return None
-        raise ValueError('%s not found in this week' % a_date)
+        raise ValueError(f'{a_date} not found in this week')
 
     def get_date_column(self, a_date: dt.date) -> int:
         """return the column `a_date` is in, raises ValueError if `a_date`
@@ -191,7 +191,7 @@ class DateCColumns(urwid.Columns):
         for num, day in enumerate(self.contents[1:8], 1):
             if day[0].date == a_date:
                 return num
-        raise ValueError('%s not found in this week' % a_date)
+        raise ValueError(f'{a_date} not found in this week')
 
     def keypress(self, size: tuple[int], key: str) -> str:
         """only leave calendar area on pressing 'tab' or 'enter'"""

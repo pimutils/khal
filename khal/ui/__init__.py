@@ -794,7 +794,7 @@ class EventColumn(urwid.WidgetWrap):
                 self.focus_event.event.export_ics(user_data.get_edit_text())
             except Exception as error:
                 self.pane.window.backtrack()
-                self.pane.window.alert(('alert', 'Failed to save event: %s' % error))
+                self.pane.window.alert(('alert', f'Failed to save event: {error}'))
             else:
                 self.pane.window.backtrack()
                 self.pane.window.alert('Event successfully exported')
