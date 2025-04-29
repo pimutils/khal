@@ -413,7 +413,7 @@ def test_event_raw_UTC():
 def test_zulu_events():
     """test if events in Zulu time are correctly recognized as localized events"""
     event = Event.fromString(_get_text('event_dt_simple_zulu'), **EVENT_KWARGS)
-    assert type(event) == LocalizedEvent
+    assert type(event) is LocalizedEvent
     assert event.start_local == BERLIN.localize(dt.datetime(2014, 4, 9, 11, 30))
 
 
@@ -451,9 +451,9 @@ def test_recur():
 
 def test_type_inference():
     event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
-    assert type(event) == LocalizedEvent
+    assert type(event) is LocalizedEvent
     event = Event.fromString(_get_text('event_dt_simple_zulu'), **EVENT_KWARGS)
-    assert type(event) == LocalizedEvent
+    assert type(event) is LocalizedEvent
 
 
 def test_duplicate_event():

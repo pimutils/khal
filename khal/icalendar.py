@@ -289,10 +289,10 @@ def expand(
             # rrule._until and dtstart could be dt.date or dt.datetime. They
             # need to be the same for comparison
             testuntil = rrule._until  # type: ignore
-            if (type(dtstart) == dt.date and type(testuntil) == dt.datetime):
+            if (type(dtstart) is dt.date and type(testuntil) is dt.datetime):
                 testuntil = testuntil.date()
             teststart = dtstart
-            if (type(testuntil) == dt.date and type(teststart) == dt.datetime):
+            if (type(testuntil) is dt.date and type(teststart) is dt.datetime):
                 teststart = teststart.date()
 
             if testuntil < teststart:
@@ -430,7 +430,7 @@ def sanitize_timerange(dtstart, dtend, duration=None):
                 "Assuming it's the same timezone as the end time"
             )
             dtstart = dtend.tzinfo.localize(dtstart)
-    if dtend is not None and type(dtstart) != type(dtend):
+    if dtend is not None and type(dtstart) is not type(dtend):
         raise ValueError(
             'The event\'s end time (DTEND) and start time (DTSTART) are not of the same type.')
 
