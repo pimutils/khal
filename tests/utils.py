@@ -77,7 +77,8 @@ def normalize_component(x):
     def inner(c):
         contentlines = icalendar.cal.Contentlines()
         for name, value in c.property_items(sorted=True, recursive=False):
-            contentlines.append(c.content_line(name, value, sorted=True))
+            if name not in ['LAST-MODIFIED', 'CREATED']:
+                contentlines.append(c.content_line(name, value, sorted=True))
         contentlines.append('')
 
         return (c.name, contentlines.to_ical(),

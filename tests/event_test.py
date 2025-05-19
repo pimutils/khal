@@ -154,7 +154,7 @@ def test_update_remove_categories():
 def test_raw_d():
     event_d = _get_text('event_d')
     event = Event.fromString(event_d, **EVENT_KWARGS)
-    assert event.raw.split('\r\n') == _get_text('cal_d').split('\n')
+    assert normalize_component(event.raw) == normalize_component(_get_text('cal_d'))
     assert LIST_FORMATTER(event.attributes(dt.date(2014, 4, 9))) == ' An Event\x1b[0m'
     assert SEARCH_FORMATTER(event.attributes(dt.date(2014, 4, 9))) == '09.04.2014 An Event\x1b[0m'
 
@@ -396,7 +396,7 @@ def test_event_raw_UTC():
     """test .raw() on events which are localized in UTC"""
     event_utc = _get_text('event_dt_simple_zulu')
     event = Event.fromString(event_utc, **EVENT_KWARGS)
-    assert event.raw == '\r\n'.join([
+    expected_raw_content = '\r\n'.join([
         '''BEGIN:VCALENDAR''',
         '''VERSION:2.0''',
         '''PRODID:-//PIMUTILS.ORG//NONSGML khal / icalendar //EN''',
@@ -408,6 +408,7 @@ def test_event_raw_UTC():
         '''UID:V042MJ8B3SJNFXQOJL6P53OFMHJE8Z3VZWOU''',
         '''END:VEVENT''',
         '''END:VCALENDAR\r\n'''])
+    assert normalize_component(event.raw) == normalize_component(expected_raw_content)
 
 
 def test_zulu_events():

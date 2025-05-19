@@ -69,7 +69,7 @@ class Event:
                  color: Optional[str] = None,
                  start: Optional[dt.datetime] = None,
                  end: Optional[dt.datetime] = None,
-                 addresses: Optional[list[str]] =None,
+                 addresses: Optional[list[str]] = None,
                  ):
         """
         :param start: start datetime of this event instance
@@ -106,6 +106,14 @@ class Event:
         else:
             self._end = end
 
+        # set CREATED time and initialize LAST-MODIFIED time
+        if 'CREATED' not in self._vevents[self.ref]:
+            now_utc = dt.datetime.now(pytz.utc)
+            self._vevents[self.ref]['CREATED'] = icalendar.prop.vDatetime(now_utc)
+        if 'LAST-MODIFIED' not in self._vevents[self.ref]:
+            now_utc = dt.datetime.now(pytz.utc)
+            self._vevents[self.ref]['LAST-MODIFIED'] = icalendar.prop.vDatetime(now_utc)
+
     @classmethod
     def _get_type_from_vDDD(cls, start: icalendar.prop.vDDDTypes) -> type:
         """infere the type of the class from the START type of the event"""
@@ -128,8 +136,8 @@ class Event:
     @classmethod
     def fromVEvents(cls,
                     events_list: list[icalendar.Event],
-                    ref: Optional[str]=None,
-                    start: Optional[dt.datetime]=None,
+                    ref: Optional[str] = None,
+                    start: Optional[dt.datetime] = None,
                     **kwargs) -> 'Event':
         assert isinstance(events_list, list)
 
@@ -227,13 +235,14 @@ class Event:
         else:
             self._vevents[self.ref].pop('DURATION')
             self._vevents[self.ref].add('DURATION', end - start)
+        self._set_last_modified()
 
     @property
     def recurring(self) -> bool:
         try:
             rval = 'RRULE' in self._vevents[self.ref] or \
-                'RECURRENCE-ID' in self._vevents[self.ref] or \
-                'RDATE' in self._vevents[self.ref]
+                   'RECURRENCE-ID' in self._vevents[self.ref] or \
+                   'RDATE' in self._vevents[self.ref]
         except KeyError:
             logger.fatal(
                 f"The event at {self.href} might be broken. You might want to "
@@ -261,6 +270,7 @@ class Event:
         self._vevents['PROTO'].pop('RRULE')
         if rrule is not None:
             self._vevents['PROTO'].add('RRULE', rrule)
+        self._set_last_modified()
 
     @property
     def recurrence_id(self) -> Union[dt.datetime, str]:
@@ -366,6 +376,34 @@ class Event:
             self._vevents[self.ref]['URL'] = url
         else:
             self._vevents[self.ref].pop('URL')
+        self._set_last_modified()
+
+    @property
+    def created(self) -> Optional[dt.datetime]:
+        """
+        Returns the CREATED datetime of the event, if available.
+        """
+        created_prop = self._vevents[self.ref].get('CREATED', None)
+        if created_prop:
+            return created_prop.dt
+        return None
+
+    def _set_last_modified(self) -> None:
+        """
+        Sets the LAST-MODIFIED property of the event to the current UTC time.
+        """
+        now_utc = dt.datetime.now(pytz.utc)
+        self._vevents[self.ref]['LAST-MODIFIED'] = icalendar.prop.vDatetime(now_utc)
+
+    @property
+    def last_modified(self) -> Optional[dt.datetime]:
+        """
+        Returns the LAST-MODIFIED datetime of the event, if available.
+        """
+        last_modified_prop = self._vevents[self.ref].get('LAST-MODIFIED', None)
+        if last_modified_prop:
+            return last_modified_prop.dt
+        return None
 
     @staticmethod
     def _create_calendar() -> icalendar.Calendar:
@@ -444,6 +482,7 @@ class Event:
 
     def update_summary(self, summary: str) -> None:
         self._vevents[self.ref]['SUMMARY'] = summary
+        self._set_last_modified()
 
     @staticmethod
     def _can_handle_alarm(alarm) -> bool:
@@ -479,6 +518,7 @@ class Event:
             new.add('DESCRIPTION', alarm[1])
             components.append(new)
         self._vevents[self.ref].subcomponents = components
+        self._set_last_modified()
 
     @property
     def location(self) -> str:
@@ -489,6 +529,7 @@ class Event:
             self._vevents[self.ref]['LOCATION'] = location
         else:
             self._vevents[self.ref].pop('LOCATION')
+        self._set_last_modified()
 
     @property
     def attendees(self) -> str:
@@ -526,6 +567,7 @@ class Event:
             self._vevents[self.ref]['ATTENDEE'] = vCalAddresses
         else:
             self._vevents[self.ref].pop('ATTENDEE')
+        self._set_last_modified()
 
     @property
     def categories(self) -> str:
@@ -540,6 +582,7 @@ class Event:
         self._vevents[self.ref].pop('CATEGORIES', False)
         if categories:
             self._vevents[self.ref].add('CATEGORIES', categories)
+        self._set_last_modified()
 
     @property
     def description(self) -> str:
@@ -550,6 +593,7 @@ class Event:
             self._vevents[self.ref]['DESCRIPTION'] = description
         else:
             self._vevents[self.ref].pop('DESCRIPTION')
+        self._set_last_modified()
 
     @property
     def _recur_str(self) -> str:
@@ -596,7 +640,7 @@ class Event:
             self,
             relative_to: Union[tuple[dt.date, dt.date], dt.date],
             env=None,
-            colors: bool=True,
+            colors: bool = True,
     ):
         """
         :param colors: determines if colors codes should be printed or not
@@ -692,7 +736,7 @@ class Event:
             attributes["start-end-time-style"] = self.symbol_strings["range"]
         else:
             attributes["start-end-time-style"] = attributes["start-style"] + \
-                tostr + attributes["end-style"]
+                                                 tostr + attributes["end-style"]
 
         if allday:
             if self.start == self.end:
@@ -731,7 +775,8 @@ class Event:
         if len(formatters) == 1:
             fmt: Callable[[str], str] = list(formatters)[0]
         else:
-            def fmt(s: str) -> str: return s.strip()
+            def fmt(s: str) -> str:
+                return s.strip()
 
         attributes["description"] = fmt(self.description)
         attributes["description-separator"] = ""
@@ -746,6 +791,14 @@ class Event:
         attributes['url-separator'] = ""
         if attributes['url']:
             attributes['url-separator'] = " :: "
+
+        attributes['created'] = ''
+        if self.created:
+            attributes['created'] = self.created.strftime(self._locale['datetimeformat'])
+
+        attributes['last-modified'] = ''
+        if self.last_modified:
+            attributes['last-modified'] = self.last_modified.strftime(self._locale['datetimeformat'])
 
         if "calendars" in env and self.calendar in env["calendars"]:
             cal = env["calendars"][self.calendar]
@@ -919,9 +972,9 @@ class AllDayEvent(Event):
 
 
 def create_timezone(
-    tz: pytz.BaseTzInfo,
-    first_date: Optional[dt.datetime]=None,
-    last_date: Optional[dt.datetime]=None
+        tz: pytz.BaseTzInfo,
+        first_date: Optional[dt.datetime] = None,
+        last_date: Optional[dt.datetime] = None
 ) -> icalendar.Timezone:
     """
     create an icalendar vtimezone from a pytz.tzinfo object
