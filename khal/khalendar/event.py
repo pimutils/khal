@@ -798,7 +798,8 @@ class Event:
 
         attributes['last-modified'] = ''
         if self.last_modified:
-            attributes['last-modified'] = self.last_modified.strftime(self._locale['datetimeformat'])
+            last_modified = self.last_modified.strftime(self._locale['datetimeformat'])
+            attributes['last-modified'] = last_modified
 
         if "calendars" in env and self.calendar in env["calendars"]:
             cal = env["calendars"][self.calendar]
