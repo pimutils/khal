@@ -738,6 +738,9 @@ class Event:
         if attributes["description"]:
             attributes["description-separator"] = " :: "
         attributes["location"] = self.location.strip()
+        attributes["location-separator"] = ""
+        if attributes["location"]:
+            attributes["location-separator"] = " @ "
         attributes["attendees"] = self.attendees
         attributes["all-day"] = str(allday)
         attributes["categories"] = self.categories
