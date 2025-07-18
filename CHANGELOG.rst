@@ -12,6 +12,7 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 
 * CHANGE the ``pkg_resources`` library is no longer required.
+* FIX the location of caching database to ``$XDG_CACHE_HOME``
 
 0.13.0
 ======

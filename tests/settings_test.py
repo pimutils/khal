@@ -49,7 +49,7 @@ class TestSettings:
                     'color': None, 'priority': 10, 'type': 'calendar', 'addresses': [''],
                 },
             },
-            'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
+            'sqlite': {'path': os.path.expanduser('~/.cache/khal/khal.db')},
             'locale': LOCALE_BERLIN,
             'default': {
                 'default_calendar': None,
@@ -89,7 +89,7 @@ class TestSettings:
                 'work': {'path': os.path.expanduser('~/.calendars/work/'),
                          'readonly': True, 'color': None, 'priority': 10,
                          'type': 'calendar', 'addresses': ['user@example.com']}},
-            'sqlite': {'path': os.path.expanduser('~/.local/share/khal/khal.db')},
+            'sqlite': {'path': os.path.expanduser('~/.cache/khal/khal.db')},
             'locale': {
                 'local_timezone': get_localzone(),
                 'default_timezone': get_localzone(),

@@ -17,11 +17,13 @@ from .utils import _get_ics_filepath, _get_text
 
 class CustomCliRunner(CliRunner):
     def __init__(self, config_file, db=None, calendars=None,
-                 xdg_data_home=None, xdg_config_home=None, tmpdir=None, **kwargs) -> None:
+                 xdg_data_home=None, xdg_config_home=None,
+                 xdg_cache_home=None, tmpdir=None, **kwargs) -> None:
         self.config_file = config_file
         self.db = db
         self.calendars = calendars
         self.xdg_data_home = xdg_data_home
+        self.xdg_cache_home = xdg_cache_home
         self.xdg_config_home = xdg_config_home
         self.tmpdir = tmpdir
 
@@ -40,12 +42,14 @@ def runner(tmpdir, monkeypatch):
     calendar3 = tmpdir.mkdir('calendar3')
 
     xdg_data_home = tmpdir.join('vdirs')
+    xdg_cache_home = tmpdir.join('.cache')
     xdg_config_home = tmpdir.join('.config')
     config_file = xdg_config_home.join('khal').join('config')
 
     # TODO create a vdir config on disk and let vdirsyncer actually read it
     monkeypatch.setattr('vdirsyncer.cli.config.load_config', lambda: Config())
     monkeypatch.setattr('xdg.BaseDirectory.xdg_data_home', str(xdg_data_home))
+    monkeypatch.setattr('xdg.BaseDirectory.xdg_cache_home', str(xdg_cache_home))
     monkeypatch.setattr('xdg.BaseDirectory.xdg_config_home', str(xdg_config_home))
     monkeypatch.setattr('xdg.BaseDirectory.xdg_config_dirs', [str(xdg_config_home)])
 
@@ -65,7 +69,7 @@ def runner(tmpdir, monkeypatch):
         runner = CustomCliRunner(
             config_file=config_file, db=db, calendars={"one": calendar},
             xdg_data_home=xdg_data_home, xdg_config_home=xdg_config_home,
-            tmpdir=tmpdir,
+            xdg_cache_home=xdg_cache_home, tmpdir=tmpdir,
         )
         return runner
     return inner
