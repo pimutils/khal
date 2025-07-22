@@ -104,7 +104,7 @@ def test_weekdaypstr():
 
 
 def test_weekdaypstr_invalid():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="invalid weekday name `foobar`"):
         weekdaypstr('foobar')
 
 
@@ -222,11 +222,17 @@ class TestGuessTimedeltafstr:
             guesstimedeltafstr('1D-3hour10m')
 
     def test_garbage(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError,
+            match='Invalid unit in timedelta string "10mbar": "mbar"',
+        ):
             guesstimedeltafstr('10mbar')
 
     def test_moregarbage(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError,
+            match='Invalid beginning of timedelta string "foo10m": "foo"',
+        ):
             guesstimedeltafstr('foo10m')
 
     def test_same(self):

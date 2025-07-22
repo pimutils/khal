@@ -148,10 +148,10 @@ class TestCollection:
             calendars=calendars, locale=LOCALE_BERLIN, dbpath=':memory:',
         )
         assert coll.default_calendar_name is None
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unknown calendar: Dad's calendar"):
             coll.default_calendar_name = "Dad's calendar"
         assert coll.default_calendar_name is None
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unknown calendar: unknownstuff"):
             coll.default_calendar_name = 'unknownstuff'
         assert coll.default_calendar_name is None
         coll.default_calendar_name = 'home'

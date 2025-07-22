@@ -36,7 +36,7 @@ SEARCH_FORMATTER = human_formatter(SEARCH_FORMAT)
 
 
 def test_no_initialization():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="do not initialize this class directly"):
         Event('', '')
 
 
@@ -188,7 +188,10 @@ def test_transform_event():
     analog_event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
     assert normalize_component(event.raw) == normalize_component(analog_event.raw)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="DTSTART and DTEND should be of the same type .datetime or date.",
+    ):
         event.update_start_end(start, dt.date(2014, 4, 9))
 
 
