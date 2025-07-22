@@ -79,7 +79,6 @@ line-length = 100
 target-version = "py39"
 
 [tool.ruff.lint]
-ignore = ["B008"]
 extend-select = ["E", "W", "I", "B0", "UP", "C4"]
 
 [tool.coverage.report]
