@@ -32,8 +32,9 @@ import os
 import os.path
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union  # noqa
 
-from ..custom_types import CalendarConfiguration, EventCreationTypes, LocaleConfiguration
-from ..icalendar import new_vevent
+from khal.custom_types import CalendarConfiguration, EventCreationTypes, LocaleConfiguration
+from khal.icalendar import new_vevent
+
 from . import backend
 from .event import Event
 from .exceptions import (

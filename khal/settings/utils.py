@@ -39,9 +39,10 @@ try:
 except ModuleNotFoundError:
     from validate import VdtValueError
 
-from ..khalendar.vdir import CollectionNotFoundError, Vdir
-from ..parse_datetime import guesstimedeltafstr
-from ..terminal import COLORS
+from khal.khalendar.vdir import CollectionNotFoundError, Vdir
+from khal.parse_datetime import guesstimedeltafstr
+from khal.terminal import COLORS
+
 from .exceptions import InvalidSettingsError
 
 logger = logging.getLogger('khal')

@@ -79,7 +79,16 @@ line-length = 100
 target-version = "py39"
 
 [tool.ruff.lint]
-extend-select = ["E", "W", "I", "B0", "UP", "C4", "PT"]
+extend-select = [
+    "B0",
+    "C4",
+    "E",
+    "I",
+    "PT",
+    "TID",
+    "UP",
+    "W",
+]
 
 [tool.coverage.report]
 exclude_lines = [

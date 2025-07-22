@@ -34,12 +34,12 @@ import pytz
 from click import style
 from pytz.tzinfo import StaticTzInfo
 
-from ..custom_types import LocaleConfiguration
-from ..exceptions import FatalError
-from ..icalendar import cal_from_ics, delete_instance, invalid_timezone
-from ..parse_datetime import timedelta2str
-from ..plugins import FORMATTERS
-from ..utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
+from khal.custom_types import LocaleConfiguration
+from khal.exceptions import FatalError
+from khal.icalendar import cal_from_ics, delete_instance, invalid_timezone
+from khal.parse_datetime import timedelta2str
+from khal.plugins import FORMATTERS
+from khal.utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
 
 logger = logging.getLogger('khal')
 

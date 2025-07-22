@@ -21,7 +21,7 @@
 
 from typing import Optional  # noqa
 
-from ..exceptions import Error, FatalError, UnsupportedFeatureError
+from khal.exceptions import Error, FatalError, UnsupportedFeatureError
 
 
 class UnsupportedRruleExceptionError(UnsupportedFeatureError):

@@ -24,7 +24,8 @@ from typing import TYPE_CHECKING, Callable, Literal, Optional
 
 import urwid
 
-from ..utils import get_weekday_occurrence, get_wrapped_text
+from khal.utils import get_weekday_occurrence, get_wrapped_text
+
 from .widgets import (
     AlarmsEditor,
     CalendarWidget,

@@ -12,7 +12,7 @@ from collections.abc import Iterable
 from hashlib import sha1
 from typing import IO, Callable, Optional, Protocol
 
-from ..custom_types import PathLike, SupportsRaw
+from khal.custom_types import PathLike, SupportsRaw
 
 
 class HasMetaProtocol(Protocol):

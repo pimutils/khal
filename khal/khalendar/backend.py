@@ -36,12 +36,13 @@ import icalendar.cal
 import pytz
 from dateutil import parser
 
-from .. import utils
-from ..custom_types import EventTuple, LocaleConfiguration
-from ..icalendar import assert_only_one_uid, cal_from_ics
-from ..icalendar import expand as expand_vevent
-from ..icalendar import sanitize as sanitize_vevent
-from ..icalendar import sort_key as sort_vevent_key
+from khal import utils
+from khal.custom_types import EventTuple, LocaleConfiguration
+from khal.icalendar import assert_only_one_uid, cal_from_ics
+from khal.icalendar import expand as expand_vevent
+from khal.icalendar import sanitize as sanitize_vevent
+from khal.icalendar import sort_key as sort_vevent_key
+
 from .exceptions import CouldNotCreateDbDir, NonUniqueUID, OutdatedDbVersionError, UpdateFailed
 
 logger = logging.getLogger('khal')

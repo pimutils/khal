@@ -3,8 +3,8 @@ import datetime as dt
 import icalendar
 
 from khal.ui.editor import RecurrenceEditor, StartEndEditor
+from tests.utils import BERLIN, LOCALE_BERLIN
 
-from ..utils import BERLIN, LOCALE_BERLIN
 from .canvas_render import CanvasTranslator
 
 CONF = {'locale': LOCALE_BERLIN, 'keybindings': {}, 'view': {'monthdisplay': 'firstday'}}

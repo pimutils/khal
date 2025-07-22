@@ -29,10 +29,11 @@ from typing import Literal, Optional
 import click
 import urwid
 
-from .. import plugins, utils
-from ..khalendar import CalendarCollection
-from ..khalendar.exceptions import FatalError, ReadOnlyCalendarError
-from ..parse_datetime import timedelta2str
+from khal import plugins, utils
+from khal.khalendar import CalendarCollection
+from khal.khalendar.exceptions import FatalError, ReadOnlyCalendarError
+from khal.parse_datetime import timedelta2str
+
 from . import colors
 from .base import Pane, Window
 from .editor import EventEditor, ExportDialog
@@ -1229,7 +1230,7 @@ def _urwid_palette_entry(
 
     :returns: an urwid palette entry
     """
-    from ..terminal import COLORS
+    from khal.terminal import COLORS
     if color == '' or color in COLORS or color is None:
         # Named colors already use urwid names, no need to change anything.
         pass

@@ -3,8 +3,8 @@ import datetime as dt
 from freezegun import freeze_time
 
 from khal.ui import DayWalker, DListBox, StaticDayWalker
+from tests.utils import LOCALE_BERLIN
 
-from ..utils import LOCALE_BERLIN
 from .canvas_render import CanvasTranslator
 
 CONF = {'locale': LOCALE_BERLIN, 'keybindings': {},
