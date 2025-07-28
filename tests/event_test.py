@@ -723,7 +723,7 @@ def test_partstat():
     assert human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9))) == \
         '✔09:30-10:30 (foobar) An Event []\x1b[0m'
 
-@pytest.mark.xfail()
+@pytest.mark.xfail
 def test_partstat_deligated():
     event = Event.fromString(
         _get_text('event_dt_partstat'), addresses=['hcabot@example.com'], **EVENT_KWARGS)
