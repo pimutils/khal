@@ -378,6 +378,7 @@ class EventEditor(urwid.WidgetWrap):
         self.description = event.description
         self.location = event.location
         self.attendees = event.attendees
+        self.organizer = event.organizer
         self.categories = event.categories
         self.url = event.url
         self.startendeditor = StartEndEditor(
@@ -430,6 +431,20 @@ class EventEditor(urwid.WidgetWrap):
         self.url = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'URL:         '), edit_text=self.url), 'edit', 'edit focus',
         )
+        if len(self.organizer) == 0:
+            default_calendar = self.event.calendar
+            account_organizer = self._conf["calendars"][default_calendar].get(
+                "organizer", default=None
+            )
+            if account_organizer:
+                self.organizer = account_organizer
+            else:
+                default_organizer = self._conf["default"]["default_organizer"]
+                if default_organizer:
+                    self.organizer = default_organizer
+        self.organizer = urwid.AttrMap(ExtendedEdit(
+            caption=("caption", "Organizer:   "), edit_text=self.organizer), "edit", "edit focus",
+        )
         self.alarmseditor: AlarmsEditor = AlarmsEditor(self.event)
         self.pile = NListBox(urwid.SimpleFocusListWalker([
             self.summary,
@@ -443,6 +458,7 @@ class EventEditor(urwid.WidgetWrap):
             self.url,
             divider,
             self.attendees,
+            self.organizer,
             divider,
             self.startendeditor,
             self.recurrenceeditor,
@@ -514,6 +530,8 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if get_wrapped_text(self.attendees) != self.event.attendees:
             return True
+        if get_wrapped_text(self.organizer) != self.event.organizer:
+            return True
         if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
         if self.recurrenceeditor.changed:
@@ -528,6 +546,7 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_location(get_wrapped_text(self.location))
         self.event.update_attendees(get_wrapped_text(self.attendees).split(','))
         self.event.update_categories(get_wrapped_text(self.categories).split(','))
+        self.event.update_organizer(get_wrapped_text(self.organizer))
         self.event.update_url(get_wrapped_text(self.url))
 
         if self.startendeditor.changed:
