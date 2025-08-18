@@ -493,6 +493,7 @@ def present_options(options, prefix="", sep="  ", width=70):
         return None
 
 
+
 def edit_event(event, collection, locale, allow_quit=False, width=80):
     options = OrderedDict()
     if allow_quit:

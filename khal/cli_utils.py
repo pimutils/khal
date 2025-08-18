@@ -110,16 +110,24 @@ def calendar_option(f):
 
 
 def global_options(f):
+    def config_callback(ctx, option, value):
+        # S'assurer que ctx.obj est initialisé
+        if ctx.obj is None:
+            ctx.ensure_object(dict)
+        ctx.obj['config'] = value  # Stocker la valeur dans ctx.obj
     def color_callback(ctx, option, value):
         ctx.color = value
 
     def logfile_callback(ctx, option, path):
-        ctx.logfilepath = path
+        if ctx.obj is None:
+            ctx.ensure_object(dict)
+        ctx.obj['logfilepath'] = path  # Stocker logfilepath dans ctx.obj
+
 
     config = click.option(
         '--config', '-c',
         help='The config file to use.',
-        default=None, metavar='PATH'
+        default=None, metavar='PATH',callback=config_callback
     )
     color = click.option(
         '--color/--no-color',
@@ -142,6 +150,8 @@ def global_options(f):
     version = click.version_option(version=__version__)
 
     return logfile(config(color(version(f))))
+
+
 
 
 def build_collection(conf, selection):
@@ -188,6 +198,13 @@ class _NoConfig:
 
 
 def prepare_context(ctx, config):
+    # Vérifier si ctx.obj est déjà initialisé
+    if ctx.obj is not None:
+        logger.debug(f"DEBUG: ctx.obj already initialized with: {ctx.obj}")
+        # Si ctx.obj est déjà initialisé, ne pas le réinitialiser
+        return
+
+    # Ancien comportement si ctx.obj est None
     assert ctx.obj is None
 
     logger.debug('khal %s', __version__)
@@ -203,8 +220,8 @@ def prepare_context(ctx, config):
         logger.debug('Using config:')
         logger.debug(stringify_conf(conf))
 
+    # Initialisation de ctx.obj
     ctx.obj = {'conf_path': config, 'conf': conf}
-
 
 def stringify_conf(conf):
     # since we have only two levels of recursion, a recursive function isn't
