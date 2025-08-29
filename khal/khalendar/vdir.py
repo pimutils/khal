@@ -197,7 +197,7 @@ class VdirBase:
         if not os.path.exists(pathn):
             os.makedirs(pathn, mode=cls.default_mode)
         elif not os.path.isdir(pathn):
-            raise OSError(f'{repr(pathn)} is not a directory.')
+            raise OSError(f'{pathn!r} is not a directory.')
 
         kwargs['path'] = pathn
         return kwargs
