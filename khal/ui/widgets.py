@@ -30,8 +30,6 @@ from typing import Optional
 
 import urwid
 
-from .calendarwidget import CalendarWidget
-
 
 class DateConversionError(Exception):
     pass
