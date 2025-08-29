@@ -60,7 +60,7 @@ ansi_sgr = re.compile(r'\x1b\['
 
 
 def find_last_reset(string: str) -> tuple[int, int, str]:
-    for match in re.finditer(ansi_reset, string):  # noqa B007: this is actually used below.
+    for match in re.finditer(ansi_reset, string):
         pass
     try:
         return match.start(), match.end(), match.group(0)
@@ -69,7 +69,7 @@ def find_last_reset(string: str) -> tuple[int, int, str]:
 
 
 def find_last_sgr(string: str) -> tuple[int, int, str]:
-    for match in re.finditer(ansi_sgr, string):  # noqa B007: this is actually used below.
+    for match in re.finditer(ansi_sgr, string):
         pass
     try:
         return match.start(), match.end(), match.group(0)
