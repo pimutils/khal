@@ -403,7 +403,7 @@ class CalendarCollection:
             if not isinstance(e, (UpdateFailed, UnsupportedFeatureError, NonUniqueUID)):
                 logger.exception('Unknown exception happened.')
             logger.warning(
-                f'Skipping {calendar}/{href}: {str(e)}\n'
+                f'Skipping {calendar}/{href}: {e!s}\n'
                 'This event will not be available in khal.')
             return False
 

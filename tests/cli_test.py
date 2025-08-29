@@ -797,7 +797,7 @@ def test_configure_command_create_vdir(runner):
         main_khal, ['configure'],
         input=choices(),
     )
-    assert f'Successfully wrote configuration to {str(runner.config_file)}' in result.output
+    assert f'Successfully wrote configuration to {runner.config_file!s}' in result.output
     assert result.exit_code == 0
     with open(str(runner.config_file)) as f:
         actual_config = ''.join(f.readlines())
@@ -805,7 +805,7 @@ def test_configure_command_create_vdir(runner):
     assert actual_config == f'''[calendars]
 
 [[private]]
-path = {str(runner.xdg_data_home)}/khal/calendars/private
+path = {runner.xdg_data_home!s}/khal/calendars/private
 type = calendar
 
 [locale]
@@ -826,7 +826,7 @@ default_calendar = private
         main_khal, ['configure'],
         input=choices(),
     )
-    assert f'Successfully wrote configuration to {str(runner.config_file)}' in result.output
+    assert f'Successfully wrote configuration to {runner.config_file!s}' in result.output
     assert result.exit_code == 0
     with open(str(runner.config_file)) as f:
         actual_config = ''.join(f.readlines())

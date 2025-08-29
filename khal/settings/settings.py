@@ -129,7 +129,7 @@ def get_config(
                     logger.fatal(
                         'config error:\n'
                         f'in {sectionize(section + [subsection])} {key}: '
-                        f'{str(config_error[key])}'
+                        f'{config_error[key]!s}'
                     )
 
     if abort or not results:
