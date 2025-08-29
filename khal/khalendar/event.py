@@ -149,7 +149,7 @@ class Event:
         if ref is None:
             ref = 'PROTO' if ref in vevents.keys() else list(vevents.keys())[0]
         try:
-            if type(vevents[ref]['DTSTART'].dt) != type(vevents[ref]['DTEND'].dt):  # noqa: E721
+            if type(vevents[ref]['DTSTART'].dt) != type(vevents[ref]['DTEND'].dt):
                 raise ValueError('DTSTART and DTEND should be of the same type (datetime or date)')
         except KeyError:
             pass

@@ -30,7 +30,7 @@ import itertools
 import logging
 import os
 import os.path
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union  # noqa
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from khal.custom_types import CalendarConfiguration, EventCreationTypes, LocaleConfiguration
 from khal.icalendar import new_vevent
