@@ -469,10 +469,7 @@ def sanitize_rrule(vevent):
 
 def invalid_timezone(prop):
     """check if an icalendar property has a timezone attached we don't understand"""
-    if hasattr(prop.dt, 'tzinfo') and prop.dt.tzinfo is None and 'TZID' in prop.params:
-        return True
-    else:
-        return False
+    return bool(hasattr(prop.dt, 'tzinfo') and prop.dt.tzinfo is None and 'TZID' in prop.params)
 
 
 def _get_all_properties(vevent, prop):

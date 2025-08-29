@@ -113,9 +113,9 @@ def expand_path(path: str) -> str:
 
 
 def expand_db_path(path: str) -> str:
-    """expands `~` as well as variable names, defaults to $XDG_DATA_HOME"""
+    """expands `~` as well as variable names, defaults to $XDG_CACHE_HOME"""
     if path is None:
-        path = join(xdg.BaseDirectory.xdg_data_home, 'khal', 'khal.db')
+        path = join(xdg.BaseDirectory.xdg_cache_home, 'khal', 'khal.db')
     return expanduser(expandvars(path))
 
 
