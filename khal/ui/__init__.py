@@ -780,7 +780,7 @@ class EventColumn(urwid.WidgetWrap):
             ContainerWidget = linebox[self.pane._conf['view']['frame']]
             new_pane = urwid.Columns([
                 ('weight', 2, CAttrMap(ContainerWidget(editor), 'editor', 'editor focus')),
-                ('weight', 1, CAttrMap(ContainerWidget(self.dlistbox), 'reveal focus')),
+                ('weight', 1, CAttrMap(ContainerWidget(self.dlistbox), 'eventcolumn')),
             ], dividechars=0, focus_column=0)
             new_pane.title = editor.title
 
