@@ -98,14 +98,21 @@ class _KhalGroup(click.Group):
 @global_options
 @click.pass_context
 def cli(ctx, config):
-    # setting the process title so it looks nicer in ps
-    # shows up as 'khal' under linux and as 'python: khal (python2.7)'
-    # under FreeBSD, which is still nicer than the default
+    """Command-line interface for khal."""
     setproctitle('khal')
-    if ctx.logfilepath:
+    # S'assurer que ctx.obj est initialisé
+    if ctx.obj is None:
+        ctx.ensure_object(dict)
+
+    # Gestion de logfilepath
+    if ctx.obj.get('logfilepath'):
         logger = logging.getLogger('khal')
-        logger.handlers = [logging.FileHandler(ctx.logfilepath)]
+        logger.handlers = [logging.FileHandler(ctx.obj['logfilepath'])]
+
     prepare_context(ctx, config)
+
+
+
 
 @cli.command()
 @multi_calendar_option
@@ -554,16 +561,32 @@ def at(ctx, datetime, notstarted, format, day_format, json, include_calendar, ex
         sys.exit(1)
 
 @cli.command()
+@click.option(
+    '--config', '-c',
+    default=None,
+    help='Path to the configuration file to use.'
+)
 @click.pass_context
-def configure(ctx):
+def configure(ctx, config):
     """Helper for initial configuration of khal."""
+    config_path = config or ctx.obj.get('config')
+
+
     from . import configwizard
     try:
-        configwizard.configwizard()
+        configwizard.configwizard(config_path=config_path)
     except FatalError as error:
         logger.debug(error, exc_info=True)
         logger.fatal(error)
         sys.exit(1)
+
+
+
+
+
+
+
+
 
 
 main_khal, main_ikhal = cli, interactive_cli
