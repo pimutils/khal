@@ -254,10 +254,11 @@ def expand(
     events_tz = getattr(dtstart_prop.dt, "tzinfo", None) if not allday else None
 
     def sanitize_datetime(date: dt.date) -> dt.date:
-        if allday and isinstance(date, dt.datetime):
-            date = date.date()
-        if events_tz is not None:
-            date = events_tz.localize(date)
+        if isinstance(date, dt.datetime):
+            if allday:
+                date = date.date()
+            if events_tz is not None:
+                date = events_tz.localize(date)
         return date
 
     rrule_param = vevent.get("RRULE")
