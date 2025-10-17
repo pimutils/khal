@@ -722,6 +722,14 @@ class Event:
         attributes["repeat-symbol"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
         attributes["alarm-symbol"] = self._alarm_str
+        attributes["alarms-list"] = [
+            {
+                "delta": alarm[0].total_seconds(),
+                "description": str(alarm[1]),
+                "delta-formatted": timedelta2str(alarm[0])
+            }
+            for alarm in self.alarms
+        ]
         attributes["status-symbol"] = self._status_str
         attributes["partstat-symbol"] = self._partstat_str
         attributes["title"] = self.summary
