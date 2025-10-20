@@ -25,7 +25,7 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from typing import Callable, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import icalendar
 import icalendar.cal
@@ -603,7 +603,7 @@ class Event:
         """
         env = env or {}
 
-        attributes = {}
+        attributes: dict[str, Any] = {}
         if isinstance(relative_to, tuple):
             relative_to_start, relative_to_end = relative_to
         else:

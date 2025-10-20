@@ -199,7 +199,8 @@ def human_formatter(format_string, width=None, colors=True):
 
             if 'alarms-list' in row and isinstance(row['alarms-list'], list):
                 row['alarms-list'] = ", ".join(
-                    alarm['description']+"@"+alarm['delta-formatted'] for alarm in row['alarms-list']
+                    alarm['description']+"@"+alarm['delta-formatted']
+                    for alarm in row['alarms-list']
                 )
 
             s = format_string.format(**row)

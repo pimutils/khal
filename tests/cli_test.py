@@ -495,7 +495,10 @@ def test_list_alarms_json(runner):
         f"new {now} 18:00 myevent --alarms 15m,1h".split())
     args = ['list', '--json', 'alarms-list']
     result = runner.invoke(main_khal, args)
-    expected = '[{"alarms-list": [{"delta": -900.0, "description": "", "delta-formatted": "-15m"}, {"delta": -3600.0, "description": "", "delta-formatted": "-1h"}]}]'
+    expected = '[{"alarms-list": [\
+    {"delta": -900.0, "description": "", "delta-formatted": "-15m"},\
+    {"delta": -3600.0, "description": "", "delta-formatted": "-1h"}\
+    ]}]'
     assert not result.exception
     assert result.output.startswith(expected)
 
