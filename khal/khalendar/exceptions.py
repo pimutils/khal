@@ -65,7 +65,7 @@ class UpdateFailed(Error):
 class DuplicateUid(Error):
 
     """an event with this UID already exists"""
-    existing_href = None  # type: Optional[str]
+    existing_href: Optional[str] = None
 
 
 class NonUniqueUID(Error):
