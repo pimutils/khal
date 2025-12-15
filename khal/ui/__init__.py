@@ -36,8 +36,9 @@ from khal.parse_datetime import timedelta2str
 
 from . import colors
 from .base import Pane, Window
+from .calendarwidget import CalendarWidget
 from .editor import EventEditor, ExportDialog
-from .widgets import CalendarWidget, CAttrMap, NColumns, NPile, button, linebox
+from .widgets import CAttrMap, NColumns, NPile, button, linebox
 from .widgets import ExtendedEdit as Edit
 
 logger = logging.getLogger('khal')

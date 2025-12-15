@@ -26,9 +26,9 @@ import urwid
 
 from khal.utils import get_weekday_occurrence, get_wrapped_text
 
+from .calendarwidget import CalendarWidget
 from .widgets import (
     AlarmsEditor,
-    CalendarWidget,
     CAttrMap,
     Choice,
     CPadding,
