@@ -60,21 +60,21 @@ ansi_sgr = re.compile(r'\x1b\['
 
 
 def find_last_reset(string: str) -> tuple[int, int, str]:
-    for match in re.finditer(ansi_reset, string):
-        pass
-    try:
-        return match.start(), match.end(), match.group(0)
-    except UnboundLocalError:
+    last = None
+    for m in re.finditer(ansi_reset, string):
+        last = m
+    if last is None:
         return -2, -1, ''
+    return last.start(), last.end(), last.group(0)
 
 
 def find_last_sgr(string: str) -> tuple[int, int, str]:
-    for match in re.finditer(ansi_sgr, string):
-        pass
-    try:
-        return match.start(), match.end(), match.group(0)
-    except UnboundLocalError:
+    last = None
+    for m in re.finditer(ansi_sgr, string):
+        last = m
+    if last is None:
         return -2, -1, ''
+    return last.start(), last.end(), last.group(0)
 
 
 def find_unmatched_sgr(string: str) -> Optional[str]:
