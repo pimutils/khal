@@ -1,8 +1,9 @@
 [Desktop Entry]
 Name=ikhal
-Categories=Calendar;ConsoleOnly;
+Categories=Office;Calendar;ConsoleOnly;
 GenericName=Calendar application
 Comment=Terminal CLI calendar application
+Icon=x-office-calendar
 Exec=ikhal
 Terminal=true
 Type=Application
