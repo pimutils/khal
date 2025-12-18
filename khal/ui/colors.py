@@ -100,7 +100,7 @@ light = [
 
     ('editbx', 'light gray', 'dark blue'),
     ('editcp', 'black', 'light gray', 'standout'),
-    ('popupbg', 'white', 'black', 'bold'),
+    ('popupbg', 'white', 'white', 'bold'),
     ('popupper', 'black', 'light gray'),
     ('caption', 'black', '', ''),
 ]
