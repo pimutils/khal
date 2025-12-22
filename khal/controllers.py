@@ -216,7 +216,7 @@ def get_events_between(
         # yes the logic could be simplified, but I believe it's easier
         # to understand what's going on here this way
         if notstarted:
-            if event.allday and event.start < original_start.date():
+            if event.allday and event.start <= original_start.date():
                 continue
             elif not event.allday and event.start_local < original_start:
                 continue
