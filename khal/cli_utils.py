@@ -59,8 +59,13 @@ def multi_calendar_select(ctx, include_calendars, exclude_calendars):
         selection.update(include_calendars)
     elif exclude_calendars:
         selection.update(ctx.obj['conf']['calendars'].keys())
-        for value in exclude_calendars:
-            selection.remove(value)
+        for cal_name in exclude_calendars:
+            if cal_name not in selection:
+                raise click.BadParameter(
+                    f'Unknown calendar {cal_name}, run `khal printcalendars` '
+                    'to get a list of all configured calendars.'
+                )
+            selection.discard(cal_name)
 
     return selection or None
 
