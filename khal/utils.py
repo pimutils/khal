@@ -214,17 +214,45 @@ def human_formatter(format_string, width=None, colors=True):
 
 
 CONTENT_ATTRIBUTES = ['start', 'start-long', 'start-date', 'start-date-long',
-                      'start-time', 'end', 'end-long', 'end-date', 'end-date-long', 'end-time',
-                      'duration', 'start-full', 'start-long-full', 'start-date-full',
-                      'start-date-long-full', 'start-time-full', 'end-full', 'end-long-full',
-                      'end-date-full', 'end-date-long-full', 'end-time-full', 'duration-full',
                       'start-style', 'end-style', 'to-style', 'start-end-time-style',
                       'end-necessary', 'end-necessary-long', 'repeat-symbol', 'repeat-pattern',
                       'title', 'organizer', 'description', 'location', 'all-day', 'categories',
-                      'uid', 'url', 'calendar', 'calendar-color', 'status', 'cancelled']
+                      'uid', 'url', 'calendar', 'calendar-color', 'status', 'cancelled', 'attendees']
+
 
 
 def json_formatter(fields):
+    """Create a formatter that formats events in JSON."""
+    if len(fields) == 1 and fields[0] == 'all':
+        fields = CONTENT_ATTRIBUTES
+
+    def fmt(rows):
+        single = isinstance(rows, dict)
+        if single:
+            rows = [rows]
+
+        filtered = []
+        for row in rows:
+            row['attendees'] = row.get('attendees', '')  # Ajout d'une valeur par défaut
+            f = dict(filter(lambda e: e[0] in fields and e[0] in CONTENT_ATTRIBUTES, row.items()))
+
+            if f.get('repeat-symbol', '') != '':
+                f["repeat-symbol"] = f["repeat-symbol"].strip()
+            if f.get('status', '') != '':
+                f["status"] = f["status"].strip()
+            if f.get('cancelled', '') != '':
+                f["cancelled"] = f["cancelled"].strip()
+
+            filtered.append(f)
+
+        results = [json.dumps(filtered, ensure_ascii=False)]
+
+        if single:
+            return results[0]
+        else:
+            return results
+    return fmt
+
     """Create a formatter that formats events in JSON."""
 
     if len(fields) == 1 and fields[0] == 'all':
@@ -237,7 +265,10 @@ def json_formatter(fields):
 
         filtered = []
         for row in rows:
+            print(f"Processing row: {row}")  # Affiche les données brutes
+            row['attendees'] = row.get('attendees', '')
             f = dict(filter(lambda e: e[0] in fields and e[0] in CONTENT_ATTRIBUTES, row.items()))
+            print(f"Filtered row: {f}")  # Affiche les données filtrées
 
             if f.get('repeat-symbol', '') != '':
                 f["repeat-symbol"] = f["repeat-symbol"].strip()
