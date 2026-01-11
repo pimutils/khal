@@ -475,6 +475,34 @@ def test_list_json(runner):
     assert result.output.startswith(expected)
 
 
+def test_list_alarms(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    runner.invoke(
+        main_khal,
+        f"new {now} 18:00 myevent --alarms -15m,1h".split())
+    args = ['list', '--format', '{alarms-list}', '--day-format', '']
+    result = runner.invoke(main_khal, args)
+    assert not result.exception
+    assert result.output.strip() == '@15m, @-1h'
+
+
+def test_list_alarms_json(runner):
+    runner = runner()
+    now = dt.datetime.now().strftime('%d.%m.%Y')
+    runner.invoke(
+        main_khal,
+        f"new {now} 18:00 myevent --alarms 15m,1h".split())
+    args = ['list', '--json', 'alarms-list']
+    result = runner.invoke(main_khal, args)
+    expected = '[{"alarms-list": [\
+    {"delta": -900.0, "description": "", "delta-formatted": "-15m"},\
+    {"delta": -3600.0, "description": "", "delta-formatted": "-1h"}\
+    ]}]'
+    assert not result.exception
+    assert result.output.startswith(expected)
+
+
 def test_search(runner):
     runner = runner(days=2)
     now = dt.datetime.now().strftime('%d.%m.%Y')
