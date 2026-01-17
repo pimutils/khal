@@ -379,6 +379,7 @@ class EventEditor(urwid.WidgetWrap):
         self.location = event.location
         self.attendees = event.attendees
         self.categories = event.categories
+        self.busystatus = event.busystatus
         self.url = event.url
         self.startendeditor = StartEndEditor(
             event.start_local, event.end_local, self._conf,
@@ -413,6 +414,12 @@ class EventEditor(urwid.WidgetWrap):
             ),
             'edit', 'edit focus',
         )
+
+        allowed_status = self.event.allowed_busystatus
+        self.busystatus_choose = Choice(
+            allowed_status.keys(), active=self.busystatus,
+            decorate_func=(lambda x: allowed_status[x]), overlay_width=24)
+
         self.location = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'Location:    '), edit_text=self.location), 'edit', 'edit focus',
         )
@@ -445,6 +452,7 @@ class EventEditor(urwid.WidgetWrap):
             self.attendees,
             divider,
             self.startendeditor,
+            urwid.Columns([(24, self.busystatus_choose)]),
             self.recurrenceeditor,
             divider,
             self.alarmseditor,
@@ -516,6 +524,8 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if self.startendeditor.changed or self.calendar_chooser.changed:
             return True
+        if self.busystatus_choose.changed:
+            return True
         if self.recurrenceeditor.changed:
             return True
         if self.alarmseditor.changed:
@@ -529,6 +539,7 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_attendees(get_wrapped_text(self.attendees).split(','))
         self.event.update_categories(get_wrapped_text(self.categories).split(','))
         self.event.update_url(get_wrapped_text(self.url))
+        self.event.update_busystatus(self.busystatus_choose.active)
 
         if self.startendeditor.changed:
             self.event.update_start_end(
