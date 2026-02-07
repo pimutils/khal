@@ -221,7 +221,8 @@ CONTENT_ATTRIBUTES = ['start', 'start-long', 'start-date', 'start-date-long',
                       'start-style', 'end-style', 'to-style', 'start-end-time-style',
                       'end-necessary', 'end-necessary-long', 'repeat-symbol', 'repeat-pattern',
                       'title', 'organizer', 'description', 'location', 'all-day', 'categories',
-                      'uid', 'url', 'calendar', 'calendar-color', 'status', 'cancelled']
+                      'uid', 'url', 'calendar', 'calendar-color', 'status', 'cancelled',
+                      'current-date']
 
 
 def json_formatter(fields):
