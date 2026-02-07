@@ -645,6 +645,8 @@ class Event:
         attributes["end-date-long"] = self.end_local.strftime(self._locale['longdateformat'])
         attributes["end-time"] = self.end_local.strftime(self._locale['timeformat'])
 
+        attributes["current-date"] = relative_to_start.strftime(self._locale['dateformat'])
+
         attributes["duration"] = timedelta2str(self.duration)
 
         # should only have time attributes at this point (start/end)
