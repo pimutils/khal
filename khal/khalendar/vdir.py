@@ -149,18 +149,26 @@ def atomic_write(dest, overwrite=False):
 
     try:
         yield file
-    except Exception:
+    except OSError:
         os.unlink(src)
         raise
     else:
         file.flush()
         file.close()
 
-        if overwrite:
-            os.rename(src, dest)
-        else:
-            os.link(src, dest)
-            os.unlink(src)
+        try:
+            if overwrite:
+                os.rename(src, dest)
+            else:
+                os.link(src, dest)
+                os.unlink(src)
+        except OSError:
+            # Ensure temp file is cleaned up if link/rename fails
+            try:
+                os.unlink(src)
+            except OSError:
+                pass  # File might already be deleted
+            raise
 
 
 class VdirBase:
