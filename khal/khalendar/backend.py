@@ -298,8 +298,12 @@ class SQLiteDb:
                 if 'FN' in vcard:
                     name = vcard['FN']
                 else:
-                    n = vcard['N'].split(';')
-                    name = ' '.join([n[1], n[2], n[0]])
+                    vn = vcard['N']
+                    if isinstance (vn, str): # icalendar < 7.0.0
+                        n = vn.split(';')
+                        name = ' '.join([n[1], n[2], n[0]])
+                    else:
+                        name = f'{vn.fields.given} {vn.fields.additional} {vn.fields.family}'
                 vevent = icalendar.Event()
                 vevent.add('dtstart', date)
                 vevent.add('dtend', date + dt.timedelta(days=1))
