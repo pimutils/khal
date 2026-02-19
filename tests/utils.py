@@ -7,6 +7,12 @@ from khal.custom_types import LocaleConfiguration
 from khal.khalendar import CalendarCollection
 from khal.khalendar.vdir import Vdir
 
+try:
+    from icalendar.parser import Contentlines  # icalendar >= 7.0.0
+except ImportError:
+    from icalendar.cal import Contentlines  # icalendar < 7.0.0  # noqa: F401
+
+
 CollVdirType = tuple[CalendarCollection, dict[str, Vdir]]
 
 cal0 = 'a_calendar'
@@ -75,7 +81,7 @@ def normalize_component(x):
     x = icalendar.cal.Component.from_ical(x)
 
     def inner(c):
-        contentlines = icalendar.cal.Contentlines()
+        contentlines = Contentlines()
         for name, value in c.property_items(sorted=True, recursive=False):
             contentlines.append(c.content_line(name, value, sorted=True))
         contentlines.append('')
