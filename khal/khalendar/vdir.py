@@ -156,12 +156,16 @@ def atomic_write(dest, overwrite=False):
         file.flush()
         file.close()
 
-        if overwrite:
-            os.rename(src, dest)
-        else:
-            os.link(src, dest)
-            os.unlink(src)
-
+        try:
+            if overwrite:
+                os.rename(src, dest)
+            else:
+                os.link(src, dest)
+        except OSError:
+            raise
+        finally:
+            with contextlib.suppress(OSError):
+                os.unlink(src)
 
 class VdirBase:
     item_class = Item
