@@ -355,6 +355,13 @@ class Event:
         else:
             return email
 
+    def update_organizer(self, organizer: str) -> None:
+        if organizer:
+            self._vevents[self.ref]['ORGANIZER'] = organizer
+        else:
+            self._vevents[self.ref].pop('ORGANIZER')
+
+
     @property
     def url(self) -> str:
         if 'URL' not in self._vevents[self.ref]:
