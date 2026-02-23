@@ -377,6 +377,7 @@ class EventEditor(urwid.WidgetWrap):
 
         self.description = event.description
         self.location = event.location
+        self.organizer = event.organizer
         self.attendees = event.attendees
         self.categories = event.categories
         self.url = event.url
@@ -419,6 +420,10 @@ class EventEditor(urwid.WidgetWrap):
         self.categories = urwid.AttrMap(ExtendedEdit(
             caption=('caption', 'Categories:  '), edit_text=self.categories), 'edit', 'edit focus',
         )
+
+        self.organizer = urwid.AttrMap(ExtendedEdit(
+            caption=('caption', 'Organizer:    '), edit_text=self.organizer), 'edit', 'edit focus',
+        )
         self.attendees = urwid.AttrMap(
             ExtendedEdit(
                 caption=('caption', 'Attendees:   '),
@@ -442,6 +447,7 @@ class EventEditor(urwid.WidgetWrap):
             self.description,
             self.url,
             divider,
+            self.organizer,
             self.attendees,
             divider,
             self.startendeditor,
@@ -512,6 +518,8 @@ class EventEditor(urwid.WidgetWrap):
             return True
         if get_wrapped_text(self.url) != self.event.url:
             return True
+        if get_wrapped_text(self.organizer) != self.event.organizer:
+            return True
         if get_wrapped_text(self.attendees) != self.event.attendees:
             return True
         if self.startendeditor.changed or self.calendar_chooser.changed:
@@ -526,6 +534,7 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_summary(get_wrapped_text(self.summary))
         self.event.update_description(get_wrapped_text(self.description))
         self.event.update_location(get_wrapped_text(self.location))
+        self.event.update_organizer(get_wrapped_text(self.organizer))
         self.event.update_attendees(get_wrapped_text(self.attendees).split(','))
         self.event.update_categories(get_wrapped_text(self.categories).split(','))
         self.event.update_url(get_wrapped_text(self.url))
