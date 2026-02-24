@@ -115,6 +115,9 @@ Several options are common to almost all of :program:`khal`'s commands
    alarm-symbol
         An alarm symbol (alarm clock) if the event has at least one alarm.
 
+   alarms-list
+        A comma-separated list of alarms for the event (e.g., `alarm1@-15m, getready@-1h`).
+
    location
         The event location.
 
@@ -222,7 +225,7 @@ Several options are common to almost all of :program:`khal`'s commands
            end-date-long, end-time, start-full, start-long-full,
            start-date-full, start-date-long-full, start-time-full,
            end-full, end-long-full, end-date-full, end-date-long-full,
-           end-time-full, repeat-symbol, location, calendar,
+           end-time-full, repeat-symbol, alarms-list, location, calendar,
            calendar-color, start-style, to-style, end-style,
            start-end-time-style, end-necessary, end-necessary-long,
            status, cancelled, organizer, url, duration, duration-full,
