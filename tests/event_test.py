@@ -676,7 +676,7 @@ def test_create_timezone_in_future():
 
 now = dt.datetime.now()
 min_value = now - dt.timedelta(days=3560)
-max_value = now + dt.timedelta(days=3560)
+max_value = now + dt.timedelta(days=5560)
 AMSTERDAM = pytz.timezone('Europe/Amsterdam')
 
 
