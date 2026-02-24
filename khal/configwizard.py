@@ -23,27 +23,28 @@
 import datetime as dt
 import json
 import logging
+import os
 from functools import partial
 from itertools import zip_longest
 from os import environ, makedirs
-from os.path import dirname, exists, expanduser, expandvars, isdir, join, normpath
+from os.path import dirname, exists, expanduser, expandvars, join, normpath
 from subprocess import call
 
 import xdg
 from click import Choice, UsageError, confirm, prompt
 
 from .exceptions import FatalError
-from .settings import find_configuration_file, utils
+from .settings import utils
 
 logger = logging.getLogger('khal')
 
 
 def compressuser(path):
     """Abbreviate home directory to '~', for presenting a path."""
-    home = normpath(expanduser('~'))
-    path = normpath(path)
+    home = os.path.normpath(os.path.expanduser("~"))
+    path = os.path.normpath(path)
     if path.startswith(home):
-        path = '~' + path[len(home):]
+        path = "~" + path[len(home):]
     return path
 
 
@@ -369,53 +370,34 @@ def create_config(vdirs, dateformat, timeformat, default_calendar=None):
     return config
 
 
-def configwizard():
-    config_file = find_configuration_file()
-    if config_file is not None:
-        logger.fatal(f"Found an existing config file at {compressuser(config_file)}.")
-        logger.fatal(
-            "If you want to create a new configuration file, "
-            "please remove the old one first. Exiting.")
-        raise FatalError()
-    dateformat = choose_datetime_format()
-    print()
-    timeformat = choose_time_format()
-    print()
-    try:
-        vdirs = choose_vdir_calendar()
-    except OSError as error:
-        raise FatalError(error)
 
-    if not vdirs:
-        print("\nWARNING: no vdir configured, khal will not be usable like this!\n")
+def configwizard(config_path=None):
+    """Interactive configuration wizard."""
+    if config_path is None:
+        config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
+        print(f"DEBUG: Defaulting to config_path = {config_path}")
 
-    print()
-    if vdirs:
-        default_calendar = choose_default_calendar(vdirs)
-    else:
-        default_calendar = None
+    config_dir = dirname(config_path)
 
+    # Vérifier si un fichier existe déjà
+    if exists(config_path):
+        overwrite = input(f"Configuration already exists at {config_path}. Overwrite? (y/n): ").strip().lower()
+        if overwrite != 'y':
+            logger.fatal(f"Configuration not overwritten: {compressuser(config_path)}.")
+            return
+
+    # Créer le répertoire si nécessaire
+    if not exists(config_dir):
+        makedirs(config_dir)
+        print(f"DEBUG: Created directory {compressuser(config_dir)}")
+
+    # Écriture de la configuration
     config = create_config(
-        vdirs, dateformat=dateformat, timeformat=timeformat,
-        default_calendar=default_calendar,
+        vdirs=[],
+        dateformat='%Y-%m-%d',
+        timeformat='%H:%M',
+        default_calendar=None
     )
-    config_path = join(xdg.BaseDirectory.xdg_config_home, 'khal', 'config')
-    if not confirm(
-            f"Do you want to write the config to {compressuser(config_path)}? "
-            "(Choosing `No` will abort)", default=True):
-        raise FatalError('User aborted...')
-    config_dir = join(xdg.BaseDirectory.xdg_config_home, 'khal')
-    if not exists(config_dir) and not isdir(config_dir):
-        try:
-            makedirs(config_dir)
-        except OSError as error:
-            print(
-                f"Could not write config file at {compressuser(config_dir)} because of "
-                f"{error}. Aborting"
-            )
-            raise FatalError(error)
-        else:
-            print(f"created directory {compressuser(config_dir)}")
     with open(config_path, 'w') as config_file:
         config_file.write(config)
     print(f"Successfully wrote configuration to {compressuser(config_path)}")
