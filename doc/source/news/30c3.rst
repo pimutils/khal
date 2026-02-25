@@ -1,8 +1,6 @@
+:date: 2013-12-13
 pycarddav and khal at 30c3
 ==========================
-
-.. feed-entry::
-        :date: 2013-12-13
 
 If you will be 30C3_ and would like to discuss the faults and merits of khal or
 pycarddav, commandline calendaring/addressbooking in general, your ideas or just

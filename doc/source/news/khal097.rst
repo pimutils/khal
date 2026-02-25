@@ -1,8 +1,6 @@
+:date: 2017-09-15
 khal v0.9.7 released
 ====================
-
-.. feed-entry::
-        :date: 2017-09-15
 
 `khal v0.9.7`_ comes with two fixes (no more crashing on datetime events with
 UNTIL properties and no more crashes on search finding events with overwritten

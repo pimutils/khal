@@ -106,7 +106,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
-    'sphinxcontrib.newsfeed',
+    'sphinxfeed',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -306,6 +306,16 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
+
+# sphinxfeed ------------------------------------------------------------------
+
+feed_base_url = 'https://lostpackets.de/khal'
+feed_author = 'khal contributors'
+feed_description = 'News feed for khal - a standards based calendar program'
+feed_filename = 'index.rss'
+feed_field_name = 'date'
+
+# intersphinx -----------------------------------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}

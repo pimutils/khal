@@ -1,8 +1,6 @@
+:date: 2017-02-13
 khal v0.9.2 released
 ====================
-
-.. feed-entry::
-        :date: 2017-02-13
 
 
 This is an **important bug fix release**, that fixes a bunch of different bugs,

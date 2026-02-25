@@ -1,8 +1,6 @@
+:date: 2015-07-15
 khal v0.6.0 released
 ====================
-
-.. feed-entry::
-        :date: 2015-07-15
 
 
 Only six weeks after the last version `khal v0.6.0`__ is now available  (yes,

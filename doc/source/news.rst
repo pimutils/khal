@@ -7,10 +7,8 @@ available as an `rss feed <https://lostpackets.de/khal/index.rss>`_ |rss|.
  .. |rss| image:: images/rss.png
         :target: https://lostpackets.de/khal/index.rss
 
-.. feed::
-    :rss: index.rss
-    :title: khal news
-    :link: http://lostpackets.de/khal/
+.. toctree::
+    :hidden:
 
     news/khal0100
     news/khal098

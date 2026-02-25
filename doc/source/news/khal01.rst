@@ -1,8 +1,6 @@
+:date: 2014-04-03
 khal v0.1 released
 ==================
-
-.. feed-entry::
-        :date: 2014-04-03
 
 The first release of khal is here: `khal v0.1.0`__ (and also available on pypi_
 now).

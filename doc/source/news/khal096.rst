@@ -1,8 +1,6 @@
+:date: 2017-06-13
 khal v0.9.6 released
 ====================
-
-.. feed-entry::
-        :date: 2017-06-13
 
 Another minor release, some non-serious bugs and some minor features.
 

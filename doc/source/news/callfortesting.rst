@@ -1,8 +1,6 @@
+:date: 2013-11-19
 Call for Testing
 =================
-
-.. feed-entry::
-        :date: 2013-11-19
 
 While there isn't a release yet, *khal* is, at least partly, in a usable shape
 by now. Please report any errors you stumble upon and improvement suggestions
