@@ -50,7 +50,7 @@ test = [
 ]
 docs = [
   "sphinx!=1.6.1",
-  "sphinxcontrib-newsfeed",
+  "sphinxfeed-lsaffre",
   "sphinx-rtd-theme",
 ]
 
