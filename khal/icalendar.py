@@ -125,6 +125,7 @@ def new_vevent(locale,
 
     event = icalendar.Event()
     event.add('dtstart', dtstart)
+    event.add('X-MICROSOFT-CDO-BUSYSTATUS', "BUSY")
     event.add('dtend', dtend)
     event.add('dtstamp', dt.datetime.now())
     event.add('summary', summary)

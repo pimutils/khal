@@ -984,6 +984,9 @@ class EventDisplay(urwid.WidgetWrap):
         if event.url != '':
             lines.append(urwid.Text('URL: ' + event.url))
 
+        if event.busystatus:
+            lines.append(urwid.Text('Busy: ' + event.busystatus_formatted))
+
         if event.attendees != '':
             lines.append(urwid.Text('Attendees:'))
             for attendee in event.attendees.split(', '):
