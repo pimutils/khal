@@ -603,26 +603,263 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             collection.update(event)
 
 
-def edit(collection, search_string, locale, format=None, allow_past=False, conf=None):
+def _edit_non_interactive(
+    collection,
+    matching_events,
+    search_string,
+    locale,
+    format,
+    conf,
+    edit_all=False,
+    delete=False,
+    summary=None,
+    description=None,
+    location=None,
+    categories=None,
+    url=None,
+    start=None,
+    end=None,
+    alarms=None,
+    repeat=None,
+    repeat_until=None,
+):
+    term_width, _ = get_terminal_size()
+    now = conf['locale']['local_timezone'].localize(dt.datetime.now())
+
+    if len(matching_events) > 1 and not edit_all:
+        echo(f"Multiple events found matching '{search_string}':")
+        for event in matching_events:
+            event_text = textwrap.wrap(
+                human_formatter(format)(event.attributes(relative_to=now)), term_width
+            )
+            echo(''.join(event_text))
+        raise FatalError(
+            f"Multiple events found ({len(matching_events)}). "
+            "Use --all to edit all of them, or refine your search."
+        )
+
+    for event in matching_events:
+        edited = False
+
+        if delete:
+            collection.delete(event.href, event.etag, event.calendar)
+            echo(f"Deleted: {event.summary}")
+            continue
+
+        changes = []
+
+        if summary is not None:
+            old_summary = event.summary
+            event.update_summary(summary)
+            edited = True
+            changes.append(f"summary: '{old_summary}' -> '{summary}'")
+
+        if description is not None:
+            old_desc = event.description
+            if description == 'None':
+                description = ''
+            event.update_description(description)
+            edited = True
+            old_str = old_desc if old_desc else '(none)'
+            new_str = description if description else '(none)'
+            changes.append(f"description: '{old_str}' -> '{new_str}'")
+
+        if location is not None:
+            if location == 'None':
+                location = ''
+            old_loc = event.location
+            event.update_location(location)
+            edited = True
+            old_str = old_loc if old_loc else '(none)'
+            new_str = location if location else '(none)'
+            changes.append(f"location: '{old_str}' -> '{new_str}'")
+
+        if categories is not None:
+            old_cats = event.categories
+            if categories == 'None':
+                event.update_categories([])
+                new_cats_display = '(none)'
+            else:
+                new_cats = [cat.strip() for cat in categories.split(',')]
+                event.update_categories(new_cats)
+                new_cats_display = ','.join(new_cats)
+            edited = True
+            old_cats_display = ','.join(old_cats) if old_cats else '(none)'
+            changes.append(f"categories: '{old_cats_display}' -> '{new_cats_display}'")
+
+        if url is not None:
+            if url == 'None':
+                url = ''
+            old_url = event.url
+            event.update_url(url)
+            edited = True
+            old_str = old_url if old_url else '(none)'
+            new_str = url if url else '(none)'
+            changes.append(f"url: '{old_str}' -> '{new_str}'")
+
+        if start is not None or end is not None:
+            old_start = event.start
+            old_end = event.end
+
+            if start is None:
+                start_dt = old_start
+            else:
+                try:
+                    start_dt = parse_datetime.guessdatetimefstr([start], locale)[0]
+                except Exception as e:
+                    raise FatalError(f"Error parsing start datetime: {e}")
+
+            if end is None:
+                end_dt = old_end
+            else:
+                try:
+                    end_dt = parse_datetime.guessdatetimefstr([end], locale)[0]
+                except Exception as e:
+                    raise FatalError(f"Error parsing end datetime: {e}")
+
+            event.update_start_end(start_dt, end_dt)
+            edited = True
+            if start is not None:
+                changes.append(f"start: '{old_start}' -> '{start_dt}'")
+            if end is not None:
+                changes.append(f"end: '{old_end}' -> '{end_dt}'")
+
+        if alarms is not None:
+            old_alarms = event.alarms
+            if alarms == 'None':
+                event.update_alarms([])
+                new_alarms = []
+            else:
+                new_alarms = []
+                for a in alarms.split(','):
+                    try:
+                        alarm_trig = -1 * parse_datetime.guesstimedeltafstr(a.strip())
+                        new_alarm = (alarm_trig, event.description)
+                        new_alarms.append(new_alarm)
+                    except Exception as e:
+                        raise FatalError(f"Error parsing alarm: {e}")
+                event.update_alarms(new_alarms)
+            edited = True
+            old_count = str(len(old_alarms)) + ' alarms' if old_alarms else '(none)'
+            new_count = str(len(new_alarms)) + ' alarms' if new_alarms else '(none)'
+            changes.append(f"alarms: {old_count} -> {new_count}")
+
+        if repeat is not None or repeat_until is not None:
+            old_rrule = event.recurobject
+            if repeat == 'None':
+                event.update_rrule(None)
+                changes.append('repeat: cleared')
+                edited = True
+            elif repeat is not None:
+                until = repeat_until
+                if until == 'None':
+                    until = None
+                rrule = parse_datetime.rrulefstr(repeat, until, locale, event.start.tzinfo)
+                event.update_rrule(rrule)
+                old_freq = old_rrule.get('freq', 'none') if old_rrule else 'none'
+                until_str = f' until={until}' if until else ''
+                changes.append(f"repeat: '{old_freq}' -> '{repeat}{until_str}'")
+                edited = True
+
+        if edited:
+            event.increment_sequence()
+            collection.update(event)
+            echo(f"Edited: {event.summary}")
+            for change in changes:
+                echo(f'  {change}')
+
+
+def _edit_interactive(collection, matching_events, format, locale, conf):
+    term_width, _ = get_terminal_size()
+    now = conf['locale']['local_timezone'].localize(dt.datetime.now())
+
+    for event in matching_events:
+        event_text = textwrap.wrap(
+            human_formatter(format)(event.attributes(relative_to=now)), term_width
+        )
+        echo(''.join(event_text))
+        if not edit_event(event, collection, locale, allow_quit=True, width=term_width):
+            return
+
+
+def edit(
+    collection,
+    search_string,
+    locale,
+    format=None,
+    allow_past=False,
+    conf=None,
+    summary=None,
+    description=None,
+    location=None,
+    categories=None,
+    url=None,
+    start=None,
+    end=None,
+    alarms=None,
+    repeat=None,
+    repeat_until=None,
+    edit_all=False,
+    delete=False,
+):
     if conf is not None:
         if format is None:
             format = conf['view']['event_format']
 
-    term_width, _ = get_terminal_size()
+    non_interactive = any(
+        [
+            summary is not None,
+            description is not None,
+            location is not None,
+            categories is not None,
+            url is not None,
+            start is not None,
+            end is not None,
+            alarms is not None,
+            repeat is not None,
+            repeat_until is not None,
+            delete,
+        ]
+    )
+
     now = conf['locale']['local_timezone'].localize(dt.datetime.now())
 
     events = sorted(collection.search(search_string))
+    matching_events = []
     for event in events:
         if not allow_past:
             if event.allday and event.end < now.date():
                 continue
             elif not event.allday and event.end_local < now:
                 continue
-        event_text = textwrap.wrap(human_formatter(format)(
-            event.attributes(relative_to=now)), term_width)
-        echo(''.join(event_text))
-        if not edit_event(event, collection, locale, allow_quit=True, width=term_width):
-            return
+        matching_events.append(event)
+
+    if not matching_events:
+        raise FatalError(f"No events found matching '{search_string}'")
+
+    if non_interactive:
+        _edit_non_interactive(
+            collection,
+            matching_events,
+            search_string,
+            locale,
+            format,
+            conf,
+            edit_all=edit_all,
+            delete=delete,
+            summary=summary,
+            description=description,
+            location=location,
+            categories=categories,
+            url=url,
+            start=start,
+            end=end,
+            alarms=alarms,
+            repeat=repeat,
+            repeat_until=repeat_until,
+        )
+    else:
+        _edit_interactive(collection, matching_events, format, locale, conf)
 
 
 def interactive(collection, conf):

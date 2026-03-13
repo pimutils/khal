@@ -493,10 +493,43 @@ def search(ctx, format, json, search_string, include_calendar, exclude_calendar)
               help=('The format of the events.'))
 @click.option('--show-past', help=('Show events that have already occurred as options'),
               is_flag=True)
+@click.option('--summary', '-s',
+              help=('Update the event summary.'))
+@click.option('--description', help=('Update the event description.'))
+@click.option('--location', '-l',
+              help=('Update the event location.'))
+@click.option('--categories', '-g',
+              help=('Update the event categories, comma separated.'))
+@click.option('--url', '-u',
+              help=('Update the event url.'))
+@click.option('--start',
+              help=('Update the event start datetime.'))
+@click.option('--end',
+              help=('Update the event end datetime.'))
+@click.option('--alarms', '-m',
+              help=('Alarm times for the event as DELTAs comma separated'))
+@click.option('--repeat', '-r',
+              help=('Update recurrence: daily, weekly, monthly or yearly.'))
+@click.option('--repeat-until',
+              help=('Update until when the event should repeat (or "None").'))
+@click.option('--all', help=('Edit all matching events in non-interactive mode.'),
+              is_flag=True)
+@click.option('--delete', help=('Delete matching events.'),
+              is_flag=True)
 @click.argument('search_string', nargs=-1)
 @click.pass_context
-def edit(ctx, format, search_string, show_past, include_calendar, exclude_calendar):
-    '''Interactively edit (or delete) events matching the search string.'''
+def edit(ctx, format, search_string, show_past, summary, description, location, categories,
+         url, start, end, alarms, repeat, repeat_until, all, delete, include_calendar,
+         exclude_calendar):
+    '''Edit (or delete) events matching the search string.
+
+    When run without any of the edit flags (--summary, --description, etc.),
+    this command runs in interactive mode, allowing you to edit events one at
+    a time.
+
+    When run with edit flags, this command runs in non-interactive mode.
+    If only one event matches the search string, it is edited directly.
+    If multiple events match, the command will error out unless --all is used.'''
     try:
         controllers.edit(
             build_collection(
@@ -507,7 +540,19 @@ def edit(ctx, format, search_string, show_past, include_calendar, exclude_calend
             format=format,
             allow_past=show_past,
             locale=ctx.obj['conf']['locale'],
-            conf=ctx.obj['conf']
+            conf=ctx.obj['conf'],
+            summary=summary,
+            description=description,
+            location=location,
+            categories=categories,
+            url=url,
+            start=start,
+            end=end,
+            alarms=alarms,
+            repeat=repeat,
+            repeat_until=repeat_until,
+            edit_all=all,
+            delete=delete,
         )
     except FatalError as error:
         logger.debug(error, exc_info=True)
