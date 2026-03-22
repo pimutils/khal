@@ -900,6 +900,86 @@ def test_edit(runner):
     assert not result.exception
 
 
+def test_edit_non_interactive(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['new', '13.03.2016', 'Test Event'])
+    assert not result.exception
+
+    format = '{title}'
+    result = runner.invoke(main_khal, ['edit', 'Test Event', '--summary', 'Updated Event'])
+    assert not result.exception
+
+    result = runner.invoke(main_khal, ['list', '--format', format, '--day-format', '', '13.03.2016'])
+    assert 'Updated Event' in result.output
+    assert 'Test Event' not in result.output
+
+
+def test_edit_non_interactive_multiple_fields(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['new', '14.03.2016', 'Meeting'])
+    assert not result.exception
+
+    result = runner.invoke(main_khal, [
+        'edit', 'Meeting',
+        '--summary', 'Team Meeting',
+        '--location', 'Conference Room A',
+        '--description', 'Weekly sync'
+    ])
+    assert not result.exception
+
+    format = '{title} {location} {description}'
+    result = runner.invoke(main_khal, ['list', '--format', format, '--day-format', '', '14.03.2016'])
+    assert 'Team Meeting' in result.output
+    assert 'Conference Room A' in result.output
+    assert 'Weekly sync' in result.output
+
+
+def test_edit_non_interactive_multiple_matches_error(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['new', '15.03.2016', 'Important Meeting'])
+    assert not result.exception
+    result = runner.invoke(main_khal, ['new', '16.03.2016', 'Important Call'])
+    assert not result.exception
+
+    result = runner.invoke(main_khal, ['edit', 'Important', '--summary', 'Test'])
+    assert result.exit_code != 0
+    assert 'Multiple events found' in result.output
+
+
+def test_edit_non_interactive_multiple_matches_with_all(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['new', '15.03.2016', 'Review'])
+    assert not result.exception
+    result = runner.invoke(main_khal, ['new', '16.03.2016', 'Code Review'])
+    assert not result.exception
+
+    result = runner.invoke(main_khal, ['edit', 'Review', '--location', 'Online', '--all'])
+    assert not result.exception
+
+    format = '{title} {location}'
+    result = runner.invoke(main_khal, ['list', '--format', format, '--day-format', '', '15.03.2016', '17.03.2016'])
+    assert 'Review Online' in result.output
+    assert 'Code Review Online' in result.output
+
+
+def test_edit_delete(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['new', '17.03.2016', 'Delete Me'])
+    assert not result.exception
+
+    result = runner.invoke(main_khal, ['edit', 'Delete Me', '--delete'])
+    assert not result.exception
+
+    result = runner.invoke(main_khal, ['list', '--format', '{title}', '--day-format', '', '17.03.2016'])
+    assert 'Delete Me' not in result.output
+
+
+def test_edit_no_match(runner):
+    runner = runner()
+    result = runner.invoke(main_khal, ['edit', 'NonExistent', '--summary', 'Test'])
+    assert result.exit_code != 0
+    assert 'No events found' in result.output or 'No events found' in str(result.exception)
+
 def test_new(runner):
     runner = runner(print_new='path')
 
