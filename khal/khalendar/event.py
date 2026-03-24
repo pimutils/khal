@@ -25,7 +25,7 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from typing import Callable, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import icalendar
 import icalendar.cal
@@ -603,7 +603,7 @@ class Event:
         """
         env = env or {}
 
-        attributes = {}
+        attributes: dict[str, Any] = {}
         if isinstance(relative_to, tuple):
             relative_to_start, relative_to_end = relative_to
         else:
@@ -722,6 +722,14 @@ class Event:
         attributes["repeat-symbol"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
         attributes["alarm-symbol"] = self._alarm_str
+        attributes["alarms-list"] = [
+            {
+                "delta": alarm[0].total_seconds(),
+                "description": str(alarm[1]),
+                "delta-formatted": timedelta2str(alarm[0])
+            }
+            for alarm in self.alarms
+        ]
         attributes["status-symbol"] = self._status_str
         attributes["partstat-symbol"] = self._partstat_str
         attributes["title"] = self.summary
