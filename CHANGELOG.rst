@@ -7,6 +7,11 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.14.1
+======
+unreleased
+* FIX add timezone when assigning start/end time
+
 0.14.0
 ======
 2026-03-24
