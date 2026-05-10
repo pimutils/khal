@@ -12,7 +12,7 @@ khal
 *Khal* is a standards based CLI and terminal calendar program, able to synchronize
 with CalDAV_ servers through vdirsyncer_.
 
-.. image:: http://lostpackets.de/images/khal.png
+.. image:: https://lostpackets.de/images/khal.png
 
 Features
 --------
@@ -37,16 +37,16 @@ working) is via github or via IRC (#pimutils on Libera.Chat).
 
 .. _vdir: https://vdirsyncer.readthedocs.org/en/stable/vdir.html
 .. _vdirsyncer: https://github.com/pimutils/vdirsyncer
-.. _CalDAV: http://en.wikipedia.org/wiki/CalDAV
+.. _CalDAV: https://en.wikipedia.org/wiki/CalDAV
 .. _github: https://github.com/pimutils/khal/
-.. __: http://en.wikipedia.org/wiki/Comparison_of_CalDAV_and_CardDAV_implementations
+.. __: https://en.wikipedia.org/wiki/Comparison_of_CalDAV_and_CardDAV_implementations
 
 
 Documentation
 -------------
 For khal's documentation have a look at readthedocs_.
 
-.. _readthedocs: http://khal.readthedocs.org/
+.. _readthedocs: https://khal.readthedocs.org/
 
 Installation
 ------------
