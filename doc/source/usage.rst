@@ -118,6 +118,9 @@ Several options are common to almost all of :program:`khal`'s commands
    location
         The event location.
 
+   location-separator
+        A separator: " @ " that appears when there is a location.
+
    calendar
         The calendar name.
 
