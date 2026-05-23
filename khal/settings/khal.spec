@@ -77,7 +77,7 @@ type = option('calendar', 'birthdays', 'discover', default='calendar')
 addresses = force_list(default='')
 
 [sqlite]
-# khal stores its internal caching database here, by default this will be in the *$XDG_DATA_HOME/khal/khal.db* (this will most likely be *~/.local/share/khal/khal.db*).
+# khal stores its internal caching database here, by default this will be in the *$XDG_CACHE_HOME/khal/khal.db* (this will most likely be *~/.cache/khal/khal.db*).
 path = expand_db_path(default=None)
 
 # It is mandatory to set (long)date-, time-, and datetimeformat options, all others options in the **[locale]** section are optional and have (sensible) defaults.

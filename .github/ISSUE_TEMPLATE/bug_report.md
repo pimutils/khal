@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 **OS, version, khal version and how you installed it:**
  - The output of khal --version: [e.g. `khal, version 0.11.2.dev20+g0c47162.d20230530` ]
  - Installation method [e.g. PyPI, git, OS repo]
- - python version [e.g. python 3.9]
+ - python version [e.g. python 3.10]
  - OS [e.g. arch]
  - Your khal config file
  - The versions of your other python packages [e.g. the output of `pip freeze`]

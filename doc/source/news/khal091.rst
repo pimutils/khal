@@ -1,8 +1,6 @@
+:date: 2017-01-25
 khal v0.9.1 released
 ====================
-
-.. feed-entry::
-        :date: 2017-01-25
 
 This is a bug fix release for python 3.6.
 

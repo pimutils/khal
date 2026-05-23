@@ -1,8 +1,6 @@
+:date: 2017-01-24
 khal v0.9.0 released
 ====================
-
-.. feed-entry::
-        :date: 2017-01-24
 
 
 This is probably the biggest release of khal to date, that is, the one with the

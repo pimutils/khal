@@ -1,8 +1,6 @@
+:date: 2015-06-01
 khal v0.5.0 released
 ====================
-
-.. feed-entry::
-        :date: 2015-06-01
 
 A new release of khal is here: `khal v0.5.0`__ (also available on pypi_).
 

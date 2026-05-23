@@ -1,8 +1,6 @@
+:date: 2019-03-25
 khal v0.10.0 released
 =====================
-
-.. feed-entry::
-        :date: 2019-03-25
 
 This is not only the first bugfix release in more than a year, but also the
 first release containing new features in nearly two years.

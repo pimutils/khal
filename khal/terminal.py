@@ -22,7 +22,7 @@
 """all functions related to terminal display are collected here"""
 
 from itertools import zip_longest
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 
 class NamedColor(NamedTuple):
@@ -30,34 +30,34 @@ class NamedColor(NamedTuple):
     light: bool
 
 
-RTEXT = '\x1b[7m'  # reverse
-NTEXT = '\x1b[0m'  # normal
-BTEXT = '\x1b[1m'  # bold
-RESET = '\33[0m'
+RTEXT = "\x1b[7m"  # reverse
+NTEXT = "\x1b[0m"  # normal
+BTEXT = "\x1b[1m"  # bold
+RESET = "\33[0m"
 COLORS: dict[str, NamedColor] = {
-    'black': NamedColor(color_index=0, light=False),
-    'dark red': NamedColor(color_index=1, light=False),
-    'dark green': NamedColor(color_index=2, light=False),
-    'brown': NamedColor(color_index=3, light=False),
-    'dark blue': NamedColor(color_index=4, light=False),
-    'dark magenta': NamedColor(color_index=5, light=False),
-    'dark cyan': NamedColor(color_index=6, light=False),
-    'white': NamedColor(color_index=7, light=False),
-    'light gray': NamedColor(color_index=7, light=True),
-    'dark gray': NamedColor(color_index=0, light=True),  # actually light black
-    'light red': NamedColor(color_index=1, light=True),
-    'light green': NamedColor(color_index=2, light=True),
-    'yellow': NamedColor(color_index=3, light=True),
-    'light blue': NamedColor(color_index=4, light=True),
-    'light magenta': NamedColor(color_index=5, light=True),
-    'light cyan': NamedColor(color_index=6, light=True)
+    "black": NamedColor(color_index=0, light=False),
+    "dark red": NamedColor(color_index=1, light=False),
+    "dark green": NamedColor(color_index=2, light=False),
+    "brown": NamedColor(color_index=3, light=False),
+    "dark blue": NamedColor(color_index=4, light=False),
+    "dark magenta": NamedColor(color_index=5, light=False),
+    "dark cyan": NamedColor(color_index=6, light=False),
+    "white": NamedColor(color_index=7, light=False),
+    "light gray": NamedColor(color_index=7, light=True),
+    "dark gray": NamedColor(color_index=0, light=True),  # actually light black
+    "light red": NamedColor(color_index=1, light=True),
+    "light green": NamedColor(color_index=2, light=True),
+    "yellow": NamedColor(color_index=3, light=True),
+    "light blue": NamedColor(color_index=4, light=True),
+    "light magenta": NamedColor(color_index=5, light=True),
+    "light cyan": NamedColor(color_index=6, light=True),
 }
 
 
 def get_color(
-    fg: Optional[str]=None,
-    bg: Optional[str]=None,
-    bold_for_light_color: bool=False,
+    fg: str | None = None,
+    bg: str | None = None,
+    bold_for_light_color: bool = False,
 ) -> str:
     """convert foreground and/or background color in ANSI color codes
 
@@ -70,10 +70,10 @@ def get_color(
     :returns: ANSI color code
     """
 
-    result = ''
+    result = ""
     for colorstring, is_bg in ((fg, False), (bg, True)):
         if colorstring:
-            color = '\33['
+            color = "\33["
             if colorstring in COLORS:
                 # 16 color palette
                 if not is_bg:
@@ -81,7 +81,7 @@ def get_color(
                     c = 30 + COLORS[colorstring].color_index
                     if COLORS[colorstring].light:
                         if bold_for_light_color:
-                            color += '1;'
+                            color += "1;"
                         else:
                             c += 60
                 else:
@@ -94,9 +94,9 @@ def get_color(
             elif colorstring.isdigit():
                 # 256 color palette
                 if not is_bg:
-                    color += '38;5;' + colorstring
+                    color += "38;5;" + colorstring
                 else:
-                    color += '48;5;' + colorstring
+                    color += "48;5;" + colorstring
             else:
                 # HTML-style 24-bit color
                 if len(colorstring) == 4:
@@ -110,19 +110,19 @@ def get_color(
                     g = int(colorstring[3:5], 16)
                     b = int(colorstring[5:7], 16)
                 if not is_bg:
-                    color += f'38;2;{r!s};{g!s};{b!s}'
+                    color += f"38;2;{r!s};{g!s};{b!s}"
                 else:
-                    color += f'48;2;{r!s};{g!s};{b!s}'
-            color += 'm'
+                    color += f"48;2;{r!s};{g!s};{b!s}"
+            color += "m"
             result += color
     return result
 
 
 def colored(
     string: str,
-    fg: Optional[str]=None,
-    bg: Optional[str]=None,
-    bold_for_light_color: bool=True,
+    fg: str | None = None,
+    bg: str | None = None,
+    bold_for_light_color: bool = True,
 ) -> str:
     """colorize `string` with ANSI color codes
 
@@ -137,7 +137,7 @@ def colored(
     return result
 
 
-def merge_columns(lcolumn: list[str], rcolumn: list[str], width: int=25) -> list[str]:
+def merge_columns(lcolumn: list[str], rcolumn: list[str], width: int = 25) -> list[str]:
     """merge two lists elementwise together
 
     Wrap right columns to terminal width.
@@ -148,6 +148,6 @@ def merge_columns(lcolumn: list[str], rcolumn: list[str], width: int=25) -> list
     """
     missing = len(rcolumn) - len(lcolumn)
     if missing > 0:
-        lcolumn = lcolumn + missing * [width * ' ']
+        lcolumn = lcolumn + missing * [width * " "]
 
-    return ['    '.join(one) for one in zip_longest(lcolumn, rcolumn, fillvalue='')]
+    return ["    ".join(one) for one in zip_longest(lcolumn, rcolumn, fillvalue="")]

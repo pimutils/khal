@@ -19,7 +19,8 @@ repos:
           - types-setuptools
           - types-python-dateutil
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.12.10'
+    rev: 'v0.15.7'
     hooks:
       - id: ruff
         args: ["--fix"]
+      - id: ruff-format

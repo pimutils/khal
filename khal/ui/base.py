@@ -28,24 +28,23 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from typing import Callable
+from collections.abc import Callable
 
 import urwid
 
 from .widgets import NColumns
 
-logger = logging.getLogger('khal')
+logger = logging.getLogger("khal")
 
 
 class Pane(urwid.WidgetWrap):
-
     """An abstract Pane to be used in a Window object."""
 
     def __init__(self, widget, title=None, description=None) -> None:
         self.widget = widget
         urwid.WidgetWrap.__init__(self, widget)
-        self._title = title or ''
-        self._description = description or ''
+        self._title = title or ""
+        self._description = description or ""
         self.window = None
 
     @property
@@ -75,15 +74,16 @@ class Pane(urwid.WidgetWrap):
         )
         lines.append(buttons)
         content = urwid.LineBox(urwid.Pile(lines))
-        overlay = urwid.Overlay(content, self, 'center', ('relative', 70), ('relative', 70), None)
+        overlay = urwid.Overlay(content, self, "center", ("relative", 70), ("relative", 70), None)
         assert self.window is not None
         self.window.open(overlay)
 
-    def scrollable_dialog(self,
-                          text: str | list[urwid.Text],
-                          buttons: list[tuple[str, Callable]] | None = None,
-                          title: str = "Press `ESC` to close this window",
-                          ) -> None:
+    def scrollable_dialog(
+        self,
+        text: str | list[urwid.Text],
+        buttons: list[tuple[str, Callable]] | None = None,
+        title: str = "Press `ESC` to close this window",
+    ) -> None:
         """Open a scrollable dialog box.
 
         :param text: Text to appear as the body of the Dialog box
@@ -98,33 +98,39 @@ class Pane(urwid.WidgetWrap):
                 [urwid.Button(label, on_press=func) for label, func in buttons],
                 outermost=True,
             )
-            content = urwid.LineBox(urwid.Pile([body, ('pack', buttons)]))
+            content = urwid.LineBox(urwid.Pile([body, ("pack", buttons)]))
         else:
             content = urwid.LineBox(urwid.Pile([body]))
 
         # put the title on the upper line
         over = urwid.Overlay(
-            urwid.Text(" " + title + " "), content, 'center', len(title) + 2, 'top', None,
+            urwid.Text(" " + title + " "),
+            content,
+            "center",
+            len(title) + 2,
+            "top",
+            None,
         )
         overlay = urwid.Overlay(
-            over, self, 'center', ('relative', 70), 'middle', ('relative', 70), None)
+            over, self, "center", ("relative", 70), "middle", ("relative", 70), None
+        )
         assert self.window is not None
         self.window.open(overlay)
 
     def keypress(self, size, key):
         """Handle application-wide key strokes."""
-        if key in ['f1', '?']:
+        if key in ["f1", "?"]:
             self.show_keybindings()
-        elif key in ['L']:
+        elif key in ["L"]:
             self.show_log()
         else:
             return super().keypress(size, key)
 
     def show_keybindings(self):
         lines = []
-        lines.append(urwid.AttrMap(urwid.Text('  Command              Keys'), 'alt header'))
-        for command, keys in self._conf['keybindings'].items():
-            lines.append(urwid.Text(f'  {command:20} {", ".join(keys)}'))
+        lines.append(urwid.AttrMap(urwid.Text("  Command              Keys"), "alt header"))
+        for command, keys in self._conf["keybindings"].items():
+            lines.append(urwid.Text(f"  {command:20} {', '.join(keys)}"))
         self.scrollable_dialog(
             lines,
             title="Press `ESC` to close this window, arrows to scroll",
@@ -132,7 +138,7 @@ class Pane(urwid.WidgetWrap):
 
     def show_log(self):
         self.scrollable_dialog(
-            '\n'.join(self.window._log),
+            "\n".join(self.window._log),
             title="Press `ESC` to close this window, arrows to scroll",
         )
 
@@ -150,14 +156,17 @@ class Window(urwid.Frame):
     to carry data between them.
     """
 
-    def __init__(self, footer='', quit_keys=None) -> None:
-        quit_keys = quit_keys or ['q']
+    def __init__(self, footer="", quit_keys=None) -> None:
+        quit_keys = quit_keys or ["q"]
         self._track: list[urwid.Overlay] = []
 
-        header = urwid.AttrWrap(urwid.Text(''), 'header')
-        footer = urwid.AttrWrap(urwid.Text(footer), 'footer')
+        header = urwid.AttrWrap(urwid.Text(""), "header")
+        footer = urwid.AttrWrap(urwid.Text(footer), "footer")
         urwid.Frame.__init__(
-            self, urwid.Text(''), header=header, footer=footer,
+            self,
+            urwid.Text(""),
+            header=header,
+            footer=footer,
         )
         self.update_header()
         self._original_w = None
@@ -165,6 +174,7 @@ class Window(urwid.Frame):
 
         def alert(message):
             self.update_header(message, warn=True)
+
         self._alert_daemon = AlertDaemon(alert)
         self._alert_daemon.start()
         self.alert = self._alert_daemon.alert
@@ -201,15 +211,14 @@ class Window(urwid.Frame):
             raise urwid.ExitMainLoop()
 
     def is_top_level(self):
-        """Is the current pane the top-level one?
-        """
+        """Is the current pane the top-level one?"""
         return len(self._track) == 1
 
     def on_key_press(self, key):
         """Handle application-wide key strokes."""
         if key in self.quit_keys:
             self.backtrack()
-        elif key == 'esc' and not self.is_top_level():
+        elif key == "esc" and not self.is_top_level():
             self.backtrack()
         return key
 
@@ -226,7 +235,7 @@ class Window(urwid.Frame):
     def clear_header(self):
         """clears header if we are not currently showing a warning"""
         if not self._header_is_warning:
-            pane_title = getattr(self._get_current_pane(), 'title', '')
+            pane_title = getattr(self._get_current_pane(), "title", "")
             self.header.w.set_text(pane_title)
 
     def update_header(self, alert=None, warn=False):
@@ -238,15 +247,15 @@ class Window(urwid.Frame):
         :type alert: str or (palette_entry, str)
         """
         self._header_is_warning = warn
-        pane_title = getattr(self._get_current_pane(), 'title', None)
+        pane_title = getattr(self._get_current_pane(), "title", None)
         text = []
 
         for part in (pane_title, alert):
             if part:
                 text.append(part)
-                text.append(('black', ' | '))
+                text.append(("black", " | "))
 
-        self.header.w.set_text(text[:-1] or '')
+        self.header.w.set_text(text[:-1] or "")
 
 
 class AlertDaemon(threading.Thread):

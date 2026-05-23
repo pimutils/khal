@@ -7,11 +7,23 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
-0.13.1
+0.14.1
 ======
 unreleased
+* FIX add timezone when assigning start/end time
+
+0.14.0
+======
+2026-03-24
 
 * CHANGE the ``pkg_resources`` library is no longer required.
+* FIX the location of caching database to ``$XDG_CACHE_HOME``
+* FIX color of eventcolumn when editing events in ikhal
+* FIX added support for ``icalendar>=7.0.0``.
+* NEW DEPENDENCY sphinxfeed-lsaffre
+* DROPPED DEPENDENCY sphinxcontrib-newsfeed
+* NEW support python 3.14
+* DROPPED support for python versions < 3.10.
 
 0.13.0
 ======

@@ -1,8 +1,6 @@
+:date: 2017-03-06
 khal v0.9.3 released
 ====================
-
-.. feed-entry::
-        :date: 2017-03-06
 
 Sadly, the biggest release in khal's history, also brought the most bugs.
 The latest release, khal version 0.9.3, fixes some more of them.

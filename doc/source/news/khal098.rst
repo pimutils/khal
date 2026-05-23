@@ -1,8 +1,6 @@
+:date: 2017-10-05
 khal v0.9.8 released with an IMPORTANT BUGFIX
 =============================================
-
-.. feed-entry::
-        :date: 2017-10-05
 
 `khal v0.9.8`_ comes with an **IMPORTANT BUGFIX**:
 If editing an event in ikhal and not editing the end time but moving the cursor
