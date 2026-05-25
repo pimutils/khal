@@ -25,7 +25,8 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import icalendar
 import icalendar.cal
@@ -738,7 +739,7 @@ class Event:
             {
                 "delta": alarm[0].total_seconds(),
                 "description": str(alarm[1]),
-                "delta-formatted": timedelta2str(alarm[0])
+                "delta-formatted": timedelta2str(alarm[0]),
             }
             for alarm in self.alarms
         ]

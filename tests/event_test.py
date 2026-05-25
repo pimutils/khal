@@ -598,23 +598,24 @@ def test_event_alarm():
 
 def test_event_alarm_list():
     """test the content of `alarms-list` attribute"""
-    event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    event = Event.fromString(_get_text("event_dt_simple"), **EVENT_KWARGS)
     assert event.alarms == []
-    event.update_alarms([(dt.timedelta(minutes=30), 'alarm 1'),
-                         (-dt.timedelta(hours=1, minutes=30), 'alarm 2')])
+    event.update_alarms(
+        [(dt.timedelta(minutes=30), "alarm 1"), (-dt.timedelta(hours=1, minutes=30), "alarm 2")]
+    )
     attributes = event.attributes(dt.date.today())
-    assert attributes['alarms-list'] == [
-        {'delta': 1800.0, 'description': 'alarm 1', 'delta-formatted': '30m'},
-        {'delta': -5400.0, 'description': 'alarm 2', 'delta-formatted': '-1h -30m'}
+    assert attributes["alarms-list"] == [
+        {"delta": 1800.0, "description": "alarm 1", "delta-formatted": "30m"},
+        {"delta": -5400.0, "description": "alarm 2", "delta-formatted": "-1h -30m"},
     ]
 
 
 def test_event_no_alarms_list():
     """test that `alarms-list` is empty for an event with no alarms"""
-    event = Event.fromString(_get_text('event_dt_simple'), **EVENT_KWARGS)
+    event = Event.fromString(_get_text("event_dt_simple"), **EVENT_KWARGS)
     assert event.alarms == []
     attributes = event.attributes(dt.date.today())
-    assert attributes['alarms-list'] == []
+    assert attributes["alarms-list"] == []
 
 
 def test_event_attendees():
