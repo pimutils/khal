@@ -1,8 +1,6 @@
+:date: 2016-10-11
 khal v0.7.1 released
 ====================
-
-.. feed-entry::
-        :date: 2016-10-11
 
 `khal v0.7.1`_ (pypi_) is a bugfix release that fixes a **critical bug** in
 `khal import`. This is a backport of the fix that got released with v0.8.4_, for

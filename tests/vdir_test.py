@@ -26,17 +26,17 @@ from khal.khalendar import vdir
 
 
 def test_etag(tmpdir, sleep_time):
-    fpath = os.path.join(str(tmpdir), 'foo')
+    fpath = os.path.join(str(tmpdir), "foo")
 
-    file_ = open(fpath, 'w')
-    file_.write('foo')
+    file_ = open(fpath, "w")
+    file_.write("foo")
     file_.close()
 
     old_etag = vdir.get_etag_from_file(fpath)
     sleep(sleep_time)
 
-    file_ = open(fpath, 'w')
-    file_.write('foo')
+    file_ = open(fpath, "w")
+    file_.write("foo")
     file_.close()
 
     new_etag = vdir.get_etag_from_file(fpath)
@@ -45,17 +45,17 @@ def test_etag(tmpdir, sleep_time):
 
 
 def test_etag_sync(tmpdir, sleep_time):
-    fpath = os.path.join(str(tmpdir), 'foo')
+    fpath = os.path.join(str(tmpdir), "foo")
 
-    file_ = open(fpath, 'w')
-    file_.write('foo')
+    file_ = open(fpath, "w")
+    file_.write("foo")
     file_.close()
     os.sync()
     old_etag = vdir.get_etag_from_file(fpath)
     sleep(sleep_time)
 
-    file_ = open(fpath, 'w')
-    file_.write('foo')
+    file_ = open(fpath, "w")
+    file_.write("foo")
     file_.close()
 
     new_etag = vdir.get_etag_from_file(fpath)

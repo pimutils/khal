@@ -21,14 +21,14 @@
 
 
 class Error(Exception):
-
     """base class for all of khal's Exceptions"""
+
     pass
 
 
 class FatalError(Error):
-
     """execution cannot continue"""
+
     pass
 
 
@@ -41,14 +41,14 @@ class ConfigurationError(FatalError):
 
 
 class UnsupportedFeatureError(Error):
-
     """something Failed but we know why"""
+
     pass
 
 
 class UnsupportedRecurrence(Error):
-
     """raised if the RRULE is not understood by dateutil.rrule"""
+
     pass
 
 

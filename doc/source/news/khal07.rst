@@ -1,8 +1,6 @@
+:date: 2015-11-24
 khal v0.7.0 released
 ====================
-
-.. feed-entry::
-        :date: 2015-11-24
 
 The latest version of khal has been released: `khal v0.7.0`__
 (as always, also on pypi_).

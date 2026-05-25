@@ -1,8 +1,6 @@
+:date: 2017-03-30
 khal v0.9.4 released
 ====================
-
-.. feed-entry::
-        :date: 2017-03-30
 
 Another minor release, this time bringing some features, mostly for ikhal:
 among others are an improved light color scheme, an improved editor for

@@ -1,8 +1,6 @@
+:date: 2016-05-16
 khal v0.8.2 released
 ====================
-
-.. feed-entry::
-        :date: 2016-05-16
 
 `khal v0.8.2`__ (pypi_) is a maintenance release that fixes several bugs in
 `configure` that would lead to crashes during the initial configuration and

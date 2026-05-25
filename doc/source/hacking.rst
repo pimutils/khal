@@ -139,7 +139,7 @@ Documentation
 *************
 Khal's documentation, which is living in :file:`doc`, is using sphinx_ to
 generate the html documentation as well as the man page from the same sources.
-After install `sphinx` and `sphinxcontrib-newsfeed` you should be able to build
+After install `sphinx` and `sphinxfeed-lsaffre` you should be able to build
 the documentation with :command:`make html` and :command:`make man` respectively
 from the root of the :file:`doc` directory (note that this requires `GNU make`,
 so on some system running :command:`gmake` may be required).

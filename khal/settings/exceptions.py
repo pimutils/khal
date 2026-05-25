@@ -24,6 +24,7 @@ from khal.exceptions import Error
 
 class InvalidSettingsError(Error):
     """Invalid Settings detected"""
+
     pass
 
 

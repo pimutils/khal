@@ -21,5 +21,5 @@
 
 from khal.cli import main_khal
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main_khal()

@@ -26,8 +26,9 @@ if anything doesn't work as expected, please open an issue for khal
 
 import calendar
 import datetime as dt
+from collections.abc import Callable
 from locale import LC_ALL, LC_TIME, getlocale, setlocale
-from typing import Any, Callable, Literal, Optional, TypedDict, Union
+from typing import Any, Literal, TypedDict
 
 import urwid
 
@@ -38,11 +39,13 @@ from khal.utils import get_month_abbr_len
 class MarkType(TypedDict):
     date: dt.date
     pos: tuple[int, int]
-OnPressType = dict[str, Callable[[dt.date, Optional[dt.date]], Optional[str]]]
-GetStylesSignature = Callable[[dt.date, bool], Optional[Union[str, tuple[str, str]]]]
 
 
-setlocale(LC_ALL, '')
+OnPressType = dict[str, Callable[[dt.date, dt.date | None], str | None]]
+GetStylesSignature = Callable[[dt.date, bool], str | tuple[str, str] | None]
+
+
+setlocale(LC_ALL, "")
 
 
 def getweeknumber(day: dt.date) -> int:
@@ -54,7 +57,6 @@ def getweeknumber(day: dt.date) -> int:
 
 
 class DatePart(urwid.Text):
-
     """used in the Date widget (single digit)"""
 
     def __init__(self, digit: str) -> None:
@@ -70,7 +72,7 @@ class DatePart(urwid.Text):
     def get_cursor_coords(self, size: tuple[int]) -> tuple[int, int]:
         return 1, 0
 
-    def render(self, size: tuple[int], focus: bool=False) -> urwid.Canvas:
+    def render(self, size: tuple[int], focus: bool = False) -> urwid.Canvas:
         canv = super().render(size, focus)
         if focus:
             canv = urwid.CompositeCanvas(canv)
@@ -79,18 +81,19 @@ class DatePart(urwid.Text):
 
 
 class Date(urwid.WidgetWrap):
-
     """used in the main calendar for dates (a number)"""
 
     def __init__(self, date: dt.date, get_styles: GetStylesSignature) -> None:
         dstr = str(date.day).rjust(2)
-        self.halves = [urwid.AttrMap(DatePart(dstr[:1]), None, None),
-                       urwid.AttrMap(DatePart(dstr[1:]), None, None)]
+        self.halves = [
+            urwid.AttrMap(DatePart(dstr[:1]), None, None),
+            urwid.AttrMap(DatePart(dstr[1:]), None, None),
+        ]
         self.date = date
         self._get_styles = get_styles
         super().__init__(urwid.Columns(self.halves))
 
-    def set_styles(self, styles: Union[None, str, tuple[str, str]]) -> None:
+    def set_styles(self, styles: None | str | tuple[str, str]) -> None:
         """If single string, sets the same style for both halves, if two
         strings, sets different style for each half.
         """
@@ -105,12 +108,12 @@ class Date(urwid.WidgetWrap):
             self.halves[0].set_focus_map({None: styles})
             self.halves[1].set_focus_map({None: styles})
 
-    def reset_styles(self, focus: bool=False) -> None:
+    def reset_styles(self, focus: bool = False) -> None:
         self.set_styles(self._get_styles(self.date, focus))
 
     @property
     def marked(self) -> bool:
-        return 'mark' in [self.halves[0].attr_map[None], self.halves[1].attr_map[None]]
+        return "mark" in [self.halves[0].attr_map[None], self.halves[1].attr_map[None]]
 
     @classmethod
     def selectable(cls) -> bool:
@@ -121,7 +124,6 @@ class Date(urwid.WidgetWrap):
 
 
 class DateCColumns(urwid.Columns):
-
     """container for one week worth of dates
     which are horizontally aligned
 
@@ -130,16 +132,19 @@ class DateCColumns(urwid.Columns):
     focus can only move away by pressing 'TAB',
     calls 'on_date_change' on every focus change (see below for details)
     """
+
     # TODO only call on_date_change when we change our date ourselves,
     # not if it gets changed by an (external) call to set_focus_date()
 
-    def __init__(self,
-                 widget_list,
-                 on_date_change: Callable[[dt.date], None],
-                 on_press: OnPressType,
-                 keybindings: dict[str, list[str]],
-                 get_styles: GetStylesSignature,
-                 **kwargs) -> None:
+    def __init__(
+        self,
+        widget_list,
+        on_date_change: Callable[[dt.date], None],
+        on_press: OnPressType,
+        keybindings: dict[str, list[str]],
+        get_styles: GetStylesSignature,
+        **kwargs,
+    ) -> None:
         self.on_date_change = on_date_change
         self.on_press = on_press
         self.keybindings = keybindings
@@ -148,12 +153,11 @@ class DateCColumns(urwid.Columns):
         super().__init__(widget_list, **kwargs)
 
     def __repr__(self) -> str:
-        return f'<DateCColumns from {self[1].date} to {self[7].date}>'
+        return f"<DateCColumns from {self[1].date} to {self[7].date}>"
 
     def _clear_cursor(self) -> None:
         old_pos: int = self.focus_position
-        self.contents[old_pos][0].set_styles(
-            self.get_styles(self.contents[old_pos][0].date, False))
+        self.contents[old_pos][0].set_styles(self.get_styles(self.contents[old_pos][0].date, False))
 
     @property
     def focus_position(self) -> int:
@@ -170,7 +174,8 @@ class DateCColumns(urwid.Columns):
         else:
             self._clear_cursor()
             self.contents[position][0].set_styles(
-                self.get_styles(self.contents[position][0].date, True))
+                self.get_styles(self.contents[position][0].date, True)
+            )
             self.on_date_change(self.contents[position][0].date)
         urwid.Columns.focus_position.fset(self, position)
 
@@ -179,28 +184,28 @@ class DateCColumns(urwid.Columns):
             if day[0].date == a_date:
                 self.focus_position = num
                 return None
-        raise ValueError(f'{a_date} not found in this week')
+        raise ValueError(f"{a_date} not found in this week")
 
     def get_date_column(self, a_date: dt.date) -> int:
         """return the column `a_date` is in, raises ValueError if `a_date`
-           cannot be found
+        cannot be found
         """
         for num, day in enumerate(self.contents[1:8], 1):
             if day[0].date == a_date:
                 return num
-        raise ValueError(f'{a_date} not found in this week')
+        raise ValueError(f"{a_date} not found in this week")
 
     def keypress(self, size: tuple[int], key: str) -> str:
         """only leave calendar area on pressing 'tab' or 'enter'"""
 
-        if key in self.keybindings['left']:
-            key = 'left'
-        elif key in self.keybindings['up']:
-            key = 'up'
-        elif key in self.keybindings['right']:
-            key = 'right'
-        elif key in self.keybindings['down']:
-            key = 'down'
+        if key in self.keybindings["left"]:
+            key = "left"
+        elif key in self.keybindings["up"]:
+            key = "up"
+        elif key in self.keybindings["right"]:
+            key = "right"
+        elif key in self.keybindings["down"]:
+            key = "down"
 
         exit_row = False  # set this, if we are leaving the current row
         old_pos = self.focus_position
@@ -208,18 +213,18 @@ class DateCColumns(urwid.Columns):
         key = super().keypress(size, key)
 
         # make sure we don't leave the calendar
-        if old_pos == 7 and key == 'right':
+        if old_pos == 7 and key == "right":
             self.focus_position = 1
             exit_row = True
-            key = 'down'
-        elif old_pos == 1 and key == 'left':
+            key = "down"
+        elif old_pos == 1 and key == "left":
             self.focus_position = 7
             exit_row = True
-            key = 'up'
-        elif key in self.keybindings['view']:  # TODO make this more generic
+            key = "up"
+        elif key in self.keybindings["view"]:  # TODO make this more generic
             self.focus_position = old_pos
-            key = 'right'
-        elif key in ['up', 'down']:
+            key = "right"
+        elif key in ["up", "down"]:
             exit_row = True
 
         if exit_row:
@@ -227,18 +232,19 @@ class DateCColumns(urwid.Columns):
 
         return key
 
+
 class CListBox(urwid.ListBox):
     """our custom version of ListBox containing a CalendarWalker instance
 
     it should contain a `CalendarWalker` instance which it autoextends on
-    rendering, if needed """
+    rendering, if needed"""
 
-    def __init__(self, walker: 'CalendarWalker') -> None:
+    def __init__(self, walker: "CalendarWalker") -> None:
         self._init: bool = True
         self.keybindings = walker.keybindings
         self.on_press = walker.on_press
-        self._marked: Optional[MarkType] = None
-        self._pos_old: Optional[tuple[int, int]] = None
+        self._marked: MarkType | None = None
+        self._pos_old: tuple[int, int] | None = None
         self.body: CalendarWalker
         super().__init__(walker)
 
@@ -250,11 +256,11 @@ class CListBox(urwid.ListBox):
     def focus_position(self, position: int) -> None:
         super().set_focus(position)
 
-    def render(self, size: tuple[int], focus: bool=False) -> urwid.Canvas:
-        while 'bottom' in self.ends_visible(size):
+    def render(self, size: tuple[int], focus: bool = False) -> urwid.Canvas:
+        while "bottom" in self.ends_visible(size):
             self.body._autoextend()
         if self._init:
-            self.set_focus_valign('middle')
+            self.set_focus_valign("middle")
             self._init = False
 
         return super().render(size, focus)
@@ -262,9 +268,8 @@ class CListBox(urwid.ListBox):
     def mouse_event(self, *args):
         size, event, button, col, row, focus = args
 
-        if event == 'mouse press' and button == 1:
-            self.focus.focus.set_styles(
-                self.focus.get_styles(self.body.focus_date, False))
+        if event == "mouse press" and button == 1:
+            self.focus.focus.set_styles(self.focus.get_styles(self.body.focus_date, False))
         return super().mouse_event(*args)
 
     def _date(self, row: int, column: int) -> dt.date:
@@ -279,9 +284,9 @@ class CListBox(urwid.ListBox):
 
     def _mark_one(self, row: int, column: int) -> None:
         """set attribute *mark* on the date at row `row` and column `column`"""
-        self.body[row].contents[column][0].set_styles('mark')
+        self.body[row].contents[column][0].set_styles("mark")
 
-    def _mark(self, a_date: Optional[dt.date]=None) -> None:
+    def _mark(self, a_date: dt.date | None = None) -> None:
         """make sure everything between the marked entry and `a_date`
         is visually marked, and nothing else"""
 
@@ -298,17 +303,17 @@ class CListBox(urwid.ListBox):
             else:
                 self._unmark_one(row, column)
 
-        start = min(self._marked['pos'][0], self.focus_position) - 2
-        stop = max(self._marked['pos'][0], self.focus_position) + 2
+        start = min(self._marked["pos"][0], self.focus_position) - 2
+        stop = max(self._marked["pos"][0], self.focus_position) + 2
         for row in range(start, stop):
             for col in range(1, 8):
-                if a_date > self._marked['date']:
-                    if self._marked['date'] <= self._date(row, col) <= a_date:
+                if a_date > self._marked["date"]:
+                    if self._marked["date"] <= self._date(row, col) <= a_date:
                         self._mark_one(row, col)
                     else:
                         self._unmark_one(row, col)
                 else:
-                    if self._marked['date'] >= self._date(row, col) >= a_date:
+                    if self._marked["date"] >= self._date(row, col) >= a_date:
                         self._mark_one(row, col)
                     else:
                         self._unmark_one(row, col)
@@ -319,8 +324,8 @@ class CListBox(urwid.ListBox):
     def _unmark_all(self) -> None:
         """remove attribute *mark* from all dates"""
         if self._marked and self._pos_old:
-            start = min(self._marked['pos'][0], self.focus_position, self._pos_old[0])
-            end = max(self._marked['pos'][0], self.focus_position, self._pos_old[0]) + 1
+            start = min(self._marked["pos"][0], self.focus_position, self._pos_old[0])
+            end = max(self._marked["pos"][0], self.focus_position, self._pos_old[0]) + 1
             for row in range(start, end):
                 for col in range(1, 8):
                     self._unmark_one(row, col)
@@ -333,34 +338,38 @@ class CListBox(urwid.ListBox):
             self._mark(a_day)
         self.body.set_focus_date(a_day)
 
-    def keypress(self, size: bool, key: str) -> Optional[str]:
-        if key in self.keybindings['mark'] + ['esc'] and self._marked:
+    def keypress(self, size: bool, key: str) -> str | None:
+        if key in self.keybindings["mark"] + ["esc"] and self._marked:
             self._unmark_all()
             self._marked = None
             return None
-        if key in self.keybindings['mark']:
-            self._marked = {'date': self.body.focus_date,
-                            'pos': (self.focus_position, self.focus.focus_col)}
-        if self._marked and key in self.keybindings['other']:
-            row, col = self._marked['pos']
-            self._marked = {'date': self.body.focus_date,
-                            'pos': (self.focus_position, self.focus.focus_col)}
+        if key in self.keybindings["mark"]:
+            self._marked = {
+                "date": self.body.focus_date,
+                "pos": (self.focus_position, self.focus.focus_col),
+            }
+        if self._marked and key in self.keybindings["other"]:
+            row, col = self._marked["pos"]
+            self._marked = {
+                "date": self.body.focus_date,
+                "pos": (self.focus_position, self.focus.focus_col),
+            }
             self.focus.focus_col = col
             self.focus_position = row
         if key in self.on_press:
             if self._marked:
-                start = min(self.body.focus_date, self._marked['date'])
-                end = max(self.body.focus_date, self._marked['date'])
+                start = min(self.body.focus_date, self._marked["date"])
+                end = max(self.body.focus_date, self._marked["date"])
             else:
                 start = self.body.focus_date
                 end = None
             return self.on_press[key](start, end)
-        if key in self.keybindings['today'] + ['page down', 'page up']:
+        if key in self.keybindings["today"] + ["page down", "page up"]:
             # reset colors of currently focused Date widget
             self.focus.focus.set_styles(self.focus.get_styles(self.body.focus_date, False))
-        if key in self.keybindings['today']:
+        if key in self.keybindings["today"]:
             self.set_focus_date(dt.date.today())
-            self.set_focus_valign(('relative', 10))
+            self.set_focus_valign(("relative", 10))
 
         key = super().keypress(size, key)
         if self._marked:
@@ -369,16 +378,17 @@ class CListBox(urwid.ListBox):
 
 
 class CalendarWalker(urwid.SimpleFocusListWalker):
-    def __init__(self,
-                 on_date_change: Callable[[dt.date], None],
-                 on_press: dict[str, Callable[[dt.date, Optional[dt.date]], Optional[str]]],
-                 keybindings: dict[str, list[str]],
-                 get_styles: GetStylesSignature,
-                 firstweekday: int = 0,
-                 weeknumbers: Literal['left', 'right', False]=False,
-                 monthdisplay: Literal['firstday', 'firstfullweek']='firstday',
-                 initial: Optional[dt.date]=None,
-                 ) -> None:
+    def __init__(
+        self,
+        on_date_change: Callable[[dt.date], None],
+        on_press: dict[str, Callable[[dt.date, dt.date | None], str | None]],
+        keybindings: dict[str, list[str]],
+        get_styles: GetStylesSignature,
+        firstweekday: int = 0,
+        weeknumbers: Literal["left", "right", False] = False,
+        monthdisplay: Literal["firstday", "firstfullweek"] = "firstday",
+        initial: dt.date | None = None,
+    ) -> None:
         self.firstweekday = firstweekday
         self.weeknumbers = weeknumbers
         self.monthdisplay = monthdisplay
@@ -388,7 +398,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         self.get_styles = get_styles
         self.reset(initial)
 
-    def reset(self, initial: Optional[dt.date]=None) -> None:
+    def reset(self, initial: dt.date | None = None) -> None:
         if initial is None:
             initial = dt.date.today()
         weeks = self._construct_month(initial.year, initial.month)
@@ -423,11 +433,11 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
     def set_focus_date(self, a_day: dt.date) -> None:
         """set the focus to `a_day`"""
-        if self.days_to_next_already_loaded(a_day) > 200:   # arbitrary number
+        if self.days_to_next_already_loaded(a_day) > 200:  # arbitrary number
             self.reset(a_day)
         row, column = self.get_date_pos(a_day)
         self.set_focus(row)
-        self[self.focus].focus_position = (column)
+        self[self.focus].focus_position = column
 
     @property
     def earliest_date(self) -> dt.date:
@@ -447,7 +457,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
         for row in range(minr, maxr + 1):
             for column in range(1, 8):
-                focus = ((row, column) == focus_pos)
+                focus = (row, column) == focus_pos
                 self[row][column].reset_styles(focus)
 
     def get_date_pos(self, a_day: dt.date) -> tuple[int, int]:
@@ -474,7 +484,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             except (ValueError, IndexError):
                 pass
         # we didn't find the date we were looking for...
-        raise ValueError('something is wrong')
+        raise ValueError("something is wrong")
 
     def _autoextend(self) -> None:
         """appends the next month"""
@@ -519,43 +529,47 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         :param week: list of datetime.date objects
         :returns: the week as an CColumns object
         """
-        if self.monthdisplay == 'firstday' and 1 in (day.day for day in week):
+        if self.monthdisplay == "firstday" and 1 in (day.day for day in week):
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
-            attr = 'monthname'
-        elif self.monthdisplay == 'firstfullweek' and week[0].day <= 7:
+            attr = "monthname"
+        elif self.monthdisplay == "firstfullweek" and week[0].day <= 7:
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
-            attr = 'monthname'
-        elif self.weeknumbers == 'left':
-            month_name = f' {getweeknumber(week[0]):2} '
-            attr = 'weeknumber_left'
+            attr = "monthname"
+        elif self.weeknumbers == "left":
+            month_name = f" {getweeknumber(week[0]):2} "
+            attr = "weeknumber_left"
         else:
-            month_name = '    '
+            month_name = "    "
             attr = None
 
-        this_week: list[tuple[int, Union[Date, urwid.AttrMap]]]
+        this_week: list[tuple[int, Date | urwid.AttrMap]]
         this_week = [(get_month_abbr_len(), urwid.AttrMap(urwid.Text(month_name), attr))]
         for _number, day in enumerate(week):
             new_date = Date(day, self.get_styles)
             this_week.append((2, new_date))
             new_date.set_styles(self.get_styles(new_date.date, False))
-        if self.weeknumbers == 'right':
-            this_week.append((2, urwid.AttrMap(
-                urwid.Text(f'{getweeknumber(week[0]):2}'), 'weeknumber_right')))
+        if self.weeknumbers == "right":
+            this_week.append(
+                (2, urwid.AttrMap(urwid.Text(f"{getweeknumber(week[0]):2}"), "weeknumber_right"))
+            )
 
-        week = DateCColumns(this_week,
-                            on_date_change=self.on_date_change,
-                            on_press=self.on_press,
-                            keybindings=self.keybindings,
-                            dividechars=1,
-                            get_styles=self.get_styles)
+        week = DateCColumns(
+            this_week,
+            on_date_change=self.on_date_change,
+            on_press=self.on_press,
+            keybindings=self.keybindings,
+            dividechars=1,
+            get_styles=self.get_styles,
+        )
         return week
 
-    def _construct_month(self,
-                         year: int=dt.date.today().year,
-                         month: int=dt.date.today().month,
-                         clean_first_row: bool=False,
-                         clean_last_row: bool=False,
-                         ) -> list[DateCColumns]:
+    def _construct_month(
+        self,
+        year: int = dt.date.today().year,
+        month: int = dt.date.today().month,
+        clean_first_row: bool = False,
+        clean_last_row: bool = False,
+    ) -> list[DateCColumns]:
         """construct one month of DateCColumns
 
         :param year: the year this month is set in
@@ -583,16 +597,17 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
 
 class CalendarWidget(urwid.WidgetWrap):
-    def __init__(self,
-                 on_date_change: Callable[[dt.date], None],
-                 keybindings: dict[str, list[str]],
-                 on_press: Optional[OnPressType]=None,
-                 firstweekday: int=0,
-                 weeknumbers: Literal['left', 'right', False]=False,
-                 monthdisplay: Literal['firstday', 'firstfullweek']='firstday',
-                 get_styles: Optional[GetStylesSignature]=None,
-                 initial: Optional[dt.date]=None,
-                 ) -> None:
+    def __init__(
+        self,
+        on_date_change: Callable[[dt.date], None],
+        keybindings: dict[str, list[str]],
+        on_press: OnPressType | None = None,
+        firstweekday: int = 0,
+        weeknumbers: Literal["left", "right", False] = False,
+        monthdisplay: Literal["firstday", "firstfullweek"] = "firstday",
+        get_styles: GetStylesSignature | None = None,
+        initial: dt.date | None = None,
+    ) -> None:
         """A calendar widget that can be used in urwid applications
 
         :param on_date_change: a function that is called every time the selected
@@ -634,46 +649,51 @@ class CalendarWidget(urwid.WidgetWrap):
             on_press = {}
 
         default_keybindings: dict[str, list[str]] = {
-            'left': ['left'], 'down': ['down'], 'right': ['right'], 'up': ['up'],
-            'today': ['t'],
-            'view': [],
-            'mark': ['v'],
-            'other': ['%'],
+            "left": ["left"],
+            "down": ["down"],
+            "right": ["right"],
+            "up": ["up"],
+            "today": ["t"],
+            "view": [],
+            "mark": ["v"],
+            "other": ["%"],
         }
 
         default_keybindings.update(keybindings)
         calendar.setfirstweekday(firstweekday)
 
         try:
-            mylocale: str = '.'.join(getlocale(LC_TIME))  # type: ignore
+            mylocale: str = ".".join(getlocale(LC_TIME))  # type: ignore
         except TypeError:  # language code and encoding may be None
-            mylocale = 'C'
+            mylocale = "C"
 
         _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)  # type: ignore
         weekheader = _calendar.formatweekheader(2)
-        dnames = weekheader.split(' ')
+        dnames = weekheader.split(" ")
 
-        def _get_styles(date: dt.date, focus: bool) -> Optional[str]:
+        def _get_styles(date: dt.date, focus: bool) -> str | None:
             if focus:
                 if date == dt.date.today():
-                    return 'today focus'
+                    return "today focus"
                 else:
-                    return 'reveal focus'
+                    return "reveal focus"
             else:
                 if date == dt.date.today():
-                    return 'today'
+                    return "today"
                 else:
                     return None
+
         if get_styles is None:
             get_styles = _get_styles
 
-        if weeknumbers == 'right':
-            dnames.append('#w')
+        if weeknumbers == "right":
+            dnames.append("#w")
         month_names_length = get_month_abbr_len()
         cnames = urwid.Columns(
-            [(month_names_length, urwid.Text(' ' * month_names_length))] +
-            [(2, urwid.AttrMap(urwid.Text(name), 'dayname')) for name in dnames],
-            dividechars=1)
+            [(month_names_length, urwid.Text(" " * month_names_length))]
+            + [(2, urwid.AttrMap(urwid.Text(name), "dayname")) for name in dnames],
+            dividechars=1,
+        )
         self.walker = CalendarWalker(
             on_date_change=on_date_change,
             on_press=on_press,
