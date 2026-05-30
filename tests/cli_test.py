@@ -544,9 +544,11 @@ def test_list_alarms_json(runner):
     args = ["list", "--json", "alarms-list"]
     result = runner.invoke(main_khal, args)
     expected = '[{"alarms-list": [\
-    {"delta": -900.0, "description": "", "delta-formatted": "-15m"},\
-    {"delta": -3600.0, "description": "", "delta-formatted": "-1h"}\
-    ]}]'
+{"delta": -900.0, "description": "", "delta-formatted": "-15m"}, \
+{"delta": -3600.0, "description": "", "delta-formatted": "-1h"}\
+]}]'
+    print(result.output)
+    print(expected)
     assert not result.exception
     assert result.output.startswith(expected)
 
