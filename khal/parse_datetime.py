@@ -23,8 +23,8 @@
 strings to date(time) or event objects"""
 
 import datetime as dt
-import logging
 import locale
+import logging
 import re
 from calendar import isleap
 from collections.abc import Callable
