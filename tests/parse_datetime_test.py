@@ -1,4 +1,5 @@
 import datetime as dt
+import locale
 from collections import OrderedDict
 
 import pytest
@@ -205,6 +206,27 @@ class TestGuessDatetimefstr:
         assert (dt.datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
             "2017-1-1 16:30".split(), locale=locale, default_day=dt.datetime.today()
         )
+
+    def test_locale_datetime_with_empty_timezone(self, monkeypatch):
+        def nl_langinfo(item):
+            return {
+                locale.D_T_FMT: "%Y-%m-%dT%T %Z",
+                locale.D_FMT: "%Y-%m-%d",
+                locale.T_FMT: "%T",
+            }[item]
+
+        monkeypatch.setattr(locale, "nl_langinfo", nl_langinfo)
+        parsed = guessdatetimefstr(
+            ["2026-05-14T12:00:00"],
+            {
+                "timeformat": "%X",
+                "dateformat": "%x",
+                "longdateformat": "%x",
+                "datetimeformat": "%c",
+                "longdatetimeformat": "%c",
+            },
+        )
+        assert parsed == (dt.datetime(2026, 5, 14, 12), False)
 
 
 class TestGuessTimedeltafstr:
