@@ -1,4 +1,12 @@
-from khal.ui.widgets import delete_last_word
+import pytest
+import urwid
+
+from khal.ui.widgets import (
+    FocusLineBoxColor,
+    FocusLineBoxTop,
+    FocusLineBoxWidth,
+    delete_last_word,
+)
 
 
 def test_delete_last_word():
@@ -27,3 +35,12 @@ def test_delete_last_word():
 
     for org, short, number in tests:
         assert delete_last_word(org, number) == short
+
+
+@pytest.mark.parametrize("cls", [FocusLineBoxColor, FocusLineBoxTop, FocusLineBoxWidth])
+def test_focus_line_box(cls):
+    inner = urwid.Filler(urwid.Text("test"))
+    box = cls(inner)
+    assert box.original_widget is inner
+    box.render((20, 10), focus=False)
+    box.render((20, 10), focus=True)

@@ -643,8 +643,8 @@ class FocusLineBoxWidth(urwid.WidgetDecoration, urwid.WidgetWrap):
             focus_item=1,
         )
 
-        urwid.WidgetDecoration.__init__(self, widget)
         urwid.WidgetWrap.__init__(self, self._all)
+        self._original_widget = widget
 
     def render(self, size, focus):
         inner = self._all.contents[1][0]
@@ -696,7 +696,7 @@ class FocusLineBoxColor(urwid.WidgetDecoration, urwid.WidgetWrap):
         )
 
         urwid.WidgetWrap.__init__(self, self._all)
-        urwid.WidgetDecoration.__init__(self, widget)
+        self._original_widget = widget
 
     def render(self, size, focus):
         if focus:
@@ -715,7 +715,7 @@ class FocusLineBoxTop(urwid.WidgetDecoration, urwid.WidgetWrap):
         topline = urwid.AttrMap(urwid.Divider("━"), "frame")
         self._all = urwid.Pile([("flow", topline), widget], focus_item=1)
         urwid.WidgetWrap.__init__(self, self._all)
-        urwid.WidgetDecoration.__init__(self, widget)
+        self._original_widget = widget
 
     def render(self, size, focus):
         if focus:
