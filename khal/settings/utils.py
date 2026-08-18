@@ -71,7 +71,7 @@ def is_timedelta(string: str) -> dt.timedelta:
         raise VdtValueError(f"Invalid timedelta: {string}")
 
 
-def weeknumber_option(option: str) -> Literal["left", "right"] | Literal[False]:
+def weeknumber_option(option: str) -> Literal["left", "right", False]:
     """checks if *option* is a valid value
 
     :param option: the option the user set in the config file
