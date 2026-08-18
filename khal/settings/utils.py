@@ -133,7 +133,7 @@ def is_color(color: str) -> str:
     # 5) an HTML-style color code
     if (
         color in ["", "auto"]
-        or color in COLORS.keys()
+        or color in COLORS
         or (color.isdigit() and int(color) >= 0 and int(color) <= 255)
         or (
             color.startswith("#")
