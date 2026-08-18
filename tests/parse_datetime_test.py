@@ -144,31 +144,31 @@ class TestGuessDatetimefstr:
     @freeze_time("2016-9-19T8:00")
     def test_tomorrow(self):
         assert (dt.datetime(2016, 9, 20, 16), False) == guessdatetimefstr(
-            "tomorrow 16:00 16:00".split(), locale=LOCALE_BERLIN
+            ["tomorrow", "16:00", "16:00"], locale=LOCALE_BERLIN
         )
 
     @freeze_time("2016-9-19T8:00")
     def test_time_tomorrow(self):
         assert (dt.datetime(2016, 9, 20, 16), False) == guessdatetimefstr(
-            "16:00".split(), locale=LOCALE_BERLIN, default_day=dt.date(2016, 9, 20)
+            ["16:00"], locale=LOCALE_BERLIN, default_day=dt.date(2016, 9, 20)
         )
 
     @freeze_time("2016-9-19T8:00")
     def test_time_yesterday(self):
         assert (dt.datetime(2016, 9, 18, 16), False) == guessdatetimefstr(
-            "Yesterday 16:00".split(), locale=LOCALE_BERLIN, default_day=dt.datetime.today()
+            ["Yesterday", "16:00"], locale=LOCALE_BERLIN, default_day=dt.datetime.today()
         )
 
     @freeze_time("2016-9-19")
     def test_time_weekday(self):
         assert (dt.datetime(2016, 9, 23, 16), False) == guessdatetimefstr(
-            "Friday 16:00".split(), locale=LOCALE_BERLIN, default_day=dt.datetime.today()
+            ["Friday", "16:00"], locale=LOCALE_BERLIN, default_day=dt.datetime.today()
         )
 
     @freeze_time("2016-9-19 17:53")
     def test_time_now(self):
         assert (dt.datetime(2016, 9, 19, 17, 53), False) == guessdatetimefstr(
-            "now".split(), locale=LOCALE_BERLIN, default_day=dt.datetime.today()
+            ["now"], locale=LOCALE_BERLIN, default_day=dt.datetime.today()
         )
 
     @freeze_time("2016-12-30 17:53")
@@ -182,10 +182,10 @@ class TestGuessDatetimefstr:
             "longdatetimeformat": "",
         }
         assert (dt.datetime(2017, 1, 1), True) == guessdatetimefstr(
-            "2017-1-1".split(), locale=locale, default_day=dt.datetime.today()
+            ["2017-1-1"], locale=locale, default_day=dt.datetime.today()
         )
         assert (dt.datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
-            "2017-1-1 16:30".split(), locale=locale, default_day=dt.datetime.today()
+            ["2017-1-1", "16:30"], locale=locale, default_day=dt.datetime.today()
         )
 
     @freeze_time("2016-12-30 17:53")
@@ -200,10 +200,10 @@ class TestGuessDatetimefstr:
             "longdatetimeformat": "%Y-%m-%d %H:%M",
         }
         assert (dt.datetime(2017, 1, 1), True) == guessdatetimefstr(
-            "2017-1-1".split(), locale=locale, default_day=dt.datetime.today()
+            ["2017-1-1"], locale=locale, default_day=dt.datetime.today()
         )
         assert (dt.datetime(2017, 1, 1, 16, 30), False) == guessdatetimefstr(
-            "2017-1-1 16:30".split(), locale=locale, default_day=dt.datetime.today()
+            ["2017-1-1", "16:30"], locale=locale, default_day=dt.datetime.today()
         )
 
 
