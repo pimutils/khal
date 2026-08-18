@@ -1303,17 +1303,17 @@ def _urwid_palette_entry(
         colors = {}
         # Colorcube
         colorlevels = (0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF)
-        for r in range(0, 6):
-            for g in range(0, 6):
-                for b in range(0, 6):
+        for r in range(6):
+            for g in range(6):
+                for b in range(6):
                     colors[r * 36 + g * 6 + b + 16] = (
                         colorlevels[r],
                         colorlevels[g],
                         colorlevels[b],
                     )
         # Grayscale
-        graylevels = [0x08 + 10 * i for i in range(0, 24)]
-        for c in range(0, 24):
+        graylevels = [0x08 + 10 * i for i in range(24)]
+        for c in range(24):
             colors[232 + c] = (graylevels[c],) * 3
         # Parse the HTML-style color into the variables r, g, b.
         if len(color) == 4:

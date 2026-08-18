@@ -305,7 +305,7 @@ class NextMixin(SupportsNext):
 
     def _first_selectable(self):
         """return sequence number of self.contents last selectable item"""
-        for j in range(0, len(self._contents)):
+        for j in range(len(self._contents)):
             if self._contents[j][0].selectable():
                 return j
         return False
@@ -373,7 +373,7 @@ class NListBox(SupportsNext, urwid.ListBox):
 
     def _first_selectable(self):
         """return sequence number of self._contents last selectable item"""
-        for j in range(0, len(self.body)):
+        for j in range(len(self.body)):
             if self.body[j].selectable():
                 return j
         return False
