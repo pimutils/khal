@@ -388,7 +388,7 @@ def guessrangefstr(
                     end = start + delta
                 except (ValueError, DateTimeParseError):
                     split = endstr.split(" ")
-                    end, end_allday = guessdatetimefstr(
+                    end, _end_allday = guessdatetimefstr(
                         split, locale, default_day=start.date(), in_future=False
                     )
                     if len(split) != 0:

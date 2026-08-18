@@ -589,7 +589,7 @@ class SQLiteDb:
         """returns the ical string matching href and calendar"""
         assert calendar is not None
         sql_s = "SELECT item, etag FROM events WHERE href = ? AND calendar = ?;"
-        item, etag = self.sql_ex(sql_s, (href, calendar))[0]
+        item, _etag = self.sql_ex(sql_s, (href, calendar))[0]
         return item
 
     def get_with_etag(self, href: str, calendar: str) -> tuple[str, str]:

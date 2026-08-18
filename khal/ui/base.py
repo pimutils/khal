@@ -201,7 +201,7 @@ class Window(urwid.Frame):
         this callback is called with the given data (if any) before
         the previous pane gets redrawn.
         """
-        old_pane, cb = self._track.pop()
+        _old_pane, cb = self._track.pop()
         if cb:
             cb(data)
 

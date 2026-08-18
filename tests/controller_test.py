@@ -39,7 +39,7 @@ conf = {
 
 class TestGetAgenda:
     def test_new_event(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         event = coll.create_event_from_ics(event_today, utils.cal1)
         coll.insert(event)
         assert ["                 a meeting :: short description\x1b[0m"] == khal_list(
@@ -47,7 +47,7 @@ class TestGetAgenda:
         )
 
     def test_new_event_day_format(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         event = coll.create_event_from_ics(event_today, utils.cal1)
         coll.insert(event)
         assert [
@@ -61,7 +61,7 @@ class TestGetAgenda:
             event_today = event_allday_template.format(
                 today.strftime("%Y%m%d"), tomorrow.strftime("%Y%m%d")
             )
-            coll, vdirs = coll_vdirs
+            coll, _vdirs = coll_vdirs
             event = coll.create_event_from_ics(event_today, utils.cal1)
             coll.insert(event)
             out = khal_list(coll, conf=conf, agenda_format=event_format, datepoint=[])
@@ -72,14 +72,14 @@ class TestGetAgenda:
 
     def test_agenda_fail(self, coll_vdirs):
         with freeze_time("2016-04-10 12:33"):
-            coll, vdirs = coll_vdirs
+            coll, _vdirs = coll_vdirs
             with pytest.raises(exceptions.FatalError):
                 khal_list(coll, conf=conf, agenda_format=event_format, datepoint=["xyz"])
             with pytest.raises(exceptions.FatalError):
                 khal_list(coll, conf=conf, agenda_format=event_format, datepoint=["today"])
 
     def test_empty_recurrence(self, coll_vdirs):
-        coll, vidrs = coll_vdirs
+        coll, _vidrs = coll_vdirs
         coll.insert(
             coll.create_event_from_ics(
                 dedent(
@@ -106,7 +106,7 @@ class TestGetAgenda:
 
 class TestImport:
     def test_import(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         view = {"event_format": "{title}"}
         conf = {"locale": utils.LOCALE_BERLIN, "view": view}
         import_ics(coll, conf, _get_text("event_rrule_recuid"), batch=True)
@@ -132,7 +132,7 @@ class TestImport:
         """
         Test importing events with mixed tz-aware and tz-naive datetimes.
         """
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         view = {"event_format": "{title}"}
         import_ics(
             coll,

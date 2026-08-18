@@ -163,7 +163,7 @@ def start_end_from_daterange(
         start = dt.datetime(*dt.date.today().timetuple()[:3])
         end = start + default_timedelta_date
     else:
-        start, end, allday = parse_datetime.guessrangefstr(
+        start, end, _allday = parse_datetime.guessrangefstr(
             daterange,
             locale,
             default_timedelta_date=default_timedelta_date,
