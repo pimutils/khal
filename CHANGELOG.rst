@@ -11,6 +11,7 @@ may want to subscribe to `GitHub's tag feed
 ======
 unreleased
 * FIX add timezone when assigning start/end time
+* FIX parse ISO-like locale datetime formats with an empty timezone field
 
 0.14.0
 ======

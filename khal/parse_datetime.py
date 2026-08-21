@@ -23,6 +23,7 @@
 strings to date(time) or event objects"""
 
 import datetime as dt
+import locale
 import logging
 import re
 from calendar import isleap
@@ -37,6 +38,29 @@ from khal.exceptions import DateTimeParseError, FatalError
 from .custom_types import LocaleConfiguration, RRuleMapType
 
 logger = logging.getLogger("khal")
+
+
+def _locale_format_candidates(dateformat: str) -> list[str]:
+    replacements = {
+        "%c": locale.D_T_FMT,
+        "%x": locale.D_FMT,
+        "%X": locale.T_FMT,
+    }
+    expanded_format = dateformat
+    for directive, nl_item in replacements.items():
+        if directive in expanded_format:
+            expanded_format = expanded_format.replace(directive, locale.nl_langinfo(nl_item))
+
+    candidates = [dateformat]
+    if expanded_format != dateformat:
+        candidates.append(expanded_format)
+
+    if "%Z" in expanded_format:
+        without_timezone = expanded_format.replace(" %Z", "").replace("%Z", "").strip()
+        if without_timezone not in candidates:
+            candidates.append(without_timezone)
+
+    return candidates
 
 
 def timefstr(dtime_list: list[str], timeformat: str) -> dt.datetime:
@@ -80,7 +104,15 @@ def datetimefstr(
     parts = dateformat.count(" ") + 1
     dtstring = " ".join(dtime_list[0:parts])
     # only time.strptime can parse the 29th of Feb. if no year is given
-    dtstart_struct = strptime(dtstring, dateformat)
+    for candidate_format in _locale_format_candidates(dateformat):
+        try:
+            dtstart_struct = strptime(dtstring, candidate_format)
+        except ValueError:
+            pass
+        else:
+            break
+    else:
+        raise ValueError
     if (
         infer_year
         and dtstart_struct.tm_mon == 2
