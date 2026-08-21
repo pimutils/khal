@@ -9,8 +9,10 @@ may want to subscribe to `GitHub's tag feed
 
 0.14.1
 ======
-unreleased
+2026-08-21
 * FIX add timezone when assigning start/end time
+* FIX crash on urwid >= 4.0.5
+* NEW add alarms-list output formats
 
 0.14.0
 ======
