@@ -92,8 +92,8 @@ def datetimefstr(
     for _ in range(parts):
         item = dtime_list.pop(0)
         if " " in item:
-            logger.warn("detected a space in datetime specification, this can lead to errors.")
-            logger.warn("Make sure not to quote your datetime specification.")
+            logger.warning("detected a space in datetime specification, this can lead to errors.")
+            logger.warning("Make sure not to quote your datetime specification.")
 
     if infer_year:
         dtstart = dt.datetime(*(default_day.timetuple()[:1] + dtstart_struct[1:5]))
@@ -242,8 +242,7 @@ def guessdatetimefstr(
         (datetimefwords, "", False, False),
     ]:
         # if a `short` format contains a year, treat it as a `long` format
-        if infer_year and "97" in dt.datetime(1997, 10, 11).strftime(dtformat):
-            infer_year = False
+        infer_year = infer_year and "97" not in dt.datetime(1997, 10, 11).strftime(dtformat)
         try:
             dtstart = fun(dtime_list, dtformat, infer_year=infer_year)
         except (ValueError, DateTimeParseError):
@@ -389,7 +388,7 @@ def guessrangefstr(
                     end = start + delta
                 except (ValueError, DateTimeParseError):
                     split = endstr.split(" ")
-                    end, end_allday = guessdatetimefstr(
+                    end, _end_allday = guessdatetimefstr(
                         split, locale, default_day=start.date(), in_future=False
                     )
                     if len(split) != 0:

@@ -277,7 +277,7 @@ class SQLiteDb:
         self.deletelike(href + "%", calendar=calendar)
         ical = cal_from_ics(vevent_str)
         vcard = ical.walk()[0]
-        for key in vcard.keys():
+        for key in vcard:
             if key in ["BDAY", "X-ANNIVERSARY", "ANNIVERSARY"] or key.endswith("X-ABDATE"):
                 date = vcard[key]
                 uuid = vcard.get("UID")
@@ -589,7 +589,7 @@ class SQLiteDb:
         """returns the ical string matching href and calendar"""
         assert calendar is not None
         sql_s = "SELECT item, etag FROM events WHERE href = ? AND calendar = ?;"
-        item, etag = self.sql_ex(sql_s, (href, calendar))[0]
+        item, _etag = self.sql_ex(sql_s, (href, calendar))[0]
         return item
 
     def get_with_etag(self, href: str, calendar: str) -> tuple[str, str]:
@@ -694,11 +694,11 @@ def get_vcard_event_description(vcard: icalendar.cal.Component, key: str) -> str
         return "anniversary"
     elif key.endswith("X-ABDATE"):
         desc_key = key[:-8] + "X-ABLABEL"
-        if desc_key in vcard.keys():
+        if desc_key in vcard:
             return vcard[desc_key]
         else:
             desc_key = key[:-8] + "X-ABLabel"
-            if desc_key in vcard.keys():
+            if desc_key in vcard:
                 return vcard[desc_key]
             else:
                 return "custom event from vcard"

@@ -266,7 +266,7 @@ class CListBox(urwid.ListBox):
         return super().render(size, focus)
 
     def mouse_event(self, *args):
-        size, event, button, col, row, focus = args
+        _size, event, button, _col, _row, _focus = args
 
         if event == "mouse press" and button == 1:
             self.focus.focus.set_styles(self.focus.get_styles(self.body.focus_date, False))
@@ -451,8 +451,8 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
     def reset_styles_range(self, min_date: dt.date, max_date: dt.date) -> None:
         """reset styles for all (displayed) dates between min_date and max_date"""
-        minr, minc = self.get_date_pos(max(min_date, self.earliest_date))
-        maxr, maxc = self.get_date_pos(min(max_date, self.latest_date))
+        minr, _minc = self.get_date_pos(max(min_date, self.earliest_date))
+        maxr, _maxc = self.get_date_pos(min(max_date, self.latest_date))
         focus_pos = self.focus, self[self.focus].focus_col
 
         for row in range(minr, maxr + 1):

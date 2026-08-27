@@ -305,7 +305,7 @@ class NextMixin(SupportsNext):
 
     def _first_selectable(self):
         """return sequence number of self.contents last selectable item"""
-        for j in range(0, len(self._contents)):
+        for j in range(len(self._contents)):
             if self._contents[j][0].selectable():
                 return j
         return False
@@ -373,7 +373,7 @@ class NListBox(SupportsNext, urwid.ListBox):
 
     def _first_selectable(self):
         """return sequence number of self._contents last selectable item"""
-        for j in range(0, len(self.body)):
+        for j in range(len(self.body)):
             if self.body[j].selectable():
                 return j
         return False
@@ -643,8 +643,8 @@ class FocusLineBoxWidth(urwid.WidgetDecoration, urwid.WidgetWrap):
             focus_item=1,
         )
 
-        urwid.WidgetDecoration.__init__(self, widget)
         urwid.WidgetWrap.__init__(self, self._all)
+        self._original_widget = widget
 
     def render(self, size, focus):
         inner = self._all.contents[1][0]
@@ -696,7 +696,7 @@ class FocusLineBoxColor(urwid.WidgetDecoration, urwid.WidgetWrap):
         )
 
         urwid.WidgetWrap.__init__(self, self._all)
-        urwid.WidgetDecoration.__init__(self, widget)
+        self._original_widget = widget
 
     def render(self, size, focus):
         if focus:
@@ -715,7 +715,7 @@ class FocusLineBoxTop(urwid.WidgetDecoration, urwid.WidgetWrap):
         topline = urwid.AttrMap(urwid.Divider("━"), "frame")
         self._all = urwid.Pile([("flow", topline), widget], focus_item=1)
         urwid.WidgetWrap.__init__(self, self._all)
-        urwid.WidgetDecoration.__init__(self, widget)
+        self._original_widget = widget
 
     def render(self, size, focus):
         if focus:

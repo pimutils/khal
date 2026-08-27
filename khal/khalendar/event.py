@@ -26,6 +26,7 @@ import datetime as dt
 import logging
 import os
 from collections.abc import Callable
+from typing import Any
 
 import icalendar
 import icalendar.cal
@@ -151,7 +152,7 @@ class Event:
                 vevents["PROTO"] = event
 
         if ref is None:
-            ref = "PROTO" if ref in vevents.keys() else list(vevents.keys())[0]
+            ref = "PROTO" if ref in vevents else list(vevents.keys())[0]
         try:
             if type(vevents[ref]["DTSTART"].dt) is not type(vevents[ref]["DTEND"].dt):
                 raise ValueError("DTSTART and DTEND should be of the same type (datetime or date)")
@@ -612,7 +613,7 @@ class Event:
         """
         env = env or {}
 
-        attributes = {}
+        attributes: dict[str, Any] = {}
         if isinstance(relative_to, tuple):
             relative_to_start, relative_to_end = relative_to
         else:
@@ -734,6 +735,14 @@ class Event:
         attributes["repeat-symbol"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
         attributes["alarm-symbol"] = self._alarm_str
+        attributes["alarms-list"] = [
+            {
+                "delta": alarm[0].total_seconds(),
+                "description": str(alarm[1]),
+                "delta-formatted": timedelta2str(alarm[0]),
+            }
+            for alarm in self.alarms
+        ]
         attributes["status-symbol"] = self._status_str
         attributes["partstat-symbol"] = self._partstat_str
         attributes["title"] = self.summary

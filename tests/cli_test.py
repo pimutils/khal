@@ -215,7 +215,7 @@ def test_notstarted(runner):
             result = runner.invoke(main_khal, command.split())
             assert not result.exception
 
-        result = runner.invoke(main_khal, "list now".split())
+        result = runner.invoke(main_khal, ["list", "now"])
         assert (
             result.output
             == """Today, 01.06.2015
@@ -232,7 +232,7 @@ Wednesday, 03.06.2015
 """
         )
         assert not result.exception
-        result = runner.invoke(main_khal, "list now --notstarted".split())
+        result = runner.invoke(main_khal, ["list", "now", "--notstarted"])
         assert (
             result.output
             == """Today, 01.06.2015
@@ -246,7 +246,7 @@ Wednesday, 03.06.2015
         )
         assert not result.exception
 
-        result = runner.invoke(main_khal, "list now --once".split())
+        result = runner.invoke(main_khal, ["list", "now", "--once"])
         assert (
             result.output
             == """Today, 01.06.2015
@@ -260,7 +260,7 @@ Tomorrow, 02.06.2015
         )
         assert not result.exception
 
-        result = runner.invoke(main_khal, "list now --once --notstarted".split())
+        result = runner.invoke(main_khal, ["list", "now", "--once", "--notstarted"])
         assert (
             result.output
             == """Today, 01.06.2015
@@ -346,9 +346,9 @@ def test_default_command_empty(runner):
 
 def test_invalid_calendar(runner):
     runner = runner(days=2)
-    result = runner.invoke(main_khal, ["new"] + "-a one 18:00 myevent".split())
+    result = runner.invoke(main_khal, ["new"] + ["-a", "one", "18:00", "myevent"])
     assert not result.exception
-    result = runner.invoke(main_khal, ["new"] + "-a inexistent 18:00 myevent".split())
+    result = runner.invoke(main_khal, ["new"] + ["-a", "inexistent", "18:00", "myevent"])
     assert result.exception
     assert result.exit_code == 2
     assert "Unknown calendar " in result.output
@@ -527,6 +527,32 @@ def test_list_json(runner):
     assert result.output.startswith(expected)
 
 
+def test_list_alarms(runner):
+    runner = runner(days=2)
+    now = dt.datetime.now().strftime("%d.%m.%Y")
+    runner.invoke(main_khal, f"new {now} 18:00 myevent --alarms -15m,1h".split())
+    args = ["list", "--format", "{alarms-list}", "--day-format", ""]
+    result = runner.invoke(main_khal, args)
+    assert not result.exception
+    assert result.output.strip() == "@15m, @-1h"
+
+
+def test_list_alarms_json(runner):
+    runner = runner()
+    now = dt.datetime.now().strftime("%d.%m.%Y")
+    runner.invoke(main_khal, f"new {now} 18:00 myevent --alarms 15m,1h".split())
+    args = ["list", "--json", "alarms-list"]
+    result = runner.invoke(main_khal, args)
+    expected = '[{"alarms-list": [\
+{"delta": -900.0, "description": "", "delta-formatted": "-15m"}, \
+{"delta": -3600.0, "description": "", "delta-formatted": "-1h"}\
+]}]'
+    print(result.output)
+    print(expected)
+    assert not result.exception
+    assert result.output.startswith(expected)
+
+
 def test_search(runner):
     runner = runner(days=2)
     now = dt.datetime.now().strftime("%d.%m.%Y")
@@ -560,7 +586,7 @@ def test_search_json(runner):
 
 def test_no_default_new(runner):
     runner = runner(default_calendar=False)
-    result = runner.invoke(main_khal, "new 18:00 beer".split())
+    result = runner.invoke(main_khal, ["new", "18:00", "beer"])
     assert (
         "Error: Invalid value: No default calendar is configured, please provide one explicitly."
     ) in result.output
@@ -578,7 +604,7 @@ def test_print_bad_ics(runner):
 
 def test_import(runner, monkeypatch):
     runner = runner()
-    result = runner.invoke(main_khal, "import -a one -a two import file.ics".split())
+    result = runner.invoke(main_khal, ["import", "-a", "one", "-a", "two", "import", "file.ics"])
     assert result.exception
     assert result.exit_code == 2
     assert 'Can\'t use "--include-calendar" / "-a" more than once' in result.output
@@ -992,7 +1018,7 @@ def test_edit(runner):
 def test_new(runner):
     runner = runner(print_new="path")
 
-    result = runner.invoke(main_khal, "new 13.03.2016 3d Visit".split())
+    result = runner.invoke(main_khal, ["new", "13.03.2016", "3d", "Visit"])
     assert not result.exception
     assert result.output.endswith(".ics\n")
     assert result.output.startswith(str(runner.tmpdir))
@@ -1033,7 +1059,7 @@ def test_new_json(runner):
 def test_new_interactive(runner):
     runner = runner(print_new="path")
 
-    result = runner.invoke(main_khal, "new -i".split(), "Another event\n13:00 17:00\n\nNone\nn\n")
+    result = runner.invoke(main_khal, ["new", "-i"], "Another event\n13:00 17:00\n\nNone\nn\n")
     assert not result.exception
     assert result.exit_code == 0
 
@@ -1053,7 +1079,7 @@ def test_new_interactive_extensive(runner):
 
     result = runner.invoke(
         main_khal,
-        "new -i 15:00 15:30".split(),
+        ["new", "-i", "15:00", "15:30"],
         "?\ninvalid\ntwo\n"
         "Unicce Name\n"
         "\n"
@@ -1079,7 +1105,7 @@ def test_issue_1056(runner):
 
     result = runner.invoke(
         main_khal,
-        "new -i".split(),
+        ["new", "-i"],
         "two\n"
         "new event\n"
         "now\n"

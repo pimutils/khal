@@ -71,7 +71,7 @@ def is_timedelta(string: str) -> dt.timedelta:
         raise VdtValueError(f"Invalid timedelta: {string}")
 
 
-def weeknumber_option(option: str) -> Literal["left", "right"] | Literal[False]:
+def weeknumber_option(option: str) -> Literal["left", "right", False]:
     """checks if *option* is a valid value
 
     :param option: the option the user set in the config file
@@ -133,7 +133,7 @@ def is_color(color: str) -> str:
     # 5) an HTML-style color code
     if (
         color in ["", "auto"]
-        or color in COLORS.keys()
+        or color in COLORS
         or (color.isdigit() and int(color) >= 0 and int(color) <= 255)
         or (
             color.startswith("#")

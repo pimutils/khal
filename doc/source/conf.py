@@ -17,7 +17,7 @@ import khal
 
 try:
     # Available from configobj 5.1.0
-    import configobj.validate as validate
+    from configobj import validate
 except ModuleNotFoundError:
     import validate
 
@@ -38,7 +38,7 @@ spec = config.configspec
 def write_section(specsection, secname, key, comment, output):
     # why is _parse_check a "private" method? seems to be rather useful...
     # we don't need fun_kwargs
-    fun_name, fun_args, fun_kwargs, default = validator._parse_check(specsection)
+    fun_name, fun_args, _fun_kwargs, default = validator._parse_check(specsection)
     output.write(f"\n.. _{secname}-{key}:")
     output.write("\n")
     output.write(f"\n.. object:: {key}\n")

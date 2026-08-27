@@ -197,6 +197,12 @@ def human_formatter(format_string, width=None, colors=True):
             if "calendar-color" in row:
                 row["calendar-color"] = get_color(row["calendar-color"])
 
+            if "alarms-list" in row and isinstance(row["alarms-list"], list):
+                row["alarms-list"] = ", ".join(
+                    alarm["description"] + "@" + alarm["delta-formatted"]
+                    for alarm in row["alarms-list"]
+                )
+
             s = format_string.format(**row)
 
             if colors:
@@ -245,6 +251,7 @@ CONTENT_ATTRIBUTES = [
     "end-necessary-long",
     "repeat-symbol",
     "repeat-pattern",
+    "alarms-list",
     "title",
     "organizer",
     "description",

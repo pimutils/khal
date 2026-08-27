@@ -71,7 +71,7 @@ class TestCalendar:
         assert len(list(vdirs[cal1].list())) == 1
 
     def test_sanity(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         mtimes = {}
         for _ in range(100):
             for cal in coll._calendars:
@@ -115,7 +115,7 @@ class TestCalendar:
 
 class TestVdirsyncerCompat:
     def test_list(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         event = Event.fromString(_get_text("event_d"), calendar=cal1, locale=LOCALE_BERLIN)
         assert event.etag is None
         assert event.href is None
@@ -164,7 +164,7 @@ class TestCollection:
         assert coll.writable_names == ["home"]
 
     def test_empty(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         start = dt.datetime.combine(today, dt.time.min)
         end = dt.datetime.combine(today, dt.time.max)
         assert list(coll.get_floating(start, end)) == []
@@ -225,7 +225,7 @@ class TestCollection:
 
     def test_get(self, coll_vdirs):
         """test getting an event by its href"""
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         event = Event.fromString(
             _get_text("event_dt_simple"),
             href="xyz.ics",
@@ -242,7 +242,7 @@ class TestCollection:
 
     def test_change(self, coll_vdirs):
         """moving an event from one calendar to another"""
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         event = Event.fromString(_get_text("event_dt_simple"), calendar=cal1, locale=LOCALE_BERLIN)
         coll.insert(event, cal1)
         event = list(coll.get_events_on(aday))[0]
@@ -255,7 +255,7 @@ class TestCollection:
 
     def test_update_event(self, coll_vdirs):
         """updating one event"""
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         event = Event.fromString(_get_text("event_dt_simple"), calendar=cal1, locale=LOCALE_BERLIN)
         coll.insert(event, cal1)
         events = coll.get_events_on(aday)
@@ -270,7 +270,7 @@ class TestCollection:
         assert events[0].summary == "really simple event"
 
     def test_newevent(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         bday = dt.datetime.combine(aday, dt.time.min)
         anend = bday + dt.timedelta(hours=1)
         event = icalendar_helpers.new_vevent(
@@ -284,7 +284,7 @@ class TestCollection:
         assert event.allday is False
 
     def test_modify_readonly_calendar(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         coll._calendars[cal1]["readonly"] = True
         coll._calendars[cal3]["readonly"] = True
         event = Event.fromString(_get_text("event_dt_simple"), calendar=cal1, locale=LOCALE_BERLIN)
@@ -296,7 +296,7 @@ class TestCollection:
             coll.delete("href", "eteg", cal1)
 
     def test_search(self, coll_vdirs):
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         assert len(list(coll.search("Event"))) == 0
         event = Event.fromString(_get_text("event_dt_simple"), calendar=cal1, locale=LOCALE_BERLIN)
         coll.insert(event, cal1)
@@ -311,7 +311,7 @@ class TestCollection:
     def test_search_recurrence_id_only(self, coll_vdirs):
         """test searching for recurring events which only have a recuid event,
         and no master"""
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         assert len(list(coll.search("Event"))) == 0
         event = Event.fromString(
             _get_text("event_dt_recuid_no_master"), calendar=cal1, locale=LOCALE_BERLIN
@@ -322,7 +322,7 @@ class TestCollection:
     def test_search_recurrence_id_only_multi(self, coll_vdirs):
         """test searching for recurring events which only have a recuid event,
         and no master"""
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         assert len(list(coll.search("Event"))) == 0
         event = Event.fromString(
             _get_text("event_dt_multi_recuid_no_master"), calendar=cal1, locale=LOCALE_BERLIN
@@ -386,7 +386,7 @@ class TestCollection:
     def test_invalid_timezones(self, coll_vdirs):
         """testing if we can delete any of two events in two different
         calendars with the same filename"""
-        coll, vdirs = coll_vdirs
+        coll, _vdirs = coll_vdirs
         event = Event.fromString(_get_text("invalid_tzoffset"), calendar=cal1, locale=LOCALE_BERLIN)
         coll.insert(event, cal1)
         events = sorted(coll.search("Event"))
@@ -515,7 +515,7 @@ def test_default_calendar(coll_vdirs, sleep_time):
 def test_only_update_old_event(coll_vdirs, monkeypatch, sleep_time):
     coll, vdirs = coll_vdirs
 
-    href_one, etag_one = vdirs[cal1].upload(
+    _href_one, _etag_one = vdirs[cal1].upload(
         coll.create_event_from_ics(
             dedent("""
     BEGIN:VEVENT
@@ -531,7 +531,7 @@ def test_only_update_old_event(coll_vdirs, monkeypatch, sleep_time):
 
     sleep(sleep_time)  # Make sure we get a new etag for meeting-two
 
-    href_two, etag_two = vdirs[cal1].upload(
+    _href_two, _etag_two = vdirs[cal1].upload(
         coll.create_event_from_ics(
             dedent("""
     BEGIN:VEVENT
@@ -559,7 +559,7 @@ def test_only_update_old_event(coll_vdirs, monkeypatch, sleep_time):
 
     monkeypatch.setattr(coll, "_update_vevent", _update_vevent)
 
-    href_three, etag_three = vdirs[cal1].upload(
+    href_three, _etag_three = vdirs[cal1].upload(
         coll.create_event_from_ics(
             dedent("""
     BEGIN:VEVENT
