@@ -7,10 +7,10 @@ khal has been packaged for, among others: Arch Linux (stable_ and development_
 versions), Debian_, Fedora_, FreeBSD_, Guix_, and pkgsrc_ (or see repology_ for
 a more complete list).
 
-.. _stable: https://www.archlinux.org/packages/community/any/khal/
+.. _stable: https://archlinux.org/packages/extra/any/khal/
 .. _development: https://aur.archlinux.org/packages/khal-git/
 .. _Debian: https://packages.debian.org/search?keywords=khal&searchon=names
-.. _Fedora: https://admin.fedoraproject.org/pkgdb/package/rpms/khal/
+.. _Fedora: https://packages.fedoraproject.org/pkgs/khal/khal/
 .. _FreeBSD: https://www.freshports.org/deskutils/py-khal/
 .. _Guix: http://www.gnu.org/software/guix/packages/
 .. _pkgsrc: http://pkgsrc.se/time/khal
@@ -31,7 +31,7 @@ You can install the latest released version of *khal* by executing::
 
 or the latest development version by executing::
 
-     pip install git+git://github.com/pimutils/khal.git
+     pip install git+https://github.com/pimutils/khal.git
 
 This should also take care of installing all required dependencies.  If in
 doubt, do not use `sudo pip install` but install `pip install khal --user`.
