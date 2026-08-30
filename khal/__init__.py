@@ -39,3 +39,23 @@ __author_email__ = "khal@lostpackets.de"
 __description__ = "A standards based terminal calendar"
 __license__ = "Expat/MIT, see COPYING"
 __homepage__ = "https://lostpackets.de/khal/"
+
+
+# Monkeypatch _strptime to support Python 3.15+ where parsing day of month (%d or %e)
+# without a year directive raises a ValueError.
+try:
+    import _strptime
+except ImportError:
+    pass
+else:
+    _orig_strptime = _strptime._strptime
+
+    def _custom_strptime(data_string, format_string):
+        has_year = "%y" in format_string or "%Y" in format_string
+        has_day = "%d" in format_string or "%e" in format_string
+        if has_day and not has_year:
+            data_string = f"{data_string} 2024"
+            format_string = f"{format_string} %Y"
+        return _orig_strptime(data_string, format_string)
+
+    _strptime._strptime = _custom_strptime
