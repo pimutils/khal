@@ -7,6 +7,14 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+0.14.2
+======
+unreleased
+
+* NEW ikhal: view the selected event's details in the external pager
+  ($PAGER, falls back to `less`), default keybinding `V`. Useful for events
+  with descriptions or attendee lists too long for the event view window.
+
 0.14.1
 ======
 2026-08-21

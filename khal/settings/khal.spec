@@ -162,6 +162,10 @@ view = force_list(default=list('enter'))
 # doesn't do a lot of validation, it silently disregards most invalid data.
 external_edit = force_list(default=list('meta E'))
 
+# show the currently selected event's details in the external pager ($PAGER),
+# useful for events with descriptions too long for the event view window
+pager = force_list(default=list('V'))
+
 # focus the calendar browser on today
 today = force_list(default=list('t'))
 

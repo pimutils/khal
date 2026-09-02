@@ -835,6 +835,30 @@ class EventColumn(urwid.WidgetWrap):
         )
         self.pane.window.open(overlay)
 
+    def view_in_pager(self, event) -> None:
+        """show the event's details in the external pager"""
+        lines = [f"Title: {event.summary}"]
+        if event.organizer:
+            lines.append(f"Organizer: {event.organizer}")
+        if event.location:
+            lines.append(f"Location: {event.location}")
+        if event.categories:
+            lines.append(f"Categories: {event.categories}")
+        if event.url:
+            lines.append(f"URL: {event.url}")
+        if event.attendees:
+            lines.append("Attendees:")
+            lines.extend(f"  - {attendee}" for attendee in event.attendees.split(", "))
+        lines.append(f"Calendar: {event.calendar}")
+        if event.description:
+            lines.append("")
+            lines.append(event.description)
+        self.pane.window.loop.stop()
+        try:
+            click.echo_via_pager("\n".join(lines))
+        finally:
+            self.pane.window.loop.start()
+
     def toggle_delete(self):
         """toggle the delete status of the event in focus"""
         event = self.focus_event
@@ -976,6 +1000,8 @@ class EventColumn(urwid.WidgetWrap):
                 self.edit(self.focus_event.event)
             elif key in self._conf["keybindings"]["external_edit"]:
                 self.edit(self.focus_event.event, external_edit=True)
+            elif key in self._conf["keybindings"]["pager"]:
+                self.view_in_pager(self.focus_event.event)
             elif (
                 key in self._conf["keybindings"]["view"]
                 or self._conf["view"]["event_view_always_visible"]

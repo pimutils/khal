@@ -400,6 +400,10 @@ When an event list is in focus, you can
  * duplicate the selected event, default keybinding :kbd:`p` as in duplicate
    (d was already taken)
  * export the selected event, default keybinding :kbd:`e`
+ * view the selected event's details in the external pager (``$PAGER``,
+   falling back to :command:`less`), default keybinding :kbd:`V`, useful for
+   events with descriptions or attendee lists too long for the event view
+   window
 
 In the event editor, you can
 
