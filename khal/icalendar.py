@@ -357,7 +357,7 @@ def expand(
                 # The excluded date matches none of the instances.
                 logger.warning(
                     f"In event {href},"
-                    " excluded instance starting at {exdate_date}"
+                    f" excluded instance starting at {exdate_date}"
                     " not found, event might be invalid."
                 )
             else:
