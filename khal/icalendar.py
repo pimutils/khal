@@ -254,10 +254,11 @@ def expand(
     events_tz = getattr(dtstart_prop.dt, "tzinfo", None) if not allday else None
 
     def sanitize_datetime(date: dt.date) -> dt.date:
-        if allday and isinstance(date, dt.datetime):
-            date = date.date()
-        if events_tz is not None:
-            date = events_tz.localize(date)
+        if isinstance(date, dt.datetime):
+            if allday:
+                date = date.date()
+            if events_tz is not None:
+                date = events_tz.localize(date)
         return date
 
     rrule_param = vevent.get("RRULE")
@@ -350,14 +351,23 @@ def expand(
 
     # remove excluded dates
     if expand:
-        for date in get_dates(vevent, "EXDATE") or ():
-            try:
-                dtstartl.remove(date)
-            except KeyError:
+        for exdate in get_dates(vevent, "EXDATE") or ():
+            exdate_date = exdate.date() if isinstance(exdate, dt.datetime) else exdate
+            if not any(start_datetime.date() == exdate_date for start_datetime in dtstartl):
+                # The excluded date matches none of the instances.
                 logger.warning(
-                    f"In event {href}, excluded instance starting at {date} "
-                    "not found, event might be invalid."
+                    f"In event {href},"
+                    f" excluded instance starting at {exdate_date}"
+                    " not found, event might be invalid."
                 )
+            else:
+                # The excluded date matches one or more instances. Remove
+                # those from the set.
+                dtstartl = {
+                    start_datetime
+                    for start_datetime in dtstartl
+                    if (start_datetime.date() != exdate_date)
+                }
 
     dtstartend = [(start, start + duration) for start in dtstartl]
     # not necessary, but I prefer deterministic output

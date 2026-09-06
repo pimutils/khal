@@ -7,6 +7,9 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
+unreleased
+* FIX Correctly expand recurring events with EXDATE values that are date-only.
+
 0.14.1
 ======
 2026-08-21
