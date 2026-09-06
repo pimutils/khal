@@ -352,23 +352,20 @@ def expand(
     # remove excluded dates
     if expand:
         for exdate in get_dates(vevent, "EXDATE") or ():
-            exdate_date = (
-                exdate.date() if isinstance(exdate, dt.datetime)
-                else exdate)
-            if not any(
-                    start_datetime.date() == exdate_date
-                    for start_datetime in dtstartl
-            ):
+            exdate_date = exdate.date() if isinstance(exdate, dt.datetime) else exdate
+            if not any(start_datetime.date() == exdate_date for start_datetime in dtstartl):
                 # The excluded date matches none of the instances.
                 logger.warning(
                     f"In event {href},"
                     " excluded instance starting at {exdate_date}"
-                    " not found, event might be invalid.")
+                    " not found, event might be invalid."
+                )
             else:
                 # The excluded date matches one or more instances. Remove
                 # those from the set.
                 dtstartl = {
-                    start_datetime for start_datetime in dtstartl
+                    start_datetime
+                    for start_datetime in dtstartl
                     if (start_datetime.date() != exdate_date)
                 }
 

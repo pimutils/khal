@@ -518,52 +518,36 @@ class TestExpand:
         assert dtstart == self.dstartend
 
     def test_exdate_timezone_datetime_values(self):
-        """ Should expand EXDATE with timezone, and datetime values. """
-        event_identifier = 'event_rrule_exdate_timezone_datetime'
+        """Should expand EXDATE with timezone, and datetime values."""
+        event_identifier = "event_rrule_exdate_timezone_datetime"
         vevent = _get_vevent_file(event_identifier)
         datetime_range_sequence = icalendar_helpers.expand(vevent, berlin)
-        start_date_sequence = [
-            start.date() for (start, end) in datetime_range_sequence]
-        assert not any([
-            exdate.date() in start_date_sequence
-            for exdate in vevent.exdates
-        ])
+        start_date_sequence = [start.date() for (start, end) in datetime_range_sequence]
+        assert not any([exdate.date() in start_date_sequence for exdate in vevent.exdates])
 
     def test_exdate_timezone_date_values(self):
-        """ Should expand EXDATE with timezone, and date values. """
-        event_identifier = 'event_rrule_exdate_timezone_date'
+        """Should expand EXDATE with timezone, and date values."""
+        event_identifier = "event_rrule_exdate_timezone_date"
         vevent = _get_vevent_file(event_identifier)
         datetime_range_sequence = icalendar_helpers.expand(vevent, berlin)
-        start_date_sequence = [
-            start.date() for (start, end) in datetime_range_sequence]
-        assert not any([
-            exdate in start_date_sequence
-            for exdate in vevent.exdates
-        ])
+        start_date_sequence = [start.date() for (start, end) in datetime_range_sequence]
+        assert not any([exdate in start_date_sequence for exdate in vevent.exdates])
 
     def test_exdate_no_timezone_datetime_values(self):
-        """ Should expand EXDATE without timezone, and datetime values. """
-        event_identifier = 'event_rrule_exdate_notz_datetime'
+        """Should expand EXDATE without timezone, and datetime values."""
+        event_identifier = "event_rrule_exdate_notz_datetime"
         vevent = _get_vevent_file(event_identifier)
         datetime_range_sequence = icalendar_helpers.expand(vevent, berlin)
-        start_date_sequence = [
-            start.date() for (start, end) in datetime_range_sequence]
-        assert not any([
-            exdate.date() in start_date_sequence
-            for exdate in vevent.exdates
-        ])
+        start_date_sequence = [start.date() for (start, end) in datetime_range_sequence]
+        assert not any([exdate.date() in start_date_sequence for exdate in vevent.exdates])
 
     def test_exdate_no_timezone_date_values(self):
-        """ Should expand EXDATE without timezone, and date values. """
-        event_identifier = 'event_rrule_exdate_notz_date'
+        """Should expand EXDATE without timezone, and date values."""
+        event_identifier = "event_rrule_exdate_notz_date"
         vevent = _get_vevent_file(event_identifier)
         datetime_range_sequence = icalendar_helpers.expand(vevent, berlin)
-        start_date_sequence = [
-            start.date() for (start, end) in datetime_range_sequence]
-        assert not any([
-            exdate in start_date_sequence
-            for exdate in vevent.exdates
-        ])
+        start_date_sequence = [start.date() for (start, end) in datetime_range_sequence]
+        assert not any([exdate in start_date_sequence for exdate in vevent.exdates])
 
     def test_expand_invalid_exdate(self):
         """testing if we can expand an event with EXDATEs that do not much

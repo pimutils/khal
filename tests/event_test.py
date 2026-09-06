@@ -837,48 +837,48 @@ def test_partstat_deligated():
 
 
 def test_event_exdate_with_timezone_values_datetime():
-    """ Should parse EXDATE with timezone, and datetime values. """
-    event_identifier = 'event_rrule_exdate_timezone_datetime'
+    """Should parse EXDATE with timezone, and datetime values."""
+    event_identifier = "event_rrule_exdate_timezone_datetime"
     ics_text = _get_text(event_identifier)
     test_event = Event.fromString(
         ics_text,
-        addresses=['exdate@example.com'],
+        addresses=["exdate@example.com"],
         **EVENT_KWARGS,
     )
     assert test_event.uid == event_identifier
 
 
 def test_event_exdate_with_timezone_values_date():
-    """ Should parse EXDATE with timezone, and date values. """
-    event_identifier = 'event_rrule_exdate_timezone_date'
+    """Should parse EXDATE with timezone, and date values."""
+    event_identifier = "event_rrule_exdate_timezone_date"
     ics_text = _get_text(event_identifier)
     test_event = Event.fromString(
         ics_text,
-        addresses=['exdate@example.com'],
+        addresses=["exdate@example.com"],
         **EVENT_KWARGS,
     )
     assert test_event.uid == event_identifier
 
 
 def test_event_exdate_no_timezone_values_datetime():
-    """ Should parse EXDATE without timezone, and datetime values. """
-    event_identifier = 'event_rrule_exdate_notz_datetime'
+    """Should parse EXDATE without timezone, and datetime values."""
+    event_identifier = "event_rrule_exdate_notz_datetime"
     ics_text = _get_text(event_identifier)
     test_event = Event.fromString(
         ics_text,
-        addresses=['exdate@example.com'],
+        addresses=["exdate@example.com"],
         **EVENT_KWARGS,
     )
     assert test_event.uid == event_identifier
 
 
 def test_event_exdate_no_timezone_values_date():
-    """ Should parse EXDATE without timezone, and date values. """
-    event_identifier = 'event_rrule_exdate_notz_date'
+    """Should parse EXDATE without timezone, and date values."""
+    event_identifier = "event_rrule_exdate_notz_date"
     ics_text = _get_text(event_identifier)
     test_event = Event.fromString(
         ics_text,
-        addresses=['exdate@example.com'],
+        addresses=["exdate@example.com"],
         **EVENT_KWARGS,
     )
     assert test_event.uid == event_identifier
