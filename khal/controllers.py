@@ -378,9 +378,15 @@ def new_interactive(
             end_string = info["dtend"].strftime(conf["locale"]["datetimeformat"])
             range_string = start_string + " " + end_string
         daterange = prompt("datetime range", default=range_string)
-        start, end, allday = parse_datetime.guessrangefstr(
-            daterange, conf["locale"], adjust_reasonably=True
-        )
+        try:
+            start, end, allday = parse_datetime.guessrangefstr(
+                daterange, conf["locale"], adjust_reasonably=True
+            )
+        except DateTimeParseError as error:
+            # Let the user retry just the datetime range instead of losing
+            # the whole event.
+            echo(error)
+            continue
         info["dtstart"] = start
         info["dtend"] = end
         info["allday"] = allday

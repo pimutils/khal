@@ -1120,6 +1120,54 @@ def test_issue_1056(runner):
     assert result.exit_code == 0
 
 
+@freeze_time("2015-6-1 8:00")
+def test_issue_789(runner):
+    """an unparseable datetime range in `khal new -i` shouldn't discard the
+    whole event and crash, it should report the problem and let the user
+    retry just the datetime range
+    """
+    runner = runner(print_new="path")
+
+    result = runner.invoke(
+        main_khal,
+        ["new", "-i"],
+        "Coffee w/Somebody\n"
+        "tuesday 13:30 - 14:30\n"  # unparseable, from the original report
+        "13:00 17:00\n"  # retry with a range that does parse
+        "\n"
+        "None\n"
+        "n\n",
+    )
+    assert "Could not parse" in result.output
+    assert "event saved" in result.output
+    assert not result.exception
+    assert result.exit_code == 0
+
+
+@freeze_time("2015-6-1 8:00")
+def test_issue_789_multiple_invalid_attempts(runner):
+    """the retry from #789 should work for as many bad attempts as the user
+    makes, not just a single one
+    """
+    runner = runner(print_new="path")
+
+    result = runner.invoke(
+        main_khal,
+        ["new", "-i"],
+        "Coffee w/Somebody\n"
+        "tuesday 13:30 - 14:30\n"  # unparseable
+        "still not valid input\n"  # still unparseable
+        "13:00 17:00\n"  # finally parses
+        "\n"
+        "None\n"
+        "n\n",
+    )
+    assert result.output.count("Could not parse") == 2
+    assert "event saved" in result.output
+    assert not result.exception
+    assert result.exit_code == 0
+
+
 def test_list_now(runner, tmpdir):
     # reproduce #693
     runner = runner()
