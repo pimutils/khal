@@ -644,6 +644,30 @@ def test_import_proper(runner):
     assert result.output == "09.04.-09.04. An Event\n"
 
 
+def test_import_format(runner):
+    """`--format` should be honored, not silently replaced by view.event_format."""
+    runner = runner()
+    result = runner.invoke(
+        main_khal,
+        ["import", "--format", "{title}", _get_ics_filepath("cal_d")],
+        input="0\ny\n",
+    )
+    assert not result.exception
+    assert result.output.startswith("An Event")
+
+
+def test_import_format_repeat_pattern(runner):
+    """The recurrence rule is available on import, like anywhere else."""
+    runner = runner()
+    result = runner.invoke(
+        main_khal,
+        ["import", "-f", "{title} {repeat-pattern}", _get_ics_filepath("event_r_past")],
+        input="0\ny\n",
+    )
+    assert not result.exception
+    assert result.output.startswith("Dummy's Birthday (1965) FREQ=YEARLY")
+
+
 def test_import_proper_invalid_timezone(runner):
     runner = runner()
     result = runner.invoke(

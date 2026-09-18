@@ -341,6 +341,7 @@ def import_ics(ctx, ics, include_calendar, batch, random_uid, format):
                 ics=ics_str,
                 batch=batch,
                 random_uid=random_uid,
+                format=format,
                 env={"calendars": ctx.obj["conf"]["calendars"]},
             )
         except FatalError as error:
