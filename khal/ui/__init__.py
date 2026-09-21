@@ -410,9 +410,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
 
     def days_to_next_already_loaded(self, day: dt.date) -> int:
         """return number of days until `day` is already loaded into the CalendarWidget"""
-        if len(self) == 0:
-            return 0
-        elif self[0].date <= day <= self[-1].date:
+        if len(self) == 0 or self[0].date <= day <= self[-1].date:
             return 0
         elif day <= self[0].date:
             return (self[0].date - day).days
@@ -891,7 +889,7 @@ class EventColumn(urwid.WidgetWrap):
         # which are also copied. If the events' summary is edited it will show
         # up on disk but not be displayed in khal
         if self.focus_event is None:
-            return None
+            return
         event = self.focus_event.event.duplicate()
         try:
             self.pane.collection.insert(event)
