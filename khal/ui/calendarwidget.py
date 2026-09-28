@@ -183,7 +183,7 @@ class DateCColumns(urwid.Columns):
         for num, day in enumerate(self.contents[1:8], 1):
             if day[0].date == a_date:
                 self.focus_position = num
-                return None
+                return
         raise ValueError(f"{a_date} not found in this week")
 
     def get_date_column(self, a_date: dt.date) -> int:
@@ -415,9 +415,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
 
     def days_to_next_already_loaded(self, day: dt.date) -> int:
         """return the number of weeks from the focus to the next week that is already loaded"""
-        if len(self) == 0:
-            return 0
-        elif self.earliest_date <= day <= self.latest_date:
+        if len(self) == 0 or self.earliest_date <= day <= self.latest_date:
             return 0
         elif day <= self.earliest_date:
             return (self.earliest_date - day).days
@@ -529,10 +527,12 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         :param week: list of datetime.date objects
         :returns: the week as an CColumns object
         """
-        if self.monthdisplay == "firstday" and 1 in (day.day for day in week):
-            month_name = calendar.month_abbr[week[-1].month].ljust(4)
-            attr = "monthname"
-        elif self.monthdisplay == "firstfullweek" and week[0].day <= 7:
+        if (
+            self.monthdisplay == "firstday"
+            and 1 in (day.day for day in week)
+            or self.monthdisplay == "firstfullweek"
+            and week[0].day <= 7
+        ):
             month_name = calendar.month_abbr[week[-1].month].ljust(4)
             attr = "monthname"
         elif self.weeknumbers == "left":

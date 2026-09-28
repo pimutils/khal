@@ -16,11 +16,9 @@ def test_relative_timedelta_str():
         assert utils.relative_timedelta_str(dt.date(2016, 7, 29)) == "~7 weeks ago"
 
 
-weekheader = """[1m    Mo Tu We Th Fr Sa Su   [0m"""
-today_line = """[1mToday[0m[0m"""
-calendarline = (
-    "[1mNov [0m[1;33m31[0m [32m 1[0m [1;33m 2[0m [1;33m 3[0m [1;33m 4[0m [32m 5[0m [32m 6[0m"
-)
+weekheader = """\x1b[1m    Mo Tu We Th Fr Sa Su   \x1b[0m"""
+today_line = """\x1b[1mToday\x1b[0m\x1b[0m"""
+calendarline = "\x1b[1mNov \x1b[0m\x1b[1;33m31\x1b[0m \x1b[32m 1\x1b[0m \x1b[1;33m 2\x1b[0m \x1b[1;33m 3\x1b[0m \x1b[1;33m 4\x1b[0m \x1b[32m 5\x1b[0m \x1b[32m 6\x1b[0m"
 
 
 def test_last_reset():
