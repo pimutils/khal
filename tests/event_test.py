@@ -19,6 +19,7 @@ from .utils import (
     LOCALE_BOGOTA,
     LOCALE_MIXED,
     NEW_YORK,
+    _get_all_vevents_file,
     _get_text,
     normalize_component,
 )
@@ -734,6 +735,21 @@ def test_sort_event_summary():
     event2 = Event.fromString(event_dt, **EVENT_KWARGS)
     event2.update_summary("ZZZ")
     assert event1 < event2
+
+
+def test_uid_missing():
+    event_uid = _get_text("event_uid_missing")
+    event = Event.fromString(event_uid, **EVENT_KWARGS)
+    assert event.uid.startswith("khal-vevent-without-uid-")
+
+
+def test_uid_missing_multiple():
+    vevents = list(_get_all_vevents_file("event_uid_missing_multiple"))
+    event1 = Event.fromVEvents([vevents[0]], **EVENT_KWARGS)
+    event2 = Event.fromVEvents([vevents[1]], **EVENT_KWARGS)
+    assert event1.uid.startswith("khal-vevent-without-uid-")
+    assert event2.uid.startswith("khal-vevent-without-uid-")
+    assert event1.uid != event2.uid
 
 
 def test_create_timezone_in_future():
