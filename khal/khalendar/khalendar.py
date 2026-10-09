@@ -261,6 +261,26 @@ class CalendarCollection:
         self.update(event)
         return event
 
+    def delete_future(
+        self,
+        href: str,
+        etag: str | None,
+        calendar: str,
+        rec_id: dt.datetime,
+    ) -> Event:
+        """Delete future recurrences of an event specified by `href` from `calendar`
+
+        returns the updated event"""
+        if self._calendars[calendar]["readonly"]:
+            raise ReadOnlyCalendarError()
+        event = self.get_event(href, calendar)
+        if etag and etag != event.etag:
+            raise EtagMissmatch()
+
+        event.delete_future(rec_id)
+        self.update(event)
+        return event
+
     def get_event(self, href: str, calendar: str) -> Event:
         """get an event by its href from the datatbase"""
         event_str, etag = self._backend.get_with_etag(href, calendar)

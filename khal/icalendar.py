@@ -524,6 +524,12 @@ def delete_instance(vevent: icalendar.Event, instance: dt.datetime) -> None:
             vevent.add("RDATE", rdates)
 
 
+def delete_future(vevent: icalendar.Event, instance: dt.datetime) -> None:
+    """add an UNTIL key to a recurrence event, a.k.a. remove future recurrences of the instance"""
+    if "RRULE" in vevent:
+        vevent["RRULE"]["UNTIL"] = instance
+
+
 def sort_key(vevent: icalendar.Event) -> tuple[str, float]:
     """helper function to determine order of VEVENTS
     so that recurrence-id events come after the corresponding rrule event, etc

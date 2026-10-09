@@ -81,6 +81,7 @@ logger = logging.getLogger("khal")
 class DeletionType(IntEnum):
     ALL = 0
     INSTANCES = 1
+    FUTURE = 2
 
 
 class DateConversionError(Exception):
@@ -203,6 +204,7 @@ class U_Event(urwid.Text):
         mark = {
             DeletionType.ALL: "D",
             DeletionType.INSTANCES: "d",
+            DeletionType.FUTURE: "f",  # TODO consider using something different
             None: "",
         }[self.delete_status(self.recuid)]
         if self.relative:
@@ -410,9 +412,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
 
     def days_to_next_already_loaded(self, day: dt.date) -> int:
         """return number of days until `day` is already loaded into the CalendarWidget"""
-        if len(self) == 0:
-            return 0
-        elif self[0].date <= day <= self[-1].date:
+        if len(self) == 0 or self[0].date <= day <= self[-1].date:
             return 0
         elif day <= self[0].date:
             return (self[0].date - day).days
@@ -661,6 +661,7 @@ class EventColumn(urwid.WidgetWrap):
         self.event_width = int(self.pane._conf["view"]["event_view_weighting"])
         self.delete_status = pane.delete_status
         self.toggle_delete_all = pane.toggle_delete_all
+        self.toggle_delete_future = pane.toggle_delete_future
         self.toggle_delete_instance = pane.toggle_delete_instance
         self.dlistbox: DListBox = elistbox
         self.container = urwid.Pile([self.dlistbox])
@@ -853,6 +854,13 @@ class EventColumn(urwid.WidgetWrap):
                 event.event.start_local, event.event.end_local, event.event.recurring
             )
 
+        def delete_future(_):
+            self.toggle_delete_future(event.recuid)
+            self.pane.window.backtrack()
+            self.refresh_titles(
+                event.event.start_local, event.event.end_local, event.event.recurring
+            )
+
         if event.event.readonly:
             self.pane.window.alert(
                 ("alert", f"Calendar {event.event.calendar} is read-only."),
@@ -872,6 +880,7 @@ class EventColumn(urwid.WidgetWrap):
                 buttons=[
                     ("Only this", delete_this),
                     ("All (past and future)", delete_all),
+                    ("Only future events", delete_future),
                     ("Abort", self.pane.window.backtrack),
                 ],
             )
@@ -1095,7 +1104,11 @@ class ClassicView(Pane):
         self.window = None
         self._conf = conf
         self.collection = collection
-        self._deleted: dict[int, list[str]] = {DeletionType.ALL: [], DeletionType.INSTANCES: []}
+        self._deleted: dict[int, list[str]] = {
+            DeletionType.ALL: [],
+            DeletionType.INSTANCES: [],
+            DeletionType.FUTURE: [],
+        }
 
         ContainerWidget = linebox[self._conf["view"]["frame"]]
         if self._conf["view"]["dynamic_days"]:
@@ -1159,6 +1172,8 @@ class ClassicView(Pane):
             return DeletionType.ALL
         elif uid in self._deleted[DeletionType.INSTANCES]:
             return DeletionType.INSTANCES
+        elif uid in self._deleted[DeletionType.FUTURE]:
+            return DeletionType.FUTURE
         else:
             return None
 
@@ -1175,6 +1190,12 @@ class ClassicView(Pane):
         else:
             self._deleted[DeletionType.INSTANCES].append(uid)
 
+    def toggle_delete_future(self, uid: str) -> None:
+        if uid in self._deleted[DeletionType.FUTURE]:
+            self._deleted[DeletionType.FUTURE].remove(uid)
+        else:
+            self._deleted[DeletionType.FUTURE].append(uid)
+
     def cleanup(self, data):
         """delete all events marked for deletion"""
         # If we delete several recuids from the same vevent, the etag will
@@ -1183,13 +1204,21 @@ class ClassicView(Pane):
         # We therefore keep track of the etags of the events we already
         # deleted.
         updated_etags = {}
+
         for part in self._deleted[DeletionType.ALL]:
             account, href, etag = part.split("\n", 2)
             self.collection.delete(href, etag, account)
+
         for part, rec_id in self._deleted[DeletionType.INSTANCES]:
             account, href, etag = part.split("\n", 2)
             etag = updated_etags.get(href) or etag
             event = self.collection.delete_instance(href, etag, account, rec_id)
+            updated_etags[event.href] = event.etag
+
+        for part, rec_id in self._deleted[DeletionType.FUTURE]:
+            account, href, etag = part.split("\n", 2)
+            etag = updated_etags.get(href) or etag
+            event = self.collection.delete_future(href, etag, account, rec_id)
             updated_etags[event.href] = event.etag
 
     def keypress(self, size: tuple[int], key: str | None) -> str | None:
