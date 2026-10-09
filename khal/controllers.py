@@ -765,7 +765,7 @@ def print_ics(conf, name, ics, format):
     events = [item for item in cal.walk() if item.name == "VEVENT"]
     events_grouped = defaultdict(list)
     for event in events:
-        events_grouped[event["UID"]].append(event)
+        events_grouped[event.get("UID", f"khal-vevent-without-uid-{id(event)}")].append(event)
 
     vevents = []
     for uid in events_grouped:
