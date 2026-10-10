@@ -204,7 +204,7 @@ class U_Event(urwid.Text):
         mark = {
             DeletionType.ALL: "D",
             DeletionType.INSTANCES: "d",
-            DeletionType.FUTURE: "f",  # TODO consider using something different
+            DeletionType.FUTURE: "d",  # TODO consider using something different
             None: "",
         }[self.delete_status(self.recuid)]
         if self.relative:
@@ -900,7 +900,7 @@ class EventColumn(urwid.WidgetWrap):
         # which are also copied. If the events' summary is edited it will show
         # up on disk but not be displayed in khal
         if self.focus_event is None:
-            return None
+            return
         event = self.focus_event.event.duplicate()
         try:
             self.pane.collection.insert(event)
@@ -1172,7 +1172,7 @@ class ClassicView(Pane):
             return DeletionType.ALL
         elif uid in self._deleted[DeletionType.INSTANCES]:
             return DeletionType.INSTANCES
-        elif uid in self._deleted[DeletionType.FUTURE]:
+        elif any(uid[0] == i[0] and uid[1] > i[1] for i in self._deleted[DeletionType.FUTURE]):
             return DeletionType.FUTURE
         else:
             return None
