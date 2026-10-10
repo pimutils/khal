@@ -879,8 +879,8 @@ class EventColumn(urwid.WidgetWrap):
                 text="This is a recurring event.\nWhich instances do you want to delete?",
                 buttons=[
                     ("Only this", delete_this),
+                    ("This and future events", delete_future),
                     ("All (past and future)", delete_all),
-                    ("Only future events", delete_future),
                     ("Abort", self.pane.window.backtrack),
                 ],
             )
@@ -1172,7 +1172,7 @@ class ClassicView(Pane):
             return DeletionType.ALL
         elif uid in self._deleted[DeletionType.INSTANCES]:
             return DeletionType.INSTANCES
-        elif any(uid[0] == i[0] and uid[1] > i[1] for i in self._deleted[DeletionType.FUTURE]):
+        elif any(uid[0] == i[0] and uid[1] >= i[1] for i in self._deleted[DeletionType.FUTURE]):
             return DeletionType.FUTURE
         else:
             return None
@@ -1215,11 +1215,13 @@ class ClassicView(Pane):
             event = self.collection.delete_instance(href, etag, account, rec_id)
             updated_etags[event.href] = event.etag
 
+        # TODO check if additional conflict resolution is required (to avoid deleting twice)
         for part, rec_id in self._deleted[DeletionType.FUTURE]:
             account, href, etag = part.split("\n", 2)
             etag = updated_etags.get(href) or etag
             event = self.collection.delete_future(href, etag, account, rec_id)
-            updated_etags[event.href] = event.etag
+            if event is not None:
+                updated_etags[event.href] = event.etag
 
     def keypress(self, size: tuple[int], key: str | None) -> str | None:
         binds = self._conf["keybindings"]

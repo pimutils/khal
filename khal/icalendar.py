@@ -525,9 +525,43 @@ def delete_instance(vevent: icalendar.Event, instance: dt.datetime) -> None:
 
 
 def delete_future(vevent: icalendar.Event, instance: dt.datetime) -> None:
-    """add an UNTIL key to a recurrence event, a.k.a. remove future recurrences of the instance"""
-    if "RRULE" in vevent:
-        vevent["RRULE"]["UNTIL"] = instance
+    """remove this and future recurrences of the instance by adding an UNTIL key
+
+    does nothing if this is the first instance"""
+
+    sanitized = sanitize_rrule(vevent)
+    rrule_param = sanitized.get("RRULE")
+    if rrule_param is None:
+        return
+
+    dtstart_prop = sanitized["DTSTART"]
+    allday = dtstart_prop.params.get("VALUE") == "DATE" or not isinstance(
+        dtstart_prop.dt, dt.datetime
+    )
+    # Don't use timezone for all-day events
+    dtstart = dtstart_prop.dt
+    events_tz = getattr(dtstart, "tzinfo", None) if not allday else None
+
+    if events_tz:
+        dtstart = dtstart.replace(tzinfo=None)
+    # For all-day events, ensure dtstart is a date, not datetime.
+    if allday and isinstance(dtstart, dt.datetime):
+        dtstart = dtstart.date()
+
+    rrule = dateutil.rrule.rrulestr(
+        rrule_param.to_ical().decode(),
+        dtstart=dtstart,
+        ignoretz=True,
+    )
+
+    if events_tz and instance.tzinfo:
+        instance = instance.astimezone(events_tz).replace(tzinfo=None)
+
+    until = rrule.before(instance)
+    if until is None:
+        return
+
+    vevent["RRULE"]["UNTIL"] = until
 
 
 def sort_key(vevent: icalendar.Event) -> tuple[str, float]:
