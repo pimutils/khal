@@ -51,12 +51,18 @@ def _locale_format_candidates(dateformat: str) -> list[str]:
         if directive in expanded_format:
             expanded_format = expanded_format.replace(directive, locale.nl_langinfo(nl_item))
 
+    expanded_format = re.sub(
+        r"%%|%T", lambda match: "%H:%M:%S" if match[0] == "%T" else match[0], expanded_format
+    )
+
     candidates = [dateformat]
     if expanded_format != dateformat:
         candidates.append(expanded_format)
 
-    if "%Z" in expanded_format:
-        without_timezone = expanded_format.replace(" %Z", "").replace("%Z", "").strip()
+    if "%Z" in expanded_format or "%z" in expanded_format:
+        without_timezone = re.sub(
+            r"%%| ?%[Zz]", lambda match: "%%" if match[0] == "%%" else "", expanded_format
+        ).strip()
         if without_timezone not in candidates:
             candidates.append(without_timezone)
 
@@ -101,10 +107,10 @@ def datetimefstr(
     now = dt.datetime.now()
     if default_day is None:
         default_day = now.date()
-    parts = dateformat.count(" ") + 1
-    dtstring = " ".join(dtime_list[0:parts])
     # only time.strptime can parse the 29th of Feb. if no year is given
     for candidate_format in _locale_format_candidates(dateformat):
+        parts = candidate_format.count(" ") + 1
+        dtstring = " ".join(dtime_list[:parts])
         try:
             dtstart_struct = strptime(dtstring, candidate_format)
         except ValueError:

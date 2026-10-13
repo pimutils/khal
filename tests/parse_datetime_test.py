@@ -207,17 +207,19 @@ class TestGuessDatetimefstr:
             ["2017-1-1", "16:30"], locale=locale, default_day=dt.datetime.today()
         )
 
-    def test_locale_datetime_with_empty_timezone(self, monkeypatch):
+    @pytest.mark.parametrize("timezone_directive", ["%Z", "%z"])
+    def test_locale_datetime_with_empty_timezone(self, monkeypatch, timezone_directive):
         def nl_langinfo(item):
             return {
-                locale.D_T_FMT: "%Y-%m-%dT%T %Z",
+                locale.D_T_FMT: f"%Y-%m-%dT%T {timezone_directive}",
                 locale.D_FMT: "%Y-%m-%d",
                 locale.T_FMT: "%T",
             }[item]
 
         monkeypatch.setattr(locale, "nl_langinfo", nl_langinfo)
+        words = ["2026-05-14T12:00:00", "meeting"]
         parsed = guessdatetimefstr(
-            ["2026-05-14T12:00:00"],
+            words,
             {
                 "timeformat": "%X",
                 "dateformat": "%x",
@@ -227,6 +229,7 @@ class TestGuessDatetimefstr:
             },
         )
         assert parsed == (dt.datetime(2026, 5, 14, 12), False)
+        assert words == ["meeting"]
 
 
 class TestGuessTimedeltafstr:

@@ -10,6 +10,7 @@ may want to subscribe to `GitHub's tag feed
 0.14.2
 ======
 unreleased
+* FIX parse ISO-like locale datetime formats with empty timezone names or offsets
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
 
@@ -19,7 +20,6 @@ unreleased
 * FIX add timezone when assigning start/end time
 * FIX crash on urwid >= 4.0.5
 * NEW add alarms-list output formats
-* FIX parse ISO-like locale datetime formats with an empty timezone field
 
 0.14.0
 ======
