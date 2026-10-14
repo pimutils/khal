@@ -1249,7 +1249,7 @@ class ClassicView(Pane):
             title=f'Search results for "{search_term}" (Esc for backtrack)',
         )
         pane._conf = self._conf
-        columns.set_focus_column(1)
+        columns.focus_position = 1
         self.window.open(pane)
 
     def render(self, size, focus=False):

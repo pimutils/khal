@@ -318,8 +318,8 @@ class CListBox(urwid.ListBox):
                     else:
                         self._unmark_one(row, col)
 
-            toggle(self.focus_position, self.focus.focus_col)
-        self._pos_old = self.focus_position, self.focus.focus_col
+            toggle(self.focus_position, self.focus.focus_position)
+        self._pos_old = self.focus_position, self.focus.focus_position
 
     def _unmark_all(self) -> None:
         """remove attribute *mark* from all dates"""
@@ -346,15 +346,15 @@ class CListBox(urwid.ListBox):
         if key in self.keybindings["mark"]:
             self._marked = {
                 "date": self.body.focus_date,
-                "pos": (self.focus_position, self.focus.focus_col),
+                "pos": (self.focus_position, self.focus.focus_position),
             }
         if self._marked and key in self.keybindings["other"]:
             row, col = self._marked["pos"]
             self._marked = {
                 "date": self.body.focus_date,
-                "pos": (self.focus_position, self.focus.focus_col),
+                "pos": (self.focus_position, self.focus.focus_position),
             }
-            self.focus.focus_col = col
+            self.focus.focus_position = col
             self.focus_position = row
         if key in self.on_press:
             if self._marked:
@@ -453,7 +453,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         """reset styles for all (displayed) dates between min_date and max_date"""
         minr, _minc = self.get_date_pos(max(min_date, self.earliest_date))
         maxr, _maxc = self.get_date_pos(min(max_date, self.latest_date))
-        focus_pos = self.focus, self[self.focus].focus_col
+        focus_pos = self.focus, self[self.focus].focus_position
 
         for row in range(minr, maxr + 1):
             for column in range(1, 8):
