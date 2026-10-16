@@ -130,7 +130,7 @@ class DateEdit(urwid.WidgetWrap):
         monthdisplay: Literal["firstday", "firstfullweek"] = "firstday",
         keybindings: dict[str, list[str]] | None = None,
     ) -> None:
-        datewidth = len(startdt.strftime(dateformat))
+        datewidth = urwid.Text(startdt.strftime(dateformat)).pack()[0]
         self._dateformat = dateformat
         if startdt is None:
             startdt = dt.date.today()
@@ -207,8 +207,10 @@ class StartEndEditor(urwid.WidgetWrap):
         self.on_start_date_change = on_start_date_change
         self.on_end_date_change = on_end_date_change
         self.on_type_change = on_type_change
-        self._datewidth = len(start.strftime(self.conf["locale"]["longdateformat"]))
-        self._timewidth = len(start.strftime(self.conf["locale"]["timeformat"]))
+        date_text = start.strftime(self.conf["locale"]["longdateformat"])
+        time_text = start.strftime(self.conf["locale"]["timeformat"])
+        self._datewidth = urwid.Text(date_text).pack()[0]
+        self._timewidth = urwid.Text(time_text).pack()[0]
         # this will contain the widgets for [start|end] [date|time]
         self.widgets = StartEnd(None, None, None, None)
         self.checkallday = urwid.CheckBox("Allday", state=self.allday, on_state_change=self.toggle)
