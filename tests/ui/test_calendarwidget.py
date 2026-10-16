@@ -1,8 +1,11 @@
+import calendar
 import datetime as dt
 
+import pytest
 from freezegun import freeze_time
 
 from khal.ui.calendarwidget import CalendarWidget
+from khal.utils import get_month_abbr_len
 
 on_press: dict = {}
 
@@ -13,6 +16,31 @@ keybindings = {
     "right": ["right", "l", " "],
     "down": ["down", "j"],
 }
+
+
+@pytest.mark.parametrize(
+    "day_abbr",
+    [("h", "k", "sze", "cs", "p", "szo", "v"), ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")],
+    ids=["hungarian", "english"],
+)
+@pytest.mark.parametrize("firstweekday", [0, 6])
+@pytest.mark.parametrize("weeknumbers", [False, "left", "right"])
+def test_weekday_header_alignment(monkeypatch, day_abbr, firstweekday, weeknumbers):
+    # Exercise the real padded formatweekheader output without requiring installed locales.
+    monkeypatch.setattr(calendar, "day_abbr", day_abbr)
+    frame = CalendarWidget(
+        on_date_change=lambda _: None,
+        keybindings=keybindings,
+        firstweekday=firstweekday,
+        weeknumbers=weeknumbers,
+    )
+    weekdays = day_abbr[firstweekday:] + day_abbr[:firstweekday]
+    names = [name[:2].ljust(2) for name in weekdays]
+    if weeknumbers == "right":
+        names.append("#w")
+    expected = " " * (get_month_abbr_len() + 1) + " ".join(names)
+    header = next(iter(frame.render((len(expected), 8)).decoded_text))
+    assert header == expected
 
 
 def test_initial_focus_today():
