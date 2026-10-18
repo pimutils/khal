@@ -269,6 +269,24 @@ class TestCollection:
         assert len(events) == 1
         assert events[0].summary == "really simple event"
 
+    def test_update_recurring_event_keeps_previous_instances(self, coll_vdirs):
+        """Editing a later instance should not remove earlier instances."""
+        coll, _ = coll_vdirs
+        event = Event.fromString(_get_text("event_dt_rr"), calendar=cal1, locale=LOCALE_BERLIN)
+        coll.insert(event, cal1)
+
+        event = next(iter(coll.get_events_on(dt.date(2014, 4, 10))))
+        event.update_start_end(
+            BERLIN.localize(dt.datetime(2014, 4, 10, 8)),
+            BERLIN.localize(dt.datetime(2014, 4, 10, 8, 30)),
+        )
+        coll.update(event)
+
+        first_instance = list(coll.get_events_on(dt.date(2014, 4, 9)))
+        assert len(first_instance) == 1
+        assert first_instance[0].start_local == BERLIN.localize(dt.datetime(2014, 4, 9, 8))
+        assert first_instance[0].end_local == BERLIN.localize(dt.datetime(2014, 4, 9, 8, 30))
+
     def test_newevent(self, coll_vdirs):
         coll, _vdirs = coll_vdirs
         bday = dt.datetime.combine(aday, dt.time.min)
