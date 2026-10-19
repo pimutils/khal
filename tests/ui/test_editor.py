@@ -103,9 +103,9 @@ def test_convert_to_date():
         BERLIN.localize(dt.datetime(2017, 10, 4, 18)),
         conf=CONF,
     )
-    canvas = editor.render((50,), True)
+    canvas = editor.render((50,), False)
     assert CanvasTranslator(canvas, palette).transform() == (
-        "[ ] Allday\nFrom: \x1b[31m2.10.2017 \x1b[0m \x1b[34m13:00 \x1b[0m\n"
+        "[ ] Allday\nFrom: \x1b[34m02.10.2017\x1b[0m \x1b[34m13:00 \x1b[0m\n"
         "To:   \x1b[34m04.10.2017\x1b[0m \x1b[34m18:00 \x1b[0m\n"
     )
 
