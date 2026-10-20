@@ -2,6 +2,7 @@ import datetime as dt
 
 from freezegun import freeze_time
 
+import khal.ui.calendarwidget as calendarwidget
 from khal.ui.calendarwidget import CalendarWidget
 
 on_press: dict = {}
@@ -13,6 +14,26 @@ keybindings = {
     "right": ["right", "l", " "],
     "down": ["down", "j"],
 }
+
+
+class _ShortWeekdayCalendar:
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def formatweekheader(self, width):
+        return "H  K  Sz Cs P  Sz V "
+
+
+def test_localized_weekday_header_has_seven_columns(monkeypatch):
+    monkeypatch.setattr(calendarwidget, "getlocale", lambda _: ("hu_HU", "UTF-8"))
+    monkeypatch.setattr(calendarwidget.calendar, "LocaleTextCalendar", _ShortWeekdayCalendar)
+
+    frame = CalendarWidget(
+        on_date_change=lambda _: None,
+        keybindings=keybindings,
+    )
+
+    assert len(frame._w.header.contents) == 8
 
 
 def test_initial_focus_today():

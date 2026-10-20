@@ -10,6 +10,7 @@ may want to subscribe to `GitHub's tag feed
 0.14.2
 ======
 unreleased
+* FIX align localized weekday headers when labels contain padded spaces
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
 

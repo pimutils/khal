@@ -669,7 +669,7 @@ class CalendarWidget(urwid.WidgetWrap):
 
         _calendar = calendar.LocaleTextCalendar(firstweekday, mylocale)  # type: ignore
         weekheader = _calendar.formatweekheader(2)
-        dnames = weekheader.split(" ")
+        dnames = weekheader.split()
 
         def _get_styles(date: dt.date, focus: bool) -> str | None:
             if focus:
