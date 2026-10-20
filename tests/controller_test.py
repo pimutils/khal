@@ -128,6 +128,50 @@ class TestImport:
             ev.start_local for ev in events
         ]
 
+    def test_import_cancelled_single_recurrence(self, coll_vdirs):
+        coll, _vdirs = coll_vdirs
+        conf = {"locale": utils.LOCALE_BERLIN, "view": {"event_format": "{title}"}}
+        series = """BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:cancel-single-instance
+DTSTAMP:20260419T120000Z
+DTSTART;TZID=Europe/Berlin:20260420T130000
+DTEND;TZID=Europe/Berlin:20260420T134000
+RRULE:FREQ=DAILY;COUNT=3
+SUMMARY:Test2
+END:VEVENT
+END:VCALENDAR
+"""
+        cancellation = """BEGIN:VCALENDAR
+VERSION:2.0
+METHOD:CANCEL
+BEGIN:VEVENT
+UID:cancel-single-instance
+DTSTAMP:20260419T120000Z
+RECURRENCE-ID;TZID=Europe/Berlin:20260421T130000
+DTSTART;TZID=Europe/Berlin:20260421T130000
+DTEND;TZID=Europe/Berlin:20260421T134000
+SUMMARY:Test2
+STATUS:CANCELLED
+END:VEVENT
+END:VCALENDAR
+"""
+
+        import_ics(coll, conf, series, batch=True)
+        import_ics(coll, conf, cancellation, batch=True)
+        import_ics(coll, conf, cancellation, batch=True)
+
+        start = utils.BERLIN.localize(dt.datetime(2026, 4, 20))
+        end = utils.BERLIN.localize(dt.datetime(2026, 4, 23))
+        events = sorted(coll.get_localized(start, end))
+        assert [event.start_local for event in events] == [
+            utils.BERLIN.localize(dt.datetime(2026, 4, 20, 13)),
+            utils.BERLIN.localize(dt.datetime(2026, 4, 21, 13)),
+            utils.BERLIN.localize(dt.datetime(2026, 4, 22, 13)),
+        ]
+        assert [event.status for event in events] == ["", "CANCELLED", ""]
+
     def test_mix_datetime_types(self, coll_vdirs):
         """
         Test importing events with mixed tz-aware and tz-naive datetimes.
