@@ -10,6 +10,7 @@ may want to subscribe to `GitHub's tag feed
 0.14.2
 ======
 unreleased
+* FIX parse ISO-like locale datetime formats with empty timezone names or offsets
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
 
