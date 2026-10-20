@@ -736,6 +736,12 @@ def test_sort_event_summary():
     assert event1 < event2
 
 
+def test_uid_missing():
+    event_uid = _get_text("event_uid_missing")
+    event = Event.fromString(event_uid, **EVENT_KWARGS)
+    assert event.uid.startswith("khal-vevent-without-uid-")
+
+
 def test_create_timezone_in_future():
     """Events too far into the future (after the next DST transition) used
     to be created with invalid timezones"""
