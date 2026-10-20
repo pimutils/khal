@@ -851,7 +851,7 @@ class RecurrenceEditor(urwid.WidgetWrap):
             self._rebuild_no_edit()
         elif self.repeat:
             self._rebuild_edit()
-            self._pile.set_focus(old_focus_y)
+            self._pile.focus_position = old_focus_y
         else:
             self._rebuild_edit_no_repeat()
 
@@ -866,7 +866,7 @@ class RecurrenceEditor(urwid.WidgetWrap):
             urwid.Button("Edit anyway", on_press=_allow_edit),
         ]
         self._refill_contents(lines)
-        self._pile.set_focus(2)
+        self._pile.focus_position = 2
 
     def _rebuild_edit_no_repeat(self):
         lines = [NColumns([(13, self.repeat_box)])]
