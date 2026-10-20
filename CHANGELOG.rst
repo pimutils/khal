@@ -10,6 +10,8 @@ may want to subscribe to `GitHub's tag feed
 0.14.2
 ======
 unreleased
+* FIX date and time fields wrapping in ikhal when their formats contain wide
+  characters, such as Japanese year, month, and day markers
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
 

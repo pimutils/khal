@@ -1,8 +1,9 @@
 import datetime as dt
 
 import icalendar
+import pytest
 
-from khal.ui.editor import RecurrenceEditor, StartEndEditor
+from khal.ui.editor import DateEdit, RecurrenceEditor, StartEndEditor
 from tests.utils import BERLIN, LOCALE_BERLIN
 
 from .canvas_render import CanvasTranslator
@@ -19,6 +20,33 @@ palette = {
     "edit focused": "red",
     "edit": "blue",
 }
+
+
+@pytest.mark.parametrize("dateformat", ["%Y-%m-%d", "%Y年%m月%d日"])
+def test_date_edit_display_width(dateformat):
+    editor = DateEdit(START, dateformat=dateformat)
+    lines = list(editor.render((50,), False).decoded_text)
+    assert len(lines) == 1
+    assert lines[0].rstrip() == START.strftime(dateformat)
+
+
+@pytest.mark.parametrize("dateformat", ["%Y-%m-%d", "%Y年%m月%d日"])
+@pytest.mark.parametrize("timeformat", ["%H:%M", "%H時%M分"])
+@pytest.mark.parametrize("allday", [False, True])
+def test_start_end_editor_display_width(dateformat, timeformat, allday):
+    conf = {
+        **CONF,
+        "locale": {**CONF["locale"], "longdateformat": dateformat, "timeformat": timeformat},
+    }
+    start, end = (START.date(), END.date()) if allday else (START, END)
+    editor = StartEndEditor(start, end, conf=conf)
+    lines = list(editor.render((60,), False).decoded_text)
+    assert len(lines) == 3
+    assert start.strftime(dateformat) in lines[1]
+    assert end.strftime(dateformat) in lines[2]
+    if not allday:
+        assert start.strftime(timeformat) in lines[1]
+        assert end.strftime(timeformat) in lines[2]
 
 
 def test_popup(monkeypatch):
