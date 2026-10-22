@@ -1,4 +1,5 @@
 import datetime as dt
+import re
 from collections import OrderedDict
 
 import pytest
@@ -352,6 +353,29 @@ class TestGuessRangefstr:
             guessrangefstr("1.1.2016x", locale=LOCALE_BERLIN)
         with pytest.raises(DateTimeParseError):
             guessrangefstr("xxx yyy zzz", locale=LOCALE_BERLIN)
+
+    def test_invalid_error_includes_example(self):
+        """the error for an unparseable daterange should recommend a
+        formatted example, not just say that the input was rejected
+        """
+        with pytest.raises(DateTimeParseError, match="Try formatting dates like this"):
+            guessrangefstr("xxx yyy zzz", locale=LOCALE_BERLIN)
+
+    def test_invalid_error_example_matches_locale(self):
+        """the recommended example should reflect the caller's own
+        configured datetimeformat, not a fixed string.
+        """
+        # same reference datetime `khal printformats` uses to demonstrate formats
+        reference = dt.datetime(2013, 12, 21, 21, 45)
+
+        berlin_example = reference.strftime(LOCALE_BERLIN["datetimeformat"])
+        with pytest.raises(DateTimeParseError, match=re.escape(berlin_example)):
+            guessrangefstr("xxx yyy zzz", locale=LOCALE_BERLIN)
+
+        new_york_example = reference.strftime(LOCALE_NEW_YORK["datetimeformat"])
+        assert berlin_example != new_york_example
+        with pytest.raises(DateTimeParseError, match=re.escape(new_york_example)):
+            guessrangefstr("xxx yyy zzz", locale=LOCALE_NEW_YORK)
 
     @freeze_time("2016-12-30 17:53")
     def test_short_format_contains_year(self):
