@@ -25,7 +25,6 @@ helper functions."""
 import datetime as dt
 import logging
 import os
-from collections.abc import Callable
 from typing import Any
 
 import icalendar
@@ -748,13 +747,14 @@ class Event:
         attributes["title"] = self.summary
         attributes["organizer"] = self.organizer.strip()
 
-        formatters = FORMATTERS.values()
-        if len(formatters) == 1:
-            fmt: Callable[[str], str] = list(formatters)[0]
-        else:
-
-            def fmt(s: str) -> str:
-                return s.strip()
+        def fmt(s: Any) -> str:
+            formatters = FORMATTERS.values()
+            if type(s) is list:
+                return s[0].strip()
+            elif len(formatters) == 1:
+                return list(formatters)[0](s)
+            else:
+                return str(s).strip()
 
         attributes["description"] = fmt(self.description)
         attributes["description-separator"] = ""
