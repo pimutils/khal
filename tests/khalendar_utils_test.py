@@ -731,6 +731,20 @@ END:VEVENT
 END:VCALENDAR
 """
 
+event_exdate_d = """BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:event_exdate_d123
+DTSTAMP:20140627T162546Z
+DTSTART;TZID=Europe/Berlin:20140702T190000
+DTEND;TZID=Europe/Berlin:20140702T193000
+SUMMARY:Test event
+RRULE:FREQ=DAILY;COUNT=10
+EXDATE:20140703
+END:VEVENT
+END:VCALENDAR
+"""
+
 latest_bug = """BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
@@ -815,6 +829,14 @@ class TestSpecial:
         vevent = _get_vevent(event_exdatesl_dt)
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert len(dtstart) == 7
+        assert dtstart[0][0] == berlin.localize(dt.datetime(2014, 7, 2, 19, 0))
+        assert dtstart[-1][0] == berlin.localize(dt.datetime(2014, 7, 11, 19, 0))
+
+    def test_event_exdate_d(self):
+        """recurring event, one date excluded via EXCLUDE with date"""
+        vevent = _get_vevent(event_exdate_d)
+        dtstart = icalendar_helpers.expand(vevent, berlin)
+        assert len(dtstart) == 9
         assert dtstart[0][0] == berlin.localize(dt.datetime(2014, 7, 2, 19, 0))
         assert dtstart[-1][0] == berlin.localize(dt.datetime(2014, 7, 11, 19, 0))
 
