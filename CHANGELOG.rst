@@ -12,6 +12,7 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
+* FIX Correctly expand recurring events with EXDATE values that are date-only.
 
 0.14.1
 ======
