@@ -61,3 +61,4 @@ Leonardo Taccari - iamleot [at] gmail [dot] com
 Jorenar - dev [at] jorenar [dot] com - https://jorenar.com
 John Wassilak - john [at] wassilak [dot] com
 Ben Finney - ben+python [at] benfinney [dot] id [dot] au
+Stefano Debenedetti - 44903077+demaledetti [at] users [dot] noreply [dot] github [dot] com
