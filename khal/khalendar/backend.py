@@ -108,7 +108,7 @@ class SQLiteDb:
     def _create_dbdir(self) -> None:
         """create the dbdir if it doesn't exist"""
         if self.db_path == ":memory:":
-            return None
+            return
         dbdir = self.db_path.rsplit("/", 1)[0]
         if not path.isdir(dbdir):
             try:
