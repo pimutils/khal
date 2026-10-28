@@ -52,7 +52,9 @@ class CanvasTranslator:
         if not fmt:
             self.output.write(text)
         else:
-            fmt = self._palette[fmt]
+            # urwid after 4.2.5 reports a nested attribute as a LayeredAttr, innermost
+            # layer first; older urwid reports that innermost attribute alone.
+            fmt = self._palette[getattr(fmt, "layers", (fmt,))[0]]
             if fmt[0]:
                 self.output.write(f"{fmt[1]}{click.style(text)}")
             else:

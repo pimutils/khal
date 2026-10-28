@@ -160,8 +160,8 @@ class Window(urwid.Frame):
         quit_keys = quit_keys or ["q"]
         self._track: list[urwid.Overlay] = []
 
-        header = urwid.AttrWrap(urwid.Text(""), "header")
-        footer = urwid.AttrWrap(urwid.Text(footer), "footer")
+        header = urwid.AttrMap(urwid.Text(""), "header")
+        footer = urwid.AttrMap(urwid.Text(footer), "footer")
         urwid.Frame.__init__(
             self,
             urwid.Text(""),
@@ -223,7 +223,7 @@ class Window(urwid.Frame):
         return key
 
     def _update(self, pane):
-        self.set_body(pane)
+        self.body = pane
         self.clear_header()
 
     def log(self, record: str):
@@ -236,7 +236,7 @@ class Window(urwid.Frame):
         """clears header if we are not currently showing a warning"""
         if not self._header_is_warning:
             pane_title = getattr(self._get_current_pane(), "title", "")
-            self.header.w.set_text(pane_title)
+            self.header.original_widget.set_text(pane_title)
 
     def update_header(self, alert=None, warn=False):
         """Update the Windows header line.
@@ -255,7 +255,7 @@ class Window(urwid.Frame):
                 text.append(part)
                 text.append(("black", " | "))
 
-        self.header.w.set_text(text[:-1] or "")
+        self.header.original_widget.set_text(text[:-1] or "")
 
 
 class AlertDaemon(threading.Thread):
