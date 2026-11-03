@@ -28,6 +28,8 @@ unreleased
   ``AttrWrap.w``
 * FIX crash when expanding recurring events with a time whose EXDATE is a
   date only; such an EXDATE now excludes all instances on that day
+* FIX an invalid alarm in ``khal edit`` or ``khal new -i`` crashed with a
+  traceback, it is now reported and the menu is shown again
 
 0.14.1
 ======
