@@ -616,10 +616,14 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
             if alarm == "None":
                 alarm = ""
             alarm_list = []
-            for a in alarm.split(","):
-                alarm_trig = -1 * parse_datetime.guesstimedeltafstr(a.strip())
-                new_alarm = (alarm_trig, event.description)
-                alarm_list += [new_alarm]
+            try:
+                for a in alarm.split(","):
+                    alarm_trig = -1 * parse_datetime.guesstimedeltafstr(a.strip())
+                    new_alarm = (alarm_trig, event.description)
+                    alarm_list += [new_alarm]
+            except (ValueError, DateTimeParseError) as error:
+                echo(f"invalid alarm: {error}")
+                continue
             event.update_alarms(alarm_list)
             edited = True
         else:

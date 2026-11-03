@@ -1080,6 +1080,34 @@ def test_new_json(runner):
 
 
 @freeze_time("2015-6-1 8:00")
+@pytest.mark.parametrize("invalid", ["alarm", "5x", "-+5m", "15m, alarm"])
+def test_edit_invalid_alarm_prompts_again(runner, invalid):
+    runner = runner()
+    event = runner.calendars["one"].join("event_dt_simple.ics")
+    event.write(_get_text("event_dt_simple"))
+
+    result = runner.invoke(
+        main_khal, ["edit", "--show-past", "Event"], input=f"a\n{invalid}\na\n30m\nn\n"
+    )
+
+    assert not result.exception
+    assert "invalid alarm" in result.output
+    assert "TRIGGER:-PT30M" in event.read()
+
+
+def test_new_interactive_invalid_alarm_does_not_lose_session(runner):
+    runner = runner()
+
+    result = runner.invoke(
+        main_khal,
+        "new -i".split(),
+        input="Another event\n13:00 17:00\n\nNone\na\nalarm\nn\n",
+    )
+    assert not result.exception
+    assert "invalid alarm" in result.output
+    assert "event saved" in result.output
+
+
 def test_new_interactive(runner):
     runner = runner(print_new="path")
 
