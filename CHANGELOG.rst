@@ -12,6 +12,8 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
+* FIX an invalid alarm in ``khal edit`` or ``khal new -i`` crashed with a
+  traceback, it is now reported and the menu is shown again
 
 0.14.1
 ======
