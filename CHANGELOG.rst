@@ -12,6 +12,10 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
+* FIX importing an ``.ics`` with a Windows-style timezone name (e.g. from
+  Outlook/Exchange, ``W. Europe Standard Time``) no longer emits a spurious
+  "Cannot find timezone [...] this could be a bug" warning; the ``VTIMEZONE``
+  is now matched to its event and kept in the imported event
 
 0.14.1
 ======
