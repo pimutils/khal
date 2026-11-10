@@ -137,6 +137,12 @@ def get_config(
     if abort or not results:
         raise InvalidSettingsError()
 
+    locale = user_config["locale"]
+    if locale["datetimeformat"] is None:
+        locale["datetimeformat"] = f"{locale['dateformat']} {locale['timeformat']}"
+    if locale["longdatetimeformat"] is None:
+        locale["longdatetimeformat"] = f"{locale['longdateformat']} {locale['timeformat']}"
+
     config_checks(user_config, _get_color_from_vdir, _get_vdir_type)
 
     extras = get_extra_values(user_config)

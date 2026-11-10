@@ -12,6 +12,10 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
+* CHANGE if ``datetimeformat`` or ``longdatetimeformat`` are not set, they now
+  default to ``dateformat`` (or ``longdateformat``) followed by ``timeformat``
+  instead of ``%c``, so ``khal new`` understands start and end times written in
+  the configured date and time formats
 
 0.14.1
 ======
