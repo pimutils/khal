@@ -2,6 +2,7 @@ import datetime as dt
 import os.path
 
 import pytest
+from configobj import get_extra_values
 from tzlocal import get_localzone as _get_localzone
 
 from khal.settings import get_config
@@ -33,6 +34,15 @@ def get_localzone():
 
 
 class TestSettings:
+    def test_sample_config(self):
+        config = get_config(
+            os.path.join(os.path.dirname(__file__), "..", "khal.conf.sample"),
+            _get_color_from_vdir=lambda x: None,
+            _get_vdir_type=lambda x: "calendar",
+        )
+        assert get_extra_values(config) == []
+        assert config["view"]["monthdisplay"] == "firstday"
+
     def test_simple_config(self):
         config = get_config(
             PATH + "simple.conf",
