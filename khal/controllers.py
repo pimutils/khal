@@ -697,14 +697,53 @@ def import_ics(collection, conf, ics, batch=False, random_uid=False, format=None
     if format is None:
         format = conf["view"]["event_format"]
     try:
+        method = str(cal_from_ics(ics).get("METHOD", "")).upper()
         vevents = split_ics(ics, random_uid, conf["locale"]["default_timezone"])
     except Exception as error:
         raise FatalError(error)
     for vevent in vevents:
-        import_event(vevent, collection, conf["locale"], batch, format, env)
+        import_event(vevent, collection, conf["locale"], batch, format, env, method)
 
 
-def import_event(vevent, collection, locale, batch, format=None, env=None):
+def _merge_cancelled_recurrences(existing_ics, cancellation_ics):
+    existing_calendar = cal_from_ics(existing_ics)
+    cancellation_calendar = cal_from_ics(cancellation_ics)
+    cancellations = [
+        component for component in cancellation_calendar.walk() if component.name == "VEVENT"
+    ]
+    if not cancellations or any("RECURRENCE-ID" not in event for event in cancellations):
+        return None
+
+    timezone_ids = {
+        str(component["TZID"])
+        for component in existing_calendar.subcomponents
+        if component.name == "VTIMEZONE"
+    }
+    for component in cancellation_calendar.subcomponents:
+        if component.name == "VTIMEZONE" and str(component["TZID"]) not in timezone_ids:
+            existing_calendar.add_component(component)
+            timezone_ids.add(str(component["TZID"]))
+
+    for event in cancellations:
+        event["STATUS"] = "CANCELLED"
+
+    existing_calendar.subcomponents[:] = [
+        component
+        for component in existing_calendar.subcomponents
+        if component.name != "VEVENT"
+        or "RECURRENCE-ID" not in component
+        or not any(
+            component["RECURRENCE-ID"].dt == cancellation["RECURRENCE-ID"].dt
+            and component["RECURRENCE-ID"].params == cancellation["RECURRENCE-ID"].params
+            for cancellation in cancellations
+        )
+    ]
+    for event in cancellations:
+        existing_calendar.add_component(event)
+    return existing_calendar.to_ical().decode("utf-8")
+
+
+def import_event(vevent, collection, locale, batch, format=None, env=None, method=None):
     """import one event into collection, let user choose the collection
 
     :type vevent: list of vevents, which can be more than one VEVENT, i.e., the
@@ -749,11 +788,17 @@ def import_event(vevent, collection, locale, batch, format=None, env=None):
     if batch or confirm(f"Do you want to import this event into `{calendar_name}`?"):
         try:
             collection.insert(Item(vevent), collection=calendar_name)
-        except DuplicateUid:
+        except DuplicateUid as error:
             if batch or confirm(
                 "An event with the same UID already exists. Do you want to update it?"
             ):
-                collection.force_update(Item(vevent), collection=calendar_name)
+                item = Item(vevent)
+                if method == "CANCEL" and error.args:
+                    existing_event = collection.get_event(error.args[0], calendar_name)
+                    merged = _merge_cancelled_recurrences(existing_event.raw, vevent)
+                    if merged is not None:
+                        item = Item(merged)
+                collection.force_update(item, collection=calendar_name)
             else:
                 logger.warning(f"Not importing event with UID `{event.uid}`")
 
