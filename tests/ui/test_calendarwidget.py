@@ -92,3 +92,25 @@ def test_set_focus_far_past():
     )
     frame.set_focus_date(future_date)
     assert frame.focus_date == future_date
+
+
+def test_mark_other_jumps_between_marked_and_focused_date():
+    """pressing `other` repeatedly toggles between both ends of the selection"""
+    frame = CalendarWidget(
+        on_date_change=lambda _: None,
+        keybindings={**keybindings, "mark": ["v"], "other": ["o"]},
+        on_press=on_press,
+        initial=dt.date(2026, 11, 26),
+    )
+    size = (30, 10)
+    frame.render(size, focus=True)
+    for key in ["v", "down", "right", "right"]:
+        frame.keypress(size, key)
+    assert frame.focus_date == dt.date(2026, 12, 5)
+
+    frame.keypress(size, "o")
+    assert frame.focus_date == dt.date(2026, 11, 26)
+    frame.keypress(size, "o")
+    assert frame.focus_date == dt.date(2026, 12, 5)
+    frame.keypress(size, "o")
+    assert frame.focus_date == dt.date(2026, 11, 26)
