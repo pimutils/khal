@@ -414,11 +414,14 @@ def guessrangefstr(
         except (ValueError, DateTimeParseError):
             pass
 
+    example = dt.datetime(2013, 12, 21, 21, 45).strftime(locale["datetimeformat"])
     raise DateTimeParseError(
-        f'Could not parse "{daterange}".\nPlease check your configuration or '
-        "run `khal printformats` to see if this does match your configured "
-        "[long](date|time|datetime)format.\nIf you suspect a bug, please "
-        "file an issue at https://github.com/pimutils/khal/issues/ "
+        f'Could not parse "{daterange}" as a daterange.\n'
+        f'Try formatting dates like this: "{example}".\n'
+        "Please check your configuration or run `khal printformats` to see "
+        "if this does match your configured [long](date|time|datetime)format."
+        "\nIf you suspect a bug, please file an issue at "
+        "https://github.com/pimutils/khal/issues/ "
     )
 
 
