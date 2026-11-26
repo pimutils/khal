@@ -26,6 +26,7 @@ import datetime as dt
 import logging
 import os
 from collections.abc import Callable
+from functools import partial
 from typing import Any
 
 import icalendar
@@ -37,12 +38,33 @@ from pytz.tzinfo import StaticTzInfo
 
 from khal.custom_types import LocaleConfiguration
 from khal.exceptions import FatalError
-from khal.icalendar import cal_from_ics, delete_instance, invalid_timezone
+from khal.icalendar import (
+    cal_from_ics,
+    check_series_move,
+    delete_instance,
+    invalid_timezone,
+    shift_recurrences,
+    shift_wall_time,
+)
 from khal.parse_datetime import timedelta2str
 from khal.plugins import FORMATTERS
-from khal.utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
+from khal.utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time, to_wall_time
 
 logger = logging.getLogger("khal")
+
+
+def _end_after(start: dt.datetime, duration: dt.timedelta) -> dt.datetime:
+    """the (exclusive) end of an event starting at `start`
+
+    for all-day events (`start` is a date), `duration` is as shown to the
+    user, i.e. one day shorter than in the icalendar file
+    """
+    if not isinstance(start, dt.datetime):
+        return start + duration + dt.timedelta(days=1)
+    end = start + duration
+    if isinstance(end.tzinfo, pytz.BaseTzInfo):
+        return end.tzinfo.normalize(end)
+    return end
 
 
 class Event:
@@ -211,55 +233,67 @@ class Event:
     def update_start_end(self, start: dt.datetime, end: dt.datetime) -> None:
         """update start and end time of this event
 
-        calling this on an expanded recurring instance will shift the proto
-        instance, rather than replacing the series' start and end dates
+        calling this on an instance of a recurring event (that has not been
+        edited on its own) moves the whole series by as much as this instance
+        was moved
 
         beware, this methods performs some open heart surgery
         """
         if type(start) is not type(end):
             raise ValueError("DTSTART and DTEND should be of the same type (datetime or date)")
-        old_start = self.start_local
-        self.__class__ = self._get_type_from_date(start)
-
-        vevent = self._vevents[self.ref]
-        proto_start = start
-        proto_end = end
         if self.recurring and self.ref == "PROTO":
-            # An expanded occurrence carries its own start/end, but is backed
-            # by the series' PROTO event; shift the anchor instead of moving
-            # the whole series to this occurrence's dates.
-            proto_dtstart = self._vevents["PROTO"]["DTSTART"].dt
-            if isinstance(start, dt.datetime) == isinstance(proto_dtstart, dt.datetime):
-                duration = end - start
-                if isinstance(start, dt.datetime):
-                    date_shift = start.date() - old_start.date()
-                    new_time = start.timetz()
-                    proto_start = proto_dtstart + date_shift
-                    proto_start = proto_start.replace(
-                        hour=new_time.hour,
-                        minute=new_time.minute,
-                        second=new_time.second,
-                        microsecond=new_time.microsecond,
-                    )
-                else:
-                    date_shift = start - old_start
-                    proto_start = proto_dtstart + date_shift
-                proto_end = proto_start + duration
+            proto_start = self._vevents["PROTO"]["DTSTART"].dt
+            changes_type = isinstance(start, dt.datetime) != isinstance(proto_start, dt.datetime)
+            # turning the first instance into an all-day event (or back)
+            # changes the whole series, everything else moves the series
+            if not (changes_type and self._start == proto_start):
+                self._move_series(start, end)
+                return
 
-        vevent.pop("DTSTART")
-        vevent.add("DTSTART", proto_start)
+        self.__class__ = self._get_type_from_date(start)
         self._start = start
-        if not isinstance(end, dt.datetime):
-            end = end + dt.timedelta(days=1)
-        self._end = end
-        if not isinstance(proto_end, dt.datetime):
-            proto_end = proto_end + dt.timedelta(days=1)
+        self._end = _end_after(start, end - start)
+        self._set_start_end(self._vevents[self.ref], self._start, self._end)
+
+    @staticmethod
+    def _set_start_end(vevent: icalendar.Event, start: dt.date, end: dt.date) -> None:
+        """set DTSTART and DTEND (or DURATION) of `vevent`, `end` is exclusive"""
+        vevent.pop("DTSTART")
+        vevent.add("DTSTART", start)
         if "DTEND" in vevent:
             vevent.pop("DTEND")
-            vevent.add("DTEND", proto_end)
+            vevent.add("DTEND", end)
         else:
             vevent.pop("DURATION")
-            vevent.add("DURATION", proto_end - proto_start)
+            vevent.add("DURATION", end - start)
+
+    def _move_series(self, start: dt.date, end: dt.date) -> None:
+        """move the whole series by as much as this instance is moved
+
+        The series is moved by the wall clock time difference in its own
+        timezone, so it stays at the same local time across DST changes.
+        """
+        proto = self._vevents["PROTO"]
+        if isinstance(start, dt.datetime) != isinstance(proto["DTSTART"].dt, dt.datetime):
+            raise ValueError(
+                "Can't change only some instances of a recurring event between all-day "
+                "and timed, please edit the first instance to change the whole series"
+            )
+        # the timezone in whose wall clock time the series repeats
+        tz = getattr(proto["DTSTART"].dt, "tzinfo", None) or self._locale["local_timezone"]
+        old_start, new_start = to_wall_time(self._start, tz), to_wall_time(start, tz)
+        check_series_move(proto, old_start, new_start)
+
+        shift = partial(shift_wall_time, delta=new_start - old_start, timezone=tz)
+
+        duration = end - start
+        proto_start = shift(proto["DTSTART"].dt)
+        self._set_start_end(proto, proto_start, _end_after(proto_start, duration))
+        shift_recurrences(self._vevents.values(), shift)
+
+        self._start = shift(self._start)
+        self._end = _end_after(self._start, duration)
+        self.__class__ = self._get_type_from_date(self._start)
 
     @property
     def recurring(self) -> bool:

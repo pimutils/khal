@@ -588,6 +588,10 @@ class EventEditor(urwid.WidgetWrap):
         return False
 
     def update_vevent(self):
+        # first, as it might refuse the change, before anything else is changed
+        if self.startendeditor.changed:
+            self.event.update_start_end(self.startendeditor.startdt, self.startendeditor.enddt)
+
         self.event.update_summary(get_wrapped_text(self.summary))
         self.event.update_description(get_wrapped_text(self.description))
         self.event.update_location(get_wrapped_text(self.location))
@@ -595,8 +599,6 @@ class EventEditor(urwid.WidgetWrap):
         self.event.update_categories(get_wrapped_text(self.categories).split(","))
         self.event.update_url(get_wrapped_text(self.url))
 
-        if self.startendeditor.changed:
-            self.event.update_start_end(self.startendeditor.startdt, self.startendeditor.enddt)
         if self.recurrenceeditor.changed:
             rrule = self.recurrenceeditor.active
             self.event.update_rrule(rrule)
@@ -646,7 +648,11 @@ class EventEditor(urwid.WidgetWrap):
             return
 
         if self._always_save or self.changed is True:
-            self.update_vevent()
+            try:
+                self.update_vevent()
+            except ValueError as error:
+                self.pane.window.alert(("light red", f"Can't save: {error}"))
+                return
             self.event.allday = self.startendeditor.allday
             self.event.increment_sequence()
             if self.event.etag is None:  # has not been saved before

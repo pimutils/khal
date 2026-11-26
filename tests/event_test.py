@@ -9,7 +9,14 @@ from icalendar import Parameters, vCalAddress, vRecur, vText
 from packaging import version
 
 from khal.controllers import human_formatter
-from khal.khalendar.event import AllDayEvent, Event, FloatingEvent, LocalizedEvent, create_timezone
+from khal.khalendar.event import (
+    AllDayEvent,
+    Event,
+    FloatingEvent,
+    LocalizedEvent,
+    _end_after,
+    create_timezone,
+)
 
 from .utils import (
     BERLIN,
@@ -834,3 +841,15 @@ def test_partstat_deligated():
         _get_text("event_dt_partstat"), addresses=["iamboss@example.com"], **EVENT_KWARGS
     )
     assert event.partstat == "ACCEPTED"
+
+
+def test_end_after():
+    # all-day: the duration is as shown, the end exclusive
+    assert _end_after(dt.date(2014, 4, 9), dt.timedelta(days=1)) == dt.date(2014, 4, 11)
+    assert _end_after(dt.datetime(2014, 4, 9, 9), dt.timedelta(hours=1)) == (
+        dt.datetime(2014, 4, 9, 10)
+    )
+    # the offset is right after a DST change (30.03.2014 02:00 in Berlin)
+    end = _end_after(BERLIN.localize(dt.datetime(2014, 3, 30, 1)), dt.timedelta(hours=2))
+    assert end == BERLIN.localize(dt.datetime(2014, 3, 30, 4))
+    assert end.utcoffset() == dt.timedelta(hours=2)

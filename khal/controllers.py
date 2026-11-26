@@ -583,10 +583,15 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 if not allday:
                     start = locale["local_timezone"].localize(start)
                     end = locale["local_timezone"].localize(end)
-                event.update_start_end(start, end)
-                edited = True
             except Exception:
                 echo("error parsing range")
+                continue
+            try:
+                event.update_start_end(start, end)
+            except ValueError as error:
+                echo(str(error))
+                continue
+            edited = True
         elif choice == "repeat":
             recur = event.recurobject
             freq = recur["freq"] if "freq" in recur else ""

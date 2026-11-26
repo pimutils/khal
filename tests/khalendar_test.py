@@ -287,6 +287,237 @@ class TestCollection:
         assert first_instance[0].start_local == BERLIN.localize(dt.datetime(2014, 4, 9, 8))
         assert first_instance[0].end_local == BERLIN.localize(dt.datetime(2014, 4, 9, 8, 30))
 
+    @staticmethod
+    def _insert_series(coll, props, overrides=""):
+        ics = (
+            "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//khal//test//EN\n"
+            "BEGIN:VEVENT\nUID:series\nSUMMARY:Series\nDTSTAMP:20140101T000000Z\n"
+            + dedent(props).strip()
+            + "\nEND:VEVENT\n"
+            + dedent(overrides)
+            + "END:VCALENDAR\n"
+        )
+        coll.insert(Event.fromString(ics, calendar=cal1, locale=LOCALE_BERLIN), cal1)
+
+    @staticmethod
+    def _starts(coll, first, days):
+        """local start times of all events on each of `days` days from `first`"""
+        return {
+            first + dt.timedelta(days=i): sorted(
+                event.start_local for event in coll.get_events_on(first + dt.timedelta(days=i))
+            )
+            for i in range(days)
+        }
+
+    def test_update_recurring_event_other_timezone(self, coll_vdirs):
+        """Moving an instance by one hour moves the series by one hour, even if
+        the series is in a different timezone than the local one."""
+        coll, _ = coll_vdirs
+        self._insert_series(
+            coll,
+            """
+            DTSTART;TZID=America/New_York:20140409T090000
+            DTEND;TZID=America/New_York:20140409T100000
+            RRULE:FREQ=DAILY;COUNT=3
+            """,
+        )
+        event = next(iter(coll.get_events_on(dt.date(2014, 4, 10))))
+        assert event.start_local == BERLIN.localize(dt.datetime(2014, 4, 10, 15))
+        event.update_start_end(
+            BERLIN.localize(dt.datetime(2014, 4, 10, 16)),
+            BERLIN.localize(dt.datetime(2014, 4, 10, 17)),
+        )
+        coll.update(event)
+
+        assert self._starts(coll, dt.date(2014, 4, 9), 3) == {
+            dt.date(2014, 4, 9 + i): [BERLIN.localize(dt.datetime(2014, 4, 9 + i, 16))]
+            for i in range(3)
+        }
+        event = next(iter(coll.get_events_on(dt.date(2014, 4, 9))))
+        assert "DTSTART;TZID=America/New_York:20140409T100000" in event.raw.split("\r\n")
+
+    def test_update_recurring_event_keeps_exdate(self, coll_vdirs):
+        """Excluded instances stay excluded when the series is moved."""
+        coll, _ = coll_vdirs
+        self._insert_series(
+            coll,
+            """
+            DTSTART;TZID=Europe/Berlin:20140409T090000
+            DTEND;TZID=Europe/Berlin:20140409T100000
+            RRULE:FREQ=DAILY;COUNT=4
+            EXDATE;TZID=Europe/Berlin:20140410T090000
+            EXDATE:20140411T070000Z
+            """,
+        )
+        event = next(iter(coll.get_events_on(dt.date(2014, 4, 12))))
+        event.update_start_end(
+            BERLIN.localize(dt.datetime(2014, 4, 12, 8)),
+            BERLIN.localize(dt.datetime(2014, 4, 12, 9)),
+        )
+        coll.update(event)
+
+        assert self._starts(coll, dt.date(2014, 4, 9), 4) == {
+            dt.date(2014, 4, 9): [BERLIN.localize(dt.datetime(2014, 4, 9, 8))],
+            dt.date(2014, 4, 10): [],
+            dt.date(2014, 4, 11): [],
+            dt.date(2014, 4, 12): [BERLIN.localize(dt.datetime(2014, 4, 12, 8))],
+        }
+
+    def test_update_recurring_event_keeps_overridden_instance(self, coll_vdirs):
+        """An instance that was edited on its own is still replaced by its
+        override after the series is moved, and not shown twice."""
+        coll, _ = coll_vdirs
+        self._insert_series(
+            coll,
+            """
+            DTSTART;TZID=Europe/Berlin:20140409T090000
+            DTEND;TZID=Europe/Berlin:20140409T100000
+            RRULE:FREQ=DAILY;COUNT=3
+            """,
+            overrides="""\
+            BEGIN:VEVENT
+            UID:series
+            SUMMARY:Moved instance
+            DTSTAMP:20140101T000000Z
+            RECURRENCE-ID;TZID=Europe/Berlin:20140410T090000
+            DTSTART;TZID=Europe/Berlin:20140410T120000
+            DTEND;TZID=Europe/Berlin:20140410T130000
+            END:VEVENT
+            """,
+        )
+        event = next(iter(coll.get_events_on(dt.date(2014, 4, 11))))
+        event.update_start_end(
+            BERLIN.localize(dt.datetime(2014, 4, 11, 8)),
+            BERLIN.localize(dt.datetime(2014, 4, 11, 9)),
+        )
+        coll.update(event)
+
+        assert self._starts(coll, dt.date(2014, 4, 9), 3) == {
+            dt.date(2014, 4, 9): [BERLIN.localize(dt.datetime(2014, 4, 9, 8))],
+            dt.date(2014, 4, 10): [BERLIN.localize(dt.datetime(2014, 4, 10, 12))],
+            dt.date(2014, 4, 11): [BERLIN.localize(dt.datetime(2014, 4, 11, 8))],
+        }
+
+    def test_update_recurring_event_keeps_until(self, coll_vdirs):
+        """Moving the series later does not lose its last instance to UNTIL."""
+        coll, _ = coll_vdirs
+        self._insert_series(
+            coll,
+            """
+            DTSTART;TZID=Europe/Berlin:20140409T090000
+            DTEND;TZID=Europe/Berlin:20140409T100000
+            RRULE:FREQ=DAILY;UNTIL=20140411T070000Z
+            """,
+        )
+        event = next(iter(coll.get_events_on(dt.date(2014, 4, 10))))
+        event.update_start_end(
+            BERLIN.localize(dt.datetime(2014, 4, 10, 10)),
+            BERLIN.localize(dt.datetime(2014, 4, 10, 11)),
+        )
+        coll.update(event)
+
+        assert self._starts(coll, dt.date(2014, 4, 9), 4) == {
+            dt.date(2014, 4, 9): [BERLIN.localize(dt.datetime(2014, 4, 9, 10))],
+            dt.date(2014, 4, 10): [BERLIN.localize(dt.datetime(2014, 4, 10, 10))],
+            dt.date(2014, 4, 11): [BERLIN.localize(dt.datetime(2014, 4, 11, 10))],
+            dt.date(2014, 4, 12): [],
+        }
+
+    def test_update_recurring_allday_event_other_day(self, coll_vdirs):
+        """Moving an instance of an all-day series to another day moves the
+        whole series by the same number of days."""
+        coll, _ = coll_vdirs
+        self._insert_series(
+            coll,
+            """
+            DTSTART;VALUE=DATE:20140409
+            DTEND;VALUE=DATE:20140410
+            RRULE:FREQ=WEEKLY;COUNT=3
+            """,
+        )
+        event = next(iter(coll.get_events_on(dt.date(2014, 4, 16))))
+        event.update_start_end(dt.date(2014, 4, 17), dt.date(2014, 4, 17))
+        coll.update(event)
+
+        starts = {
+            day: [event.start for event in coll.get_events_on(day)]
+            for day in (dt.date(2014, 4, 9) + dt.timedelta(days=i) for i in range(17))
+        }
+        assert {day: s for day, s in starts.items() if s} == {
+            dt.date(2014, 4, 10): [dt.date(2014, 4, 10)],
+            dt.date(2014, 4, 17): [dt.date(2014, 4, 17)],
+            dt.date(2014, 4, 24): [dt.date(2014, 4, 24)],
+        }
+
+    def test_update_recurring_event_byday_time(self, coll_vdirs):
+        """Changing the time of an instance of a series that repeats on
+        specific weekdays changes the time of the whole series."""
+        coll, _ = coll_vdirs
+        self._insert_series(
+            coll,
+            """
+            DTSTART;TZID=Europe/Berlin:20140407T090000
+            DTEND;TZID=Europe/Berlin:20140407T100000
+            RRULE:FREQ=WEEKLY;BYDAY=MO,WE;COUNT=4
+            """,
+        )
+        event = next(iter(coll.get_events_on(dt.date(2014, 4, 14))))
+        event.update_start_end(
+            BERLIN.localize(dt.datetime(2014, 4, 14, 8)),
+            BERLIN.localize(dt.datetime(2014, 4, 14, 9)),
+        )
+        coll.update(event)
+
+        starts = self._starts(coll, dt.date(2014, 4, 7), 14)
+        assert {day: s for day, s in starts.items() if s} == {
+            day: [BERLIN.localize(dt.datetime.combine(day, dt.time(8)))]
+            for day in (
+                dt.date(2014, 4, 7),
+                dt.date(2014, 4, 9),
+                dt.date(2014, 4, 14),
+                dt.date(2014, 4, 16),
+            )
+        }
+
+    def test_update_recurring_event_byday_other_day(self, coll_vdirs):
+        """Moving an instance of a series that repeats on specific weekdays to
+        another day is refused instead of breaking the series."""
+        coll, _ = coll_vdirs
+        self._insert_series(
+            coll,
+            """
+            DTSTART;TZID=Europe/Berlin:20140407T090000
+            DTEND;TZID=Europe/Berlin:20140407T100000
+            RRULE:FREQ=WEEKLY;BYDAY=MO,WE;COUNT=4
+            """,
+        )
+        event = next(iter(coll.get_events_on(dt.date(2014, 4, 14))))
+        raw = event.raw
+        with pytest.raises(ValueError, match="another day"):
+            event.update_start_end(
+                BERLIN.localize(dt.datetime(2014, 4, 15, 9)),
+                BERLIN.localize(dt.datetime(2014, 4, 15, 10)),
+            )
+        assert event.raw == raw
+
+    def test_update_recurring_event_to_allday(self, coll_vdirs):
+        """Turning an instance of a series with times into an all-day event is
+        refused instead of dropping earlier instances."""
+        coll, _ = coll_vdirs
+        self._insert_series(
+            coll,
+            """
+            DTSTART;TZID=Europe/Berlin:20140409T090000
+            DTEND;TZID=Europe/Berlin:20140409T100000
+            RRULE:FREQ=DAILY;COUNT=3
+            """,
+        )
+        event = next(iter(coll.get_events_on(dt.date(2014, 4, 10))))
+        raw = event.raw
+        with pytest.raises(ValueError, match="all-day"):
+            event.update_start_end(dt.date(2014, 4, 10), dt.date(2014, 4, 10))
+        assert event.raw == raw
+
     def test_newevent(self, coll_vdirs):
         coll, _vdirs = coll_vdirs
         bday = dt.datetime.combine(aday, dt.time.min)

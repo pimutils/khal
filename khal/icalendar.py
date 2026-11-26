@@ -24,7 +24,9 @@
 import datetime as dt
 import logging
 from collections import defaultdict
+from collections.abc import Callable, Iterable
 from hashlib import sha256
+from typing import overload
 
 import dateutil.rrule
 import icalendar
@@ -32,7 +34,12 @@ import pytz
 
 from .exceptions import UnsupportedRecurrence
 from .parse_datetime import rrulefstr
-from .utils import generate_random_uid, localize_strip_tz, str2alarm, to_unix_time
+from .utils import (
+    generate_random_uid,
+    localize_strip_tz,
+    str2alarm,
+    to_unix_time,
+)
 
 logger = logging.getLogger("khal")
 
@@ -522,6 +529,75 @@ def delete_instance(vevent: icalendar.Event, instance: dt.datetime) -> None:
         vevent.pop("RDATE")
         if rdates != []:
             vevent.add("RDATE", rdates)
+
+
+@overload
+def shift_wall_time(
+    value: dt.datetime, delta: dt.timedelta, timezone: pytz.BaseTzInfo
+) -> dt.datetime: ...
+@overload
+def shift_wall_time(value: dt.date, delta: dt.timedelta, timezone: pytz.BaseTzInfo) -> dt.date: ...
+def shift_wall_time(value: dt.date, delta: dt.timedelta, timezone: pytz.BaseTzInfo) -> dt.date:
+    """move `value` by `delta` of wall clock time in `timezone`
+
+    Aware datetimes are moved in `timezone` (so a DST change in between
+    doesn't change their wall clock time there) and returned in their own
+    timezone. Dates and naive datetimes are just moved by `delta`.
+    """
+    if not isinstance(value, dt.datetime) or value.tzinfo is None:
+        return value + delta
+    moved = timezone.localize(value.astimezone(timezone).replace(tzinfo=None) + delta)
+    return moved.astimezone(value.tzinfo)
+
+
+def check_series_move(vevent: icalendar.Event, old_start: dt.date, new_start: dt.date) -> None:
+    """raise ValueError if moving the series from `old_start` to `new_start`
+    (wall clock times of one instance) would not move its instances along
+
+    If the series repeats on specific days (e.g. every Monday and
+    Wednesday), its rule and not its DTSTART decides on which days it
+    repeats, so only its time can be changed.
+    """
+    by_day = ("BYDAY", "BYMONTHDAY", "BYYEARDAY", "BYWEEKNO", "BYMONTH", "BYSETPOS")
+    if not any(key in vevent.get("RRULE", {}) for key in by_day):
+        return
+    old_day = old_start.date() if isinstance(old_start, dt.datetime) else old_start
+    new_day = new_start.date() if isinstance(new_start, dt.datetime) else new_start
+    if old_day != new_day:
+        raise ValueError(
+            "Can't move an instance of a recurring event that repeats on "
+            "specific days to another day, please change the recurrence rule"
+        )
+
+
+def shift_recurrences(
+    vevents: Iterable[icalendar.Event], shift: Callable[[dt.date], dt.date]
+) -> None:
+    """apply `shift` to everything referring to instances of a series
+
+    These are EXDATE, RDATE and UNTIL of the series and RECURRENCE-ID of its
+    edited instances. Moving them along with the series keeps excluded
+    instances excluded, edited instances replacing the right instance and
+    the end of the series in place. The DTSTART of an edited instance is not
+    changed, it was set on purpose.
+
+    :param vevents: all VEVENTs of the series
+    :param shift: function taking and returning a date or datetime
+    """
+    # RDATE;VALUE=PERIOD is not supported by khal, so there are no periods
+    for vevent in vevents:
+        for name in ("EXDATE", "RDATE"):
+            if name in vevent:
+                values = [shift(value) for value in _get_all_properties(vevent, name)]
+                vevent.pop(name)
+                for value in values:
+                    vevent.add(name, value)
+        if "UNTIL" in vevent.get("RRULE", {}):
+            vevent["RRULE"]["UNTIL"] = [shift(until) for until in vevent["RRULE"]["UNTIL"]]
+        if "RECURRENCE-ID" in vevent:
+            recurrence_id = vevent.pop("RECURRENCE-ID")
+            params = {k: v for k, v in recurrence_id.params.items() if k not in ("TZID", "VALUE")}
+            vevent.add("RECURRENCE-ID", shift(recurrence_id.dt), parameters=params)
 
 
 def sort_key(vevent: icalendar.Event) -> tuple[str, float]:
