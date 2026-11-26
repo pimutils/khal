@@ -25,6 +25,8 @@ unreleased
 * FIX ikhal compatibility with urwid 5.0, which removed ``Columns.focus_col``,
   ``Columns.set_focus_column()``, ``Pile.set_focus()``, ``Frame.set_body()`` and
   ``AttrWrap.w``
+* FIX crash when expanding recurring events with a time whose EXDATE is a
+  date only; such an EXDATE now excludes all instances on that day
 
 0.14.1
 ======
