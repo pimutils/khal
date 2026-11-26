@@ -349,13 +349,12 @@ class CListBox(urwid.ListBox):
                 "pos": (self.focus_position, self.focus.focus_position),
             }
         if self._marked and key in self.keybindings["other"]:
-            row, col = self._marked["pos"]
+            other_date = self._marked["date"]
             self._marked = {
                 "date": self.body.focus_date,
                 "pos": (self.focus_position, self.focus.focus_position),
             }
-            self.focus.focus_position = col
-            self.focus_position = row
+            self.set_focus_date(other_date)
         if key in self.on_press:
             if self._marked:
                 start = min(self.body.focus_date, self._marked["date"])

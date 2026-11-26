@@ -19,6 +19,8 @@ unreleased
 * FIX ikhal compatibility with urwid 5.0, which removed ``Columns.focus_col``,
   ``Columns.set_focus_column()``, ``Pile.set_focus()``, ``Frame.set_body()`` and
   ``AttrWrap.w``
+* FIX in ikhal's calendar, pressing ``other`` (default ``o``) while marking a
+  date range now jumps back to the right day again with urwid >= 5.0
 
 0.14.1
 ======
