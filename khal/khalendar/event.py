@@ -37,7 +37,7 @@ from pytz.tzinfo import StaticTzInfo
 
 from khal.custom_types import LocaleConfiguration
 from khal.exceptions import FatalError
-from khal.icalendar import cal_from_ics, delete_instance, invalid_timezone
+from khal.icalendar import cal_from_ics, delete_future, delete_instance, invalid_timezone
 from khal.parse_datetime import timedelta2str
 from khal.plugins import FORMATTERS
 from khal.utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
@@ -834,6 +834,18 @@ class Event:
                 continue
         for key in to_pop:
             self._vevents.pop(key)
+
+    def delete_future(self, instance: dt.datetime) -> None:
+        """delete future instances from this event
+        (instances only after `instance` will be deleted)
+
+        we don't check, if that instance is an instance of the recurrence rules
+        defined in the event
+        """
+        assert self.recurring
+        delete_future(self._vevents["PROTO"], instance)
+        # TODO check if we also have to delete RECURRENCE-ID
+        # TODO consider returning the relevant event
 
     @property
     def status(self) -> str:
