@@ -38,7 +38,7 @@ class ReadOnlyCalendarError(Error):
     khal"""
 
 
-class EtagMissmatch(Error):
+class EtagMismatch(Error):
     """An event is trying to be modified from khal which has also been externally
     modified"""
 

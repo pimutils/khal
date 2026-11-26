@@ -40,7 +40,7 @@ from . import backend
 from .event import Event
 from .exceptions import (
     DuplicateUid,
-    EtagMissmatch,
+    EtagMismatch,
     NonUniqueUID,
     ReadOnlyCalendarError,
     UnsupportedFeatureError,
@@ -237,7 +237,7 @@ class CalendarCollection:
         try:
             self._storages[calendar].delete(href, etag)
         except WrongEtagError:
-            raise EtagMissmatch()
+            raise EtagMismatch()
         self._backend.delete(href, calendar=calendar)
 
     def delete_instance(
@@ -255,7 +255,7 @@ class CalendarCollection:
             raise ReadOnlyCalendarError()
         event = self.get_event(href, calendar)
         if etag and etag != event.etag:
-            raise EtagMissmatch()
+            raise EtagMismatch()
 
         event.delete_instance(rec_id)
         self.update(event)
