@@ -57,11 +57,17 @@ def split_ics(ics: str, random_uid: bool = False, default_timezone=None) -> list
         # Standard Time' for 'Pacific/Auckland' in Olson format), we convert any
         # Windows format timezones to Olson.
         if item.name == "VTIMEZONE":
+            # Store the VTIMEZONE under its original TZID. Depending on the
+            # icalendar version, an event's datetime may keep the (possibly
+            # Windows-style) TZID as its tzinfo name, so this key is what the
+            # lookup in ics_from_list() uses.
+            tzs[item["TZID"]] = item
+            # Also store it under the Olson name so events that reference the
+            # timezone by its Olson equivalent (or whose tzinfo icalendar has
+            # already normalized to Olson) can find it too.
             if item["TZID"] in icalendar.timezone.windows_to_olson.WINDOWS_TO_OLSON:
-                key = icalendar.timezone.windows_to_olson.WINDOWS_TO_OLSON[item["TZID"]]
-            else:
-                key = item["TZID"]
-            tzs[key] = item
+                olson = icalendar.timezone.windows_to_olson.WINDOWS_TO_OLSON[item["TZID"]]
+                tzs[olson] = item
 
         if item.name == "VEVENT":
             if "UID" not in item:
