@@ -1108,6 +1108,7 @@ def test_new_interactive_invalid_alarm_does_not_lose_session(runner):
     assert "event saved" in result.output
 
 
+@freeze_time("2015-6-1 8:00")
 def test_new_interactive(runner):
     runner = runner(print_new="path")
 
