@@ -24,6 +24,8 @@ datetimeformat =  %d.%m. %H:%M
 longdatetimeformat = %d.%m.%Y %H:%M
 
 firstweekday = 0
+
+[view]
 monthdisplay = firstday
 
 [default]
