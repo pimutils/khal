@@ -63,3 +63,5 @@ John Wassilak - john [at] wassilak [dot] com
 Pierre Wilke - wilke.pierre [at] gmail [dot] com
 Muhammad Umar Nadeem
 Aleksei Stepanov - penguinolog [at] gmail [dot] com
+Ben Finney - ben+python [at] benfinney [dot] id [dot] au
+Stefano Debenedetti - 44903077+demaledetti [at] users [dot] noreply [dot] github [dot] com
