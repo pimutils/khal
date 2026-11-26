@@ -118,11 +118,13 @@ longdateformat = string(default='%x')
 
 # khal will display and understand all datetimes in this format, see
 # :ref:`timeformat <locale-timeformat>` for the format.
-datetimeformat = string(default='%c')
+# If not set, it defaults to *dateformat* followed by a space and *timeformat*.
+datetimeformat = string(default=None)
 
 # khal will display and understand all datetimes in this format, it should
 # contain a year (e.g. *%Y*) see :ref:`timeformat <locale-timeformat>` for the format.
-longdatetimeformat = string(default='%c')
+# If not set, it defaults to *longdateformat* followed by a space and *timeformat*.
+longdatetimeformat = string(default=None)
 
 
 # Enable weeknumbers in `calendar` and `interactive` (ikhal) mode by specifying

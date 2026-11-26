@@ -116,8 +116,8 @@ class TestSettings:
                 "timeformat": "%X",
                 "dateformat": "%x",
                 "longdateformat": "%x",
-                "datetimeformat": "%c",
-                "longdatetimeformat": "%c",
+                "datetimeformat": "%x %X",
+                "longdatetimeformat": "%x %X",
                 "firstweekday": 0,
                 "unicode_symbols": True,
                 "weeknumbers": False,
@@ -188,6 +188,42 @@ default_calendar = home
             conf.write(config)
         with pytest.raises(InvalidSettingsError):
             config_checks(get_config(conf_path))
+
+    def test_datetimeformat_defaults_to_date_and_time(self, tmpdir):
+        config = """
+[calendars]
+[[home]]
+path = ~/.khal/calendars/home/
+[locale]
+timeformat = %H:%M
+dateformat = %d/%m
+longdateformat = %d/%m/%Y
+"""
+        conf_path = str(tmpdir.join("khal.conf"))
+        with open(conf_path, "w+") as conf:
+            conf.write(config)
+        locale = get_config(conf_path)["locale"]
+        assert locale["datetimeformat"] == "%d/%m %H:%M"
+        assert locale["longdatetimeformat"] == "%d/%m/%Y %H:%M"
+
+    def test_datetimeformat_explicit(self, tmpdir):
+        config = """
+[calendars]
+[[home]]
+path = ~/.khal/calendars/home/
+[locale]
+timeformat = %H:%M
+dateformat = %d/%m
+longdateformat = %d/%m/%Y
+datetimeformat = %d.%m. %H:%M
+longdatetimeformat = %d.%m.%Y %H:%M
+"""
+        conf_path = str(tmpdir.join("khal.conf"))
+        with open(conf_path, "w+") as conf:
+            conf.write(config)
+        locale = get_config(conf_path)["locale"]
+        assert locale["datetimeformat"] == "%d.%m. %H:%M"
+        assert locale["longdatetimeformat"] == "%d.%m.%Y %H:%M"
 
 
 def test_broken_color(metavdirs):
