@@ -110,8 +110,15 @@ def test_split_ics_missing_timezone():
 def test_windows_timezone(caplog):
     """Test if a windows tz format works"""
     cal = _get_text("tz_windows_format")
-    split_ics(cal)
+    vevents = split_ics(cal)
+    # No "cannot find timezone" warning should be emitted: the VTIMEZONE is
+    # present in the file, under its (Windows-style) TZID. Check for both the
+    # Olson name and the original Windows TZID, since the datetime's tzinfo may
+    # keep either depending on the icalendar version.
     assert "Cannot find timezone `Pacific/Auckland`" not in caplog.text
+    assert "Cannot find timezone `New Zealand Standard Time`" not in caplog.text
+    # and the VTIMEZONE must be carried over into the split output
+    assert "BEGIN:VTIMEZONE" in vevents[0]
 
 
 def test_split_ics_without_uid():

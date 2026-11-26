@@ -15,6 +15,10 @@ unreleased
 * FIX place ``monthdisplay`` in the ``[view]`` section of the sample configuration
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
+* FIX importing an ``.ics`` with a Windows-style timezone name (e.g. from
+  Outlook/Exchange, ``W. Europe Standard Time``) no longer emits a spurious
+  "Cannot find timezone [...] this could be a bug" warning; the ``VTIMEZONE``
+  is now matched to its event and kept in the imported event
 * CHANGE if ``datetimeformat`` or ``longdatetimeformat`` are not set, they now
   default to ``dateformat`` (or ``longdateformat``) followed by ``timeformat``
   instead of ``%c``, so ``khal new`` understands start and end times written in
@@ -22,6 +26,8 @@ unreleased
 * FIX ikhal compatibility with urwid 5.0, which removed ``Columns.focus_col``,
   ``Columns.set_focus_column()``, ``Pile.set_focus()``, ``Frame.set_body()`` and
   ``AttrWrap.w``
+* FIX crash when expanding recurring events with a time whose EXDATE is a
+  date only; such an EXDATE now excludes all instances on that day
 
 0.14.1
 ======

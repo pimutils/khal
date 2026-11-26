@@ -57,11 +57,17 @@ def split_ics(ics: str, random_uid: bool = False, default_timezone=None) -> list
         # Standard Time' for 'Pacific/Auckland' in Olson format), we convert any
         # Windows format timezones to Olson.
         if item.name == "VTIMEZONE":
+            # Store the VTIMEZONE under its original TZID. Depending on the
+            # icalendar version, an event's datetime may keep the (possibly
+            # Windows-style) TZID as its tzinfo name, so this key is what the
+            # lookup in ics_from_list() uses.
+            tzs[item["TZID"]] = item
+            # Also store it under the Olson name so events that reference the
+            # timezone by its Olson equivalent (or whose tzinfo icalendar has
+            # already normalized to Olson) can find it too.
             if item["TZID"] in icalendar.timezone.windows_to_olson.WINDOWS_TO_OLSON:
-                key = icalendar.timezone.windows_to_olson.WINDOWS_TO_OLSON[item["TZID"]]
-            else:
-                key = item["TZID"]
-            tzs[key] = item
+                olson = icalendar.timezone.windows_to_olson.WINDOWS_TO_OLSON[item["TZID"]]
+                tzs[olson] = item
 
         if item.name == "VEVENT":
             if "UID" not in item:
@@ -254,10 +260,11 @@ def expand(
     events_tz = getattr(dtstart_prop.dt, "tzinfo", None) if not allday else None
 
     def sanitize_datetime(date: dt.date) -> dt.date:
-        if allday and isinstance(date, dt.datetime):
-            date = date.date()
-        if events_tz is not None:
-            date = events_tz.localize(date)
+        if isinstance(date, dt.datetime):
+            if allday:
+                date = date.date()
+            if events_tz is not None:
+                date = events_tz.localize(date)
         return date
 
     rrule_param = vevent.get("RRULE")
@@ -350,14 +357,31 @@ def expand(
 
     # remove excluded dates
     if expand:
-        for date in get_dates(vevent, "EXDATE") or ():
+        for exdate in get_dates(vevent, "EXDATE") or ():
             try:
-                dtstartl.remove(date)
+                # try the happy path first:
+                # * assume recurrences have the same type as exdates
+                # * and trust that they are supposed to match
+                dtstartl.remove(exdate)
             except KeyError:
-                logger.warning(
-                    f"In event {href}, excluded instance starting at {date} "
-                    "not found, event might be invalid."
-                )
+                found = False
+                # if there was no match, and if the exdate is a date
+                # exclude any recurrence datetime that has that date
+                if type(exdate) is dt.date:
+                    _dtstartl = {
+                        start_datetime
+                        for start_datetime in dtstartl
+                        if (type(start_datetime) is dt.date or start_datetime.date() != exdate)
+                    }
+                    if dtstartl != _dtstartl:
+                        found = True
+                        dtstartl = _dtstartl
+                # both attempts at finding this exdate among the recurrences failed
+                if not found:
+                    logger.warning(
+                        f"In event {href}, excluded instance starting at {exdate} "
+                        "not found, event might be invalid."
+                    )
 
     dtstartend = [(start, start + duration) for start in dtstartl]
     # not necessary, but I prefer deterministic output
