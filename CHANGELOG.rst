@@ -12,6 +12,7 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 * FIX align weekday headings in ikhal for locales with single-letter weekday
   abbreviations, such as Hungarian
+* FIX place ``monthdisplay`` in the ``[view]`` section of the sample configuration
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
 * CHANGE if ``datetimeformat`` or ``longdatetimeformat`` are not set, they now
