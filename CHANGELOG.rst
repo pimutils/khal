@@ -12,6 +12,10 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
+* NEW ikhal supports view plugins (entry point group ``khal.views``) that
+  replace the event list in the right column, switch between views with
+  ``w`` (``[keybindings] switch_view``), select the view shown on startup
+  with ``[view] default_view``; plugins can show their keys in ikhal's help
 
 0.14.1
 ======

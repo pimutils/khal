@@ -62,6 +62,37 @@ found in `khal's source code`_.
 .. _`urwid documentation`: http://urwid.org/manual/displayattributes.html
 .. _`khal's source code`: https://github.com/pimutils/khal/blob/master/khal/ui/colors.py
 
+View plugins
+************
+
+View plugins provide alternative ways of displaying events in the right column
+of `ikhal`, e.g., a time grid in which an event's height is proportional to
+its duration (see `khal_timegrid`_). A view plugin
+registers an entry point in the group `khal.views`, which must resolve to a
+callable `factory(pane)` (usually the view class itself). `pane` is the
+`khal.ui.ClassicView` instance, giving access to the configuration
+(`pane._conf`), the calendar collection (`pane.collection`) and the calendar
+widget on the left (`pane.calendar`).
+
+.. code-block:: toml
+
+   [project.entry-points."khal.views"]
+   timegrid = "khal_timegrid:TimeGrid"
+
+The returned urwid box widget must implement the `khal.ui.EventView` protocol
+(`focus_event`, `current_date`, `ensure_date()`, `update_range()`,
+`refresh_titles()` and `update_date_line()`). Optionally, a view can implement
+`new_event_range()` to suggest the start and end of a new event (e.g., the time
+slot under its cursor), and `keybindings_help(conf)` returning `(command, keys,
+description)` tuples, which are shown in ikhal's help (`?`) while the view is
+active. Users can cycle through all views
+with the `switch_view` key (default `w`) or select the view shown on startup
+with `[view] default_view`. Plugins may read their own settings from
+subsections of the `[plugins]` section of khal's config file (e.g.,
+`[[timegrid]]`), which khal does not validate.
+
+.. _`khal_timegrid`: https://github.com/geier/khal_timegrid
+
 General notes for developing khal (and lots of other python packages)
 ---------------------------------------------------------------------
 

@@ -1,4 +1,5 @@
 from collections.abc import Callable, Mapping
+from functools import cache
 from importlib import metadata as importlib_metadata
 
 # This is a shameless ripoff of mdformat's plugin extension API.
@@ -32,3 +33,19 @@ def _load_commands() -> dict[str, Callable]:
 
 
 COMMANDS: dict[str, Callable] = _load_commands()
+
+
+@cache
+def get_views() -> dict[str, Callable]:
+    """load alternative views for ikhal's event column
+
+    Each entry point must resolve to a callable with the signature
+    ``factory(pane: khal.ui.ClassicView) -> urwid.Widget``. The returned box
+    widget replaces the default event list in the right column of ikhal and
+    must implement the interface described in :class:`khal.ui.EventView`.
+
+    In contrast to the other plugin types, views are loaded lazily, as they
+    will usually need to import from :mod:`khal.ui` themselves.
+    """
+    view_entrypoints = importlib_metadata.entry_points(group="khal.views")
+    return {ep.name: ep.load() for ep in view_entrypoints}

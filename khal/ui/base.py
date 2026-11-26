@@ -126,11 +126,36 @@ class Pane(urwid.WidgetWrap):
         else:
             return super().keypress(size, key)
 
+    def extra_keybindings(self) -> list[tuple[str, list[tuple[str, list[str], str]]]]:
+        """additional sections for the keybindings help
+
+        :returns: list of (section title, list of (command, keys, description))
+        """
+        return []
+
     def show_keybindings(self):
+        def show(keys):
+            return ", ".join("space" if key == " " else key for key in keys)
+
         lines = []
         lines.append(urwid.AttrMap(urwid.Text("  Command              Keys"), "alt header"))
         for command, keys in self._conf["keybindings"].items():
-            lines.append(urwid.Text(f"  {command:20} {', '.join(keys)}"))
+            lines.append(urwid.Text(f"  {command:20} {show(keys)}"))
+        for title, entries in self.extra_keybindings():
+            keys_width = max([20] + [len(show(keys)) + 1 for _, keys, _ in entries])
+            lines.append(urwid.Text(""))
+            lines.append(urwid.AttrMap(urwid.Text(f"  {title}"), "alt header"))
+            for command, keys, description in entries:
+                # descriptions wrap within their own column
+                lines.append(
+                    urwid.Columns(
+                        [
+                            (23, urwid.Text(f"  {command}")),
+                            (keys_width, urwid.Text(show(keys))),
+                            urwid.Text(description),
+                        ]
+                    )
+                )
         self.scrollable_dialog(
             lines,
             title="Press `ESC` to close this window, arrows to scroll",

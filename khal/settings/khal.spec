@@ -186,6 +186,10 @@ search = force_list(default=list('/'))
 # show logged messages
 log = force_list(default=list('L'))
 
+# cycle through the available views of ikhal's right column (the default event
+# list and any views supplied by plugins)
+switch_view = force_list(default=list('w'))
+
 # quit
 quit = force_list(default=list('q', 'Q'))
 
@@ -249,6 +253,12 @@ event_view_weighting = integer(default=1)
 
 # Set to true to always show the event view window when looking at the event list
 event_view_always_visible = boolean(default=False)
+
+# The view used for ikhal's right column on startup. `list` is the built-in
+# list of events, plugins can provide additional views (e.g. a time grid where
+# the height of an event is proportional to its duration). Press the
+# `switch_view` key to cycle through all available views.
+default_view = string(default='list')
 
 # Add a blank line before the name of the day (khal only)
 blank_line_before_day = boolean(default=False)
@@ -357,3 +367,8 @@ default_color = color(default='')
 # If you can't theme an element in ikhal, please open an issue on `github
 # <https://github.com/pimutils/khal/issues/new/choose>`_.
 [palette]
+
+
+# Plugins may read their settings from subsections of this section, e.g.
+# ``[[timegrid]]``. Its contents are not validated by khal.
+[plugins]

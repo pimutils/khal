@@ -147,6 +147,9 @@ def get_config(
             # we don't validate the palette section, because there is no way to
             # automatically extract valid attributes from the ui module
             continue
+        elif section[:1] == ("plugins",):
+            # plugins validate their own settings
+            continue
         else:
             section = sectionize(section)
             logger.warning(f'unknown key or subsection "{value}" in section "{section}"')

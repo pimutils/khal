@@ -24,7 +24,7 @@ import logging
 import signal
 import sys
 from enum import IntEnum
-from typing import Literal
+from typing import Literal, Protocol, runtime_checkable
 
 import click
 import urwid
@@ -76,6 +76,59 @@ logger = logging.getLogger("khal")
 #   │ │                 │  │ └──────────────────────────────┘ │ │
 #   │ └─────────────────┘  └──────────────────────────────────┘ │
 #   └───────────────────────────────────────────────────────────┘
+
+
+@runtime_checkable
+class EventView(Protocol):
+    """Interface of the widget shown in ikhal's right column
+
+    The built-in implementation is :class:`DListBox`, plugins can provide
+    alternative implementations via the ``khal.views`` entry point group, see
+    :mod:`khal.plugins`. Implementations must be urwid box widgets and should
+    call ``pane.calendar.base_widget.set_focus_date(day)`` when they move the
+    focus to another day on their own.
+    """
+
+    @property
+    def focus_event(self) -> "U_Event | None":
+        """the event currently in focus (or None)"""
+        ...
+
+    @property
+    def current_date(self) -> dt.date:
+        """the date currently in focus"""
+        ...
+
+    def ensure_date(self, day: dt.date) -> None:
+        """bring `day` into view and focus it"""
+        ...
+
+    def update_range(self, start: dt.date, end: dt.date, everything: bool = False) -> None:
+        """reload events between `start` and `end` (inclusive), or all if `everything`"""
+        ...
+
+    def refresh_titles(self, start: dt.date, end: dt.date, everything: bool) -> None:
+        """re-render event titles (e.g. after an event was marked as deleted)"""
+        ...
+
+    def update_date_line(self) -> None:
+        """called when the current date changed (e.g., at midnight)"""
+        ...
+
+    # Optionally, views may implement
+    #
+    #     @classmethod
+    #     def keybindings_help(cls, conf) -> list[tuple[str, list[str], str]]
+    #
+    # returning (command, keys, description) tuples, shown in ikhal's help
+    # (`?`), and
+    #
+    #     def new_event_range(self) -> tuple[dt.date, dt.date] | None
+    #
+    # which gets called when the user wants to create a new event. Returning two
+    # datetimes creates a timed event with that start and end, two dates an
+    # all-day event (end date inclusive), and None falls back to the default
+    # (focused date, next full hour).
 
 
 class DeletionType(IntEnum):
@@ -355,6 +408,12 @@ class DListBox(EventListBox):
 
     def refresh_titles(self, start, end, recurring):
         self.body.refresh_titles(start, end, recurring)
+
+    def update_range(self, start: dt.date, end: dt.date, everything: bool = False) -> None:
+        if everything:
+            start = self.body.first_date
+            end = self.body.last_date
+        self.body.update_range(start, end)
 
     def update_date_line(self):
         self.body.update_date_line()
@@ -662,9 +721,18 @@ class EventColumn(urwid.WidgetWrap):
         self.delete_status = pane.delete_status
         self.toggle_delete_all = pane.toggle_delete_all
         self.toggle_delete_instance = pane.toggle_delete_instance
-        self.dlistbox: DListBox = elistbox
+        self.dlistbox: EventView = elistbox
         self.container = urwid.Pile([self.dlistbox])
         urwid.WidgetWrap.__init__(self, self.container)
+
+    def set_view(self, view: EventView) -> None:
+        """replace the widget showing the events (e.g. the list of events)"""
+        date = self.focus_date
+        self.clear_event_view()
+        self._eventshown = None
+        self.dlistbox = view
+        self.container.contents[0] = (view, self.container.options())
+        view.ensure_date(date)
 
     @property
     def focus_event(self) -> U_Event | None:
@@ -708,10 +776,7 @@ class EventColumn(urwid.WidgetWrap):
             min_date = self.pane.calendar.base_widget.walker.earliest_date
             max_date = self.pane.calendar.base_widget.walker.latest_date
         self.pane.base_widget.calendar.base_widget.reset_styles_range(min_date, max_date)
-        if everything:
-            min_date = self.dlistbox.body.first_date
-            max_date = self.dlistbox.body.last_date
-        self.dlistbox.body.update_range(min_date, max_date)
+        self.dlistbox.update_range(min_date, max_date, everything)
 
     def refresh_titles(self, min_date: dt.date, max_date: dt.date, everything: bool) -> None:
         """refresh titles in DateListBoxes
@@ -916,6 +981,9 @@ class EventColumn(urwid.WidgetWrap):
 
         :param date: default date for new event
         :param end: date the event ends on (inclusive)
+
+        If both `date` and `end` are datetimes, a timed event spanning from
+        `date` to `end` is created instead.
         """
         dtstart: dt.date
         dtend: dt.date
@@ -924,7 +992,10 @@ class EventColumn(urwid.WidgetWrap):
             return
         if date is None:
             date = dt.datetime.now()
-        if end is None:
+        if isinstance(date, dt.datetime) and isinstance(end, dt.datetime):
+            dtstart, dtend = date, end
+            allday = False
+        elif end is None:
             dtstart = dt.datetime.combine(date, dt.time(dt.datetime.now().hour))
             dtend = dtstart + dt.timedelta(minutes=60)
             allday = False
@@ -953,7 +1024,13 @@ class EventColumn(urwid.WidgetWrap):
         self.clear_event_view()
 
         if key in self._conf["keybindings"]["new"]:
-            self.new(self.focus_date, None)
+            # views may suggest a date or time range for the new event
+            new_event_range = getattr(self.dlistbox, "new_event_range", None)
+            span = new_event_range() if new_event_range is not None else None
+            if span is not None:
+                self.new(*span)
+            else:
+                self.new(self.focus_date, None)
             key = None
 
         if self.focus_event:
@@ -1118,6 +1195,11 @@ class ClassicView(Pane):
             toggle_delete_instance=self.toggle_delete_instance,
             dynamic_days=self._conf["view"]["dynamic_days"],
         )
+        # all views available for the right column, plugin views get
+        # instantiated lazily when they are first switched to
+        self._views: dict[str, EventView | None] = {"list": elistbox}
+        self._views.update(dict.fromkeys(plugins.get_views()))
+        self._current_view = "list"
         self.eventscolumn = ContainerWidget(
             CAttrMap(
                 EventColumn(pane=self, elistbox=elistbox),
@@ -1153,6 +1235,45 @@ class ClassicView(Pane):
             outermost=True,
         )
         Pane.__init__(self, columns, title=title, description=description)
+
+        default_view = self._conf["view"].get("default_view", "list")
+        if default_view not in self._views:
+            logger.warning(
+                f"Unknown view `{default_view}` configured, available views are: "
+                f"{', '.join(self._views)}"
+            )
+        elif default_view != "list":
+            self.switch_view(default_view)
+
+    def switch_view(self, name: str | None = None) -> None:
+        """switch the right column to view `name` (or to the next available view)"""
+        names = list(self._views)
+        if name is None:
+            name = names[(names.index(self._current_view) + 1) % len(names)]
+        if self._views[name] is None:
+            try:
+                self._views[name] = plugins.get_views()[name](self)
+            except Exception as error:
+                logger.exception(error)
+                logger.error(f"Could not load view `{name}`: {error}")
+                del self._views[name]
+                return
+        self._current_view = name
+        self.eventscolumn.original_widget.set_view(self._views[name])
+        if self.window is not None:
+            self.window.alert(f"view: {name}")
+
+    def extra_keybindings(self) -> list[tuple[str, list[tuple[str, list[str], str]]]]:
+        """keybindings of the currently active view (if it provides them)"""
+        name = self._current_view
+        keybindings_help = getattr(self._views[name], "keybindings_help", None)
+        if keybindings_help is None:
+            return []
+        try:
+            return [(f"{name} view", keybindings_help(self._conf))]
+        except Exception as error:
+            logger.error(f"Could not get keybindings of view `{name}`: {error}")
+            return []
 
     def delete_status(self, uid: str) -> DeletionType | None:
         if uid[0] in self._deleted[DeletionType.ALL]:
@@ -1196,6 +1317,9 @@ class ClassicView(Pane):
         binds = self._conf["keybindings"]
         if key in binds["search"]:
             self.search()
+        elif key in binds.get("switch_view", []):
+            self.switch_view()
+            return None
         return super().keypress(size, key)
 
     def search(self):
@@ -1504,6 +1628,20 @@ def start_pane(
         base="popupbg",
         attr_template="calendar {} popup",
     )
+    # calendar colors as background, e.g. for blocks in time based views
+    for cal in pane.collection.calendars:
+        color = cal["color"] or pane.collection.default_color
+        if color and color[0] == "#" and len(color) in (5, 9):
+            color = color[:-1] if len(color) == 5 else color[:7]
+        palette.append(
+            _urwid_palette_entry(
+                f"calendar {cal['name']} bg",
+                color,
+                "bg",
+                color_mode=color_mode,
+                foreground="black",
+            )
+        )
 
     def merge_palettes(pallete_a, pallete_b) -> list[tuple[str, ...]]:
         """Merge two palettes together, with the second palette taking priority."""
