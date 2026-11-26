@@ -837,7 +837,21 @@ class Event:
 
     @property
     def status(self) -> str:
-        return self._vevents[self.ref].get("STATUS", "")
+        status = self._vevents[self.ref].get("STATUS", "")
+        # Some malformed events have multiple status entries. Only use the
+        # last one.
+        if isinstance(status, list):
+            if status:
+                status = status[-1]
+                logger.warning(
+                    f'{self.href} ("{self.summary}"): The event contains '
+                    "multiple 'STATUS' entries, which is invalid as per "
+                    "RFC 5545. Khal will assume the last entry is "
+                    f"intended ({status})"
+                )
+            else:
+                status = ""
+        return status
 
     @property
     def partstat(self) -> str | None:
