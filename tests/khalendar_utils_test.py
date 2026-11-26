@@ -759,6 +759,21 @@ END:VEVENT
 END:VCALENDAR
 """
 
+event_exdate_d_multi = """BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:event_exdate_d_multi123
+DTSTAMP:20140627T162546Z
+DTSTART;TZID=Europe/Berlin:20140702T080000
+DTEND;TZID=Europe/Berlin:20140702T083000
+SUMMARY:Test event
+RRULE:FREQ=HOURLY;INTERVAL=8;COUNT=9
+EXDATE;VALUE=DATE:20140703
+EXDATE;TZID=Europe/Berlin:20140704T080000
+END:VEVENT
+END:VCALENDAR
+"""
+
 latest_bug = """BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
@@ -861,6 +876,19 @@ class TestSpecial:
         assert len(dtstart) == 9
         assert dtstart[0][0] == dt.date(2014, 7, 2)
         assert dtstart[-1][0] == dt.date(2014, 7, 11)
+
+    def test_event_exdate_d_multiple_instances_per_day(self):
+        """a date EXDATE excludes all instances on that day, a datetime one
+        only the matching instance"""
+        vevent = _get_vevent(event_exdate_d_multi)
+        dtstart = [start for start, _ in icalendar_helpers.expand(vevent, berlin)]
+        assert dtstart == [
+            berlin.localize(dt.datetime(2014, 7, 2, 8)),
+            berlin.localize(dt.datetime(2014, 7, 2, 16)),
+            berlin.localize(dt.datetime(2014, 7, 4, 0)),
+            berlin.localize(dt.datetime(2014, 7, 4, 16)),
+            berlin.localize(dt.datetime(2014, 7, 5, 0)),
+        ]
 
     def test_event_exdates_remove(self):
         """check if we can remove one more instance"""
