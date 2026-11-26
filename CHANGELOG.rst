@@ -12,6 +12,9 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
+* FIX ikhal compatibility with urwid 5.0, which removed ``Columns.focus_col``,
+  ``Columns.set_focus_column()``, ``Pile.set_focus()``, ``Frame.set_body()`` and
+  ``AttrWrap.w``
 
 0.14.1
 ======
