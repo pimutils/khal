@@ -1,6 +1,7 @@
 import datetime as dt
 
 import icalendar
+import pytest
 import pytz
 
 from khal import icalendar as icalendar_helpers
@@ -995,3 +996,87 @@ class TestIsAware:
 
     def test_utc(self):
         assert utils.is_aware(pytz.UTC.localize(dt.datetime.now())) is True
+
+
+class TestMoveSeries:
+    """helpers for moving a recurring event"""
+
+    new_york = pytz.timezone("America/New_York")
+
+    def test_shift_wall_time_keeps_wall_time_across_dst(self):
+        # 27.03.2014 is still CET (+01:00), 03.04.2014 already CEST (+02:00)
+        before_dst = BERLIN.localize(dt.datetime(2014, 3, 27, 9))
+        shifted = icalendar_helpers.shift_wall_time(before_dst, dt.timedelta(days=7), BERLIN)
+        assert shifted == BERLIN.localize(dt.datetime(2014, 4, 3, 9))
+        assert shifted.utcoffset() == dt.timedelta(hours=2)
+
+    def test_shift_wall_time_other_timezone(self):
+        """values in another timezone (e.g. UTC EXDATEs) are moved in the
+        series' timezone and stay in their own"""
+        utc = pytz.UTC.localize(dt.datetime(2014, 3, 27, 8))  # 09:00 in Berlin
+        shifted = icalendar_helpers.shift_wall_time(utc, dt.timedelta(days=7), BERLIN)
+        assert shifted == pytz.UTC.localize(dt.datetime(2014, 4, 3, 7))  # 09:00 in Berlin
+        assert shifted.tzinfo == pytz.UTC
+
+    def test_shift_wall_time_naive_and_date(self):
+        delta = dt.timedelta(days=1, hours=1)
+        assert icalendar_helpers.shift_wall_time(dt.datetime(2014, 4, 9, 9), delta, BERLIN) == (
+            dt.datetime(2014, 4, 10, 10)
+        )
+        # a date only moves by whole days
+        assert icalendar_helpers.shift_wall_time(dt.date(2014, 4, 9), delta, BERLIN) == (
+            dt.date(2014, 4, 10)
+        )
+
+    @staticmethod
+    def _vevent(rrule):
+        vevent = icalendar.Event()
+        vevent.add("RRULE", icalendar.vRecur.from_ical(rrule))
+        return vevent
+
+    def test_check_series_move(self):
+        monday_9 = dt.datetime(2014, 4, 14, 9)
+        monday_8 = dt.datetime(2014, 4, 14, 8)
+        tuesday_9 = dt.datetime(2014, 4, 15, 9)
+        weekly = self._vevent("FREQ=WEEKLY")
+        mon_wed = self._vevent("FREQ=WEEKLY;BYDAY=MO,WE")
+        # without BY... rules, any move is fine
+        icalendar_helpers.check_series_move(weekly, monday_9, tuesday_9)
+        # with them, only the time may change
+        icalendar_helpers.check_series_move(mon_wed, monday_9, monday_8)
+        with pytest.raises(ValueError, match="another day"):
+            icalendar_helpers.check_series_move(mon_wed, monday_9, tuesday_9)
+        with pytest.raises(ValueError, match="another day"):
+            icalendar_helpers.check_series_move(
+                self._vevent("FREQ=MONTHLY;BYMONTHDAY=14"),
+                dt.date(2014, 4, 14),
+                dt.date(2014, 4, 15),
+            )
+
+    def test_shift_recurrences(self):
+        series = icalendar.Event()
+        series.add("RRULE", icalendar.vRecur.from_ical("FREQ=DAILY;UNTIL=20140420T070000Z"))
+        series.add("EXDATE", BERLIN.localize(dt.datetime(2014, 4, 10, 9)))
+        series.add("EXDATE", pytz.UTC.localize(dt.datetime(2014, 4, 11, 7)))
+        series.add("RDATE", BERLIN.localize(dt.datetime(2014, 4, 25, 9)))
+        edited = icalendar.Event()
+        edited.add(
+            "RECURRENCE-ID",
+            BERLIN.localize(dt.datetime(2014, 4, 12, 9)),
+            parameters={"RANGE": "THISANDFUTURE"},
+        )
+        edited.add("DTSTART", BERLIN.localize(dt.datetime(2014, 4, 12, 12)))
+
+        def one_hour_later(value):
+            return value + dt.timedelta(hours=1)
+
+        icalendar_helpers.shift_recurrences([series, edited], one_hour_later)
+
+        lines = (series.to_ical() + edited.to_ical()).decode().split("\r\n")
+        assert "RRULE:FREQ=DAILY;UNTIL=20140420T080000Z" in lines
+        assert "EXDATE;TZID=Europe/Berlin:20140410T100000" in lines
+        assert "EXDATE:20140411T080000Z" in lines
+        assert "RDATE;TZID=Europe/Berlin:20140425T100000" in lines
+        assert "RECURRENCE-ID;RANGE=THISANDFUTURE;TZID=Europe/Berlin:20140412T100000" in lines
+        # an edited instance keeps its own start
+        assert "DTSTART;TZID=Europe/Berlin:20140412T120000" in lines

@@ -2,6 +2,7 @@
 
 import datetime as dt
 
+import pytz
 from click import style
 from freezegun import freeze_time
 
@@ -126,3 +127,15 @@ def test_human_formatter_width():
     formatter = utils.human_formatter("{red}{title}", width=10)
     output = formatter({"title": "morethan10characters", "red": style("", reset=False, fg="red")})
     assert output.startswith("\x1b[31mmoret\x1b[0m")
+
+
+def test_to_wall_time():
+    berlin = pytz.timezone("Europe/Berlin")
+    new_york = pytz.timezone("America/New_York")
+    # 09:00 in New York is 15:00 in Berlin
+    assert utils.to_wall_time(new_york.localize(dt.datetime(2014, 4, 9, 9)), berlin) == (
+        dt.datetime(2014, 4, 9, 15)
+    )
+    # floating datetimes and dates stay as they are
+    assert utils.to_wall_time(dt.datetime(2014, 4, 9, 9), berlin) == dt.datetime(2014, 4, 9, 9)
+    assert utils.to_wall_time(dt.date(2014, 4, 9), berlin) == dt.date(2014, 4, 9)

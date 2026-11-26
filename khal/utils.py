@@ -120,13 +120,21 @@ def get_month_abbr_len() -> int:
     return max(len(month_abbr[i]) for i in range(1, 13)) + 1
 
 
+def to_wall_time(value: dt.date, timezone: dt.tzinfo) -> dt.date:
+    """converts `value` to timezone, than removes tz info
+
+    i.e. the (naive) wall clock time of `value` in `timezone`, dates and
+    naive datetimes are returned unchanged
+    """
+    if isinstance(value, dt.datetime) and value.tzinfo is not None:
+        value = value.astimezone(timezone).replace(tzinfo=None)
+    return value
+
+
 def localize_strip_tz(dates: list[dt.datetime], timezone: dt.tzinfo) -> Iterator[dt.datetime]:
     """converts a list of dates to timezone, than removes tz info"""
     for one_date in dates:
-        if getattr(one_date, "tzinfo", None) is not None:
-            one_date = one_date.astimezone(timezone)
-            one_date = one_date.replace(tzinfo=None)
-        yield one_date
+        yield to_wall_time(one_date, timezone)  # type: ignore[misc]
 
 
 def to_unix_time(dtime: dt.datetime) -> float:
