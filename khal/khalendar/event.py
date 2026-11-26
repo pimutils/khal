@@ -211,27 +211,55 @@ class Event:
     def update_start_end(self, start: dt.datetime, end: dt.datetime) -> None:
         """update start and end time of this event
 
-        calling this on a recurring event will lead to the proto instance
-        be set to the new start and end times
+        calling this on an expanded recurring instance will shift the proto
+        instance, rather than replacing the series' start and end dates
 
         beware, this methods performs some open heart surgery
         """
         if type(start) is not type(end):
             raise ValueError("DTSTART and DTEND should be of the same type (datetime or date)")
+        old_start = self.start_local
         self.__class__ = self._get_type_from_date(start)
 
-        self._vevents[self.ref].pop("DTSTART")
-        self._vevents[self.ref].add("DTSTART", start)
+        vevent = self._vevents[self.ref]
+        proto_start = start
+        proto_end = end
+        if self.recurring and self.ref == "PROTO":
+            # An expanded occurrence carries its own start/end, but is backed
+            # by the series' PROTO event; shift the anchor instead of moving
+            # the whole series to this occurrence's dates.
+            proto_dtstart = self._vevents["PROTO"]["DTSTART"].dt
+            if isinstance(start, dt.datetime) == isinstance(proto_dtstart, dt.datetime):
+                duration = end - start
+                if isinstance(start, dt.datetime):
+                    date_shift = start.date() - old_start.date()
+                    new_time = start.timetz()
+                    proto_start = proto_dtstart + date_shift
+                    proto_start = proto_start.replace(
+                        hour=new_time.hour,
+                        minute=new_time.minute,
+                        second=new_time.second,
+                        microsecond=new_time.microsecond,
+                    )
+                else:
+                    date_shift = start - old_start
+                    proto_start = proto_dtstart + date_shift
+                proto_end = proto_start + duration
+
+        vevent.pop("DTSTART")
+        vevent.add("DTSTART", proto_start)
         self._start = start
         if not isinstance(end, dt.datetime):
             end = end + dt.timedelta(days=1)
         self._end = end
-        if "DTEND" in self._vevents[self.ref]:
-            self._vevents[self.ref].pop("DTEND")
-            self._vevents[self.ref].add("DTEND", end)
+        if not isinstance(proto_end, dt.datetime):
+            proto_end = proto_end + dt.timedelta(days=1)
+        if "DTEND" in vevent:
+            vevent.pop("DTEND")
+            vevent.add("DTEND", proto_end)
         else:
-            self._vevents[self.ref].pop("DURATION")
-            self._vevents[self.ref].add("DURATION", end - start)
+            vevent.pop("DURATION")
+            vevent.add("DURATION", proto_end - proto_start)
 
     @property
     def recurring(self) -> bool:
