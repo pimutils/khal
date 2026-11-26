@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+# Utility script for a more interactive `khal new` experience.
+# Supports interactive date/time picking and readline keybindings.
+#
+# Requires the following external programs to be installed:
+#
+#   * https://github.com/nmeum/datepicker
+#   * https://github.com/hanslub42/rlwrap
+#
+# Can also be symlinked to khal-pick-range.
+
+set -e
+
+sample_to_datepicker() {
+	sed -e 's/\b21\b/%d/' \
+		-e 's/\b12\b/%m/' \
+		-e 's/\b2013\b/%Y/' \
+		-e 's/\b21\b/%H/' \
+		-e 's/\b45\b/%M/'
+}
+
+get_format() {
+	[ $# -eq 1 ] || return 1
+
+	khal printformats | \
+		grep "^${1}: " | cut -d " " -f2- | \
+		sample_to_datepicker
+}
+
+format_date=$(get_format "dateformat")
+format_full=$(get_format "datetimeformat")
+format=${format_full}
+
+range_option=0
+case "${0##*/}" in
+khal-pick-range) range_option=1
+esac
+
+args="$@"
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-d|--date-only) format=${format_date} ;;
+	esac
+
+	shift
+done
+set -- ${args}
+
+start_date=$(datepicker -f "${format}" "$@")
+if [ $range_option -eq 1 ]; then
+	end_date=$(datepicker -s "${start_date}" -f "${format}" "$@")
+fi
+
+exec rlwrap khal new -i "${start_date}" "${end_date}"
