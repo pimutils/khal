@@ -10,7 +10,7 @@ from khal.khalendar.vdir import Vdir
 try:
     from icalendar.parser import Contentlines  # icalendar >= 7.0.0
 except ImportError:
-    from icalendar.cal import Contentlines  # icalendar < 7.0.0  # noqa: F401
+    from icalendar.cal import Contentlines  # icalendar < 7.0.0
 
 
 CollVdirType = tuple[CalendarCollection, dict[str, Vdir]]
