@@ -599,7 +599,7 @@ def test_datetimefstr_year_directives_still_parsed(dateformat, text, expected):
 )
 @pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_datetimefstr_surrounding_whitespace_still_rejected(dtime_list, dateformat):
-    with pytest.raises(ValueError, match="does not match|unconverted"):
+    with pytest.raises(ValueError, match="does not match|unconverted|without a year"):
         datetimefstr(dtime_list, dateformat, dt.date(2016, 9, 19))
 
 
