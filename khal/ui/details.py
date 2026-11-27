@@ -39,9 +39,8 @@ from .editor_layout import (
     Glyphs,
     format_alarm,
     format_key,
-    relative_day,
+    relative_to_now,
     section_rule,
-    summary_line,
 )
 from .floating import describe_rrule
 
@@ -71,6 +70,78 @@ def attendee_markup(attendees: list[tuple[str, str]], glyphs: Glyphs) -> list:
     return markup
 
 
+def _relative_markup(event, today: dt.date | None = None) -> list:
+    """`tomorrow`, `now · ends in 6 days`, `ended yesterday` (see
+    relative_to_now); `today` (for tests) stands in for now's date"""
+    now = dt.datetime.now()
+    if today is not None and today != now.date():
+        now = dt.datetime.combine(today, now.time())
+    word, rest = relative_to_now(event.start_local, event.end_local, event.allday, now)
+    if word:
+        return [("details relative", word), ("details label", f" · {rest}")]
+    return [("details relative", rest)]
+
+
+def _short_day(day: dt.date) -> str:
+    """`Fr 27 Nov`, like the day headers of the list"""
+    return f"{day:%a}"[:2] + f" {day.day} {day:%b}"
+
+
+def when_parts(event, conf) -> tuple[str, str, str]:
+    """(start, end, duration) of the `when` row; `end` is empty for events
+    within one day, which read `Fr 27 Nov 08:00–17:30`; never "all day"
+    (the date says it)"""
+    from .agenda import _naive, event_days, short_duration
+
+    timeformat = conf["locale"]["timeformat"]
+    first, last = event_days(event)
+    duration = short_duration(event)
+    if event.allday:
+        if first == last:
+            return _short_day(first), "", ""
+        return _short_day(first), _short_day(last), duration
+    start, end = _naive(event.start_local), _naive(event.end_local)
+    times = f"{start.strftime(timeformat)}–{end.strftime(timeformat)}"
+    if first == last:
+        return f"{_short_day(first)} {times}", "", duration
+    if end - start < dt.timedelta(hours=24):  # overnight
+        return f"{_short_day(first)} {times} (+1 day)", "", duration
+    return (
+        f"{_short_day(first)} {start.strftime(timeformat)}",
+        f"{_short_day(last)} {end.strftime(timeformat)}",
+        duration,
+    )
+
+
+class WhenText(urwid.WidgetWrap):
+    """`Fr 27 Nov 18:00 – Mo 30 Nov 12:00 · 2d18h`, or (if it doesn't fit)
+    broken after the dash, each end on its own line"""
+
+    def __init__(self, start: str, end: str, duration: str) -> None:
+        tail = [("details dim", f" · {duration}")] if duration else []
+        if end:
+            self._one = [("details text", f"{start} – {end}"), *tail]
+            self._two = [("details text", f"{start} –\n{end}"), *tail]
+        else:
+            self._one = self._two = [("details text", start), *tail]
+        self._text = urwid.Text(self._one)
+        super().__init__(self._text)
+
+    def _choose(self, maxcol: int) -> None:
+        text = urwid.decompose_tagmarkup(self._one)[0]
+        markup = self._one if urwid.calc_width(text, 0, len(text)) <= maxcol else self._two
+        if self._text.get_text()[0] != urwid.decompose_tagmarkup(markup)[0]:
+            self._text.set_text(markup)
+
+    def rows(self, size, focus=False):
+        self._choose(size[0])
+        return super().rows(size, focus)
+
+    def render(self, size, focus=False):
+        self._choose(size[0])
+        return super().render(size, focus)
+
+
 def details_rows(
     event,
     conf,
@@ -79,65 +150,64 @@ def details_rows(
     headline: bool = True,
     rule: bool = True,
 ) -> list[urwid.Widget]:
-    """the rows of the details view (without the key hints)
+    """the rows of the details (the inline card, the details column and the
+    details view): the title (with `headline`), `● work · tomorrow`, then
+    when, where, who, alarm, repeat, tags, link and notes, each a label and
+    a value (free text as one string, wrapped)
 
-    :param headline: start with the event's title (not needed right under
-        the event's row in the list)
-    :param rule: a rule below the title and summary line
+    :param rule: (ignored, kept for compatibility)
     """
+    del rule
+    start = event.start_local
+    entries: list[tuple[str, urwid.Widget]] = []
 
-    def row(field_id: str | None, label: str, value) -> urwid.Widget:
+    def add(field_id: str | None, label: str, value) -> None:
         if field_id is not None:
             label = FIELD[field_id].noun or label
-        return urwid.Columns(
-            [(LABEL_WIDTH, urwid.Text(("details label", label))), urwid.Text(value)]
-        )
+        entries.append((label, value if isinstance(value, urwid.Widget) else urwid.Text(value)))
 
-    start, end = event.start_local, event.end_local
+    add(None, "when", WhenText(*when_parts(event, conf)))
+    if event.location:
+        add("location", "where", ("details text", event.location.strip()))
+    attendees = event.attendees_status
+    if attendees:
+        add("attendees", "who", attendee_markup(attendees, glyphs))
+    if event.organizer:
+        add(None, "by", ("details text", event.organizer))
+    for index, (delta, _) in enumerate(event.alarms):
+        add(None, "alarm" if index == 0 else "", ("details text", format_alarm(delta)))
+    if event.recurring:
+        repeat = describe_rrule(event.recurobject, start, conf["locale"]["timeformat"])
+        repeat = repeat.removeprefix("Repeats ").rstrip(".") if repeat else "repeats"
+        add(None, "repeat", ("details text", repeat))
+    if event.categories:
+        add("categories", "tags", ("details text", event.categories))
+    if event.url:
+        add("url", "link", ("details link", event.url))
+    if event.description:
+        add(None, "notes", ("details text", event.description.strip()))
+
+    width = max(len(label) for label, _ in entries) + 1
     rows: list[urwid.Widget] = []
     if headline:
         rows += [
             urwid.Divider(),
             urwid.Text(("details headline", event.summary or "(no title)")),
         ]
-    rows.append(
+    rows += [
         urwid.Text(
-            summary_line(
-                event.calendar,
-                start,
-                end,
-                event.allday,
-                conf,
-                glyphs,
-                [relative_day(_day(start), today)],
-                attr="details dim",
-                compact=True,
-            )
-        )
-    )
-    if rule:
-        rows.append(section_rule(None, glyphs))
-    rows.append(urwid.Divider())
-    if event.location:
-        rows.append(row("location", "where", ("details text", event.location)))
-    attendees = event.attendees_status
-    if attendees:
-        rows.append(row("attendees", "who", attendee_markup(attendees, glyphs)))
-    if event.organizer:
-        rows.append(row(None, "by", ("details text", event.organizer)))
-    for index, (delta, _) in enumerate(event.alarms):
-        rows.append(row(None, "alarm" if index == 0 else "", ("details text", format_alarm(delta))))
-    if event.recurring:
-        rule = describe_rrule(event.recurobject, start, conf["locale"]["timeformat"])
-        rule = rule.removeprefix("Repeats ").rstrip(".") if rule else "repeats"
-        rows.append(row(None, "repeat", ("details text", rule)))
-    if event.categories:
-        rows.append(row("categories", "tags", ("details text", event.categories)))
-    if event.url:
-        rows.append(row("url", "link", ("details link", event.url)))
-    if event.description:
-        rows.append(urwid.Divider())
-        rows.extend(urwid.Text(("details text", line)) for line in event.description.splitlines())
+            [
+                (f"calendar {event.calendar}", glyphs.dot + " "),
+                ("details label", f"{event.calendar} · "),
+                *_relative_markup(event, today),
+            ]
+        ),
+        urwid.Divider(),
+    ]
+    rows += [
+        urwid.Columns([(width, urwid.Text(("details label", label))), value])
+        for label, value in entries
+    ]
     return rows
 
 
@@ -194,7 +264,8 @@ def card_rows(
         rows = rows[1:]  # no blank row at the top of the card
     if deleted:
         rows.insert(2 if headline else 1, deletion_row(conf, deleted, glyphs))
-    return rows + [urwid.Divider(), urwid.Text(key_hints(conf, glyphs, close=True))]
+    # the keys are in the footer (see ClassicView.footer_hints)
+    return rows
 
 
 def event_card(

@@ -78,14 +78,14 @@ PRESETS: dict[str, dict] = {
         "blank_after_header": True,
     },
     "regular": {
-        "event_format": "{bar} {time:<8}{title}{range}{repeat-symbol}{alarm-symbol}"
-        "{location-gap}{location}{tab}{duration-short}",
+        "event_format": "{bar} {time:<8}{title}{repeat-symbol}{alarm-symbol}"
+        "{location-gap}{location-first-day}{tab}{duration-first-day}",
         "details_format": "",
         "day_header": "rule",
         "blank_after_header": False,
     },
     "dense": {
-        "event_format": "{day-label:<7}{bar}{time:<8}{title}{range}{tab}{duration-short}",
+        "event_format": "{day-label:<7}{bar}{time:<8}{title}{tab}{duration-first-day}",
         "details_format": "",
         "day_header": "none",
         "blank_after_header": False,
@@ -194,13 +194,103 @@ def day_attributes(day: dt.date, conf, today: dt.date | None = None) -> dict[str
     }
 
 
+@dataclass(frozen=True)
+class EventDay:
+    """where `day` is in the days of an event"""
+
+    first: bool
+    last: bool
+    multi: bool  # the event touches several days
+    overnight: bool  # timed, shorter than 24 hours, ending the next day
+
+    @property
+    def whole_day(self) -> bool:
+        """the event takes all of `day` (all-day, or a middle day)"""
+        return self.multi and not self.first and not self.last and not self.overnight
+
+    @property
+    def shown(self) -> bool:
+        """overnight events are only listed on their first day"""
+        return self.first or not self.overnight
+
+    @property
+    def continuing(self) -> bool:
+        """sorted before the day's timed events (see list_order)"""
+        return self.whole_day or (self.multi and self.last and not self.overnight)
+
+
+def _naive(value):
+    return value.replace(tzinfo=None) if isinstance(value, dt.datetime) else value
+
+
+def event_days(event) -> tuple[dt.date, dt.date]:
+    """the first and the last day of `event` (an end at midnight belongs to
+    the day before)"""
+    start, end = _naive(event.start_local), _naive(event.end_local)
+    if isinstance(start, dt.datetime):
+        last = (
+            end.date()
+            if end.time() != dt.time() or end.date() == start.date()
+            else (end.date() - dt.timedelta(days=1))
+        )
+        return start.date(), max(start.date(), last)
+    # all-day: the end is exclusive in icalendar, khal's end_local is inclusive
+    return start, max(start, end)
+
+
+def event_day(event, day: dt.date) -> EventDay:
+    first_day, last_day = event_days(event)
+    multi = first_day != last_day
+    overnight = (
+        not event.allday
+        and multi
+        and _naive(event.end_local) - _naive(event.start_local) < dt.timedelta(hours=24)
+    )
+    return EventDay(day <= first_day, day >= last_day, multi, overnight)
+
+
+def list_order(event, day: dt.date):
+    """all-day and continuing events first, then by time"""
+    where = event_day(event, day)
+    if event.allday or where.continuing:
+        return (0, "")
+    start = _naive(event.start_local)
+    return (1, start.time().isoformat() if start.date() == day else "")
+
+
+def short_duration(event) -> str:
+    """`9h30m`, `2d18h`, `2d` (all-day over several days), "" for one day"""
+    if event.allday:
+        first, last = event_days(event)
+        days = (last - first).days + 1
+        return f"{days}d" if days > 1 else ""
+    return timedelta2str(_naive(event.end_local) - _naive(event.start_local)).replace(" ", "")
+
+
 def event_attributes(event, day: dt.date, first_of_day: bool, conf) -> dict[str, str]:
     """the ikhal-only attributes of an event in the list (see module doc)"""
     attributes = event.attributes(day, colors=False)
-    if event.allday:
-        time = "all day"
+    where = event_day(event, day)
+    timeformat = conf["locale"]["timeformat"]
+    if event.allday or where.whole_day:
+        time = ""  # the day header says it
+    elif where.multi and where.last and not where.overnight:
+        time = "–" + _naive(event.end_local).strftime(timeformat)
     else:
-        time = attributes["start-style"]
+        time = _naive(event.start_local).strftime(timeformat)
+    location = (event.location or "").strip() if where.first else ""
+    # {time-span}: 08:00–17:30, 18:00–… on the first day of an event over
+    # several days, –12:00 on its last day, 22:00–02:00 overnight
+    start = end = ""
+    if not event.allday:
+        start = _naive(event.start_local).strftime(timeformat)
+        end = _naive(event.end_local).strftime(timeformat)
+    if event.allday or where.whole_day:
+        time_span = ""
+    elif where.multi and not where.overnight:
+        time_span = f"{start}–…" if where.first else f"–{end}"
+    else:
+        time_span = f"{start}–{end}"
     details = event_details(event, conf)
     attributes.update(
         {
@@ -214,7 +304,11 @@ def event_attributes(event, day: dt.date, first_of_day: bool, conf) -> dict[str,
             "attendees-short": short_attendees(event),
             "description-short": short_description(event),
             "day-label": f"{day:%a}"[:2] + f" {day.day:>2}" if first_of_day else "",
-            "location-gap": "  " if event.location else "",
+            "time-span": time_span,
+            "location-gap": "  " if location else "",
+            # only on the first day of an event
+            "location-first-day": location,
+            "duration-first-day": short_duration(event) if where.first else "",
             "empty": "",
             "tab": "\t",
         }
@@ -309,30 +403,41 @@ def free_gaps(
     minimum: dt.timedelta,
     hours: tuple[dt.time, dt.time] | None = None,
 ) -> dict[int, dt.timedelta]:
-    """index of an event -> the free time before it (only gaps >= minimum)
+    """index of an event -> the free time before it (only gaps >= minimum);
+    the index `len(events)` stands for the free time after the last event
 
-    With `hours`, only the part of a gap within those hours counts.
+    With `hours`, only the part of a gap within those hours counts and, on
+    working days (Monday to Friday), also the time from the start of those
+    hours to the first timed event and from the last one to their end; a
+    working day without timed events is free for all of `hours`. All-day
+    events don't take time.
     """
     gaps: dict[int, dt.timedelta] = {}
-    previous_end = None
+    edges = hours is not None and day.weekday() < 5
+    opening = dt.datetime.combine(day, hours[0]) if hours is not None else None
+    closing = dt.datetime.combine(day, hours[1]) if hours is not None else None
+    previous_end = opening if edges else None
     for index, event in enumerate(events):
         if event.allday:
             continue
-        start = event.start_local.replace(tzinfo=None)
-        end = event.end_local.replace(tzinfo=None)
-        if start.date() != day:
-            previous_end = end if end.date() == day else None
+        start = _naive(event.start_local)
+        end = _naive(event.end_local)
+        if start.date() != day:  # started before today
+            previous_end = end if previous_end is None else max(previous_end, end)
             continue
         if previous_end is not None:
             gap_start, gap_end = previous_end, start
             if hours is not None:
-                gap_start = max(gap_start, dt.datetime.combine(day, hours[0]))
-                gap_end = min(gap_end, dt.datetime.combine(day, hours[1]))
+                gap_start = max(gap_start, opening)
+                gap_end = min(gap_end, closing)
             gap = gap_end - gap_start
             if gap >= minimum:
                 gaps[index] = gap
-        if previous_end is None or end > previous_end:
-            previous_end = end
+        previous_end = end if previous_end is None else max(previous_end, end)
+    if edges and previous_end is not None:
+        gap = closing - max(previous_end, opening)
+        if gap >= minimum:
+            gaps[len(events)] = gap
     return gaps
 
 

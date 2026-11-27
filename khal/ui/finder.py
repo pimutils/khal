@@ -70,13 +70,22 @@ def highlight(text: str, query: str) -> list:
 class ResultRow(urwid.WidgetWrap):
     """`▌▍28.11. Dinner at Anna's` (▌ while selected)"""
 
-    def __init__(self, event, query: str, dateformat: str, glyphs) -> None:
+    def __init__(self, event, query: str, dateformat: str, glyphs, hidden: bool = False) -> None:
+        """
+        :param hidden: the event's calendar is hidden: the row is dimmed
+        """
         self.event = event
+        self.hidden = hidden
         self._text = urwid.Text("", wrap="clip")
+        title = highlight(event.summary or "", query)
+        if hidden:
+            title = [
+                ("float choice hint", part) if isinstance(part, str) else part for part in title
+            ]
         self._parts = [
             ("calendar " + event.calendar, "▍" if glyphs.marker == "▌" else "|"),
             ("float choice hint", _start(event).strftime(dateformat) + " "),
-            *highlight(event.summary or "", query),
+            *title,
         ]
         self._marker = glyphs.marker
         self._focus_map = {
@@ -108,7 +117,12 @@ class Finder(urwid.WidgetWrap):
         search: Callable[[str], list],
         on_jump: Callable[[object], None],
         on_close: Callable[[], None],
+        hidden: Callable[[object], bool] = lambda event: False,
     ) -> None:
+        """
+        :param hidden: events of hidden calendars are found, but dimmed
+        """
+        self._hidden = hidden
         self._conf = conf
         self._search = search
         self._on_jump = on_jump
@@ -146,7 +160,8 @@ class Finder(urwid.WidgetWrap):
         self.results = events[:MAX_RESULTS]
         dateformat = self._conf["locale"]["dateformat"]
         self._walker[:] = [
-            ResultRow(event, query, dateformat, self._glyphs) for event in self.results
+            ResultRow(event, query, dateformat, self._glyphs, self._hidden(event))
+            for event in self.results
         ]
         if self.results:
             # the first event from today on, or the last one

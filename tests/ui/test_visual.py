@@ -284,6 +284,25 @@ def test_render_time_grid(busy, name, size, keys):
     assert not screen.undefined_attributes()
 
 
+@pytest.mark.parametrize(
+    ("name", "size", "keys"),
+    [
+        ("spans-80x24", (80, 24), ()),
+        ("spans-card-80x24", (80, 24), ("/", *"conference", "enter", "enter")),
+        ("spans-column-160", (160, 28), ("/", *"conference", "enter", "enter")),
+        ("spans-100x46", (100, 46), ()),
+    ],
+)
+def test_render_spans(tmp_path, name, size, keys):
+    """events over several days and overnight (design/overview-mockups/41)"""
+    conf = make_conf(tmp_path)
+    screen = Screen(conf, make_collection(conf, spans=True), size=size)
+    screen.press(*keys)
+    text = screen.dump(name)
+    _check_frame(text, size[0])
+    assert not screen.undefined_attributes()
+
+
 def test_pop_ups_on_theme_background(setup):
     """pop-ups are inside the "body" attribute map: no cell of an open
     pop-up is drawn without an attribute (= the terminal's background)"""

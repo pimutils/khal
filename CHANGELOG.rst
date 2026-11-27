@@ -147,6 +147,33 @@ unreleased
   ``event_format_comfortable`` and ``event_format_comfortable_details`` (the
   defaults are documented in the config spec), with the new attributes
   ``{bar}``, ``{time-range}``, ``{attendees-short}``, ``{description-short}``
+* CHANGE ikhal's list (regular, dense): the right column is always the
+  duration, on an event's first day only (``9h30m``, ``2d18h``, ``2d``); all-day
+  events and the middle days of longer events have an empty time column, the
+  last day of a timed one shows its end (``–12:00``); overnight events are
+  listed on their first day only; the location only on the first day.
+  Format attributes ``{time}``, ``{time-span}`` (with end times),
+  ``{duration-first-day}`` and ``{location-first-day}``; khal.spec has an
+  example with end times
+* CHANGE event details: ``● work · tomorrow`` (``now · ends in 6 days`` while
+  it runs, ``ended yesterday`` afterwards), then a ``when`` row
+  (``Fr 27 Nov 18:00 – Mo 30 Nov 12:00 · 2d18h``, broken after the dash if
+  narrow; never "all day" where the date says it), where/who/alarm/repeat/
+  link/notes; the keys are in the footer while details are open
+* CHANGE durations use one compact format everywhere (``15m``, ``9h30m``,
+  ``2d18h``, ``2d``)
+* NEW show and hide calendars while ikhal runs: ``c`` (``[keybindings]
+  toggle_calendars``) lists the calendars, space toggles one, 1–9 the n-th,
+  ``a`` shows all; the list, the time grid, the month column and the next
+  event in the header follow at once, search still finds everything (dimmed);
+  the frame says how many are hidden. ``hidden = True`` in a calendar's
+  section starts it hidden, nothing is saved
+* NEW with ``[view] free_time_hours``, the free time before the first and
+  after the last timed event within those hours is shown, too, and a working
+  day without timed events shows all of it as free
+* CHANGE ikhal's list: all-day events are marked with ■ instead of the bar
+  ▍; the focused day header shows the ▌ marker and the day in the accent
+  colour instead of a full accent bar
 * CHANGE events marked for deletion (``d``) no longer get a letter (D/d/f) in
   front: in the list the calendar bar becomes a red ✕, time and title are
   struck through and the scope ("deleted", "this one", "this & following")

@@ -359,14 +359,15 @@ def format_duration(delta: dt.timedelta, compact: bool = False) -> str:
     return ("" if compact else " ").join(parts)
 
 
-def span_duration(start, end, allday: bool, compact: bool = False) -> str:
-    """duration of an event, allday events end on (including) `end`"""
+def span_duration(start, end, allday: bool, compact: bool = True) -> str:
+    """duration of an event in the one compact format used everywhere
+    (`15m`, `9h30m`, `2d18h`, `2d`), allday events end on (including) `end`
+
+    :param compact: (ignored, durations are always compact)
+    """
     if allday:
-        days = (end - start).days + 1
-        if compact:
-            return f"{days}d"
-        return f"{days} day" + ("" if days == 1 else "s")
-    return format_duration(end - start, compact)
+        return f"{(end - start).days + 1}d"
+    return format_duration(end - start, compact=True)
 
 
 def event_duration(see: StartEndEditor, compact: bool = False) -> str:
@@ -388,6 +389,48 @@ def relative_day(day: dt.date, today: dt.date | None = None) -> str:
         amount, unit = amount // 7, "week"
     text = f"{amount} {unit}s"
     return f"in {text}" if delta > 0 else f"{text} ago"
+
+
+def _in(delta: dt.timedelta) -> str:
+    """`25m`, `2h`, `2h30m` (for "in 2h", "ended 25m ago")"""
+    minutes = max(1, int(delta.total_seconds() // 60))
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        return f"{hours}h{minutes:02d}m" if minutes else f"{hours}h"
+    return f"{minutes}m"
+
+
+def relative_to_now(start, end, allday: bool, now: dt.datetime | None = None):
+    """where an event is from now: (None, "tomorrow"), (None, "in 2h"),
+    ("now", "ends in 6 days"), (None, "ended yesterday"), ...
+
+    All-day events end at midnight after their (inclusive) last day.
+    """
+    now = now or dt.datetime.now()
+    today = now.date()
+    if allday:
+        start = dt.datetime.combine(start, dt.time())
+        end = dt.datetime.combine(end + dt.timedelta(days=1), dt.time())
+    else:
+        start = start.replace(tzinfo=None)
+        end = end.replace(tzinfo=None)
+    # the last day an event takes (an end at midnight belongs to the day before)
+    last_day = (end - dt.timedelta(microseconds=1)).date() if end > start else start.date()
+    if now < start:
+        if start.date() == today:
+            return None, f"in {_in(start - now)}"
+        return None, relative_day(start.date(), today)
+    if now < end:
+        if not allday and end.date() == today:
+            return "now", f"ends in {_in(end - now)}"
+        if last_day == today:
+            return "now", "ends today"
+        return "now", f"ends {relative_day(last_day, today)}"
+    if not allday and end.date() == today:
+        return None, f"ended {_in(now - end)} ago"
+    if last_day == today:
+        return None, "ended today"
+    return None, f"ended {relative_day(last_day, today)}"
 
 
 def summary_line(

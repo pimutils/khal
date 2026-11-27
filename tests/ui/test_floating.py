@@ -212,13 +212,14 @@ def test_event_details(coll_vdirs, conf):
     rendered = text(details, (90, 20))
     lines = rendered.splitlines()
     assert lines[1].strip() == "Standup"
-    assert "● foobar · Thu 26 Nov · " in lines[2]
-    assert lines[2].endswith("15m · tomorrow")
-    assert "where   Room 2.04" in rendered
-    assert "who     ✓ alice@example.org   ✗ carol@example.org   ? bob@example.org" in rendered
-    assert "alarm   5 min before" in rendered
-    assert "repeat  every weekday at" in rendered
-    assert "Bring coffee." in rendered
+    assert lines[2].strip() == "● foobar · tomorrow"
+    assert "when   Th 26 Nov 09:00:00–09:15:00 · 15m" in rendered  # timeformat %H:%M:%S
+    assert "where  Room 2.04" in rendered
+    assert "who    ✓ alice@example.org   ✗ carol@example.org   ? bob@example.org" in rendered
+    assert "alarm  5 min before" in rendered
+    assert "repeat every weekday at" in rendered
+    assert "notes  Bring coffee." in rendered
+    assert "all day" not in rendered
     assert "enter edit  d delete" in lines[-1]
 
 

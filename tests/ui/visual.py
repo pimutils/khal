@@ -99,6 +99,13 @@ BUSY = [
     ("home", "plumber", "Call plumber", _at(1, "10:00"), _at(1, "11:00"), {}),
 ]  # fmt: skip
 
+# multi-day and overnight events (design/overview-mockups/41-a-sizes)
+SPANS = [
+    ("work", "conference", "Conference", _at(1, "18:00"), _at(4, "12:00"),
+     {"location": "Leipzig, Messe, Hall B", "alarm": True}),
+    ("home", "party", "Party at Jo's", _at(5, "22:00"), _at(6, "02:00"), {"location": "Neukölln"}),
+]  # fmt: skip
+
 CONFIG = """
 [calendars]
 {calendars}
@@ -149,12 +156,13 @@ def make_conf(tmp_path: pathlib.Path, **view):
     return get_config(str(config), _get_color_from_vdir=lambda path: None)
 
 
-def make_collection(conf, busy: bool = False) -> CalendarCollection:
-    """the events of the mockups (with `busy`, also BUSY)"""
+def make_collection(conf, busy: bool = False, spans: bool = False) -> CalendarCollection:
+    """the events of the mockups (with `busy`, also BUSY, with `spans` SPANS)"""
     from khal.cli_utils import build_collection
 
     collection = build_collection(conf, None)
-    for calendar, uid, summary, start, end, options in EVENTS + (BUSY if busy else []):
+    extra = (BUSY if busy else []) + (SPANS if spans else [])
+    for calendar, uid, summary, start, end, options in EVENTS + extra:
         event = collection.create_event_from_ics(
             _vevent(uid, summary, start, end, **options), calendar_name=calendar
         )

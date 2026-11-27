@@ -80,6 +80,9 @@ class CalendarCollection:
         assert calendars is not None
 
         self._calendars: dict[str, CalendarConfiguration] = calendars
+        # calendars whose events get_events_on() and get_calendars_on() leave
+        # out (ikhal's show/hide); search() still finds everything
+        self.hidden_calendars: set[str] = set()
         self._default_calendar_name: str | None = None
         self._storages: dict[str, Vdir] = {}
         file_ext: str
@@ -159,7 +162,10 @@ class CalendarCollection:
         floating_events = self.get_floating(start, end)
         localize = self._locale["local_timezone"].localize
         localized_events = self.get_localized(localize(start), localize(end))
-        return itertools.chain(localized_events, floating_events)
+        events = itertools.chain(localized_events, floating_events)
+        if self.hidden_calendars:
+            return (event for event in events if event.calendar not in self.hidden_calendars)
+        return events
 
     def get_calendars_on(self, day: dt.date) -> list[str]:
         start = dt.datetime.combine(day, dt.time.min)
@@ -169,7 +175,7 @@ class CalendarCollection:
             self._backend.get_floating_calendars(start, end),
             self._backend.get_localized_calendars(localize(start), localize(end)),
         )
-        return list(set(calendars))
+        return [name for name in set(calendars) if name not in self.hidden_calendars]
 
     def update(self, event: Event) -> None:
         """update `event` in vdir and db"""

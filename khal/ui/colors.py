@@ -231,6 +231,7 @@ ROLES: dict[str, tuple[str, str, str]] = {
     "frame focus top": ("acc", "bg", ""),
     "frame title": ("lbl", "bg", ""),
     "frame hint": ("dim", "bg", ""),
+    "frame warning": ("yel", "bg", ""),
     "eventcolumn": ("txt", "bg", ""),
     "editor": ("txt", "bg", ""),
     "editor focus": ("txt", "bg", ""),
@@ -299,6 +300,7 @@ ROLES: dict[str, tuple[str, str, str]] = {
     "footer version": ("dim", "bg", ""),
     "details headline": ("txt", "bg", "bold"),
     "details label": ("lbl", "bg", ""),
+    "details relative": ("acc", "bg", ""),
     "details text": ("txt", "bg", ""),
     "details dim": ("dim", "bg", ""),
     "details link": ("blu", "bg", "underline"),
@@ -309,6 +311,8 @@ ROLES: dict[str, tuple[str, str, str]] = {
     "agenda past": ("dim", "bg", ""),
     "agenda free": ("dim", "bg", ""),
     "agenda now": ("acc", "bg", "bold"),
+    "agenda rule": ("dim", "bg", ""),
+    "agenda day focus": ("acc", "bg", "bold"),
     # events marked for deletion: red ✕, struck through, the scope in red
     "agenda deleted": ("dim", "bg", "strikethrough"),
     "agenda deleted focus": ("dim", "row", "strikethrough"),
@@ -641,7 +645,7 @@ NEW_UI_PREFIXES = (
     "editor ", "float ", "message ", "footer key", "footer version", "footer deleted", "details ",
     "timegrid deleted",
     "attendee ", "day heat ", "agenda ", "finder ", "log ", "header ", "frame title",
-    "frame hint",
+    "frame hint", "frame warning",
 )  # fmt: skip
 NEW_UI_NAMES = [name for name in ROLES if name.startswith(NEW_UI_PREFIXES)]
 dark.extend(expand_theme(NEUTRAL_DARK, names=NEW_UI_NAMES, transparent=True))

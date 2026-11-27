@@ -126,7 +126,12 @@ slot under its cursor), and `keybindings_help(conf)` returning `(command, keys,
 description)` tuples, which are shown in ikhal's help (`?`) while the view is
 active, a `pane_title` property shown in the top border of the right column
 (e.g. `Week 48 · Mon–Fri`) and `handles_view_key()` returning True when the
-view uses the `view` key (enter) itself instead of showing the focused event. Users can cycle through all views
+view uses the `view` key (enter) itself instead of showing the focused event.
+Calendars the user hides in ikhal (`c`) are left out by the collection's
+`get_events_on()` (and `get_calendars_on()`), see
+`CalendarCollection.hidden_calendars`; after a change every view gets
+`update_range(None, None, everything=True)`, so a view that caches events only
+has to drop its cache there. Users can cycle through all views
 with the `switch_view` key (default `w`) or select the view shown on startup
 with `[view] default_view`. Plugins may read their own settings from
 subsections of the `[plugins]` section of khal's config file (e.g.,

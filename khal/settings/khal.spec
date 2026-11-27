@@ -49,6 +49,11 @@ priority = integer(default=10)
 # calendar
 readonly = boolean(default=False)
 
+# ikhal starts with this calendar hidden (its events are not shown, search
+# still finds them). Calendars can be shown and hidden while ikhal runs with
+# the `toggle_calendars` key (`c`), which is not saved.
+hidden = boolean(default=False)
+
 # Setting the type of this collection (default ``calendar``).
 #
 # If set to ``calendar`` (the default), this collection will be used as a
@@ -217,6 +222,10 @@ prev_year = force_list(default=list('['))
 # configured formats, ISO, weekday names, today, tomorrow), or relative like
 # +3d, -2w, +1m, -1y
 goto_date = force_list(default=list('g'))
+
+# show and hide calendars (ikhal): a list of the calendars, space toggles the
+# focused one, 1–9 the n-th, a shows all
+toggle_calendars = force_list(default=list('c'))
 
 # remove all deletion marks (events marked with `delete` are only deleted when
 # ikhal quits)
@@ -393,18 +402,28 @@ density = option('auto', 'comfortable', 'regular', 'dense', 'classic', default='
 
 # The formats of the events in ikhal's list per density (empty: the built-in
 # default, given here). Besides the attributes of `agenda_event_format`, they
-# know {bar} (the calendar's colour bar, or ✕ for events marked for deletion),
-# {tab} (the rest of the line is right-aligned), {time} (start time or "all
-# day"), {time-range} (09:00–09:15), {duration-short} (1h30m), {range}
+# know {bar} (the calendar's colour bar ▍, ■ for all-day events, or ✕ for
+# events marked for deletion),
+# {tab} (the rest of the line is right-aligned), {time} (the start time; empty
+# for all-day events and the middle days of events over several days, the end
+# as "–12:00" on the last day of a timed one), {time-span} (with end times:
+# 08:00–17:30, 18:00–… on the first day of an event over several days, –12:00
+# on its last day, 22:00–02:00 overnight), {time-range} (09:00–09:15),
+# {duration-first-day} (15m, 9h30m, 2d18h, 2d; only on an event's first day,
+# empty for one-day all-day events), {duration-short} (every day), {range}
 # ((Sat–Sun) for events over several days), {day-label} (Th 26 on a day's
-# first event, for dense), {location-gap} (two blanks if there is a location),
-# {details} (location · attendees · start of the description · repeat rule),
+# first event, for dense), {location-first-day} (the location, only on the
+# first day), {location-gap} (two blanks if there is one), {details}
+# (location · attendees · start of the description · repeat rule),
 # {attendees-short} (the first attendee +N), {description-short} (the start of
-# the description) and {empty}.
-#   regular:     {bar} {time:<8}{title}{range}{repeat-symbol}{alarm-symbol}{location-gap}{location}{tab}{duration-short}
-#   dense:       {day-label:<7}{bar}{time:<8}{title}{range}{tab}{duration-short}
+# the description) and {empty}. All-day and continuing events come first,
+# overnight events (shorter than a day) are only listed on their first day.
+#   regular:     {bar} {time:<8}{title}{repeat-symbol}{alarm-symbol}{location-gap}{location-first-day}{tab}{duration-first-day}
+#   dense:       {day-label:<7}{bar}{time:<8}{title}{tab}{duration-first-day}
 #   comfortable: {bar} {time-range:<12}{title}{range}{tab}{duration-short}
 #   and its second line: {bar} {empty:<12}{details}
+# For example, regular with end times:
+#   event_format_regular = {bar} {time-span:<12}{title}{repeat-symbol}{alarm-symbol}{location-gap}{location-first-day}{tab}{duration-first-day}
 # The second line is left out for events where it would be empty.
 # `density = classic` uses `agenda_event_format`.
 event_format_regular = string(default='')
@@ -424,8 +443,11 @@ event_color = option('line', 'bar', default='bar')
 # ("┊ 4h free") if it is at least this long; `0` or `off` disables it.
 show_free_time = string(default='3h')
 
-# Only count free time within these hours, e.g. `08:00-18:00` (default: the
-# whole time between two events counts).
+# Only count free time within these hours, e.g. `09:00-18:00` (default: the
+# whole time between two events counts). On working days (Monday to Friday)
+# the time from the start of these hours to the first timed event and from
+# the last one to their end counts, too, and a day without timed events shows
+# all of it as free; all-day events don't take time.
 free_time_hours = string(default='')
 
 # Format of the day headers in ikhal's list (empty: the density's default,

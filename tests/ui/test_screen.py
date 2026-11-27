@@ -246,7 +246,8 @@ def test_view_inline_then_edit(setup):
     lines = screen.text().splitlines()
     row = next(i for i, line in enumerate(lines) if i and "Lunch w/ Bob" in line)
     assert "╭" in lines[row + 1]  # the card, right under the event
-    assert "● home · Thu 26 Nov · 12:30–13:30 · 1h · today" in lines[row + 2]
+    assert "● home · in 1h10m" in lines[row + 2]
+    assert "when  Th 26 Nov 12:30–13:30 · 1h" in lines[row + 4]
     assert "enter edit  d delete  p duplicate  esc close" in screen.text()
     screen.press("enter")  # again: edit
     assert isinstance(screen.window._get_current_pane(), EditingScreen)
@@ -362,8 +363,9 @@ def test_finder(setup):
     assert "› din" in text
     assert "▌▍28.11. Dinner at Anna's" in text
     assert "1/1" in text
-    assert "● home · Sat 28 Nov · 20:00–23:00" in text  # the preview
-    assert "where   Kreuzberg" in text
+    assert "● home · in 2 days" in text  # the preview
+    assert "when  Sa 28 Nov 20:00–23:00 · 3h" in text
+    assert "where Kreuzberg" in text
     assert "finder match focus" in screen.attributes()  # "Din" highlighted
     screen.press("backspace", "backspace", "backspace", *"e")
     screen.render()  # searches once per screen update
@@ -762,7 +764,7 @@ def test_month_and_year_keys(setup, where):
     assert screen.pane.focus_date == dt.date(2027, 11, 26)
     assert screen.pane.calendar.base_widget.focus_date == dt.date(2027, 11, 26)
     if where == "grid":
-        assert screen.column.dlistbox.pane_title == "Fri 26 Nov"  # the shown day moved
+        assert screen.column.dlistbox.pane_title == "Fri 26 Nov 2027"  # the shown day moved
     else:
         assert screen.column.focus_date == dt.date(2027, 11, 26)
 
@@ -875,3 +877,382 @@ def test_no_frame_titles_without_frames(setup):
     text = screen.text()
     assert "November ─" not in text
     assert "Agenda" not in text
+
+
+# -- events over several days (variant A) and the details
+
+
+@pytest.fixture
+def spans(tmp_path):
+    count = iter(range(1000))
+
+    def make(size=(100, 46), **view):
+        directory = tmp_path / f"s{next(count)}"
+        directory.mkdir()
+        conf = make_conf(directory, **view)
+        return Screen(conf, make_collection(conf, spans=True), size=size)
+
+    return make
+
+
+def day_rows(screen: Screen) -> dict[str, list[str]]:
+    """the rows of each day in the list (right of the month column)"""
+    days: dict[str, list[str]] = {}
+    current = None
+    for line in screen.text().splitlines()[2:-2]:
+        right = line.split("││")[-1].rstrip("│").rstrip()
+        if "── " in right and right.strip().startswith("──"):
+            current = right.strip()[3:8]
+            days[current] = []
+        elif current and right.strip():
+            days[current].append(right)
+    return days
+
+
+@freeze_time(NOW)
+def test_list_variant_a(spans):
+    days = day_rows(spans())
+    friday, saturday, sunday = days["Fr 27"], days["Sa 28"], days["Su 29"]
+    monday, tuesday = days["Mo 30"], days["Tu  1"]
+    # timed multi-day: start + duration and location on the first day only
+    conference = next(row for row in friday if "Conference" in row)
+    assert "▍ 18:00   Conference ♪  Leipzig, Messe, Hall B" in conference
+    assert conference.endswith("2d18h")
+    # middle days: empty time column, nothing at the right; first in the day
+    assert saturday[0] == "  ▍         Conference ♪"
+    assert sunday[0] == "  ▍         Conference ♪"
+    # last day: the end in the time column
+    assert monday[0] == "  ▍ –12:00  Conference ♪"
+    # all-day over several days: "2d" on the first day only, no "all day"
+    hiking = [row for row in saturday + sunday if "Hiking" in row]
+    assert hiking[0].endswith("2d")
+    assert hiking[1] == "  ■         Hiking trip"
+    # one-day all-day: no duration
+    assert "  ■         Mum's birthday" in tuesday
+    # overnight: on its first day only
+    party = next(row for row in tuesday if "Party" in row)
+    assert "22:00   Party at Jo's  Neukölln" in party
+    assert party.endswith("4h")
+    assert not any("Party" in row for row in days.get("We  2", []))
+    assert "all day" not in "\n".join(sum(days.values(), []))
+
+
+@freeze_time(NOW)
+def test_list_with_end_times(spans):
+    """the example in khal.spec (design/overview-mockups/41: A with end times)"""
+    screen = spans(
+        event_format_regular="{bar} {time-span:<12}{title}{repeat-symbol}{alarm-symbol}"
+        "{location-gap}{location-first-day}{tab}{duration-first-day}"
+    )
+    days = day_rows(screen)
+    assert days["Fr 27"][0].startswith("  ▍ 08:00–17:30 Great Event ♪  Haus der Kulturen")
+    assert days["Fr 27"][0].endswith("9h30m")
+    assert any(row.startswith("  ▍ 18:00–…     Conference ♪") for row in days["Fr 27"])
+    assert days["Sa 28"][0] == "  ▍             Conference ♪"
+    assert days["Mo 30"][0] == "  ▍ –12:00      Conference ♪"
+    party = next(row for row in days["Tu  1"] if "Party" in row)
+    assert party.startswith("  ▍ 22:00–02:00 Party at Jo's  Neukölln")
+    import pathlib
+
+    spec = pathlib.Path("khal/settings/khal.spec").read_text(encoding="utf-8")
+    assert (
+        "{bar} {time-span:<12}{title}{repeat-symbol}{alarm-symbol}{location-gap}"
+        "{location-first-day}{tab}{duration-first-day}" in spec
+    )
+
+
+def _when(screen, uid):
+    from khal.ui.details import when_parts
+
+    return when_parts(screen.event(uid), screen.conf)
+
+
+@freeze_time(NOW)
+def test_when_row(spans):
+    screen = spans()
+    assert _when(screen, "great") == ("Fr 27 Nov 08:00–17:30", "", "9h30m")
+    assert _when(screen, "mum") == ("Tu 1 Dec", "", "")
+    assert _when(screen, "hiking") == ("Sa 28 Nov", "Su 29 Nov", "2d")
+    assert _when(screen, "party") == ("Tu 1 Dec 22:00–02:00 (+1 day)", "", "4h")
+    assert _when(screen, "conference") == ("Fr 27 Nov 18:00", "Mo 30 Nov 12:00", "2d18h")
+
+
+def test_when_row_wraps_after_the_dash():
+    from khal.ui.details import WhenText
+
+    when = WhenText("Fr 27 Nov 18:00", "Mo 30 Nov 12:00", "2d18h")
+    wide = [line.decode().rstrip() for line in when.render((60,)).text]
+    assert wide == ["Fr 27 Nov 18:00 – Mo 30 Nov 12:00 · 2d18h"]
+    narrow = [line.decode().rstrip() for line in when.render((30,)).text]
+    assert narrow == ["Fr 27 Nov 18:00 –", "Mo 30 Nov 12:00 · 2d18h"]
+
+
+def open_conference(screen: Screen) -> None:
+    screen.press("/", *"conference", "enter", "enter")
+
+
+@freeze_time(NOW)
+def test_details_card_and_footer(spans):
+    screen = spans((80, 24))
+    open_conference(screen)
+    text = screen.text()
+    lines = text.splitlines()
+    assert "● work · tomorrow" in text
+    first = next(i for i, line in enumerate(lines) if "when  Fr 27 Nov 18:00 –" in line)
+    assert "      Mo 30 Nov 12:00 · 2d18h" in lines[first + 1]  # under the value column
+    assert "where Leipzig, Messe, Hall B" in text
+    assert "esc close" not in "\n".join(lines[:-1])  # no key row in the card
+    assert lines[-1].startswith(" enter edit  d delete  p duplicate  esc close  ? help")
+    screen.press("esc")
+    assert screen.text().splitlines()[-1].startswith(" n new")
+
+
+@freeze_time(NOW)
+def test_details_column_and_footer(spans):
+    screen = spans((160, 28))
+    open_conference(screen)
+    text = screen.text()
+    assert "when  Fr 27 Nov 18:00 – Mo 30 Nov 12:00 · 2d18h" in text
+    assert text.splitlines()[-1].startswith(" enter edit  d delete  p duplicate  esc close")
+    assert text.count("esc close") == 1
+
+
+def test_durations_are_compact():
+    import datetime as dt
+
+    from khal.ui.editor_layout import span_duration
+
+    start = dt.datetime(2026, 11, 27, 18)
+    assert span_duration(start, start + dt.timedelta(days=2, hours=18), False) == "2d18h"
+    assert span_duration(start, start + dt.timedelta(minutes=15), False) == "15m"
+    assert span_duration(dt.date(2026, 11, 28), dt.date(2026, 11, 29), True) == "2d"
+
+
+# -- showing and hiding calendars
+
+
+def open_calendars(screen: Screen) -> None:
+    screen.press("tab", "c")
+
+
+@freeze_time(NOW)
+def test_calendars_box(setup):
+    from khal.ui.calendars import CalendarsBox
+
+    screen = setup()
+    open_calendars(screen)
+    overlay = screen.window._get_current_pane()
+    assert isinstance(overlay.top_w, CalendarsBox)
+    text = screen.text()
+    assert "╭─ Calendars ─" in text
+    assert "▌ ✓ ● home" in text
+    assert "space show/hide · a all · esc" in text
+    # no grey backdrop: the list keeps its colours
+    assert not any(str(attr).endswith(" grey") for attr in screen.attributes())
+
+
+@freeze_time(NOW)
+def test_toggle_calendars_with_space_digits_and_a(setup):
+    screen = setup()
+    open_calendars(screen)
+    screen.press(" ")  # home (focused)
+    assert screen.pane.collection.hidden_calendars == {"home"}
+    assert "1 hidden ─╮" in screen.text()
+    screen.press("3", "4")  # family, birthdays
+    assert screen.pane.collection.hidden_calendars == {"home", "family", "birthdays"}
+    assert "Lunch w/ Bob" not in screen.text().split("\n", 1)[1]  # the list follows at once
+    assert "3 hidden" in screen.text().splitlines()[1]  # the list's frame
+    screen.press("a")
+    assert not screen.pane.collection.hidden_calendars
+    screen.press("1", "esc")
+    assert screen.window._get_current_pane() is screen.pane
+    assert "1 hidden ─╮" in screen.text().splitlines()[1]
+    assert "frame warning" in screen.attributes()
+
+
+@freeze_time(NOW)
+def test_hidden_calendars_in_month_and_header(setup):
+    screen = setup()
+    before = screen.text()
+    assert "next: Lunch w/ Bob" in before.splitlines()[0]
+    open_calendars(screen)
+    screen.press("1", "esc")  # hide home
+    text = screen.text()
+    assert "next: Choir" in text.splitlines()[0]  # the header ignores hidden calendars
+    # the month column: Saturday 28 had family and home (‥), now only family (•)
+    week = next(line for line in before.splitlines()[2:] if "26" in line and "48" in line)
+    after = next(line for line in text.splitlines()[2:] if "26" in line and "48" in line)
+    assert "28‥" in week
+    assert "28•" in after
+
+
+@freeze_time(NOW)
+def test_hidden_calendars_in_the_time_grid(busy):
+    screen = busy()
+    screen.press("tab", "w", "1", "t", "right")
+    assert "Team sync" in screen.text()
+    screen.press("c", "2", "esc")  # hide work
+    text = screen.text()
+    assert "Team sync" not in text
+    assert "Interview" not in text
+    assert "1 hidden ─╮" in text.splitlines()[1]
+
+
+@freeze_time(NOW)
+def test_search_finds_hidden_calendars_dimmed(setup):
+    screen = setup()
+    open_calendars(screen)
+    screen.press("1", "esc", "/", *"lunch")
+    finder = screen.window._get_current_pane().top_w
+    screen.render()
+    assert finder.results[0].summary == "Lunch w/ Bob"
+    assert finder._walker[0].hidden
+
+
+@freeze_time(NOW)
+def test_hidden_from_config(setup, tmp_path):
+    from tests.ui.visual import CALENDARS
+
+    screen = setup()
+    conf = screen.conf
+    conf["calendars"]["family"]["hidden"] = True
+    other = Screen(conf, screen.collection, size=(100, 28))
+    assert other.pane.collection.hidden_calendars == {"family"}
+    assert "Choir" not in other.text()
+    assert "1 hidden" in other.text().splitlines()[1]
+    assert "family" in CALENDARS
+
+
+@freeze_time(NOW)
+def test_new_events_offer_all_calendars(setup):
+    from khal.ui.editor import EventEditor
+
+    from .visual import find
+
+    screen = setup()
+    open_calendars(screen)
+    screen.press("3", "esc", "n")
+    editor = find(screen.window._get_current_pane(), EventEditor)[0]
+    names = [c["name"] for c in editor.calendar_chooser.original_widget.choices]
+    assert "family" in names
+
+
+@freeze_time(NOW)
+def test_month_title_names_other_years(setup):
+    screen = setup()
+    assert screen.text().splitlines()[1].startswith("╭─ November ─")
+    screen.press("tab", "}")
+    assert screen.text().splitlines()[1].startswith("╭─ December ─")
+    screen.press("}")
+    assert screen.text().splitlines()[1].startswith("╭─ January 2027 ─")
+    screen.press("[", "[", "{", "{", "{")
+    assert screen.text().splitlines()[1].startswith("╭─ October 2024 ─")
+
+
+@needs_timegrid
+@freeze_time(NOW)
+def test_titles_name_other_years(setup):
+    screen = setup()
+    screen.press("tab", "}", "}")
+    assert screen.text().splitlines()[1].startswith("╭─ January 2027 ─")
+    screen.press("w", "1")
+    assert screen.column.dlistbox.pane_title == "Tue 26 Jan 2027"
+    screen.press("[", "[", "{", "{")
+    assert screen.text().splitlines()[1].startswith("╭─ November 2024 ─")
+    assert screen.column.dlistbox.pane_title == "Tue 26 Nov 2024"
+    screen.press("t")
+    assert screen.column.dlistbox.pane_title == "Thu 26 Nov"
+
+
+# -- relative to now in the details
+
+
+NOW_ = dt.datetime(2026, 11, 26, 11, 20)
+
+
+@pytest.mark.parametrize(
+    ("start", "end", "allday", "expected"),
+    [
+        # future
+        (dt.datetime(2026, 11, 27, 8), dt.datetime(2026, 11, 27, 17), False, (None, "tomorrow")),
+        (dt.datetime(2026, 11, 29, 8), dt.datetime(2026, 11, 29, 9), False, (None, "in 3 days")),
+        (dt.datetime(2026, 11, 26, 13, 20), dt.datetime(2026, 11, 26, 14), False, (None, "in 2h")),
+        (dt.date(2026, 11, 28), dt.date(2026, 11, 29), True, (None, "in 2 days")),
+        # running now
+        (dt.datetime(2026, 11, 26, 11), dt.datetime(2026, 11, 26, 11, 45), False,
+         ("now", "ends in 25m")),
+        (dt.datetime(2026, 11, 25, 18), dt.datetime(2026, 11, 27, 12), False,
+         ("now", "ends tomorrow")),
+        (dt.date(2026, 11, 23), dt.date(2026, 12, 2), True, ("now", "ends in 6 days")),  # holiday
+        (dt.date(2026, 11, 26), dt.date(2026, 11, 26), True, ("now", "ends today")),
+        # past
+        (dt.datetime(2026, 11, 26, 8), dt.datetime(2026, 11, 26, 9, 20), False,
+         (None, "ended 2h ago")),
+        (dt.date(2026, 11, 20), dt.date(2026, 11, 25), True, (None, "ended yesterday")),
+        (dt.datetime(2026, 11, 21, 8), dt.datetime(2026, 11, 23, 9), False,
+         (None, "ended 3 days ago")),
+    ],
+)  # fmt: skip
+def test_relative_to_now(start, end, allday, expected):
+    from khal.ui.editor_layout import relative_to_now
+
+    assert relative_to_now(start, end, allday, NOW_) == expected
+
+
+@freeze_time(NOW)
+def test_details_of_a_running_holiday(setup):
+    """a multi-day all-day event that started days ago says `now · ends …`"""
+    from khal.ui.details import details_rows
+    from khal.ui.editor_layout import UNICODE
+
+    screen = setup()
+    event = screen.collection.create_event_from_dict(
+        {
+            "dtstart": dt.date(2026, 11, 23),
+            "dtend": dt.date(2026, 12, 3),
+            "allday": True,
+            "summary": "Holiday",
+            "timezone": screen.conf["locale"]["default_timezone"],
+            "alarms": "",
+        },
+        calendar_name="home",
+    )
+    rows = details_rows(event, screen.conf, UNICODE, headline=False)
+    text = rows[0].get_text()[0]
+    assert text == "● home · now · ends in 6 days"
+
+
+# -- the focused day header and the all-day marker
+
+
+@freeze_time(NOW)
+@pytest.mark.parametrize("theme", ["retrobox", "retrobox-light"])
+def test_focused_day_header(setup, theme):
+    screen = setup(theme=theme)
+    screen.press("tab")  # the list, on today's header
+    header = screen.text().splitlines()[2].split("││")[-1]
+    assert header.startswith("▌── Th 26 Nov · today ──")
+    attributes = screen.attributes()
+    assert "agenda day focus" in attributes
+    assert "date header focused" not in attributes  # no accent bar
+    screen.press("down")  # an event of the day: no ▌ on the header, still accent
+    header = screen.text().splitlines()[2].split("││")[-1]
+    assert header.startswith(" ── Th 26 Nov")
+    assert "agenda day focus" in screen.attributes()
+    assert not screen.undefined_attributes()
+
+
+@freeze_time(NOW)
+def test_all_day_marker(spans):
+    days = day_rows(spans())
+    assert days["Sa 28"][1].startswith("  ■         Hiking trip")
+    assert days["Sa 28"][0].startswith("  ▍         Conference")  # timed: the bar
+
+
+@freeze_time(NOW)
+def test_all_day_marker_ascii(spans):
+    screen = spans()
+    screen.conf["locale"]["unicode_symbols"] = False
+    other = Screen(screen.conf, screen.collection, size=(100, 46))
+    text = other.text()
+    assert "  #         Hiking trip" in text

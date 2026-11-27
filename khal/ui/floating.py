@@ -189,6 +189,7 @@ HELP_GROUPS: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
         "View",
         (
             ("switch_view", "next view"),
+            ("toggle_calendars", "show/hide calendars"),
             ("search", "search"),
             ("log", "log"),
             ("help", "help"),

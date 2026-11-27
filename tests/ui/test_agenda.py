@@ -117,7 +117,11 @@ def test_render_list(coll_vdirs, conf, density):
     assert "11:20 ━━━" in text  # the now line, between Standup and Lunch
     assert text.index("Standup") < text.index("11:20 ━") < text.index("Lunch")
     assert "┊ 5h30m free" in text  # 13:30 -> 19:00 (and 3h15m before Lunch)
-    assert "Hike (Sat–Sun)" in text
+    assert "Hike" in text
+    if density in ("regular", "dense"):
+        hike = next(line for line in text.splitlines() if "Hike" in line)
+        assert hike.endswith("2d")  # the duration, on the first day only
+        assert "all day" not in hike
     standup = next(line for line in text.splitlines() if "Standup" in line)
     assert standup.endswith("15m")
     if density == "comfortable":
@@ -236,3 +240,76 @@ def test_invalid_density_format(coll_vdirs, conf, caplog):
     conf["view"]["event_format_regular"] = "{bar} {nonsense}"
     lines = _list(collection, conf)
     assert any("Standup [format error]" in line for line in lines)
+
+
+# -- free time within working hours
+
+
+class _Event:
+    def __init__(self, start, end, allday=False):
+        self.start_local, self.end_local, self.allday = start, end, allday
+
+
+def _at(day, hhmm):
+    hour, minute = map(int, hhmm.split(":"))
+    return dt.datetime.combine(day, dt.time(hour, minute))
+
+
+THURSDAY = dt.date(2026, 11, 26)
+HOURS = (dt.time(9), dt.time(18))
+HALF = dt.timedelta(minutes=30)
+
+
+def test_free_gaps_between_events_only_without_hours():
+    events = [
+        _Event(_at(THURSDAY, "10:00"), _at(THURSDAY, "11:00")),
+        _Event(_at(THURSDAY, "14:00"), _at(THURSDAY, "15:00")),
+    ]
+    assert agenda.free_gaps(events, THURSDAY, HALF) == {1: dt.timedelta(hours=3)}
+
+
+def test_free_gaps_with_hours_count_the_edges():
+    events = [
+        _Event(THURSDAY, THURSDAY, allday=True),  # doesn't take time
+        _Event(_at(THURSDAY, "10:00"), _at(THURSDAY, "11:00")),
+        _Event(_at(THURSDAY, "14:00"), _at(THURSDAY, "15:00")),
+    ]
+    gaps = agenda.free_gaps(events, THURSDAY, HALF, HOURS)
+    assert gaps == {
+        1: dt.timedelta(hours=1),  # 09:00-10:00
+        2: dt.timedelta(hours=3),
+        3: dt.timedelta(hours=3),  # 15:00-18:00, after the last event
+    }
+
+
+def test_free_gaps_edges_shorter_than_the_minimum():
+    events = [_Event(_at(THURSDAY, "09:15"), _at(THURSDAY, "17:45"))]
+    assert agenda.free_gaps(events, THURSDAY, HALF, HOURS) == {}
+
+
+def test_free_gaps_empty_working_day():
+    assert agenda.free_gaps([], THURSDAY, HALF, HOURS) == {0: dt.timedelta(hours=9)}
+    allday = [_Event(THURSDAY, THURSDAY, allday=True)]
+    assert agenda.free_gaps(allday, THURSDAY, HALF, HOURS) == {1: dt.timedelta(hours=9)}
+    saturday = THURSDAY + dt.timedelta(days=2)
+    assert agenda.free_gaps([], saturday, HALF, HOURS) == {}  # not a working day
+
+
+def test_free_gaps_event_from_yesterday_blocks_the_morning():
+    events = [_Event(_at(THURSDAY - dt.timedelta(days=1), "20:00"), _at(THURSDAY, "12:00"))]
+    assert agenda.free_gaps(events, THURSDAY, HALF, HOURS) == {1: dt.timedelta(hours=6)}
+
+
+@freeze_time("2026-11-26 11:20")
+def test_free_rows_in_the_list(coll_vdirs, conf):
+    collection, _ = coll_vdirs
+    add(collection, conf, dt.datetime(2026, 11, 26, 10, 0), 60, "Review")
+    conf["view"]["density"] = "regular"
+    conf["view"]["show_free_time"] = "30m"
+    conf["view"]["free_time_hours"] = "09:00-18:00"
+    lines = _list(collection, conf)
+    review = next(i for i, line in enumerate(lines) if "Review" in line)
+    assert "┊ 1h free" in lines[review - 1] or "┊ 1h free" in lines[review - 2]
+    assert "┊ 7h free" in lines[review + 1]
+    friday = next(i for i, line in enumerate(lines) if "Fr 27 Nov" in line)
+    assert "┊ 9h free" in lines[friday + 1]  # a working day without events
