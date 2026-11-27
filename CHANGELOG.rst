@@ -30,6 +30,8 @@ unreleased
   date only; such an EXDATE now excludes all instances on that day
 * FIX an invalid alarm in ``khal edit`` or ``khal new -i`` crashed with a
   traceback, it is now reported and the menu is shown again
+* FIX avoid the Python 3.13 ``DeprecationWarning`` when inferring the year for
+  dates such as ``khal new 17.03.`` without surrounding whitespace
 
 0.14.1
 ======
