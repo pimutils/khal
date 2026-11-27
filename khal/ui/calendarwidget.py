@@ -28,7 +28,7 @@ import calendar
 import datetime as dt
 from collections.abc import Callable
 from locale import LC_ALL, LC_TIME, getlocale, setlocale
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, TypeAlias, TypedDict
 
 import urwid
 
@@ -41,8 +41,8 @@ class MarkType(TypedDict):
     pos: tuple[int, int]
 
 
-OnPressType = dict[str, Callable[[dt.date, dt.date | None], str | None]]
-GetStylesSignature = Callable[[dt.date, bool], str | tuple[str, str] | None]
+OnPressType: TypeAlias = dict[str, Callable[[dt.date, dt.date | None], str | None]]
+GetStylesSignature: TypeAlias = Callable[[dt.date, bool], str | tuple[str, str] | None]
 
 
 setlocale(LC_ALL, "")
