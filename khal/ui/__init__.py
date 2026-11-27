@@ -24,12 +24,12 @@ import logging
 import signal
 import sys
 from enum import IntEnum
-from typing import Literal
 
 import click
 import urwid
 
 from khal import plugins, utils
+from khal.custom_types import ColorModeType
 from khal.khalendar import CalendarCollection
 from khal.khalendar.exceptions import FatalError, ReadOnlyCalendarError
 from khal.parse_datetime import timedelta2str
@@ -1269,7 +1269,7 @@ def _urwid_palette_entry(
     name: str,
     color: str,
     hmethod: str,
-    color_mode: Literal["256colors", "rgb"],
+    color_mode: ColorModeType,
     foreground: str = "",
     background: str = "",
 ) -> tuple[str, str, str, str, str, str]:
@@ -1349,7 +1349,7 @@ def _urwid_palette_entry(
 def _add_calendar_colors(
     palette: list[tuple[str, ...]],
     collection: "CalendarCollection",
-    color_mode: Literal["256colors", "rgb"],
+    color_mode: ColorModeType,
     base: str | None = None,
     attr_template: str = "calendar {}",
 ) -> list[tuple[str, ...]]:
@@ -1426,7 +1426,7 @@ def start_pane(
     callback,
     program_info="",
     quit_keys=None,
-    color_mode: Literal["rgb", "256colors"] = "rgb",
+    color_mode: ColorModeType = "rgb",
 ):
     """Open the user interface with the given initial pane."""
     # We don't validate the themes in settings.spec but instead here

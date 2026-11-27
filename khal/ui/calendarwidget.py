@@ -28,10 +28,11 @@ import calendar
 import datetime as dt
 from collections.abc import Callable
 from locale import LC_ALL, LC_TIME, getlocale, setlocale
-from typing import Any, Literal, TypedDict
+from typing import Any, TypeAlias, TypedDict
 
 import urwid
 
+from khal.custom_types import MonthDisplayType, WeekNumbersType
 from khal.utils import get_month_abbr_len
 
 
@@ -41,8 +42,8 @@ class MarkType(TypedDict):
     pos: tuple[int, int]
 
 
-OnPressType = dict[str, Callable[[dt.date, dt.date | None], str | None]]
-GetStylesSignature = Callable[[dt.date, bool], str | tuple[str, str] | None]
+OnPressType: TypeAlias = dict[str, Callable[[dt.date, dt.date | None], str | None]]
+GetStylesSignature: TypeAlias = Callable[[dt.date, bool], str | tuple[str, str] | None]
 
 
 setlocale(LC_ALL, "")
@@ -385,8 +386,8 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         keybindings: dict[str, list[str]],
         get_styles: GetStylesSignature,
         firstweekday: int = 0,
-        weeknumbers: Literal["left", "right", False] = False,
-        monthdisplay: Literal["firstday", "firstfullweek"] = "firstday",
+        weeknumbers: WeekNumbersType = False,
+        monthdisplay: MonthDisplayType = "firstday",
         initial: dt.date | None = None,
     ) -> None:
         self.firstweekday = firstweekday
@@ -603,8 +604,8 @@ class CalendarWidget(urwid.WidgetWrap):
         keybindings: dict[str, list[str]],
         on_press: OnPressType | None = None,
         firstweekday: int = 0,
-        weeknumbers: Literal["left", "right", False] = False,
-        monthdisplay: Literal["firstday", "firstfullweek"] = "firstday",
+        weeknumbers: WeekNumbersType = False,
+        monthdisplay: MonthDisplayType = "firstday",
         get_styles: GetStylesSignature | None = None,
         initial: dt.date | None = None,
     ) -> None:

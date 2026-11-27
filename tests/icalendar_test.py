@@ -3,6 +3,7 @@ import random
 import textwrap
 
 import icalendar
+import pytest
 from freezegun import freeze_time
 
 from khal.icalendar import new_vevent, split_ics
@@ -73,6 +74,21 @@ def test_split_ics():
 
     assert sorted(vevents0) == sorted(part0)
     assert sorted(vevents1) == sorted(part1)
+
+
+def test_split_ics_broken_event_has_uid_note():
+    ics = textwrap.dedent("""\
+        BEGIN:VCALENDAR
+        BEGIN:VEVENT
+        UID:brokenuid
+        DTSTART:notadate
+        SUMMARY:broken
+        END:VEVENT
+        END:VCALENDAR
+        """)
+    with pytest.raises(ValueError, match="notadate") as excinfo:
+        split_ics(ics)
+    assert "while importing the event with UID brokenuid" in excinfo.value.__notes__
 
 
 def test_split_ics_random_uid():

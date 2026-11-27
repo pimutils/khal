@@ -1,8 +1,14 @@
 import datetime as dt
 import os
-from typing import Literal, Protocol, TypedDict
+from typing import Literal, NotRequired, Protocol, TypeAlias, TypedDict
 
 import pytz
+
+PathLike: TypeAlias = str | os.PathLike
+
+WeekNumbersType: TypeAlias = Literal["left", "right", False]
+MonthDisplayType: TypeAlias = Literal["firstday", "firstfullweek"]
+ColorModeType: TypeAlias = Literal["256colors", "rgb"]
 
 
 class CalendarConfiguration(TypedDict):
@@ -23,7 +29,7 @@ class LocaleConfiguration(TypedDict):
     longdateformat: str
     datetimeformat: str
     longdatetimeformat: str
-    weeknumbers: str | bool
+    weeknumbers: WeekNumbersType
     firstweekday: int
     unicode_symbols: bool
 
@@ -36,8 +42,7 @@ class SupportsRaw(Protocol):
     def raw(self) -> str: ...
 
 
-# set this to TypeAlias once we support that python version (PEP613)
-EventTuple = tuple[
+EventTuple: TypeAlias = tuple[
     str,
     str,
     dt.date | dt.datetime,
@@ -48,34 +53,26 @@ EventTuple = tuple[
 ]
 
 
-# Only need for RRuleMapType
-class RRuleMapBase(TypedDict):
+class RRuleMapType(TypedDict):
     freq: str
-
-
-class RRuleMapType(RRuleMapBase, total=False):
-    # not required keys go in here
-    # TODO remove if either `NotRequired` is supported by mypy or the oldest
-    # python we support is 3.11 (see PEP 655)
-    until: dt.datetime
+    until: NotRequired[dt.datetime]
 
 
 class EventCreationTypes(TypedDict):
+    """keyword arguments for :func:`khal.icalendar.new_vevent`
+
+    keys marked as `NotRequired` have a default value there
+    """
+
     dtstart: dt.date
     dtend: dt.date
     summary: str
-    description: str
-    allday: bool
-    location: str | None
-    categories: str | list[str] | None
-    repeat: str | None
-    until: str
-    alarms: str
-    timezone: pytz.BaseTzInfo
-    url: str
-
-
-PathLike = str | os.PathLike
-
-WeekNumbersType = Literal["left", "right", False]
-MonthDisplayType = Literal["firstday", "firstfullweek"]
+    description: NotRequired[str | None]
+    allday: NotRequired[bool]
+    location: NotRequired[str | None]
+    categories: NotRequired[str | list[str] | None]
+    repeat: NotRequired[str | None]
+    until: NotRequired[str | None]
+    alarms: NotRequired[str | None]
+    timezone: NotRequired[pytz.BaseTzInfo | None]
+    url: NotRequired[str | None]

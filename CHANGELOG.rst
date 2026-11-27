@@ -11,6 +11,10 @@ may want to subscribe to `GitHub's tag feed
 ======
 unreleased
 * DROPPED support for python 3.10, khal now requires python >= 3.11
+* FIX ``khal import`` names the reason why a file or event could not be
+  imported, not only the file
+* FIX a file in a calendar that isn't valid UTF-8 is skipped with a warning
+  naming its path instead of crashing khal
 * FIX align weekday headings in ikhal for locales with single-letter weekday
   abbreviations, such as Hungarian
 * FIX place ``monthdisplay`` in the ``[view]`` section of the sample configuration

@@ -684,6 +684,32 @@ def test_import_proper_invalid_timezone(runner):
     assert "02.12. 08:00-02.12. 09:30 Some event" in result.output
 
 
+def test_import_broken_file_reports_error(runner, tmp_path):
+    """the reason why a file could not be imported is shown to the user"""
+    runner = runner()
+    broken = tmp_path / "broken.ics"
+    broken.write_text(
+        "BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:brokenuid\nDTSTART:notadate\n"
+        "SUMMARY:broken\nEND:VEVENT\nEND:VCALENDAR\n"
+    )
+    result = runner.invoke(main_khal, ["import", "--batch", "-a", "one", str(broken)])
+    assert result.exit_code == 1
+    assert "Error when trying to import the event brokenuid: " in result.output
+    assert f"import the file from {broken}: " in result.output
+    assert "notadate" in result.output
+
+
+def test_list_broken_vdir_file_reports_path(runner):
+    """files in a vdir that cannot be read are skipped and their path is shown"""
+    runner = runner()
+    broken = runner.calendars["one"].join("broken.ics")
+    broken.write_binary(b"BEGIN:VCALENDAR\n\xff\xfe broken\nEND:VCALENDAR\n")
+    result = runner.invoke(main_khal, ["list"])
+    assert not result.exception
+    assert f"while reading {broken}" in result.output
+    assert f"Skipping one/broken.ics ({broken}): " in result.output
+
+
 def test_import_invalid_choice_and_prefix(runner):
     runner = runner()
     result = runner.invoke(main_khal, ["import", _get_ics_filepath("cal_d")], input="9\nth\ny\n")

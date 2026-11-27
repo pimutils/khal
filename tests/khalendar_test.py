@@ -405,9 +405,25 @@ class TestCollection:
         assert list(coll.search("")) == []
         messages = [rec.message for rec in caplog.records]
         assert messages[0].startswith("The .ics file at foobar/12345.ics contains multiple UIDs.\n")
+        fpath = os.path.join(vdirs[cal1].path, "12345.ics")
         assert messages[1].startswith(
-            "Skipping foobar/12345.ics: \nThis event will not be available in khal."
+            f"Skipping foobar/12345.ics ({fpath}): \nThis event will not be available in khal."
         )
+
+    def test_undecodable_file_in_vdir(self, coll_vdirs, caplog, fix_caplog, sleep_time):
+        """a file which is not valid utf-8 is skipped, the path is reported"""
+        coll, vdirs = coll_vdirs
+        caplog.set_level(logging.WARNING)
+        sleep(sleep_time)  # Make sure we get a new ctag
+        fpath = os.path.join(vdirs[cal1].path, "broken.ics")
+        with open(fpath, "wb") as f:
+            f.write(b"BEGIN:VCALENDAR\n\xff\xfe\nEND:VCALENDAR\n")
+        coll.update_db()
+        assert list(coll.search("")) == []
+        exc_record, skip_record = caplog.records
+        assert exc_record.exc_info is not None
+        assert f"while reading {fpath}" in exc_record.exc_info[1].__notes__
+        assert skip_record.message.startswith(f"Skipping foobar/broken.ics ({fpath}): ")
 
 
 class TestDbCreation:

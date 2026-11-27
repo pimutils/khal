@@ -21,10 +21,11 @@
 
 import datetime as dt
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import urwid
 
+from khal.custom_types import MonthDisplayType, WeekNumbersType
 from khal.utils import get_weekday_occurrence, get_wrapped_text
 
 from .calendarwidget import CalendarWidget
@@ -63,7 +64,7 @@ class CalendarPopUp(urwid.PopUpLauncher):
         self,
         widget,
         on_date_change,
-        weeknumbers: Literal["left", "right", False] = False,
+        weeknumbers: WeekNumbersType = False,
         firstweekday=0,
         monthdisplay="firstday",
         keybindings=None,
@@ -125,9 +126,9 @@ class DateEdit(urwid.WidgetWrap):
         startdt: dt.date,
         dateformat: str = "%Y-%m-%d",
         on_date_change: Callable = lambda _: None,
-        weeknumbers: Literal["left", "right", False] = False,
+        weeknumbers: WeekNumbersType = False,
         firstweekday: int = 0,
-        monthdisplay: Literal["firstday", "firstfullweek"] = "firstday",
+        monthdisplay: MonthDisplayType = "firstday",
         keybindings: dict[str, list[str]] | None = None,
     ) -> None:
         datewidth = len(startdt.strftime(dateformat))

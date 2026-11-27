@@ -27,11 +27,12 @@ import os
 import pathlib
 from collections.abc import Callable, Iterable
 from os.path import expanduser, expandvars, join
-from typing import Literal
 
 import pytz
 import xdg
 from tzlocal import get_localzone
+
+from khal.custom_types import MonthDisplayType, WeekNumbersType
 
 try:
     # Available from configobj 5.1.0
@@ -71,7 +72,7 @@ def is_timedelta(string: str) -> dt.timedelta:
         raise VdtValueError(f"Invalid timedelta: {string}")
 
 
-def weeknumber_option(option: str) -> Literal["left", "right", False]:
+def weeknumber_option(option: str) -> WeekNumbersType:
     """checks if *option* is a valid value
 
     :param option: the option the user set in the config file
@@ -91,7 +92,7 @@ def weeknumber_option(option: str) -> Literal["left", "right", False]:
         )
 
 
-def monthdisplay_option(option: str) -> Literal["firstday", "firstfullweek"]:
+def monthdisplay_option(option: str) -> MonthDisplayType:
     """checks if *option* is a valid value
 
     :param option: the option the user set in the config file
