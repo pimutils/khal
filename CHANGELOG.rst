@@ -10,6 +10,7 @@ may want to subscribe to `GitHub's tag feed
 0.14.2
 ======
 unreleased
+* DROPPED support for python 3.10, khal now requires python >= 3.11
 * FIX align weekday headings in ikhal for locales with single-letter weekday
   abbreviations, such as Hungarian
 * FIX place ``monthdisplay`` in the ``[view]`` section of the sample configuration
