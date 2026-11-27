@@ -29,7 +29,7 @@ import sqlite3
 from collections.abc import Iterable, Iterator
 from enum import IntEnum
 from os import makedirs, path
-from typing import Any
+from typing import Any, Literal, LiteralString
 
 import icalendar
 import icalendar.cal
@@ -189,13 +189,21 @@ class SQLiteDb:
                 stuple = (cal, "")
                 self.sql_ex(sql_s, stuple)
 
-    def sql_ex(self, statement: str, stuple: tuple) -> list:
-        """wrapper for sql statements, does a "fetchall" """
+    def sql_ex(self, statement: LiteralString, stuple: tuple) -> list:
+        """wrapper for sql statements, does a "fetchall"
+
+        `statement` must be a constant string, all values need to be passed
+        via `?` placeholders and `stuple`.
+        """
         self.cursor.execute(statement, stuple)
         result = self.cursor.fetchall()
         if not self._at_once:
             self.conn.commit()
         return result
+
+    def _calendar_placeholders(self) -> LiteralString:
+        """one `?` placeholder per configured calendar, for `IN (...)` clauses"""
+        return ("?," * len(self.calendars)).rstrip(",")
 
     def update(
         self,
@@ -362,7 +370,9 @@ class SQLiteDb:
         if ("TZID" in vevent["DTSTART"].params and dtype == EventType.DATETIME) or getattr(
             vevent["DTSTART"].dt, "tzinfo", None
         ):
-            recs_table = "recs_loc"
+            # only ever one of these two constant table names, safe to use
+            # in the SQL statements below
+            recs_table: Literal["recs_loc", "recs_float"] = "recs_loc"
         else:
             recs_table = "recs_float"
 
@@ -454,7 +464,7 @@ class SQLiteDb:
                      we always delete
         """
         assert calendar != ""
-        for table in ["recs_loc", "recs_float"]:
+        for table in ("recs_loc", "recs_float"):
             sql_s = f"DELETE FROM {table} WHERE href = ? AND calendar = ?;"
             self.sql_ex(sql_s, (href, calendar))
         sql_s = "DELETE FROM events WHERE href = ? AND calendar = ?;"
@@ -470,7 +480,7 @@ class SQLiteDb:
                      we always delete
         """
         assert calendar != ""
-        for table in ["recs_loc", "recs_float"]:
+        for table in ("recs_loc", "recs_float"):
             sql_s = f"DELETE FROM {table} WHERE href LIKE ? AND calendar = ?;"
             self.sql_ex(sql_s, (href, calendar))
         sql_s = "DELETE FROM events WHERE href LIKE ? AND calendar = ?;"
@@ -501,7 +511,7 @@ class SQLiteDb:
             "ORDER BY dtstart"
         )
         stuple = tuple([start_u, end_u, start_u, end_u, start_u, end_u] + list(self.calendars))  # type: ignore
-        result = self.sql_ex(sql_s.format(",".join(["?"] * len(self.calendars))), stuple)
+        result = self.sql_ex(sql_s.format(self._calendar_placeholders()), stuple)
         for calendar in result:
             yield calendar[0]  # result is always an iterable, even if getting only one item
 
@@ -518,8 +528,7 @@ class SQLiteDb:
             "(dtstart >= ? AND dtstart <= ? OR "
             "dtend > ? AND dtend <= ? OR "
             "dtstart <= ? AND dtend >= ?) AND "
-            # insert as many "?" as we have configured calendars
-            f"events.calendar in ({','.join('?' * len(self.calendars))}) "
+            "events.calendar in ({0}) "
             "ORDER BY dtstart"
         )
         stuple = (
@@ -530,7 +539,7 @@ class SQLiteDb:
             start_timestamp,
             end_timestamp,
         ) + tuple(self.calendars)
-        result = self.sql_ex(sql_s, stuple)
+        result = self.sql_ex(sql_s.format(self._calendar_placeholders()), stuple)
         for item, href, start_timestamp, end_timestamp, ref, etag, _dtype, calendar in result:
             start = dt.datetime.fromtimestamp(start_timestamp, pytz.UTC)
             end = dt.datetime.fromtimestamp(end_timestamp, pytz.UTC)
@@ -552,7 +561,7 @@ class SQLiteDb:
             "ORDER BY dtstart"
         )
         stuple = tuple([start_u, end_u, start_u, end_u, start_u, end_u] + list(self.calendars))  # type: ignore
-        result = self.sql_ex(sql_s.format(",".join(["?"] * len(self.calendars))), stuple)
+        result = self.sql_ex(sql_s.format(self._calendar_placeholders()), stuple)
         for calendar in result:
             yield calendar[0]
 
@@ -576,7 +585,7 @@ class SQLiteDb:
             "ORDER BY dtstart"
         )
         stuple = tuple([start_u, end_u, start_u, end_u, start_u, end_u] + list(self.calendars))  # type: ignore
-        result = self.sql_ex(sql_s.format(",".join(["?"] * len(self.calendars))), stuple)
+        result = self.sql_ex(sql_s.format(self._calendar_placeholders()), stuple)
         for item, href, start_s, end_s, ref, etag, dtype, calendar in result:
             start_dt = dt.datetime.fromtimestamp(start_s, pytz.UTC).replace(tzinfo=None)
             end_dt = dt.datetime.fromtimestamp(end_s, pytz.UTC).replace(tzinfo=None)
@@ -611,7 +620,7 @@ class SQLiteDb:
             "WHERE item LIKE (?) and events.calendar in ({0});"
         )
         stuple = tuple([f"%{search_string}%"] + list(self.calendars))
-        result = self.sql_ex(sql_s.format(",".join(["?"] * len(self.calendars))), stuple)
+        result = self.sql_ex(sql_s.format(self._calendar_placeholders()), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = dt.datetime.fromtimestamp(start, pytz.UTC)
             end = dt.datetime.fromtimestamp(end, pytz.UTC)
@@ -628,7 +637,7 @@ class SQLiteDb:
             "WHERE item LIKE (?) and events.calendar in ({0});"
         )
         stuple = tuple([f"%{search_string}%"] + list(self.calendars))
-        result = self.sql_ex(sql_s.format(",".join(["?"] * len(self.calendars))), stuple)
+        result = self.sql_ex(sql_s.format(self._calendar_placeholders()), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = dt.datetime.fromtimestamp(start, pytz.UTC).replace(tzinfo=None)
             end = dt.datetime.fromtimestamp(end, pytz.UTC).replace(tzinfo=None)
