@@ -10,6 +10,7 @@ may want to subscribe to `GitHub's tag feed
 0.14.2
 ======
 unreleased
+* NEW khal is tested with and supports python 3.15
 * FIX search matches text across folded lines in iCalendar files
 * FIX align weekday headings in ikhal for locales with single-letter weekday
   abbreviations, such as Hungarian
