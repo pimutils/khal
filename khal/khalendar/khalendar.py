@@ -175,7 +175,12 @@ class CalendarCollection:
             self._backend.get_floating_calendars(start, end),
             self._backend.get_localized_calendars(localize(start), localize(end)),
         )
-        return [name for name in set(calendars) if name not in self.hidden_calendars]
+        found = set(calendars)
+        # in the order of the configuration, so e.g. the colour of a day with
+        # events from several calendars is the same on every start
+        return [
+            name for name in self._calendars if name in found and name not in self.hidden_calendars
+        ]
 
     def update(self, event: Event) -> None:
         """update `event` in vdir and db"""

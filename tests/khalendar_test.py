@@ -671,3 +671,15 @@ def test_birthdays_no_year(coll_vdirs_birthday, sleep_time):
     events = list(coll.get_floating(dt.datetime(1971, 3, 11), dt.datetime(1971, 3, 11, 23, 59, 59)))
     assert len(events) == 1
     assert "Unix's birthday" == events[0].summary
+
+
+def test_get_calendars_on_in_config_order(coll_vdirs):
+    """the calendars of a day come in the configured order (not a set's)"""
+    coll, vdirs = coll_vdirs
+    day = dt.date(2014, 4, 9)
+    names = list(coll.writable_names)
+    assert len(names) > 1
+    for name in reversed(names):
+        event = coll.create_event_from_ics(_get_text("event_dt_simple"), calendar_name=name)
+        coll.insert(event)
+    assert coll.get_calendars_on(day) == [n for n in coll._calendars if n in names]
