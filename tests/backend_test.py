@@ -192,6 +192,31 @@ def test_event_recuid_rrule_no_master():
     assert len(list(events)) == 2
 
 
+@pytest.mark.parametrize("line_break", ["\r\n", "\n"])
+@pytest.mark.parametrize("continuation", [" ", "\t"])
+@pytest.mark.parametrize("utc", [False, True])
+def test_search_folded_content(line_break, continuation, utc):
+    text = _get_text("event_dt_folded")
+    if utc:
+        text = text.replace("T100000", "T100000Z").replace("T110000", "T110000Z")
+    text = text.replace("\n ", "\n" + continuation).replace("\n", line_break)
+    dbi = backend.SQLiteDb([calname, "other"], ":memory:", locale=LOCALE_BERLIN)
+    for calendar in (calname, "other"):
+        dbi.update(text, href="folded.ics", etag="original-etag", calendar=calendar)
+    dbi.calendars = [calname]
+
+    for query in ("ma.us/cor", "searchneedle"):
+        results = list(dbi.search(query))
+        assert len(results) == 1
+        item, href, _start, _end, _ref, etag, calendar = results[0]
+        assert item == text
+        assert (href, etag, calendar) == ("folded.ics", "original-etag", calname)
+
+    # Separate content lines must not become a single searchable string.
+    assert list(dbi.search("MassachusettsDESCRIPTION")) == []
+    assert dbi.get_with_etag("folded.ics", calname) == (text, "original-etag")
+
+
 def test_no_valid_timezone():
     dbi = backend.SQLiteDb([calname], ":memory:", locale=LOCALE_BERLIN)
     dbi.update(

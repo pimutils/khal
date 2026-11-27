@@ -550,6 +550,8 @@ search
 search for events matching a search string and print them.  Currently, search
 will print one line for every different event in a recurrence set, that is one
 line for the master event, and one line for every different overwritten event.
+Search ignores iCalendar line folding, so a word or URL split across
+continuation lines in the file can still be found.
 No advanced search features are currently supported.
 
 The command
