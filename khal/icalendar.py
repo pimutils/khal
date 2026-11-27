@@ -85,7 +85,8 @@ def split_ics(ics: str, random_uid: bool = False, default_timezone=None) -> list
         try:
             ics = ics_from_list(events, tzs, random_uid, default_timezone)
         except Exception as exception:
-            logger.warning(f"Error when trying to import the event {uid}")
+            logger.warning(f"Error when trying to import the event {uid}: {exception}")
+            exception.add_note(f"while importing the event with UID {uid}")
             saved_exception = exception
         else:
             out.append(ics)

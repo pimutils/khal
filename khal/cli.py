@@ -346,7 +346,9 @@ def import_ics(ctx, ics, include_calendar, batch, random_uid, format):
             )
         except FatalError as error:
             logger.debug(error, exc_info=True)
-            logger.fatal(f"An error occurred when trying to import the file from {filename}")
+            logger.fatal(
+                f"An error occurred when trying to import the file from {filename}: {error}"
+            )
             logger.fatal("Events from it will not be available in khal")
             if not batch:
                 sys.exit(1)
