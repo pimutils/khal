@@ -71,7 +71,7 @@ class CalendarRow(urwid.WidgetWrap):
                 " ",
                 ("float choice tick" + suffix, tick) if shown else " ",
                 " ",
-                (f"calendar {self.name}" + (" row" if focused else ""), self._glyphs.dot),
+                (f"calendar {self.name}" + (" row" if focused else " mark"), self._glyphs.dot),
                 " ",
                 (
                     ("float choice" + suffix) if shown else ("float choice hint" + suffix),

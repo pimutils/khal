@@ -125,7 +125,7 @@ def test_day_marking(coll_vdirs, marking):
     empty = pane.day_styles(day + dt.timedelta(days=1), False)
     assert pane.day_styles(dt.date.today(), False) == "today"
     if marking == "dot":
-        assert style == DayStyle(None, "•", f"calendar {cal1}")
+        assert style == DayStyle(None, "•", f"calendar {cal1} mark")
         assert empty is None
         rendered = b"\n".join(pane.calendar.render((28, 10), False).text).decode()
         assert "•" in rendered

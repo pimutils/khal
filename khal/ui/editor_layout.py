@@ -462,7 +462,7 @@ def summary_line(
         parts.append(f"{start.strftime(timefmt)}–{end.strftime(timefmt)}")
     parts.append(span_duration(start, end, allday, compact))
     parts.extend(extra)
-    return [(f"calendar {calendar}", glyphs.dot + " "), (attr, " · ".join([calendar, *parts]))]
+    return [(f"calendar {calendar} mark", glyphs.dot + " "), (attr, " · ".join([calendar, *parts]))]
 
 
 def format_alarm(delta: dt.timedelta, compact: bool = False) -> str:

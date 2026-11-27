@@ -444,9 +444,15 @@ class U_Event(urwid.Text):
         elif bar and self.event.allday:
             # a marker of their own: bars of one calendar on consecutive rows
             # would look like one event running across the timed ones below
-            bar_glyph = ("calendar " + self.event.calendar, "■" if unicode_symbols else "#")
+            bar_glyph = (
+                "calendar " + self.event.calendar + " mark",
+                "■" if unicode_symbols else "#",
+            )
         elif bar:
-            bar_glyph = ("calendar " + self.event.calendar, "▍" if unicode_symbols else "|")
+            bar_glyph = (
+                "calendar " + self.event.calendar + " mark",
+                "▍" if unicode_symbols else "|",
+            )
         else:
             bar_glyph = " "
         for index, line in enumerate(text.split("\n")):
@@ -1799,7 +1805,7 @@ class ClassicView(Pane):
             marker = "•" if len(calendars) == 1 else "‥"
             if not self._conf["locale"].get("unicode_symbols", True):
                 marker = "*"
-            return DayStyle(own, marker, "calendar " + calendars[0])
+            return DayStyle(own, marker, "calendar " + calendars[0] + " mark")
         if marking == "heat":
             count = len(list(self.collection.get_events_on(date)))
             level = 0
@@ -2283,6 +2289,7 @@ def _add_calendar_colors(
     base: str | None = None,
     attr_template: str = "calendar {}",
     highlight: bool = True,
+    hmethod: str | None = None,
 ) -> list[colors.PaletteEntry]:
     """Add the colors for the defined calendars to the palette.
 
@@ -2295,6 +2302,8 @@ def _add_calendar_colors(
     :param base: the attribute to extract the background and foreground color from
     :param attr_template: the template to use for the attribute name
     :param highlight: also add `highlight_days_color` and `highlight_days_multiple`
+    :param hmethod: `fg`/`bg` instead of `[highlight_days] method` (markers like
+        the month column's dots are always coloured in the foreground)
     :returns: the modified palette
     """
     bg_color, fg_color = "", ""
@@ -2324,7 +2333,7 @@ def _add_calendar_colors(
         entry = _urwid_palette_entry(
             attr_template.format(cal["name"]),
             color,
-            collection.hmethod,
+            hmethod or collection.hmethod,
             color_mode=color_mode,
             foreground=fg_color,
             background=bg_color,
@@ -2435,6 +2444,19 @@ def build_palette(
         base="popupbg",
         attr_template="calendar {} popup",
         highlight=False,
+        hmethod="fg",
+    )
+    # markers (the list's bars, the month column's dots, the dots in details
+    # and lists): always the calendar colour on the normal background, also
+    # with `[highlight_days] method = background`
+    palette = _add_calendar_colors(
+        palette,
+        collection,
+        color_mode=color_mode,
+        base="calendar",
+        attr_template="calendar {} mark",
+        highlight=False,
+        hmethod="fg",
     )
     # the calendar's colour on the background of focused rows (dots in the
     # editor's calendar field and in choice lists)
@@ -2445,6 +2467,7 @@ def build_palette(
         base="editor focus row",
         attr_template="calendar {} row",
         highlight=False,
+        hmethod="fg",
     )
     # calendar colors as background, e.g. for blocks in time based views
     for cal in collection.calendars:

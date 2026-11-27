@@ -197,7 +197,7 @@ def details_rows(
     rows += [
         urwid.Text(
             [
-                (f"calendar {event.calendar}", glyphs.dot + " "),
+                (f"calendar {event.calendar} mark", glyphs.dot + " "),
                 ("details label", f"{event.calendar} · "),
                 *_relative_markup(event, today),
             ]

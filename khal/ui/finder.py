@@ -83,7 +83,7 @@ class ResultRow(urwid.WidgetWrap):
                 ("float choice hint", part) if isinstance(part, str) else part for part in title
             ]
         self._parts = [
-            ("calendar " + event.calendar, "▍" if glyphs.marker == "▌" else "|"),
+            ("calendar " + event.calendar + " mark", "▍" if glyphs.marker == "▌" else "|"),
             ("float choice hint", _start(event).strftime(dateformat) + " "),
             *title,
         ]
@@ -92,7 +92,7 @@ class ResultRow(urwid.WidgetWrap):
             None: "float choice focus",
             "float choice hint": "float choice hint focus",
             "finder match": "finder match focus",
-            "calendar " + event.calendar: "calendar " + event.calendar + " row",
+            "calendar " + event.calendar + " mark": "calendar " + event.calendar + " row",
         }
         self._map = urwid.AttrMap(self._text, "float choice")
         super().__init__(self._map)

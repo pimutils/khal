@@ -1260,3 +1260,23 @@ def test_all_day_marker_ascii(spans):
     other = Screen(screen.conf, screen.collection, size=(100, 46))
     text = other.text()
     assert "  #         Hiking trip" in text
+
+
+@freeze_time(NOW)
+def test_markers_stay_foreground_with_background_highlighting(tmp_path):
+    """`[highlight_days] method = background` colours days and lines with the
+    calendar colour as background; markers (bars, dots) must still be drawn in
+    the calendar colour on the normal background, not as coloured blocks"""
+    conf = make_conf(tmp_path)
+    conf["highlight_days"]["method"] = "background"
+    collection = make_collection(conf)
+    collection.hmethod = "background"
+    palette = {entry[0]: entry for entry in ui.build_palette(conf, collection, "rgb").palette}
+    plain, mark = palette["calendar home"], palette["calendar home mark"]
+    color = plain[5]  # background highlighting: the colour sits in the background slot
+    assert color
+    assert mark[4] == color  # the marker: colour in the foreground slot
+    assert mark[5] != color
+    assert palette["calendar home row"][4] == color
+    screen = Screen(conf, collection)
+    assert "calendar home mark" in screen.attributes()
