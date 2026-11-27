@@ -239,6 +239,59 @@ class PromptLine(urwid.WidgetWrap):
         return None
 
 
+class HeaderLine(urwid.WidgetWrap):
+    """the window's header line: a message (for a few seconds) or the
+    header of the pane (`header_markup(maxcol)`, which can adapt to the
+    width) or its title"""
+
+    no_cache = ["render", "rows"]  # the header changes with the time and the width
+
+    def __init__(self, window: Window, text: urwid.Text) -> None:
+        self._window = window
+        self._text = text  # the title or a message, see Window.update_header
+        self._shown = urwid.Text("", wrap="ellipsis")
+        super().__init__(self._shown)
+
+    def _markup(self, maxcol: int):
+        window = self._window
+        if not window._header_is_warning:
+            for pane, _ in reversed(window._track):
+                header = getattr(pane, "header_markup", None)
+                if header is None:
+                    continue
+                markup = header(maxcol)
+                if markup is not None:
+                    return markup
+                break
+        text, attrs = self._text.get_text()
+        return self._text_markup(text, attrs) if attrs else text
+
+    @property
+    def text(self) -> str:
+        """the title or message (without the pane's own header)"""
+        return self._text.text
+
+    @staticmethod
+    def _text_markup(text: str, attrs) -> list:
+        markup, position = [], 0
+        for attr, length in attrs:
+            markup.append((attr, text[position : position + length]))
+            position += length
+        if position < len(text):
+            markup.append(text[position:])
+        return markup
+
+    def rows(self, size, focus=False):
+        return 1
+
+    def render(self, size, focus=False):
+        markup = self._markup(size[0])
+        if markup != getattr(self, "_last", None):
+            self._last = markup
+            self._shown.set_text(markup or "")
+        return super().render(size, focus)
+
+
 class Window(urwid.Frame):
     """The main user interface frame.
 
@@ -265,7 +318,8 @@ class Window(urwid.Frame):
         self._track: list[tuple[urwid.Widget, Callable | None]] = []
 
         self._header_text = urwid.Text("", wrap="ellipsis")
-        header = urwid.AttrMap(self._header_text, "header")
+        self._header_line = HeaderLine(self, self._header_text)
+        header = urwid.AttrMap(self._header_line, "header")
         self._footer_text = urwid.Text(footer, wrap="ellipsis")
         footer_widget = urwid.AttrMap(FooterLine(self._footer_text, version), "footer")
         urwid.Frame.__init__(
@@ -340,6 +394,15 @@ class Window(urwid.Frame):
         else:
             raise urwid.ExitMainLoop()
 
+    def keypress(self, size, key):
+        # the header shows the view (tabs) and the time, keys may change both
+        self._header_line._invalidate()
+        return super().keypress(size, key)
+
+    def mouse_event(self, size, event, button, col, row, focus):
+        self._header_line._invalidate()
+        return super().mouse_event(size, event, button, col, row, focus)
+
     def is_top_level(self):
         """Is the current pane the top-level one?"""
         return len(self._track) == 1
@@ -404,6 +467,7 @@ class Window(urwid.Frame):
                 text.append(part)
                 text.append(("message info", " | "))
         self._header_text.set_text(text[:-1] or "")
+        self._header_line._invalidate()
 
     def message(self, text: str, kind: str = "info") -> None:
         """show `text` in the header for a few seconds
@@ -420,6 +484,7 @@ class Window(urwid.Frame):
             markup.append(("message info", text))
         self._header_is_warning = True
         self._header_text.set_text(markup)
+        self._header_line._invalidate()
         self._message_serial += 1
         serial = self._message_serial
         if self.loop is not None:

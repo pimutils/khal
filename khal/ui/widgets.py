@@ -1072,14 +1072,14 @@ class TopBorder(urwid.WidgetWrap):
 
 
 class FocusLineBoxWidth(urwid.WidgetDecoration, urwid.WidgetWrap):
-    def __init__(self, widget, title: str = "", status=None) -> None:
+    def __init__(self, widget, title="", status=None, title_attr: str = "editor title") -> None:
         # we cheat here with the attrs, if we use thick dividers we apply the
         # focus attr group. We probably should fix this in render()
         hline = urwid.AttrMap(urwid.Divider("─"), "frame")
         hline_focus = urwid.AttrMap(urwid.Divider("━"), "frame focus")
         self._vline = urwid.AttrMap(urwid.SolidFill("│"), "frame")
         self._vline_focus = urwid.AttrMap(urwid.SolidFill("┃"), "frame focus")
-        self._topline = TopBorder(("┌", "┐"), "─", "frame", title, status)
+        self._topline = TopBorder(("┌", "┐"), "─", "frame", title, status, title_attr)
         self._bottomline = urwid.Columns(
             [
                 ("fixed", 1, urwid.AttrMap(urwid.Text("└"), "frame")),
@@ -1122,16 +1122,16 @@ class FocusLineBoxWidth(urwid.WidgetDecoration, urwid.WidgetWrap):
 
 
 class FocusLineBoxColor(urwid.WidgetDecoration, urwid.WidgetWrap):
-    def __init__(self, widget, title: str = "", status=None) -> None:
+    def __init__(self, widget, title="", status=None, title_attr: str = "editor title") -> None:
         hline = urwid.Divider("─")
         self._vline = urwid.AttrMap(urwid.SolidFill("│"), "frame")
-        self._topline = TopBorder(("┌", "┐"), "─", "frame", title, status)
+        self._topline = TopBorder(("╭", "╮"), "─", "frame", title, status, title_attr)
         self._bottomline = urwid.AttrMap(
             urwid.Columns(
                 [
-                    ("fixed", 1, urwid.Text("└")),
+                    ("fixed", 1, urwid.Text("╰")),
                     hline,
-                    ("fixed", 1, urwid.Text("┘")),
+                    ("fixed", 1, urwid.Text("╯")),
                 ]
             ),
             "frame",
@@ -1152,14 +1152,14 @@ class FocusLineBoxColor(urwid.WidgetDecoration, urwid.WidgetWrap):
     def render(self, size, focus):
         attr = "frame focus color" if focus else "frame"
         self._middle.contents[0][0].set_attr_map({None: attr})
-        self._topline.set_style(("┌", "┐"), "─", attr)
+        self._topline.set_style(("╭", "╮"), "─", attr)
         self._all.contents[2][0].set_attr_map({None: attr})
         return super().render(size, focus)
 
 
 class FocusLineBoxTop(urwid.WidgetDecoration, urwid.WidgetWrap):
-    def __init__(self, widget, title: str = "", status=None) -> None:
-        self._topline = TopBorder(("━", "━"), "━", "frame", title, status)
+    def __init__(self, widget, title="", status=None, title_attr: str = "editor title") -> None:
+        self._topline = TopBorder(("━", "━"), "━", "frame", title, status, title_attr)
         self._all = urwid.Pile([("flow", self._topline), widget], focus_item=1)
         urwid.WidgetWrap.__init__(self, self._all)
         self._original_widget = widget
@@ -1172,7 +1172,7 @@ class FocusLineBoxTop(urwid.WidgetDecoration, urwid.WidgetWrap):
 class NoFrame(urwid.WidgetPlaceholder):
     """`[view] frame = False`: no frame (and no room for a title)"""
 
-    def __init__(self, widget, title: str = "", status=None) -> None:
+    def __init__(self, widget, title="", status=None, title_attr: str = "editor title") -> None:
         super().__init__(widget)
 
 

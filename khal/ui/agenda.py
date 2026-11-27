@@ -25,7 +25,9 @@ A density is a preset of format strings (see `PRESETS`); `classic` keeps
 `[view] agenda_event_format` and the old day headers. Besides the usual
 event attributes (see `khal list --format`), the ikhal event formats know
 `{time}` (start time, "all day" or an arrow for events that started
-earlier), `{details}` (calendar · location · repeats), `{day-label}` (the
+earlier), `{time-range}` (09:00–09:15, "all day" or arrows), `{details}`
+(location · attendees · the start of the description · the repeat rule, only
+what the first row doesn't show), `{bar}` (the calendar's bar), `{day-label}` (the
 day, only on the first event of a day) and `{tab}` (the rest of the line is
 right-aligned).
 """
@@ -40,6 +42,8 @@ import urwid
 from khal.parse_datetime import guesstimedeltafstr, timedelta2str
 
 DENSITIES = ("comfortable", "regular", "dense")
+# what `density = auto` chooses from (comfortable only if configured)
+AUTO_DENSITIES = ("regular", "dense")
 DAY_LABEL_WIDTH = 7  # `{day-label:<7}` in the dense preset
 
 
@@ -63,24 +67,35 @@ class AgendaStyle:
         return self.event_format.count("\n") + 1
 
 
+# stands for `{bar}` in a formatted event until it is drawn (one column)
+BAR = "\ue000"
+
 PRESETS: dict[str, dict] = {
     "comfortable": {
-        "event_format": "{start-end-time-style:<12}{title}{range}{tab}{duration-short}\n"
-        "{empty:<12}{details}",
+        "event_format": "{bar} {time-range:<12}{title}{range}{tab}{duration-short}",
+        "details_format": "{bar} {empty:<12}{details}",
         "day_header": "rule",
         "blank_after_header": True,
     },
     "regular": {
-        "event_format": "{time:<8}{title}{range}{repeat-symbol}{alarm-symbol}"
+        "event_format": "{bar} {time:<8}{title}{range}{repeat-symbol}{alarm-symbol}"
         "{location-gap}{location}{tab}{duration-short}",
+        "details_format": "",
         "day_header": "rule",
         "blank_after_header": False,
     },
     "dense": {
-        "event_format": "{day-label:<7}{time:<8}{title}{range}{tab}{duration-short}",
+        "event_format": "{day-label:<7}{bar}{time:<8}{title}{range}{tab}{duration-short}",
+        "details_format": "",
         "day_header": "none",
         "blank_after_header": False,
     },
+}
+# [view] options overriding the presets' formats (empty: the preset)
+FORMAT_OPTIONS = {
+    "regular": ("event_format_regular", None),
+    "dense": ("event_format_dense", None),
+    "comfortable": ("event_format_comfortable", "event_format_comfortable_details"),
 }
 # {day-padded}: single-digit days get a leading space, so the headers of
 # consecutive days line up (" 9 Dec" / "10 Dec")
@@ -132,9 +147,16 @@ def agenda_style(conf, density: str | None = None) -> AgendaStyle:
             free_hours=free_hours,
         )
     preset = PRESETS[density]
+    first_option, details_option = FORMAT_OPTIONS[density]
+    event_format = view.get(first_option, "") or preset["event_format"]
+    details_format = preset["details_format"]
+    if details_option is not None:
+        details_format = view.get(details_option, "") or details_format
+    if details_format:
+        event_format += "\n" + details_format
     return AgendaStyle(
         density=density,
-        event_format=preset["event_format"],
+        event_format=event_format,
         day_format=ikhal_day_format or DEFAULT_DAY_FORMAT,
         day_header=preset["day_header"],
         blank_after_header=preset["blank_after_header"],
@@ -179,17 +201,18 @@ def event_attributes(event, day: dt.date, first_of_day: bool, conf) -> dict[str,
         time = "all day"
     else:
         time = attributes["start-style"]
-    details = [event.calendar]
-    if event.location:
-        details.append(event.location.strip())
-    if event.recurring:
-        details.append("repeats")
-    if event.alarms:
-        details.append("alarm")
+    details = event_details(event, conf)
     attributes.update(
         {
             "time": time,
+            # 09:00–09:15, all day, or arrows for events over several days
+            "time-range": "all day"
+            if event.allday
+            else attributes["start-end-time-style"].replace("-", "–"),
             "details": " · ".join(details),
+            "bar": BAR,
+            "attendees-short": short_attendees(event),
+            "description-short": short_description(event),
             "day-label": f"{day:%a}"[:2] + f" {day.day:>2}" if first_of_day else "",
             "location-gap": "  " if event.location else "",
             "empty": "",
@@ -217,6 +240,51 @@ def clip(text: str, width: int, ellipsis: str = "…") -> str:
         out += char
         used += char_width
     return out + ellipsis if width > 0 else ""
+
+
+DESCRIPTION_EXCERPT = 40
+
+
+def short_attendees(event) -> str:
+    """`alice@example.org +2`"""
+    attendees = [a.strip() for a in (event.attendees or "").split(",") if a.strip()]
+    if not attendees:
+        return ""
+    return attendees[0] + (f" +{len(attendees) - 1}" if len(attendees) > 1 else "")
+
+
+def short_description(event) -> str:
+    """the start of the description, on one line"""
+    description = " ".join((event.description or "").split())
+    if len(description) > DESCRIPTION_EXCERPT:
+        description = description[: DESCRIPTION_EXCERPT - 1].rstrip() + "…"
+    return description
+
+
+def event_details(event, conf) -> list[str]:
+    """what the second row of `comfortable` shows: only what isn't on the
+    first row (location, attendees, the start of the description, the repeat
+    rule in words), never the calendar"""
+    from .floating import describe_rrule
+
+    details = []
+    if event.location:
+        details.append(event.location.strip())
+    attendees = [a.strip() for a in (event.attendees or "").split(",") if a.strip()]
+    if attendees:
+        details.append(", ".join(attendees))
+    description = short_description(event)
+    if description:
+        details.append(description)
+    if event.recurring and event.recurobject:
+        try:
+            rule = describe_rrule(
+                event.recurobject, event.start_local, conf["locale"]["timeformat"]
+            )
+        except Exception:  # never let the list fail on an odd rule
+            rule = ""
+        details.append(rule.removeprefix("Repeats ").rstrip(".") if rule else "repeats")
+    return details
 
 
 def align_tab(text: str, width: int, ellipsis: str = "…") -> str:
@@ -281,11 +349,12 @@ def rows_needed(style: AgendaStyle, counts: list[int]) -> int:
 
 
 def choose_density(conf, counts: list[int], rows: int) -> str:
-    """the airiest density that shows `counts` (events per day) within `rows`"""
-    for density in DENSITIES:
+    """the airiest density (regular or dense) that shows `counts` (events per
+    day) within `rows`"""
+    for density in AUTO_DENSITIES:
         if rows_needed(agenda_style(conf, density), counts) <= rows:
             return density
-    return DENSITIES[-1]
+    return AUTO_DENSITIES[-1]
 
 
 # -- the window's header line
@@ -323,6 +392,8 @@ def header_attributes(conf, collection, now: dt.datetime | None = None) -> dict[
         "date": now.strftime(conf["locale"]["dateformat"]),
         "date-long": now.strftime(conf["locale"]["longdateformat"]),
         "weekday": now.strftime("%a"),
+        "weekday-long": now.strftime("%A"),
+        "date-long-text": f"{now:%A}, {now.day} {now:%B %Y}",
         "day": str(now.day),
         "month-short": now.strftime("%b"),
         "time": now.strftime(conf["locale"]["timeformat"]),
@@ -346,7 +417,53 @@ def header_attributes(conf, collection, now: dt.datetime | None = None) -> dict[
     return attributes
 
 
-DEFAULT_HEADER_FORMAT = "{weekday} {day} {month-short} {time}{next-separator}{next-title} {next-in}"
+DEFAULT_HEADER_FORMAT = (
+    "{date-long-text} · week {week} · {time}{next-separator}{next-title} {next-in}"
+)
+# shorter variants of the default for narrow screens
+SHORT_HEADER_FORMATS = (
+    "{weekday} {day} {month-short} {time}{next-separator}{next-title} {next-in}",
+    "{weekday} {day} {month-short} {time}",
+)
+
+# header attribute -> palette attribute (literal text is dim)
+HEADER_ATTRIBUTES = {
+    "date-long-text": "header date",
+    "date": "header date",
+    "date-long": "header date",
+    "weekday": "header date",
+    "weekday-long": "header date",
+    "day": "header date",
+    "month-short": "header date",
+    "time": "header time",
+    "next-title": "header next",
+}
+
+
+def header_markup(header_format: str, attributes: dict[str, str]) -> list:
+    """`header_format` filled in, as urwid markup: the date bold, the time in
+    the accent colour, the next event's title normal, the rest dim"""
+    import string
+
+    markup: list = []
+    for literal, field, spec, conversion in string.Formatter().parse(header_format):
+        if literal:
+            markup.append(("header dim", literal))
+        if field is None:
+            continue
+        value = attributes[field]
+        if conversion == "r":
+            value = repr(value)
+        value = format(value, spec or "")
+        if value:
+            markup.append((HEADER_ATTRIBUTES.get(field, "header dim"), value))
+    # no trailing blanks (e.g. without a next event)
+    while markup and not markup[-1][1].strip():
+        markup.pop()
+    if markup:
+        attr, text = markup[-1]
+        markup[-1] = (attr, text.rstrip())
+    return markup
 
 
 def format_header(conf, collection, now: dt.datetime | None = None) -> str:

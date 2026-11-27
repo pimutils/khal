@@ -3,6 +3,7 @@
 import datetime as dt
 
 import pytest
+import urwid
 from freezegun import freeze_time
 
 from khal import ui
@@ -86,7 +87,8 @@ def test_free_gaps(coll_vdirs, conf):
 
 def test_choose_density(conf):
     counts = [3, 2, 2]
-    assert agenda.choose_density(conf, counts, 40) == "comfortable"
+    # auto never picks comfortable (only when configured)
+    assert agenda.choose_density(conf, counts, 40) == "regular"
     assert agenda.choose_density(conf, counts, 14) == "regular"
     assert agenda.choose_density(conf, counts, 8) == "dense"
 
@@ -119,7 +121,14 @@ def test_render_list(coll_vdirs, conf, density):
     standup = next(line for line in text.splitlines() if "Standup" in line)
     assert standup.endswith("15m")
     if density == "comfortable":
-        assert "foobar · Café" in text
+        # the second row only with what the first doesn't show: no calendar
+        rows = text.splitlines()
+        lunch = rows[next(i for i, row in enumerate(rows) if "Lunch" in row) + 1]
+        assert lunch.strip().endswith("Café")
+        assert "foobar" not in text
+        choir = next(i for i, row in enumerate(rows) if "Choir" in row)
+        assert "▍" not in text.splitlines()[choir + 1]  # nothing to add: one row
+        assert "12:30–13:30 Lunch" in text
 
 
 @freeze_time("2026-11-26 11:20")
@@ -127,7 +136,16 @@ def test_header_line(coll_vdirs, conf):
     collection, _ = coll_vdirs
     add(collection, conf, dt.datetime(2026, 11, 26, 12, 30), 60, "Lunch w/ Bob")
     pane = ui.ClassicView(collection, conf)
-    assert pane.title == " Thu 26 Nov 11:20  next: Lunch w/ Bob in 1h10m"
+    assert pane.title == (
+        " Thursday, 26 November 2026 · week 48 · 11:20  next: Lunch w/ Bob in 1h10m"
+    )
+    text = urwid.decompose_tagmarkup(pane.header_markup(200))[0]
+    assert text.startswith(" Thursday, 26 November 2026 · week 48 · 11:20  next: Lunch w/ Bob")
+    # narrow: shorter, then without the next event
+    assert urwid.decompose_tagmarkup(pane.header_markup(60))[0] == (
+        " Thu 26 Nov 11:20  next: Lunch w/ Bob in 1h10m"
+    )
+    assert urwid.decompose_tagmarkup(pane.header_markup(30))[0] == " Thu 26 Nov 11:20"
     conf["view"]["header_format"] = "{date} {time}"
     assert pane.title == " 26.11. 11:20"
 
@@ -144,3 +162,77 @@ def test_default_day_headers_line_up():
     )
     assert len(nine) == len(ten)
     assert nine.index("Dec") == ten.index("Dec")
+
+
+# -- the formats of the densities
+
+
+def _list(collection, conf):
+    pane = ui.ClassicView(collection, conf)
+    column = pane.eventscolumn.original_widget
+    return [line.decode().rstrip() for line in column.render((60, 20), True).text]
+
+
+@freeze_time("2026-11-26 11:20")
+@pytest.mark.parametrize(
+    ("density", "option", "value", "expected"),
+    [
+        ("regular", "event_format_regular", "{bar}<{title}>{tab}{calendar}", "▍<Standup>"),
+        ("dense", "event_format_dense", "{day-label:<7}{bar}{title}!", "Th 26  ▍Standup!"),
+        (
+            "comfortable",
+            "event_format_comfortable",
+            "{bar} {title} at {time}",
+            "▍ Standup at 09:00",
+        ),
+    ],
+)
+def test_density_formats_can_be_overridden(coll_vdirs, conf, density, option, value, expected):
+    collection, _ = coll_vdirs
+    add(collection, conf, dt.datetime(2026, 11, 26, 9, 0), 15, "Standup")
+    conf["view"]["density"] = density
+    conf["view"][option] = value
+    lines = _list(collection, conf)
+    standup = next(line for line in lines if "Standup" in line)
+    assert expected in standup
+    if density == "regular":
+        assert standup.endswith("foobar")  # right-aligned with {tab}
+
+
+@freeze_time("2026-11-26 11:20")
+def test_comfortable_details_format(coll_vdirs, conf):
+    collection, _ = coll_vdirs
+    add(collection, conf, dt.datetime(2026, 11, 26, 9, 0), 15, "Standup")
+    add(collection, conf, dt.datetime(2026, 11, 26, 12, 30), 60, "Lunch", location="Café")
+    conf["view"]["density"] = "comfortable"
+    conf["view"]["event_format_comfortable_details"] = "{bar}   where: {location}"
+    lines = _list(collection, conf)
+    lunch = next(i for i, line in enumerate(lines) if "Lunch" in line)
+    assert "▍   where: Café" in lines[lunch + 1]
+    # Standup has no location: the second line ("where: ") is not empty, kept
+    conf["view"]["event_format_comfortable_details"] = "{bar} {location}"
+    lines = _list(collection, conf)
+    standup = next(i for i, line in enumerate(lines) if "Standup" in line)
+    assert "▍" not in lines[standup + 1]  # an empty second line is left out
+
+
+def test_defaults_are_expressible():
+    """the documented defaults in khal.spec are the presets"""
+    import pathlib
+
+    spec = pathlib.Path("khal/settings/khal.spec").read_text(encoding="utf-8")
+    for density, preset in agenda.PRESETS.items():
+        assert f"#   {density}:" in spec or density == "comfortable"
+        assert preset["event_format"] in spec
+        if preset["details_format"]:
+            assert preset["details_format"] in spec
+
+
+@freeze_time("2026-11-26 11:20")
+def test_invalid_density_format(coll_vdirs, conf, caplog):
+    collection, _ = coll_vdirs
+    add(collection, conf, dt.datetime(2026, 11, 26, 9, 0), 15, "Standup")
+    conf["view"]["density"] = "regular"
+    conf["view"]["event_format_regular"] = "{bar} {nonsense}"
+    lines = _list(collection, conf)
+    assert any("Standup [format error]" in line for line in lines)

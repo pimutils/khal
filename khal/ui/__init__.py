@@ -36,7 +36,10 @@ from khal.parse_datetime import timedelta2str
 
 from . import colors
 from .agenda import (
+    BAR,
     DAY_LABEL_WIDTH,
+    DEFAULT_HEADER_FORMAT,
+    SHORT_HEADER_FORMATS,
     AgendaStyle,
     agenda_style,
     align_tab,
@@ -46,6 +49,8 @@ from .agenda import (
     format_free,
     format_header,
     free_gaps,
+    header_attributes,
+    header_markup,
 )
 from .base import Pane, Window
 from .calendarwidget import CalendarWidget, DayStyle
@@ -271,6 +276,10 @@ class DateHeader(SelectableText):
         return key
 
 
+# event formats that failed (logged once)
+_FORMAT_ERRORS: set[str] = set()
+
+
 class U_Event(urwid.Text):
     def __init__(
         self,
@@ -348,10 +357,9 @@ class U_Event(urwid.Text):
         mark = mark or " "
         bar = self.style is not None and self.style.event_color == "bar"
         dense = self.style is not None and self.style.density == "dense"
-        if dense:  # [mark][day label][bar][text]
-            prefix = 2
-        else:  # [margin][mark][bar or blank] [text]
-            prefix = 4 if bar else 3
+        # [margin][mark] then the formatted text, which has `{bar}` (BAR)
+        # where the calendar's bar goes; dense: the mark is the margin
+        prefix = 1 if dense else 2
         deleted = getattr(self, "deleted", None)
         if deleted is not None:
             # the scope instead of whatever was right-aligned, only on the first row
@@ -363,37 +371,36 @@ class U_Event(urwid.Text):
         )
         markup: list = []
         suffix = " focus" if focus else ""
-        bar_glyph: tuple[str, str] = (
-            "calendar " + self.event.calendar,
-            "▍" if unicode_symbols else "|",
-        )
         if deleted is not None:
-            bar_glyph = ("agenda deleted mark" + suffix, "✕" if unicode_symbols else "x")
+            bar_glyph: tuple | str = (
+                "agenda deleted mark" + suffix,
+                "✕" if unicode_symbols else "x",
+            )
+        elif bar:
+            bar_glyph = ("calendar " + self.event.calendar, "▍" if unicode_symbols else "|")
+        else:
+            bar_glyph = " "
         for index, line in enumerate(text.split("\n")):
             if index:
                 markup.append("\n")
             row_mark = mark if index == 0 else " "
-            if dense:
-                label, line = line[:DAY_LABEL_WIDTH], line[DAY_LABEL_WIDTH:]
-                markup += [row_mark, label, bar_glyph if bar or deleted is not None else " "]
-            elif bar:
-                markup += [" ", row_mark, bar_glyph, " "]
-            elif deleted is not None:  # line style: the ✕ right before the text
-                markup += [" ", row_mark, bar_glyph]
-            else:
-                markup += [" ", row_mark, " "]
-            if deleted is None:
-                markup.append(line)
-                continue
-            scope = deletion_scope(deleted) if index == 0 else ""
-            left = line[: len(line) - len(scope)] if scope else line
-            stripped = left.rstrip()
-            markup += [
-                ("agenda deleted" + suffix, stripped),
-                left[len(stripped) :],
-                ("agenda deleted scope" + suffix, scope),
-            ]
-        self.set_text(markup)
+            markup += [row_mark] if dense else [" ", row_mark]
+            scope = deletion_scope(deleted) if deleted is not None and index == 0 else ""
+            body = line[: len(line) - len(scope)] if scope else line
+            for number, part in enumerate(body.split(BAR)):
+                if number:
+                    markup.append(bar_glyph)
+                if deleted is None or not part.strip():
+                    markup.append(part)
+                    continue
+                # struck through: the text, not the blanks around it
+                stripped = part.strip()
+                lead = part[: len(part) - len(part.lstrip())]
+                trail = part[len(part.rstrip()) :]
+                markup += [lead, ("agenda deleted" + suffix, stripped), trail]
+            if scope:
+                markup.append(("agenda deleted scope" + suffix, scope))
+        self.set_text([part for part in markup if part])
 
     @classmethod
     def selectable(cls) -> bool:
@@ -426,11 +433,21 @@ class U_Event(urwid.Text):
                     attributes[key] = ""
                 attributes["repeat-symbol"] = attributes["alarm-symbol"] = ""
             try:
-                self._formatted = self.style.event_format.format(**attributes)
+                formatted = self.style.event_format.format(**attributes)
+                # rows without anything (e.g. comfortable's second row of an
+                # event without location, attendees, ...) are left out
+                lines = formatted.split("\n")
+                kept = [lines[0]] + [
+                    line for line in lines[1:] if line.replace("\t", "").replace(BAR, "").strip()
+                ]
+                self._formatted = "\n".join(kept)
             except (KeyError, ValueError, IndexError) as error:
-                self._formatted = f"{attributes.get('title', '')} [format error: {error}]"
+                self._formatted = f"{attributes.get('title', '')} [format error]"
+                if self.style.event_format not in _FORMAT_ERRORS:  # log it once
+                    _FORMAT_ERRORS.add(self.style.event_format)
+                    logger.error(f"Invalid event format {self.style.event_format!r}: {error!r}")
             self._width = None
-            self.set_text(self._formatted.replace("\t", " "))
+            self.set_text(self._formatted.replace("\t", " ").replace(BAR, " "))
             return
         if self.relative:
             format_ = self._conf["view"]["agenda_event_format"]
@@ -520,12 +537,33 @@ class DListBox(EventListBox):
         super().__init__(*args, **kwargs)
         self._init = dynamic_days
 
-    def render(self, size, focus=False):
-        if self._init:
-            self._init = False
+    pane_title = "Agenda"
+    _size: tuple[int, int] | None = None  # of the last render
+
+    @property
+    def pane_status(self) -> str:
+        """the number of days in view (`6 days`)"""
+        if self._size is None:
+            return ""
+        try:
+            _, top, bottom = self.calculate_visible(self._size, True)
+            days = 1 + len(top[1]) + len(bottom[1])
+        except (TypeError, IndexError, AttributeError):
+            return ""
+        return f"{days} day{'s' if days != 1 else ''}"
+
+    def prepare(self, size) -> None:
+        """density and enough days for `size` (before rendering, also for
+        the title in the frame, which is drawn first)"""
         self._auto_density(size)
         while not isinstance(self.body, StaticDayWalker) and "bottom" in self.ends_visible(size):
             self.body._autoextend()
+        self._size = size
+
+    def render(self, size, focus=False):
+        if self._init:
+            self._init = False
+        self.prepare(size)
         return super().render(size, focus)
 
     _density_size: tuple[int, int] | None = None
@@ -880,7 +918,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
         """the column of the events' times (see U_Event._align)"""
         if style.density == "dense":
             return 1 + DAY_LABEL_WIDTH + 1
-        return 4 if style.event_color == "bar" else 3
+        return 4  # margin, mark, bar (blank with event_color = line), blank
 
     def _now_line(self, now: dt.datetime, unicode_symbols: bool) -> urwid.Widget:
         time = now.strftime(self._conf["locale"]["timeformat"])
@@ -1537,6 +1575,8 @@ class ClassicView(Pane):
                 "eventcolumn focus",
             ),
             title=self.view_title,
+            status=self.view_status,
+            title_attr="frame title",
         )
         self._day_marking = self._conf["view"].get("day_marking", "calendar")
         calendar = CAttrMap(
@@ -1557,7 +1597,7 @@ class ClassicView(Pane):
             elistbox.set_focus_date_callback = calendar.set_focus_date
         else:
             elistbox.set_focus_date_callback = lambda _: None
-        self.calendar = ContainerWidget(calendar)
+        self.calendar = ContainerWidget(calendar, title=self.month_title, title_attr="frame title")
         self.lwidth = 32 if self._conf["locale"]["weeknumbers"] == "right" else 28
         if self._conf["view"]["frame"] in ["width", "color"]:
             self.lwidth += 2
@@ -1640,11 +1680,80 @@ class ClassicView(Pane):
         suffix = getattr(view, "title_suffix", "")
         return f"{header}  · {suffix}" if suffix else header
 
+    def view_tabs(self) -> list:
+        """`[list]  day  week`: the views of the right column (a view class
+        can have several `tabs`, its instance names the `active_tab`)"""
+        markup: list = []
+        for name, view in self._views.items():
+            source = view if view is not None else plugins.get_views().get(name)
+            tabs = tuple(getattr(source, "tabs", None) or (name,))
+            active = None
+            if name == self._current_view:
+                active = getattr(view, "active_tab", None) or tabs[0]
+            for tab in tabs:
+                if markup:
+                    markup.append("  ")
+                if tab == active:
+                    markup.append(("header tab active", f"[{tab}]"))
+                else:
+                    markup.append(("header tab", tab))
+        return markup
+
+    def header_markup(self, maxcol: int) -> list | None:
+        """the header line for a screen `maxcol` wide: `[view] header_format`
+        and the view tabs at the right; when narrow, the tabs go first, then
+        the default format gets shorter (see agenda.SHORT_HEADER_FORMATS)"""
+        view = self._conf["view"]
+        header_format = view.get("header_format", "") or ""
+        if not header_format:
+            return None
+        try:
+            attributes = header_attributes(self._conf, self.collection)
+            variants = [header_format]
+            if header_format == DEFAULT_HEADER_FORMAT:
+                variants += list(SHORT_HEADER_FORMATS)
+            formatted = [header_markup(variant, attributes) for variant in variants]
+        except (KeyError, ValueError, IndexError):
+            return [("header dim", " " + header_format)]
+        tabs = (
+            self.view_tabs() if view.get("header_view_tabs", True) and len(self._views) > 1 else []
+        )
+
+        def width(markup) -> int:
+            text = urwid.decompose_tagmarkup(markup)[0] if markup else ""
+            return urwid.calc_width(text, 0, len(text))
+
+        options = [(left, tabs) for left in formatted[:1] if tabs] + [
+            (left, []) for left in formatted
+        ]
+        for left, right in options:
+            needed = 1 + width(left) + (2 + width(right) + 1 if right else 0)
+            if needed <= maxcol:
+                break
+        if not right:
+            return [" ", *left]
+        gap = maxcol - 1 - width(left) - width(right) - 1
+        return [" ", *left, " " * gap, *right, " "]
+
+    def month_title(self) -> str:
+        """the title of the month column: the month in focus (`November`)"""
+        try:
+            return f"{self.calendar.base_widget.focus_date:%B}"
+        except (AttributeError, IndexError):
+            return ""
+
     def view_title(self) -> str:
         """the title of the right column: the current view's `pane_title`
-        (e.g. the time grid's `Week 48 · Mon–Fri`), if it has one"""
+        (`Agenda`, the time grid's `Week 48 · Mon–Fri`), if it has one"""
         view = self._views.get(self._current_view) if hasattr(self, "_views") else None
         return getattr(view, "pane_title", "") or ""
+
+    def view_status(self) -> list:
+        """right in the right column's top border: the view's `pane_status`
+        (the list: `6 days`)"""
+        view = self._views.get(self._current_view) if hasattr(self, "_views") else None
+        status = getattr(view, "pane_status", "") or ""
+        return [("frame hint", status)] if status else []
 
     @property
     def marked_count(self) -> int:
@@ -1697,7 +1806,10 @@ class ClassicView(Pane):
                 return
         self._current_view = name
         self.eventscolumn.original_widget.set_view(self._views[name])
-        if self.window is not None:
+        tabs = self._conf["view"].get("header_view_tabs", True) and self._conf["view"].get(
+            "header_format"
+        )
+        if self.window is not None and not tabs:  # otherwise the tabs show it
             self.window.alert(f"view: {name}")
 
     def extra_keybindings(self) -> list[tuple[str, list[tuple[str, list[str], str]]]]:
@@ -1854,6 +1966,16 @@ class ClassicView(Pane):
 
     def render(self, size, focus=False):
         self.width = size[0]
+        listbox = self._views.get("list")
+        if self._current_view == "list" and isinstance(listbox, DListBox) and len(size) == 2:
+            # the right column's title (`6 days`) is drawn before the list
+            frame = 2 if self._conf["view"]["frame"] in ("width", "color") else 0
+            width = size[0] - self.lwidth - frame
+            if (
+                not self.details_shown
+                and not self.eventscolumn.original_widget.container.contents[1:]
+            ):
+                listbox.prepare((max(1, width), max(1, size[1] - frame)))
         if self.details_shown and self.eventscolumn.original_widget.view_mode() != "column":
             self.show_details(None)  # got too narrow
         rval = super().render(size, focus)

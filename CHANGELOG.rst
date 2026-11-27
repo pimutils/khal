@@ -125,6 +125,22 @@ unreleased
   the command line, or relative like ``+3d``, ``-2w``, ``+1m``); in the month
   column, the list and the time grid; jumps to another month are announced
   in the header
+* NEW ikhal's header line: ``Thursday, 26 November 2026 · week 48 · 11:20``,
+  the next event and, at the right, the views as tabs (``[list]  day  week``,
+  ``[view] header_view_tabs``); shorter on narrow screens. New default
+  ``header_format`` and attributes ``{date-long-text}``, ``{weekday-long}``
+* NEW with frames, the month column is titled with the month in focus and the
+  right column with its view (``Agenda`` and the number of days in view, the
+  time grid's mode); frames of ``frame = color`` have rounded corners
+* CHANGE ``density = auto`` chooses between ``regular`` and ``dense`` only;
+  ``comfortable`` shows a second line only with what the first doesn't
+  (location, attendees, start of the description, repeat rule), never the
+  calendar
+* NEW the event formats of the densities can be changed:
+  ``[view] event_format_regular``, ``event_format_dense``,
+  ``event_format_comfortable`` and ``event_format_comfortable_details`` (the
+  defaults are documented in the config spec), with the new attributes
+  ``{bar}``, ``{time-range}``, ``{attendees-short}``, ``{description-short}``
 * CHANGE events marked for deletion (``d``) no longer get a letter (D/d/f) in
   front: in the list the calendar bar becomes a red ✕, time and title are
   struck through and the scope ("deleted", "this one", "this & following")

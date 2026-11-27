@@ -113,6 +113,13 @@ class EditingScreen(urwid.WidgetWrap):
             return self.pane.title
         return self.editor.title
 
+    def header_markup(self, maxcol: int) -> list | None:
+        """the overview's header line (clock, next event), if the title is in
+        the frame; otherwise the title (`Edit: …`)"""
+        if self.framed_status:
+            return self.pane.header_markup(maxcol)
+        return None
+
     @property
     def footer_hints(self) -> list:
         keys = self._conf["keybindings"]

@@ -368,13 +368,35 @@ day_marking = option('calendar', 'dot', 'heat', 'none', default='calendar')
 minute_step = integer(default=5, min=1, max=30)
 
 # How dense ikhal's list of events is. The densities are presets of the format
-# of events and day headers: *comfortable* (a second row per event with
-# calendar · location · repeat/alarm), *regular* (one row per event, day
-# headers as rules), *dense* (no day header rows, the day stands in front of
-# the day's first event); *auto* picks the airiest of these that still shows
-# the next `density_min_days` days completely. *classic* uses
+# of events and day headers: *comfortable* (a second row per event with what
+# the first row doesn't show: location, attendees, the start of the
+# description, the repeat rule; never the calendar), *regular* (one row per
+# event, day headers as rules), *dense* (no day header rows, the day stands in
+# front of the day's first event); *auto* picks regular or, if that doesn't
+# show the next `density_min_days` days completely, dense. *classic* uses
 # `agenda_event_format` and the old day headers.
 density = option('auto', 'comfortable', 'regular', 'dense', 'classic', default='auto')
+
+# The formats of the events in ikhal's list per density (empty: the built-in
+# default, given here). Besides the attributes of `agenda_event_format`, they
+# know {bar} (the calendar's colour bar, or ✕ for events marked for deletion),
+# {tab} (the rest of the line is right-aligned), {time} (start time or "all
+# day"), {time-range} (09:00–09:15), {duration-short} (1h30m), {range}
+# ((Sat–Sun) for events over several days), {day-label} (Th 26 on a day's
+# first event, for dense), {location-gap} (two blanks if there is a location),
+# {details} (location · attendees · start of the description · repeat rule),
+# {attendees-short} (the first attendee +N), {description-short} (the start of
+# the description) and {empty}.
+#   regular:     {bar} {time:<8}{title}{range}{repeat-symbol}{alarm-symbol}{location-gap}{location}{tab}{duration-short}
+#   dense:       {day-label:<7}{bar}{time:<8}{title}{range}{tab}{duration-short}
+#   comfortable: {bar} {time-range:<12}{title}{range}{tab}{duration-short}
+#   and its second line: {bar} {empty:<12}{details}
+# The second line is left out for events where it would be empty.
+# `density = classic` uses `agenda_event_format`.
+event_format_regular = string(default='')
+event_format_dense = string(default='')
+event_format_comfortable = string(default='')
+event_format_comfortable_details = string(default='')
 
 # Number of days `density = auto` tries to show completely.
 density_min_days = integer(default=3, min=1)
@@ -405,10 +427,17 @@ ikhal_day_format = string(default='')
 day_header = option('text', 'rule', default='text')
 
 # Format of ikhal's header line (empty: the title of the current pane).
-# Available: {weekday}, {day}, {month-short}, {date}, {date-long}, {time},
+# Available: {weekday} (Thu), {weekday-long} (Thursday), {day}, {month-short},
+# {date}, {date-long}, {date-long-text} (Thursday, 26 November 2026), {time},
 # {week}, and of the next event: {next-title}, {next-in} (e.g. "in 1h10m"),
 # {next-time} and {next-separator} ("  next: " if there is a next event).
-header_format = string(default='{weekday} {day} {month-short} {time}{next-separator}{next-title} {next-in}')
+# With the default, narrow screens get `Thu 26 Nov 11:20  next: …` (and then
+# without the next event).
+header_format = string(default='{date-long-text} · week {week} · {time}{next-separator}{next-title} {next-in}')
+
+# Show the views of the right column as tabs at the right of ikhal's header
+# line (`[list]  day  week`, the active one in brackets).
+header_view_tabs = boolean(default=True)
 
 # Whether to use bold text for light colors or not. Non-bold light colors may
 # not work on all terminals but allow using light background colors.

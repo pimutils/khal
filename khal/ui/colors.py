@@ -229,6 +229,8 @@ ROLES: dict[str, tuple[str, str, str]] = {
     "frame focus": ("acc", "bg", ""),
     "frame focus color": ("acc", "bg", ""),
     "frame focus top": ("acc", "bg", ""),
+    "frame title": ("lbl", "bg", ""),
+    "frame hint": ("dim", "bg", ""),
     "eventcolumn": ("txt", "bg", ""),
     "editor": ("txt", "bg", ""),
     "editor focus": ("txt", "bg", ""),
@@ -315,6 +317,13 @@ ROLES: dict[str, tuple[str, str, str]] = {
     "agenda deleted scope": ("red", "bg", ""),
     "agenda deleted scope focus": ("red", "row", ""),
     "footer deleted": ("red", "bg", "bold"),
+    # the header line: date, time, next event, view tabs
+    "header date": ("txt", "bg", "bold"),
+    "header time": ("acc", "bg", "bold"),
+    "header next": ("txt", "bg", ""),
+    "header dim": ("dim", "bg", ""),
+    "header tab": ("dim", "bg", ""),
+    "header tab active": ("acc", "bg", "bold"),
     # the log (L)
     "log time": ("dim", "bg", ""),
     "log text": ("txt", "bg", ""),
@@ -631,7 +640,8 @@ NEUTRAL_LIGHT = {
 NEW_UI_PREFIXES = (
     "editor ", "float ", "message ", "footer key", "footer version", "footer deleted", "details ",
     "timegrid deleted",
-    "attendee ", "day heat ", "agenda ", "finder ", "log ",
+    "attendee ", "day heat ", "agenda ", "finder ", "log ", "header ", "frame title",
+    "frame hint",
 )  # fmt: skip
 NEW_UI_NAMES = [name for name in ROLES if name.startswith(NEW_UI_PREFIXES)]
 dark.extend(expand_theme(NEUTRAL_DARK, names=NEW_UI_NAMES, transparent=True))

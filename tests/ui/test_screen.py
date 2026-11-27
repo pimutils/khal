@@ -95,7 +95,7 @@ def test_editor_width_configured(setup):
     editing = open_editor(screen)
     screen.render()
     assert editing.editor_width(120) == 60
-    assert screen.text().splitlines()[1].index("┐") == 59
+    assert screen.text().splitlines()[1].index("╮") == 59
 
 
 @freeze_time(NOW)
@@ -103,10 +103,10 @@ def test_frame_title_and_status(setup):
     screen = setup()
     editing = open_editor(screen)
     lines = screen.text().splitlines()
-    assert lines[1].startswith("┌─ Edit event ─")
+    assert lines[1].startswith("╭─ Edit event ─")
     assert "11:20" in lines[0]  # the header keeps the clock
     screen.press("end", "!")
-    assert "● unsaved ─┐" in screen.text().splitlines()[1]
+    assert "● unsaved ─╮" in screen.text().splitlines()[1]
     assert "unsaved" not in screen.text().splitlines()[-3]  # not in the action bar
     assert editing.editor.status_in_frame
 
@@ -596,7 +596,7 @@ def test_grid_auto_is_the_work_week(busy):
     screen = busy()
     screen.press("tab", "w", "0")
     lines = screen.text().splitlines()
-    assert "┌─ Week 48 · Mon–Fri ─" in lines[1]
+    assert "╭─ Week 48 · Mon–Fri ─" in lines[1]
     assert "timegrid" not in lines[0] or "next:" not in lines[0]  # (mode message)
     header = grid_lines(screen)[0].rstrip("│")
     assert header.split() == ["Mo", "23", "Tu", "24", "We", "25", "Th", "26", "Fr", "27"]
@@ -796,3 +796,70 @@ def test_navigation_keys_dont_collide():
     taken |= {k for command in COMMANDS for k in command.default_keys}
     for name in new:
         assert not set(keys[name]) & taken, name
+
+
+# -- header line and frame titles
+
+
+@freeze_time(NOW)
+def test_header_line_date_and_next_event(setup):
+    """the left part of the header, independent of which views are installed"""
+    header = setup().text().splitlines()[0]
+    assert header.startswith(
+        " Thursday, 26 November 2026 · week 48 · 11:20  next: Lunch w/ Bob in 1h10m"
+    )
+
+
+@needs_timegrid
+@freeze_time(NOW)
+def test_header_line_like_the_mockup(setup):
+    screen = setup()
+    header = screen.text().splitlines()[0]
+    assert header == (
+        " Thursday, 26 November 2026 · week 48 · 11:20  next: Lunch w/ Bob in 1h10m"
+        "        [list]  day  week"
+    )
+    attributes = screen.attributes()
+    assert {"header date", "header time", "header dim", "header tab active"} <= attributes
+
+
+@freeze_time(NOW)
+def test_header_line_narrow(setup):
+    screen = setup((80, 24))
+    assert screen.text().splitlines()[0] == (
+        " Thursday, 26 November 2026 · week 48 · 11:20  next: Lunch w/ Bob in 1h10m"
+    )
+    screen = setup((50, 24))
+    assert screen.text().splitlines()[0] == " Thu 26 Nov 11:20  next: Lunch w/ Bob in 1h10m"
+
+
+@needs_timegrid
+@freeze_time(NOW)
+def test_header_tabs_follow_the_view(setup):
+    screen = setup()
+    screen.press("tab", "w", "1")
+    assert screen.text().splitlines()[0].endswith("list  [day]  week")
+    screen.press("7")
+    assert screen.text().splitlines()[0].endswith("list  day  [week]")
+    screen = setup(header_view_tabs="False")
+    assert "[list]" not in screen.text().splitlines()[0]
+
+
+@freeze_time(NOW)
+def test_frame_titles(setup):
+    screen = setup()
+    top = screen.text().splitlines()[1]
+    assert top.startswith("╭─ November ─")
+    assert "╭─ Agenda ─" in top
+    assert top.endswith(" 5 days ─╮")
+    assert "frame title" in screen.attributes()
+    screen.press("}")  # the month column follows
+    assert screen.text().splitlines()[1].startswith("╭─ December ─")
+
+
+@freeze_time(NOW)
+def test_no_frame_titles_without_frames(setup):
+    screen = setup(frame="False")
+    text = screen.text()
+    assert "November ─" not in text
+    assert "Agenda" not in text
