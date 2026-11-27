@@ -45,6 +45,18 @@ from khal.utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
 logger = logging.getLogger("khal")
 
 
+# the [locale] options that override single symbols of Event.symbol_strings
+SYMBOL_OPTIONS = {
+    "recurring": "repeat_symbol",
+    "alarming": "alarm_symbol",
+    "cancelled": "cancelled_symbol",
+    "confirmed": "confirmed_symbol",
+    "tentative": "tentative_symbol",
+    "accepted": "accepted_symbol",
+    "declined": "declined_symbol",
+}
+
+
 class Event:
     """base Event class for representing a *recurring instance* of an Event
 
@@ -288,19 +300,30 @@ class Event:
 
     @property
     def symbol_strings(self) -> dict[str, str]:
+        symbols = self._builtin_symbol_strings()
+        # [locale] *_symbol options override single symbols
+        for key, option in SYMBOL_OPTIONS.items():
+            value = self._locale.get(option) if hasattr(self._locale, "get") else None
+            if value:
+                symbols[key] = value
+        return symbols
+
+    def _builtin_symbol_strings(self) -> dict[str, str]:
         if self._locale["unicode_symbols"]:
             return {
                 "recurring": "\N{CLOCKWISE GAPPED CIRCLE ARROW}",
-                "alarming": "\N{ALARM CLOCK}",
+                # narrow glyphs only: the emoji ⏰ / ❌ / ✔ are double width
+                # (and coloured) in most terminals and break alignment
+                "alarming": "\N{EIGHTH NOTE}",
                 "range": "\N{LEFT RIGHT ARROW}",
                 "range_end": "\N{RIGHTWARDS ARROW TO BAR}",
                 "range_start": "\N{RIGHTWARDS ARROW FROM BAR}",
                 "right_arrow": "\N{RIGHTWARDS ARROW}",
-                "cancelled": "\N{CROSS MARK}",
-                "confirmed": "\N{HEAVY CHECK MARK}",
+                "cancelled": "\N{MULTIPLICATION X}",
+                "confirmed": "\N{CHECK MARK}",
                 "tentative": "?",
-                "declined": "\N{CROSS MARK}",
-                "accepted": "\N{HEAVY CHECK MARK}",
+                "declined": "\N{MULTIPLICATION X}",
+                "accepted": "\N{CHECK MARK}",
             }
         else:
             return {

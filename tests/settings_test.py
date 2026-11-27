@@ -120,6 +120,13 @@ class TestSettings:
                 "longdatetimeformat": "%c",
                 "firstweekday": 0,
                 "unicode_symbols": True,
+                "alarm_symbol": "",
+                "repeat_symbol": "",
+                "cancelled_symbol": "",
+                "confirmed_symbol": "",
+                "tentative_symbol": "",
+                "accepted_symbol": "",
+                "declined_symbol": "",
                 "weeknumbers": False,
             },
             "default": {

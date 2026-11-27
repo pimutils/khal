@@ -15,7 +15,19 @@ class CalendarConfiguration(TypedDict):
     addresses: str
 
 
-class LocaleConfiguration(TypedDict):
+class _LocaleSymbols(TypedDict, total=False):
+    """overrides for single symbols, empty: built-in (see Event.symbol_strings)"""
+
+    alarm_symbol: str
+    repeat_symbol: str
+    cancelled_symbol: str
+    confirmed_symbol: str
+    tentative_symbol: str
+    accepted_symbol: str
+    declined_symbol: str
+
+
+class LocaleConfiguration(_LocaleSymbols):
     local_timezone: pytz.BaseTzInfo
     default_timezone: pytz.BaseTzInfo
     timeformat: str

@@ -12,6 +12,12 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
+* CHANGE the default unicode symbols are narrow characters now (♪ alarm,
+  ✕ cancelled/declined, ✓ confirmed/accepted) instead of emoji (⏰, ❌, ✔),
+  which most terminals draw double width; single symbols can be set with
+  ``[locale] alarm_symbol``, ``repeat_symbol``, ``cancelled_symbol``,
+  ``confirmed_symbol``, ``tentative_symbol``, ``accepted_symbol`` and
+  ``declined_symbol``
 * NEW ikhal supports view plugins (entry point group ``khal.views``) that
   replace the event list in the right column, switch between views with
   ``w`` (``[keybindings] switch_view``), select the view shown on startup

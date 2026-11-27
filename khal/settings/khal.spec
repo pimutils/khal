@@ -90,6 +90,20 @@ firstweekday = integer(0, 6, default=0)
 # if your font, encoding etc. does not support those symbols, set this to *False* (this will enable ascii based replacements).
 unicode_symbols = boolean(default=True)
 
+# Override single symbols shown in event formats ({alarm-symbol},
+# {repeat-symbol}, {status-symbol}, {partstat-symbol}); empty means the
+# built-in one, which depends on *unicode_symbols*. The unicode defaults are
+# ♪ (alarm), ⟳ (repeat), ✕ (cancelled, declined), ✓ (confirmed, accepted)
+# and ? (tentative). Prefer narrow characters: emoji like ⏰ are double width
+# in most terminals and break the alignment of ikhal's columns.
+alarm_symbol = string(default='')
+repeat_symbol = string(default='')
+cancelled_symbol = string(default='')
+confirmed_symbol = string(default='')
+tentative_symbol = string(default='')
+accepted_symbol = string(default='')
+declined_symbol = string(default='')
+
 # this timezone will be used for new events (when no timezone is specified) and
 # when khal does not understand the timezone specified in the icalendar file.
 # If no timezone is set, the timezone your computer is set to will be used.
