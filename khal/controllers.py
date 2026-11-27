@@ -600,7 +600,12 @@ def edit_event(event, collection, locale, allow_quit=False, width=80):
                 until = prompt('until (or "None")', until)
                 if until == "None":
                     until = None
-                rrule = parse_datetime.rrulefstr(freq, until, locale, event.start.tzinfo)
+                try:
+                    rrule = parse_datetime.rrulefstr(freq, until, locale, event.start.tzinfo)
+                except (FatalError, DateTimeParseError) as error:
+                    reason = str(error) or "expected daily, weekly, monthly or yearly"
+                    echo(f"invalid repeat: {reason}")
+                    continue
                 event.update_rrule(rrule)
             edited = True
         elif choice == "alarm":
