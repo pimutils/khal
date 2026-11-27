@@ -4,6 +4,12 @@ from typing import Literal, NotRequired, Protocol, TypeAlias, TypedDict
 
 import pytz
 
+PathLike: TypeAlias = str | os.PathLike
+
+WeekNumbersType: TypeAlias = Literal["left", "right", False]
+MonthDisplayType: TypeAlias = Literal["firstday", "firstfullweek"]
+ColorModeType: TypeAlias = Literal["256colors", "rgb"]
+
 
 class CalendarConfiguration(TypedDict):
     name: str
@@ -23,7 +29,7 @@ class LocaleConfiguration(TypedDict):
     longdateformat: str
     datetimeformat: str
     longdatetimeformat: str
-    weeknumbers: str | bool
+    weeknumbers: WeekNumbersType
     firstweekday: int
     unicode_symbols: bool
 
@@ -70,9 +76,3 @@ class EventCreationTypes(TypedDict):
     alarms: NotRequired[str | None]
     timezone: NotRequired[pytz.BaseTzInfo | None]
     url: NotRequired[str | None]
-
-
-PathLike: TypeAlias = str | os.PathLike
-
-WeekNumbersType: TypeAlias = Literal["left", "right", False]
-MonthDisplayType: TypeAlias = Literal["firstday", "firstfullweek"]
