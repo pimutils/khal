@@ -7,7 +7,7 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
-0.14.2
+0.15.0
 ======
 unreleased
 * DROPPED support for python 3.10, khal now requires python >= 3.11
