@@ -309,10 +309,22 @@ def test_view_column_on_wide_screens(setup):
     lines = screen.text().splitlines()
     assert "╭─ Event " in lines[1]
     assert "Lunch w/ Bob" in lines[2].split("││")[-1]
-    screen.press("down")  # follows the focused event
-    assert "Choir" in screen.text().splitlines()[2].split("││")[-1]
     screen.press("esc")
     assert "╭─ Event " not in screen.text()
+
+
+@freeze_time(NOW)
+def test_view_column_closes_when_moving_away(setup):
+    """like the inline card: moving to another row closes the details column,
+    also when the next row is the same (multi-day) event on the next day"""
+    screen = setup((150, 28))
+    focus_lunch(screen)
+    screen.press("enter")
+    assert "╭─ Event " in screen.text()
+    screen.press("down")
+    assert "╭─ Event " not in screen.text()
+    screen.press("enter")  # shows the newly focused event
+    assert "Choir" in screen.text().splitlines()[2].split("││")[-1]
 
 
 @freeze_time(NOW)

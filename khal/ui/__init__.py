@@ -1448,16 +1448,13 @@ class EventColumn(urwid.WidgetWrap):
     def keypress(self, size: tuple[int], key: str | None) -> str | None:
         self._size = size  # type: ignore[assignment]
         if self.pane.details_shown:
+            # like the inline card: any key closes the details column; enter on
+            # the same event then edits it, enter on another one shows that one
+            self.pane.show_details(None)
             if key == "esc":
-                self.pane.show_details(None)
                 self._eventshown = None
                 return None
-            rval = self._keypress(size, key)
-            if self.pane.details_shown and self.focus_event is not None:
-                # the details column follows the focused event
-                self.pane.show_details(self.focus_event.event, self._deleted_scope())
-                self._eventshown = self.focus_event.recuid
-            return rval
+            return self._keypress(size, key)
         if key == "esc" and (self._inline is not None or len(self.container.contents) > 1):
             self._eventshown = None
             self.clear_event_view()

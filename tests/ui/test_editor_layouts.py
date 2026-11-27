@@ -382,3 +382,16 @@ def test_duration_drum(pane):
     drum.keypress((drum.width, 6), "down")
     drum.keypress((drum.width, 6), "enter")
     assert see.enddt == BERLIN.localize(dt.datetime(2026, 11, 26, 23, 15))
+
+
+def test_summary_line_names_the_end_day_of_multi_day_events():
+    import datetime as dt
+
+    from khal.ui.editor_layout import UNICODE, summary_line
+
+    conf = {"locale": {"timeformat": "%H:%M"}}
+    start, end = dt.datetime(2026, 11, 27, 18), dt.datetime(2026, 11, 30, 12)
+    text = summary_line("work", start, end, False, conf, UNICODE, compact=True)[1][1]
+    assert "18:00 – Mon 30 Nov 12:00" in text
+    same_day = summary_line("work", start, start + dt.timedelta(hours=2), False, conf, UNICODE)
+    assert "18:00–20:00" in same_day[1][1]

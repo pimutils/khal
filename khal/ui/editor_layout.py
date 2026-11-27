@@ -409,6 +409,10 @@ def summary_line(
     parts: list[str] = [day]
     if allday:
         parts.append("all day")
+    elif end.date() != start.date():
+        # ends on another day: name that day ("18:00 – Mon 30 Nov 12:00")
+        end_day = f"{end:%a} {end.day} {end:%b}" if compact else f"{end:%a %b} {end.day}"
+        parts.append(f"{start.strftime(timefmt)} – {end_day} {end.strftime(timefmt)}")
     else:
         parts.append(f"{start.strftime(timefmt)}–{end.strftime(timefmt)}")
     parts.append(span_duration(start, end, allday, compact))

@@ -386,6 +386,10 @@ class CListBox(urwid.ListBox):
             if self._marked:
                 start = min(self.body.focus_date, self._marked["date"])
                 end = max(self.body.focus_date, self._marked["date"])
+                # the range is handed over (e.g. to a new event): leave the
+                # marking mode, whether that event is saved or not
+                self._unmark_all()
+                self._marked = None
             else:
                 start = self.body.focus_date
                 end = None
