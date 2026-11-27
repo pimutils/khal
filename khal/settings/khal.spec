@@ -190,6 +190,37 @@ log = force_list(default=list('L'))
 # list and any views supplied by plugins)
 switch_view = force_list(default=list('w'))
 
+# the same day in the next/previous month (or the month's last day), in the
+# month column, the list and the views of the right column
+next_month = force_list(default=list('}'))
+prev_month = force_list(default=list('{'))
+
+# the same day in the next/previous year
+next_year = force_list(default=list(']'))
+prev_year = force_list(default=list('['))
+
+# go to a date typed at the bottom: dates as on khal's command line (in the
+# configured formats, ISO, weekday names, today, tomorrow), or relative like
+# +3d, -2w, +1m, -1y
+goto_date = force_list(default=list('g'))
+
+# remove all deletion marks (events marked with `delete` are only deleted when
+# ikhal quits)
+undo_all_deletions = force_list(default=list('U'))
+
+# while editing an event: the next view of the right column, without leaving
+# the editor
+switch_view_editor = force_list(default=list('meta w'))
+
+# while editing an event: move the focus between the editor and the right
+# column (the events, where the view's own keys work, e.g. `switch_view`)
+other_column = force_list(default=list('f6'))
+
+# while editing an event: move the border between the editor and the right
+# column (it can also be dragged with the mouse), kept for the session
+editor_narrower = force_list(default=list('meta <'))
+editor_wider = force_list(default=list('meta >'))
+
 # quit
 quit = force_list(default=list('q', 'Q'))
 
@@ -252,7 +283,17 @@ dynamic_days = boolean(default=True)
 event_view_weighting = integer(default=1)
 
 # Set to true to always show the event view window when looking at the event list
+# (below the list, `event_view_weighting` sets its height relative to the
+# list). Otherwise the `view` key (enter) opens the event's details as a card
+# right under its row in the list (esc closes it) or, on screens at least
+# `event_view_column_from` columns wide, in a column of their own next to the
+# list, which follows the focused event. Views of plugins (e.g. a time grid)
+# always show the details below themselves.
 event_view_always_visible = boolean(default=False)
+
+# Minimum width of the screen (in columns) for showing an event's details in
+# a column of their own next to the list of events; 0 never does.
+event_view_column_from = integer(default=140, min=0)
 
 # The view used for ikhal's right column on startup. `list` is the built-in
 # list of events, plugins can provide additional views (e.g. a time grid where
@@ -265,8 +306,11 @@ blank_line_before_day = boolean(default=False)
 
 # Choose a color theme for khal.
 #
-# Khal ships with two color themes, *dark* and *light*.  Additionally, plugins
-# might supply different color schemes.
+# Khal ships with the color themes *dark* and *light* (which use the
+# terminal's colours) and *retrobox*, *retrobox-light* (the colours of Vim's
+# retrobox, after gruvbox), *ink*, *fjord*, *ember* and *paper* (which bring
+# their own background).  Additionally, plugins might supply different color
+# schemes.
 # You can also define your own color theme in the [palette] section.
 theme = string(default='dark')
 
@@ -277,6 +321,94 @@ theme = string(default='dark')
 # khal, so please try them out and give feedback on which style you prefer
 # (the color of all variants can be defined in the color themes).
 frame = option('False', 'width', 'color', 'top', default='False')
+
+# How ikhal's event editor arranges its fields.
+#
+# *sections* groups the fields under the headings When, Details and Alarms,
+# empty fields show a dimmed placeholder.
+# *headline* shows the title as a headline with a plain-language summary
+# below it and uses short labels (when, where, who, ...); empty optional
+# fields are collapsed into a single "+ location  + attendees ..." row.
+# *cards* puts each group of fields into its own box, the box containing the
+# focus is highlighted.
+# *compact* uses one row per field and no blank rows, for narrow panes and
+# 80x24 terminals, *compact-ascii* is the same without any non-ASCII
+# characters.
+# *auto* uses *compact* if the editor is narrow, *sections* otherwise (with
+# more spacing on wide screens) and switches when the terminal is resized.
+editor_layout = option('auto', 'sections', 'headline', 'cards', 'compact', 'compact-ascii', default='auto')
+
+# An explicitly chosen `editor_layout` falls back to *compact* while the editor
+# is narrower than this many columns (and switches back when it gets wider);
+# 0 never falls back.
+editor_compact_below = integer(default=60, min=0)
+
+# Width of the editor in ikhal's editing screen, the rest is for the events at
+# its right: empty for automatic (two thirds, at most 94 columns), a
+# percentage (`60%`) or a number of columns. The border can also be moved with
+# the mouse or the `editor_narrower`/`editor_wider` keys.
+editor_width = string(default='')
+
+# What happens to the screen behind floating boxes (dialogs, help, log) in
+# ikhal: *grey* draws it in faded greys (on terminals with 16 colours only: in
+# dark grey) so only the box keeps its colours, *none* leaves it as it is.
+backdrop = option('grey', 'none', default='grey')
+
+# How ikhal's month column marks days with events: *calendar* colours the
+# day's number in the colour of (the first of) its calendars (only with
+# `[default] highlight_event_days`, see `[highlight_days]`), *dot* keeps the
+# number in the normal colour and puts a coloured • after it (‥ if there are
+# events from several calendars), *heat* tints the day's background by how busy
+# it is (three levels, from the theme's accent colour), *none* marks nothing.
+# Today and marked ranges always keep their own style.
+day_marking = option('calendar', 'dot', 'heat', 'none', default='calendar')
+
+# Step (in minutes) of the minutes column of the time picker in ikhal's event
+# editor (enter on a time).
+minute_step = integer(default=5, min=1, max=30)
+
+# How dense ikhal's list of events is. The densities are presets of the format
+# of events and day headers: *comfortable* (a second row per event with
+# calendar · location · repeat/alarm), *regular* (one row per event, day
+# headers as rules), *dense* (no day header rows, the day stands in front of
+# the day's first event); *auto* picks the airiest of these that still shows
+# the next `density_min_days` days completely. *classic* uses
+# `agenda_event_format` and the old day headers.
+density = option('auto', 'comfortable', 'regular', 'dense', 'classic', default='auto')
+
+# Number of days `density = auto` tries to show completely.
+density_min_days = integer(default=3, min=1)
+
+# How events in ikhal's list show their calendar's colour: *line* colours the
+# whole line, *bar* only a ▍ in front of the event (the text stays in the
+# normal colour).
+event_color = option('line', 'bar', default='bar')
+
+# Show free time between two timed events of the same day in ikhal's list
+# ("┊ 4h free") if it is at least this long; `0` or `off` disables it.
+show_free_time = string(default='3h')
+
+# Only count free time within these hours, e.g. `08:00-18:00` (default: the
+# whole time between two events counts).
+free_time_hours = string(default='')
+
+# Format of the day headers in ikhal's list (empty: the density's default,
+# or "Today (Thursday, 26.11.2026)" with `density = classic`). Available:
+# {name}, {name-short}, {day}, {day-padded} (single-digit days with a leading
+# space, so consecutive headers line up), {month}, {month-short}, {date},
+# {date-long}, {week}, {relative} (today, tomorrow, yesterday or empty) and
+# {relative-separator} (" · " if there is a relative day).
+ikhal_day_format = string(default='')
+
+# With `density = classic`: draw the day headers as plain text or as a rule
+# (`── Fr 27 Nov · tomorrow ─────`).
+day_header = option('text', 'rule', default='text')
+
+# Format of ikhal's header line (empty: the title of the current pane).
+# Available: {weekday}, {day}, {month-short}, {date}, {date-long}, {time},
+# {week}, and of the next event: {next-title}, {next-in} (e.g. "in 1h10m"),
+# {next-time} and {next-separator} ("  next: " if there is a next event).
+header_format = string(default='{weekday} {day} {month-short} {time}{next-separator}{next-title} {next-in}')
 
 # Whether to use bold text for light colors or not. Non-bold light colors may
 # not work on all terminals but allow using light background colors.

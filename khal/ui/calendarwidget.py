@@ -27,6 +27,7 @@ if anything doesn't work as expected, please open an issue for khal
 import calendar
 import datetime as dt
 from collections.abc import Callable
+from dataclasses import dataclass
 from locale import LC_ALL, LC_TIME, getlocale, setlocale
 from typing import Any, Literal, TypedDict
 
@@ -42,7 +43,7 @@ class MarkType(TypedDict):
 
 
 OnPressType = dict[str, Callable[[dt.date, dt.date | None], str | None]]
-GetStylesSignature = Callable[[dt.date, bool], str | tuple[str, str] | None]
+GetStylesSignature = Callable[[dt.date, bool], "str | tuple[str, str] | DayStyle | None"]
 
 
 setlocale(LC_ALL, "")
@@ -80,10 +81,23 @@ class DatePart(urwid.Text):
         return canv
 
 
-class Date(urwid.WidgetWrap):
-    """used in the main calendar for dates (a number)"""
+@dataclass(frozen=True)
+class DayStyle:
+    """style of a day with a marker after its number (`[view] day_marking = dot`)"""
 
-    def __init__(self, date: dt.date, get_styles: GetStylesSignature) -> None:
+    attr: str | None
+    marker: str = " "
+    marker_attr: str | None = None
+
+
+class Date(urwid.WidgetWrap):
+    """used in the main calendar for dates (a number)
+
+    With `marker`, a third column after the number shows a marker (e.g. a
+    dot in the colour of the day's calendar).
+    """
+
+    def __init__(self, date: dt.date, get_styles: GetStylesSignature, marker: bool = False) -> None:
         dstr = str(date.day).rjust(2)
         self.halves = [
             urwid.AttrMap(DatePart(dstr[:1]), None, None),
@@ -91,12 +105,24 @@ class Date(urwid.WidgetWrap):
         ]
         self.date = date
         self._get_styles = get_styles
-        super().__init__(urwid.Columns(self.halves))
+        self._marker: urwid.Text | None = None
+        columns: list = list(self.halves)
+        if marker:
+            self._marker = urwid.Text(" ")
+            columns.append((1, self._marker))
+        super().__init__(urwid.Columns(columns))
 
-    def set_styles(self, styles: None | str | tuple[str, str]) -> None:
+    def set_styles(self, styles: None | str | tuple[str, str] | DayStyle) -> None:
         """If single string, sets the same style for both halves, if two
-        strings, sets different style for each half.
+        strings, sets different style for each half; a DayStyle also sets the
+        marker.
         """
+        if isinstance(styles, DayStyle):
+            if self._marker is not None:
+                self._marker.set_text((styles.marker_attr, styles.marker))
+            styles = styles.attr
+        elif self._marker is not None:
+            self._marker.set_text(" ")
         if type(styles) is tuple:
             self.halves[0].set_attr_map({None: styles[0]})
             self.halves[1].set_attr_map({None: styles[1]})
@@ -388,7 +414,9 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         weeknumbers: Literal["left", "right", False] = False,
         monthdisplay: Literal["firstday", "firstfullweek"] = "firstday",
         initial: dt.date | None = None,
+        day_markers: bool = False,
     ) -> None:
+        self.day_markers = day_markers
         self.firstweekday = firstweekday
         self.weeknumbers = weeknumbers
         self.monthdisplay = monthdisplay
@@ -542,15 +570,29 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             month_name = "    "
             attr = None
 
+        # with day markers, every day is three columns wide (number and
+        # marker) and there are no dividers, so the width stays the same
+        markers = self.day_markers
         this_week: list[tuple[int, Date | urwid.AttrMap]]
-        this_week = [(get_month_abbr_len(), urwid.AttrMap(urwid.Text(month_name), attr))]
+        this_week = [
+            (
+                get_month_abbr_len() + markers,
+                urwid.AttrMap(urwid.Text(month_name), attr),
+            )
+        ]
         for _number, day in enumerate(week):
-            new_date = Date(day, self.get_styles)
-            this_week.append((2, new_date))
+            new_date = Date(day, self.get_styles, marker=markers)
+            this_week.append((3 if markers else 2, new_date))
             new_date.set_styles(self.get_styles(new_date.date, False))
         if self.weeknumbers == "right":
+            # one extra column of space, so single-digit days on Sunday don't
+            # read as part of the week number ("6 22")
+            weeknumber = f"{getweeknumber(week[0]):2}"
             this_week.append(
-                (2, urwid.AttrMap(urwid.Text(f"{getweeknumber(week[0]):2}"), "weeknumber_right"))
+                (
+                    3 + markers,
+                    urwid.AttrMap(urwid.Text(" " * (1 + markers) + weeknumber), "weeknumber_right"),
+                )
             )
 
         week = DateCColumns(
@@ -558,7 +600,7 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
             on_date_change=self.on_date_change,
             on_press=self.on_press,
             keybindings=self.keybindings,
-            dividechars=1,
+            dividechars=0 if markers else 1,
             get_styles=self.get_styles,
         )
         return week
@@ -607,6 +649,7 @@ class CalendarWidget(urwid.WidgetWrap):
         monthdisplay: Literal["firstday", "firstfullweek"] = "firstday",
         get_styles: GetStylesSignature | None = None,
         initial: dt.date | None = None,
+        day_markers: bool = False,
     ) -> None:
         """A calendar widget that can be used in urwid applications
 
@@ -639,6 +682,8 @@ class CalendarWidget(urwid.WidgetWrap):
            month or in the first row that only contains days of the current month.
         :param get_styles: a function that returns a list of styles for a given date
         :param initial: the date that is selected when the widget is first rendered
+        :param day_markers: leave room for a marker after each day's number
+            (`get_styles` then may return `DayStyle`s)
         """
         if initial is None:
             self._initial = dt.date.today()
@@ -686,14 +731,30 @@ class CalendarWidget(urwid.WidgetWrap):
         if get_styles is None:
             get_styles = _get_styles
 
-        if weeknumbers == "right":
-            dnames.append("#w")
         month_names_length = get_month_abbr_len()
-        cnames = urwid.Columns(
-            [(month_names_length, urwid.Text(" " * month_names_length))]
-            + [(2, urwid.AttrMap(urwid.Text(name), "dayname")) for name in dnames],
-            dividechars=1,
-        )
+        # the week number column (see _construct_week) is one column wider
+        # than a day and starts with its spacing
+        weeknumber_header = []
+        if weeknumbers == "right":
+            weeknumber_header = [
+                (
+                    3 + int(day_markers),
+                    urwid.AttrMap(urwid.Text(" " * (1 + int(day_markers)) + "#w"), "dayname"),
+                )
+            ]
+        if day_markers:
+            cnames = urwid.Columns(
+                [(month_names_length + 1, urwid.Text(" " * month_names_length))]
+                + [(3, urwid.AttrMap(urwid.Text(name), "dayname")) for name in dnames]
+                + weeknumber_header,
+            )
+        else:
+            cnames = urwid.Columns(
+                [(month_names_length, urwid.Text(" " * month_names_length))]
+                + [(2, urwid.AttrMap(urwid.Text(name), "dayname")) for name in dnames]
+                + weeknumber_header,
+                dividechars=1,
+            )
         self.walker = CalendarWalker(
             on_date_change=on_date_change,
             on_press=on_press,
@@ -703,6 +764,7 @@ class CalendarWidget(urwid.WidgetWrap):
             monthdisplay=monthdisplay,
             get_styles=get_styles,
             initial=self._initial,
+            day_markers=day_markers,
         )
         self.box = CListBox(self.walker)
         frame = urwid.Frame(self.box, header=cnames)

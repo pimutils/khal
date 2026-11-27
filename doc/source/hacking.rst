@@ -52,15 +52,54 @@ Color scheme plugins
 *********************
 
 Khal color schemes plugins are only availlable for the `ikhal` interface. They
-are installed as python packages (e.g. `python -m pip install khal_gruvbox`).
-A color scheme plugin must provide an entry point `khal_colorscheme` and contain
-an urwid palette definition. The palette definition is a list of tuples, where
-each tuple contains an attribute name and a color definition.  See the `urwid
-documentation`_ for more information. All currently avaialable attributes can be
-found in `khal's source code`_.
+are installed as python packages (e.g. `python -m pip install khal_gruvbox`)
+and register an entry point in the group `khal.color_theme`; its name is the
+name of the theme (`[view] theme = <name>`).
+
+The entry point can resolve to one of two things:
+
+* a full urwid palette: a list of tuples, where each tuple contains an
+  attribute name and a color definition.  See the `urwid documentation`_ for
+  more information. All currently available attributes can be found in
+  `khal's source code`_ (the `dark` theme).
+* a *semantic* theme: a dict of about 15 colours (as `#rrggbb`) that khal
+  expands into a full palette (see `ROLES` in `khal's source code`_ for which
+  attribute gets which colour). 16 and 256 colour terminals get the nearest
+  available colours. Keys: `bg` background, `txt` text, `lbl` labels and
+  secondary text, `dim` rules and hints, `acc` accent (focus, keys, today),
+  `row` background of the focused row, `pop` popups, `btn` buttons, `fld2` input
+  fields, `errbg` background of errors, `grn`, `blu`, `red`, `yel`, `pur` state
+  colours and optionally `cal` (four calendar colours) and `calfg`.
+
+A minimal theme plugin, e.g. `khal_mytheme/__init__.py`:
+
+.. code-block:: python
+
+   MYTHEME = dict(
+       bg="#101418", txt="#e0e4ea", lbl="#98a2b0", dim="#5b6470",
+       acc="#e8a33d", row="#1c232b", pop="#242d37", btn="#242d37",
+       fld2="#2e3945", errbg="#4a2124", grn="#8fc78a", blu="#7aa7e8",
+       red="#ef6f6c", yel="#e8c766", pur="#c39be6",
+   )
+
+and its `pyproject.toml`:
+
+.. code-block:: toml
+
+   [project.entry-points."khal.color_theme"]
+   mytheme = "khal_mytheme:MYTHEME"
+
+Khal itself ships the semantic themes `retrobox`, `retrobox-light`, `ink`,
+`fjord`, `ember` and `paper` next to `dark` and `light`. `retrobox` and
+`retrobox-light` use the colours of Vim's retrobox colour scheme by Maxim Kim
+(`vim/colorschemes`_), which is ported from Lifepillar's `gruvbox8`_, after
+`gruvbox`_ by morhetz; `ink`, `fjord`, `ember` and `paper` were made for khal.
 
 .. _`urwid documentation`: http://urwid.org/manual/displayattributes.html
 .. _`khal's source code`: https://github.com/pimutils/khal/blob/master/khal/ui/colors.py
+.. _`vim/colorschemes`: https://github.com/vim/colorschemes
+.. _`gruvbox8`: https://github.com/lifepillar/vim-gruvbox8
+.. _`gruvbox`: https://github.com/morhetz/gruvbox
 
 View plugins
 ************
@@ -85,7 +124,9 @@ The returned urwid box widget must implement the `khal.ui.EventView` protocol
 `new_event_range()` to suggest the start and end of a new event (e.g., the time
 slot under its cursor), and `keybindings_help(conf)` returning `(command, keys,
 description)` tuples, which are shown in ikhal's help (`?`) while the view is
-active. Users can cycle through all views
+active, a `pane_title` property shown in the top border of the right column
+(e.g. `Week 48 · Mon–Fri`) and `handles_view_key()` returning True when the
+view uses the `view` key (enter) itself instead of showing the focused event. Users can cycle through all views
 with the `switch_view` key (default `w`) or select the view shown on startup
 with `[view] default_view`. Plugins may read their own settings from
 subsections of the `[plugins]` section of khal's config file (e.g.,

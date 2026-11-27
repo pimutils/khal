@@ -261,6 +261,28 @@ class CalendarCollection:
         self.update(event)
         return event
 
+    def delete_following(
+        self,
+        href: str,
+        etag: str | None,
+        calendar: str,
+        rec_id: dt.datetime,
+    ) -> Event | None:
+        """Delete the instance `rec_id` of a repeating event and all following ones
+
+        returns the updated event (or None, if the whole event was deleted)
+        """
+        if self._calendars[calendar]["readonly"]:
+            raise ReadOnlyCalendarError()
+        event = self.get_event(href, calendar)
+        if etag and etag != event.etag:
+            raise EtagMismatch()
+        if not event.end_before(rec_id):
+            self.delete(href, event.etag, calendar)
+            return None
+        self.update(event)
+        return event
+
     def get_event(self, href: str, calendar: str) -> Event:
         """get an event by its href from the datatbase"""
         event_str, etag = self._backend.get_with_etag(href, calendar)
