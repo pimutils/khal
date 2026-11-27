@@ -79,8 +79,17 @@ def datetimefstr(
         default_day = now.date()
     parts = dateformat.count(" ") + 1
     dtstring = " ".join(dtime_list[0:parts])
-    # only time.strptime can parse the 29th of Feb. if no year is given
-    dtstart_struct = strptime(dtstring, dateformat)
+    # only time.strptime can parse the 29th of Feb. if no year is given, but
+    # parsing without a year is deprecated, so parse with a leap year instead
+    if (
+        infer_year
+        and dateformat == dateformat.strip()
+        and dtstring == dtstring.strip()
+        and not re.search(r"%[yYGgjUWcx]", dateformat.replace("%%", ""))
+    ):
+        dtstart_struct = strptime(f"{dtstring} 2000", f"{dateformat} %Y")
+    else:
+        dtstart_struct = strptime(dtstring, dateformat)
     if (
         infer_year
         and dtstart_struct.tm_mon == 2
