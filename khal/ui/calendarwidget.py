@@ -557,17 +557,21 @@ class CalendarWalker(urwid.SimpleFocusListWalker):
         :param week: list of datetime.date objects
         :returns: the week as an CColumns object
         """
+        # the column is one character wider than the longest month name; that
+        # character is a margin on the left, so the names don't touch the frame
+        # and are one space away from the days (" Nov 26", "  48 23")
+        width = get_month_abbr_len()
         if self.monthdisplay == "firstday" and 1 in (day.day for day in week):
-            month_name = calendar.month_abbr[week[-1].month].ljust(4)
+            month_name = " " + calendar.month_abbr[week[-1].month].ljust(width - 1)
             attr = "monthname"
         elif self.monthdisplay == "firstfullweek" and week[0].day <= 7:
-            month_name = calendar.month_abbr[week[-1].month].ljust(4)
+            month_name = " " + calendar.month_abbr[week[-1].month].ljust(width - 1)
             attr = "monthname"
         elif self.weeknumbers == "left":
-            month_name = f" {getweeknumber(week[0]):2} "
+            month_name = f"{getweeknumber(week[0]):2}".rjust(width)
             attr = "weeknumber_left"
         else:
-            month_name = "    "
+            month_name = " " * width
             attr = None
 
         # with day markers, every day is three columns wide (number and
