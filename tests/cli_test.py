@@ -563,6 +563,20 @@ def test_search(runner):
     assert result.output.startswith("\x1b[34m\x1b[31m18:00")
 
 
+def test_search_folded_content(runner, monkeypatch):
+    monkeypatch.setattr("khal.cli.get_terminal_size", lambda: (1000, 24))
+    runner = runner()
+    runner.calendars["one"].join("folded.ics").write(_get_text("event_dt_folded"))
+    result = runner.invoke(main_khal, ["search", "--json", "title", "ma.us/cor"])
+    assert not result.exception
+    assert json.loads(result.output) == [
+        {
+            "title": "File annual report (by January 30) at <https://www.sec.state.ma.us/cor/>. "
+            "$500 business check to Commonwealth of Massachusetts"
+        }
+    ]
+
+
 def test_search_json(runner):
     runner = runner(days=2)
     now = dt.datetime.now().strftime("%d.%m.%Y")
