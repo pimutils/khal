@@ -106,7 +106,7 @@ def cli(ctx, config):
     if ctx.logfilepath:
         logger = logging.getLogger("khal")
         logger.handlers = [logging.FileHandler(ctx.logfilepath)]
-    prepare_context(ctx, config)
+    prepare_context(ctx, config, check_ui=ctx.invoked_subcommand == "interactive")
 
 
 @cli.command()
@@ -388,7 +388,7 @@ def _run_interactive(ctx, include_calendar, exclude_calendar) -> None:
 @click.pass_context
 def interactive_cli(ctx, config, include_calendar, exclude_calendar, mouse):
     """Interactive UI. Also launchable via `khal interactive`."""
-    prepare_context(ctx, config)
+    prepare_context(ctx, config, check_ui=True)
     if mouse is not None:
         ctx.obj["conf"]["default"]["enable_mouse"] = mouse
     _run_interactive(ctx, include_calendar, exclude_calendar)
