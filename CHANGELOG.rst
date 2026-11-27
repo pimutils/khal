@@ -7,9 +7,10 @@ Package maintainers and users who have to manually update their installation
 may want to subscribe to `GitHub's tag feed
 <https://github.com/geier/khal/tags.atom>`_.
 
-0.14.2
+0.15.0
 ======
 unreleased
+* DROPPED support for python 3.10, khal now requires python >= 3.11
 * FIX align weekday headings in ikhal for locales with single-letter weekday
   abbreviations, such as Hungarian
 * FIX place ``monthdisplay`` in the ``[view]`` section of the sample configuration
