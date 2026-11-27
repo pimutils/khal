@@ -55,6 +55,25 @@ def timefstr(dtime_list: list[str], timeformat: str) -> dt.datetime:
     return dtstart
 
 
+# directives that set the year themselves (%y %Y %G %c %x) or whose meaning
+# depends on it (%j %U %W)
+_YEAR_DIRECTIVES = re.compile(r"%[yYGgjUWcx]")
+
+
+def _can_add_year(dateformat: str, dtstring: str) -> bool:
+    """whether a year can be appended to `dateformat` and `dtstring` to parse
+    them with strptime() without changing the result
+
+    Formats or input with surrounding whitespace keep the old parsing path,
+    so they fail the same way as before.
+    """
+    return (
+        dateformat == dateformat.strip()
+        and dtstring == dtstring.strip()
+        and not _YEAR_DIRECTIVES.search(dateformat.replace("%%", ""))
+    )
+
+
 def datetimefstr(
     dtime_list: list[str],
     dateformat: str,
@@ -79,8 +98,13 @@ def datetimefstr(
         default_day = now.date()
     parts = dateformat.count(" ") + 1
     dtstring = " ".join(dtime_list[0:parts])
-    # only time.strptime can parse the 29th of Feb. if no year is given
-    dtstart_struct = strptime(dtstring, dateformat)
+    # strptime() without a year is deprecated (an error since Python 3.15) and
+    # cannot parse the 29th of Feb., so parse with a leap year; the actual
+    # year is inferred below
+    if infer_year and _can_add_year(dateformat, dtstring):
+        dtstart_struct = strptime(f"{dtstring} 2000", f"{dateformat} %Y")
+    else:
+        dtstart_struct = strptime(dtstring, dateformat)
     if (
         infer_year
         and dtstart_struct.tm_mon == 2
