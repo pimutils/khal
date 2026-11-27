@@ -396,8 +396,9 @@ class CalendarCollection:
     def _update_vevent(self, href: str, calendar: str) -> bool:
         """should only be called during db_update, only updates the db,
         does not check for readonly"""
-        event, etag = self._storages[calendar].get(href)
+        fpath = os.path.join(self._storages[calendar].path, href)
         try:
+            event, etag = self._storages[calendar].get(href)
             if self._calendars[calendar].get("ctype") == "birthdays":
                 update = self._backend.update_vcf_dates
             else:
@@ -406,9 +407,11 @@ class CalendarCollection:
             return True
         except Exception as e:
             if not isinstance(e, UpdateFailed | UnsupportedFeatureError | NonUniqueUID):
+                e.add_note(f"while reading {fpath}")
                 logger.exception("Unknown exception happened.")
             logger.warning(
-                f"Skipping {calendar}/{href}: {e!s}\nThis event will not be available in khal."
+                f"Skipping {calendar}/{href} ({fpath}): {e!s}\n"
+                "This event will not be available in khal."
             )
             return False
 

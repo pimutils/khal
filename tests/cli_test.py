@@ -699,6 +699,17 @@ def test_import_broken_file_reports_error(runner, tmp_path):
     assert "notadate" in result.output
 
 
+def test_list_broken_vdir_file_reports_path(runner):
+    """files in a vdir that cannot be read are skipped and their path is shown"""
+    runner = runner()
+    broken = runner.calendars["one"].join("broken.ics")
+    broken.write_binary(b"BEGIN:VCALENDAR\n\xff\xfe broken\nEND:VCALENDAR\n")
+    result = runner.invoke(main_khal, ["list"])
+    assert not result.exception
+    assert f"while reading {broken}" in result.output
+    assert f"Skipping one/broken.ics ({broken}): " in result.output
+
+
 def test_import_invalid_choice_and_prefix(runner):
     runner = runner()
     result = runner.invoke(main_khal, ["import", _get_ics_filepath("cal_d")], input="9\nth\ny\n")
