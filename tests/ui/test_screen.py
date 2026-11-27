@@ -1046,7 +1046,7 @@ def test_calendars_box(setup):
     text = screen.text()
     assert "╭─ Calendars ─" in text
     assert "▌ ✓ ● home" in text
-    assert "space show/hide · a all · esc" in text
+    assert "space show/hide · a all · n none · esc" in text
     # no grey backdrop: the list keeps its colours
     assert not any(str(attr).endswith(" grey") for attr in screen.attributes())
 
@@ -1064,6 +1064,10 @@ def test_toggle_calendars_with_space_digits_and_a(setup):
     assert "3 hidden" in screen.text().splitlines()[1]  # the list's frame
     screen.press("a")
     assert not screen.pane.collection.hidden_calendars
+    screen.press("n")  # none
+    assert screen.pane.collection.hidden_calendars == {"home", "work", "family", "birthdays"}
+    assert "4 hidden" in screen.text()
+    screen.press("a")
     screen.press("1", "esc")
     assert screen.window._get_current_pane() is screen.pane
     assert "1 hidden ─╮" in screen.text().splitlines()[1]

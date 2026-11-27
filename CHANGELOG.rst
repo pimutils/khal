@@ -164,7 +164,7 @@ unreleased
   ``2d18h``, ``2d``)
 * NEW show and hide calendars while ikhal runs: ``c`` (``[keybindings]
   toggle_calendars``) lists the calendars, space toggles one, 1–9 the n-th,
-  ``a`` shows all; the list, the time grid, the month column and the next
+  ``a`` shows all, ``n`` none; the list, the time grid, the month column and the next
   event in the header follow at once, search still finds everything (dimmed);
   the frame says how many are hidden. ``hidden = True`` in a calendar's
   section starts it hidden, nothing is saved

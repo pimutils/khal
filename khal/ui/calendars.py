@@ -35,7 +35,7 @@ import urwid
 from .editor_layout import UNICODE, Glyphs
 from .floating import float_box
 
-HINT = "space show/hide · a all · esc"
+HINT = "space show/hide · a all · n none · esc"
 
 
 class CalendarRow(urwid.WidgetWrap):
@@ -143,6 +143,12 @@ class CalendarsBox(urwid.WidgetWrap):
                 self._set_shown(name, True)
         self._refresh()
 
+    def show_none(self) -> None:
+        for name in self.names:
+            if self._is_shown(name):
+                self._set_shown(name, False)
+        self._refresh()
+
     def _refresh(self) -> None:
         focus = self._walker.get_focus()[1]
         for index, row in enumerate(self.entries):
@@ -159,6 +165,9 @@ class CalendarsBox(urwid.WidgetWrap):
             return None
         if key == "a":
             self.show_all()
+            return None
+        if key == "n":
+            self.show_none()
             return None
         if key.isdigit() and 1 <= int(key) <= min(9, len(self.names)):
             self.toggle(self.names[int(key) - 1])
