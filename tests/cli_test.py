@@ -1216,3 +1216,24 @@ def test_list_now(runner, tmpdir):
 
     result = runner.invoke(main_khal, ["list", "now"])
     assert not result.exception
+
+
+@freeze_time("2015-6-1 8:00")
+@pytest.mark.parametrize(
+    "invalid",
+    ["foo\n\n", "weekly\nnonsense\n"],
+)
+def test_edit_invalid_repeat_prompts_again(runner, invalid):
+    runner = runner()
+    event = runner.calendars["one"].join("event_dt_simple.ics")
+    event.write(_get_text("event_dt_simple"))
+
+    result = runner.invoke(
+        main_khal,
+        ["edit", "--show-past", "Event"],
+        input=f"p\n{invalid}p\ndaily\nNone\nn\n",
+    )
+
+    assert not result.exception
+    assert "invalid repeat" in result.output
+    assert "RRULE:FREQ=DAILY" in event.read()

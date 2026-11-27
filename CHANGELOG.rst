@@ -31,6 +31,9 @@ unreleased
   date only; such an EXDATE now excludes all instances on that day
 * FIX an invalid alarm in ``khal edit`` or ``khal new -i`` crashed with a
   traceback, it is now reported and the menu is shown again
+* FIX an invalid frequency or ``until`` value at the ``repeat`` prompt of
+  ``khal edit`` or ``khal new -i`` ended the session, it is now reported and
+  the menu is shown again
 
 0.14.1
 ======
