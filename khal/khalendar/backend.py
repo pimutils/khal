@@ -603,14 +603,21 @@ class SQLiteDb:
         self, search_string: str
     ) -> Iterable[tuple[str, str, dt.date, dt.date, str, str, str]]:
         """search for events matching `search_string`"""
+        # Unfold only continuation lines; keep the stored item and content-line boundaries.
+        unfolded_item = (
+            "CASE WHEN instr(item, ?) OR instr(item, ?) "
+            "THEN replace(replace(replace(replace(item, ?, ''), ?, ''), ?, ''), ?, '') "
+            "ELSE item END"
+        )
+        folds = ("\r\n ", "\r\n\t", "\n ", "\n\t")
+        stuple = ("\n ", "\n\t", *folds, f"%{search_string}%", *self.calendars)
         sql_s = (
             "SELECT item, recs_loc.href, dtstart, dtend, ref, etag, dtype, events.calendar "
             "FROM recs_loc JOIN events ON "
             "recs_loc.href = events.href AND "
             "recs_loc.calendar = events.calendar "
-            "WHERE item LIKE (?) and events.calendar in ({0});"
+            f"WHERE {unfolded_item} LIKE (?) and events.calendar in ({{0}});"
         )
-        stuple = tuple([f"%{search_string}%"] + list(self.calendars))
         result = self.sql_ex(sql_s.format(",".join(["?"] * len(self.calendars))), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = dt.datetime.fromtimestamp(start, pytz.UTC)
@@ -625,9 +632,8 @@ class SQLiteDb:
             "FROM recs_float JOIN events ON "
             "recs_float.href = events.href AND "
             "recs_float.calendar = events.calendar "
-            "WHERE item LIKE (?) and events.calendar in ({0});"
+            f"WHERE {unfolded_item} LIKE (?) and events.calendar in ({{0}});"
         )
-        stuple = tuple([f"%{search_string}%"] + list(self.calendars))
         result = self.sql_ex(sql_s.format(",".join(["?"] * len(self.calendars))), stuple)
         for item, href, start, end, ref, etag, dtype, calendar in result:
             start = dt.datetime.fromtimestamp(start, pytz.UTC).replace(tzinfo=None)
