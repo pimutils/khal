@@ -357,6 +357,7 @@ def expand(
 
     # remove excluded dates
     if expand:
+        unmatched_exdates = []
         for exdate in get_dates(vevent, "EXDATE") or ():
             try:
                 # try the happy path first:
@@ -378,10 +379,15 @@ def expand(
                         dtstartl = _dtstartl
                 # both attempts at finding this exdate among the recurrences failed
                 if not found:
-                    logger.warning(
-                        f"In event {href}, excluded instance starting at {exdate} "
-                        "not found, event might be invalid."
-                    )
+                    unmatched_exdates.append(exdate)
+                    logger.debug("Unmatched EXDATE %s in %s", exdate, href)
+
+        if unmatched_exdates:
+            logger.warning(
+                f"In {href}, no remaining occurrence matches the excluded start "
+                f"{unmatched_exdates[0]} ({len(unmatched_exdates)} unmatched in total). "
+                "See https://khal.readthedocs.io/en/latest/faq.html#unmatched-exdates"
+            )
 
     dtstartend = [(start, start + duration) for start in dtstartl]
     # not necessary, but I prefer deterministic output

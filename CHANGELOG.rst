@@ -30,6 +30,8 @@ unreleased
   date only; such an EXDATE now excludes all instances on that day
 * FIX an invalid alarm in ``khal edit`` or ``khal new -i`` crashed with a
   traceback, it is now reported and the menu is shown again
+* CHANGE report unmatched exclusions in a recurring event in one warning
+  with a link to the FAQ
 
 0.14.1
 ======

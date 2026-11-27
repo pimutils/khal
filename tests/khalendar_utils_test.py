@@ -1,4 +1,5 @@
 import datetime as dt
+import logging
 
 import icalendar
 import pytz
@@ -517,12 +518,24 @@ class TestExpand:
         dtstart = icalendar_helpers.expand(vevent, berlin)
         assert dtstart == self.dstartend
 
-    def test_expand_invalid_exdate(self):
-        """testing if we can expand an event with EXDATEs that do not much
-        its RRULE"""
+    def test_expand_invalid_exdate(self, caplog, fix_caplog):
+        """Apply the matching exclusion and explain the two unmatched ones."""
         vevent = _get_vevent_file("event_invalid_exdate")
-        dtstartl = icalendar_helpers.expand(vevent, berlin)
-        # TODO test for logging message
+        with caplog.at_level(logging.DEBUG, logger="khal"):
+            dtstartl = icalendar_helpers.expand(vevent, "soccer.ics")
+
+        warnings = [
+            record.message for record in caplog.records if record.levelno == logging.WARNING
+        ]
+        assert len(warnings) == 1
+        assert "soccer.ics" in warnings[0]
+        assert "2011-09-24" in warnings[0]
+        assert "2 unmatched" in warnings[0]
+        assert "https://khal.readthedocs.io/en/latest/faq.html#unmatched-exdates" in warnings[0]
+        assert any(
+            "2011-10-08" in record.message and record.levelno == logging.DEBUG
+            for record in caplog.records
+        )
         assert dtstartl == [
             (
                 new_york.localize(dt.datetime(2011, 11, 12, 15, 50)),
