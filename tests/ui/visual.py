@@ -19,12 +19,14 @@ import datetime as dt
 import os
 import pathlib
 import textwrap
+import typing
 
 import urwid
 
 from khal import ui
 from khal.khalendar import CalendarCollection
 from khal.settings import get_config
+from khal.ui import colors
 
 NOW = dt.datetime(2026, 11, 26, 11, 20)
 
@@ -66,9 +68,12 @@ def _day(days: int) -> dt.date:
     return NOW.date() + dt.timedelta(days=days)
 
 
+# (calendar, uid, summary, start, end, options for _vevent)
+SampleEvent = tuple[str, str, str, dt.date, dt.date, dict[str, typing.Any]]
+
 # (calendar, uid, summary, start, end, options); the events of the mockups,
 # Standup and Choir repeat, the hiking trip spans the weekend
-EVENTS = [
+EVENTS: list[SampleEvent] = [
     ("work", "standup", "Standup", _at(-3, "09:00"), _at(-3, "09:15"),
      {"rrule": "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH"}),
     ("home", "lunch", "Lunch w/ Bob", _at(0, "12:30"), _at(0, "13:30"),
@@ -91,7 +96,7 @@ EVENTS = [
 ]  # fmt: skip
 
 # Friday morning with six events at once (design/overview-mockups/39-grid-overlaps)
-BUSY = [
+BUSY: list[SampleEvent] = [
     ("work", "sync", "Team sync", _at(1, "09:00"), _at(1, "10:00"), {}),
     ("family", "anna", "Anna: 1:1 with Max", _at(1, "09:00"), _at(1, "11:00"), {}),
     ("birthdays", "review", "Ben: code review", _at(1, "09:30"), _at(1, "10:30"), {}),
@@ -100,7 +105,7 @@ BUSY = [
 ]  # fmt: skip
 
 # multi-day and overnight events (design/overview-mockups/41-a-sizes)
-SPANS = [
+SPANS: list[SampleEvent] = [
     ("work", "conference", "Conference", _at(1, "18:00"), _at(4, "12:00"),
      {"location": "Leipzig, Messe, Hall B", "alarm": True}),
     ("home", "party", "Party at Jo's", _at(5, "22:00"), _at(6, "02:00"), {"location": "Neukölln"}),
@@ -191,9 +196,12 @@ class Screen:
         self.root = ui.root_widget(self.window)
         self.screen = urwid.display.raw.Screen()
         self.loop = urwid.MainLoop(
-            self.root, palette=themed.palette, screen=self.screen, pop_ups=False
+            self.root,
+            palette=colors.urwid_palette(themed.palette),
+            screen=self.screen,
+            pop_ups=False,
         )
-        self.screen.colors = 2**24 if color_mode == "rgb" else 256
+        self.screen.set_terminal_properties(colors=16_777_216 if color_mode == "rgb" else 256)
         self.window.loop = self.loop
 
     # -- driving
@@ -222,28 +230,39 @@ class Screen:
     def text(self) -> str:
         return "\n".join(line.decode().rstrip() for line in self.render().text)
 
+    def _layers(self) -> list[tuple]:
+        """the layers of every attribute in the canvas, innermost first
+        (urwid >= 5 stacks the attributes of nested AttrMaps in a LayeredAttr)"""
+        return [
+            tuple(getattr(attr, "layers", (attr,)))
+            for row in self.render().content()
+            for attr, _, _ in row
+        ]
+
     def attributes(self) -> set:
-        return {attr for row in self.render().content() for attr, _, _ in row}
+        """the innermost attribute of every run (what a widget asked for)"""
+        return {layers[0] if layers else None for layers in self._layers()}
 
     def undefined_attributes(self) -> set:
-        """attributes in the canvas the screen has no palette entry for"""
-        return {attr for attr in self.attributes() if attr not in self.screen._palette}
+        """attributes in the canvas the screen has no palette entry for (in any
+        layer); urwid draws them in the terminal's default colours"""
+        return {
+            layer
+            for layers in self._layers()
+            for layer in layers
+            if isinstance(layer, str) and layer not in self.screen._palette
+        }
 
     def ansi(self) -> str:
         out = []
+        index = 4 if self.screen.colors == 2**24 else 3
         for row in self.render().content():
             line = ""
             for attr, _, text in row:
-                spec = self._spec(attr)
+                spec = self.screen.resolve_attr(attr, index) if attr is not None else None
                 line += _sgr(spec) + text.decode() + "\x1b[0m"
             out.append(line)
         return "\n".join(out) + "\n"
-
-    def _spec(self, attr) -> urwid.AttrSpec | None:
-        entry = self.screen._palette.get(attr)
-        if entry is None:
-            return None
-        return entry[4] if self.screen.colors == 2**24 else entry[3]
 
     def dump(self, name: str) -> str:
         """the plain text render; with KHAL_VISUAL_DUMP set also write files"""
@@ -286,7 +305,12 @@ def children(widget: urwid.Widget) -> list[urwid.Widget]:
     if isinstance(widget, urwid.PopUpLauncher):
         return [widget.original_widget]
     if isinstance(widget, urwid.ListBox):
-        return list(widget.body)
+        body = widget.body
+        return (
+            list(body)
+            if isinstance(body, urwid.SimpleFocusListWalker | urwid.SimpleListWalker)
+            else []
+        )
     contents = getattr(widget, "contents", None)
     if isinstance(contents, list):
         return [item[0] if isinstance(item, tuple) else item for item in contents]

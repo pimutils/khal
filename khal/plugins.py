@@ -16,14 +16,16 @@ def _load_formatters() -> dict[str, Callable[[str], str]]:
 FORMATTERS: Mapping[str, Callable[[str], str]] = _load_formatters()
 
 
-def _load_color_themes() -> dict[str, list[tuple[str, ...]]]:
+def _load_color_themes() -> dict[str, list[tuple[str | None, ...]] | dict]:
     color_theme_entrypoints = importlib_metadata.entry_points(group="khal.color_theme")
     return {ep.name: ep.load() for ep in color_theme_entrypoints}
 
 
+# a full urwid palette or (see khal.ui.colors.SEMANTIC_THEMES) a dict of a
+# few semantic colours
 THEMES: dict[
     str,
-    list[tuple[str, ...]],
+    list[tuple[str | None, ...]] | dict,
 ] = _load_color_themes()
 
 

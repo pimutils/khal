@@ -20,6 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import datetime as dt
+import functools
 import logging
 import time
 from collections.abc import Callable
@@ -66,6 +67,7 @@ from .widgets import (
     NPile,
     PlaceholderEdit,
     PositiveIntEdit,
+    Size,
     TimeWidget,
     format_duration_short,
     parse_duration,
@@ -84,6 +86,8 @@ class StartEnd:
         self.starttime = starttime
         self.enddate = enddate
         self.endtime = endtime
+        # the editable duration ("for 1h30m"), set by StartEndEditor.toggle()
+        self.duration: urwid.Widget | None = None
 
 
 class CalendarPopUp(urwid.PopUpLauncher):
@@ -340,8 +344,11 @@ class StartEndEditor(DelegateNext, urwid.WidgetWrap):
 
     def _set_end(self, end) -> None:
         """set the end (and the end widgets' texts) programmatically"""
-        if isinstance(end, dt.datetime) and getattr(end, "tzinfo", None) is not None:
-            end = end.tzinfo.normalize(end) if hasattr(end.tzinfo, "normalize") else end
+        if isinstance(end, dt.datetime) and end.tzinfo is not None:
+            # pytz timezones fix the UTC offset after arithmetic (DST changes)
+            normalize = getattr(end.tzinfo, "normalize", None)
+            if normalize is not None:
+                end = normalize(end)
         self._enddt = end
         if self.widgets.enddate is not None:
             self.widgets.enddate.date = end.date() if isinstance(end, dt.datetime) else end
@@ -530,10 +537,11 @@ class StartEndEditor(DelegateNext, urwid.WidgetWrap):
             return
         try:
             if end.date() == start.date() and end < start:
-                self._enddt = self.localize_end(
+                rolled = self.localize_end(
                     dt.datetime.combine(end.date() + dt.timedelta(days=1), end.time())
                 )
-                self.widgets.enddate.date = self._enddt.date()
+                self._enddt = rolled
+                self.widgets.enddate.date = rolled.date()
                 self._flash_until = time.monotonic() + self.FLASH_SECONDS
         except TypeError:  # aware vs. floating
             return
@@ -651,7 +659,7 @@ class StartEndEditor(DelegateNext, urwid.WidgetWrap):
             self.widgets.starttime = urwid.Padding(
                 DrumPopUp(
                     raw_start_time_widget,
-                    lambda close, edit=raw_start_time_widget: self._time_drum(edit, False, close),
+                    functools.partial(self._time_drum, raw_start_time_widget, False),
                 ),
                 align="left",
                 width=self._timewidth + 1,
@@ -667,7 +675,7 @@ class StartEndEditor(DelegateNext, urwid.WidgetWrap):
             self.widgets.endtime = urwid.Padding(
                 DrumPopUp(
                     raw_end_time_widget,
-                    lambda close, edit=raw_end_time_widget: self._time_drum(edit, True, close),
+                    functools.partial(self._time_drum, raw_end_time_widget, True),
                 ),
                 align="left",
                 width=self._timewidth + 1,
@@ -833,7 +841,7 @@ class EventEditor(urwid.WidgetWrap):
             raise ValueError(f"unknown editor layout `{layout}`")
         self._layout_name = layout
         self._layout: BuiltLayout | None = None
-        self._layout_size: tuple[int, ...] | None = None
+        self._layout_size: Size | None = None
         urwid.WidgetWrap.__init__(self, urwid.SolidFill(" "))
         self._apply_layout(LAYOUTS["sections"] if layout == "auto" else LAYOUTS[layout])
 
@@ -876,10 +884,10 @@ class EventEditor(urwid.WidgetWrap):
             return COMPACT_ASCII if spec.glyphs is ASCII else COMPACT
         return spec
 
-    def _ensure_layout(self, size: tuple[int, ...]) -> None:
+    def _ensure_layout(self, size: Size) -> None:
         """pick the layout matching `size` (`auto`, or the narrow fallback
         of an explicitly chosen layout), keeping the focused field"""
-        if size == self._layout_size:
+        if size == self._layout_size or not size:
             return
         self._layout_size = size
         spec = self.wanted_layout(size[0])
@@ -1041,7 +1049,8 @@ class EventEditor(urwid.WidgetWrap):
         parts = [
             (field.label or field.name).lower()
             for field in TEXT_FIELDS
-            if get_wrapped_text(self.fields[field.id]) != field.load(self.event)  # type: ignore[misc]
+            if field.load is not None
+            and get_wrapped_text(self.fields[field.id]) != field.load(self.event)
         ]
         if self.calendar_chooser.changed:
             parts.append("calendar")
@@ -1073,7 +1082,7 @@ class EventEditor(urwid.WidgetWrap):
             description=description,
         )
 
-    def keypress(self, size: tuple[int], key: str) -> str | None:
+    def keypress(self, size: Size, key: str) -> str | None:
         if key in ["esc"] and self.changed:
             self.ask_unsaved()
             return None
@@ -1286,7 +1295,7 @@ class RecurrenceEditor(DelegateNext, urwid.WidgetWrap):
             self.monthly_choice._decorate = decorate
             self.monthly_choice.set_button_factory(self._sentence_button)
 
-    def next_occurrences(self, count: int = 3) -> list[dt.date]:
+    def next_occurrences(self, count: int = 3) -> list[dt.datetime]:
         """the next `count` instances after the event's start (for the preview)"""
         from dateutil.rrule import rrulestr
 

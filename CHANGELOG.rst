@@ -182,6 +182,12 @@ unreleased
   the scope and a ╱ hatch (greyed below 256 colours). While anything is
   marked the footer says how many and that they are deleted when ikhal quits;
   NEW ``[keybindings] undo_all_deletions`` (``U``) removes all marks
+* UPDATED REQUIREMENT urwid >= 5.0 is now required
+* FIX ikhal compatibility with urwid 5.0, which removed ``Columns.focus_col``,
+  ``Columns.set_focus_column()``, ``Pile.set_focus()``, ``Frame.set_body()`` and
+  ``AttrWrap.w``
+* FIX in ikhal's calendar, pressing ``other`` (default ``o``) while marking a
+  date range now jumps back to the right day again with urwid >= 5.0
 
 0.14.1
 ======

@@ -413,10 +413,14 @@ def free_gaps(
     events don't take time.
     """
     gaps: dict[int, dt.timedelta] = {}
-    edges = hours is not None and day.weekday() < 5
-    opening = dt.datetime.combine(day, hours[0]) if hours is not None else None
-    closing = dt.datetime.combine(day, hours[1]) if hours is not None else None
-    previous_end = opening if edges else None
+    # (opening, closing) of `hours` on `day`
+    window = (
+        (dt.datetime.combine(day, hours[0]), dt.datetime.combine(day, hours[1]))
+        if hours is not None
+        else None
+    )
+    edges = window is not None and day.weekday() < 5
+    previous_end = window[0] if edges and window is not None else None
     for index, event in enumerate(events):
         if event.allday:
             continue
@@ -427,15 +431,15 @@ def free_gaps(
             continue
         if previous_end is not None:
             gap_start, gap_end = previous_end, start
-            if hours is not None:
-                gap_start = max(gap_start, opening)
-                gap_end = min(gap_end, closing)
+            if window is not None:
+                gap_start = max(gap_start, window[0])
+                gap_end = min(gap_end, window[1])
             gap = gap_end - gap_start
             if gap >= minimum:
                 gaps[index] = gap
         previous_end = end if previous_end is None else max(previous_end, end)
-    if edges and previous_end is not None:
-        gap = closing - max(previous_end, opening)
+    if edges and window is not None and previous_end is not None:
+        gap = window[1] - max(previous_end, window[0])
         if gap >= minimum:
             gaps[len(events)] = gap
     return gaps

@@ -47,12 +47,14 @@ from .widgets import (
     ActionButton,
     AlarmStyle,
     DelegateNext,
+    FlowWidget,
     FocusExpand,
     LiveText,
     NColumns,
     NListBox,
     NPile,
     SupportsNext,
+    find_child,
 )
 
 if TYPE_CHECKING:
@@ -526,7 +528,10 @@ def format_key(key: str, glyphs: Glyphs) -> str:
 # focus helpers
 
 
-def _wrapped(widget: urwid.Widget) -> urwid.Widget | None:
+# the widget trees are walked with isinstance checks, so any object will do
+
+
+def _wrapped(widget: object) -> object | None:
     if isinstance(widget, urwid.WidgetDecoration):
         return widget.original_widget
     if isinstance(widget, urwid.WidgetWrap):
@@ -534,13 +539,13 @@ def _wrapped(widget: urwid.Widget) -> urwid.Widget | None:
     return None
 
 
-def _focus_child(widget: urwid.Widget) -> urwid.Widget | None:
+def _focus_child(widget: object) -> object | None:
     if isinstance(widget, (urwid.ListBox, urwid.Pile, urwid.Columns)):
         return widget.focus
     return _wrapped(widget)
 
 
-def focused_field_id(widget: urwid.Widget | None) -> str | None:
+def focused_field_id(widget: object | None) -> str | None:
     """id of the (innermost) FocusRow on the focus path below `widget`"""
     found = None
     while widget is not None:
@@ -550,12 +555,12 @@ def focused_field_id(widget: urwid.Widget | None) -> str | None:
     return found
 
 
-def focus_field(widget: urwid.Widget, field_id: str) -> bool:
+def focus_field(widget: object, field_id: str) -> bool:
     """move the focus to the (first selectable) FocusRow of `field_id`"""
     if isinstance(widget, FocusRow) and widget.field_id == field_id:
         if widget.selectable():
             return True
-    if isinstance(widget, urwid.ListBox):
+    if isinstance(widget, urwid.ListBox) and isinstance(widget.body, urwid.SimpleFocusListWalker):
         for position, child in enumerate(widget.body):
             if focus_field(child, field_id):
                 # via the walker: ListBox.set_focus would, on the next
@@ -604,12 +609,12 @@ class FocusRow(DelegateNext, urwid.WidgetWrap):
         field_id: str | None,
         content: urwid.Widget,
         *,
-        label: str | None = None,
+        label: str | tuple[str, str] | None = None,
         label_width: int = 0,
         margin: int = 1,
         gap: int = 1,
         glyphs: Glyphs = UNICODE,
-        collapse_with: urwid.Widget | None = None,
+        collapse_with: FlowWidget | None = None,
     ) -> None:
         """
         :param collapse_with: hide the whole row while this (flow) widget has
@@ -759,7 +764,9 @@ class WrappingButtons(DelegateNext, urwid.WidgetWrap):
         for row, line in enumerate(lines):
             if focused in line:
                 pile.focus_position = row
-                pile.contents[row][0].focus_position = line.index(focused)
+                find_child(pile.contents[row][0], urwid.Columns).focus_position = line.index(
+                    focused
+                )
         self._w = pile
 
     def rows(self, size, focus=False):
@@ -896,9 +903,9 @@ class BuiltLayout:
 
     def content_rows(self, cols: int) -> int:
         """rows needed to show everything without scrolling"""
-        return sum(w.rows((cols,)) for w in self.listbox.body) + sum(
-            w.rows((cols,)) for w in self.footer
-        )
+        walker = self.listbox.body
+        assert isinstance(walker, urwid.SimpleFocusListWalker)
+        return sum(w.rows((cols,)) for w in walker) + sum(w.pack((cols,))[1] for w in self.footer)
 
 
 class LayoutBuilder:
@@ -921,7 +928,7 @@ class LayoutBuilder:
         field_id: str | None,
         content: urwid.Widget,
         label: Any = ...,
-        collapse_with: urwid.Widget | None = None,
+        collapse_with: FlowWidget | None = None,
     ) -> FocusRow:
         if label is ...:
             label = self.label(field_id) if field_id else None
@@ -936,7 +943,7 @@ class LayoutBuilder:
             collapse_with=collapse_with,
         )
 
-    def indent(self, widget: urwid.Widget) -> urwid.Widget:
+    def indent(self, widget: urwid.Widget) -> urwid.Padding:
         """align a non-field widget with the labels"""
         left = self._margin + len(self.glyphs.marker) + self.spec.gap
         # the right edge of FocusRow's content
@@ -1091,9 +1098,11 @@ class LayoutBuilder:
 
     def _duration_field(self, see: StartEndEditor) -> list:
         """`for [1h30m]`: editable, enter opens a drum"""
+        duration = see.widgets.duration
+        assert duration is not None  # set up by StartEndEditor.toggle()
         return [
             (5, urwid.Text(("editor label", "  for"))),
-            (7, urwid.AttrMap(see.widgets.duration, "editor field", "editor field focus")),
+            (7, urwid.AttrMap(duration, "editor field", "editor field focus")),
         ]
 
     def arrange_row(self, see: StartEndEditor) -> urwid.Widget:
@@ -1222,7 +1231,7 @@ class LayoutBuilder:
             columns = NColumns([*packed, status], dividechars=1, focus_column=0)
         else:
             columns = NColumns([status, *packed], dividechars=1, focus_column=1)
-        rows = []
+        rows: list[urwid.Widget] = []
         if spec.actions_rule:
             rows.append(
                 urwid.Padding(section_rule(None, glyphs), left=spec.margin, right=spec.margin)

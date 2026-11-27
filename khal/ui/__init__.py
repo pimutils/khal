@@ -19,6 +19,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from __future__ import annotations
+
 import datetime as dt
 import logging
 import signal
@@ -64,7 +66,7 @@ from .editor_layout import ASCII, UNICODE, format_key
 from .finder import Finder
 from .floating import Answer, LogEntry, describe_rrule
 from .navigation import MONTH_STEPS, parse_goto, shift_months
-from .widgets import CAttrMap, NColumns, PopUpTarget, linebox
+from .widgets import CAttrMap, ListBoxSize, NColumns, PopUpTarget, Size, find_child, linebox
 
 logger = logging.getLogger("khal")
 
@@ -115,7 +117,7 @@ class EventView(Protocol):
     """
 
     @property
-    def focus_event(self) -> "U_Event | None":
+    def focus_event(self) -> U_Event | None:
         """the event currently in focus (or None)"""
         ...
 
@@ -128,8 +130,11 @@ class EventView(Protocol):
         """bring `day` into view and focus it"""
         ...
 
-    def update_range(self, start: dt.date, end: dt.date, everything: bool = False) -> None:
-        """reload events between `start` and `end` (inclusive), or all if `everything`"""
+    def update_range(
+        self, start: dt.date | None, end: dt.date | None, everything: bool = False
+    ) -> None:
+        """reload events between `start` and `end` (inclusive), or all if
+        `everything` (then `start` and `end` may be None)"""
         ...
 
     def refresh_titles(self, start: dt.date, end: dt.date, everything: bool) -> None:
@@ -156,6 +161,44 @@ class EventView(Protocol):
     # (focused date, next full hour).
 
 
+# the optional parts of an EventView (see the comment in EventView), each as
+# its own protocol, so the window can check for them
+
+
+@runtime_checkable
+class HasNewEventRange(Protocol):
+    def new_event_range(self) -> tuple[dt.date, dt.date] | None:
+        """start and end of a new event (None: the focused date)"""
+        ...
+
+
+@runtime_checkable
+class HandlesViewKey(Protocol):
+    def handles_view_key(self) -> bool:
+        """True: the view uses the `view` key (enter) itself right now"""
+        ...
+
+
+@runtime_checkable
+class HasPaneTitle(Protocol):
+    """the title of the right column's frame (`Agenda`, `Week 48 · Mon–Fri`)"""
+
+    @property
+    def pane_title(self) -> str: ...
+
+
+@runtime_checkable
+class HasPaneStatus(Protocol):
+    """the status at the right of the right column's frame (`6 days`)"""
+
+    @property
+    def pane_status(self) -> str: ...
+
+
+# (tabs in the header line: a view class may name its `tabs`, an instance
+# its `active_tab`, see ClassicView.view_tabs)
+
+
 class DeletionType(IntEnum):
     ALL = 0
     INSTANCES = 1
@@ -179,7 +222,7 @@ class SelectableText(urwid.Text):
     def selectable(self) -> bool:
         return True
 
-    def keypress(self, size: tuple[int], key: str | None) -> str | None:
+    def keypress(self, size: Size, key: str) -> str | None:
         return key
 
     def get_cursor_coords(self, size: tuple[int]) -> tuple[int, int]:
@@ -285,7 +328,7 @@ class DateHeader(SelectableText):
 
         return f"{weekday}, {daystr} ({approx_delta})"
 
-    def keypress(self, size: tuple[int], key: str | None) -> str | None:
+    def keypress(self, size: Size, key: str) -> str | None:
         binds = self._conf["keybindings"]
         if key in binds["left"]:
             key = "left"
@@ -323,7 +366,7 @@ class U_Event(urwid.Text):
         self.style = style
         self.first_of_day = first_of_day
         self._formatted: str | None = None  # text with \t, laid out in render()
-        self._width: int | None = None
+        self._width: tuple[int, bool] | None = None  # (width, focus) of the layout
         if relative:
             if isinstance(this_date, dt.datetime) or not isinstance(this_date, dt.date):
                 raise ValueError(
@@ -373,7 +416,7 @@ class U_Event(urwid.Text):
         self._width = (width, focus)
         unicode_symbols = self._conf["locale"].get("unicode_symbols", True)
         text = self._formatted
-        mark = self._mark[:1]
+        mark: str | tuple[str, str] = self._mark[:1]
         if not mark and focus:
             mark = ("editor marker", "▌" if unicode_symbols else ">")
         mark = mark or " "
@@ -494,7 +537,7 @@ class U_Event(urwid.Text):
 
         self.set_text(mark + " " + text.replace("\n", newline))
 
-    def keypress(self, size: tuple[int], key: str | None) -> str | None:
+    def keypress(self, size: Size, key: str) -> str | None:
         binds = self._conf["keybindings"]
         if key in binds["left"]:
             key = "left"
@@ -531,15 +574,18 @@ class EventListBox(urwid.ListBox):
         self.set_focus_date_callback = set_focus_date_callback
         super().__init__(*args, **kwargs)
 
-    def keypress(self, size: tuple[int], key: str | None) -> str | None:
+    def keypress(
+        self,
+        size: ListBoxSize,  # type: ignore[override]  # urwid.ListBox narrows Widget's size, too
+        key: str,
+    ) -> str | None:
         return super().keypress(size, key)
 
     @property
     def focus_event(self) -> U_Event | None:
         if self.focus is None:
             return None
-        else:
-            return self.focus.original_widget
+        return find_child(self.focus, U_Event)
 
     def refresh_titles(self, min_date, max_date, everything):
         """Refresh only the currently focused event's title
@@ -550,7 +596,9 @@ class EventListBox(urwid.ListBox):
 
         ignores all arguments
         """
-        self.focus.original_widget.set_title()
+        event = self.focus_event
+        if event is not None:
+            event.set_title()
 
 
 class DListBox(EventListBox):
@@ -567,29 +615,40 @@ class DListBox(EventListBox):
     _size: tuple[int, int] | None = None  # of the last render
 
     @property
+    def days(self) -> DayWalker:
+        """the walker (self.body, with its type)"""
+        body = self.body
+        assert isinstance(body, DayWalker)
+        return body
+
+    @property
     def pane_status(self) -> str:
         """the number of days in view (`6 days`)"""
         if self._size is None:
             return ""
         try:
-            _, top, bottom = self.calculate_visible(self._size, True)
-            days = 1 + len(top[1]) + len(bottom[1])
+            visible = self.calculate_visible(self._size, True)
         except (TypeError, IndexError, AttributeError):
             return ""
+        if visible[0] is None or visible[1] is None or visible[2] is None:
+            return ""
+        _, top, bottom = visible
+        days = 1 + len(top[1]) + len(bottom[1])
         return f"{days} day{'s' if days != 1 else ''}"
 
-    def prepare(self, size) -> None:
+    def prepare(self, size: tuple[int, int]) -> None:
         """density and enough days for `size` (before rendering, also for
         the title in the frame, which is drawn first)"""
         self._auto_density(size)
-        while not isinstance(self.body, StaticDayWalker) and "bottom" in self.ends_visible(size):
-            self.body._autoextend()
+        while not isinstance(self.days, StaticDayWalker) and "bottom" in self.ends_visible(size):
+            self.days._autoextend()
         self._size = size
 
     def render(self, size, focus=False):
         if self._init:
             self._init = False
-        self.prepare(size)
+        if len(size) == 2:
+            self.prepare(size)
         return super().render(size, focus)
 
     _density_size: tuple[int, int] | None = None
@@ -630,17 +689,21 @@ class DListBox(EventListBox):
             self._old_focus = self.focus_position
         except IndexError:
             pass
-        self.body.ensure_date(day)
+        self.days.ensure_date(day)
         self.clean()
 
-    def keypress(self, size: tuple[int], key: str | None) -> str | None:
+    def keypress(
+        self,
+        size: ListBoxSize,  # type: ignore[override]  # urwid.ListBox narrows Widget's size, too
+        key: str,
+    ) -> str | None:
         if key in self._conf["keybindings"]["up"]:
             key = "up"
         if key in self._conf["keybindings"]["down"]:
             key = "down"
 
         if key in self._conf["keybindings"]["today"]:
-            self.parent.calendar.base_widget.set_focus_date(dt.date.today())
+            self.parent.month_column.set_focus_date(dt.date.today())
 
         rval = super().keypress(size, key)
         self.clean()
@@ -649,7 +712,7 @@ class DListBox(EventListBox):
                 self._old_focus = self.focus_position
             except IndexError:
                 pass
-            day = self.body[self.body.focus].date
+            day = self.days.current_day
 
             # we need to save DateListBox.selected_date and reset it later, because
             # calling CalendarWalker.set_focus_date() calls back into
@@ -662,26 +725,28 @@ class DListBox(EventListBox):
 
     @property
     def focus_event(self):
-        return self.body.focus_event
+        return self.days.focus_event
 
     @property
     def current_date(self) -> dt.date:
-        return self.body.current_day
+        return self.days.current_day
 
     def refresh_titles(self, start, end, recurring):
-        self.body.refresh_titles(start, end, recurring)
+        self.days.refresh_titles(start, end, recurring)
 
-    def update_range(self, start: dt.date, end: dt.date, everything: bool = False) -> None:
-        if everything:
-            start = self.body.first_date
-            end = self.body.last_date
-        self.body.update_range(start, end)
+    def update_range(
+        self, start: dt.date | None, end: dt.date | None, everything: bool = False
+    ) -> None:
+        if everything or start is None or end is None:
+            start = self.days.first_date
+            end = self.days.last_date
+        self.days.update_range(start, end)
 
     def update_date_line(self):
-        self.body.update_date_line()
+        self.days.update_date_line()
 
 
-class DayWalker(urwid.SimpleFocusListWalker):
+class DayWalker(urwid.SimpleFocusListWalker["urwid.BoxAdapter[DateListBox]"]):
     """A list Walker that contains a list of DateListBox objects, each representing
     one day and associated events"""
 
@@ -857,7 +922,7 @@ class DayWalker(urwid.SimpleFocusListWalker):
                 return index
         return len(events)
 
-    def _get_events(self, day: dt.date) -> urwid.Widget:
+    def _get_events(self, day: dt.date) -> urwid.BoxAdapter[DateListBox]:
         """get all events on day, return a DateListBox of `U_Event()`s"""
         style = self.style
         self.events = self._events_on(day)
@@ -975,12 +1040,12 @@ class DayWalker(urwid.SimpleFocusListWalker):
         return True
 
     @property
-    def focus_event(self) -> U_Event:
-        return self[self.focus].original_widget.focus_event
+    def focus_event(self) -> U_Event | None:
+        return self[self.focus or 0].original_widget.focus_event
 
     @property
     def current_day(self) -> dt.date:
-        return self[self.focus].original_widget.date
+        return self[self.focus or 0].original_widget.date
 
     @property
     def first_date(self) -> dt.date:
@@ -1045,9 +1110,12 @@ class DateListBox(urwid.ListBox):
 
     selected_date = None
 
-    def __init__(self, content, date, has_header: bool = True) -> None:
+    def __init__(
+        self, content: urwid.SimpleFocusListWalker, date: dt.date, has_header: bool = True
+    ) -> None:
         self.date = date
         self.has_header = has_header
+        self.items = content  # (self.body, with its type)
         super().__init__(content)
 
     def __repr__(self) -> str:
@@ -1055,8 +1123,8 @@ class DateListBox(urwid.ListBox):
 
     __str__ = __repr__
 
-    def render(self, size, focus):
-        header = self.body[0].original_widget if self.has_header else None
+    def render(self, size, focus=False):
+        header = self.items[0].original_widget if self.has_header else None
         rule = isinstance(header, DateHeader) and header._style is not None
         rule = rule and header._style.day_header == "rule"
         if rule and header.day_focused != bool(focus):
@@ -1089,7 +1157,7 @@ class DateListBox(urwid.ListBox):
             return
         # we need to touch the title's content to make sure
         # that urwid re-renders the title
-        title = self.body[0].original_widget
+        title = find_child(self.items[0], DateHeader)
         title.set_text(title.get_text()[0])
 
     @property
@@ -1097,7 +1165,7 @@ class DateListBox(urwid.ListBox):
         widget = self.focus
         if widget is None or not isinstance(getattr(widget, "original_widget", None), U_Event):
             return None
-        return widget.original_widget
+        return find_child(widget, U_Event)
 
     def refresh_titles(self):
         """refresh the titles of all events"""
@@ -1138,6 +1206,7 @@ class EventColumn(urwid.WidgetWrap):
         self.clear_event_view()
         self._eventshown = None
         self.dlistbox = view
+        assert isinstance(view, urwid.Widget)  # views are urwid box widgets
         self.container.contents[0] = (view, self.container.options())
         view.ensure_date(date)
 
@@ -1195,7 +1264,7 @@ class EventColumn(urwid.WidgetWrap):
             right=RIGHT_MARGIN,
         )
         height = card.rows((self._size[0],))
-        datelist.body.insert(datelist.focus_position + 1, card)
+        datelist.items.insert(datelist.focus_position + 1, card)
         day.height += height
         self._inline = (day, card, height)
         return True
@@ -1235,7 +1304,7 @@ class EventColumn(urwid.WidgetWrap):
         if not isinstance(body, DayWalker) or body.focus is None:
             return
         datelist = body[body.focus].original_widget
-        for position, widget in enumerate(datelist.body):
+        for position, widget in enumerate(datelist.items):
             uevent = getattr(widget, "original_widget", None)
             if isinstance(uevent, U_Event) and uevent.event.uid == event.uid:
                 datelist.set_focus(position)
@@ -1496,8 +1565,9 @@ class EventColumn(urwid.WidgetWrap):
     def selectable(self):
         return True
 
-    def keypress(self, size: tuple[int], key: str | None) -> str | None:
-        self._size = size  # type: ignore[assignment]
+    def keypress(self, size: Size, key: str) -> str | None:
+        if len(size) == 2:
+            self._size = size
         if self.pane.details_shown:
             # like the inline card: any key closes the details column; enter on
             # the same event then edits it, enter on another one shows that one
@@ -1512,9 +1582,13 @@ class EventColumn(urwid.WidgetWrap):
             return None
         return self._keypress(size, key)
 
-    def _keypress(self, size: tuple[int], key: str | None) -> str | None:
-        handles_view_key = getattr(self.dlistbox, "handles_view_key", None)
-        if key in self._conf["keybindings"]["view"] and handles_view_key and handles_view_key():
+    def _keypress(self, size: Size, key: str) -> str | None:
+        view = self.dlistbox
+        if (
+            key in self._conf["keybindings"]["view"]
+            and isinstance(view, HandlesViewKey)
+            and view.handles_view_key()
+        ):
             # the view uses the key itself (e.g. the time grid's "+N" badge)
             self._eventshown = None
             self.clear_event_view()
@@ -1525,13 +1599,13 @@ class EventColumn(urwid.WidgetWrap):
 
         if key in self._conf["keybindings"]["new"]:
             # views may suggest a date or time range for the new event
-            new_event_range = getattr(self.dlistbox, "new_event_range", None)
-            span = new_event_range() if new_event_range is not None else None
+            view = self.dlistbox
+            span = view.new_event_range() if isinstance(view, HasNewEventRange) else None
             if span is not None:
                 self.new(*span)
             else:
                 self.new(self.focus_date, None)
-            key = None
+            return None
 
         if self.focus_event:
             if key in self._conf["keybindings"]["delete"]:
@@ -1539,10 +1613,10 @@ class EventColumn(urwid.WidgetWrap):
                 key = "down"
             elif key in self._conf["keybindings"]["duplicate"]:
                 self.duplicate()
-                key = None
+                return None
             elif key in self._conf["keybindings"]["export"]:
                 self.export_event()
-                key = None
+                return None
 
         rval = super().keypress(size, key)
         if self.focus_event:
@@ -1633,7 +1707,7 @@ class ClassicView(Pane):
         self._day_marking = self._conf["view"].get("day_marking", "calendar")
         calendar = CAttrMap(
             CalendarWidget(
-                on_date_change=self.eventscolumn.original_widget.set_focus_date,
+                on_date_change=self.event_column.set_focus_date,
                 keybindings=self._conf["keybindings"],
                 on_press=dict.fromkeys(self._conf["keybindings"]["new"], self.new_event),
                 firstweekday=self._conf["locale"]["firstweekday"],
@@ -1673,6 +1747,16 @@ class ClassicView(Pane):
             self.switch_view(default_view)
 
     HEAT_LEVELS = ((1, 1), (2, 2), (4, 3))  # (minimum number of events, level)
+
+    @property
+    def month_column(self) -> CalendarWidget:
+        """the month column (inside its frame and attribute map)"""
+        return find_child(self.calendar, CalendarWidget)
+
+    @property
+    def event_column(self) -> EventColumn:
+        """the right column (inside its frame and attribute map)"""
+        return find_child(self.eventscolumn, EventColumn)
 
     @property
     def details_shown(self) -> bool:
@@ -1792,7 +1876,7 @@ class ClassicView(Pane):
         """the title of the month column: the month in focus (`November`,
         `January 2027` in another year)"""
         try:
-            day = self.calendar.base_widget.focus_date
+            day = self.month_column.focus_date
         except (AttributeError, IndexError):
             return ""
         # the year only if it isn't this one
@@ -1802,7 +1886,7 @@ class ClassicView(Pane):
         """the title of the right column: the current view's `pane_title`
         (`Agenda`, the time grid's `Week 48 · Mon–Fri`), if it has one"""
         view = self._views.get(self._current_view) if hasattr(self, "_views") else None
-        return getattr(view, "pane_title", "") or ""
+        return view.pane_title if isinstance(view, HasPaneTitle) else ""
 
     def view_status(self) -> list:
         """right in the right column's top border: `2 hidden` while calendars
@@ -1811,7 +1895,7 @@ class ClassicView(Pane):
         if hidden:
             return [("frame warning", f"{hidden} hidden")]
         view = self._views.get(self._current_view) if hasattr(self, "_views") else None
-        status = getattr(view, "pane_status", "") or ""
+        status = view.pane_status if isinstance(view, HasPaneStatus) else ""
         return [("frame hint", status)] if status else []
 
     @property
@@ -1822,7 +1906,7 @@ class ClassicView(Pane):
     @property
     def details_open(self) -> bool:
         """an event's details are open (the card in the list or the column)"""
-        column = self.eventscolumn.original_widget
+        column = self.event_column
         return self.details_shown or getattr(column, "_inline", None) is not None
 
     def details_hints(self) -> list:
@@ -1866,7 +1950,7 @@ class ClassicView(Pane):
         for marks in self._deleted.values():
             marks.clear()
         today = dt.date.today()
-        self.eventscolumn.original_widget.refresh_titles(today, today, True)
+        self.event_column.refresh_titles(today, today, True)
         self._marks_changed()
 
     def switch_view(self, name: str | None = None) -> None:
@@ -1882,8 +1966,10 @@ class ClassicView(Pane):
                 logger.error(f"Could not load view `{name}`: {error}")
                 del self._views[name]
                 return
+        view = self._views[name]
+        assert view is not None  # loaded above
         self._current_view = name
-        self.eventscolumn.original_widget.set_view(self._views[name])
+        self.event_column.set_view(view)
         tabs = self._conf["view"].get("header_view_tabs", True) and self._conf["view"].get(
             "header_format"
         )
@@ -1986,11 +2072,11 @@ class ClassicView(Pane):
         else:
             self.collection.hidden_calendars.add(name)
         # the month column: restyle the loaded weeks in place (no scrolling)
-        walker = self.calendar.base_widget.walker
-        focus = walker.focus, walker[walker.focus].focus_col
+        walker = self.month_column.walker
+        focus = walker.focus_row, walker.week(walker.focus_row).focus_position
         for row in range(len(walker)):
-            for column in range(1, 8):
-                walker[row][column].reset_styles((row, column) == focus)
+            for column, day in enumerate(walker.week(row).days(), 1):
+                day.reset_styles((row, column) == focus)
         # every view (also those not shown right now) reloads its events
         for view in self._views.values():
             if view is not None:
@@ -2016,16 +2102,16 @@ class ClassicView(Pane):
     def focus_date(self) -> dt.date:
         """the day in focus (in the month column or the right column)"""
         if self._columns.focus_position == 0:
-            return self.calendar.base_widget.focus_date
-        return self.eventscolumn.original_widget.focus_date
+            return self.month_column.focus_date
+        return self.event_column.focus_date
 
     def jump_to_date(self, day: dt.date, announce: bool = False) -> None:
         """bring `day` into focus in the month column and the right column
         (list, time grid, ...); a jump to another month is announced in the
         header (`→ March 2027`), with `announce` always"""
         before = self.focus_date
-        self.calendar.base_widget.set_focus_date(day)
-        self.eventscolumn.original_widget.focus_date = day
+        self.month_column.set_focus_date(day)
+        self.event_column.focus_date = day
         if self.window is not None and (
             announce or (day.year, day.month) != (before.year, before.month)
         ):
@@ -2044,7 +2130,7 @@ class ClassicView(Pane):
 
         self.window.prompt("go to", jump)
 
-    def keypress(self, size: tuple[int], key: str | None) -> str | None:
+    def keypress(self, size: Size, key: str) -> str | None:
         binds = self._conf["keybindings"]
         for command, months in MONTH_STEPS.items():
             if key in binds.get(command, []):
@@ -2191,13 +2277,13 @@ def _urwid_palette_entry(
 
 
 def _add_calendar_colors(
-    palette: list[tuple[str, ...]],
-    collection: "CalendarCollection",
+    palette: list[colors.PaletteEntry],
+    collection: CalendarCollection,
     color_mode: Literal["256colors", "rgb"],
     base: str | None = None,
     attr_template: str = "calendar {}",
     highlight: bool = True,
-) -> list[tuple[str, ...]]:
+) -> list[colors.PaletteEntry]:
     """Add the colors for the defined calendars to the palette.
 
     We support setting a fixed background or foreground color that we extract
@@ -2215,11 +2301,11 @@ def _add_calendar_colors(
     for attr in palette:
         if base and attr[0] == base:
             if color_mode == "rgb" and len(attr) >= 5:
-                bg_color = attr[5]
-                fg_color = attr[4]
+                bg_color = attr[5] or ""
+                fg_color = attr[4] or ""
             else:
-                bg_color = attr[2]
-                fg_color = attr[1]
+                bg_color = attr[2] or ""
+                fg_color = attr[1] or ""
 
     for cal in collection.calendars:
         if cal["color"] == "":
@@ -2291,7 +2377,7 @@ def footer_hints(keybindings: dict[str, list[str]], quit_keys: list[str]) -> lis
 class ThemePalette(NamedTuple):
     """the urwid palette of a theme and what ikhal's window needs to know of it"""
 
-    palette: list[tuple[str, ...]]
+    palette: list[colors.PaletteEntry]
     # the theme's semantic colours (bg, acc, ...), e.g. for colours plugins compute
     theme_colors: dict[str, str]
     # the theme paints its own background
@@ -2321,17 +2407,19 @@ def build_palette(
         raise FatalError
     semantic = colors.is_semantic_theme(theme_source)
     # the theme's background and accent, e.g. for colours plugins compute
-    if semantic:
-        theme_colors = dict(theme_source)  # type: ignore[arg-type]
-    elif colors.theme_is_dark(theme_source, theme_name):
-        theme_colors = dict(colors.NEUTRAL_DARK)
-    else:
-        theme_colors = dict(colors.NEUTRAL_LIGHT)
-    if semantic:
+    theme_colors: dict[str, str]
+    theme: list[colors.PaletteEntry]
+    if colors.is_semantic_theme(theme_source):
+        theme_colors = dict(theme_source)
         # themes can be given as a few semantic colours (see colors.ROLES)
-        theme = colors.expand_theme(theme_source, color_mode)  # type: ignore[arg-type]
+        theme = colors.expand_theme(theme_source, color_mode)
+    elif isinstance(theme_source, list):
+        dark = colors.theme_is_dark(theme_source, theme_name)
+        theme_colors = dict(colors.NEUTRAL_DARK if dark else colors.NEUTRAL_LIGHT)
+        theme = list(theme_source)
     else:
-        theme = list(theme_source)  # type: ignore[arg-type]
+        logger.fatal(f"Theme {theme_name} is neither a palette nor a dict of semantic colours")
+        raise FatalError
 
     palette = _add_calendar_colors(
         theme,
@@ -2373,7 +2461,7 @@ def build_palette(
             )
         )
 
-    def merge_palettes(pallete_a, pallete_b) -> list[tuple[str, ...]]:
+    def merge_palettes(pallete_a, pallete_b) -> list[colors.PaletteEntry]:
         """Merge two palettes together, with the second palette taking priority."""
         merged = {}
         for entry in pallete_a:
@@ -2485,9 +2573,11 @@ def start_pane(
     logger.addHandler(header_handler)
 
     frame.open(pane, callback)
+    screen = urwid.display.raw.Screen()
     loop = urwid.MainLoop(
         widget=root_widget(frame),
-        palette=palette,
+        palette=colors.urwid_palette(palette),
+        screen=screen,
         unhandled_input=frame.on_key_press,
         pop_ups=False,  # root_widget() hosts the pop-ups
         handle_mouse=pane._conf["default"]["enable_mouse"],
@@ -2507,9 +2597,8 @@ def start_pane(
 
     loop.set_alarm_in(60, check_for_updates, pane)
 
-    colors_ = 2**24 if color_mode == "rgb" else 256
-    loop.screen.set_terminal_properties(
-        colors=colors_,
+    screen.set_terminal_properties(
+        colors=16_777_216 if color_mode == "rgb" else 256,
         bright_is_bold=pane._conf["view"]["bold_for_light_color"],
     )
 

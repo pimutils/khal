@@ -62,6 +62,7 @@ def edit(uid: str, field: str = "summary"):
         screen.render()
         screen.column.edit(screen.event(uid))
         editor = editor_of(screen)
+        assert editor._layout is not None
         focus_field(editor._layout.listbox, field)
 
     return scenario

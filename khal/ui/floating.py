@@ -30,7 +30,7 @@ greyscale `backdrop` palette twins (see `khal.ui.colors.add_backdrop_twins`).
 from __future__ import annotations
 
 import datetime as dt
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 import urwid
@@ -216,7 +216,7 @@ FIXED_KEYS = {"help": ["?", "f1"], "tab": ["tab"], "shift tab": ["shift tab"], "
 
 def help_groups(
     keybindings: dict[str, list[str]],
-    extra: list[tuple[str, list[tuple[str, list[str], str]]]] = (),  # type: ignore[assignment]
+    extra: Sequence[tuple[str, list[tuple[str, list[str], str]]]] = (),
 ) -> list[tuple[str, list[HelpEntry]]]:
     """the groups shown in the help, `extra` are the sections plugins provide"""
     groups = []
@@ -253,7 +253,9 @@ class HelpView(urwid.WidgetWrap):
         self._groups = groups
         self._glyphs = glyphs
         self._maxcol: int | None = None
-        self._walker = urwid.SimpleListWalker([])
+        self._walker: urwid.SimpleListWalker[urwid.Divider | urwid.Columns] = (
+            urwid.SimpleListWalker([])
+        )
         self.listbox = urwid.ListBox(self._walker)
         super().__init__(self.listbox)
 
@@ -295,7 +297,7 @@ class HelpView(urwid.WidgetWrap):
             for block in column:
                 lines += [*block, ""]
             flowed.append(lines)
-        rows: list[urwid.Widget] = [urwid.Divider()]
+        rows: list[urwid.Divider | urwid.Columns] = [urwid.Divider()]
         for index in range(max(len(lines) for lines in flowed)):
             cells = [
                 urwid.Text(lines[index] if index < len(lines) else "", wrap="ellipsis")
@@ -451,7 +453,7 @@ class LogView(urwid.WidgetWrap):
     """
 
     def __init__(self, entries: list[LogEntry]) -> None:
-        rows: list[urwid.Widget] = []
+        rows: list[urwid.Columns | urwid.Text] = []
         for entry in entries:
             tag, attr = log_tag(entry.level)
             rows.append(

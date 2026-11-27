@@ -27,11 +27,24 @@ if they are large, into their own files
 
 import datetime as dt
 import re
+import typing
 import weakref
 from collections.abc import Callable
 from dataclasses import dataclass
 
 import urwid
+
+# the size urwid passes to render(), keypress() and friends: () for fixed,
+# (maxcol,) for flow and (maxcol, maxrow) for box widgets
+Size = tuple[()] | tuple[int] | tuple[int, int]
+# the size of a ListBox (flow or box)
+ListBoxSize = tuple[int] | tuple[int, int]
+
+
+class FlowWidget(typing.Protocol):
+    """a widget that can be rendered with a (maxcol,) size"""
+
+    def rows(self, size: tuple[int], focus: bool = False) -> int: ...
 
 
 class DateConversionError(Exception):
@@ -75,10 +88,16 @@ def goto_end_of_line(text):
     return text.find("\n")
 
 
+def markup_text(markup) -> str:
+    """the text of urwid markup (urwid also allows bytes)"""
+    text = urwid.decompose_tagmarkup(markup)[0]
+    return text.decode() if isinstance(text, bytes) else text
+
+
 class ExtendedEdit(urwid.Edit):
     """A text editing widget supporting some more editing commands"""
 
-    def keypress(self, size: tuple[int], key: str | None) -> str | None:
+    def keypress(self, size: tuple[int], key: str) -> str | None:  # type: ignore[override]  # urwid.Edit narrows the size, too
         if key == "ctrl w":
             self._delete_word()
         elif key == "ctrl u":
@@ -707,11 +726,11 @@ class ActionButton(urwid.WidgetWrap):
 
     @property
     def width(self) -> int:
-        text, _ = urwid.decompose_tagmarkup(self._label)
+        text = markup_text(self._label)
         return urwid.calc_width(text, 0, len(text))
 
     def get_label(self) -> str:
-        return urwid.decompose_tagmarkup(self._label)[0]
+        return markup_text(self._label)
 
     def keypress(self, size, key):
         if key in ("enter", " "):
@@ -730,15 +749,16 @@ class PlaceholderEdit(ExtendedEdit):
     """An ExtendedEdit that shows a (dimmed) placeholder while empty and unfocused"""
 
     def __init__(self, *args, placeholder="", **kwargs) -> None:
-        self._placeholder = urwid.Text(placeholder, wrap="ellipsis")
+        # (not `_placeholder`: urwid >= 5 Edit has an attribute of that name)
+        self._hint_text = urwid.Text(placeholder, wrap="ellipsis")
         super().__init__(*args, **kwargs)
 
     def set_placeholder(self, markup) -> None:
-        self._placeholder.set_text(markup)
+        self._hint_text.set_text(markup)
         self._invalidate()
 
     def _show_placeholder(self, focus: bool) -> bool:
-        return not focus and self.edit_text == "" and self._placeholder.text != ""
+        return not focus and self.edit_text == "" and self._hint_text.text != ""
 
     def rows(self, size, focus=False):
         if self._show_placeholder(focus):
@@ -747,7 +767,7 @@ class PlaceholderEdit(ExtendedEdit):
 
     def render(self, size, focus=False):
         if self._show_placeholder(focus):
-            return self._placeholder.render(size)
+            return self._hint_text.render(size)
         return super().render(size, focus)
 
 
@@ -976,7 +996,7 @@ class AlarmsEditor(DelegateNext, urwid.WidgetWrap):
             rows.append(urwid.Text(self._style.header))
         rows.extend(self._style.row(editor, index) for index, editor in enumerate(self._editors))
         rows.append(self._style.row(self._style.add_widget(self.add_alarm), -1))
-        self.pile.contents[:] = [(row, ("weight", 1)) for row in rows]
+        self.pile.contents[:] = [(row, self.pile.options("weight", 1)) for row in rows]
         offset = 0 if self._style.header is None else 1
         if focus is not None:
             self.pile.focus_position = offset + max(0, min(focus, len(self._editors)))
@@ -1082,24 +1102,24 @@ class FocusLineBoxWidth(urwid.WidgetDecoration, urwid.WidgetWrap):
         self._topline = TopBorder(("┌", "┐"), "─", "frame", title, status, title_attr)
         self._bottomline = urwid.Columns(
             [
-                ("fixed", 1, urwid.AttrMap(urwid.Text("└"), "frame")),
+                (1, urwid.AttrMap(urwid.Text("└"), "frame")),
                 hline,
-                ("fixed", 1, urwid.AttrMap(urwid.Text("┘"), "frame")),
+                (1, urwid.AttrMap(urwid.Text("┘"), "frame")),
             ]
         )
         self._bottomline_focus = urwid.Columns(
             [
-                ("fixed", 1, urwid.AttrMap(urwid.Text("┗"), "frame focus")),
+                (1, urwid.AttrMap(urwid.Text("┗"), "frame focus")),
                 hline_focus,
-                ("fixed", 1, urwid.AttrMap(urwid.Text("┛"), "frame focus")),
+                (1, urwid.AttrMap(urwid.Text("┛"), "frame focus")),
             ]
         )
         self._middle = urwid.Columns(
-            [("fixed", 1, self._vline), widget, ("fixed", 1, self._vline)],
+            [(1, self._vline), widget, (1, self._vline)],
             focus_column=1,
         )
         self._all = urwid.Pile(
-            [("flow", self._topline), self._middle, ("flow", self._bottomline)],
+            [("pack", self._topline), self._middle, ("pack", self._bottomline)],
             focus_item=1,
         )
 
@@ -1129,20 +1149,20 @@ class FocusLineBoxColor(urwid.WidgetDecoration, urwid.WidgetWrap):
         self._bottomline = urwid.AttrMap(
             urwid.Columns(
                 [
-                    ("fixed", 1, urwid.Text("╰")),
+                    (1, urwid.Text("╰")),
                     hline,
-                    ("fixed", 1, urwid.Text("╯")),
+                    (1, urwid.Text("╯")),
                 ]
             ),
             "frame",
         )
 
         self._middle = urwid.Columns(
-            [("fixed", 1, self._vline), widget, ("fixed", 1, self._vline)],
+            [(1, self._vline), widget, (1, self._vline)],
             focus_column=1,
         )
         self._all = urwid.Pile(
-            [("flow", self._topline), self._middle, ("flow", self._bottomline)],
+            [("pack", self._topline), self._middle, ("pack", self._bottomline)],
             focus_item=1,
         )
 
@@ -1160,7 +1180,7 @@ class FocusLineBoxColor(urwid.WidgetDecoration, urwid.WidgetWrap):
 class FocusLineBoxTop(urwid.WidgetDecoration, urwid.WidgetWrap):
     def __init__(self, widget, title="", status=None, title_attr: str = "editor title") -> None:
         self._topline = TopBorder(("━", "━"), "━", "frame", title, status, title_attr)
-        self._all = urwid.Pile([("flow", self._topline), widget], focus_item=1)
+        self._all = urwid.Pile([("pack", self._topline), widget], focus_item=1)
         urwid.WidgetWrap.__init__(self, self._all)
         self._original_widget = widget
 
@@ -1198,10 +1218,8 @@ def button(
     **kwargs,
 ):
     """wrapping an urwid button in attrmap and padding"""
-    button_ = urwid.Button(*args, **kwargs)
-    button_ = urwid.AttrMap(button_, attr_map=attr_map, focus_map=focus_map)
-    button_ = urwid.Padding(button_, left=padding_left, right=padding_right)
-    return button_
+    mapped = urwid.AttrMap(urwid.Button(*args, **kwargs), attr_map=attr_map, focus_map=focus_map)
+    return urwid.Padding(mapped, left=padding_left, right=padding_right)
 
 
 class CAttrMap(urwid.AttrMap):
@@ -1266,3 +1284,30 @@ class PopUpTarget(urwid.PopUpTarget):
                 overlay.set_overlay_parameters(
                     align="left", width=width, valign="top", height=height, left=left, top=top
                 )
+
+
+W = typing.TypeVar("W", bound=urwid.Widget)
+
+
+def find_child(widget: object, cls: type[W]) -> W:
+    """the first widget of type `cls` in `widget` or the widgets it wraps
+    (decorations like AttrMap and Padding, WidgetWrap, PopUpLauncher), so the
+    static type survives chains like `x.original_widget.base_widget`
+
+    :raises TypeError: if there is none
+    """
+    current: object = widget
+    seen = 0
+    while current is not None and seen < 32:
+        if isinstance(current, cls):
+            return current
+        if isinstance(current, urwid.WidgetDecoration):
+            current = current.original_widget
+        elif isinstance(current, urwid.WidgetWrap):
+            current = current._w
+        elif isinstance(current, urwid.WidgetPlaceholder):
+            current = current.original_widget
+        else:
+            break
+        seen += 1
+    raise TypeError(f"no {cls.__name__} in {widget!r}")

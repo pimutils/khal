@@ -2,6 +2,7 @@ import datetime as dt
 
 import icalendar
 
+from khal.ui.calendarwidget import CalendarWidget
 from khal.ui.editor import RecurrenceEditor, StartEndEditor
 from tests.utils import BERLIN, LOCALE_BERLIN
 
@@ -27,18 +28,21 @@ def test_popup(monkeypatch):
     #405
     """
 
-    class FakeCalendar:
-        def store(self, *args, **kwargs):
-            self.args = args
-            self.kwargs = kwargs
+    calls = []
+    original_init = CalendarWidget.__init__
 
-    fake = FakeCalendar()
-    monkeypatch.setattr("khal.ui.calendarwidget.CalendarWidget.__init__", fake.store)
+    # record the arguments, but still build a real widget, urwid >= 5.2's
+    # LineBox needs a fully initialized widget to wrap
+    def spy_init(self, *args, **kwargs):
+        calls.append(kwargs)
+        original_init(self, *args, **kwargs)
+
+    monkeypatch.setattr(CalendarWidget, "__init__", spy_init)
     see = StartEndEditor(START, END, CONF)
     see.widgets.startdate.keypress((22,), "enter")
-    assert fake.kwargs["initial"] == dt.date(2015, 4, 26)
+    assert calls[-1]["initial"] == dt.date(2015, 4, 26)
     see.widgets.enddate.keypress((22,), "enter")
-    assert fake.kwargs["initial"] == dt.date(2015, 4, 27)
+    assert calls[-1]["initial"] == dt.date(2015, 4, 27)
 
 
 def test_check_understood_rrule():

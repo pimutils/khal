@@ -134,12 +134,14 @@ class Finder(urwid.WidgetWrap):
         self.total = 0
         self.edit = ExtendedEdit(caption=("float key", "› "))
         self._count = urwid.Text("", align="right")
-        self._walker = urwid.SimpleFocusListWalker([])
+        self._walker: urwid.SimpleFocusListWalker[ResultRow] = urwid.SimpleFocusListWalker([])
         self._list = urwid.ListBox(self._walker)
         rule = urwid.AttrMap(urwid.Divider(self._glyphs.rule), "editor rule")
         top = urwid.Columns([self.edit, (9, self._count)], dividechars=1)
         find = urwid.Pile([("pack", top), ("pack", rule), self._list], focus_item=0)
-        self._preview = urwid.WidgetPlaceholder(urwid.SolidFill(" "))
+        self._preview: urwid.WidgetPlaceholder[urwid.Widget] = urwid.WidgetPlaceholder(
+            urwid.SolidFill(" ")
+        )
         columns = urwid.Columns(
             [
                 float_box("Find", find, "esc", self._glyphs),
@@ -171,37 +173,41 @@ class Finder(urwid.WidgetWrap):
         else:
             self._update_preview()
 
+    @property
+    def _position(self) -> int | None:
+        """the position of the selected row (None: no results)"""
+        return self._walker.focus if self._walker else None
+
     def _select(self, position: int) -> None:
-        if not self._walker:
+        if self._position is None:
             return
-        self._walker.get_focus()[0].set_selected(False)
+        self._walker[self._position].set_selected(False)
         self._walker.set_focus(max(0, min(position, len(self._walker) - 1)))
-        self._walker.get_focus()[0].set_selected(True)
+        self._walker[self._walker.focus or 0].set_selected(True)
         self._update_preview()
 
     @property
     def selected(self):
-        if not self._walker:
-            return None
-        return self._walker.get_focus()[0].event
+        position = self._position
+        return None if position is None else self._walker[position].event
 
     def _update_preview(self) -> None:
         event = self.selected
-        if self.results:
-            position = self._walker.get_focus()[1] + 1
+        if self.results and self._position is not None:
+            position = self._position + 1
             more = "+" if self.total > len(self.results) else ""
             self._count.set_text(("float dim", f"{position}/{len(self.results)}{more}"))
         else:
             self._count.set_text(("float dim", "0/0" if self.query.strip() else ""))
         if event is None:
-            self._preview.original_widget = urwid.SolidFill(" ")
+            self._preview.original_widget = urwid.Filler(urwid.Pile([]), valign="top")
             return
         rows = details_rows(event, self._conf, self._glyphs, rule=False)[1:]
         self._preview.original_widget = urwid.Filler(urwid.Pile(rows), valign="top")
 
     def _move(self, delta: int) -> None:
-        if self._walker:
-            self._select(self._walker.get_focus()[1] + delta)
+        if self._position is not None:
+            self._select(self._position + delta)
 
     # -- urwid
 

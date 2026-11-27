@@ -119,24 +119,24 @@ class Pane(urwid.WidgetWrap):
 
     def scrollable_dialog(
         self,
-        text: str | list[urwid.Widget],
+        text: str | list[urwid.Text],
         buttons: list[tuple[str, Callable]] | None = None,
         title: str = "",
         hint: str = "esc close",
     ) -> None:
-        """Open a scrollable floating box (closed with esc)."""
-        if isinstance(text, str):
-            body = urwid.ListBox([urwid.Text(line) for line in text.splitlines()])
-        else:
-            body = urwid.ListBox(text)
+        """Open a scrollable floating box (closed with esc).
+
+        :param text: a text or (flow) widgets, one per row
+        """
+        lines = [urwid.Text(line) for line in text.splitlines()] if isinstance(text, str) else text
+        body = urwid.ListBox(urwid.SimpleFocusListWalker(lines))
+        content: urwid.Widget = body
         if buttons:
-            buttons = NColumns(
+            row = NColumns(
                 [urwid.Button(label, on_press=func) for label, func in buttons],
                 outermost=True,
             )
-            content = urwid.Pile([body, ("pack", buttons)])
-        else:
-            content = body
+            content = urwid.Pile([body, ("pack", row)])
         assert self.window is not None
         self.window.open_floating(
             float_box(title, content, hint), width=("relative", 80), height=("relative", 80)
@@ -239,6 +239,12 @@ class PromptLine(urwid.WidgetWrap):
         return None
 
 
+class FloatingOverlay(urwid.Overlay):
+    """a floating box over the current pane; the window shows its `title`"""
+
+    title: str = ""
+
+
 class HeaderLine(urwid.WidgetWrap):
     """the window's header line: a message (for a few seconds) or the
     header of the pane (`header_markup(maxcol)`, which can adapt to the
@@ -264,16 +270,20 @@ class HeaderLine(urwid.WidgetWrap):
                     return markup
                 break
         text, attrs = self._text.get_text()
+        if isinstance(text, bytes):
+            text = text.decode()
         return self._text_markup(text, attrs) if attrs else text
 
     @property
     def text(self) -> str:
         """the title or message (without the pane's own header)"""
-        return self._text.text
+        text = self._text.text
+        return text.decode() if isinstance(text, bytes) else text
 
     @staticmethod
     def _text_markup(text: str, attrs) -> list:
-        markup, position = [], 0
+        markup: list = []
+        position = 0
         for attr, length in attrs:
             markup.append((attr, text[position : position + length]))
             position += length
@@ -331,7 +341,7 @@ class Window(urwid.Frame):
         self._original_w = None
         self.quit_keys = quit_keys
         self.log_key = log_key
-        self.loop = None
+        self.loop: urwid.MainLoop | None = None
         self._log: list[LogEntry] = []
         self._header_is_warning = False
         self._message_serial = 0
@@ -372,7 +382,9 @@ class Window(urwid.Frame):
         behind = self._get_current_pane()
         if self.backdrop is not None and backdrop:
             behind = urwid.AttrMap(behind, self.backdrop)
-        overlay = urwid.Overlay(box, behind, "center", width, "middle", height, min_width=min_width)
+        overlay = FloatingOverlay(
+            box, behind, "center", width, "middle", height, min_width=min_width
+        )
         overlay.title = getattr(self._get_current_pane(), "title", "")
         self.open(overlay, callback)
         return overlay
@@ -416,7 +428,7 @@ class Window(urwid.Frame):
         return key
 
     def _update(self, pane):
-        self.set_body(pane)
+        self.body = pane
         hints = getattr(pane, "footer_hints", None)
         if hints is not None:  # key hints for the current context
             self._footer_text.set_text(hints)

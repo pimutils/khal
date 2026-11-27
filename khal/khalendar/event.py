@@ -304,7 +304,7 @@ class Event:
         # [locale] *_symbol options override single symbols
         for key, option in SYMBOL_OPTIONS.items():
             value = self._locale.get(option) if hasattr(self._locale, "get") else None
-            if value:
+            if isinstance(value, str) and value:
                 symbols[key] = value
         return symbols
 
@@ -899,6 +899,7 @@ class Event:
             pass
         if "RRULE" not in proto:
             return True
+        until: dt.date
         if isinstance(instance, dt.datetime):
             until = instance - dt.timedelta(seconds=1)
             if until.tzinfo is not None:

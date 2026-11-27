@@ -19,8 +19,33 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import typing
 
-dark = [
+# an urwid palette entry: name, 16 colour fg, bg, mono, high colour fg, bg
+# (mono is often None, the name never)
+PaletteEntry = tuple[str | None, ...]
+
+
+def entry_name(entry: PaletteEntry) -> str:
+    return entry[0] or ""
+
+
+UrwidPaletteEntry = tuple[str, str, str, "str | None", "str | None", "str | None"]
+
+
+def urwid_palette(palette: list[PaletteEntry]) -> list[UrwidPaletteEntry]:
+    """`palette` with every entry in urwid's full form: name, foreground,
+    background, mono, high colour foreground, high colour background"""
+    full: list[UrwidPaletteEntry] = []
+    for entry in palette:
+        padded = (*entry, *([None] * (6 - len(entry))))
+        full.append(
+            (entry_name(entry), padded[1] or "", padded[2] or "", padded[3], padded[4], padded[5])
+        )
+    return full
+
+
+dark: list[PaletteEntry] = [
     ("header", "white", "black"),
     ("footer", "white", "black"),
     ("line header", "black", "white", "bold"),
@@ -65,7 +90,7 @@ dark = [
     ("popupper", "white", "dark cyan"),
     ("caption", "white", "", "bold"),
 ]
-light = [
+light: list[PaletteEntry] = [
     ("header", "black", "white"),
     ("footer", "black", "white"),
     ("line header", "black", "white", "bold"),
@@ -107,7 +132,11 @@ light = [
     ("caption", "black", "", ""),
 ]
 
-themes: dict[str, list[tuple[str, ...]]] = {"light": light, "dark": dark}
+# a theme is a full palette or (see SEMANTIC_THEMES) a few semantic colours
+SemanticTheme = dict[str, typing.Any]
+Theme = list[PaletteEntry] | SemanticTheme
+
+themes: dict[str, Theme] = {"light": light, "dark": dark}
 
 
 # the entries of the new UI parts are generated at the end of this module
@@ -133,8 +162,8 @@ def _settings(spec: str) -> list[str]:
 
 
 def backdrop_twin(
-    entry: tuple[str, ...], dark_theme: bool = True, amount: float = 0.4
-) -> tuple[str, ...]:
+    entry: PaletteEntry, dark_theme: bool = True, amount: float = 0.4
+) -> PaletteEntry:
     """the greyscale twin `<name> grey` of a palette entry
 
     High colours are converted to grey and blended `amount` towards the
@@ -142,43 +171,48 @@ def backdrop_twin(
     """
     import urwid
 
-    name, fg, bg = entry[0], entry[1] or "", entry[2] or ""
+    name, fg, bg = entry_name(entry), entry[1] or "", entry[2] or ""
     mono = entry[3] if len(entry) > 3 else None
     fg_high = (entry[4] if len(entry) > 4 else None) or fg
     bg_high = (entry[5] if len(entry) > 5 else None) or bg
     background = (0, 0, 0) if dark_theme else (255, 255, 255)
     foreground = (229, 229, 229) if dark_theme else (0, 0, 0)
+    fg_rgb: tuple[int, int, int] = foreground
+    bg_rgb: tuple[int, int, int] | None = None
     try:
-        values = urwid.AttrSpec(fg_high, bg_high, 2**24).get_rgb_values()
+        r, g, b, br, bgreen, bb = urwid.AttrSpec(fg_high, bg_high, 16_777_216).get_rgb_values()
     except Exception:  # anything urwid can't parse just becomes grey
-        values = (None,) * 6
-    fg_rgb = values[:3] if values[0] is not None else foreground
+        pass
+    else:
+        if r is not None and g is not None and b is not None:
+            fg_rgb = (r, g, b)
+        if br is not None and bgreen is not None and bb is not None:
+            bg_rgb = (br, bgreen, bb)
     settings = _settings(fg) + (_settings(mono) if isinstance(mono, str) else [])
     settings = sorted(set(settings))
     fg_grey = ",".join([_grey(fg_rgb, background, amount), *settings])
-    bg_grey = "" if values[3] is None else _grey(values[3:], background, amount * 1.5)
+    bg_grey = "" if bg_rgb is None else _grey(bg_rgb, background, amount * 1.5)
     # 16 colours: one visible grey-ish colour for everything (not "dark gray",
     # which is invisible with e.g. Solarized)
     fg16 = ",".join(["light gray" if dark_theme else "dark cyan", *settings])
-    return (name + BACKDROP_SUFFIX, fg16, "", None, fg_grey, bg_grey)
+    return (f"{name}{BACKDROP_SUFFIX}", fg16, "", None, fg_grey, bg_grey)
 
 
-def add_backdrop_twins(
-    palette: list[tuple[str, ...]], dark_theme: bool = True
-) -> list[tuple[str, ...]]:
+def add_backdrop_twins(palette: list[PaletteEntry], dark_theme: bool = True) -> list[PaletteEntry]:
     """`palette` plus a greyscale twin for every entry (and for `backdrop`)"""
-    entries = [entry for entry in palette if not entry[0].endswith(BACKDROP_SUFFIX)]
+    entries = [entry for entry in palette if not entry_name(entry).endswith(BACKDROP_SUFFIX)]
     twins = [backdrop_twin(entry, dark_theme) for entry in entries]
     default = backdrop_twin((BACKDROP_DEFAULT, "", ""), dark_theme)
     return [*entries, *twins, (BACKDROP_DEFAULT, *default[1:])]
 
 
-def backdrop_map(palette: list[tuple[str, ...]]) -> dict[str | None, str]:
+def backdrop_map(palette: list[PaletteEntry]) -> dict[str | None, str]:
     """attribute map for an AttrMap that draws a widget with the twins"""
     mapping: dict[str | None, str] = {None: BACKDROP_DEFAULT}
     for entry in palette:
-        if not entry[0].endswith(BACKDROP_SUFFIX) and entry[0] != BACKDROP_DEFAULT:
-            mapping[entry[0]] = entry[0] + BACKDROP_SUFFIX
+        name = entry_name(entry)
+        if not name.endswith(BACKDROP_SUFFIX) and name != BACKDROP_DEFAULT:
+            mapping[name] = name + BACKDROP_SUFFIX
     return mapping
 
 
@@ -413,7 +447,7 @@ def blend(color: str, towards: str, amount: float) -> str:
     return f"#{r:02x}{g:02x}{bl:02x}"
 
 
-def is_semantic_theme(theme) -> bool:
+def is_semantic_theme(theme: object) -> typing.TypeGuard[SemanticTheme]:
     return isinstance(theme, dict) and "bg" in theme and "txt" in theme
 
 
@@ -453,7 +487,7 @@ def expand_theme(
     color_mode: str = "rgb",
     names: list[str] | None = None,
     transparent: bool = False,
-) -> list[tuple[str, ...]]:
+) -> list[PaletteEntry]:
     """a full urwid palette from a semantic theme (see ROLES)
 
     :param transparent: keep the terminal's background (for `dark`/`light`):
@@ -481,9 +515,9 @@ def expand_theme(
             return table.get(role, "")
         return name
 
-    palette = []
+    palette: list[PaletteEntry] = []
     if names is None:
-        names = list(dict.fromkeys([entry[0] for entry in dark] + ["body"]))
+        names = list(dict.fromkeys([entry_name(entry) for entry in dark] + ["body"]))
     for name in names:
         fg_role, bg_role, settings = ROLES.get(name, ("txt", "bg", ""))
         fg16 = ",".join(filter(None, [basic_fg(fg_role, bg_role), settings]))
@@ -505,7 +539,7 @@ def theme_is_dark(theme, name: str = "") -> bool:
 # gruvbox8 (https://github.com/lifepillar/vim-gruvbox8), after gruvbox by
 # morhetz (https://github.com/morhetz/gruvbox). ink, fjord, ember and paper are
 # original for khal.
-SEMANTIC_THEMES: dict[str, dict] = {
+SEMANTIC_THEMES: dict[str, SemanticTheme] = {
     "retrobox": {
         "bg": "#1c1c1c",
         "dim": "#7c6f64",
@@ -622,7 +656,7 @@ SEMANTIC_THEMES: dict[str, dict] = {
     },  # fmt: skip
 }
 
-themes.update(SEMANTIC_THEMES)  # type: ignore[arg-type]
+themes.update(SEMANTIC_THEMES)
 for _palette in (dark, light):
     _palette.append(("body", "", ""))
 
