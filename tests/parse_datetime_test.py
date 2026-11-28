@@ -1,4 +1,5 @@
 import datetime as dt
+import warnings
 from collections import OrderedDict
 
 import pytest
@@ -8,6 +9,7 @@ from khal.exceptions import DateTimeParseError, FatalError
 from khal.icalendar import new_vevent
 from khal.parse_datetime import (
     construct_daynames,
+    datetimefstr,
     eventinfofstr,
     guessdatetimefstr,
     guessrangefstr,
@@ -544,6 +546,70 @@ def test_leap_year():
         with freeze_time("2016-1-1 20:21:22"):
             event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
             assert _replace_uid(event).to_ical() == vevent
+
+
+def test_datetimefstr_without_year_does_not_warn():
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        parsed = datetimefstr(["17.03.", "16:00"], "%d.%m. %H:%M", dt.date(2016, 9, 19))
+        assert parsed == dt.datetime(2017, 3, 17, 16, 0)
+        leap = datetimefstr(["29.02."], "%d.%m.", dt.date(2016, 1, 1), in_future=False)
+        assert leap == dt.datetime(2016, 2, 29)
+        with pytest.raises(ValueError, match="^$"):
+            datetimefstr(["29.02."], "%d.%m.", dt.date(2015, 1, 1))
+
+
+@pytest.mark.parametrize(
+    ("dateformat", "text"),
+    [
+        ("%d.%m.%%Y", "17.03.%Y"),
+        ("%%j %d.%m.", "%j 17.03."),
+        ("%%%d.%m.", "%17.03."),
+    ],
+)
+def test_datetimefstr_escaped_percent_is_not_a_year_directive(dateformat, text):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = datetimefstr(text.split(" "), dateformat, dt.date(2016, 9, 19))
+    assert result == dt.datetime(2017, 3, 17)
+
+
+@pytest.mark.parametrize(
+    ("dateformat", "text", "expected"),
+    [
+        ("%d.%m.%Y", "17.03.2016", dt.datetime(2016, 3, 17)),
+        ("%d.%m.%y", "17.03.16", dt.datetime(2016, 3, 17)),
+        ("%j", "076", dt.datetime(1900, 3, 17)),
+    ],
+)
+def test_datetimefstr_year_directives_still_parsed(dateformat, text, expected):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = datetimefstr([text], dateformat, dt.date(2016, 9, 19), infer_year=False)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("dtime_list", "dateformat"),
+    [
+        (["17.03."], "%d.%m. "),
+        (["17.03. "], "%d.%m."),
+        ([" 17.03."], "%d.%m."),
+    ],
+)
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
+def test_datetimefstr_surrounding_whitespace_still_rejected(dtime_list, dateformat):
+    with pytest.raises(ValueError, match="does not match|unconverted|without a year"):
+        datetimefstr(dtime_list, dateformat, dt.date(2016, 9, 19))
+
+
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
+def test_guessdatetimefstr_dateformat_with_trailing_space_raises_parse_error():
+    locale = dict(LOCALE_BERLIN)
+    locale["dateformat"] = "%d.%m. "
+    locale["datetimeformat"] = "%d.%m. %H:%M"
+    with pytest.raises(DateTimeParseError):
+        guessdatetimefstr(["17.03."], locale, default_day=dt.date(2024, 1, 1))
 
 
 test_set_description = _create_testcases(

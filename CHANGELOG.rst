@@ -10,6 +10,7 @@ may want to subscribe to `GitHub's tag feed
 0.14.2
 ======
 unreleased
+* FIX search matches text across folded lines in iCalendar files
 * FIX align weekday headings in ikhal for locales with single-letter weekday
   abbreviations, such as Hungarian
 * FIX place ``monthdisplay`` in the ``[view]`` section of the sample configuration
@@ -30,6 +31,9 @@ unreleased
   date only; such an EXDATE now excludes all instances on that day
 * FIX an invalid alarm in ``khal edit`` or ``khal new -i`` crashed with a
   traceback, it is now reported and the menu is shown again
+* FIX parsing dates without a year (e.g. ``khal new 17.03.``) no longer
+  triggers a ``DeprecationWarning`` on Python 3.13+ and works with Python
+  3.15, where such parsing raises an error
 * CHANGE report unmatched exclusions in a recurring event in one warning
   with a link to the FAQ
 

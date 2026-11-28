@@ -308,6 +308,17 @@ class TestCollection:
         assert len(list(coll.search("Search for me"))) == 1
         assert len(list(coll.search("Event"))) == 2
 
+    def test_search_folded_content(self, coll_vdirs):
+        coll, vdirs = coll_vdirs
+        vdirs[cal1].upload(Item(_get_text("event_dt_folded")))
+        coll.update_db()
+
+        events = list(coll.search("ma.us/cor"))
+        assert len(events) == 1
+        assert "https://www.sec.state.ma.us/cor/" in events[0].summary
+        assert events[0].description == "A description with a searchneedle across a fold."
+        assert list(coll.search("searchneedle"))[0].uid == events[0].uid
+
     def test_search_recurrence_id_only(self, coll_vdirs):
         """test searching for recurring events which only have a recuid event,
         and no master"""
