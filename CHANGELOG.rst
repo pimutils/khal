@@ -34,6 +34,8 @@ unreleased
 * FIX parsing dates without a year (e.g. ``khal new 17.03.``) no longer
   triggers a ``DeprecationWarning`` on Python 3.13+ and works with Python
   3.15, where such parsing raises an error
+* CHANGE report unmatched exclusions in a recurring event in one warning
+  with a link to the FAQ
 
 0.14.1
 ======
