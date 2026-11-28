@@ -92,3 +92,49 @@ def test_set_focus_far_past():
     )
     frame.set_focus_date(future_date)
     assert frame.focus_date == future_date
+
+
+@freeze_time("2016-04-10")
+def test_handing_over_a_marked_range_ends_marking():
+    """v, move, n (new event for the range): the marking ends right away, so
+    the calendar is back to normal after the editor closes, saved or not"""
+    calls = []
+    keys = dict(keybindings, mark=["v"], other=["o"])
+    frame = CalendarWidget(
+        on_date_change=lambda _: None,
+        keybindings=keys,
+        on_press={"n": lambda start, end: calls.append((start, end))},
+        weeknumbers="right",
+    )
+    size = (28, 10)
+    frame.render(size, focus=True)
+    frame.keypress(size, "v")
+    frame.keypress(size, "right")
+    frame.keypress(size, "right")
+    frame.keypress(size, "n")
+    assert calls == [(dt.date(2016, 4, 10), dt.date(2016, 4, 12))]
+    frame.keypress(size, "right")
+    frame.keypress(size, "n")
+    assert calls[-1] == (dt.date(2016, 4, 13), None)  # no range any more
+
+
+def test_mark_other_jumps_between_marked_and_focused_date():
+    """pressing `other` repeatedly toggles between both ends of the selection"""
+    frame = CalendarWidget(
+        on_date_change=lambda _: None,
+        keybindings={**keybindings, "mark": ["v"], "other": ["o"]},
+        on_press=on_press,
+        initial=dt.date(2026, 11, 26),
+    )
+    size = (30, 10)
+    frame.render(size, focus=True)
+    for key in ["v", "down", "right", "right"]:
+        frame.keypress(size, key)
+    assert frame.focus_date == dt.date(2026, 12, 5)
+
+    frame.keypress(size, "o")
+    assert frame.focus_date == dt.date(2026, 11, 26)
+    frame.keypress(size, "o")
+    assert frame.focus_date == dt.date(2026, 12, 5)
+    frame.keypress(size, "o")
+    assert frame.focus_date == dt.date(2026, 11, 26)

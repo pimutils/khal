@@ -18,6 +18,8 @@ repos:
           - types-pytz
           - types-setuptools
           - types-python-dateutil
+          # khal's code is typed against urwid's own annotations
+          - urwid>=5.0
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: 'v0.15.7'
     hooks:

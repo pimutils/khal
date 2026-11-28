@@ -45,6 +45,18 @@ from khal.utils import generate_random_uid, is_aware, to_naive_utc, to_unix_time
 logger = logging.getLogger("khal")
 
 
+# the [locale] options that override single symbols of Event.symbol_strings
+SYMBOL_OPTIONS = {
+    "recurring": "repeat_symbol",
+    "alarming": "alarm_symbol",
+    "cancelled": "cancelled_symbol",
+    "confirmed": "confirmed_symbol",
+    "tentative": "tentative_symbol",
+    "accepted": "accepted_symbol",
+    "declined": "declined_symbol",
+}
+
+
 class Event:
     """base Event class for representing a *recurring instance* of an Event
 
@@ -288,19 +300,30 @@ class Event:
 
     @property
     def symbol_strings(self) -> dict[str, str]:
+        symbols = self._builtin_symbol_strings()
+        # [locale] *_symbol options override single symbols
+        for key, option in SYMBOL_OPTIONS.items():
+            value = self._locale.get(option) if hasattr(self._locale, "get") else None
+            if isinstance(value, str) and value:
+                symbols[key] = value
+        return symbols
+
+    def _builtin_symbol_strings(self) -> dict[str, str]:
         if self._locale["unicode_symbols"]:
             return {
                 "recurring": "\N{CLOCKWISE GAPPED CIRCLE ARROW}",
-                "alarming": "\N{ALARM CLOCK}",
+                # narrow glyphs only: the emoji ⏰ / ❌ / ✔ are double width
+                # (and coloured) in most terminals and break alignment
+                "alarming": "\N{EIGHTH NOTE}",
                 "range": "\N{LEFT RIGHT ARROW}",
                 "range_end": "\N{RIGHTWARDS ARROW TO BAR}",
                 "range_start": "\N{RIGHTWARDS ARROW FROM BAR}",
                 "right_arrow": "\N{RIGHTWARDS ARROW}",
-                "cancelled": "\N{CROSS MARK}",
-                "confirmed": "\N{HEAVY CHECK MARK}",
+                "cancelled": "\N{MULTIPLICATION X}",
+                "confirmed": "\N{CHECK MARK}",
                 "tentative": "?",
-                "declined": "\N{CROSS MARK}",
-                "accepted": "\N{HEAVY CHECK MARK}",
+                "declined": "\N{MULTIPLICATION X}",
+                "accepted": "\N{CHECK MARK}",
             }
         else:
             return {
@@ -508,6 +531,21 @@ class Event:
             ]
         return ", ".join([address.split(":")[-1] for address in addresses])
 
+    @property
+    def attendees_status(self) -> list[tuple[str, str]]:
+        """(address, PARTSTAT) of every attendee, PARTSTAT is upper case
+        (NEEDS-ACTION if not given)"""
+        addresses = self._vevents[self.ref].get("ATTENDEE", [])
+        if not isinstance(addresses, list):
+            addresses = [addresses]
+        return [
+            (
+                address.split(":")[-1],
+                str(getattr(address, "params", {}).get("PARTSTAT", "NEEDS-ACTION")).upper(),
+            )
+            for address in addresses
+        ]
+
     def update_attendees(self, attendees: list[str]):
         assert isinstance(attendees, list)
         attendees = [a.strip().lower() for a in attendees if a != ""]
@@ -658,6 +696,8 @@ class Event:
         attributes["end-time"] = self.end_local.strftime(self._locale["timeformat"])
 
         attributes["duration"] = timedelta2str(self.duration)
+        attributes["duration-short"] = "" if allday else attributes["duration"].replace(" ", "")
+        attributes["tab"] = "\t"  # ikhal: the rest of the line is right-aligned
 
         # should only have time attributes at this point (start/end)
         full = {}
@@ -731,6 +771,12 @@ class Event:
             if self.start_local.date() != self.end_local.date():
                 attributes["end-necessary"] = attributes["end"]
                 attributes["end-necessary-long"] = attributes["end-long"]
+
+        # " (Sat–Sun)" for events that span several days
+        attributes["range"] = ""
+        if self.start_local.timetuple()[:3] != self.end_local.timetuple()[:3]:
+            dash = "–" if self._locale.get("unicode_symbols", True) else "-"
+            attributes["range"] = f" ({self.start_local:%a}{dash}{self.end_local:%a})"
 
         attributes["repeat-symbol"] = self._recur_str
         attributes["repeat-pattern"] = self.recurpattern
@@ -834,6 +880,47 @@ class Event:
                 continue
         for key in to_pop:
             self._vevents.pop(key)
+
+    def end_before(self, instance: dt.date) -> bool:
+        """let the recurrence rule end before `instance` (which is a recurrence id)
+
+        Instances overridden by RECURRENCE-ID events at or after `instance` are
+        removed as well.
+
+        :returns: False if no instance would be left (the event should be
+            deleted instead), True otherwise
+        """
+        proto = self._vevents["PROTO"]
+        start = proto["DTSTART"].dt
+        try:
+            if instance <= start:
+                return False
+        except TypeError:
+            pass
+        if "RRULE" not in proto:
+            return True
+        until: dt.date
+        if isinstance(instance, dt.datetime):
+            until = instance - dt.timedelta(seconds=1)
+            if until.tzinfo is not None:
+                until = until.astimezone(pytz.UTC)
+        else:
+            until = instance - dt.timedelta(days=1)
+        rrule = proto["RRULE"]
+        rrule.pop("COUNT", None)
+        rrule["UNTIL"] = [until]
+        to_pop = []
+        for key in self._vevents:
+            if key == "PROTO":
+                continue
+            try:
+                if self._vevents[key].get("RECURRENCE-ID").dt >= instance:
+                    to_pop.append(key)
+            except TypeError:  # localized/floating datetime mismatch
+                continue
+        for key in to_pop:
+            self._vevents.pop(key)
+        return True
 
     @property
     def status(self) -> str:

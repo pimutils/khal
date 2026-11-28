@@ -80,6 +80,9 @@ class CalendarCollection:
         assert calendars is not None
 
         self._calendars: dict[str, CalendarConfiguration] = calendars
+        # calendars whose events get_events_on() and get_calendars_on() leave
+        # out (ikhal's show/hide); search() still finds everything
+        self.hidden_calendars: set[str] = set()
         self._default_calendar_name: str | None = None
         self._storages: dict[str, Vdir] = {}
         file_ext: str
@@ -159,7 +162,10 @@ class CalendarCollection:
         floating_events = self.get_floating(start, end)
         localize = self._locale["local_timezone"].localize
         localized_events = self.get_localized(localize(start), localize(end))
-        return itertools.chain(localized_events, floating_events)
+        events = itertools.chain(localized_events, floating_events)
+        if self.hidden_calendars:
+            return (event for event in events if event.calendar not in self.hidden_calendars)
+        return events
 
     def get_calendars_on(self, day: dt.date) -> list[str]:
         start = dt.datetime.combine(day, dt.time.min)
@@ -169,7 +175,12 @@ class CalendarCollection:
             self._backend.get_floating_calendars(start, end),
             self._backend.get_localized_calendars(localize(start), localize(end)),
         )
-        return list(set(calendars))
+        found = set(calendars)
+        # in the order of the configuration, so e.g. the colour of a day with
+        # events from several calendars is the same on every start
+        return [
+            name for name in self._calendars if name in found and name not in self.hidden_calendars
+        ]
 
     def update(self, event: Event) -> None:
         """update `event` in vdir and db"""
@@ -258,6 +269,28 @@ class CalendarCollection:
             raise EtagMismatch()
 
         event.delete_instance(rec_id)
+        self.update(event)
+        return event
+
+    def delete_following(
+        self,
+        href: str,
+        etag: str | None,
+        calendar: str,
+        rec_id: dt.datetime,
+    ) -> Event | None:
+        """Delete the instance `rec_id` of a repeating event and all following ones
+
+        returns the updated event (or None, if the whole event was deleted)
+        """
+        if self._calendars[calendar]["readonly"]:
+            raise ReadOnlyCalendarError()
+        event = self.get_event(href, calendar)
+        if etag and etag != event.etag:
+            raise EtagMismatch()
+        if not event.end_before(rec_id):
+            self.delete(href, event.etag, calendar)
+            return None
         self.update(event)
         return event
 

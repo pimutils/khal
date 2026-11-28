@@ -106,7 +106,7 @@ def cli(ctx, config):
     if ctx.logfilepath:
         logger = logging.getLogger("khal")
         logger.handlers = [logging.FileHandler(ctx.logfilepath)]
-    prepare_context(ctx, config)
+    prepare_context(ctx, config, check_ui=ctx.invoked_subcommand == "interactive")
 
 
 @cli.command()
@@ -362,12 +362,23 @@ def interactive(ctx, include_calendar, exclude_calendar, mouse):
     """Interactive UI. Also launchable via `ikhal`."""
     if mouse is not None:
         ctx.obj["conf"]["default"]["enable_mouse"] = mouse
-    controllers.interactive(
-        build_collection(
-            ctx.obj["conf"], multi_calendar_select(ctx, include_calendar, exclude_calendar)
-        ),
-        ctx.obj["conf"],
-    )
+    _run_interactive(ctx, include_calendar, exclude_calendar)
+
+
+def _run_interactive(ctx, include_calendar, exclude_calendar) -> None:
+    """start ikhal; configuration errors end it with a message, not a traceback"""
+    try:
+        controllers.interactive(
+            build_collection(
+                ctx.obj["conf"], multi_calendar_select(ctx, include_calendar, exclude_calendar)
+            ),
+            ctx.obj["conf"],
+        )
+    except FatalError as error:
+        logger.debug(error, exc_info=True)
+        if str(error):  # the details are usually logged where the error is raised
+            logger.fatal(error)
+        sys.exit(1)
 
 
 @click.command()
@@ -377,15 +388,10 @@ def interactive(ctx, include_calendar, exclude_calendar, mouse):
 @click.pass_context
 def interactive_cli(ctx, config, include_calendar, exclude_calendar, mouse):
     """Interactive UI. Also launchable via `khal interactive`."""
-    prepare_context(ctx, config)
+    prepare_context(ctx, config, check_ui=True)
     if mouse is not None:
         ctx.obj["conf"]["default"]["enable_mouse"] = mouse
-    controllers.interactive(
-        build_collection(
-            ctx.obj["conf"], multi_calendar_select(ctx, include_calendar, exclude_calendar)
-        ),
-        ctx.obj["conf"],
-    )
+    _run_interactive(ctx, include_calendar, exclude_calendar)
 
 
 @cli.command()

@@ -201,12 +201,12 @@ class _NoConfig:
         sys.exit(1)
 
 
-def prepare_context(ctx, config):
+def prepare_context(ctx, config, check_ui: bool = False):
     assert ctx.obj is None
 
     logger.debug("khal %s", __version__)
     try:
-        conf = get_config(config)
+        conf = get_config(config, check_ui=check_ui)
     except NoConfigFile:
         conf = _NoConfig()
     except InvalidSettingsError:

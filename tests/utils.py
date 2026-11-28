@@ -43,6 +43,13 @@ LOCALE_BERLIN: LocaleConfiguration = {
     "unicode_symbols": True,
     "firstweekday": 0,
     "weeknumbers": False,
+    "alarm_symbol": "",
+    "repeat_symbol": "",
+    "cancelled_symbol": "",
+    "confirmed_symbol": "",
+    "tentative_symbol": "",
+    "accepted_symbol": "",
+    "declined_symbol": "",
 }
 
 LOCALE_NEW_YORK: LocaleConfiguration = {

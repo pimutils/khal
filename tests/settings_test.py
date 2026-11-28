@@ -44,6 +44,7 @@ class TestSettings:
                 "home": {
                     "path": os.path.expanduser("~/.calendars/home/"),
                     "readonly": False,
+                    "hidden": False,
                     "color": None,
                     "priority": 10,
                     "type": "calendar",
@@ -52,6 +53,7 @@ class TestSettings:
                 "work": {
                     "path": os.path.expanduser("~/.calendars/work/"),
                     "readonly": False,
+                    "hidden": False,
                     "color": None,
                     "priority": 10,
                     "type": "calendar",
@@ -96,6 +98,7 @@ class TestSettings:
                     "path": os.path.expanduser("~/.calendars/home/"),
                     "color": "dark green",
                     "readonly": False,
+                    "hidden": False,
                     "priority": 20,
                     "type": "calendar",
                     "addresses": [""],
@@ -103,6 +106,7 @@ class TestSettings:
                 "work": {
                     "path": os.path.expanduser("~/.calendars/work/"),
                     "readonly": True,
+                    "hidden": False,
                     "color": None,
                     "priority": 10,
                     "type": "calendar",
@@ -120,6 +124,13 @@ class TestSettings:
                 "longdatetimeformat": "%c",
                 "firstweekday": 0,
                 "unicode_symbols": True,
+                "alarm_symbol": "",
+                "repeat_symbol": "",
+                "cancelled_symbol": "",
+                "confirmed_symbol": "",
+                "tentative_symbol": "",
+                "accepted_symbol": "",
+                "declined_symbol": "",
                 "weeknumbers": False,
             },
             "default": {
@@ -346,3 +357,36 @@ def test_is_color():
     assert is_color("123") == "123"
     with pytest.raises(VdtValueError):
         assert is_color("red") == "red"
+
+
+def test_all_config_errors_at_once(tmp_path, caplog, fix_caplog):
+    """several mistakes are reported together, each with the valid values,
+    including [view] settings ikhal would otherwise only check at startup"""
+    import logging
+
+    config = tmp_path / "khal.conf"
+    config.write_text(
+        f"""
+[calendars]
+[[home]]
+path = {tmp_path}
+[locale]
+weeknumbers = links
+[view]
+density = autto
+theme = retrobox-x
+show_free_time = drei Stunden
+free_time_hours = morgens
+"""
+    )
+    with caplog.at_level(logging.CRITICAL, logger="khal"):
+        with pytest.raises(InvalidSettingsError):
+            get_config(str(config), _get_color_from_vdir=lambda x: None, check_ui=True)
+    text = caplog.text
+    assert "5 config errors" in text
+    assert "weeknumbers" in text
+    assert "must be one of" in text
+    assert 'density: the value "autto" is unacceptable. (valid: auto,' in text
+    assert 'theme: the value "retrobox-x" is unacceptable. (valid: light, dark, retrobox' in text
+    assert 'show_free_time: the value "drei Stunden" is unacceptable. (e.g. 30m' in text
+    assert 'free_time_hours: the value "morgens" is unacceptable. (e.g. 09:00-18:00)' in text

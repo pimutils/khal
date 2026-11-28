@@ -1173,3 +1173,20 @@ def test_list_now(runner, tmpdir):
 
     result = runner.invoke(main_khal, ["list", "now"])
     assert not result.exception
+
+
+def test_interactive_fatal_error_exits_cleanly(runner, monkeypatch):
+    """a configuration error found when ikhal starts (e.g. an unknown theme)
+    ends ikhal with exit code 1 and a message, not with a traceback"""
+    from khal.exceptions import FatalError
+
+    runner = runner(days=2)
+
+    def broken_ui(*a, **kw):
+        raise FatalError("Invalid theme nope configured")
+
+    monkeypatch.setattr("khal.ui.start_pane", broken_ui)
+    for command, args in ((main_ikhal, []), (main_khal, ["interactive"])):
+        result = runner.invoke(command, args)
+        assert result.exit_code == 1
+        assert not isinstance(result.exception, FatalError)

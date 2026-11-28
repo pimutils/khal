@@ -374,7 +374,7 @@ def test_status_confirmed():
 
     assert (
         human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9)))
-        == "✔09:30-10:30 (foobar) An Event []\x1b[0m"
+        == "✓09:30-10:30 (foobar) An Event []\x1b[0m"
     )
 
 
@@ -801,7 +801,7 @@ def test_partstat():
     assert event.partstat == "ACCEPTED"
     assert (
         human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9)))
-        == "✔09:30-10:30 (foobar) An Event []\x1b[0m"
+        == "✓09:30-10:30 (foobar) An Event []\x1b[0m"
     )
 
     event = Event.fromString(
@@ -810,7 +810,7 @@ def test_partstat():
     assert event.partstat == "DECLINED"
     assert (
         human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9)))
-        == "❌09:30-10:30 (foobar) An Event []\x1b[0m"
+        == "✕09:30-10:30 (foobar) An Event []\x1b[0m"
     )
 
     event = Event.fromString(
@@ -819,7 +819,7 @@ def test_partstat():
     assert event.partstat == "ACCEPTED"
     assert (
         human_formatter(FORMAT_CALENDAR)(event.attributes(dt.date(2014, 4, 9)))
-        == "✔09:30-10:30 (foobar) An Event []\x1b[0m"
+        == "✓09:30-10:30 (foobar) An Event []\x1b[0m"
     )
 
 
@@ -834,3 +834,18 @@ def test_partstat_deligated():
         _get_text("event_dt_partstat"), addresses=["iamboss@example.com"], **EVENT_KWARGS
     )
     assert event.partstat == "ACCEPTED"
+
+
+def test_symbols_are_narrow_and_overridable():
+    """the built-in unicode symbols are no (double width) emoji, and single
+    symbols can be overridden via [locale] *_symbol"""
+    import unicodedata
+
+    event = Event.fromString(_get_text("event_dt_simple"), **EVENT_KWARGS)
+    for symbol in event.symbol_strings.values():
+        assert all(unicodedata.east_asian_width(ch) not in "WF" for ch in symbol), symbol
+    locale = dict(LOCALE_BERLIN, alarm_symbol="!", repeat_symbol="(r)")
+    event = Event.fromString(_get_text("event_dt_simple"), calendar="foobar", locale=locale)
+    assert event.symbol_strings["alarming"] == "!"
+    assert event.symbol_strings["recurring"] == "(r)"
+    assert event.symbol_strings["cancelled"] == "\N{MULTIPLICATION X}"

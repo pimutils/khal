@@ -76,8 +76,13 @@ def get_config(
     config_path: str | None = None,
     _get_color_from_vdir: Callable = get_color_from_vdir,
     _get_vdir_type: Callable = get_vdir_type,
+    check_ui: bool = False,
 ) -> ConfigObj:
     """reads the config file, validates it and return a config dict
+
+    With `check_ui` (ikhal is about to start), [view] settings ikhal would
+    otherwise only check at startup are validated as well, so all mistakes are
+    reported at once.
 
     :param config_path: path to a custom config file, if none is given the
                         default locations will be searched
@@ -120,21 +125,29 @@ def get_config(
     validator = Validator(fdict)
     results = user_config.validate(validator, preserve_errors=True)
 
-    abort = False
+    # collect every problem first, so a config with several mistakes is
+    # reported completely instead of one error per start
+    problems: list[str] = []
     for section, subsection, config_error in flatten_errors(user_config, results):
-        abort = True
         if isinstance(config_error, Exception):
-            logger.fatal(f"config error:\nin [{section[0]}] {subsection}: {config_error}")
+            hint = _valid_values_hint(validator, user_config, section, subsection, config_error)
+            problems.append(f"in [{section[0]}] {subsection}: {config_error}{hint}")
         else:
             for key in config_error:
                 if isinstance(config_error[key], Exception):
-                    logger.fatal(
-                        "config error:\n"
-                        f"in {sectionize(section + [subsection])} {key}: "
-                        f"{config_error[key]!s}"
+                    hint = _valid_values_hint(
+                        validator, user_config, section + [subsection], key, config_error[key]
                     )
+                    where = sectionize(section + [subsection])
+                    problems.append(f"in {where} {key}: {config_error[key]!s}{hint}")
+    if check_ui:  # needs khal.ui, which the other commands don't load
+        problems += ui_settings_problems(user_config)
+    if problems:
+        logger.fatal("config error:" if len(problems) == 1 else f"{len(problems)} config errors:")
+    for problem in problems:
+        logger.fatal(f"  {problem}")
 
-    if abort or not results:
+    if problems or not results:
         raise InvalidSettingsError()
 
     config_checks(user_config, _get_color_from_vdir, _get_vdir_type)
@@ -163,3 +176,74 @@ def sectionize(sections: list[str], depth: int = 1) -> str:
         return this_part + sectionize(sections[1:], depth=depth + 1)
     else:
         return this_part
+
+
+# valid values of the custom checks in khal.spec (option() lists its own)
+_CHECK_VALUES = {
+    "weeknumbers": ["off", "left", "right"],
+    "monthdisplay": ["firstday", "firstfullweek"],
+}
+
+
+def _valid_values_hint(validator, config, sections: list[str], key: str, error=None) -> str:
+    """the valid values of an option with a fixed set of them, as
+    ` (valid: a, b, c)`; empty if there is no such set or the error message
+    already names it"""
+    if "must be one of" in str(error):
+        return ""
+    spec = config.configspec
+    try:
+        for name in sections:
+            spec = spec[name] if name in spec else spec["__many__"]
+        check = spec[key]
+        name, args, _kwargs, _default = validator._parse_with_caching(check)
+    except (KeyError, TypeError, AttributeError, ValueError):
+        return ""
+    values = args if name == "option" else _CHECK_VALUES.get(name)
+    return f" (valid: {', '.join(values)})" if values else ""
+
+
+def ui_settings_problems(config) -> list[str]:
+    """checks of [view] settings ikhal would otherwise only notice at startup"""
+    from importlib import metadata
+
+    problems: list[str] = []
+    view = config.get("view", {})
+    if not isinstance(view, dict):
+        return problems
+
+    from khal.ui import colors
+
+    themes = list(colors.themes) + [
+        ep.name for ep in metadata.entry_points(group="khal.color_theme")
+    ]
+    theme = view.get("theme")
+    if isinstance(theme, str) and theme not in themes:
+        problems.append(
+            f'in [view] theme: the value "{theme}" is unacceptable. (valid: {", ".join(themes)})'
+        )
+
+    views = ["list"] + [ep.name for ep in metadata.entry_points(group="khal.views")]
+    default_view = view.get("default_view")
+    if isinstance(default_view, str) and default_view and default_view not in views:
+        problems.append(
+            f'in [view] default_view: the value "{default_view}" is unacceptable. '
+            f"(valid: {', '.join(views)})"
+        )
+
+    from khal.ui.agenda import parse_free_time, parse_hours
+
+    for key, parse, example in (
+        ("show_free_time", parse_free_time, "30m, 3h, off"),
+        ("free_time_hours", parse_hours, "09:00-18:00"),
+    ):
+        value = view.get(key)
+        if not isinstance(value, str):
+            continue
+        try:
+            parse(value)
+        except (ValueError, TypeError):
+            problems.append(
+                f'in [view] {key}: the value "{value}" is unacceptable. (e.g. {example})'
+            )
+    return problems

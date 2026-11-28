@@ -2,6 +2,7 @@ import datetime as dt
 
 import icalendar
 
+from khal.ui.calendarwidget import CalendarWidget
 from khal.ui.editor import RecurrenceEditor, StartEndEditor
 from tests.utils import BERLIN, LOCALE_BERLIN
 
@@ -16,8 +17,8 @@ palette = {
     "date header focused": "blue",
     "date header": "green",
     "default": "black",
-    "edit focused": "red",
-    "edit": "blue",
+    "editor field focus": "red",
+    "editor field": "blue",
 }
 
 
@@ -27,18 +28,21 @@ def test_popup(monkeypatch):
     #405
     """
 
-    class FakeCalendar:
-        def store(self, *args, **kwargs):
-            self.args = args
-            self.kwargs = kwargs
+    calls = []
+    original_init = CalendarWidget.__init__
 
-    fake = FakeCalendar()
-    monkeypatch.setattr("khal.ui.calendarwidget.CalendarWidget.__init__", fake.store)
+    # record the arguments, but still build a real widget, urwid >= 5.2's
+    # LineBox needs a fully initialized widget to wrap
+    def spy_init(self, *args, **kwargs):
+        calls.append(kwargs)
+        original_init(self, *args, **kwargs)
+
+    monkeypatch.setattr(CalendarWidget, "__init__", spy_init)
     see = StartEndEditor(START, END, CONF)
     see.widgets.startdate.keypress((22,), "enter")
-    assert fake.kwargs["initial"] == dt.date(2015, 4, 26)
+    assert calls[-1]["initial"] == dt.date(2015, 4, 26)
     see.widgets.enddate.keypress((22,), "enter")
-    assert fake.kwargs["initial"] == dt.date(2015, 4, 27)
+    assert calls[-1]["initial"] == dt.date(2015, 4, 27)
 
 
 def test_check_understood_rrule():
@@ -131,3 +135,24 @@ def test_convert_to_date():
     assert editor.allday is True
     assert editor.startdt == dt.date(2017, 10, 2)
     assert editor.enddt == dt.date(2017, 10, 4)
+
+
+def test_untick_allday_restores_times():
+    """00:00–01:00, tick and untick "all day": the times come back (they used
+    to collapse to 00:00–00:00, an event that ends when it starts)"""
+    editor = StartEndEditor(
+        BERLIN.localize(dt.datetime(2026, 11, 27, 0)),
+        BERLIN.localize(dt.datetime(2026, 11, 27, 1)),
+        conf=CONF,
+    )
+    editor.toggle(None, True)
+    assert editor.startdt == dt.date(2026, 11, 27)
+    editor.toggle(None, False)
+    assert editor.startdt.replace(tzinfo=None) == dt.datetime(2026, 11, 27, 0)
+    assert editor.enddt.replace(tzinfo=None) == dt.datetime(2026, 11, 27, 1)
+
+
+def test_untick_allday_of_allday_event_uses_default_duration():
+    editor = StartEndEditor(dt.date(2026, 11, 27), dt.date(2026, 11, 27), conf=CONF)
+    editor.toggle(None, False)
+    assert editor.enddt - editor.startdt == dt.timedelta(hours=1)

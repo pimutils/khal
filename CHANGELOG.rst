@@ -12,10 +12,182 @@ may want to subscribe to `GitHub's tag feed
 unreleased
 * FIX ``khal import --format``/``-f`` was accepted and then ignored, always
   falling back to ``view.event_format``
+* CHANGE the default unicode symbols are narrow characters now (♪ alarm,
+  ✕ cancelled/declined, ✓ confirmed/accepted) instead of emoji (⏰, ❌, ✔),
+  which most terminals draw double width; single symbols can be set with
+  ``[locale] alarm_symbol``, ``repeat_symbol``, ``cancelled_symbol``,
+  ``confirmed_symbol``, ``tentative_symbol``, ``accepted_symbol`` and
+  ``declined_symbol``
 * NEW ikhal supports view plugins (entry point group ``khal.views``) that
   replace the event list in the right column, switch between views with
   ``w`` (``[keybindings] switch_view``), select the view shown on startup
   with ``[view] default_view``; plugins can show their keys in ikhal's help
+* NEW redesigned event editor in ikhal: fields are grouped, only the focused
+  row is highlighted (no more solid field backgrounds), empty fields show a
+  placeholder or collapse into a "+ field" row, Save/Export live in an action
+  bar and alarms are deleted with ✕ on their row; choose the arrangement with
+  ``[view] editor_layout`` (``auto``, ``sections``, ``headline``, ``cards``,
+  ``compact`` or ``compact-ascii``)
+* NEW palette entries for the event editor (``editor label``, ``editor
+  field``, ``editor focus row``, ``editor marker``, ``editor rule``, ``editor
+  card``, ...), see ``khal/ui/colors.py``
+* NEW ikhal's dialogs, help and log are floating boxes; questions are answered
+  with one key (e.g. deleting a repeating event: ``t`` only this one, ``f``
+  this and all following, ``a`` all occurrences), the screen behind them is
+  drawn in grey (``[view] backdrop = grey|none``)
+* NEW deleting "this and all following" instances of a repeating event in ikhal
+* NEW the event editor asks whether to save, discard or keep editing when
+  leaving it with unsaved changes
+* NEW ikhal's event details look like the headline editor (summary line,
+  attendees with their replies, plain text description)
+* NEW ikhal shows messages (saved, errors) in the header line for a few
+  seconds, the version moved to the right of the footer line
+* NEW event editor: one duration field per alarm (``5m``, ``1h30m``, ``2d``,
+  same syntax as the config) that reads "5 minutes before" when not focused;
+  repetition reads like a sentence (``every 2 weeks on Mo Tu ...``, ``ends
+  never``) with a preview of the next occurrences; invalid dates/times are
+  pointed out next to the field and an end time before the start time moves
+  the end to the next day
+* NEW colour themes ``retrobox``, ``retrobox-light`` (Vim's retrobox, after
+  gruvbox), ``ink``, ``fjord``, ``ember`` and ``paper``; theme plugins
+  (``khal.color_theme``) can now also be a dict of ~15 semantic colours that
+  khal expands into a full palette
+* NEW ``[view] day_marking`` (``calendar``, ``dot``, ``heat``, ``none``): how
+  ikhal's month column marks days with events
+* NEW ikhal's list of events: ``[view] density`` (``auto``, ``comfortable``,
+  ``regular``, ``dense``, ``classic``), ``event_color`` (``line``/``bar``),
+  free time between events (``show_free_time``, ``free_time_hours``), a "now"
+  line, past events dimmed, day headers as rules with the relative day
+  (``ikhal_day_format``, ``day_header``); new format attributes ``{range}``,
+  ``{duration-short}`` and (ikhal) ``{tab}`` to right-align the rest of a line
+* NEW ``[view] header_format`` for ikhal's header line (date, time, next event
+  with ``{next-title}`` and ``{next-in}``); the footer shows the keys for the
+  current context and the version at the right
+* FIX the editor's colours no longer depend on the terminal's ANSI palette in
+  256/true colour mode (e.g. invisible borders with Solarized)
+* NEW event editor: enter on a time opens a small time picker (hours | minutes in
+  steps of ``[view] minute_step``; for the end time with the resulting
+  duration), an editable duration field ("for 1h30m", enter opens a picker in
+  quarter hours) next to the end; moving the start keeps the duration
+* NEW the date picker is a floating box (chosen day filled, today in the
+  accent colour, weekends dimmer)
+* NEW exporting an event asks for the path in a floating box with tab
+  completion and shows errors under the field
+* NEW saving an event that ends before it starts focuses the end and says
+  why; repeat rules ikhal can't edit are spelled out in plain words with an
+  ``e`` key to replace them
+* NEW every ▾ field of the editor (calendar, before/after, repeat unit, day of
+  the month, end of a repeat) opens one list component below the field (above
+  it if there's no room): accent border, the current value ticked, calendars
+  with their colour dot, with six or more entries typing filters the list
+* FIX pop-ups (choices, date picker, time picker) were drawn on the
+  terminal's background instead of the theme's
+* NEW the editor's frame shows "Edit event" and the status (● unsaved,
+  ✗ can't save) in its top border (with ``[view] frame = False`` the status
+  stays in the action bar); the action bar has Save/Export on the left and the
+  configured keys on the right
+* NEW an explicitly chosen ``editor_layout`` falls back to ``compact`` while
+  the editor is narrower than ``[view] editor_compact_below`` (default 60
+  columns, 0: never)
+* NEW editing screen: ``[view] editor_width`` (automatic, ``60%`` or columns);
+  drag the border between editor and events with the mouse or move it with
+  ``[keybindings] editor_narrower``/``editor_wider`` (``meta <``/``meta >``);
+  the right column shows the current view (list, time grid, ...) and follows
+  the event's date, ``other_column`` (``f6``) moves the focus there (where the
+  view's keys work, esc goes back), ``switch_view_editor`` (``meta w``)
+  switches the view from within the editor
+* NEW viewing an event (enter) opens its details as a card right under its
+  row in the list (enter again edits, esc closes); on screens at least
+  ``[view] event_view_column_from`` (140) columns wide in a column of their
+  own next to the list that follows the focused event;
+  ``event_view_always_visible`` keeps the old split below the list
+* NEW search (``/``) is a finder: matching events (also past ones) as you
+  type with the match highlighted and a preview of the selected event, enter
+  jumps to the event in the list
+* CHANGE key hints spell out ``enter`` (``M-enter``) and ``S-tab`` instead of
+  ⏎/⇧ (which many fonts draw almost double width); the help lists letters
+  before arrow keys and flows its groups down two columns
+* FIX ikhal's list of events: columns (times, now line, free time, durations)
+  line up, also with wide characters (⏰) in titles; events have a focus
+  marker ▌ and a margin on both sides
+* FIX ikhal's header clock is refreshed on the full minute (it could lag up
+  to a minute) and the next event is recomputed each time
+* FIX the editor showed the weekday twice if ``longdateformat`` contains it
+* FIX with ``day_marking = dot`` today and the focused day lost their dot
+* NEW the log (``L``) is a floating box: one row per entry with its time and
+  a coloured level, long messages wrapped with a hanging indent, the newest
+  entry at the bottom and in view
+* NEW time grid plugin (contrib/khal_timegrid), round 2: overlapping events
+  share equal columns of constant width, events that don't fit (option
+  ``min_lane_width``) are counted in a "+N" badge (enter lists them); titles
+  wrapped over the block with the start time below; no hour lines inside
+  events; all-day events as one bar over their days; today's column tinted
+  and the now line only there; starts at ``day_start`` (07:00); ``0``/auto
+  shows the week, Monday to Friday or fewer days (``min_day_width`` 11); the
+  mode is the title of the column (``Week 48 · Mon–Fri``) instead of the header
+* NEW ikhal: ``}``/``{`` the same day next/previous month, ``]``/``[`` next/
+  previous year (``[keybindings] next_month``, ``prev_month``, ``next_year``,
+  ``prev_year``), ``g`` (``goto_date``) asks for a date at the bottom (as on
+  the command line, or relative like ``+3d``, ``-2w``, ``+1m``); in the month
+  column, the list and the time grid; jumps to another month are announced
+  in the header
+* NEW ikhal's header line: ``Thursday, 26 November 2026 · week 48 · 11:20``,
+  the next event and, at the right, the views as tabs (``[list]  day  week``,
+  ``[view] header_view_tabs``); shorter on narrow screens. New default
+  ``header_format`` and attributes ``{date-long-text}``, ``{weekday-long}``
+* NEW with frames, the month column is titled with the month in focus and the
+  right column with its view (``Agenda`` and the number of days in view, the
+  time grid's mode); frames of ``frame = color`` have rounded corners
+* CHANGE ``density = auto`` chooses between ``regular`` and ``dense`` only;
+  ``comfortable`` shows a second line only with what the first doesn't
+  (location, attendees, start of the description, repeat rule), never the
+  calendar
+* NEW the event formats of the densities can be changed:
+  ``[view] event_format_regular``, ``event_format_dense``,
+  ``event_format_comfortable`` and ``event_format_comfortable_details`` (the
+  defaults are documented in the config spec), with the new attributes
+  ``{bar}``, ``{time-range}``, ``{attendees-short}``, ``{description-short}``
+* CHANGE ikhal's list (regular, dense): the right column is always the
+  duration, on an event's first day only (``9h30m``, ``2d18h``, ``2d``); all-day
+  events and the middle days of longer events have an empty time column, the
+  last day of a timed one shows its end (``–12:00``); overnight events are
+  listed on their first day only; the location only on the first day.
+  Format attributes ``{time}``, ``{time-span}`` (with end times),
+  ``{duration-first-day}`` and ``{location-first-day}``; khal.spec has an
+  example with end times
+* CHANGE event details: ``● work · tomorrow`` (``now · ends in 6 days`` while
+  it runs, ``ended yesterday`` afterwards), then a ``when`` row
+  (``Fr 27 Nov 18:00 – Mo 30 Nov 12:00 · 2d18h``, broken after the dash if
+  narrow; never "all day" where the date says it), where/who/alarm/repeat/
+  link/notes; the keys are in the footer while details are open
+* CHANGE durations use one compact format everywhere (``15m``, ``9h30m``,
+  ``2d18h``, ``2d``)
+* NEW show and hide calendars while ikhal runs: ``c`` (``[keybindings]
+  toggle_calendars``) lists the calendars, space toggles one, 1–9 the n-th,
+  ``a`` shows all, ``n`` none; the list, the time grid, the month column and the next
+  event in the header follow at once, search still finds everything (dimmed);
+  the frame says how many are hidden. ``hidden = True`` in a calendar's
+  section starts it hidden, nothing is saved
+* NEW with ``[view] free_time_hours``, the free time before the first and
+  after the last timed event within those hours is shown, too, and a working
+  day without timed events shows all of it as free
+* CHANGE ikhal's list: all-day events are marked with ■ instead of the bar
+  ▍; the focused day header shows the ▌ marker and the day in the accent
+  colour instead of a full accent bar
+* CHANGE events marked for deletion (``d``) no longer get a letter (D/d/f) in
+  front: in the list the calendar bar becomes a red ✕, time and title are
+  struck through and the scope ("deleted", "this one", "this & following")
+  replaces the duration; the details say "✕ marked for deletion"; in the time
+  grid the block keeps its place and tint, gets a red ✕ edge, a struck title,
+  the scope and a ╱ hatch (greyed below 256 colours). While anything is
+  marked the footer says how many and that they are deleted when ikhal quits;
+  NEW ``[keybindings] undo_all_deletions`` (``U``) removes all marks
+* UPDATED REQUIREMENT urwid >= 5.0 is now required
+* FIX ikhal compatibility with urwid 5.0, which removed ``Columns.focus_col``,
+  ``Columns.set_focus_column()``, ``Pile.set_focus()``, ``Frame.set_body()`` and
+  ``AttrWrap.w``
+* FIX in ikhal's calendar, pressing ``other`` (default ``o``) while marking a
+  date range now jumps back to the right day again with urwid >= 5.0
 
 0.14.1
 ======
