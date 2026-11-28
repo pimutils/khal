@@ -541,8 +541,22 @@ test_set_leap_year = _create_testcases(
 
 def test_leap_year():
     for data_list, vevent in test_set_leap_year:
-        with freeze_time("1999-1-1"), pytest.raises(DateTimeParseError):
+        # 1999 is not a leap year; 29.02. is the next leap day
+        with freeze_time("1999-1-1"):
             event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
+            assert (
+                _replace_uid(event).to_ical()
+                == (
+                    "\r\n".join(
+                        _create_vevent(
+                            "DTSTART;VALUE=DATE:20000229",
+                            "DTEND;VALUE=DATE:20000301",
+                            "DTSTAMP:19990101T000000Z",
+                        )
+                    )
+                    + "\r\n"
+                ).encode()
+            )
         with freeze_time("2016-1-1 20:21:22"):
             event = _construct_event(data_list.split(), locale=LOCALE_BERLIN)
             assert _replace_uid(event).to_ical() == vevent
@@ -555,8 +569,60 @@ def test_datetimefstr_without_year_does_not_warn():
         assert parsed == dt.datetime(2017, 3, 17, 16, 0)
         leap = datetimefstr(["29.02."], "%d.%m.", dt.date(2016, 1, 1), in_future=False)
         assert leap == dt.datetime(2016, 2, 29)
-        with pytest.raises(ValueError, match="^$"):
-            datetimefstr(["29.02."], "%d.%m.", dt.date(2015, 1, 1))
+        with freeze_time("2015-01-01"):
+            inferred = datetimefstr(["29.02."], "%d.%m.", dt.date(2015, 1, 1))
+        assert inferred == dt.datetime(2016, 2, 29)
+
+
+@pytest.mark.parametrize(
+    ("today", "expected"),
+    [
+        ("2024-01-15", dt.datetime(2024, 2, 29)),
+        ("2024-02-29", dt.datetime(2024, 2, 29)),
+        ("2024-03-01", dt.datetime(2028, 2, 29)),
+        ("2026-11-28", dt.datetime(2028, 2, 29)),
+        ("2027-06-01", dt.datetime(2028, 2, 29)),
+        ("2028-03-01", dt.datetime(2032, 2, 29)),
+        # 2000 is a leap year; 2100 is not
+        ("2000-01-15", dt.datetime(2000, 2, 29)),
+        ("2000-03-01", dt.datetime(2004, 2, 29)),
+        ("2100-01-15", dt.datetime(2104, 2, 29)),
+        ("2096-03-01", dt.datetime(2104, 2, 29)),
+    ],
+)
+def test_datetimefstr_feb29_infers_next_leap_year(today, expected):
+    with freeze_time(today):
+        parsed = datetimefstr(["29.02."], "%d.%m.", dt.date.today())
+    assert parsed == expected
+
+
+@pytest.mark.parametrize(
+    ("today", "expected"),
+    [
+        ("2024-01-15", dt.datetime(2024, 2, 29)),
+        ("2024-02-29 18:00:00", dt.datetime(2024, 2, 29)),
+        ("2024-03-01", dt.datetime(2028, 2, 29)),
+        ("2026-11-28", dt.datetime(2028, 2, 29)),
+        ("2027-06-01", dt.datetime(2028, 2, 29)),
+        ("2028-03-01", dt.datetime(2032, 2, 29)),
+    ],
+)
+def test_datetimefstr_feb29_in_future_false(today, expected):
+    with freeze_time(today):
+        parsed = datetimefstr(["29.02."], "%d.%m.", dt.date.today(), in_future=False)
+    assert parsed == expected
+
+
+def test_datetimefstr_feb29_in_future_moves_past_today():
+    with freeze_time("2024-02-29 18:00:00"):
+        parsed = datetimefstr(["29.02."], "%d.%m.", dt.date.today())
+    assert parsed == dt.datetime(2028, 2, 29)
+
+
+def test_datetimefstr_feb29_keeps_time():
+    with freeze_time("2024-03-01 12:00:00"):
+        parsed = datetimefstr(["29.02.", "16:00"], "%d.%m. %H:%M", dt.date.today())
+    assert parsed == dt.datetime(2028, 2, 29, 16, 0)
 
 
 @pytest.mark.parametrize(
