@@ -1280,3 +1280,24 @@ def test_markers_stay_foreground_with_background_highlighting(tmp_path):
     assert palette["calendar home row"][4] == color
     screen = Screen(conf, collection)
     assert "calendar home mark" in screen.attributes()
+
+
+@freeze_time(NOW)
+def test_calendar_dots_in_editor_stay_foreground_with_background_highlighting(tmp_path):
+    """the calendar dots of the editor's dropdown and of its calendar list
+    use the `mark`/`row` entries, not the plain (background) calendar colour"""
+    conf = make_conf(tmp_path)
+    conf["highlight_days"]["method"] = "background"
+    collection = make_collection(conf)
+    collection.hmethod = "background"
+    screen = Screen(conf, collection)
+    screen.press("tab", "j", "j", "enter", "enter")
+    assert "calendar home mark" in screen.attributes()
+    screen.press("tab", "enter")  # the calendar list
+    text = screen.text()
+    assert "● home" in text
+    assert "● work" in text
+    attributes = screen.attributes()
+    assert "calendar work mark" in attributes
+    assert "calendar home row" in attributes  # the focused entry
+    assert not {"calendar home", "calendar work"} & set(attributes)

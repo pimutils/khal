@@ -54,6 +54,8 @@ from .widgets import (
     NListBox,
     NPile,
     SupportsNext,
+    calendar_mark,
+    calendar_row,
     find_child,
 )
 
@@ -869,7 +871,7 @@ def dropdown_factory(glyphs: Glyphs) -> Callable[[Any], urwid.Widget]:
     def factory(label):
         if isinstance(label, list):  # calendar markup uses the popup attributes
             label = [
-                (attr.removesuffix(" popup"), text) if isinstance(attr, str) else (attr, text)
+                (calendar_mark(attr), text) if isinstance(attr, str) else (attr, text)
                 for attr, text in (
                     part if isinstance(part, tuple) else (None, part) for part in label
                 )
@@ -880,7 +882,7 @@ def dropdown_factory(glyphs: Glyphs) -> Callable[[Any], urwid.Widget]:
         focus_attr: dict[str | None, str] = {None: "editor field focus"}
         for part in label:
             if isinstance(part, tuple) and str(part[0]).startswith("calendar "):
-                focus_attr[part[0]] = part[0] + " row"
+                focus_attr[part[0]] = calendar_row(part[0])
         return ActionButton(
             [*label, ("editor dim", glyphs.dropdown)],
             attr="editor field",

@@ -281,6 +281,19 @@ class Choice(urwid.PopUpLauncher):
         urwid.connect_signal(self.button, "click", lambda button: self.open_pop_up())
 
 
+def calendar_mark(attr: str) -> str:
+    """`calendar <name> popup` -> `calendar <name> mark`: a calendar's dot in
+    its colour as foreground, whatever `[highlight_days] method` says"""
+    if attr.startswith("calendar ") and attr.endswith(" popup"):
+        return attr.removesuffix(" popup") + " mark"
+    return attr
+
+
+def calendar_row(attr: str) -> str:
+    """the focused-row version of a `calendar <name> mark` attribute"""
+    return attr.removesuffix(" mark") + " row"
+
+
 def _plain_markup(markup) -> list:
     """the label markup of a choice for the list: calendar dots in their
     colours on the list's background (not the old "... popup" fill)"""
@@ -289,7 +302,7 @@ def _plain_markup(markup) -> list:
     out: list = []
     for part in markup:
         if isinstance(part, tuple) and isinstance(part[0], str):
-            out.append((part[0].removesuffix(" popup"), part[1]))
+            out.append((calendar_mark(part[0]), part[1]))
         else:
             out.append(part)
     return out
@@ -318,7 +331,7 @@ class ChoiceRow(urwid.WidgetWrap):
         }
         for part in label:
             if isinstance(part, tuple) and part[0].startswith("calendar "):
-                focus_map[part[0]] = part[0] + " row"
+                focus_map[part[0]] = calendar_row(part[0])
         self._focused: bool | None = None
         super().__init__(urwid.AttrMap(self._text, "float choice", focus_map))
 
