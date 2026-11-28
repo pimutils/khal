@@ -308,8 +308,9 @@ class TestCollection:
         assert len(list(coll.search("Search for me"))) == 1
         assert len(list(coll.search("Event"))) == 2
 
-    def test_search_folded_content(self, coll_vdirs):
+    def test_search_folded_content(self, coll_vdirs, sleep_time):
         coll, vdirs = coll_vdirs
+        sleep(sleep_time)  # Make sure we get a new ctag on upload
         vdirs[cal1].upload(Item(_get_text("event_dt_folded")))
         coll.update_db()
 

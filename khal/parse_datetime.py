@@ -74,6 +74,14 @@ def _can_add_year(dateformat: str, dtstring: str) -> bool:
     )
 
 
+def _replace_year(dtime: dt.datetime, year: int) -> dt.datetime:
+    """return `dtime` in `year`; a 29 February moves ahead to the next leap year"""
+    if dtime.month == 2 and dtime.day == 29:
+        while not isleap(year):
+            year += 1
+    return dtime.replace(year=year)
+
+
 def datetimefstr(
     dtime_list: list[str],
     dateformat: str,
@@ -100,18 +108,11 @@ def datetimefstr(
     dtstring = " ".join(dtime_list[0:parts])
     # strptime() without a year is deprecated (an error since Python 3.15) and
     # cannot parse the 29th of Feb., so parse with a leap year; the actual
-    # year is inferred below
+    # year is inferred below (29 Feb moves ahead to the next leap year)
     if infer_year and _can_add_year(dateformat, dtstring):
         dtstart_struct = strptime(f"{dtstring} 2000", f"{dateformat} %Y")
     else:
         dtstart_struct = strptime(dtstring, dateformat)
-    if (
-        infer_year
-        and dtstart_struct.tm_mon == 2
-        and dtstart_struct.tm_mday == 29
-        and not isleap(default_day.year)
-    ):
-        raise ValueError
 
     for _ in range(parts):
         item = dtime_list.pop(0)
@@ -120,11 +121,21 @@ def datetimefstr(
             logger.warning("Make sure not to quote your datetime specification.")
 
     if infer_year:
-        dtstart = dt.datetime(*(default_day.timetuple()[:1] + dtstart_struct[1:5]))
+        # 2000 is a leap year, so 29 Feb can be built before its year is chosen
+        dtstart = _replace_year(
+            dt.datetime(
+                2000,
+                dtstart_struct.tm_mon,
+                dtstart_struct.tm_mday,
+                dtstart_struct.tm_hour,
+                dtstart_struct.tm_min,
+            ),
+            default_day.year,
+        )
         if in_future and dtstart < now:
-            dtstart = dtstart.replace(year=dtstart.year + 1)
+            dtstart = _replace_year(dtstart, dtstart.year + 1)
         if dtstart.date() < default_day:
-            dtstart = dtstart.replace(year=default_day.year + 1)
+            dtstart = _replace_year(dtstart, default_day.year + 1)
         return dtstart
     else:
         return dt.datetime(*dtstart_struct[:5])

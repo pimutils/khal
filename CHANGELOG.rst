@@ -34,6 +34,9 @@ unreleased
 * FIX parsing dates without a year (e.g. ``khal new 17.03.``) no longer
   triggers a ``DeprecationWarning`` on Python 3.13+ and works with Python
   3.15, where such parsing raises an error
+* FIX a date without a year that falls on 29 February (e.g. ``khal new
+  29.02.``) is scheduled on the next leap day instead of being rejected
+  outside January and February of a leap year
 
 0.14.1
 ======
